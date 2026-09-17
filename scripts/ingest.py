@@ -1,6 +1,5 @@
 # ============================================================
-# ARGUS — ЧИТАТЕЛЬ КНИГ (v2)
-# Читает PDF через pymupdf, чистит текст, режет по предложениям
+# ARGUS — ЧИТАТЕЛЬ КНИГ (v3)
 # ============================================================
 
 import os
@@ -8,97 +7,91 @@ import re
 import json
 import fitz   # pymupdf
 
-# --- Пути ---
 BOOKS_DIR = "books"
 DATA_DIR = "data"
 OUTPUT_FILE = os.path.join(DATA_DIR, "knowledge.json")
 
-# --- Загружаем существующие знания ---
 if os.path.exists(OUTPUT_FILE):
     with open(OUTPUT_FILE, "r", encoding="utf-8") as f:
         knowledge = json.load(f)
 else:
     knowledge = {"books": [], "chunks": []}
 
-# --- Список уже обработанных файлов ---
 processed = []
 for book in knowledge["books"]:
     processed.append(book["file"])
 
 
 # ============================================================
-# ОЧИСТКА ТЕКСТА
+# ОЧИСТКА ТЕКСТА (мягкая)
 # ============================================================
 def clean_text(text):
-    # Убираем повторяющиеся символы (C+C+C+, =====, -----, ++++)
-    text = re.sub(r"(\S)\1{3,}", r"\1", text)
+    # Убираем длинные цепочки одинаковых символов (C+C+C+, =====)
+    text = re.sub(r"(\S)\1{4,}", r"\1", text)
 
-    # Убираем длинные цепочки символов без пробелов
-    text = re.sub(r"[^\w\s]{4,}", " ", text)
-
-    # Убираем одиночные символы через пробел (а б в г ...)
-    text = re.sub(r"\b\w\b\s\b\w\b\s\b\w\b\s\b\w\b", " ", text)
-
-    # Схлопываем пробелы
+    # Схлопываем множественные пробелы
     text = re.sub(r"[ \t]+", " ", text)
 
-    # Убираем пустые строки (больше 2 подряд)
+    # Схлопываем переносы строк
     text = re.sub(r"\n{3,}", "\n\n", text)
 
     return text.strip()
 
 
 # ============================================================
-# РАЗБИВКА НА ПРЕДЛОЖЕНИЯ → ЧАНКИ
+# РАЗБИВКА ПО АБЗАЦАМ С ДОБИВКОЙ ДО РАЗМЕРА
 # ============================================================
-def split_into_chunks(text, max_chars=800, min_chars=200):
-    # Режем по предложениям: точка, !, ?, перенос строки
-    sentences = re.split(r"(?<=[.!?])\s+|\n\n", text)
+def split_into_chunks(text, target=900, min_size=400):
+    # Делим по абзацам
+    paragraphs = re.split(r"\n\s*\n", text)
 
     chunks = []
     current = ""
 
-    for sentence in sentences:
-        sentence = sentence.strip()
-        if not sentence:
+    for para in paragraphs:
+        para = para.strip()
+        if not para:
             continue
 
-        # Если предложение короткое — добавляем к текущему
-        if len(current) + len(sentence) < max_chars:
-            current = current + " " + sentence
+        # Если параграф короткий — приклеиваем к текущему
+        if len(current) + len(para) + 2 <= target:
+            if current:
+                current = current + "\n\n" + para
+            else:
+                current = para
         else:
-            # Сохраняем текущий чанк
-            if len(current) >= min_chars:
+            # Текущий чанк готов
+            if len(current) >= min_size:
                 chunks.append(current.strip())
-            # Начинаем новый
-            current = sentence
+            elif current:
+                chunks.append(current.strip())
 
-    # Не забываем последний
-    if len(current) >= min_chars:
+            current = para
+
+    if current:
         chunks.append(current.strip())
 
     return chunks
 
 
 # ============================================================
-# ПРОВЕРКА КАЧЕСТВА ЧАНКА
+# ПРОВЕРКА КАЧЕСТВА
 # ============================================================
 def is_good_chunk(chunk):
-    # Отбрасываем чанки, где мало букв (только мусор)
-    letters = 0
-    for char in chunk:
-        if char.isalpha():
-            letters = letters + 1
-
-    if len(chunk) == 0:
+    if len(chunk) < 100:
         return False
 
+    letters = 0
+    for c in chunk:
+        if c.isalpha():
+            letters = letters + 1
+
     ratio = letters / len(chunk)
-    return ratio > 0.6   # минимум 60% букв
+    return ratio > 0.5
 
 
 # ============================================================
-# ОБРАБОТКА ВСЕХ PDF
+# ОБРАБОТКА
 # ============================================================
 for filename in os.listdir(BOOKS_DIR):
     if not filename.lower().endswith(".pdf"):
@@ -112,35 +105,30 @@ for filename in os.listdir(BOOKS_DIR):
     print(f"📖 Обработка: {filename}")
 
     try:
-        # --- Открываем PDF ---
         doc = fitz.open(filepath)
-        full_text = ""
+        pages_count = len(doc)   # ← сохраняем ДО закрытия
 
+        full_text = ""
         for page in doc:
             full_text = full_text + page.get_text() + "\n"
 
         doc.close()
 
         if len(full_text.strip()) < 100:
-            print(f"   ⚠️ Мало текста — возможно, скан")
+            print(f"   ⚠️ Мало текста")
             continue
 
-        # --- Чистим текст ---
         cleaned = clean_text(full_text)
         print(f"   Очищено: {len(full_text)} → {len(cleaned)} символов")
 
-        # --- Режем на чанки ---
         chunks = split_into_chunks(cleaned)
-
-        # --- Фильтруем мусор ---
         good_chunks = []
-        for chunk in chunks:
-            if is_good_chunk(chunk):
-                good_chunks.append(chunk)
+        for c in chunks:
+            if is_good_chunk(c):
+                good_chunks.append(c)
 
         print(f"   Чанков: {len(chunks)} → {len(good_chunks)} после фильтра")
 
-        # --- Сохраняем ---
         for idx, chunk in enumerate(good_chunks):
             knowledge["chunks"].append({
                 "book": filename,
@@ -150,7 +138,7 @@ for filename in os.listdir(BOOKS_DIR):
 
         knowledge["books"].append({
             "file": filename,
-            "pages": len(doc),
+            "pages": pages_count,
             "chunks": len(good_chunks)
         })
 
