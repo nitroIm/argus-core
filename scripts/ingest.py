@@ -1,11 +1,11 @@
 # ============================================================
-# ARGUS — ЧИТАТЕЛЬ КНИГ (v3)
+# ARGUS — ЧИТАТЕЛЬ КНИГ (v4)
 # ============================================================
 
 import os
 import re
 import json
-import fitz   # pymupdf
+import fitz
 
 BOOKS_DIR = "books"
 DATA_DIR = "data"
@@ -23,62 +23,68 @@ for book in knowledge["books"]:
 
 
 # ============================================================
-# ОЧИСТКА ТЕКСТА (мягкая)
+# ОЧИСТКА
 # ============================================================
 def clean_text(text):
-    # Убираем длинные цепочки одинаковых символов (C+C+C+, =====)
     text = re.sub(r"(\S)\1{4,}", r"\1", text)
-
-    # Схлопываем множественные пробелы
     text = re.sub(r"[ \t]+", " ", text)
-
-    # Схлопываем переносы строк
     text = re.sub(r"\n{3,}", "\n\n", text)
-
     return text.strip()
 
 
 # ============================================================
-# РАЗБИВКА ПО АБЗАЦАМ С ДОБИВКОЙ ДО РАЗМЕРА
+# РАЗБИВКА — НАКОПИТЕЛЬНЫЙ БУФЕР
 # ============================================================
-def split_into_chunks(text, target=900, min_size=400):
-    # Делим по абзацам
-    paragraphs = re.split(r"\n\s*\n", text)
+def split_into_chunks(text, target=900, min_size=600):
+    # Единый поток: убираем переносы, клеим по предложениям
+    text = re.sub(r"\n+", " ", text)
+    text = re.sub(r"\s+", " ", text).strip()
+
+    # Режем на предложения
+    sentences = re.split(r"(?<=[.!?])\s+", text)
 
     chunks = []
     current = ""
 
-    for para in paragraphs:
-        para = para.strip()
-        if not para:
+    for sentence in sentences:
+        sentence = sentence.strip()
+        if not sentence:
             continue
 
-        # Если параграф короткий — приклеиваем к текущему
-        if len(current) + len(para) + 2 <= target:
+        # Если добавление не превысит target — копим
+        if len(current) + len(sentence) + 1 <= target:
             if current:
-                current = current + "\n\n" + para
+                current = current + " " + sentence
             else:
-                current = para
+                current = sentence
         else:
-            # Текущий чанк готов
+            # Буфер полон — сохраняем, если достаточно большой
             if len(current) >= min_size:
-                chunks.append(current.strip())
+                chunks.append(current)
+            elif chunks:
+                # Маленький хвост — клеим к предыдущему
+                chunks[-1] = chunks[-1] + " " + current
             elif current:
-                chunks.append(current.strip())
+                chunks.append(current)
 
-            current = para
+            current = sentence
 
-    if current:
-        chunks.append(current.strip())
+    # Последний буфер
+    if len(current) >= min_size:
+        chunks.append(current)
+    elif chunks and current:
+        chunks[-1] = chunks[-1] + " " + current
+    elif current:
+        chunks.append(current)
 
     return chunks
 
 
 # ============================================================
-# ПРОВЕРКА КАЧЕСТВА
+# ПРОВЕРКА
 # ============================================================
 def is_good_chunk(chunk):
-    if len(chunk) < 100:
+    if len(chunk) < 200:
         return False
 
     letters = 0
@@ -106,7 +112,7 @@ for filename in os.listdir(BOOKS_DIR):
 
     try:
         doc = fitz.open(filepath)
-        pages_count = len(doc)   # ← сохраняем ДО закрытия
+        pages_count = len(doc)
 
         full_text = ""
         for page in doc:
@@ -148,9 +154,6 @@ for filename in os.listdir(BOOKS_DIR):
         print(f"   ❌ Ошибка: {e}")
 
 
-# ============================================================
-# СОХРАНЕНИЕ
-# ============================================================
 os.makedirs(DATA_DIR, exist_ok=True)
 
 with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
