@@ -1,0 +1,23 @@
+name: Check Token
+
+on:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check token
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_PAT }}
+        run: |
+          echo "=== Информация о пользователе ==="
+          curl -s -H "Authorization: token $GH_TOKEN" https://api.github.com/user | head -20
+          
+          echo ""
+          echo "=== Права токена (scopes) ==="
+          curl -s -I -H "Authorization: token $GH_TOKEN" https://api.github.com/user | grep -i "x-oauth-scopes"
+          
+          echo ""
+          echo "=== Доступ к репозиторию ==="
+          curl -s -o /dev/null -w "Статус: %{http_code}\n" -H "Authorization: token $GH_TOKEN" https://api.github.com/repos/nitrolm/argus-core
