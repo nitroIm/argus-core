@@ -26,9 +26,19 @@ for book in knowledge["books"]:
 # ОЧИСТКА
 # ============================================================
 def clean_text(text):
+    # Убираем пробелы между одиночными буквами (А К А Д Е М И Я → АКАДЕМИЯ)
+    text = re.sub(r"\b(\w)\s(?=\w\b)", r"\1", text)
+    text = re.sub(r"\b(\w)\s(?=\w\b)", r"\1", text)
+
+    # Убираем длинные цепочки одинаковых символов
     text = re.sub(r"(\S)\1{4,}", r"\1", text)
+
+    # Множественные пробелы
     text = re.sub(r"[ \t]+", " ", text)
+
+    # Множественные переносы
     text = re.sub(r"\n{3,}", "\n\n", text)
+
     return text.strip()
 
 
@@ -36,11 +46,9 @@ def clean_text(text):
 # РАЗБИВКА — НАКОПИТЕЛЬНЫЙ БУФЕР
 # ============================================================
 def split_into_chunks(text, target=900, min_size=600):
-    # Единый поток: убираем переносы, клеим по предложениям
     text = re.sub(r"\n+", " ", text)
     text = re.sub(r"\s+", " ", text).strip()
 
-    # Режем на предложения
     sentences = re.split(r"(?<=[.!?])\s+", text)
 
     chunks = []
@@ -51,25 +59,21 @@ def split_into_chunks(text, target=900, min_size=600):
         if not sentence:
             continue
 
-        # Если добавление не превысит target — копим
         if len(current) + len(sentence) + 1 <= target:
             if current:
                 current = current + " " + sentence
             else:
                 current = sentence
         else:
-            # Буфер полон — сохраняем, если достаточно большой
             if len(current) >= min_size:
                 chunks.append(current)
             elif chunks:
-                # Маленький хвост — клеим к предыдущему
                 chunks[-1] = chunks[-1] + " " + current
             elif current:
                 chunks.append(current)
 
             current = sentence
 
-    # Последний буфер
     if len(current) >= min_size:
         chunks.append(current)
     elif chunks and current:
