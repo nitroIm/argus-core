@@ -1,0 +1,25 @@
+name: ARGUS Search
+
+on:
+  workflow_dispatch:
+    inputs:
+      query:
+        description: 'Поисковый запрос'
+        required: true
+        default: 'Что такое новая атлантида?'
+
+jobs:
+  search:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run search
+        run: python scripts/search.py "${{ github.event.inputs.query }}"
