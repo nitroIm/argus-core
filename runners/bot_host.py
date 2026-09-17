@@ -10,14 +10,46 @@ import logging
 import requests
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters import Command
+from dotenv import load_dotenv
 
-# ---------- Настройки (из переменных окружения) ----------
-BOT_TOKEN = os.getenv("BOT_TOKEN")
-GITHUB_PAT = os.getenv("GITHUB_PAT")
-GITHUB_REPO = os.getenv("GITHUB_REPO")  # например: "nitrolm/argus-core"
+# ---------- Загружаем переменные из .env ----------
+load_dotenv()
+
+# ---------- Настройки ----------
+BOT_TOKEN = (os.getenv("BOT_TOKEN") or "").strip()
+GITHUB_PAT = (os.getenv("GITHUB_PAT") or "").strip()
+GITHUB_REPO = (os.getenv("GITHUB_REPO") or "").strip()
+
+# ---------- Логирование ----------
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s"
+)
+logger = logging.getLogger(__name__)
+
+# ---------- ДИАГНОСТИКА ----------
+logger.info("=" * 50)
+logger.info("ДИАГНОСТИКА ПЕРЕМЕННЫХ:")
+logger.info(f"BOT_TOKEN: длина={len(BOT_TOKEN)}, начало={BOT_TOKEN[:15]}...")
+logger.info(f"GITHUB_PAT: длина={len(GITHUB_PAT)}, начало={GITHUB_PAT[:10]}...")
+logger.info(f"GITHUB_REPO: [{GITHUB_REPO}]")
+
+# Проверяем доступ к репозиторию
+try:
+    test_url = f"https://api.github.com/repos/{GITHUB_REPO}"
+    test_headers = {
+        "Authorization": f"Bearer {GITHUB_PAT}",
+        "Accept": "application/vnd.github+json"
+    }
+    test_response = requests.get(test_url, headers=test_headers, timeout=10)
+    logger.info(f"ПРОВЕРКА РЕПОЗИТОРИЯ: статус {test_response.status_code}")
+    if test_response.status_code != 200:
+        logger.error(f"Ответ GitHub: {test_response.text[:300]}")
+except Exception as e:
+    logger.error(f"Ошибка проверки: {e}")
+logger.info("=" * 50)
 
 # ---------- Инициализация ----------
-logging.basicConfig(level=logging.INFO)
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
 
@@ -71,7 +103,7 @@ async def cmd_ask(message: types.Message):
         )
         return
 
-    # Сообщаем пользователю, что начали
+    # Сообщаем, что начали
     await message.answer("🔍 ARGUS ищет ответ... Придёт через 30-60 секунд.")
 
     # Отправляем repository_dispatch в GitHub
@@ -94,15 +126,18 @@ async def cmd_ask(message: types.Message):
     try:
         response = requests.post(url, headers=headers, json=payload, timeout=30)
 
+        logger.info(f"GitHub ответил: {response.status_code}")
+
         if response.status_code == 204:
-            logging.info(f"✅ Запрос отправлен в GitHub: {query}")
+            logger.info(f"✅ Запрос отправлен в GitHub: {query}")
         else:
+            logger.error(f"⚠️ GitHub: {response.status_code} {response.text[:200]}")
             await message.answer(
                 f"⚠️ GitHub ответил ошибкой: {response.status_code}\n"
                 f"{response.text[:300]}"
             )
     except Exception as e:
-        logging.error(f"❌ Ошибка отправки: {e}")
+        logger.error(f"❌ Ошибка отправки: {e}")
         await message.answer(f"⚠️ Ошибка соединения с GitHub: {e}")
 
 
@@ -111,7 +146,7 @@ async def cmd_ask(message: types.Message):
 # ============================================================
 @dp.message(Command("stats"))
 async def cmd_stats(message: types.Message):
-    # Читаем summary.json через raw-ссылку (лёгкий файл)
+    # Читаем summary.json через raw-ссылку
     raw_url = f"https://raw.githubusercontent.com/{GITHUB_REPO}/main/data/summary.json"
 
     try:
@@ -146,7 +181,7 @@ async def cmd_stats(message: types.Message):
 # ЗАПУСК
 # ============================================================
 async def main():
-    logging.info("🏛️ ARGUS запущен. Слушаю команды...")
+    logger.info("🏛️ ARGUS запущен. Слушаю команды...")
     await dp.start_polling(bot)
 
 
