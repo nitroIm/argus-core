@@ -7,17 +7,30 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - name: Check token
+      - name: Check token full
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
-          echo "=== Информация о пользователе ==="
-          curl -s -H "Authorization: token $GH_TOKEN" https://api.github.com/user | head -20
+          echo "=== 1. Первые и последние символы токена ==="
+          echo "Начало: ${GH_TOKEN:0:7}"
+          echo "Длина: ${#GH_TOKEN}"
 
           echo ""
-          echo "=== Права токена (scopes) ==="
+          echo "=== 2. Под каким аккаунтом создан токен ==="
+          curl -s -H "Authorization: token $GH_TOKEN" https://api.github.com/user | grep -E '"login"|"id"'
+
+          echo ""
+          echo "=== 3. Права токена ==="
           curl -s -I -H "Authorization: token $GH_TOKEN" https://api.github.com/user | grep -i "x-oauth-scopes"
 
           echo ""
-          echo "=== Доступ к репозиторию ==="
+          echo "=== 4. Существует ли репозиторий ==="
           curl -s -o /dev/null -w "Статус: %{http_code}\n" -H "Authorization: token $GH_TOKEN" https://api.github.com/repos/nitrolm/argus-core
+
+          echo ""
+          echo "=== 5. Владелец репозитория ==="
+          curl -s -H "Authorization: token $GH_TOKEN" https://api.github.com/repos/nitrolm/argus-core | grep -E '"full_name"|"owner"|"default_branch"|"archived"'
+
+          echo ""
+          echo "=== 6. Список workflows в репозитории ==="
+          curl -s -H "Authorization: token $GH_TOKEN" https://api.github.com/repos/nitrolm/argus-core/actions/workflows | grep -E '"name"|"path"|"state"'
