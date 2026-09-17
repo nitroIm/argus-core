@@ -1,5 +1,6 @@
 # ============================================================
-# ARGUS — ПОИСК + LLM + ОТПРАВКА В TELEGRAM
+# ARGUS — ПОИСК + LLM + ОТПРАВКА В TELEGRAM (v2)
+# С автоматическим fallback между бесплатными моделями
 # ============================================================
 
 import os
@@ -10,6 +11,18 @@ import requests
 
 KNOWLEDGE_FILE = "data/knowledge.json"
 
+# --- Список бесплатных моделей в порядке приоритета ---
+FREE_MODELS = [
+    "z-ai/glm-4.5-air:free",
+    "meta-llama/llama-3.3-70b-instruct:free",
+    "google/gemini-2.0-flash-exp:free",
+    "deepseek/deepseek-r1-0528:free",
+    "nvidia/nemotron-3-nano-30b-a3b:free",
+    "openai/gpt-oss-20b:free",
+    "qwen/qwen3-vl-235b-a22b-thinking:free",
+    "openrouter/free"   # универсальный роутер — последний резерв
+]
+
 # --- Проверка знаний ---
 if not os.path.exists(KNOWLEDGE_FILE):
     print("❌ knowledge.json не найден.")
@@ -19,7 +32,6 @@ with open(KNOWLEDGE_FILE, "r", encoding="utf-8") as f:
     knowledge = json.load(f)
 
 chunks = knowledge.get("chunks", [])
-
 if not chunks:
     print("❌ База знаний пуста.")
     sys.exit()
@@ -41,9 +53,7 @@ query_words = [w for w in normalize(query).split() if len(w) > 2]
 results = []
 for chunk in chunks:
     text_norm = normalize(chunk.get("text", ""))
-    score = 0
-    for w in query_words:
-        score += text_norm.count(w)
+    score = sum(text_norm.count(w) for w in query_words)
     if score > 0:
         results.append((score, chunk))
 
@@ -54,19 +64,18 @@ if not top_chunks:
     answer = "❌ По запросу ничего не найдено в базе знаний."
     print(answer)
 else:
-    # --- Формируем контекст ---
     context = "\n\n".join([c["text"] for c in top_chunks])
 
-    # --- Отправляем в LLM ---
     api_key = os.getenv("OPENROUTER_API_KEY")
-
     if not api_key:
         answer = "❌ OPENROUTER_API_KEY не задан."
         print(answer)
     else:
         headers = {
             "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "HTTP-Referer": "https://github.com/nitrolm/argus-core",
+            "X-Title": "ARGUS"
         }
 
         prompt = f"""Ответь на вопрос, используя ТОЛЬКО предоставленный контекст.
@@ -80,25 +89,29 @@ else:
 Ответ:"""
 
         payload = {
-            "model": "z-ai/glm-4.5-air:free",
+            "models": FREE_MODELS,   # ← массив моделей для fallback
             "messages": [
                 {"role": "user", "content": prompt}
             ]
         }
+
+        answer = None
+        used_model = None
 
         try:
             response = requests.post(
                 "https://openrouter.ai/api/v1/chat/completions",
                 headers=headers,
                 json=payload,
-                timeout=60
+                timeout=90
             )
             response.raise_for_status()
             data = response.json()
             answer = data["choices"][0]["message"]["content"]
-            print(f"✅ Ответ получен: {len(answer)} символов")
+            used_model = data.get("model", "unknown")
+            print(f"✅ Ответ получен от модели: {used_model}")
         except Exception as e:
-            answer = f"❌ Ошибка LLM: {e}"
+            answer = f"❌ Все модели недоступны. Ошибка: {e}"
             print(answer)
 
 # --- Отправка в Telegram ---
@@ -121,5 +134,5 @@ if bot_token and chat_id:
     except Exception as e:
         print(f"⚠️ Ошибка отправки в Telegram: {e}")
 else:
-    print("⚠️ Telegram не настроен (нет TELEGRAM_BOT_TOKEN или chat_id)")
+    print("⚠️ Telegram не настроен")
     print(f"\n📄 Ответ:\n{answer}")
