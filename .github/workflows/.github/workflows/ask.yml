@@ -1,0 +1,41 @@
+name: ARGUS Ask
+
+on:
+  workflow_dispatch:
+    inputs:
+      query:
+        description: 'Вопрос'
+        required: true
+        default: 'Что такое Новая Атлантида?'
+      chat_id:
+        description: 'Telegram chat_id (необязательно)'
+        required: false
+        default: ''
+
+  repository_dispatch:
+    types: [run_search]
+
+jobs:
+  ask:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run ask
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          QUERY: ${{ github.event.inputs.query || github.event.client_payload.query }}
+          CHAT_ID: ${{ github.event.inputs.chat_id || github.event.client_payload.chat_id }}
+        run: python scripts/ask.py "$QUERY"
