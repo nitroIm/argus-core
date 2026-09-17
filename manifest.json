@@ -1,0 +1,34 @@
+{
+    "name": "ARGUS",
+    "version": "0.1",
+    "born": "2026-09-17",
+    "modules": {
+        "ingest": {
+            "status": "planned",
+            "needs": ["scripts/ingest.py", "books/"]
+        },
+        "collect": {
+            "status": "planned",
+            "needs": ["scripts/collect.py", "data/"]
+        },
+        "train": {
+            "status": "planned",
+            "needs": ["models/", "scripts/train.py"]
+        },
+        "predict": {
+            "status": "planned",
+            "needs": ["models/", "scripts/predict.py"]
+        },
+        "rag": {
+            "status": "planned",
+            "needs": ["index/", "books/"]
+        }
+    },
+    "wants": [
+        "больше книг по трейдингу",
+        "доступ к API бирж",
+        "больше данных для обучения",
+        "новые источники сентимента"
+    ],
+    "growth_log": []
+}
