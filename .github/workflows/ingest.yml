@@ -1,0 +1,34 @@
+name: ARGUS Ingest
+
+on:
+  push:
+    paths:
+      - 'books/**'
+  workflow_dispatch:
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r scripts/requirements.txt
+
+      - name: Run ingest
+        run: python scripts/ingest.py
+
+      - name: Commit knowledge
+        run: |
+          git config user.name "ARGUS"
+          git config user.email "argus@github.com"
+          git add data/
+          git commit -m "ARGUS: обработал новые книги" || echo "Нет изменений"
+          git push
