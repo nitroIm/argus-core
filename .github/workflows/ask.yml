@@ -8,16 +8,20 @@ on:
         required: true
         default: 'Что такое Новая Атлантида?'
       chat_id:
-        description: 'Telegram chat_id (необязательно)'
+        description: 'Telegram chat_id'
         required: false
         default: ''
 
   repository_dispatch:
     types: [run_search]
 
+permissions:
+  contents: write
+
 jobs:
   ask:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     steps:
       - name: Checkout
@@ -28,8 +32,16 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Cache models
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface
+          key: hf-models-v1
+
       - name: Install dependencies
-        run: pip install requests
+        run: |
+          pip install requests==2.32.3
+          pip install transformers==4.41.2 sentencepiece==0.2.0 sacremoses==0.1.1
 
       - name: Run ask
         env:
@@ -37,4 +49,14 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           QUERY: ${{ github.event.inputs.query || github.event.client_payload.query }}
           CHAT_ID: ${{ github.event.inputs.chat_id || github.event.client_payload.chat_id }}
-        run: python scripts/ask.py "$QUERY"
+        run: |
+          cd scripts
+          python ask.py "$QUERY"
+
+      - name: Commit logs
+        run: |
+          git config user.name "ARGUS"
+          git config user.email "argus@github.com"
+          git add logs/
+          git diff --staged --quiet || git commit -m "ARGUS: новые логи"
+          git push
