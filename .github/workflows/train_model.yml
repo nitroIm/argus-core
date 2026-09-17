@@ -6,19 +6,32 @@ on:
 permissions:
   contents: write
 
+# Не даёт запускаться двум обучениям одновременно
+concurrency:
+  group: argus-train
+  cancel-in-progress: false
+
 jobs:
   train:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 90
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+
+      - name: Cache HuggingFace models
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface
+          key: hf-models-v1
 
       - name: Install CPU torch
         run: |
@@ -33,11 +46,33 @@ jobs:
       - name: Build FAISS index
         run: python scripts/build_index.py
 
-      - name: Commit model
+      - name: Commit and push
         run: |
           git config user.name "ARGUS"
           git config user.email "argus@github.com"
+
+          # Добавляем только нужные папки
           git add models/ data/
-          git commit -m "ARGUS: обновил модель и индекс" || echo "Нет изменений"
-          git pull --rebase origin main
-          git push
+
+          # Коммитим, если есть изменения
+          if git diff --staged --quiet; then
+            echo "ℹ️ Изменений нет — коммит не нужен."
+            exit 0
+          fi
+
+          git commit -m "ARGUS: обновил модель и индекс [skip ci]"
+
+          # Подтягиваем свежие изменения и повторяем попытку push до 3 раз
+          for i in 1 2 3; do
+            echo "🔄 Попытка push #$i"
+            git pull --rebase --autostash origin main
+            if git push; then
+              echo "✅ Модель успешно сохранена в репозиторий."
+              exit 0
+            fi
+            echo "⚠️ Push не удался, повтор через 5 секунд..."
+            sleep 5
+          done
+
+          echo "❌ Не удалось запушить после 3 попыток."
+          exit 1
