@@ -1,7 +1,6 @@
 # ============================================================
 # ARGUS — ОТПРАВКА КАРТОЧЕК НА ОДОБРЕНИЕ
-# С инлайн-кнопками в Telegram
-# v2: с памятью (sent_ids) — не слать одно и то же
+# v3: с памятью (sent_ids) + чёрный список источников
 # ============================================================
 
 import os
@@ -16,7 +15,18 @@ PENDING_FILE = "data/pending_cards.json"
 
 MAX_CARDS = 5  # не больше 5 карточек за один прогон
 
-# ---------- Загрузка ----------
+# ---------- Чёрный список доменов ----------
+# Ссылки с этих доменов не отправляются вообще
+BLACKLIST = [
+    "archive.org",   # 401 Unauthorized (lending library)
+    "sci-hub",       # серые зоны
+]
+
+def in_blacklist(url: str) -> bool:
+    u = url.lower()
+    return any(domain in u for domain in BLACKLIST)
+
+# ---------- Загрузка кандидатов ----------
 if not os.path.exists(CANDIDATES_FILE):
     print("❌ Нет файла кандидатов.")
     exit(0)
@@ -35,7 +45,7 @@ if os.path.exists(SENT_IDS_FILE):
     except Exception:
         sent_ids = set()
 
-# ---------- Pending (для обработки кнопок) ----------
+# ---------- Pending ----------
 pending = {}
 if os.path.exists(PENDING_FILE):
     try:
@@ -44,8 +54,8 @@ if os.path.exists(PENDING_FILE):
     except Exception:
         pending = {}
 
-# ---------- Настройки ----------
-BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+# ---------- Настройки Telegram ----------
+BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("BOT_TOKEN")
 CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
 if not BOT_TOKEN or not CHAT_ID:
@@ -61,10 +71,14 @@ def is_new(c: dict) -> bool:
     url = c.get("url", "")
     if not url:
         return False
+    if in_blacklist(url):
+        return False
     return url_id(url) not in sent_ids
 
 new_candidates = [c for c in candidates if is_new(c)]
-print(f"ℹ️ Всего кандидатов: {len(candidates)}, новых: {len(new_candidates)}")
+skipped_blacklist = [c for c in candidates if c.get("url") and in_blacklist(c["url"])]
+print(f"ℹ️ Всего кандидатов: {len(candidates)}, новых: {len(new_candidates)}, "
+      f"в чёрном списке: {len(skipped_blacklist)}")
 
 if not new_candidates:
     print("ℹ️ Новых кандидатов нет.")
@@ -79,7 +93,7 @@ for i, c in enumerate(new_candidates[:MAX_CARDS]):
     topic = c.get("topic", "?")
     size = c.get("size_mb")
 
-    short_id = url_id(url)  # стабильный id
+    short_id = url_id(url)
 
     message = f"📚 <b>Найдена книга</b>\n\n"
     message += f"<b>{title}</b>\n\n"
@@ -97,7 +111,6 @@ for i, c in enumerate(new_candidates[:MAX_CARDS]):
         ]
     }
 
-    # Сохраняем mapping для обработки кнопки
     pending[short_id] = {
         "url": url,
         "title": title,
@@ -125,7 +138,7 @@ for i, c in enumerate(new_candidates[:MAX_CARDS]):
     except Exception as e:
         print(f"⚠️ {e}")
 
-# ---------- Сохраняем всё ----------
+# ---------- Сохраняем ----------
 with open(SENT_IDS_FILE, "w", encoding="utf-8") as f:
     json.dump(list(sent_ids), f, ensure_ascii=False, indent=2)
 
