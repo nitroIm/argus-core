@@ -1,6 +1,6 @@
 # ============================================================
 # ARGUS — НАБЛЮДАТЕЛЬ
-# v2: правильные пути + расширенные стоп-слова
+# v3: правильные пути + фильтр только по action="ask" + расширенные стоп-слова
 # ============================================================
 
 import os
@@ -30,10 +30,7 @@ STOP_WORDS = {
 }
 
 
-# ---------- Загрузка логов ----------
-if not os.path.exists(LOG_FILE):
-    print(f"❌ Логов нет ({LOG_FILE}). Пока нечего наблюдать.")
-    # Не выходим — создаём пустой observation, чтобы цепочка не рвалась
+def save_empty(note: str):
     obs = {
         "generated_at": datetime.utcnow().isoformat(),
         "total_queries": 0,
@@ -45,29 +42,42 @@ if not os.path.exists(LOG_FILE):
         "translated_chunks_total": 0,
         "top_failed_words": [],
         "recent_failed_queries": [],
-        "note": "log file not found",
+        "note": note,
     }
     os.makedirs(os.path.dirname(OUTPUT_FILE), exist_ok=True)
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
         json.dump(obs, f, ensure_ascii=False, indent=2)
-    print(f"✅ Создан пустой {OUTPUT_FILE}")
+    print(f"✅ Создан пустой {OUTPUT_FILE} ({note})")
+
+
+# ---------- Загрузка логов ----------
+if not os.path.exists(LOG_FILE):
+    print(f"❌ Логов нет ({LOG_FILE}).")
+    save_empty("log file not found")
     exit(0)
 
 with open(LOG_FILE, "r", encoding="utf-8") as f:
     lines = f.readlines()
 
-logs = []
+all_logs = []
 for line in lines:
     line = line.strip()
     if not line:
         continue
     try:
-        logs.append(json.loads(line))
+        all_logs.append(json.loads(line))
     except Exception:
         continue
 
+# --- Фильтр: только записи от /ask ---
+logs = [l for l in all_logs if l.get("action") == "ask"]
+
+print(f"📂 Всего записей в логе: {len(all_logs)}")
+print(f"🔍 Из них /ask: {len(logs)}")
+
 if not logs:
-    print("❌ Логи пусты.")
+    print("⚠️ Запросов /ask пока нет — создаю пустой observation.")
+    save_empty("no ask records yet")
     exit(0)
 
 # ---------- Метрики ----------
