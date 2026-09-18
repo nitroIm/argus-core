@@ -37,18 +37,11 @@ jobs:
             python collector.py "${{ github.event.inputs.url }}"
           fi
 
-      - name: Debug — что скачалось
-        run: |
-          echo "=== Корень репо ==="
-          ls -la books/ || echo "books/ пусто"
-          echo "=== scripts/books ==="
-          ls -la scripts/books/ 2>/dev/null || echo "scripts/books нет"
-
       - name: Commit books
         run: |
           git config user.name "ARGUS"
           git config user.email "argus@github.com"
-          git add books/ scripts/books/ 2>/dev/null || true
+          git add books/
           git status
           git diff --staged --quiet && echo "❌ Нечего коммитить" && exit 0
           git commit -m "ARGUS: новые книги [skip ci]"
