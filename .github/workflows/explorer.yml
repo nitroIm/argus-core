@@ -1,9 +1,14 @@
 name: ARGUS Explorer
 
 on:
-#  schedule:
-#    - cron: "0 7 * * *"   # каждый день в 7:00 UTC
   workflow_dispatch:
+    inputs:
+      topic:
+        description: 'Тема для поиска (опционально)'
+        required: false
+        default: ''
+  repository_dispatch:
+    types: [explore_topic]
 
 permissions:
   contents: write
@@ -23,26 +28,18 @@ jobs:
           python-version: '3.11'
 
       - name: Install deps
-        run: pip install requests==2.32.3
+        run: pip install requests
 
       - name: Run explorer
-        run: python scripts/explorer.py
-
-      - name: Send approval cards
         env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: python scripts/approval.py
+          EXPLORE_TOPIC: ${{ github.event.client_payload.topic || github.event.inputs.topic }}
+        run: python scripts/explorer.py
 
       - name: Commit
         run: |
           git config user.name "ARGUS"
           git config user.email "argus@github.com"
-          git add data/explore_log.json data/explore_seen.json data/scout_candidates.json || true
-          git diff --staged --quiet && echo "Нет изменений" && exit 0
-          git commit -m "ARGUS: explorer результаты [skip ci]"
-          for i in 1 2 3; do
-            git pull --rebase --autostash origin main
-            git push && break
-            sleep 5
-          done
+          git add -A
+          git diff --staged --quiet || git commit -m "ARGUS: explorer $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          git pull --rebase origin main || true
+          git push || true
