@@ -1,8 +1,8 @@
 name: ARGUS Explorer
 
 on:
-  schedule:
-    - cron: "0 7 * * *"   # каждый день в 7:00 UTC
+#  schedule:
+#    - cron: "0 7 * * *"   # каждый день в 7:00 UTC
   workflow_dispatch:
 
 permissions:
