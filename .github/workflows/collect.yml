@@ -8,29 +8,41 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: argus-collect
+  cancel-in-progress: false
+
 jobs:
   collect:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: Install dependencies
-        run: pip install requests
+      - name: Install deps
+        run: pip install requests==2.32.3
 
       - name: Run collect
         run: python scripts/collect_data.py
 
-      - name: Commit data
+      - name: Commit
         run: |
           git config user.name "ARGUS"
           git config user.email "argus@github.com"
-          git add data/price_history.json
-          git diff --staged --quiet || git commit -m "ARGUS: новые свечи BTC"
-          git push
+          git add data/price_history.json || true
+          git diff --staged --quiet && echo "Нет новых свечей" && exit 0
+          git commit -m "ARGUS: свежие свечи [skip ci]"
+          for i in 1 2 3; do
+            git pull --rebase --autostash origin main
+            git push && break
+            sleep 5
+          done
