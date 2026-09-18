@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       url:
-        description: 'URL для сбора (если пусто — из файла)'
+        description: 'URL для сбора'
         required: false
         default: ''
 
@@ -37,12 +37,20 @@ jobs:
             python collector.py "${{ github.event.inputs.url }}"
           fi
 
+      - name: Debug — что скачалось
+        run: |
+          echo "=== Корень репо ==="
+          ls -la books/ || echo "books/ пусто"
+          echo "=== scripts/books ==="
+          ls -la scripts/books/ 2>/dev/null || echo "scripts/books нет"
+
       - name: Commit books
         run: |
           git config user.name "ARGUS"
           git config user.email "argus@github.com"
-          git add books/ data/collect_urls.txt || true
-          git diff --staged --quiet && echo "Нет новых книг" && exit 0
+          git add books/ scripts/books/ 2>/dev/null || true
+          git status
+          git diff --staged --quiet && echo "❌ Нечего коммитить" && exit 0
           git commit -m "ARGUS: новые книги [skip ci]"
           for i in 1 2 3; do
             git pull --rebase --autostash origin main
