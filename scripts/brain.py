@@ -1,6 +1,6 @@
 # ============================================================
 # ARGUS — BRAIN (Оркестратор)
-# v2: защита от циклов (cooldown + mark-before-trigger)
+# v3: сам дёргает Explorer раз в сутки + защита от циклов
 # ============================================================
 
 import os
@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 # ---------- Настройки ----------
 GITHUB_REPO = os.getenv("GITHUB_REPO", "nitroIm/argus-core")
 GITHUB_PAT = os.getenv("GITHUB_PAT")
-BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("BOT_TOKEN")
 CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
 STATE_FILE = "data/brain_state.json"
@@ -30,7 +30,7 @@ LIMITS = {
     "train": 1,
     "collect": 24,
     "guardian": 2,
-    "explorer": 1,   # защита на будущее — Explorer через Brain не чаще 1 раза в сутки
+    "explorer": 1,
 }
 
 
@@ -70,7 +70,7 @@ def hours_since(state, key):
 
 
 # ============================================================
-# ПРОВЕРКА ПРАВ
+# ПРОВЕРКА ЛИМИТОВ
 # ============================================================
 def can_run(action, state):
     today = datetime.utcnow().strftime("%Y-%m-%d")
@@ -119,6 +119,15 @@ def trigger_workflow(workflow_file):
 def decide(state):
     decisions = []
 
+    # ---------- 0. Explorer: раз в сутки ----------
+    if can_run("explorer", state):
+        if hours_since(state, "last_explorer") > EXPLORER_COOLDOWN_HOURS:
+            decisions.append({
+                "action": "explorer",
+                "workflow": "explorer.yml",
+                "reason": "Раз в сутки — поиск новых книг",
+            })
+
     obs = load("data/observation.json", {})
     quality = load("data/quality.json", {})
     proposals = load("data/proposals.json", {})
@@ -132,7 +141,7 @@ def decide(state):
                 "reason": "Раз в день — собрать статистику",
             })
 
-    # ---------- 2. Analyzer: только если есть свежие наблюдения ----------
+    # ---------- 2. Analyzer: только если есть наблюдения ----------
     if can_run("analyzer", state) and obs.get("total_queries", 0) > 0:
         if hours_since(state, "last_analyzer") > ACTION_COOLDOWN_HOURS:
             decisions.append({
@@ -141,7 +150,7 @@ def decide(state):
                 "reason": "Проанализировать наблюдения",
             })
 
-    # ---------- 3. Guardian: раз в сутки, только если есть quality ----------
+    # ---------- 3. Guardian: раз в сутки ----------
     if can_run("guardian", state) and quality:
         if hours_since(state, "last_guardian") > ACTION_COOLDOWN_HOURS:
             decisions.append({
@@ -182,16 +191,14 @@ def decide(state):
 # ============================================================
 state = load(STATE_FILE, {})
 
-# ---------- Cooldown самого Brain ----------
+# Cooldown самого Brain
 if hours_since(state, "last_brain_run") < (BRAIN_COOLDOWN_MIN / 60):
     print(f"🧠 Brain: cooldown {BRAIN_COOLDOWN_MIN} мин не прошёл — выход.")
     print(f"   Последний запуск: {state.get('last_brain_run')}")
     exit(0)
 
-# Помечаем сразу — защита от двойных запусков cron
 state["last_brain_run"] = datetime.utcnow().isoformat()
 
-# ---------- Решения ----------
 decisions = decide(state)
 
 print("🧠 ARGUS BRAIN")
@@ -204,19 +211,16 @@ executed = []
 for d in decisions:
     print(f"▶️ {d['action']}: {d['reason']}")
 
-    # ВАЖНО: mark_run ДО trigger — защита от race condition
     mark_run(d["action"], state)
 
     ok, msg = trigger_workflow(d["workflow"])
 
     if ok:
-        # Обновляем last_train_books только при успешном Train
         if d["action"] == "train" and "_books_count" in d:
             state["last_train_books"] = d["_books_count"]
         print(f"   ✅ Запущено")
     else:
         print(f"   ❌ Ошибка: {msg}")
-        # Если не запустилось — вернём счётчик назад (мягкий откат)
         state["runs"][d["action"]] = max(0, state["runs"].get(d["action"], 1) - 1)
 
     executed.append({
@@ -241,9 +245,9 @@ if BOT_TOKEN and CHAT_ID and executed:
         icon = "✅" if e["success"] else "❌"
         msg += f"{icon} {e['action']}: {e['reason']}\n"
     try:
-        requests.get(
+        requests.post(
             f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
-            params={"chat_id": CHAT_ID, "text": msg[:4000], "parse_mode": "HTML"},
+            json={"chat_id": CHAT_ID, "text": msg[:4000], "parse_mode": "HTML"},
             timeout=15,
         )
         print("\n📤 Отчёт в Telegram")
