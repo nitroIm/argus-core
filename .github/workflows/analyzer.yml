@@ -1,0 +1,50 @@
+name: ARGUS Analyzer
+
+on:
+  schedule:
+    - cron: "0 4 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: pip install requests==2.32.3
+
+      - name: Run analyzer
+        run: python scripts/analyzer.py
+
+      - name: Run proposer
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python scripts/proposer.py
+
+      - name: Commit
+        run: |
+          git config user.name "ARGUS"
+          git config user.email "argus@github.com"
+          git add data/analysis.json data/proposals.json
+          git diff --staged --quiet && echo "Нет изменений" && exit 0
+          git commit -m "ARGUS: анализ и предложения [skip ci]"
+          for i in 1 2 3; do
+            git pull --rebase --autostash origin main
+            git push && break
+            sleep 5
+          done
