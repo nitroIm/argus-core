@@ -1,0 +1,48 @@
+name: ARGUS Scout
+
+on:
+  schedule:
+    - cron: "0 6 * * *"   # каждый день в 6:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  scout:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: pip install requests==2.32.3
+
+      - name: Run scout
+        run: python scripts/scout.py
+
+      - name: Send approval cards
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python scripts/approval.py
+
+      - name: Commit
+        run: |
+          git config user.name "ARGUS"
+          git config user.email "argus@github.com"
+          git add data/scout_candidates.json data/scout_seen.json || true
+          git diff --staged --quiet && echo "Нет изменений" && exit 0
+          git commit -m "ARGUS: scout candidates [skip ci]"
+          for i in 1 2 3; do
+            git pull --rebase --autostash origin main
+            git push && break
+            sleep 5
+          done
