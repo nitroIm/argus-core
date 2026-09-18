@@ -1,152 +1,122 @@
 # ============================================================
-# ARGUS — ПОИСК + ЛОГИРОВАНИЕ + ПЕРЕВОД
+# ARGUS — СЕМАНТИЧЕСКИЙ ПОИСК + ЛОГИРОВАНИЕ + ПЕРЕВОД
+# Ищет ответы ПО СМЫСЛУ через FAISS + свою модель эмбеддингов
 # ============================================================
 
 import os
-import re
 import sys
 import json
 import time
+import numpy as np
+import faiss
 import requests
+from sentence_transformers import SentenceTransformer
 
 from logger import log_action
 from translate import is_english, translate_to_ru
 
-KNOWLEDGE_FILE = "data/knowledge.json"
+# ---------- Пути ----------
+MODEL_DIR = "models/argus-embeddings"
+INDEX_FILE = "data/faiss.index"
+CHUNKS_FILE = "data/chunks_for_index.json"
 
 start_time = time.time()
 
-# ---------- Проверка знаний ----------
-if not os.path.exists(KNOWLEDGE_FILE):
-    log_action("ask", error="knowledge.json не найден")
-    print("❌ knowledge.json не найден.")
-    sys.exit()
+# ---------- Проверки ----------
+if not os.path.exists(MODEL_DIR):
+    log_action("ask", error="Модель не найдена")
+    print("❌ Модель не найдена. Сначала запусти ARGUS Train Model.")
+    sys.exit(1)
 
-with open(KNOWLEDGE_FILE, "r", encoding="utf-8") as f:
-    knowledge = json.load(f)
+if not os.path.exists(INDEX_FILE):
+    log_action("ask", error="faiss.index не найден")
+    print("❌ FAISS-индекс не найден.")
+    sys.exit(1)
 
-chunks = knowledge.get("chunks", [])
+if not os.path.exists(CHUNKS_FILE):
+    log_action("ask", error="chunks_for_index.json не найден")
+    print("❌ Файл чанков не найден.")
+    sys.exit(1)
 
-if not chunks:
-    log_action("ask", error="База знаний пуста")
-    print("❌ База знаний пуста.")
-    sys.exit()
+# ---------- Загрузка ----------
+print("📦 Загружаю модель...")
+model = SentenceTransformer(MODEL_DIR)
+
+print("📦 Загружаю индекс...")
+index = faiss.read_index(INDEX_FILE)
+
+with open(CHUNKS_FILE, "r", encoding="utf-8") as f:
+    chunks = json.load(f)
+
+print(f"✅ Индекс: {index.ntotal} векторов, чанков: {len(chunks)}")
 
 # ---------- Вопрос ----------
 query = os.getenv("QUERY") or " ".join(sys.argv[1:]) or "Что такое Новая Атлантида?"
 print(f"🔍 Вопрос: {query}")
 
-# ---------- Стоп-слова ----------
-STOP_WORDS = {
-    "и", "в", "во", "не", "что", "он", "на", "я", "с", "со",
-    "как", "а", "то", "все", "она", "так", "его", "но", "да",
-    "ты", "к", "у", "же", "вы", "за", "бы", "по", "только",
-    "ее", "мне", "было", "вот", "от", "меня", "еще", "нет",
-    "о", "из", "ему", "теперь", "когда", "даже", "ну", "вдруг",
-    "ли", "если", "уже", "или", "ни", "быть", "был", "него",
-    "до", "вас", "нибудь", "опять", "уж", "вам", "ведь", "там",
-    "потом", "себя", "ничего", "ей", "может", "они", "тут",
-    "где", "есть", "надо", "ней", "для", "мы", "тебя", "их",
-    "чем", "была", "сам", "чтоб", "без", "будто", "чего", "раз",
-    "тоже", "себе", "под", "будет", "ж", "тогда", "кто", "этот",
-    "того", "потому", "этого", "какой", "совсем", "ним", "здесь",
-    "этом", "один", "почти", "мой", "тем", "чтобы", "нее",
-    "сейчас", "были", "куда", "зачем", "всех", "никогда",
-    "можно", "при", "наконец", "два", "об", "другой", "хоть",
-    "после", "над", "больше", "тот", "через", "эти", "нас",
-    "про", "всего", "них", "какая", "много", "разве", "три",
-    "эту", "моя", "впрочем", "хорошо", "свою", "этой", "перед",
-    "иногда", "лучше", "чуть", "том", "нельзя", "такой", "им",
-    "более", "всегда", "конечно", "всю", "между", "это"
-}
+# ---------- Семантический поиск ----------
+query_vec = model.encode([query]).astype("float32")
+distances, indices = index.search(query_vec, k=5)
 
+# ---------- Собираем результаты ----------
+top = []
+for i, idx in enumerate(indices[0]):
+    if 0 <= idx < len(chunks):
+        top.append({
+            "score": float(distances[0][i]),
+            "text": chunks[idx]
+        })
 
-def normalize(text):
-    text = text.lower()
-    text = re.sub(r"[^\w\s]", " ", text)
-    text = re.sub(r"\s+", " ", text)
-    return text.strip()
-
-
-# ---------- Разбор запроса ----------
-query_words = []
-for w in normalize(query).split():
-    if len(w) < 3:
-        continue
-    if w in STOP_WORDS:
-        continue
-    query_words.append(w)
-
-if not query_words:
-    answer = "❌ Запрос слишком короткий."
-    log_action("ask", query=query, error="Короткий запрос")
+if not top:
+    answer = "❌ По запросу ничего не найдено."
+    log_action("ask", query=query, found_chunks=0)
     print(answer)
 else:
-    # ---------- Поиск ----------
-    results = []
-    for chunk in chunks:
-        text = chunk.get("text", "")
-        text_norm = normalize(text)
-        score = 0
-        for w in query_words:
-            count = text_norm.count(w)
-            if count > 0:
-                score += 1
-                if count > 1:
-                    score += 0.5
-        if score > 0:
-            score = score / len(query_words)
-            length_bonus = min(len(text) / 1000, 1.0) * 0.3
-            score += length_bonus
-            results.append({"score": round(score, 3), "text": text})
+    # ---------- Перевод английских фрагментов ----------
+    translated_count = 0
+    final_top = []
 
-    results.sort(key=lambda x: x["score"], reverse=True)
-    top = results[:5]
+    for r in top:
+        text = r["text"]
+        if is_english(text):
+            try:
+                text = translate_to_ru(text)
+                translated_count += 1
+            except Exception as e:
+                print(f"⚠️ Ошибка перевода: {e}")
 
-    if not top:
-        answer = "❌ По запросу ничего не найдено."
-        log_action("ask", query=query, found_chunks=0)
-        print(answer)
-    else:
-        # ---------- Перевод английских фрагментов ----------
-        translated_count = 0
-        final_top = []
-        for r in top:
-            text = r["text"]
-            if is_english(text):
-                try:
-                    text = translate_to_ru(text)
-                    translated_count += 1
-                except Exception as e:
-                    print(f"⚠️ Ошибка перевода: {e}")
-            if len(text) > 400:
-                text = text[:400] + "..."
-            final_top.append({"score": r["score"], "text": text})
+        if len(text) > 500:
+            text = text[:500] + "..."
 
-        # ---------- Формируем ответ ----------
-        answer = f"🔍 <b>Запрос:</b> {query}\n"
-        answer += f"📊 Найдено: {len(results)}\n"
-        if translated_count > 0:
-            answer += f"🌐 Переведено с EN: {translated_count}\n"
-        answer += "\n"
+        final_top.append({"score": r["score"], "text": text})
 
-        for i, r in enumerate(final_top, 1):
-            answer += f"<b>#{i}</b> (score {r['score']})\n{r['text']}\n\n"
+    # ---------- Формируем ответ ----------
+    answer = f"🔍 <b>Запрос:</b> {query}\n"
+    answer += f"📊 Найдено: {len(top)}\n"
+    if translated_count > 0:
+        answer += f"🌐 Переведено с EN: {translated_count}\n"
+    answer += "\n"
 
-        if len(answer) > 3900:
-            answer = answer[:3900] + "\n\n... (обрезано)"
+    for i, r in enumerate(final_top, 1):
+        answer += f"<b>#{i}</b> (расстояние {r['score']:.3f})\n{r['text']}\n\n"
 
-        # ---------- Логирование ----------
-        elapsed_ms = int((time.time() - start_time) * 1000)
-        log_action(
-            "ask",
-            query=query,
-            found_chunks=len(top),
-            response_time_ms=elapsed_ms,
-            extra={"translated": translated_count}
-        )
+    if len(answer) > 3900:
+        answer = answer[:3900] + "\n\n... (обрезано)"
 
-        print(f"✅ Найдено: {len(top)}, переведено: {translated_count}")
+    # ---------- Логирование ----------
+    elapsed_ms = int((time.time() - start_time) * 1000)
+    avg_dist = sum(r["score"] for r in top) / len(top)
+
+    log_action(
+        "ask",
+        query=query,
+        found_chunks=len(top),
+        avg_distance=round(avg_dist, 3),
+        response_time_ms=elapsed_ms,
+        extra={"translated": translated_count}
+    )
+
+    print(f"✅ Найдено: {len(top)}, переведено: {translated_count}, время: {elapsed_ms} мс")
 
 
 # ---------- Отправка в Telegram ----------
@@ -163,7 +133,7 @@ if bot_token and chat_id:
                 "text": answer[:4000],
                 "parse_mode": "HTML"
             },
-            timeout=10
+            timeout=15
         )
         print("📤 Отправлено в Telegram")
     except Exception as e:
