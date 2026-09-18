@@ -1,6 +1,6 @@
 # ============================================================
 # ARGUS — АНАЛИЗ НОВОСТЕЙ
-# v2: перевод заголовков на русский + кэш
+# v3: локальный перевод Helsinki-NLP + кэш
 # ============================================================
 
 import os
@@ -9,6 +9,16 @@ import json
 import hashlib
 import requests
 from datetime import datetime, timedelta
+
+# --- Импорт локального переводчика ---
+try:
+    from translate import translate_to_ru, is_english
+    TRANSLATE_AVAILABLE = True
+except Exception as e:
+    print(f"⚠️ translate.py недоступен: {e}")
+    TRANSLATE_AVAILABLE = False
+    def translate_to_ru(t): return t
+    def is_english(t): return False
 
 
 # ============================================================
@@ -72,7 +82,7 @@ def save(path, data):
 
 
 # ============================================================
-# ПЕРЕВОД (Google free endpoint) + КЭШ
+# КЭШ ПЕРЕВОДОВ
 # ============================================================
 _translate_cache = load(TRANSLATE_CACHE_FILE, {})
 
@@ -81,12 +91,10 @@ def _hash(text: str) -> str:
     return hashlib.md5(text.encode("utf-8")).hexdigest()[:16]
 
 
-def translate_to_ru(text: str) -> str:
-    """Переводит текст на русский. При ошибке возвращает оригинал."""
+def translate_cached(text: str) -> str:
+    """Перевод с кэшем. Русский пропускает как есть."""
     if not text or not text.strip():
         return text
-
-    # Уже русский?
     if re.search(r"[а-яА-Я]", text):
         return text
 
@@ -95,37 +103,18 @@ def translate_to_ru(text: str) -> str:
         return _translate_cache[key]
 
     try:
-        r = requests.get(
-            "https://translate.googleapis.com/translate_a/single",
-            params={
-                "client": "gtx",
-                "sl": "en",
-                "tl": "ru",
-                "dt": "t",
-                "q": text,
-            },
-            timeout=15,
-            headers={"User-Agent": "Mozilla/5.0"},
-        )
-        r.raise_for_status()
-        data = r.json()
-        # data[0] — список сегментов, у каждого [перевод, оригинал, ...]
-        translated = "".join(seg[0] for seg in data[0] if seg and seg[0])
-        translated = translated.strip()
-
-        if translated:
+        translated = translate_to_ru(text)
+        if translated and translated.strip():
             _translate_cache[key] = translated
             return translated
     except Exception as e:
         print(f"⚠️ translate: {e}")
 
-    # fallback — вернуть оригинал
     return text
 
 
 def save_translate_cache():
     try:
-        # обрезаем кэш, чтобы не рос бесконечно
         if len(_translate_cache) > 5000:
             keys = list(_translate_cache.keys())[-3000:]
             trimmed = {k: _translate_cache[k] for k in keys}
@@ -195,6 +184,7 @@ def analyze_sentiment(title):
 # ============================================================
 def main():
     print("📰 ARGUS NEWS ANALYZER")
+    print(f"🌐 Переводчик: {'локальный (Helsinki-NLP)' if TRANSLATE_AVAILABLE else 'НЕДОСТУПЕН'}")
     print("=" * 50)
 
     all_news = []
@@ -210,13 +200,12 @@ def main():
             item["bear_words"] = bear
             item["collected_at"] = datetime.utcnow().isoformat()
 
-            # --- Переводим заголовок, если он не русский ---
             original = item["title"]
-            if feed["lang"] == "en" or not re.search(r"[а-яА-Я]", original):
-                item["title_original"] = original
-                item["title"] = translate_to_ru(original)
-            else:
-                item["title_original"] = original
+            item["title_original"] = original
+
+            # Переводим только английские
+            if feed["lang"] == "en" or is_english(original):
+                item["title"] = translate_cached(original)
 
             all_news.append(item)
 
@@ -270,10 +259,8 @@ def main():
         history["days"] = history["days"][-90:]
     save(NEWS_HISTORY_FILE, history)
 
-    # --- Сохраняем кэш переводов ---
     save_translate_cache()
 
-    # ---------- Вывод ----------
     print("=" * 50)
     print(f"📊 Всего новостей: {len(all_news)}")
     print(f"🎭 Настроение рынка: {mood}")
