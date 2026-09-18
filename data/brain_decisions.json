@@ -1,0 +1,19 @@
+{
+  "generated_at": "2026-09-18T15:20:54.323295",
+  "decisions": [
+    {
+      "time": "2026-09-18T15:20:53.043283",
+      "action": "observer",
+      "reason": "Раз в день — собрать статистику",
+      "success": true,
+      "error": null
+    },
+    {
+      "time": "2026-09-18T15:20:54.323065",
+      "action": "analyzer",
+      "reason": "Проанализировать наблюдения",
+      "success": true,
+      "error": null
+    }
+  ]
+}
