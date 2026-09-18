@@ -31,16 +31,17 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/huggingface
-          key: hf-models-v2
+          key: hf-models-v3
 
       - name: Install CPU torch
         run: |
-          pip install torch==2.1.0 --index-url https://download.pytorch.org/whl/cpu
+          pip install torch==2.2.0 --index-url https://download.pytorch.org/whl/cpu
 
       - name: Install dependencies
         run: |
           pip install sentence-transformers==3.0.1
           pip install faiss-cpu==1.8.0
+          pip install transformers==4.41.2
           pip install numpy==1.26.4
 
       - name: Run guardian
