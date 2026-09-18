@@ -57,6 +57,7 @@ jobs:
           pip install sacremoses==0.1.1
           pip install requests==2.32.3
           pip install numpy==1.26.4
+        
 
       - name: Run ask
         env:
@@ -64,9 +65,7 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           QUERY: ${{ github.event.inputs.query || github.event.client_payload.query }}
           CHAT_ID: ${{ github.event.inputs.chat_id || github.event.client_payload.chat_id }}
-        run: |
-          cd scripts
-          python ask.py "$QUERY"
+        run: python scripts/ask.py "$QUERY"
 
       - name: Commit logs
         run: |
