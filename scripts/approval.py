@@ -1,17 +1,24 @@
 # ============================================================
 # ARGUS — ОТПРАВКА КАРТОЧЕК НА ОДОБРЕНИЕ
 # С инлайн-кнопками в Telegram
+# v2: с памятью (sent_ids) — не слать одно и то же
 # ============================================================
 
 import os
 import json
+import hashlib
 import requests
 from datetime import datetime
 
 CANDIDATES_FILE = "data/scout_candidates.json"
+SENT_IDS_FILE = "data/sent_ids.json"
+PENDING_FILE = "data/pending_cards.json"
 
+MAX_CARDS = 5  # не больше 5 карточек за один прогон
+
+# ---------- Загрузка ----------
 if not os.path.exists(CANDIDATES_FILE):
-    print("❌ Нет кандидатов.")
+    print("❌ Нет файла кандидатов.")
     exit(0)
 
 with open(CANDIDATES_FILE, "r", encoding="utf-8") as f:
@@ -19,9 +26,23 @@ with open(CANDIDATES_FILE, "r", encoding="utf-8") as f:
 
 candidates = data.get("candidates", [])
 
-if not candidates:
-    print("ℹ️ Новых кандидатов нет.")
-    exit(0)
+# ---------- Память отправленного ----------
+sent_ids = set()
+if os.path.exists(SENT_IDS_FILE):
+    try:
+        with open(SENT_IDS_FILE, "r", encoding="utf-8") as f:
+            sent_ids = set(json.load(f))
+    except Exception:
+        sent_ids = set()
+
+# ---------- Pending (для обработки кнопок) ----------
+pending = {}
+if os.path.exists(PENDING_FILE):
+    try:
+        with open(PENDING_FILE, "r", encoding="utf-8") as f:
+            pending = json.load(f)
+    except Exception:
+        pending = {}
 
 # ---------- Настройки ----------
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
@@ -31,43 +52,57 @@ if not BOT_TOKEN or not CHAT_ID:
     print("❌ Нет TELEGRAM_BOT_TOKEN или TELEGRAM_CHAT_ID")
     exit(1)
 
-# ---------- Отправляем по одному ----------
-# Ограничение: не больше 5 карточек за раз
-MAX_CARDS = 5
+# ---------- Стабильный id по URL ----------
+def url_id(url: str) -> str:
+    return hashlib.md5(url.encode("utf-8")).hexdigest()[:16]
 
+# ---------- Отбор новых ----------
+def is_new(c: dict) -> bool:
+    url = c.get("url", "")
+    if not url:
+        return False
+    return url_id(url) not in sent_ids
+
+new_candidates = [c for c in candidates if is_new(c)]
+print(f"ℹ️ Всего кандидатов: {len(candidates)}, новых: {len(new_candidates)}")
+
+if not new_candidates:
+    print("ℹ️ Новых кандидатов нет.")
+    exit(0)
+
+# ---------- Отправка ----------
 sent = 0
-
-for i, c in enumerate(candidates[:MAX_CARDS]):
+for i, c in enumerate(new_candidates[:MAX_CARDS]):
     title = c.get("title", "?")
     url = c.get("url", "")
     source = c.get("source", "?")
     topic = c.get("topic", "?")
     size = c.get("size_mb")
 
-    # Короткое имя для callback
-    short_id = f"s{i}_{int(datetime.utcnow().timestamp())}"
+    short_id = url_id(url)  # стабильный id
 
-    message = f"📚 <b>Найдена книга #{i+1}</b>\n\n"
+    message = f"📚 <b>Найдена книга</b>\n\n"
     message += f"<b>{title}</b>\n\n"
     message += f"📡 Источник: {source}\n"
     message += f"🏷 Тема: {topic}\n"
     if size:
         message += f"💾 Размер: {size} МБ\n"
 
-    # Inline-клавиатура
     keyboard = {
         "inline_keyboard": [
             [
-                {"text": "✅ Скачать", "callback_data": f"approve_{short_id}"},
-                {"text": "❌ Отклонить", "callback_data": f"reject_{short_id}"}
+                {"text": "✅ Скачать", "callback_data": f"approve:{short_id}"},
+                {"text": "❌ Отклонить", "callback_data": f"reject:{short_id}"}
             ]
         ]
     }
 
-    # Сохраняем mapping short_id → url
-    if "pending" not in data:
-        data["pending"] = {}
-    data["pending"][short_id] = {"url": url, "title": title}
+    # Сохраняем mapping для обработки кнопки
+    pending[short_id] = {
+        "url": url,
+        "title": title,
+        "sent_at": datetime.utcnow().isoformat(),
+    }
 
     try:
         r = requests.post(
@@ -77,20 +112,24 @@ for i, c in enumerate(candidates[:MAX_CARDS]):
                 "text": message,
                 "parse_mode": "HTML",
                 "reply_markup": keyboard,
-                "disable_web_page_preview": True
+                "disable_web_page_preview": True,
             },
-            timeout=15
+            timeout=15,
         )
         if r.status_code == 200:
-            print(f"✅ Отправлено: {title[:50]}")
+            print(f"✅ Отправлено: {title[:60]}")
+            sent_ids.add(short_id)
             sent += 1
         else:
-            print(f"⚠️ Ошибка: {r.text[:200]}")
+            print(f"⚠️ Ошибка Telegram: {r.text[:200]}")
     except Exception as e:
         print(f"⚠️ {e}")
 
-# ---------- Сохраняем обновлённый файл ----------
-with open(CANDIDATES_FILE, "w", encoding="utf-8") as f:
-    json.dump(data, f, ensure_ascii=False, indent=2)
+# ---------- Сохраняем всё ----------
+with open(SENT_IDS_FILE, "w", encoding="utf-8") as f:
+    json.dump(list(sent_ids), f, ensure_ascii=False, indent=2)
 
-print(f"\n📤 Отправлено карточек: {sent}")
+with open(PENDING_FILE, "w", encoding="utf-8") as f:
+    json.dump(pending, f, ensure_ascii=False, indent=2)
+
+print(f"\n📤 Отправлено карточек: {sent} (из {len(new_candidates)} новых)")
