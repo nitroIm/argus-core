@@ -9,7 +9,7 @@ on:
         description: 'URL книги для скачивания'
         required: true
       candidate_id:
-        description: 'ID кандидата (из scout_candidates.json)'
+        description: 'ID кандидата (short_id из кнопки)'
         required: false
         default: 'manual'
       title:
@@ -52,7 +52,7 @@ jobs:
         run: |
           git config user.name "ARGUS"
           git config user.email "argus@github.com"
-          git add books/ data/scout_candidates.json data/collect_urls.txt || true
+          git add books/ data/scout_candidates.json data/pending_cards.json data/sent_ids.json || true
           git diff --staged --quiet || git commit -m "ARGUS: approved download $(date -u +%Y-%m-%dT%H:%M:%SZ)"
           git pull --rebase origin main || true
           git push || true
