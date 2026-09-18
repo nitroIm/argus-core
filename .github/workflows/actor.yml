@@ -2,8 +2,8 @@ name: ARGUS Actor
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "0 5 * * *"   # каждый день в 5:00 UTC
+#  schedule:
+ #   - cron: "0 5 * * *"   # каждый день в 5:00 UTC
 
 permissions:
   contents: write
