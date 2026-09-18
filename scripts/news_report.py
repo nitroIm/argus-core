@@ -1,17 +1,21 @@
 # ============================================================
 # ARGUS — ОТЧЁТ ПО НОВОСТЯМ
-# Отправляет сводку сентимента в Telegram
+# v2: правильные пути + уведомление
 # ============================================================
 
 import os
 import json
 import requests
 
-DATA_DIR = "data"
-SENTIMENT_FILE = os.path.join(DATA_DIR, "news_sentiment.json")
+# --- Пути от корня репо, а не от cwd ---
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+REPO_ROOT = os.path.dirname(SCRIPT_DIR)
+SENTIMENT_FILE = os.path.join(REPO_ROOT, "data", "news_sentiment.json")
+
+print(f"[news_report] читаю: {SENTIMENT_FILE}")
 
 if not os.path.exists(SENTIMENT_FILE):
-    print("❌ Нет данных о новостях.")
+    print(f"❌ Нет файла {SENTIMENT_FILE}")
     exit(0)
 
 with open(SENTIMENT_FILE, "r", encoding="utf-8") as f:
@@ -30,38 +34,42 @@ msg += f"🟡 Нейтральных: {data['neutral_count']}\n\n"
 if data.get("top_bullish"):
     msg += "<b>🟢 Главные позитивные:</b>\n"
     for n in data["top_bullish"][:3]:
-        title = n["title"][:100]
+        title = n.get("title", "")[:100]
         msg += f"• {title}\n"
     msg += "\n"
 
 if data.get("top_bearish"):
     msg += "<b>🔴 Главные негативные:</b>\n"
     for n in data["top_bearish"][:3]:
-        title = n["title"][:100]
+        title = n.get("title", "")[:100]
         msg += f"• {title}\n"
     msg += "\n"
 
 msg += "<i>Настроение — один из факторов прогноза.</i>"
 
-
 # ---------- Отправка ----------
-bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
+bot_token = os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("BOT_TOKEN")
 chat_id = os.getenv("TELEGRAM_CHAT_ID")
 
-if bot_token and chat_id:
-    try:
-        requests.post(
-            f"https://api.telegram.org/bot{bot_token}/sendMessage",
-            json={
-                "chat_id": chat_id,
-                "text": msg[:4000],
-                "parse_mode": "HTML",
-                "disable_web_page_preview": True
-            },
-            timeout=15
-        )
-        print("📤 Отчёт отправлен")
-    except Exception as e:
-        print(f"⚠️ {e}")
-else:
+if not bot_token or not chat_id:
+    print("⚠️ Нет TELEGRAM_BOT_TOKEN или TELEGRAM_CHAT_ID — печатаю в лог:")
     print(msg)
+    exit(0)
+
+try:
+    r = requests.post(
+        f"https://api.telegram.org/bot{bot_token}/sendMessage",
+        json={
+            "chat_id": chat_id,
+            "text": msg[:4000],
+            "parse_mode": "HTML",
+            "disable_web_page_preview": True,
+        },
+        timeout=15,
+    )
+    if r.status_code == 200:
+        print("📤 Отчёт отправлен в Telegram")
+    else:
+        print(f"⚠️ Telegram {r.status_code}: {r.text[:200]}")
+except Exception as e:
+    print(f"⚠️ {e}")
