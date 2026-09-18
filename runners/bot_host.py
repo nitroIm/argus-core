@@ -180,6 +180,50 @@ async def cmd_stats(message: types.Message):
 # ============================================================
 # ЗАПУСК
 # ============================================================
+from aiogram import F
+from aiogram.types import CallbackQuery
+
+
+# ============================================================
+# ОБРАБОТКА КНОПОК «Скачать» / «Отклонить»
+# ============================================================
+@dp.callback_query(F.data.startswith("approve_"))
+async def handle_approve(callback: CallbackQuery):
+    short_id = callback.data.replace("approve_", "")
+
+    # Отправляем в GitHub
+    url = f"https://api.github.com/repos/{GITHUB_REPO}/dispatches"
+    headers = {
+        "Accept": "application/vnd.github+json",
+        "Authorization": f"token {GITHUB_PAT}",
+        "X-GitHub-Api-Version": "2022-11-28"
+    }
+    payload = {
+        "event_type": "approved_download",
+        "client_payload": {"short_id": short_id}
+    }
+
+    try:
+        r = requests.post(url, headers=headers, json=payload, timeout=20)
+        if r.status_code == 204:
+            await callback.message.edit_text(
+                callback.message.text + "\n\n✅ <b>Одобрено. Скачиваю...</b>",
+                parse_mode="HTML"
+            )
+        else:
+            await callback.answer("Ошибка GitHub", show_alert=True)
+    except Exception as e:
+        await callback.answer(f"Ошибка: {e}", show_alert=True)
+
+
+@dp.callback_query(F.data.startswith("reject_"))
+async def handle_reject(callback: CallbackQuery):
+    short_id = callback.data.replace("reject_", "")
+
+    await callback.message.edit_text(
+        callback.message.text + "\n\n❌ <b>Отклонено</b>",
+        parse_mode="HTML"
+    )
 async def main():
     logger.info("🏛️ ARGUS запущен. Слушаю команды...")
     await dp.start_polling(bot)
