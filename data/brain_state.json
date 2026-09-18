@@ -1,9 +1,14 @@
 {
   "runs": {
     "observer": 1,
-    "analyzer": 1
+    "analyzer": 1,
+    "explorer": 1,
+    "guardian": 1
   },
   "day": "2026-09-18",
   "last_observer": "2026-09-18T15:20:53.043268",
-  "last_analyzer": "2026-09-18T15:20:54.323049"
+  "last_analyzer": "2026-09-18T15:20:54.323049",
+  "last_brain_run": "2026-09-18T23:04:45.600387",
+  "last_explorer": "2026-09-18T23:04:45.600599",
+  "last_guardian": "2026-09-18T23:04:47.129308"
 }
