@@ -1,0 +1,41 @@
+name: ARGUS Observer
+
+on:
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  observe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run observer
+        run: python scripts/observer.py
+
+      - name: Commit
+        run: |
+          git config user.name "ARGUS"
+          git config user.email "argus@github.com"
+          git add data/observation.json
+          git diff --staged --quiet && echo "Нет изменений" && exit 0
+          git commit -m "ARGUS: наблюдение [skip ci]"
+          for i in 1 2 3; do
+            git pull --rebase --autostash origin main
+            git push && break
+            sleep 5
+          done
