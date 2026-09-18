@@ -3,6 +3,19 @@ name: ARGUS Approved Download
 on:
   repository_dispatch:
     types: [approved_download]
+  workflow_dispatch:
+    inputs:
+      url:
+        description: 'URL книги для скачивания'
+        required: true
+      candidate_id:
+        description: 'ID кандидата (из scout_candidates.json)'
+        required: false
+        default: 'manual'
+      title:
+        description: 'Название (опционально)'
+        required: false
+        default: 'manual download'
 
 permissions:
   contents: write
@@ -25,19 +38,21 @@ jobs:
         run: pip install requests==2.32.3
 
       - name: Run approve handler
+        env:
+          APPROVE_URL: ${{ github.event.client_payload.url || github.event.inputs.url }}
+          APPROVE_ID: ${{ github.event.client_payload.candidate_id || github.event.inputs.candidate_id }}
+          APPROVE_TITLE: ${{ github.event.client_payload.title || github.event.inputs.title }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           cd scripts
-          python approve_handler.py "${{ github.event.client_payload.short_id }}"
+          python approve_handler.py
 
       - name: Commit
         run: |
           git config user.name "ARGUS"
           git config user.email "argus@github.com"
-          git add books/ data/scout_candidates.json || true
-          git diff --staged --quiet && echo "Нет изменений" && exit 0
-          git commit -m "ARGUS: одобренная книга [skip ci]"
-          for i in 1 2 3; do
-            git pull --rebase --autostash origin main
-            git push && break
-            sleep 5
-          done
+          git add books/ data/scout_candidates.json data/collect_urls.txt || true
+          git diff --staged --quiet || git commit -m "ARGUS: approved download $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          git pull --rebase origin main || true
+          git push || true
