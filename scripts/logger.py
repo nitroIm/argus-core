@@ -1,6 +1,5 @@
 # ============================================================
 # ARGUS — ЛОГИРОВАНИЕ
-# Каждое действие ARGUS записывается в logs/argus.log
 # ============================================================
 
 import os
@@ -10,16 +9,8 @@ from datetime import datetime
 LOG_FILE = "logs/argus.log"
 
 
-def log_action(
-    action,
-    query=None,
-    found_chunks=0,
-    avg_distance=None,
-    response_time_ms=0,
-    error=None,
-    extra=None
-):
-    """Записывает одно действие в лог."""
+def log_action(action, query=None, found_chunks=0, avg_distance=None,
+               response_time_ms=0, error=None, extra=None):
     os.makedirs("logs", exist_ok=True)
 
     entry = {
