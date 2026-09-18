@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS — КОЛЛЕКТОР
+# ARGUS — КОЛЛЕКТОР (v2)
 # ============================================================
 
 import os
@@ -11,7 +11,6 @@ from sources.arxiv import ArxivSource
 from sources.rss import RSSSource
 
 
-# ---------- Корень репозитория ----------
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BOOKS_DIR = os.path.join(REPO_ROOT, "books")
 URLS_FILE = os.path.join(REPO_ROOT, "data", "collect_urls.txt")
@@ -25,7 +24,16 @@ SOURCES = [
 ]
 
 
+def clean_url(url):
+    """Убирает мусор в конце URL: точку, запятую, скобку, пробел."""
+    url = url.strip()
+    while url and url[-1] in ".,;:!?)]}>\"'":
+        url = url[:-1]
+    return url
+
+
 def collect_from_url(url):
+    url = clean_url(url)
     print(f"\n🔍 Обработка: {url}")
 
     handler = None
@@ -35,7 +43,7 @@ def collect_from_url(url):
             break
 
     if not handler:
-        print(f"⚠️ Не найден адаптер для {url}")
+        print(f"⚠️ Не найден адаптер")
         return []
 
     print(f"   📡 Адаптер: {handler.name}")
