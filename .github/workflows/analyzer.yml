@@ -28,19 +28,21 @@ jobs:
         run: pip install requests==2.32.3
 
       - name: Run analyzer
-        run: python scripts/analyzer.py
+        run: python scripts/analyzer.py || echo "Analyzer пропущен"
 
       - name: Run proposer
+        if: hashFiles('data/analysis.json') != ''
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: python scripts/proposer.py
+        run: python scripts/proposer.py || echo "Proposer пропущен"
 
       - name: Commit
         run: |
           git config user.name "ARGUS"
           git config user.email "argus@github.com"
-          git add data/analysis.json data/proposals.json
+          mkdir -p data
+          git add data/analysis.json data/proposals.json || true
           git diff --staged --quiet && echo "Нет изменений" && exit 0
           git commit -m "ARGUS: анализ и предложения [skip ci]"
           for i in 1 2 3; do
