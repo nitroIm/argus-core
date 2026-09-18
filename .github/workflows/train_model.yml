@@ -2,8 +2,10 @@ name: ARGUS Train Model
 
 on:
   workflow_dispatch:
+  repository_dispatch:
+    types: [run_train]
   schedule:
-    - cron: '0 */6 * * *'   # каждые 6 часов — проверка новых книг
+    - cron: '0 */6 * * *'
 
 permissions:
   contents: write
@@ -86,13 +88,22 @@ jobs:
           git pull --rebase origin main || true
           git push || true
 
-      - name: Notify
-        if: steps.check.outputs.skip == 'false'
+  notify:
+    needs: train
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify result
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
+          if [ "${{ needs.train.result }}" = "success" ]; then
+            TEXT="🎓 <b>Train завершён</b>%0AИндекс обновлён."
+          else
+            TEXT="❌ <b>Train упал</b>%0AПроверь Actions."
+          fi
           curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
             -d "chat_id=${TELEGRAM_CHAT_ID}" \
-            -d "text=🎓 ARGUS: Train завершён, индекс обновлён." \
+            -d "text=${TEXT}" \
             -d "parse_mode=HTML"
