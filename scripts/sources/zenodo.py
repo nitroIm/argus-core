@@ -1,7 +1,7 @@
 # ============================================================
 # ARGUS — АДАПТЕР: ZENODO
 # Публичный API, без ключа
-# v2: правильное имя файла + префикс record_id (без коллизий)
+# v3: если URL уже прямой (/files/.../content) — не звать API
 # ============================================================
 
 import os
@@ -18,18 +18,21 @@ class ZenodoSource(Source):
         return "zenodo.org" in url
 
     def extract(self, url):
-        """
-        Поддерживает:
-        1. /records/<id> — страница записи
-        2. /api/records/<id>/files/... — прямой файл
-        """
         pdfs = []
 
+        # 1) Если URL — уже прямой линк на PDF, API не нужен
+        if "/files/" in url and url.rstrip("/").endswith("/content"):
+            return [url]
+        # также ловим случай с download=1
+        if "/files/" in url and "download=1" in url:
+            return [url]
+
+        # 2) Иначе — тянем метаданные записи
         try:
             if "/records/" in url:
                 record_id = url.split("/records/")[1].split("/")[0].split("?")[0]
                 api_url = f"https://zenodo.org/api/records/{record_id}"
-                r = requests.get(api_url, timeout=20)
+                r = requests.get(api_url, timeout=60)
                 r.raise_for_status()
                 data = r.json()
 
@@ -45,17 +48,11 @@ class ZenodoSource(Source):
     # Правильное имя файла
     # --------------------------------------------------------
     def _filename_from_url(self, url):
-        """
-        Для URL вида /records/<id>/files/<name>/content
-        возвращает <id>_<name> — уникально и читаемо.
-        """
-        # record_id
         record_id = None
         m = re.search(r"/records/(\d+)", url)
         if m:
             record_id = m.group(1)
 
-        # имя файла
         name = None
         m = re.search(r"/files/([^/]+)/content", url)
         if m:
@@ -71,7 +68,6 @@ class ZenodoSource(Source):
         if not name.lower().endswith(".pdf"):
             name += ".pdf"
 
-        # убираем недопустимые символы
         name = re.sub(r'[<>:"/\\|?*]', "_", name)
 
         if record_id:
@@ -95,8 +91,20 @@ class ZenodoSource(Source):
                 print(f"⏭ Уже есть: {filename}")
                 return filename
 
-            r = requests.get(url, timeout=60, stream=True)
-            r.raise_for_status()
+            # retry: 3 попытки с таймаутом 120 сек
+            last_err = None
+            for attempt in range(3):
+                try:
+                    r = requests.get(url, timeout=120, stream=True)
+                    r.raise_for_status()
+                    break
+                except Exception as e:
+                    last_err = e
+                    print(f"⚠️ Попытка {attempt+1}/3: {e}")
+
+            if last_err and 'r' not in locals():
+                print(f"❌ Все попытки провалились: {last_err}")
+                return None
 
             size = 0
             with open(filepath, "wb") as f:
