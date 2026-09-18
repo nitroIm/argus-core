@@ -1,0 +1,52 @@
+name: ARGUS News
+
+on:
+  schedule:
+    - cron: "0 */4 * * *"   # каждые 4 часа
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: argus-news
+  cancel-in-progress: false
+
+jobs:
+  news:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: pip install requests==2.32.3
+
+      - name: Run news analyzer
+        run: python scripts/news.py
+
+      - name: Send report
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python scripts/news_report.py
+
+      - name: Commit
+        run: |
+          git config user.name "ARGUS"
+          git config user.email "argus@github.com"
+          git add data/news_sentiment.json data/news_history.json || true
+          git diff --staged --quiet && echo "Нет изменений" && exit 0
+          git commit -m "ARGUS: новостной сентимент [skip ci]"
+          for i in 1 2 3; do
+            git pull --rebase --autostash origin main
+            git push && break
+            sleep 5
+          done
