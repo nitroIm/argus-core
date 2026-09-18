@@ -1,8 +1,8 @@
 name: ARGUS Brain
 
 on:
-  schedule:
-    - cron: "*/30 * * * *"   # каждые 30 минут
+#  schedule:
+#    - cron: "*/30 * * * *"   # каждые 30 минут
   workflow_dispatch:
 
 permissions:
