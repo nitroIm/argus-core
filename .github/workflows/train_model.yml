@@ -30,11 +30,11 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/huggingface
-          key: hf-models-v2
+          key: hf-models-v3
 
       - name: Install CPU torch
         run: |
-          pip install torch==2.1.0 --index-url https://download.pytorch.org/whl/cpu
+          pip install torch==2.2.0 --index-url https://download.pytorch.org/whl/cpu
 
       - name: Install dependencies
         run: pip install -r scripts/requirements.txt
