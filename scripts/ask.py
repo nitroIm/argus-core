@@ -1,6 +1,6 @@
 # ============================================================
-# ARGUS — СЕМАНТИЧЕСКИЙ ПОИСК + ЛОГИРОВАНИЕ + ПЕРЕВОД
-# Ищет ответы ПО СМЫСЛУ через FAISS + свою модель эмбеддингов
+# ARGUS — СЕМАНТИЧЕСКИЙ ПОИСК (v2)
+# Многоязычная модель + нормализация + IP
 # ============================================================
 
 import os
@@ -16,18 +16,13 @@ from logger import log_action
 from translate import is_english, translate_to_ru
 
 # ---------- Пути ----------
-MODEL_DIR = "models/argus-embeddings"
+MODEL_NAME = "intfloat/multilingual-e5-small"
 INDEX_FILE = "data/faiss.index"
 CHUNKS_FILE = "data/chunks_for_index.json"
 
 start_time = time.time()
 
 # ---------- Проверки ----------
-if not os.path.exists(MODEL_DIR):
-    log_action("ask", error="Модель не найдена")
-    print("❌ Модель не найдена. Сначала запусти ARGUS Train Model.")
-    sys.exit(1)
-
 if not os.path.exists(INDEX_FILE):
     log_action("ask", error="faiss.index не найден")
     print("❌ FAISS-индекс не найден.")
@@ -40,7 +35,7 @@ if not os.path.exists(CHUNKS_FILE):
 
 # ---------- Загрузка ----------
 print("📦 Загружаю модель...")
-model = SentenceTransformer(MODEL_DIR)
+model = SentenceTransformer(MODEL_NAME)
 
 print("📦 Загружаю индекс...")
 index = faiss.read_index(INDEX_FILE)
@@ -55,7 +50,7 @@ query = os.getenv("QUERY") or " ".join(sys.argv[1:]) or "Что такое Но�
 print(f"🔍 Вопрос: {query}")
 
 # ---------- Семантический поиск ----------
-query_vec = model.encode([query]).astype("float32")
+query_vec = model.encode([query], normalize_embeddings=True).astype("float32")
 distances, indices = index.search(query_vec, k=5)
 
 # ---------- Собираем результаты ----------
@@ -98,20 +93,20 @@ else:
     answer += "\n"
 
     for i, r in enumerate(final_top, 1):
-        answer += f"<b>#{i}</b> (расстояние {r['score']:.3f})\n{r['text']}\n\n"
+        answer += f"<b>#{i}</b> (score {r['score']:.3f})\n{r['text']}\n\n"
 
     if len(answer) > 3900:
         answer = answer[:3900] + "\n\n... (обрезано)"
 
     # ---------- Логирование ----------
     elapsed_ms = int((time.time() - start_time) * 1000)
-    avg_dist = sum(r["score"] for r in top) / len(top)
+    avg_score = sum(r["score"] for r in top) / len(top)
 
     log_action(
         "ask",
         query=query,
         found_chunks=len(top),
-        avg_distance=round(avg_dist, 3),
+        avg_distance=round(avg_score, 3),
         response_time_ms=elapsed_ms,
         extra={"translated": translated_count}
     )
