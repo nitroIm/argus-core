@@ -1,5 +1,6 @@
 # ============================================================
 # ARGUS — ОБРАБОТКА ОДОБРЕНИЙ
+# v3: поддержка pending_cards.json, прямого URL и short_id
 # ============================================================
 
 import os
@@ -8,9 +9,10 @@ import json
 import subprocess
 import hashlib
 
-# --- Пути относительно скрипта (не cwd!) ---
+# --- Пути ---
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.dirname(SCRIPT_DIR)
+PENDING_FILE = os.path.join(REPO_ROOT, "data", "pending_cards.json")
 CANDIDATES_FILE = os.path.join(REPO_ROOT, "data", "scout_candidates.json")
 COLLECTOR = os.path.join(SCRIPT_DIR, "collector.py")
 
@@ -31,59 +33,56 @@ if not URL_INPUT and not ID_INPUT:
     print("❌ Не указан ни URL (APPROVE_URL), ни short_id (APPROVE_ID / argv[1])")
     exit(1)
 
-# --- Загружаем базу кандидатов ---
-data = {}
-if os.path.exists(CANDIDATES_FILE):
+# --- Загружаем pending ---
+pending = {}
+if os.path.exists(PENDING_FILE):
     try:
-        with open(CANDIDATES_FILE, "r", encoding="utf-8") as f:
-            data = json.load(f)
+        with open(PENDING_FILE, "r", encoding="utf-8") as f:
+            pending = json.load(f)
     except Exception as e:
-        print(f"⚠️ Не удалось прочитать {CANDIDATES_FILE}: {e}")
-        data = {}
-else:
-    print(f"⚠️ Файл {CANDIDATES_FILE} не найден")
+        print(f"⚠️ Не удалось прочитать {PENDING_FILE}: {e}")
+        pending = {}
 
 url = None
 title = TITLE_INPUT or "manual download"
-removed = False
+removed_id = None
 
 # --- 1) URL передан напрямую ---
 if URL_INPUT:
     url = URL_INPUT
-    candidates = data.get("candidates", [])
-    for i, c in enumerate(candidates):
-        if isinstance(c, dict) and c.get("url") == url:
+    # попробуем найти соответствующий pending по url
+    for sid, item in list(pending.items()):
+        if item.get("url") == url:
             if not TITLE_INPUT:
-                title = c.get("title", title)
-            candidates.pop(i)
-            removed = True
+                title = item.get("title", title)
+            del pending[sid]
+            removed_id = sid
             break
-    data["candidates"] = candidates
+    # если не нашли в pending, всё равно качаем
 else:
-    # --- 2) Поиск по short_id в pending (старая схема) ---
-    pending = data.get("pending", {})
-    item = pending.get(ID_INPUT) if isinstance(pending, dict) else None
+    # --- 2) Поиск по short_id в pending ---
+    item = pending.get(ID_INPUT)
     if item:
         url = item.get("url")
         title = item.get("title", title)
         del pending[ID_INPUT]
-        data["pending"] = pending
-        removed = True
+        removed_id = ID_INPUT
     else:
-        # --- 3) Поиск по short_id в candidates (новая схема от Explorer) ---
-        candidates = data.get("candidates", [])
-        for i, c in enumerate(candidates):
-            if not isinstance(c, dict):
-                continue
-            c_url = c.get("url", "")
-            c_id = c.get("id") or hashlib.md5(c_url.encode()).hexdigest()[:8]
-            if c_id == ID_INPUT or str(i) == ID_INPUT:
-                url = c_url
-                title = c.get("title", title)
-                candidates.pop(i)
-                removed = True
-                break
-        data["candidates"] = candidates
+        # --- 3) Поиск в scout_candidates.json (на всякий случай) ---
+        if os.path.exists(CANDIDATES_FILE):
+            try:
+                with open(CANDIDATES_FILE, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                candidates = data.get("candidates", [])
+                for i, c in enumerate(candidates):
+                    c_url = c.get("url", "")
+                    c_id = hashlib.md5(c_url.encode()).hexdigest()[:16]
+                    if c_id == ID_INPUT or str(i) == ID_INPUT:
+                        url = c_url
+                        title = c.get("title", title)
+                        break
+            except Exception as e:
+                print(f"⚠️ scout_candidates.json: {e}")
 
 if not url:
     print(f"❌ Не найден кандидат: {ID_INPUT or URL_INPUT}")
@@ -113,12 +112,13 @@ if result.returncode != 0:
     print(result.stderr)
     exit(1)
 
-# --- Обновляем базу ---
-if removed:
-    try:
-        with open(CANDIDATES_FILE, "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
-    except Exception as e:
-        print(f"⚠️ Не удалось записать {CANDIDATES_FILE}: {e}")
+# --- Обновляем pending на диске ---
+try:
+    with open(PENDING_FILE, "w", encoding="utf-8") as f:
+        json.dump(pending, f, ensure_ascii=False, indent=2)
+    if removed_id:
+        print(f"🧹 Удалён из pending: {removed_id}")
+except Exception as e:
+    print(f"⚠️ Не удалось записать {PENDING_FILE}: {e}")
 
 print(f"✅ Готово: {title}")
