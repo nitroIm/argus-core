@@ -2,9 +2,6 @@ name: Crypto - Probe Exchanges
 
 on:
   workflow_dispatch:
-  # Раскомментируй, если хочешь раз в неделю проверять, что API не меняются
-  # schedule:
-  #   - cron: '0 3 * * 1'
 
 permissions:
   contents: write
@@ -35,17 +32,10 @@ jobs:
       - name: Show summary
         if: always()
         run: |
-          echo "=== Отчёт ==="
           if [ -f crypto/data/exchange_probe.json ]; then
-            python - <<'EOF'
-import json
-data = json.load(open("crypto/data/exchange_probe.json"))
-s = data.get("summary", {})
-print(f"Всего метрик: {s.get('total_metrics_available', 0)}")
-print(f"Объём за месяц: ~{s.get('total_mb_per_month_all', 0)} МБ")
-EOF
+            python -c "import json; d=json.load(open('crypto/data/exchange_probe.json')); s=d.get('summary',{}); print('Метрик:', s.get('total_metrics_available',0)); print('Объём за месяц МБ:', s.get('total_mb_per_month_all',0))"
           else
-            echo "❌ Отчёт не создан"
+            echo "Отчёт не создан"
           fi
 
       - name: Commit report
@@ -57,7 +47,7 @@ EOF
           if git diff --staged --quiet; then
             echo "Нет изменений для коммита"
           else
-            git commit -m "crypto: probe exchanges $(date -u +%Y-%m-%dT%H:%M:%SZ)"
-            git pull --rebase origin main || echo "rebase failed, continuing"
+            git commit -m "crypto: probe exchanges"
+            git pull --rebase origin main || echo "rebase failed"
             git push origin main || echo "push failed"
           fi
