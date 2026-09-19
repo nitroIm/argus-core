@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-09-19T00:49:23.760388",
-  "chunks_total": 2670,
-  "index_total": 2670,
+  "generated_at": "2026-09-19T10:03:46.163276",
+  "chunks_total": 2917,
+  "index_total": 2917,
   "recall": {
     "sample_size": 50,
-    "recall_at_1": 98.0,
+    "recall_at_1": 96.0,
     "recall_at_5": 100.0,
-    "avg_time_ms": 44
+    "avg_time_ms": 61
   },
   "golden": {
     "total": 14,
@@ -253,7 +253,7 @@
     ]
   },
   "delta": {
-    "recall_at_k": null,
-    "golden_pass_rate": null
+    "recall_at_k": 0.0,
+    "golden_pass_rate": 0.0
   }
 }
