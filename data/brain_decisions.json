@@ -1,17 +1,10 @@
 {
-  "generated_at": "2026-09-18T23:04:48.686764",
+  "generated_at": "2026-09-19T09:49:36.581173",
   "decisions": [
     {
-      "time": "2026-09-18T23:04:47.129294",
-      "action": "explorer",
-      "reason": "Раз в сутки — поиск новых книг",
-      "success": true,
-      "error": null
-    },
-    {
-      "time": "2026-09-18T23:04:48.686502",
-      "action": "guardian",
-      "reason": "Проверить качество поиска",
+      "time": "2026-09-19T09:49:36.580918",
+      "action": "train",
+      "reason": "Книг стало больше: 0 → 21",
       "success": true,
       "error": null
     }
