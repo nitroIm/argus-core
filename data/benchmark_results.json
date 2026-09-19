@@ -1,0 +1,259 @@
+{
+  "generated_at": "2026-09-19T00:49:23.760388",
+  "chunks_total": 2670,
+  "index_total": 2670,
+  "recall": {
+    "sample_size": 50,
+    "recall_at_1": 98.0,
+    "recall_at_5": 100.0,
+    "avg_time_ms": 44
+  },
+  "golden": {
+    "total": 14,
+    "passed": 7,
+    "pass_rate": 50.0,
+    "details": [
+      {
+        "query": "Что такое RSI и как его использовать в трейдинге?",
+        "ok": false,
+        "hit_ratio": 0.2,
+        "matched": [
+          "сил"
+        ],
+        "keywords": [
+          "rsi",
+          "индекс",
+          "сил",
+          "перекуплен",
+          "перепродан"
+        ],
+        "top_score": 0.86
+      },
+      {
+        "query": "Как работают скользящие средние в трейдинге?",
+        "ok": false,
+        "hit_ratio": 0.2,
+        "matched": [
+          "средн"
+        ],
+        "keywords": [
+          "средн",
+          "ma",
+          "moving",
+          "average",
+          "скользящ"
+        ],
+        "top_score": 0.857
+      },
+      {
+        "query": "Что такое риск-менеджмент в алгоритмической торговле?",
+        "ok": true,
+        "hit_ratio": 0.6,
+        "matched": [
+          "риск",
+          "менеджмент",
+          "позици"
+        ],
+        "keywords": [
+          "риск",
+          "risk",
+          "менеджмент",
+          "capital",
+          "позици"
+        ],
+        "top_score": 0.9
+      },
+      {
+        "query": "Стратегии возврата к среднему (mean reversion)",
+        "ok": true,
+        "hit_ratio": 0.5,
+        "matched": [
+          "mean",
+          "reversion"
+        ],
+        "keywords": [
+          "mean",
+          "reversion",
+          "возврат",
+          "средн"
+        ],
+        "top_score": 0.85
+      },
+      {
+        "query": "Как построить торгового робота на Python?",
+        "ok": false,
+        "hit_ratio": 0.4,
+        "matched": [
+          "робот",
+          "trade"
+        ],
+        "keywords": [
+          "python",
+          "робот",
+          "bot",
+          "trade",
+          "backtest"
+        ],
+        "top_score": 0.885
+      },
+      {
+        "query": "Что описывает Бэкон в Новой Атлантиде?",
+        "ok": true,
+        "hit_ratio": 0.8,
+        "matched": [
+          "атлантид",
+          "бэкон",
+          "бенсалем",
+          "научн"
+        ],
+        "keywords": [
+          "атлантид",
+          "бэкон",
+          "остров",
+          "бенсалем",
+          "научн"
+        ],
+        "top_score": 0.904
+      },
+      {
+        "query": "Как устроено общество в утопии Бэкона?",
+        "ok": true,
+        "hit_ratio": 1.0,
+        "matched": [
+          "атлантид",
+          "общество",
+          "бенсалем",
+          "дом",
+          "соломон"
+        ],
+        "keywords": [
+          "атлантид",
+          "общество",
+          "бенсалем",
+          "дом",
+          "соломон"
+        ],
+        "top_score": 0.889
+      },
+      {
+        "query": "Идея научного прогресса у Фрэнсиса Бэкона",
+        "ok": true,
+        "hit_ratio": 1.0,
+        "matched": [
+          "наук",
+          "бэкон",
+          "прогресс",
+          "эксперимент",
+          "опыт"
+        ],
+        "keywords": [
+          "наук",
+          "бэкон",
+          "прогресс",
+          "эксперимент",
+          "опыт"
+        ],
+        "top_score": 0.871
+      },
+      {
+        "query": "Как коррелируют между собой разные криптовалюты?",
+        "ok": true,
+        "hit_ratio": 0.6,
+        "matched": [
+          "correlation",
+          "cryptocurrenc",
+          "bitcoin"
+        ],
+        "keywords": [
+          "коррел",
+          "correlation",
+          "cryptocurrenc",
+          "bitcoin",
+          "сет"
+        ],
+        "top_score": 0.859
+      },
+      {
+        "query": "Что такое обучающие кривые в машинном обучении?",
+        "ok": false,
+        "hit_ratio": 0.0,
+        "matched": [],
+        "keywords": [
+          "learning",
+          "curve",
+          "обучен",
+          "крив",
+          "decision"
+        ],
+        "top_score": 0.833
+      },
+      {
+        "query": "Как выбрать данные для обучения ML-модели?",
+        "ok": true,
+        "hit_ratio": 0.6,
+        "matched": [
+          "данн",
+          "обучен",
+          "выбор"
+        ],
+        "keywords": [
+          "data",
+          "данн",
+          "sources",
+          "обучен",
+          "выбор"
+        ],
+        "top_score": 0.837
+      },
+      {
+        "query": "Применение активного обучения к потокам данных",
+        "ok": false,
+        "hit_ratio": 0.4,
+        "matched": [
+          "активн",
+          "поток"
+        ],
+        "keywords": [
+          "active",
+          "learning",
+          "stream",
+          "активн",
+          "поток"
+        ],
+        "top_score": 0.838
+      },
+      {
+        "query": "Как работает квантовая запутанность в биологии?",
+        "ok": false,
+        "hit_ratio": 0.0,
+        "matched": [],
+        "keywords": [
+          "квант",
+          "quantum",
+          "запутан",
+          "биолог"
+        ],
+        "top_score": 0.829
+      },
+      {
+        "query": "Экономика марсианской колонии",
+        "ok": false,
+        "hit_ratio": 0.25,
+        "matched": [
+          "колони"
+        ],
+        "keywords": [
+          "марс",
+          "mars",
+          "колони",
+          "эконом"
+        ],
+        "top_score": 0.851
+      }
+    ]
+  },
+  "delta": {
+    "recall_at_k": null,
+    "golden_pass_rate": null
+  }
+}
