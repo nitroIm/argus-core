@@ -4,16 +4,15 @@ on:
   workflow_dispatch:
   repository_dispatch:
     types: [post_publish, post_skip, post_generate]
-  #schedule:
- #   - cron: '0 6 * * *'
-#    - cron: '0 16 * * *'
 
 permissions:
   contents: write
 
 jobs:
   generate:
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || github.event.action == 'post_generate'
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      github.event.action == 'post_generate'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -38,13 +37,14 @@ jobs:
           git config user.name "ARGUS"
           git config user.email "argus@github.com"
           git add -A
-          git diff --staged --quiet || git commit -m "ARGUS: draft post $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          git diff --staged --quiet || git commit -m "ARGUS: draft $(date -u +%Y-%m-%dT%H:%M:%SZ)"
           git pull --rebase origin main || true
           git push || true
 
   publish:
-    publish:
-    if: github.event_name == 'repository_dispatch' && github.event.action != 'post_generate'
+    if: |
+      github.event.action == 'post_publish' ||
+      github.event.action == 'post_skip'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
