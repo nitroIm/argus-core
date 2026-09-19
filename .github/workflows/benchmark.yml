@@ -5,10 +5,14 @@ on:
   repository_dispatch:
     types: [run_benchmark]
   schedule:
-    - cron: '0 5 * * 0'
+    - cron: '0 5 * * 0'  # Каждое воскресенье в 5:00 UTC
 
 permissions:
   contents: write
+
+concurrency:
+  group: argus-benchmark
+  cancel-in-progress: false
 
 jobs:
   bench:
@@ -16,11 +20,13 @@ jobs:
     timeout-minutes: 30
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-python@v5
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
@@ -29,6 +35,7 @@ jobs:
         with:
           path: ~/.cache/pip
           key: pip-bench-v2
+          restore-keys: pip-bench-
 
       - name: Cache HF models
         uses: actions/cache@v4
@@ -37,12 +44,12 @@ jobs:
           key: hf-e5-small-v1
           restore-keys: hf-
 
-      - name: Install deps
+      - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install "numpy<2.0"
           pip install torch==2.2.0 --index-url https://download.pytorch.org/whl/cpu
-          pip install transformers==4.41.2 sentence-transformers==3.0.1 faiss-cpu==1.8.0 requests
+          pip install transformers==4.41.2 sentence-transformers==3.0.1 faiss-cpu==1.8.0 requests==2.32.3
 
       - name: Run benchmark
         env:
@@ -50,11 +57,30 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python scripts/benchmark.py
 
-      - name: Commit results
+      - name: Commit and Push results
         run: |
           git config user.name "ARGUS"
           git config user.email "argus@github.com"
-          git add -A
-          git diff --staged --quiet || git commit -m "ARGUS: benchmark $(date -u +%Y-%m-%dT%H:%M:%SZ)"
-          git pull --rebase origin main || true
-          git push || true
+          
+          # Безопасно коммитим только файлы результатов бенчмарка
+          git add data/benchmark_results.json data/benchmark_history.json || true
+          
+          if git diff --staged --quiet; then
+            echo "Нет изменений в результатах бенчмарка."
+            exit 0
+          fi
+          
+          echo "Есть изменения. Коммичу и пушу..."
+          git commit -m "ARGUS: benchmark results [skip ci]"
+          
+          # Надежный пуш с обработкой конфликтов (race conditions)
+          for i in 1 2 3; do
+            git pull --rebase --autostash origin main
+            if git push origin main; then
+              echo "✅ Результаты успешно отправлены в репозиторий"
+              break
+            else
+              echo "⚠️ Попытка $i не удалась, жду 5 секунд..."
+              sleep 5
+            fi
+          done
