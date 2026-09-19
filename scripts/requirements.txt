@@ -1,16 +1,30 @@
-pymupdf==1.24.9
-sentence-transformers==3.0.1
-datasets==2.20.0
-accelerate==0.26.0
-faiss-cpu==1.8.0
-requests==2.32.3
+# ============ CORE ML ============
 torch==2.2.0
 transformers==4.41.2
+sentence-transformers==3.0.1
 huggingface-hub==0.23.4
+accelerate==0.30.1
+datasets==2.20.0
+
+# ============ VECTOR / HYBRID SEARCH ============
+faiss-cpu==1.8.0
+rank-bm25==0.2.2
 scikit-learn==1.4.2
 scipy==1.11.4
-numpy==1.26.4
-tqdm==4.66.4
+numpy==1.26.4            # НЕ поднимать до 2.x: faiss/scipy/torch2.2 сломаются
+
+# ============ INGEST (books) ============
+pymupdf==1.24.9          # PDF
+ebooklib==0.18           # EPUB
+beautifulsoup4==4.12.3   # HTML из EPUB
+lxml==5.2.2              # быстрый бэкенд для bs4
+
+# ============ NEWS / COLLECT ============
+feedparser==6.0.11       # RSS-фиды
+requests==2.32.3
+
+# ============ TOKENIZERS / MISC ============
 sentencepiece==0.2.0
 protobuf==4.25.3
 sacremoses==0.1.1
+tqdm==4.66.4
