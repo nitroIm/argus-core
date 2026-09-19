@@ -1,6 +1,6 @@
 # ============================================================
-# ARGUS — BENCHMARK
-# Проверка качества поиска: авто-recall + golden-вопросы
+# ARGUS — BENCHMARK (v2)
+# v2: синхронизация с build_index (meta.json, префиксы E5, pathlib, timezone)
 # ============================================================
 
 import os
@@ -9,7 +9,9 @@ import json
 import time
 import random
 import requests
-from datetime import datetime
+from datetime import datetime, timezone
+from pathlib import Path
+from html import escape as hesc
 
 import faiss
 import numpy as np
@@ -18,23 +20,23 @@ from sentence_transformers import SentenceTransformer
 # ============================================================
 # ПУТИ
 # ============================================================
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-REPO_ROOT = os.path.dirname(SCRIPT_DIR)
-DATA_DIR = os.path.join(REPO_ROOT, "data")
+SCRIPT_DIR = Path(__file__).resolve().parent
+REPO_ROOT = SCRIPT_DIR.parent
+DATA_DIR = REPO_ROOT / "data"
+MODELS_DIR = REPO_ROOT / "models"
 
-INDEX_FILE = os.path.join(DATA_DIR, "faiss.index")
-CHUNKS_FILE = os.path.join(DATA_DIR, "chunks_for_index.json")
-RESULTS_FILE = os.path.join(DATA_DIR, "benchmark_results.json")
-HISTORY_FILE = os.path.join(DATA_DIR, "benchmark_history.json")
+INDEX_FILE = DATA_DIR / "faiss.index"
+META_FILE = DATA_DIR / "chunks_meta.json"  # <-- ИСПРАВЛЕНО: читаем метаданные
+RESULTS_FILE = DATA_DIR / "benchmark_results.json"
+HISTORY_FILE = DATA_DIR / "benchmark_history.json"
 
-MODEL_NAME = "intfloat/multilingual-e5-small"
+BASE_MODEL = "intfloat/multilingual-e5-small"
 
 # ============================================================
 # КОНФИГ
 # ============================================================
 AUTO_SAMPLE_SIZE = 50     # сколько случайных чанков проверить
 TOP_K = 5                 # сколько результатов возвращает поиск
-RECALL_THRESHOLD = 1      # считаем «нашлось» если в топ-K есть нужный чанк
 
 # ============================================================
 # GOLDEN SET — вопросы по книгам
@@ -60,7 +62,7 @@ GOLDEN_QUESTIONS = [
     {"q": "Идея научного прогресса у Фрэнсиса Бэкона",
      "keywords": ["наук", "бэкон", "прогресс", "эксперимент", "опыт"]},
 
-    # --- Криптовалюты / ML (arxiv-статьи) ---
+    # --- Криптовалюты / ML ---
     {"q": "Как коррелируют между собой разные криптовалюты?",
      "keywords": ["коррел", "correlation", "cryptocurrenc", "bitcoin", "сет"]},
     {"q": "Что такое обучающие кривые в машинном обучении?",
@@ -79,10 +81,10 @@ GOLDEN_QUESTIONS = [
 
 
 # ============================================================
-# ЗАГРУЗКА
+# УТИЛИТЫ
 # ============================================================
 def load_json(path, default=None):
-    if not os.path.exists(path):
+    if not path.exists():
         return default if default is not None else {}
     try:
         with open(path, "r", encoding="utf-8") as f:
@@ -92,7 +94,7 @@ def load_json(path, default=None):
 
 
 def save_json(path, data):
-    os.makedirs(os.path.dirname(path), exist_ok=True)
+    path.parent.mkdir(parents=True, exist_ok=True)
     with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
@@ -100,36 +102,34 @@ def save_json(path, data):
 # ============================================================
 # ТЕСТ A — RECALL (авто)
 # ============================================================
-def test_recall(model, index, chunks):
-    """
-    Берём N случайных чанков. Используем их начало как «запрос».
-    Проверяем: найдёт ли индекс этот же чанк в топ-K?
-    """
+def test_recall(model, index, chunks, use_prefix):
     print("\n" + "=" * 50)
     print("📊 ТЕСТ A — RECALL (авто)")
     print("=" * 50)
 
-    if len(chunks) < AUTO_SAMPLE_SIZE:
-        sample_size = len(chunks)
-    else:
-        sample_size = AUTO_SAMPLE_SIZE
+    sample_size = min(AUTO_SAMPLE_SIZE, len(chunks))
+    if sample_size == 0:
+        print("⚠️ Нет чанков для тестирования")
+        return {}
 
-    random.seed(42)  # стабильная выборка
+    random.seed(42)
     sample_indices = random.sample(range(len(chunks)), sample_size)
 
     hits_at_1 = 0
     hits_at_k = 0
-    total_time = 0
+    total_time = 0.0
 
     for orig_idx in sample_indices:
-        chunk = chunks[orig_idx]
-        # Первые 200 символов как запрос
-        query = chunk[:200].strip()
+        chunk_text = chunks[orig_idx]
+        query = chunk_text[:200].strip()
         if len(query) < 30:
             continue
 
+        # Добавляем префикс, если используем базовую E5
+        search_q = f"query: {query}" if use_prefix else query
+
         t0 = time.time()
-        vec = model.encode([query], normalize_embeddings=True).astype("float32")
+        vec = model.encode([search_q], normalize_embeddings=True).astype("float32")
         distances, indices = index.search(vec, TOP_K)
         total_time += (time.time() - t0)
 
@@ -140,8 +140,8 @@ def test_recall(model, index, chunks):
             hits_at_k += 1
 
     avg_time_ms = int((total_time / sample_size) * 1000) if sample_size else 0
-    recall_1 = round(hits_at_1 / sample_size * 100, 1) if sample_size else 0
-    recall_k = round(hits_at_k / sample_size * 100, 1) if sample_size else 0
+    recall_1 = round(hits_at_1 / sample_size * 100, 1)
+    recall_k = round(hits_at_k / sample_size * 100, 1)
 
     print(f"Проверено чанков: {sample_size}")
     print(f"Recall@1: {recall_1}%")
@@ -159,11 +159,7 @@ def test_recall(model, index, chunks):
 # ============================================================
 # ТЕСТ B — GOLDEN
 # ============================================================
-def test_golden(model, index, chunks):
-    """
-    Прогоняем вручную заданные вопросы.
-    Считаем: сколько ожидаемых ключевых слов попало в топ-K фрагментов.
-    """
+def test_golden(model, index, chunks, use_prefix):
     print("\n" + "=" * 50)
     print("🎯 ТЕСТ B — GOLDEN QUESTIONS")
     print("=" * 50)
@@ -174,8 +170,10 @@ def test_golden(model, index, chunks):
     for item in GOLDEN_QUESTIONS:
         query = item["q"]
         keywords = [k.lower() for k in item["keywords"]]
+        
+        search_q = f"query: {query}" if use_prefix else query
 
-        vec = model.encode([query], normalize_embeddings=True).astype("float32")
+        vec = model.encode([search_q], normalize_embeddings=True).astype("float32")
         distances, indices = index.search(vec, TOP_K)
 
         # Собираем весь текст найденных фрагментов
@@ -194,7 +192,7 @@ def test_golden(model, index, chunks):
         if ok:
             passed += 1
 
-        best_score = float(distances[0][0]) if len(distances[0]) else 0
+        best_score = float(distances[0][0]) if len(distances[0]) else 0.0
         results.append({
             "query": query,
             "ok": ok,
@@ -227,27 +225,39 @@ def main():
     print("🧪 ARGUS BENCHMARK")
     print("=" * 50)
 
-    if not os.path.exists(INDEX_FILE):
+    if not INDEX_FILE.exists():
         print(f"❌ Нет {INDEX_FILE}")
-        exit(1)
-    if not os.path.exists(CHUNKS_FILE):
-        print(f"❌ Нет {CHUNKS_FILE}")
-        exit(1)
+        sys.exit(1)
+    if not META_FILE.exists():
+        print(f"❌ Нет {META_FILE}")
+        sys.exit(1)
+
+    # --- Выбор модели (как в build_index и ask) ---
+    TRAINED_MODEL = MODELS_DIR / "argus-embeddings"
+    if TRAINED_MODEL.exists() and (TRAINED_MODEL / "config.json").exists():
+        model_path = str(TRAINED_MODEL)
+        use_prefix = False
+        print(f"🎓 Тестируем обученную модель: {model_path}")
+    else:
+        model_path = BASE_MODEL
+        use_prefix = True
+        print(f"📦 Тестируем базовую модель: {model_path} (с префиксом 'query: ')")
 
     print("📦 Загружаю модель...")
-    model = SentenceTransformer(MODEL_NAME)
+    model = SentenceTransformer(model_path)
 
     print("📦 Загружаю индекс...")
-    index = faiss.read_index(INDEX_FILE)
+    index = faiss.read_index(str(INDEX_FILE))
 
-    with open(CHUNKS_FILE, "r", encoding="utf-8") as f:
-        chunks = json.load(f)
+    # Читаем метаданные и извлекаем только тексты для бенчмарка
+    meta_chunks = load_json(META_FILE, [])
+    chunks = [m.get("text", "") for m in meta_chunks]
 
     print(f"✅ Векторов: {index.ntotal}, чанков: {len(chunks)}")
 
     # --- Тесты ---
-    recall = test_recall(model, index, chunks)
-    golden = test_golden(model, index, chunks)
+    recall = test_recall(model, index, chunks, use_prefix)
+    golden = test_golden(model, index, chunks, use_prefix)
 
     # --- Предыдущий результат для сравнения ---
     prev = load_json(RESULTS_FILE, {})
@@ -256,14 +266,15 @@ def main():
 
     delta_recall = None
     delta_golden = None
-    if prev_recall is not None:
+    if prev_recall is not None and f"recall_at_{TOP_K}" in recall:
         delta_recall = round(recall[f"recall_at_{TOP_K}"] - prev_recall, 1)
-    if prev_golden is not None:
+    if prev_golden is not None and "pass_rate" in golden:
         delta_golden = round(golden["pass_rate"] - prev_golden, 1)
 
     # --- Итог ---
     result = {
-        "generated_at": datetime.utcnow().isoformat(),
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "model_used": model_path,
         "chunks_total": len(chunks),
         "index_total": index.ntotal,
         "recall": recall,
@@ -280,9 +291,10 @@ def main():
     history = load_json(HISTORY_FILE, {"runs": []})
     history["runs"].append({
         "time": result["generated_at"],
+        "model": model_path.split("/")[-1],
         "chunks": len(chunks),
-        "recall_at_k": recall[f"recall_at_{TOP_K}"],
-        "golden_pass_rate": golden["pass_rate"],
+        "recall_at_k": recall.get(f"recall_at_{TOP_K}", 0),
+        "golden_pass_rate": golden.get("pass_rate", 0),
     })
     if len(history["runs"]) > 100:
         history["runs"] = history["runs"][-100:]
@@ -303,20 +315,25 @@ def main():
             return " (=)"
 
         msg = "🧪 <b>ARGUS BENCHMARK</b>\n\n"
+        msg += f"🧠 Модель: <code>{model_path.split('/')[-1]}</code>\n"
         msg += f"📚 Чанков в индексе: {len(chunks)}\n\n"
 
-        msg += f"📊 <b>Recall@{TOP_K}:</b> {recall[f'recall_at_{TOP_K}']}%{fmt_delta(delta_recall)}\n"
-        msg += f"📊 Recall@1: {recall['recall_at_1']}%\n"
-        msg += f"⏱ Среднее время: {recall['avg_time_ms']} мс\n\n"
+        if recall:
+            msg += f"📊 <b>Recall@{TOP_K}:</b> {recall.get(f'recall_at_{TOP_K}', 0)}%{fmt_delta(delta_recall)}\n"
+            msg += f"📊 Recall@1: {recall.get('recall_at_1', 0)}%\n"
+            msg += f"⏱ Среднее время: {recall.get('avg_time_ms', 0)} мс\n\n"
 
-        msg += f"🎯 <b>Golden:</b> {golden['passed']}/{golden['total']} ({golden['pass_rate']}%){fmt_delta(delta_golden)}\n\n"
+        if golden:
+            msg += f"🎯 <b>Golden:</b> {golden['passed']}/{golden['total']} ({golden['pass_rate']}%){fmt_delta(delta_golden)}\n\n"
 
-        # Топ провалов
-        fails = [r for r in golden["details"] if not r["ok"]]
-        if fails:
-            msg += "<b>Не найдено:</b>\n"
-            for f in fails[:5]:
-                msg += f"❌ {f['query'][:60]}\n"
+            # Топ провалов
+            fails = [r for r in golden["details"] if not r["ok"]]
+            if fails:
+                msg += "<b>Не найдено:</b>\n"
+                for f in fails[:5]:
+                    # Экранируем HTML, чтобы спецсимволы не ломали сообщение
+                    safe_q = hesc(f['query'][:60])
+                    msg += f"❌ {safe_q}\n"
 
         try:
             requests.post(
