@@ -1,159 +1,95 @@
 # ============================================================
-# ARGUS — ПОИСК ПО ЗНАНИЯМ (v1)
-# Ищет чанки по ключевым словам из вопроса
+# ARGUS - SEMANTIC SEARCH (v2)
+# Uses FAISS index + trained model (or E5 fallback)
+# Output: JSON for bot consumption
 # ============================================================
 
 import os
-import re
 import sys
 import json
+import argparse
+from pathlib import Path
+import numpy as np
+import faiss
+from sentence_transformers import SentenceTransformer
 
-# --- Путь к знаниям ---
-KNOWLEDGE_FILE = "data/knowledge.json"
+# --- Paths ---
+SCRIPT_DIR = Path(__file__).resolve().parent
+REPO_ROOT = SCRIPT_DIR.parent
+DATA_DIR = REPO_ROOT / "data"
+MODELS_DIR = REPO_ROOT / "models"
 
-# --- Вопрос из аргумента ---
-if len(sys.argv) > 1:
-    query = " ".join(sys.argv[1:])
-else:
-    query = "Что такое новая атлантида?"
-
-
-# ============================================================
-# ЗАГРУЗКА ЗНАНИЙ
-# ============================================================
-if not os.path.exists(KNOWLEDGE_FILE):
-    print(json.dumps({
-        "error": "knowledge.json не найден. Сначала загрузи книгу."
-    }, ensure_ascii=False, indent=2))
-    sys.exit()
-
-with open(KNOWLEDGE_FILE, "r", encoding="utf-8") as f:
-    knowledge = json.load(f)
-
-chunks = knowledge.get("chunks", [])
-
-if not chunks:
-    print(json.dumps({
-        "error": "База знаний пуста."
-    }, ensure_ascii=False, indent=2))
-    sys.exit()
+INDEX_FILE = DATA_DIR / "faiss.index"
+META_FILE = DATA_DIR / "chunks_meta.json"
+TRAINING_INFO = MODELS_DIR / "argus-embeddings" / "training_info.json"
+TRAINED_MODEL = MODELS_DIR / "argus-embeddings"
+BASE_MODEL = "intfloat/multilingual-e5-small"
 
 
-# ============================================================
-# ПОДГОТОВКА ЗАПРОСА
-# ============================================================
-def normalize(text):
-    text = text.lower()
-    # Оставляем буквы, цифры, пробелы
-    text = re.sub(r"[^\w\s]", " ", text)
-    text = re.sub(r"\s+", " ", text)
-    return text.strip()
+def load_model():
+    if TRAINED_MODEL.exists() and (TRAINED_MODEL / "config.json").exists():
+        print("Using trained model:", TRAINED_MODEL)
+        return SentenceTransformer(str(TRAINED_MODEL)), False
+    print("Using base model:", BASE_MODEL)
+    return SentenceTransformer(BASE_MODEL), True
 
 
-# Стоп-слова — не влияют на поиск
-STOP_WORDS = {
-    "и", "в", "во", "не", "что", "он", "на", "я", "с", "со",
-    "как", "а", "то", "все", "она", "так", "его", "но", "да",
-    "ты", "к", "у", "же", "вы", "за", "бы", "по", "только",
-    "ее", "мне", "было", "вот", "от", "меня", "еще", "нет",
-    "о", "из", "ему", "теперь", "когда", "даже", "ну", "вдруг",
-    "ли", "если", "уже", "или", "ни", "быть", "был", "него",
-    "до", "вас", "нибудь", "опять", "уж", "вам", "ведь", "там",
-    "потом", "себя", "ничего", "ей", "может", "они", "тут",
-    "где", "есть", "надо", "ней", "для", "мы", "тебя", "их",
-    "чем", "была", "сам", "чтоб", "без", "будто", "чего", "раз",
-    "тоже", "себе", "под", "будет", "ж", "тогда", "кто", "этот",
-    "того", "потому", "этого", "какой", "совсем", "ним", "здесь",
-    "этом", "один", "почти", "мой", "тем", "чтобы", "нее",
-    "сейчас", "были", "куда", "зачем", "всех", "никогда",
-    "можно", "при", "наконец", "два", "об", "другой", "хоть",
-    "после", "над", "больше", "тот", "через", "эти", "нас",
-    "про", "всего", "них", "какая", "много", "разве", "три",
-    "эту", "моя", "впрочем", "хорошо", "свою", "этой", "перед",
-    "иногда", "лучше", "чуть", "том", "нельзя", "такой", "им",
-    "более", "всегда", "конечно", "всю", "между", "это"
-}
-
-# Нормализуем запрос
-query_norm = normalize(query)
-
-# Разбиваем на слова, убираем стоп-слова и слова короче 3 букв
-query_words = []
-for word in query_norm.split():
-    if len(word) < 3:
-        continue
-    if word in STOP_WORDS:
-        continue
-    query_words.append(word)
-
-if not query_words:
-    print(json.dumps({
-        "error": "Запрос слишком короткий или состоит только из служебных слов."
-    }, ensure_ascii=False, indent=2))
-    sys.exit()
+def load_index():
+    if not INDEX_FILE.exists():
+        return None, None
+    index = faiss.read_index(str(INDEX_FILE))
+    with open(META_FILE, "r", encoding="utf-8") as f:
+        meta = json.load(f)
+    return index, meta
 
 
-# ============================================================
-# ПОИСК
-# ============================================================
-results = []
+def search(query, top_k=5, use_prefix=False, model=None, index=None, meta=None):
+    if index is None or meta is None:
+        return {"error": "Index not found. Run build_index first."}
 
-for chunk in chunks:
-    text = chunk.get("text", "")
-    text_norm = normalize(text)
+    text = query
+    if use_prefix:
+        text = "query: " + text
 
-    score = 0
+    emb = model.encode(
+        [text],
+        normalize_embeddings=True,
+        show_progress_bar=False,
+        convert_to_numpy=True
+    ).astype("float32")
 
-    for word in query_words:
-        # Считаем, сколько раз слово встречается в чанке
-        count = text_norm.count(word)
+    scores, ids = index.search(emb, min(top_k, index.ntotal))
 
-        if count > 0:
-            # Базовый балл за совпадение
-            score = score + 1
-
-            # Бонус за частоту (но не бесконечно)
-            if count > 1:
-                score = score + 0.5
-
-    # Нормализуем по длине запроса
-    if score > 0:
-        score = score / len(query_words)
-
-        # Бонус за длину чанка (длинные информативнее)
-        length_bonus = min(len(text) / 1000, 1.0) * 0.3
-        score = score + length_bonus
-
+    results = []
+    for score, idx in zip(scores[0], ids[0]):
+        if idx < 0 or idx >= len(meta):
+            continue
+        m = meta[idx]
         results.append({
-            "score": round(score, 3),
-            "book": chunk.get("book", ""),
-            "chunk_id": chunk.get("chunk_id", 0),
-            "text": text
+            "score": round(float(score), 4),
+            "id": m.get("id", ""),
+            "source": m.get("source", ""),
+            "book": m.get("book", ""),
+            "chunk_index": m.get("chunk_index", 0),
+            "text": m.get("text", "")
         })
 
-# --- Сортируем по score (убывание) ---
-results.sort(key=lambda x: x["score"], reverse=True)
-
-# --- Берём топ-5 ---
-top_results = results[:5]
+    return {"query": query, "top_k": top_k, "results": results}
 
 
-# ============================================================
-# ВЫВОД
-# ============================================================
-output = {
-    "query": query,
-    "words": query_words,
-    "total_matches": len(results),
-    "results": []
-}
+def main():
+    parser = argparse.ArgumentParser(description="ARGUS semantic search")
+    parser.add_argument("query", nargs="?", default="What is trading?", help="Search query")
+    parser.add_argument("--top", type=int, default=5, help="Number of results")
+    parser.add_argument("--json", action="store_true", help="Force JSON output")
+    args = parser.parse_args()
 
-for r in top_results:
-    output["results"].append({
-        "score": r["score"],
-        "book": r["book"],
-        "chunk_id": r["chunk_id"],
-        "text": r["text"][:600]   # обрезаем для читаемости
-    })
+    model, use_prefix = load_model()
+    index, meta = load_index()
 
-print(json.dumps(output, ensure_ascii=False, indent=2))
+    result = search(args.query, args.top, use_prefix, model, index, meta)
+    print(json.dumps(result, ensure_ascii=False, indent=2))
+
+
+if __name__ == "__main__":
+    main()
