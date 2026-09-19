@@ -27,7 +27,7 @@ jobs:
 
       - name: Run probe
         run: |
-          python crypto/probe_exchanges.py
+          python crypto/proba_exchanges.py
 
       - name: Show summary
         if: always()
