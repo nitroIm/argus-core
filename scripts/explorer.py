@@ -1,6 +1,6 @@
 # ============================================================
-# ARGUS — АВТОНОМНЫЙ ИССЛЕДОВАТЕЛЬ
-# v2: поддержка темы от Actor (--topic "quantum computing")
+# ARGUS — АВТОНОМНЫЙ ИССЛЕДОВАТЕЛЬ (v3)
+# v3: pathlib, фикс datetime, защита от раздувания seen-файла
 # ============================================================
 
 import os
@@ -8,8 +8,8 @@ import sys
 import json
 import random
 import requests
-from datetime import datetime
-
+from datetime import datetime, timezone
+from pathlib import Path
 
 CONFIG = {
     "max_topics_per_run": 5,
@@ -23,17 +23,19 @@ CONFIG = {
     ],
 }
 
-REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DATA_DIR = os.path.join(REPO_ROOT, "data")
+# --- Пути от корня репо ---
+SCRIPT_DIR = Path(__file__).resolve().parent
+REPO_ROOT = SCRIPT_DIR.parent
+DATA_DIR = REPO_ROOT / "data"
 
-OBS_FILE = os.path.join(DATA_DIR, "observation.json")
-EXPLORE_LOG = os.path.join(DATA_DIR, "explore_log.json")
-SEEN_FILE = os.path.join(DATA_DIR, "explore_seen.json")
-CANDIDATES_FILE = os.path.join(DATA_DIR, "scout_candidates.json")
+OBS_FILE = DATA_DIR / "observation.json"
+EXPLORE_LOG = DATA_DIR / "explore_log.json"
+SEEN_FILE = DATA_DIR / "explore_seen.json"
+CANDIDATES_FILE = DATA_DIR / "scout_candidates.json"
 
 
-def load(path, default=None):
-    if not os.path.exists(path):
+def load_json(path, default=None):
+    if not path.exists():
         return default if default is not None else {}
     try:
         with open(path, "r", encoding="utf-8") as f:
@@ -42,8 +44,8 @@ def load(path, default=None):
         return default if default is not None else {}
 
 
-def save(path, data):
-    os.makedirs(os.path.dirname(path), exist_ok=True)
+def save_json(path, data):
+    path.parent.mkdir(parents=True, exist_ok=True)
     with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
@@ -52,19 +54,16 @@ def save(path, data):
 # ВХОДНАЯ ТЕМА (от Actor)
 # ============================================================
 REQUESTED_TOPIC = None
-# из аргументов: python explorer.py "quantum computing"
 if len(sys.argv) > 1:
     REQUESTED_TOPIC = sys.argv[1].strip()
-# из env: EXPLORE_TOPIC=quantum computing
 if not REQUESTED_TOPIC:
     REQUESTED_TOPIC = (os.environ.get("EXPLORE_TOPIC") or "").strip() or None
 
 
 def decide_topics():
-    obs = load(OBS_FILE, {})
-    seen = load(SEEN_FILE, {"urls": [], "topics": {}})
+    obs = load_json(OBS_FILE, {})
+    seen = load_json(SEEN_FILE, {"urls": [], "topics": {}})
 
-    # --- Если Actor запросил конкретную тему ---
     if REQUESTED_TOPIC:
         print(f"🎯 Запрошена тема от Actor: {REQUESTED_TOPIC}")
         return [{"topic": REQUESTED_TOPIC, "reason": "запрос Actor"}]
@@ -74,7 +73,15 @@ def decide_topics():
     # 1. ПРОБЕЛЫ
     failed_words = obs.get("top_failed_words", [])
     gaps_count = int(CONFIG["max_topics_per_run"] * CONFIG["weights"]["gaps"])
-    for word, count in failed_words[:gaps_count]:
+    for item in failed_words[:gaps_count]:
+        # Поддержка формата [word, count] или {"word": count}
+        if isinstance(item, (list, tuple)) and len(item) >= 2:
+            word, count = item[0], item[1]
+        elif isinstance(item, dict):
+            continue # Пропускаем словари, если вдруг формат другой
+        else:
+            continue
+            
         if count >= 2:
             topics.append({"topic": word, "reason": f"пробел: {count} запросов"})
 
@@ -95,6 +102,7 @@ def decide_topics():
         if t["topic"] not in names:
             unique.append(t)
             names.add(t["topic"])
+            
     return unique[:CONFIG["max_topics_per_run"]]
 
 
@@ -168,7 +176,7 @@ def search_crossref(topic, limit=3):
         r = requests.get(
             "https://api.crossref.org/works",
             params={"query": topic, "rows": limit,
-                    "filter": "type:journal-article,has-full-text:true,license.url:*"},
+                    "filter": "type:journal-article,has-full-text:true"},
             timeout=20,
         )
         r.raise_for_status()
@@ -233,10 +241,12 @@ def main():
     for t in topics:
         print(f"   • {t['topic']} ({t['reason']})")
 
-    seen = load(SEEN_FILE, {"urls": [], "topics": {}})
-    seen_urls = set(seen["urls"])
+    seen = load_json(SEEN_FILE, {"urls": [], "topics": {}})
+    seen_urls = set(seen.get("urls", []))
 
     candidates = []
+    run_seen_urls = set() # Защита от дублей внутри одного запуска
+
     for topic_data in topics:
         topic = topic_data["topic"]
         print(f"\n🔍 Тема: {topic}")
@@ -245,37 +255,47 @@ def main():
             if results:
                 print(f"   📡 {source_name}: {len(results)}")
             for r in results:
-                if r["url"] in seen_urls:
+                url = r["url"]
+                if url in seen_urls or url in run_seen_urls:
                     continue
                 if r.get("size_mb", 0) > CONFIG["max_size_mb"]:
                     continue
-                r["found_at"] = datetime.utcnow().isoformat()
+                
+                r["found_at"] = datetime.now(timezone.utc).isoformat()
                 r["reason"] = topic_data["reason"]
                 candidates.append(r)
-                seen_urls.add(r["url"])
+                seen_urls.add(url)
+                run_seen_urls.add(url)
 
+    # Сохраняем seen (topics храним как список последних 10 дат, чтобы не раздувать файл)
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     seen["urls"] = list(seen_urls)
-    today = datetime.utcnow().strftime("%Y-%m-%d")
     seen.setdefault("topics", {})
     for t in topics:
-        seen["topics"].setdefault(t["topic"], []).append(today)
-    save(SEEN_FILE, seen)
+        topic_name = t["topic"]
+        dates = set(seen["topics"].get(topic_name, []))
+        dates.add(today)
+        # Храним только последние 10 дат для каждой темы
+        seen["topics"][topic_name] = sorted(list(dates))[-10:]
+        
+    save_json(SEEN_FILE, seen)
 
-    existing = load(CANDIDATES_FILE, {"candidates": [], "pending": {}})
+    # Добавляем новых кандидатов
+    existing = load_json(CANDIDATES_FILE, {"candidates": [], "pending": {}})
     existing["candidates"] = existing.get("candidates", []) + candidates
-    existing["generated_at"] = datetime.utcnow().isoformat()
+    existing["generated_at"] = datetime.now(timezone.utc).isoformat()
     existing["total"] = len(existing["candidates"])
-    save(CANDIDATES_FILE, existing)
+    save_json(CANDIDATES_FILE, existing)
 
-    log = load(EXPLORE_LOG, {"runs": []})
+    log = load_json(EXPLORE_LOG, {"runs": []})
     log["runs"].append({
-        "time": datetime.utcnow().isoformat(),
+        "time": datetime.now(timezone.utc).isoformat(),
         "topics": [t["topic"] for t in topics],
         "candidates_found": len(candidates),
     })
     if len(log["runs"]) > 100:
         log["runs"] = log["runs"][-100:]
-    save(EXPLORE_LOG, log)
+    save_json(EXPLORE_LOG, log)
 
     print("\n" + "=" * 50)
     print(f"✅ Новых кандидатов: {len(candidates)}")
