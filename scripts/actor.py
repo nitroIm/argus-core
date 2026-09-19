@@ -1,33 +1,34 @@
 # ============================================================
-# ARGUS — АКТОР
-# v2: самоулучшение — сам скачивает книги по проблемным темам
+# ARGUS — АКТОР (v3)
+# v3: фикс импорта sys, безопасная обрезка HTML, pathlib, timezone
 # ============================================================
 
 import os
+import sys
 import json
 import subprocess
 import requests
-from datetime import datetime
+from datetime import datetime, timezone
+from pathlib import Path
 
-# --- Пути от корня ---
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-REPO_ROOT = os.path.dirname(SCRIPT_DIR)
-DATA_DIR = os.path.join(REPO_ROOT, "data")
+# --- Пути от корня репо ---
+SCRIPT_DIR = Path(__file__).resolve().parent
+REPO_ROOT = SCRIPT_DIR.parent
+DATA_DIR = REPO_ROOT / "data"
 
-PROPOSALS_FILE = os.path.join(DATA_DIR, "proposals.json")
-HISTORY_FILE = os.path.join(DATA_DIR, "actions_history.json")
-SCOUT_FILE = os.path.join(DATA_DIR, "scout_candidates.json")
+PROPOSALS_FILE = DATA_DIR / "proposals.json"
+HISTORY_FILE = DATA_DIR / "actions_history.json"
 
-if not os.path.exists(PROPOSALS_FILE):
+if not PROPOSALS_FILE.exists():
     print(f"❌ Нет {PROPOSALS_FILE}. Сначала запусти proposer.")
-    exit(0)
+    sys.exit(0)
 
 with open(PROPOSALS_FILE, "r", encoding="utf-8") as f:
     proposals_data = json.load(f)
 
 proposals = proposals_data.get("proposals", [])
 
-if os.path.exists(HISTORY_FILE):
+if HISTORY_FILE.exists():
     try:
         with open(HISTORY_FILE, "r", encoding="utf-8") as f:
             actions_history = json.load(f)
@@ -36,7 +37,7 @@ if os.path.exists(HISTORY_FILE):
 else:
     actions_history = []
 
-# --- Telegram ---
+# --- Переменные окружения ---
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("BOT_TOKEN")
 CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 GITHUB_REPO = os.getenv("GITHUB_REPO", "nitroIm/argus-core")
@@ -50,7 +51,7 @@ def rebuild_index():
     print("🔄 Пересобираю индекс...")
     try:
         result = subprocess.run(
-            [subprocess.sys.executable, os.path.join(SCRIPT_DIR, "build_index.py")],
+            [sys.executable, str(SCRIPT_DIR / "build_index.py")],
             capture_output=True, text=True, timeout=900,
         )
         if result.returncode == 0:
@@ -64,7 +65,7 @@ def run_observer():
     print("🔄 Запускаю Observer...")
     try:
         result = subprocess.run(
-            [subprocess.sys.executable, os.path.join(SCRIPT_DIR, "observer.py")],
+            [sys.executable, str(SCRIPT_DIR / "observer.py")],
             capture_output=True, text=True, timeout=120,
         )
         return result.returncode == 0, "Observer выполнен"
@@ -76,7 +77,7 @@ def run_collect():
     print("🔄 Собираю данные с бирж...")
     try:
         result = subprocess.run(
-            [subprocess.sys.executable, os.path.join(SCRIPT_DIR, "collect_data.py")],
+            [sys.executable, str(SCRIPT_DIR / "collect_data.py")],
             capture_output=True, text=True, timeout=180,
         )
         return result.returncode == 0, "Данные собраны"
@@ -86,8 +87,7 @@ def run_collect():
 
 def run_explorer_for_topic(topic: str):
     """
-    Запускает Explorer для поиска книг по конкретной теме.
-    Реальный механизм — trigger workflow explorer.yml с payload.
+    Запускает Explorer для поиска книг по конкретной теме через GitHub Actions.
     """
     if not GITHUB_PAT:
         return False, "Нет GITHUB_PAT — не могу дёрнуть Explorer"
@@ -113,7 +113,7 @@ def run_explorer_for_topic(topic: str):
 
 SAFE_ACTIONS = {
     "rebuild_index": rebuild_index,
-    "retrain_index": rebuild_index,
+    "retrain_index": rebuild_index, # Пока просто пересборка, полноценный retrain лучше делать через workflow
     "run_observer": run_observer,
     "collect_data": run_collect,
 }
@@ -148,7 +148,7 @@ for p in proposals:
         continue
 
     executed.append({
-        "time": datetime.utcnow().isoformat(),
+        "time": datetime.now(timezone.utc).isoformat(),
         "action": action,
         "topic": p.get("topic", ""),
         "success": success,
@@ -164,24 +164,41 @@ actions_history.extend(executed)
 if len(actions_history) > 500:
     actions_history = actions_history[-500:]
 
-os.makedirs(DATA_DIR, exist_ok=True)
+DATA_DIR.mkdir(parents=True, exist_ok=True)
 with open(HISTORY_FILE, "w", encoding="utf-8") as f:
     json.dump(actions_history, f, ensure_ascii=False, indent=2)
 
 if BOT_TOKEN and CHAT_ID and executed:
-    message = "🤖 <b>ARGUS — выполнил действия</b>\n\n"
-    for e in executed:
+    # БЕЗОПАСНАЯ сборка сообщения: ограничиваем количество элементов, а не символы, 
+    # чтобы не разорвать HTML-теги
+    report_items = executed[:15]  # Максимум 15 последних действий в отчете
+    
+    message_lines = ["🤖 <b>ARGUS — выполнил действия</b>\n"]
+    for e in report_items:
         icon = "✅" if e["success"] else "❌"
-        message += f"{icon} {e['message']}\n"
+        # Экранируем текст сообщения на случай спецсимволов
+        safe_msg = e["message"].replace("<", "&lt;").replace(">", "&gt;")
+        message_lines.append(f"{icon} {safe_msg}")
+    
+    if len(executed) > 15:
+        message_lines.append(f"\n<i>...и ещё {len(executed) - 15} действий (см. actions_history.json)</i>")
+
+    message = "\n".join(message_lines)
+    
     try:
         requests.post(
             f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
-            json={"chat_id": CHAT_ID, "text": message[:4000], "parse_mode": "HTML"},
+            json={
+                "chat_id": CHAT_ID, 
+                "text": message, 
+                "parse_mode": "HTML",
+                "disable_web_page_preview": True
+            },
             timeout=15,
         )
         print("\n📤 Отчёт отправлен в Telegram")
     except Exception as e:
-        print(f"⚠️ Telegram: {e}")
+        print(f"⚠️ Telegram error: {e}")
 
 print("\n" + "=" * 50)
 print(f"✅ Выполнено действий: {len(executed)}")
