@@ -1,17 +1,21 @@
 name: ARGUS Analyzer
 
 on:
-#  schedule:
-#    - cron: "0 4 * * *"
   workflow_dispatch:
+  # schedule:
+  #   - cron: "0 4 * * *"  # Раскомментируй для ежедневного запуска в 4:00 UTC
 
 permissions:
   contents: write
 
+concurrency:
+  group: argus-analyzer
+  cancel-in-progress: false
+
 jobs:
   analyze:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
 
     steps:
       - name: Checkout
@@ -24,29 +28,43 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install deps
+      - name: Install dependencies
         run: pip install requests==2.32.3
 
-      - name: Run analyzer
-        run: python scripts/analyzer.py || echo "Analyzer пропущен"
+      - name: Run Analyzer
+        run: python scripts/analyzer.py
 
-      - name: Run proposer
-        if: hashFiles('data/analysis.json') != ''
+      - name: Run Proposer
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: python scripts/proposer.py || echo "Proposer пропущен"
+        run: python scripts/proposer.py
 
-      - name: Commit
+      - name: Commit and Push changes
         run: |
           git config user.name "ARGUS"
           git config user.email "argus@github.com"
-          mkdir -p data
-          git add data/analysis.json data/proposals.json || true
-          git diff --staged --quiet && echo "Нет изменений" && exit 0
+          
+          # Добавляем всю папку data, чтобы не пропустить новые файлы (например, впервые созданный proposals.json)
+          git add data/ || true
+          
+          # Проверяем, есть ли что коммитить
+          if git diff --staged --quiet; then
+            echo "Нет изменений для коммита."
+            exit 0
+          fi
+          
+          echo "Есть изменения. Коммичу и пушу..."
           git commit -m "ARGUS: анализ и предложения [skip ci]"
+          
+          # Надежный пуш с обработкой конфликтов
           for i in 1 2 3; do
             git pull --rebase --autostash origin main
-            git push && break
-            sleep 5
+            if git push origin main; then
+              echo "✅ Успешно отправлено в репозиторий"
+              break
+            else
+              echo "⚠️ Попытка $i не удалась, жду 5 секунд..."
+              sleep 5
+            fi
           done
