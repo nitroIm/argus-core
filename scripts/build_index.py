@@ -1,47 +1,92 @@
 # ============================================================
-# ARGUS — ПОСТРОЕНИЕ ИНДЕКСА (v2)
-# Многоязычная модель + нормализация + Inner Product
+# ARGUS — ПОСТРОЕНИЕ ИНДЕКСА (v3)
+# v3: загрузка обученной модели, сохранение метаданных чанков (для отображения книги в ответе)
 # ============================================================
 
 import os
 import json
 import numpy as np
 import faiss
+from pathlib import Path
 from sentence_transformers import SentenceTransformer
 
-if not os.path.exists("data/knowledge.json"):
-    print("❌ knowledge.json не найден.")
+# --- Пути от корня репо ---
+SCRIPT_DIR = Path(__file__).resolve().parent
+REPO_ROOT = SCRIPT_DIR.parent
+
+DATA_DIR = REPO_ROOT / "data"
+MODELS_DIR = REPO_ROOT / "models"
+
+KNOWLEDGE_FILE = DATA_DIR / "knowledge.json"
+INDEX_FILE = DATA_DIR / "faiss.index"
+METADATA_FILE = DATA_DIR / "chunks_metadata.json"  # <-- НОВОЕ: хранит привязку к книгам
+TRAINED_MODEL_PATH = MODELS_DIR / "argus-embeddings"
+
+DATA_DIR.mkdir(parents=True, exist_ok=True)
+
+if not KNOWLEDGE_FILE.exists():
+    print("❌ knowledge.json не найден. Сначала запусти ingest.py")
     exit(1)
 
-with open("data/knowledge.json", "r", encoding="utf-8") as f:
+print(f"📚 Загрузка знаний из: {KNOWLEDGE_FILE}")
+with open(KNOWLEDGE_FILE, "r", encoding="utf-8") as f:
     knowledge = json.load(f)
 
-chunks = [c["text"] for c in knowledge["chunks"]]
-print(f"📚 Чанков: {len(chunks)}")
+# --- Подготовка данных ---
+texts = []
+metadata = []
 
-# Многоязычная модель — понимает русский и английский
-MODEL_NAME = "intfloat/multilingual-e5-small"
-print(f"📦 Загружаю модель: {MODEL_NAME}")
-model = SentenceTransformer(MODEL_NAME)
+for c in knowledge.get("chunks", []):
+    text = " ".join(c.get("text", "").split()) # нормализация пробелов
+    if len(text) < 100:  # пропускаем мусорные короткие куски
+        continue
+    
+    texts.append(text)
+    metadata.append({
+        "id": c.get("id", f"chunk_{len(metadata)}"),
+        "source": c.get("source", c.get("book", "unknown")),
+        "book": c.get("book", "unknown"),
+        "chunk_index": c.get("chunk_index", 0)
+    })
 
-# Нормализация эмбеддингов (для cosine similarity)
-print("🧠 Создаю эмбеддинги...")
+print(f"✅ Подготовлено {len(texts)} чанков для индексации")
+
+# --- Загрузка модели ---
+# Сначала пытаемся загрузить ту, которую мы только что обучили
+if TRAINED_MODEL_PATH.exists() and (TRAINED_MODEL_PATH / "config.json").exists():
+    model_path = str(TRAINED_MODEL_PATH)
+    print(f"🧠 Загружаю ОБУЧЕННУЮ модель: {model_path}")
+else:
+    # Фоллбэк на базовую, если обученной ещё нет (первый запуск)
+    model_path = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+    print(f"⚠️ Обученная модель не найдена, использую базовую: {model_path}")
+
+model = SentenceTransformer(model_path)
+
+# --- Создание эмбеддингов ---
+print("🧠 Векторизация чанков...")
 embeddings = model.encode(
-    chunks,
-    normalize_embeddings=True,   # ← ключевое
+    texts,
+    normalize_embeddings=True,   # Обязательно для IndexFlatIP (Cosine Similarity)
     show_progress_bar=True,
     batch_size=32
 )
 embeddings = np.array(embeddings).astype("float32")
 
-# Inner Product вместо L2
+# --- Построение FAISS индекса ---
 dimension = embeddings.shape[1]
-index = faiss.IndexFlatIP(dimension)   # ← IP вместо L2
+print(f"📐 Размерность вектора: {dimension}")
+
+# IndexFlatIP (Inner Product) на нормализованных векторах = Cosine Similarity
+index = faiss.IndexFlatIP(dimension)
 index.add(embeddings)
 
-faiss.write_index(index, "data/faiss.index")
+# --- Сохранение ---
+faiss.write_index(index, str(INDEX_FILE))
+print(f"✅ FAISS индекс сохранён: {INDEX_FILE} ({index.ntotal} векторов)")
 
-with open("data/chunks_for_index.json", "w", encoding="utf-8") as f:
-    json.dump(chunks, f, ensure_ascii=False)
+with open(METADATA_FILE, "w", encoding="utf-8") as f:
+    json.dump(metadata, f, ensure_ascii=False, indent=2)
+print(f"✅ Метаданные чанков сохранены: {METADATA_FILE}")
 
-print(f"✅ Индекс создан: {index.ntotal} векторов")
+print("🎉 Индекс успешно построен!")
