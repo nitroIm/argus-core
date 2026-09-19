@@ -5,7 +5,7 @@ on:
   repository_dispatch:
     types: [run_benchmark]
   schedule:
-    - cron: '0 5 * * 0'   # воскресенье, 05:00 UTC
+    - cron: '0 5 * * 0'
 
 permissions:
   contents: write
@@ -25,9 +25,9 @@ jobs:
           python-version: '3.11'
 
       - name: Cache pip
-        uses/.: actions/cache@v4
+        uses: actions/cache@v4
         with:
-          pathcache: ~/pip
+          path: ~/.cache/pip
           key: pip-bench-v1
 
       - name: Cache HF models
