@@ -1,7 +1,10 @@
 # ============================================================
-# ARGUS — ПЕРЕВОДЧИК (EN → RU)
+# ARGUS — ПЕРЕВОДЧИК (EN → RU) (v2)
+# v2: добавлен torch.no_grad() для экономии памяти при массовом переводе
 # Локальная модель Helsinki-NLP/opus-mt-en-ru
 # ============================================================
+
+import torch
 
 _model = None
 _tokenizer = None
@@ -30,7 +33,7 @@ def translate_to_ru(text):
         return text
 
     model, tokenizer = _load_model()
-    text = text[:500]
+    text = text[:500]  # Ограничение длины для стабильности модели
 
     tokens = tokenizer(
         [text],
@@ -39,5 +42,10 @@ def translate_to_ru(text):
         truncation=True,
         max_length=512
     )
-    translated = model.generate(**tokens)
+    
+    # Отключаем расчёт градиентов, чтобы не забивать оперативную память 
+    # при массовом переводе новостей или чанков
+    with torch.no_grad():
+        translated = model.generate(**tokens)
+        
     return tokenizer.decode(translated[0], skip_special_tokens=True)
