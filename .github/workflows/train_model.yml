@@ -11,9 +11,47 @@ permissions:
   contents: write
 
 jobs:
-  train:
+  check:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    outputs:
+      skip: ${{ steps.fingerprint.outputs.skip }}
+      changed: ${{ steps.fingerprint.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for changes
+        id: fingerprint
+        run: |
+          mkdir -p data
+          if [ ! -d books ] || [ -z "$(ls -A books 2>/dev/null)" ]; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "📭 Нет книг в books/"
+            exit 0
+          fi
+          
+          # Стабильный fingerprint: хэшируем содержимое файлов
+          CURRENT=$(find books/ -type f -exec md5sum {} + | sort | md5sum | cut -d' ' -f1)
+          LAST=$(cat data/last_train_fingerprint.txt 2>/dev/null || echo "none")
+          
+          echo "current=$CURRENT"
+          echo "last=$LAST"
+          
+          if [ "$CURRENT" = "$LAST" ]; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "✅ Новых книг нет — Train пропущен."
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "📚 Есть новые книги — запускаю Train."
+            echo "$CURRENT" > /tmp/new_fingerprint.txt
+          fi
+
+  train:
+    needs: check
+    if: needs.check.outputs.skip == 'false'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
 
     steps:
       - uses: actions/checkout@v4
@@ -35,8 +73,8 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/huggingface
-          key: hf-e5-small-v1
-          restore-keys: hf-
+          key: hf-models-${{ hashFiles('scripts/train_embeddings.py') }}
+          restore-keys: hf-models-
 
       - name: Install deps
         run: |
@@ -44,52 +82,44 @@ jobs:
           pip install torch==2.2.0 --index-url https://download.pytorch.org/whl/cpu
           pip install -r scripts/requirements.txt
 
-      - name: Check for new books
-        id: check
-        run: |
-          mkdir -p data
-          if [ ! -d books ] || [ -z "$(ls -A books 2>/dev/null)" ]; then
-            echo "skip=true" >> $GITHUB_OUTPUT
-            echo "📭 Нет книг в books/"
-            exit 0
-          fi
-          CURRENT=$(ls -la books/ | md5sum | cut -d' ' -f1)
-          LAST=$(cat data/last_train_fingerprint.txt 2>/dev/null || echo "none")
-          echo "current=$CURRENT"
-          echo "last=$LAST"
-          if [ "$CURRENT" = "$LAST" ]; then
-            echo "skip=true" >> $GITHUB_OUTPUT
-            echo "✅ Новых книг нет — Train пропущен."
-          else
-            echo "skip=false" >> $GITHUB_OUTPUT
-            echo "📚 Есть новые книги — запускаю Train."
-          fi
-          echo "$CURRENT" > /tmp/new_fingerprint.txt
-
       - name: Ingest books
-        if: steps.check.outputs.skip == 'false'
         run: python scripts/ingest.py
 
+      - name: Train embeddings
+        run: |
+          python scripts/train_embeddings.py \
+            --data-path data/knowledge.json \
+            --output-dir models/argus-embeddings \
+            --epochs 3 \
+            --batch-size 32
+
       - name: Build index
-        if: steps.check.outputs.skip == 'false'
         run: python scripts/build_index.py
 
       - name: Save fingerprint
-        if: steps.check.outputs.skip == 'false'
         run: cp /tmp/new_fingerprint.txt data/last_train_fingerprint.txt
 
-      - name: Commit
-        if: steps.check.outputs.skip == 'false'
+      - name: Upload model artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: argus-embeddings
+          path: models/argus-embeddings/
+          retention-days: 30
+
+      - name: Commit data changes
         run: |
           git config user.name "ARGUS"
           git config user.email "argus@github.com"
-          git add -A
-          git diff --staged --quiet || git commit -m "ARGUS: train $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          
+          # Коммитим только data/, не модели
+          git add data/
+          git diff --staged --quiet || git commit -m "ARGUS: update chunks $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          
           git pull --rebase origin main || true
           git push || true
 
   notify:
-    needs: train
+    needs: [check, train]
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -98,11 +128,14 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
-          if [ "${{ needs.train.result }}" = "success" ]; then
-            TEXT="🎓 <b>Train завершён</b>%0AИндекс обновлён."
+          if [ "${{ needs.check.outputs.skip }}" = "true" ]; then
+            TEXT="⏭️ <b>Train пропущен</b>%0AНет изменений в книгах."
+          elif [ "${{ needs.train.result }}" = "success" ]; then
+            TEXT="🎓 <b>Train завершён</b>%0AЭмбеддинги и индекс обновлены."
           else
             TEXT="❌ <b>Train упал</b>%0AПроверь Actions."
           fi
+          
           curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
             -d "chat_id=${TELEGRAM_CHAT_ID}" \
             -d "text=${TEXT}" \
