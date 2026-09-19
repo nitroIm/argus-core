@@ -17,7 +17,7 @@ concurrency:
 jobs:
   train:
     runs-on: ubuntu-latest
-    timeout-minutes: 180
+    timeout-minutes: 120
     
     # ВАЖНО: экспортируем outputs из job, чтобы notify мог их читать
     outputs:
