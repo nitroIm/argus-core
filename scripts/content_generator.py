@@ -219,13 +219,41 @@ def gen_insight():
 # ВЫБОР ТИПА
 # ============================================================
 def generate_post():
+    # Смотрим, что уже было — чтобы не повторяться
+    history_file = os.path.join(DATA_DIR, "post_history.json")
+    history = load_json(history_file, {"types": []})
+    last_types = history.get("types", [])[-3:]
+
+    # Определяем кандидатов по времени
     now_hour = datetime.utcnow().hour
     if 4 <= now_hour < 10:
-        return gen_morning()
+        candidates = ["morning", "philosophy", "insight"]
     elif 10 <= now_hour < 17:
-        return gen_philosophy()
+        candidates = ["philosophy", "insight", "morning"]
     else:
-        return gen_insight()
+        candidates = ["insight", "philosophy", "morning"]
+
+    # Убираем те, что были в последних 3 постах
+    fresh = [c for c in candidates if c not in last_types]
+    if not fresh:
+        fresh = candidates
+
+    post_type = fresh[0]
+
+    if post_type == "morning":
+        text, _ = gen_morning()
+    elif post_type == "philosophy":
+        text, _ = gen_philosophy()
+    else:
+        text, _ = gen_insight()
+
+    # Запоминаем
+    history["types"].append(post_type)
+    if len(history["types"]) > 50:
+        history["types"] = history["types"][-50:]
+    save_json(history_file, history)
+
+    return text, post_type
 
 
 # ============================================================
