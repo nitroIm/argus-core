@@ -52,7 +52,7 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           # КРИТИЧЕСКИ ВАЖНО: actor.py нужен PAT для запуска других workflow (например, explorer)
-          GITHUB_PAT: ${{ secrets.GITHUB_PAT }}
+          GITHUB_PAT: ${{ secrets.GH_PAT }}
           GITHUB_REPO: ${{ github.repository }}
         run: python scripts/actor.py
 
