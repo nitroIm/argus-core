@@ -1,7 +1,6 @@
 # ============================================================
-# ARGUS — ГЕНЕРАТОР ПОСТОВ v2
-# Цитаты из книг (knowledge.json) + бридж под настроение рынка
-# Публикация ТОЛЬКО по кнопке
+# ARGUS — ГЕНЕРАТОР ПОСТОВ v3
+# Без seed, случайный выбор цитат и новостей
 # ============================================================
 
 import os
@@ -49,11 +48,17 @@ PHILOSOPHY_HINTS = [
     "природ", "разум", "сила", "власт", "свобод", "доброд",
     "смысл", "правд", "развити", "прогресс", "будущ", "жизн",
     "душ", "сердц", "страст", "вол", "характер", "судьб",
+    "рынок", "цен", "риск", "прибыл", "убыт", "капитал",
+    "стратег", "решен", "правил", "дисциплин", "эмоци",
+    "анализ", "прогноз", "вероятн", "данн", "модел",
+    "любов", "вера", "надежд", "страх", "смел", "мужеств",
+    "ошибк", "урок", "цель", "путь",
     "knowledge", "truth", "wisdom", "power", "mind", "reason",
+    "market", "risk", "profit", "strategy", "decision",
 ]
 
 
-def extract_quotes_from_books(max_quotes=200):
+def extract_quotes_from_books(max_quotes=500):
     cached = load_json(QUOTES_CACHE, {})
     if cached.get("quotes") and len(cached.get("quotes", [])) > 20:
         return cached["quotes"]
@@ -111,7 +116,7 @@ def extract_quotes_from_books(max_quotes=200):
 
 
 # ============================================================
-# БРИДЖ (связь цитаты с рынком)
+# БРИДЖ
 # ============================================================
 BRIDGE_TEMPLATES = [
     "Что это значит для трейдинга? {idea}",
@@ -189,8 +194,8 @@ def get_sentiment():
     return {
         "mood": data.get("mood", "нейтральное"),
         "score": data.get("avg_sentiment", 0),
-        "top_bull": (data.get("top_bullish") or [{}])[:1],
-        "top_bear": (data.get("top_bearish") or [{}])[:1],
+        "top_bull": data.get("top_bullish") or [],
+        "top_bear": data.get("top_bearish") or [],
         "total": data.get("total_news", 0),
     }
 
@@ -211,15 +216,21 @@ def gen_morning():
     lines.append("Настроение рынка: " + str(sent["mood"]))
     lines.append("Сентимент: " + "{:+.3f}".format(sent["score"]))
 
-    if sent["top_bull"] and sent["top_bull"][0].get("title"):
-        lines.append("")
-        lines.append("Позитив:")
-        lines.append("- " + str(sent["top_bull"][0]["title"])[:120])
+    # Случайная позитивная новость
+    if sent["top_bull"]:
+        item = random.choice(sent["top_bull"])
+        if item.get("title"):
+            lines.append("")
+            lines.append("Позитив:")
+            lines.append("- " + str(item["title"])[:120])
 
-    if sent["top_bear"] and sent["top_bear"][0].get("title"):
-        lines.append("")
-        lines.append("Негатив:")
-        lines.append("- " + str(sent["top_bear"][0]["title"])[:120])
+    # Случайная негативная новость
+    if sent["top_bear"]:
+        item = random.choice(sent["top_bear"])
+        if item.get("title"):
+            lines.append("")
+            lines.append("Негатив:")
+            lines.append("- " + str(item["title"])[:120])
 
     return "\n".join(lines), "morning"
 
@@ -231,7 +242,7 @@ def gen_philosophy():
     if not quotes:
         return gen_insight()
 
-    random.seed(int(datetime.utcnow().timestamp() * 1000) % 100000)
+    # Чистый random.choice — без seed!
     q = random.choice(quotes)
 
     text = "Заметка дня"
@@ -247,14 +258,21 @@ def gen_insight():
     sent = get_sentiment()
     prices = get_prices()
 
-    news_title = ""
-    if sent["top_bear"] and sent["top_bear"][0].get("title"):
-        news_title = sent["top_bear"][0]["title"]
-    elif sent["top_bull"] and sent["top_bull"][0].get("title"):
-        news_title = sent["top_bull"][0]["title"]
+    # Собираем ВСЕ новости (и позитивные, и негативные)
+    pool = []
+    for x in sent["top_bull"]:
+        if x.get("title"):
+            pool.append(x["title"])
+    for x in sent["top_bear"]:
+        if x.get("title"):
+            pool.append(x["title"])
 
-    if not news_title:
+    if not pool:
+        # Если новостей нет — делаем философию
         return gen_philosophy()
+
+    # Случайная новость из пула
+    news_title = random.choice(pool)
 
     text = "Инсайт дня\n\n"
     text += str(news_title)[:140] + "\n\n"
@@ -267,19 +285,18 @@ def gen_insight():
 
 
 # ============================================================
-# ВЫБОР ТИПА (ротация по времени, без истории)
+# ВЫБОР ТИПА (по времени — 3 разных окна)
 # ============================================================
 def generate_post():
-    now = datetime.utcnow()
-    hour = now.hour
-    minute = now.minute
+    # Три разных типа на разные часы — так никогда не совпадёт
+    hour = datetime.utcnow().hour
 
-    if 4 <= hour < 10:
+    if hour < 10:
         post_type = "morning"
-    elif 10 <= hour < 17:
-        post_type = "philosophy" if (minute % 2 == 0) else "insight"
+    elif hour < 16:
+        post_type = "philosophy"
     else:
-        post_type = "insight" if (minute % 2 == 0) else "philosophy"
+        post_type = "insight"
 
     if post_type == "morning":
         text, _ = gen_morning()
@@ -292,7 +309,7 @@ def generate_post():
 
 
 # ============================================================
-# ОТПРАВКА ЧЕРНОВИКА
+# ОТПРАВКА
 # ============================================================
 def send_draft(text, post_type):
     if not BOT_TOKEN or not CHAT_ID:
@@ -334,11 +351,8 @@ def send_draft(text, post_type):
         return False
 
 
-# ============================================================
-# MAIN
-# ============================================================
 def main():
-    print("ARGUS CONTENT v2")
+    print("ARGUS CONTENT v3")
     print("=" * 50)
 
     quotes = extract_quotes_from_books()
