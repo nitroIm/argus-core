@@ -3,7 +3,7 @@ name: ARGUS Content Post
 on:
   workflow_dispatch:
   repository_dispatch:
-    types: [post_publish, post_skip]
+    types: [post_publish, post_skip, post_generate]
   schedule:
     - cron: '0 6 * * *'
     - cron: '0 16 * * *'
