@@ -1,0 +1,59 @@
+name: ARGUS Benchmark
+
+on:
+  workflow_dispatch:
+  repository_dispatch:
+    types: [run_benchmark]
+  schedule:
+    - cron: '0 5 * * 0'   # воскресенье, 05:00 UTC
+
+permissions:
+  contents: write
+
+jobs:
+  bench:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Cache pip
+        uses/.: actions/cache@v4
+        with:
+          pathcache: ~/pip
+          key: pip-bench-v1
+
+      - name: Cache HF models
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface
+          key: hf-e5-small-v1
+          restore-keys: hf-
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install torch==2.2.0 --index-url https://download.pytorch.org/whl/cpu
+          pip install transformers==4.41.2 sentence-transformers==3.0.1 faiss-cpu==1.8.0 requests
+
+      - name: Run benchmark
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python scripts/benchmark.py
+
+      - name: Commit results
+        run: |
+          git config user.name "ARGUS"
+          git config user.email "argus@github.com"
+          git add -A
+          git diff --staged --quiet || git commit -m "ARGUS: benchmark $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          git pull --rebase origin main || true
+          git push || true
