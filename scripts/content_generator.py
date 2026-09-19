@@ -1,31 +1,34 @@
 # ============================================================
-# ARGUS — ГЕНЕРАТОР ПОСТОВ v3
-# Без seed, случайный выбор цитат и новостей
+# ARGUS — ГЕНЕРАТОР ПОСТОВ (v4)
+# v4: pathlib, фикс datetime, синхронизация с collect.py v3 (market_summary.json)
 # ============================================================
 
 import os
+import sys
 import re
 import json
 import random
 import requests
-from datetime import datetime
+from datetime import datetime, timezone
+from pathlib import Path
 
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-REPO_ROOT = os.path.dirname(SCRIPT_DIR)
-DATA_DIR = os.path.join(REPO_ROOT, "data")
+# --- Пути от корня репо ---
+SCRIPT_DIR = Path(__file__).resolve().parent
+REPO_ROOT = SCRIPT_DIR.parent
+DATA_DIR = REPO_ROOT / "data"
 
-NEWS_FILE = os.path.join(DATA_DIR, "news_sentiment.json")
-PRICE_FILE = os.path.join(DATA_DIR, "price_history.json")
-KNOWLEDGE_FILE = os.path.join(DATA_DIR, "knowledge.json")
-POST_FILE = os.path.join(DATA_DIR, "pending_post.json")
-QUOTES_CACHE = os.path.join(DATA_DIR, "quotes_pool.json")
+NEWS_FILE = DATA_DIR / "news_sentiment.json"
+MARKET_SUMMARY = DATA_DIR / "market_summary.json"
+KNOWLEDGE_FILE = DATA_DIR / "knowledge.json"
+POST_FILE = DATA_DIR / "pending_post.json"
+QUOTES_CACHE = DATA_DIR / "quotes_pool.json"
 
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("BOT_TOKEN")
 CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
 
 def load_json(path, default=None):
-    if not os.path.exists(path):
+    if not path.exists():
         return default if default is not None else {}
     try:
         with open(path, "r", encoding="utf-8") as f:
@@ -35,7 +38,7 @@ def load_json(path, default=None):
 
 
 def save_json(path, data):
-    os.makedirs(os.path.dirname(path), exist_ok=True)
+    path.parent.mkdir(parents=True, exist_ok=True)
     with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
@@ -98,7 +101,7 @@ def extract_quotes_from_books(max_quotes=500):
             quotes.append({
                 "text": s,
                 "book": book,
-                "source": book.replace(".pdf", "").strip(),
+                "source": book.replace(".pdf", "").replace(".epub", "").strip(),
             })
 
             if len(quotes) >= max_quotes:
@@ -108,7 +111,7 @@ def extract_quotes_from_books(max_quotes=500):
             break
 
     save_json(QUOTES_CACHE, {
-        "generated_at": datetime.utcnow().isoformat(),
+        "generated_at": datetime.now(timezone.utc).isoformat(),
         "total": len(quotes),
         "quotes": quotes,
     })
@@ -116,7 +119,7 @@ def extract_quotes_from_books(max_quotes=500):
 
 
 # ============================================================
-# БРИДЖ
+# БРИДЖ (Связка философии и рынка)
 # ============================================================
 BRIDGE_TEMPLATES = [
     "Что это значит для трейдинга? {idea}",
@@ -149,6 +152,7 @@ MARKET_IDEAS = {
 
 
 def build_bridge(score):
+    # score ожидается от -1.0 до 1.0 (или аналогичная шкала)
     if score > 0.15:
         bucket = "positive"
     elif score < -0.15:
@@ -162,134 +166,130 @@ def build_bridge(score):
 
 
 # ============================================================
-# ДАННЫЕ
+# ДАННЫЕ (Синхронизировано с collect.py v3)
 # ============================================================
-def get_prices():
-    data = load_json(PRICE_FILE, [])
-    result = {}
-    if isinstance(data, dict):
-        for k in data.keys():
-            kk = k.upper()
-            if kk.startswith("BTC") and "btc" not in result:
-                arr = data[k]
-                if isinstance(arr, list) and arr:
-                    last = arr[-1]
-                    if isinstance(last, dict):
-                        result["btc"] = last.get("close") or last.get("c")
-                    elif isinstance(last, (int, float)):
-                        result["btc"] = last
-            if kk.startswith("ETH") and "eth" not in result:
-                arr = data[k]
-                if isinstance(arr, list) and arr:
-                    last = arr[-1]
-                    if isinstance(last, dict):
-                        result["eth"] = last.get("close") or last.get("c")
-                    elif isinstance(last, (int, float)):
-                        result["eth"] = last
-    return result
-
-
-def get_sentiment():
-    data = load_json(NEWS_FILE, {})
-    return {
-        "mood": data.get("mood", "нейтральное"),
-        "score": data.get("avg_sentiment", 0),
-        "top_bull": data.get("top_bullish") or [],
-        "top_bear": data.get("top_bearish") or [],
-        "total": data.get("total_news", 0),
+def get_market_data():
+    """Читает актуальные цены и сентимент из market_summary.json (или fallback на news_sentiment.json)"""
+    prices = {}
+    sentiment = {
+        "mood": "нейтральное",
+        "score": 0.0,
+        "top_bull": [],
+        "top_bear": [],
+        "total": 0,
     }
+
+    # 1. Пробуем прочитать market_summary.json (создаётся collect.py v3)
+    summary = load_json(MARKET_SUMMARY, {})
+    if "assets" in summary:
+        for k, v in summary["assets"].items():
+            if "BTC" in k.upper(): prices["btc"] = v
+            if "ETH" in k.upper(): prices["eth"] = v
+            
+    if "sentiment" in summary:
+        fg = summary["sentiment"]
+        # Нормализуем Fear & Greed (0-100) в шкалу -1.0 ... 1.0
+        sentiment["score"] = (fg.get("value", 50) - 50) / 50.0
+        sentiment["mood"] = fg.get("classification", "нейтральное")
+
+    # 2. Дополняем или перезаписываем сентимент из news_sentiment.json, если он есть
+    news = load_json(NEWS_FILE, {})
+    if news.get("avg_sentiment") is not None:
+        sentiment["score"] = news.get("avg_sentiment", sentiment["score"])
+        sentiment["mood"] = news.get("mood", sentiment["mood"])
+        sentiment["top_bull"] = news.get("top_bullish", sentiment["top_bull"])
+        sentiment["top_bear"] = news.get("top_bearish", sentiment["top_bear"])
+        sentiment["total"] = news.get("total_news", sentiment["total"])
+        
+    return prices, sentiment
 
 
 # ============================================================
 # ГЕНЕРАТОРЫ
 # ============================================================
 def gen_morning():
-    prices = get_prices()
-    sent = get_sentiment()
+    prices, sent = get_market_data()
 
-    lines = ["Утренняя сводка ARGUS", ""]
+    lines = ["🌅 <b>Утренняя сводка ARGUS</b>", ""]
     if prices.get("btc"):
-        lines.append("BTC: $" + "{:,.0f}".format(prices["btc"]))
+        lines.append(f"💰 <b>BTC:</b> ${prices['btc']:,.0f}")
     if prices.get("eth"):
-        lines.append("ETH: $" + "{:,.0f}".format(prices["eth"]))
+        lines.append(f"💰 <b>ETH:</b> ${prices['eth']:,.0f}")
+    
     lines.append("")
-    lines.append("Настроение рынка: " + str(sent["mood"]))
-    lines.append("Сентимент: " + "{:+.3f}".format(sent["score"]))
+    lines.append(f"📊 Настроение рынка: <b>{sent['mood']}</b>")
+    lines.append(f"📈 Сентимент: <code>{sent['score']:+.3f}</code>")
 
-    # Случайная позитивная новость
     if sent["top_bull"]:
         item = random.choice(sent["top_bull"])
-        if item.get("title"):
-            lines.append("")
-            lines.append("Позитив:")
-            lines.append("- " + str(item["title"])[:120])
+        if isinstance(item, dict) and item.get("title"):
+            lines.append(f"\n✅ <b>Позитив:</b> {str(item['title'])[:120]}")
+    elif isinstance(sent["top_bull"], str):
+        lines.append(f"\n✅ <b>Позитив:</b> {sent['top_bull'][:120]}")
 
-    # Случайная негативная новость
     if sent["top_bear"]:
         item = random.choice(sent["top_bear"])
-        if item.get("title"):
-            lines.append("")
-            lines.append("Негатив:")
-            lines.append("- " + str(item["title"])[:120])
+        if isinstance(item, dict) and item.get("title"):
+            lines.append(f"\n⚠️ <b>Негатив:</b> {str(item['title'])[:120]}")
+    elif isinstance(sent["top_bear"], str):
+        lines.append(f"\n⚠️ <b>Негатив:</b> {sent['top_bear'][:120]}")
 
     return "\n".join(lines), "morning"
 
 
 def gen_philosophy():
     quotes = extract_quotes_from_books()
-    sent = get_sentiment()
+    _, sent = get_market_data()
 
     if not quotes:
         return gen_insight()
 
-    # Чистый random.choice — без seed!
     q = random.choice(quotes)
 
-    text = "Заметка дня"
-    text += "\n\n"
-    text += '"' + q["text"] + '"\n'
-    text += "— " + q["source"]
-    text += "\n\n"
+    text = "📜 <b>Заметка дня</b>\n\n"
+    text += f"<i>«{q['text']}»</i>\n"
+    text += f"— {q['source']}\n\n"
     text += build_bridge(sent["score"])
     return text, "philosophy"
 
 
 def gen_insight():
-    sent = get_sentiment()
-    prices = get_prices()
+    _, sent = get_market_data()
+    prices, _ = get_market_data()
 
-    # Собираем ВСЕ новости (и позитивные, и негативные)
     pool = []
     for x in sent["top_bull"]:
-        if x.get("title"):
+        if isinstance(x, dict) and x.get("title"):
             pool.append(x["title"])
+        elif isinstance(x, str):
+            pool.append(x)
+            
     for x in sent["top_bear"]:
-        if x.get("title"):
+        if isinstance(x, dict) and x.get("title"):
             pool.append(x["title"])
+        elif isinstance(x, str):
+            pool.append(x)
 
     if not pool:
-        # Если новостей нет — делаем философию
         return gen_philosophy()
 
-    # Случайная новость из пула
     news_title = random.choice(pool)
 
-    text = "Инсайт дня\n\n"
-    text += str(news_title)[:140] + "\n\n"
+    text = "💡 <b>Инсайт дня</b>\n\n"
+    text += f"{str(news_title)[:140]}\n\n"
 
     if prices.get("btc"):
-        text += "BTC сейчас: $" + "{:,.0f}".format(prices["btc"]) + "\n\n"
+        text += f"📌 BTC сейчас: <b>${prices['btc']:,.0f}</b>\n\n"
 
     text += build_bridge(sent["score"])
     return text, "insight"
 
 
 # ============================================================
-# ВЫБОР ТИПА (по времени — 3 разных окна)
+# ВЫБОР ТИПА (по времени UTC)
 # ============================================================
 def generate_post():
-    # Три разных типа на разные часы — так никогда не совпадёт
-    hour = datetime.utcnow().hour
+    hour = datetime.now(timezone.utc).hour
 
     if hour < 10:
         post_type = "morning"
@@ -319,28 +319,29 @@ def send_draft(text, post_type):
     save_json(POST_FILE, {
         "text": text,
         "type": post_type,
-        "created_at": datetime.utcnow().isoformat(),
+        "created_at": datetime.now(timezone.utc).isoformat(),
         "status": "pending",
     })
 
     kb = {
         "inline_keyboard": [[
-            {"text": "Опубликовать", "callback_data": "post_pub:go"},
-            {"text": "Перегенерировать", "callback_data": "post_pub:regen"},
-            {"text": "Удалить", "callback_data": "post_skip:go"},
+            {"text": "✅ Опубликовать", "callback_data": "post_pub:go"},
+            {"text": "🔄 Перегенерировать", "callback_data": "post_pub:regen"},
+            {"text": "❌ Удалить", "callback_data": "post_skip:go"},
         ]]
     }
 
-    header = "Черновик (" + post_type + ")\n\n"
+    header = f"📝 <b>Черновик</b> ({post_type})\n\n"
     full = header + text
 
     try:
         r = requests.post(
-            "https://api.telegram.org/bot" + BOT_TOKEN + "/sendMessage",
+            f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
             json={
                 "chat_id": CHAT_ID,
                 "text": full[:4000],
                 "reply_markup": kb,
+                "parse_mode": "HTML",
                 "disable_web_page_preview": True,
             },
             timeout=15,
@@ -352,20 +353,20 @@ def send_draft(text, post_type):
 
 
 def main():
-    print("ARGUS CONTENT v3")
+    print("ARGUS CONTENT GENERATOR v4")
     print("=" * 50)
 
     quotes = extract_quotes_from_books()
-    print("Цитат в пуле: " + str(len(quotes)))
+    print(f"Цитат в пуле: {len(quotes)}")
 
     text, post_type = generate_post()
-    print("Тип: " + post_type)
-    print("Длина: " + str(len(text)))
+    print(f"Тип: {post_type}")
+    print(f"Длина: {len(text)}")
 
     if send_draft(text, post_type):
-        print("Отправлено в Telegram")
+        print("✅ Отправлено в Telegram")
     else:
-        print("Ошибка отправки")
+        print("❌ Ошибка отправки")
 
 
 if __name__ == "__main__":
