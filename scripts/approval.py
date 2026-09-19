@@ -1,35 +1,41 @@
 # ============================================================
-# ARGUS — ОТПРАВКА КАРТОЧЕК НА ОДОБРЕНИЕ
-# v3: с памятью (sent_ids) + чёрный список источников
+# ARGUS — ОТПРАВКА КАРТОЧЕК НА ОДОБРЕНИЕ (v4)
+# v4: pathlib, фикс sys.exit, timezone, защита от дублей
 # ============================================================
 
-import os
+import sys
 import json
 import hashlib
 import requests
-from datetime import datetime
+from datetime import datetime, timezone
+from pathlib import Path
 
-CANDIDATES_FILE = "data/scout_candidates.json"
-SENT_IDS_FILE = "data/sent_ids.json"
-PENDING_FILE = "data/pending_cards.json"
+# --- Пути от корня репо ---
+SCRIPT_DIR = Path(__file__).resolve().parent
+REPO_ROOT = SCRIPT_DIR.parent
+DATA_DIR = REPO_ROOT / "data"
+
+CANDIDATES_FILE = DATA_DIR / "scout_candidates.json"
+SENT_IDS_FILE = DATA_DIR / "sent_ids.json"
+PENDING_FILE = DATA_DIR / "pending_cards.json"
 
 MAX_CARDS = 5  # не больше 5 карточек за один прогон
 
 # ---------- Чёрный список доменов ----------
-# Ссылки с этих доменов не отправляются вообще
 BLACKLIST = [
-    "archive.org",   # 401 Unauthorized (lending library)
-    "sci-hub",       # серые зоны
+    "archive.org",
+    "sci-hub",
 ]
 
 def in_blacklist(url: str) -> bool:
     u = url.lower()
+    # Простая, но эффективная проверка подстроки
     return any(domain in u for domain in BLACKLIST)
 
-# ---------- Загрузка кандидатов ----------
-if not os.path.exists(CANDIDATES_FILE):
-    print("❌ Нет файла кандидатов.")
-    exit(0)
+# ---------- Проверка файлов ----------
+if not CANDIDATES_FILE.exists():
+    print("❌ Нет файла кандидатов (scout_candidates.json).")
+    sys.exit(0)
 
 with open(CANDIDATES_FILE, "r", encoding="utf-8") as f:
     data = json.load(f)
@@ -38,7 +44,7 @@ candidates = data.get("candidates", [])
 
 # ---------- Память отправленного ----------
 sent_ids = set()
-if os.path.exists(SENT_IDS_FILE):
+if SENT_IDS_FILE.exists():
     try:
         with open(SENT_IDS_FILE, "r", encoding="utf-8") as f:
             sent_ids = set(json.load(f))
@@ -47,7 +53,7 @@ if os.path.exists(SENT_IDS_FILE):
 
 # ---------- Pending ----------
 pending = {}
-if os.path.exists(PENDING_FILE):
+if PENDING_FILE.exists():
     try:
         with open(PENDING_FILE, "r", encoding="utf-8") as f:
             pending = json.load(f)
@@ -59,8 +65,8 @@ BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("BOT_TOKEN")
 CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
 if not BOT_TOKEN or not CHAT_ID:
-    print("❌ Нет TELEGRAM_BOT_TOKEN или TELEGRAM_CHAT_ID")
-    exit(1)
+    print("❌ Нет TELEGRAM_BOT_TOKEN или TELEGRAM_CHAT_ID в окружении")
+    sys.exit(1)
 
 # ---------- Стабильный id по URL ----------
 def url_id(url: str) -> str:
@@ -77,16 +83,18 @@ def is_new(c: dict) -> bool:
 
 new_candidates = [c for c in candidates if is_new(c)]
 skipped_blacklist = [c for c in candidates if c.get("url") and in_blacklist(c["url"])]
-print(f"ℹ️ Всего кандидатов: {len(candidates)}, новых: {len(new_candidates)}, "
-      f"в чёрном списке: {len(skipped_blacklist)}")
+
+print(f"ℹ️ Всего кандидатов: {len(candidates)}")
+print(f"ℹ️ Новых для отправки: {len(new_candidates)}")
+print(f"ℹ️ В чёрном списке: {len(skipped_blacklist)}")
 
 if not new_candidates:
-    print("ℹ️ Новых кандидатов нет.")
-    exit(0)
+    print("✅ Новых кандидатов нет. Выход.")
+    sys.exit(0)
 
 # ---------- Отправка ----------
-sent = 0
-for i, c in enumerate(new_candidates[:MAX_CARDS]):
+sent_count = 0
+for c in new_candidates[:MAX_CARDS]:
     title = c.get("title", "?")
     url = c.get("url", "")
     source = c.get("source", "?")
@@ -95,12 +103,16 @@ for i, c in enumerate(new_candidates[:MAX_CARDS]):
 
     short_id = url_id(url)
 
-    message = f"📚 <b>Найдена книга</b>\n\n"
-    message += f"<b>{title}</b>\n\n"
-    message += f"📡 Источник: {source}\n"
-    message += f"🏷 Тема: {topic}\n"
+    message = (
+        f"📚 <b>Найдена книга</b>\n\n"
+        f"<b>{title}</b>\n\n"
+        f"📡 Источник: {source}\n"
+        f"🏷 Тема: {topic}\n"
+    )
     if size:
         message += f"💾 Размер: {size} МБ\n"
+    
+    message += f"\n<a href=\"{url}\">Открыть ссылку</a>"
 
     keyboard = {
         "inline_keyboard": [
@@ -114,7 +126,7 @@ for i, c in enumerate(new_candidates[:MAX_CARDS]):
     pending[short_id] = {
         "url": url,
         "title": title,
-        "sent_at": datetime.utcnow().isoformat(),
+        "sent_at": datetime.now(timezone.utc).isoformat(),
     }
 
     try:
@@ -132,17 +144,23 @@ for i, c in enumerate(new_candidates[:MAX_CARDS]):
         if r.status_code == 200:
             print(f"✅ Отправлено: {title[:60]}")
             sent_ids.add(short_id)
-            sent += 1
+            sent_count += 1
         else:
-            print(f"⚠️ Ошибка Telegram: {r.text[:200]}")
+            print(f"⚠️ Ошибка Telegram: {r.status_code} - {r.text[:200]}")
     except Exception as e:
-        print(f"⚠️ {e}")
+        print(f"⚠️ Исключение при отправке: {e}")
 
-# ---------- Сохраняем ----------
+# ---------- Сохраняем состояние ----------
+# ВАЖНО: Если этот скрипт работает в GitHub Actions, 
+# workflow ДОЛЖЕН сделать git add/commit/push для SENT_IDS_FILE и PENDING_FILE,
+# иначе при следующем запуске память обнулится и придут дубли!
+
+DATA_DIR.mkdir(parents=True, exist_ok=True)
+
 with open(SENT_IDS_FILE, "w", encoding="utf-8") as f:
     json.dump(list(sent_ids), f, ensure_ascii=False, indent=2)
 
 with open(PENDING_FILE, "w", encoding="utf-8") as f:
     json.dump(pending, f, ensure_ascii=False, indent=2)
 
-print(f"\n📤 Отправлено карточек: {sent} (из {len(new_candidates)} новых)")
+print(f"\n📤 Итого отправлено карточек: {sent_count}")
