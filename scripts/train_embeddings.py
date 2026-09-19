@@ -1,6 +1,6 @@
 # ============================================================
-# ARGUS — ОБУЧЕНИЕ ЭМБЕДДИНГОВ (v2)
-# v2: пары внутри книги, train/val split, валидация, мультиязычная модель
+# ARGUS — ОБУЧЕНИЕ ЭМБЕДДИНГОВ (v2.1)
+# v2.1: фикс параметра evaluator (scores вместо similarities)
 # ============================================================
 
 import json
@@ -107,7 +107,7 @@ val_pairs = build_pairs(val_chunks)
 print(f"Train пар: {len(train_pairs)}, Val пар: {len(val_pairs)}")
 
 # Если val пар мало — берём случайные из train (fallback)
-if len(val_pairs) < 5:
+if len(val_pairs) < 5 and train_pairs:
     print("⚠️ Мало val пар, добавляю случайные из train")
     extra = random.sample(train_pairs, min(20, len(train_pairs)))
     val_pairs.extend(extra)
@@ -135,12 +135,16 @@ for a, b in val_pairs:
             val_scores.append(0.0)
             break
 
+# ВАЖНО: параметр называется 'scores', а не 'similarities'
 evaluator = EmbeddingSimilarityEvaluator(
     sentences1=val_sentences1,
     sentences2=val_sentences2,
-    similarities=val_scores,
+    scores=val_scores,
     name="argus-val",
-)
+)===========
+model.save(str(OUTPUT_DIR))
+
+info =
 
 # ============================================================
 # 5. МОДЕЛЬ И ОБУЧЕНИЕ
@@ -175,14 +179,27 @@ model.save(str(OUTPUT_DIR))
 
 info = {
     "model": MODEL_NAME,
+    " {
+    "model": MODEL_NAME,
     "chunks": len(unique_chunks),
+    "train_pairs":chunks": len(unique_chunks),
     "train_pairs": len(train_pairs),
+    "val_pairs": len(val len(train_pairs),
     "val_pairs": len(val_pairs),
+    "epochs": EPOCHS,
+_pairs),
     "epochs": EPOCHS,
     "batch_size": BATCH_SIZE,
 }
-with open(OUTPUT_DIR / "training_info.json", "w", encoding="utf-8") as f:
+with    "batch_size": BATCH_SIZE,
+}
+with open(OUTPUT_DIR / "training_info.json", "w open(OUTPUT_DIR / "training_info.json", "w", encoding="utf-8") as f:
+   ", encoding="utf-8") as f:
     json.dump(info, f, indent=2)
 
+print json.dump(info, f, indent=2)
+
 print(f"✅ Модель сохранена: {OUTPUT_DIR}")
+(f"✅ Модель сохранена: {OUTPUT_DIR}")
 print(f"   training_info.json: создан")
+```print(f"   training_info.json: создан")
