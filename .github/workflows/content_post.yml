@@ -43,7 +43,8 @@ jobs:
           git push || true
 
   publish:
-    if: github.event_name == 'repository_dispatch'
+    publish:
+    if: github.event_name == 'repository_dispatch' && github.event.action != 'post_generate'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
