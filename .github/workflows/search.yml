@@ -6,11 +6,14 @@ on:
       query:
         description: 'Поисковый запрос'
         required: true
-        default: 'Что такое новая атлантида?'
+        default: 'Что такое имбаланс?'
+  repository_dispatch:
+    types: [run_search]
 
 jobs:
   search:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
 
     steps:
       - name: Checkout
@@ -20,6 +23,86 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+          cache: 'pip'
 
-      - name: Run search
-        run: python scripts/search.py "${{ github.event.inputs.query }}"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install sentence-transformers faiss-cpu numpy
+
+      - name: Extract query and chat_id
+        id: vars
+        run: |
+          if [ "${{ github.event_name }}" == "repository_dispatch" ]; then
+            echo "query=${{ github.event.client_payload.query }}" >> $GITHUB_OUTPUT
+            echo "chat_id=${{ github.event.client_payload.chat_id }}" >> $GITHUB_OUTPUT
+          else
+            echo "query=${{ github.event.inputs.query }}" >> $GITHUB_OUTPUT
+            echo "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run semantic search
+        id: search
+        run: |
+          echo "Searching for: ${{ steps.vars.outputs.query }}"
+          # Запускаем поиск и сохраняем JSON-вывод в переменную GITHUB_OUTPUT
+          OUTPUT=$(python scripts/search.py "${{ steps.vars.outputs.query }}" --top 3)
+          echo "result<<EOF" >> $GITHUB_OUTPUT
+          echo "$OUTPUT" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Send result to Telegram
+        env:
+          BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CHAT_ID: ${{ steps.vars.outputs.chat_id }}
+          SEARCH_RESULT: ${{ steps.search.outputs.result }}
+        run: |
+          python3 << 'PYTHON_SCRIPT'
+          import os
+          import json
+          import urllib.request
+
+          bot_token = os.environ['BOT_TOKEN']
+          chat_id = os.environ['CHAT_ID']
+          
+          try:
+              result = json.loads(os.environ['SEARCH_RESULT'])
+              
+              if 'error' in result:
+                  text = f"❌ <b>Ошибка поиска:</b>\n{result['error']}"
+              elif not result.get('results'):
+                  text = f"🔎 <b>Запрос:</b> {result.get('query')}\n\nНичего не найдено в базе знаний."
+              else:
+                  text = f"🔎 <b>Результаты для:</b> <i>{result.get('query')}</i>\n\n"
+                  for i, r in enumerate(result['results'], 1):
+                      score = r.get('score', 0)
+                      book = r.get('book', r.get('source', 'Unknown'))
+                      chunk_text = r.get('text', '')[:400]  # Обрезаем, чтобы не превысить лимит Telegram
+                      
+                      text += f"{i}. <b>Совпадение:</b> {score:.2f} | <b>Книга:</b> {book}\n"
+                      text += f"<code>{chunk_text}...</code>\n\n"
+              
+              url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+              data = json.dumps({
+                  'chat_id': chat_id,
+                  'text': text,
+                  'parse_mode': 'HTML',
+                  'disable_web_page_preview': True
+              }).encode('utf-8')
+              
+              req = urllib.request.Request(url, data=data, headers={'Content-Type': 'application/json'})
+              response = urllib.request.urlopen(req)
+              print("Message sent successfully")
+              
+          except Exception as e:
+              print(f"Failed to send message: {e}")
+              # Fallback: отправляем сырую ошибку, если парсинг сломался
+              url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+              data = json.dumps({
+                  'chat_id': chat_id,
+                  'text': f"❌ <b>Ошибка обработки ответа:</b>\n{str(e)}",
+                  'parse_mode': 'HTML'
+              }).encode('utf-8')
+              req = urllib.request.Request(url, data=data, headers={'Content-Type': 'application/json'})
+              urllib.request.urlopen(req)
+          PYTHON_SCRIPT
