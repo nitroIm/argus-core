@@ -2,8 +2,8 @@ name: ARGUS Actor
 
 on:
   workflow_dispatch:
-#  schedule:
- #   - cron: "0 5 * * *"   # каждый день в 5:00 UTC
+  # schedule:
+  #   - cron: "0 5 * * *"   # Раскомментируй, когда будешь готов к ежедневной автономной работе (5:00 UTC)
 
 permissions:
   contents: write
@@ -15,7 +15,7 @@ concurrency:
 jobs:
   act:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
 
     steps:
       - name: Checkout
@@ -45,22 +45,42 @@ jobs:
           pip install transformers==4.41.2
           pip install requests==2.32.3
           pip install numpy==1.26.4
+          pip install urllib3==2.2.2
 
       - name: Run actor
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          # КРИТИЧЕСКИ ВАЖНО: actor.py нужен PAT для запуска других workflow (например, explorer)
+          GITHUB_PAT: ${{ secrets.GITHUB_PAT }}
+          GITHUB_REPO: ${{ github.repository }}
         run: python scripts/actor.py
 
-      - name: Commit
+      - name: Commit and Push changes
         run: |
           git config user.name "ARGUS"
           git config user.email "argus@github.com"
+          
+          # Добавляем только измененные файлы в data/
           git add data/ || true
-          git diff --staged --quiet && echo "Нет изменений" && exit 0
+          
+          # Проверяем, есть ли что коммитить
+          if git diff --staged --quiet; then
+            echo "Нет изменений для коммита."
+            exit 0
+          fi
+          
+          echo "Есть изменения. Коммичу и пушу..."
           git commit -m "ARGUS: выполнил действия [skip ci]"
+          
+          # Надежный пуш с обработкой конфликтов (race conditions)
           for i in 1 2 3; do
             git pull --rebase --autostash origin main
-            git push && break
-            sleep 5
+            if git push origin main; then
+              echo "✅ Успешно отправлено в репозиторий"
+              break
+            else
+              echo "⚠️ Попытка $i не удалась, жду 5 секунд..."
+              sleep 5
+            fi
           done
