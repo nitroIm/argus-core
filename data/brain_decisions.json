@@ -1,10 +1,17 @@
 {
-  "generated_at": "2026-09-19T09:49:36.581173",
+  "generated_at": "2026-09-19T18:10:57.603504+00:00",
   "decisions": [
     {
-      "time": "2026-09-19T09:49:36.580918",
-      "action": "train",
-      "reason": "Книг стало больше: 0 → 21",
+      "time": "2026-09-19T18:10:56.243661+00:00",
+      "action": "observer",
+      "reason": "Раз в день — собрать статистику",
+      "success": true,
+      "error": null
+    },
+    {
+      "time": "2026-09-19T18:10:57.603229+00:00",
+      "action": "analyzer",
+      "reason": "Проанализировать наблюдения",
       "success": true,
       "error": null
     }
