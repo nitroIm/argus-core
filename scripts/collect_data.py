@@ -1,16 +1,39 @@
 # ============================================================
-# ARGUS — СБОР ДАННЫХ (v2)
+# ARGUS — СБОР ДАННЫХ (v3)
+# v3: фикс datetime для Python 3.12+, import sys, Telegram-уведомление
 # MEXC → Binance Vision → CoinGecko
 # ============================================================
 
 import os
+import sys
 import json
 import requests
-from datetime import datetime
+from datetime import datetime, timezone
 
 SYMBOL = "BTCUSDT"
 LIMIT = 500
 DATA_FILE = "data/price_history.json"
+
+# --- Telegram ---
+BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("BOT_TOKEN")
+CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+
+def notify(text: str):
+    if not BOT_TOKEN or not CHAT_ID:
+        return
+    try:
+        requests.post(
+            f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
+            json={
+                "chat_id": CHAT_ID,
+                "text": text,
+                "parse_mode": "HTML",
+                "disable_web_page_preview": True
+            },
+            timeout=10,
+        )
+    except Exception:
+        pass  # Тихо игнорируем ошибки нотификации
 
 
 def parse_candle(candle):
@@ -29,7 +52,6 @@ def fetch_mexc():
     try:
         print("🔄 MEXC...")
         url = "https://api.mexc.com/api/v3/klines"
-        # ВАЖНО: интервал '60m', а не 'Min60'
         params = {"symbol": SYMBOL, "interval": "60m", "limit": LIMIT}
         r = requests.get(url, params=params, timeout=20)
         r.raise_for_status()
@@ -51,7 +73,7 @@ def fetch_binance():
         data = r.json()
         return [parse_candle(c) for c in data]
     except Exception as e:
-        print(f"⚠️ Binance: {e}")
+        print(f"⚠️ Binance Vision: {e}")
         return None
 
 
@@ -64,7 +86,7 @@ def fetch_coingecko():
         r = requests.get(url, params=params, timeout=20)
         r.raise_for_status()
         data = r.json()
-        # Формат: [time, open, high, low, close]
+        # Формат CoinGecko OHLC: [time(ms), open, high, low, close]
         candles = []
         for item in data:
             candles.append({
@@ -73,7 +95,7 @@ def fetch_coingecko():
                 "high": float(item[2]),
                 "low": float(item[3]),
                 "close": float(item[4]),
-                "volume": 0.0,
+                "volume": 0.0,  # CoinGecko OHLC не отдает объем
             })
         return candles
     except Exception as e:
@@ -81,55 +103,87 @@ def fetch_coingecko():
         return None
 
 
-# ---------- Загрузка истории ----------
-if os.path.exists(DATA_FILE):
-    with open(DATA_FILE, "r", encoding="utf-8") as f:
-        history = json.load(f)
-else:
-    history = []
+# ============================================================
+# ОСНОВНОЕ
+# ============================================================
 
-print(f"📊 Старых точек: {len(history)}")
+def main():
+    os.makedirs("data", exist_ok=True)
+    
+    if os.path.exists(DATA_FILE):
+        try:
+            with open(DATA_FILE, "r", encoding="utf-8") as f:
+                history = json.load(f)
+        except Exception:
+            history = []
+    else:
+        history = []
 
-# ---------- Пробуем по очереди ----------
-new_data = None
-source = None
+    print(f"📊 Старых точек в истории: {len(history)}")
 
-for fetcher, name in [(fetch_mexc, "MEXC"), (fetch_binance, "Binance"), (fetch_coingecko, "CoinGecko")]:
-    new_data = fetcher()
-    if new_data:
-        source = name
-        break
+    # ---------- Пробуем по очереди ----------
+    new_data = None
+    source = None
 
-if not new_data:
-    print("❌ Все источники недоступны.")
-    exit(1)
+    for fetcher, name in [(fetch_mexc, "MEXC"), (fetch_binance, "Binance Vision"), (fetch_coingecko, "CoinGecko")]:
+        new_data = fetcher()
+        if new_data:
+            source = name
+            break
 
-print(f"✅ Данные получены с {source}: {len(new_data)} свечей")
+    if not new_data:
+        msg = "❌ ARGUS Collect: Все источники данных недоступны."
+        print(msg)
+        notify(msg)
+        sys.exit(1)
 
-# ---------- Добавляем новые точки ----------
-existing_times = {p["time"] for p in history}
-new_points = 0
+    print(f"✅ Данные успешно получены с {source}: {len(new_data)} свечей")
 
-for candle in new_data:
-    if candle["time"] in existing_times:
-        continue
-    candle["datetime"] = datetime.utcfromtimestamp(candle["time"] / 1000).isoformat()
-    candle["source"] = source
-    history.append(candle)
-    new_points += 1
+    # ---------- Добавляем новые точки ----------
+    existing_times = {p["time"] for p in history}
+    new_points = 0
 
-history.sort(key=lambda x: x["time"])
-if len(history) > 20000:
-    history = history[-20000:]
+    for candle in new_data:
+        if candle["time"] in existing_times:
+            continue
+        
+        # ИСПРАВЛЕНО: безопасная работа с часовыми поясами для Python 3.12+
+        candle["datetime"] = datetime.fromtimestamp(candle["time"] / 1000, tz=timezone.utc).isoformat()
+        candle["source"] = source
+        
+        history.append(candle)
+        new_points += 1
 
-os.makedirs("data", exist_ok=True)
-with open(DATA_FILE, "w", encoding="utf-8") as f:
-    json.dump(history, f, ensure_ascii=False, indent=2)
+    # Сортируем по времени и обрезаем хвост, чтобы файл не раздувался
+    history.sort(key=lambda x: x["time"])
+    if len(history) > 20000:
+        history = history[-20000:]
 
-print("=" * 50)
-print(f"✅ Новых точек: {new_points}")
-print(f"📊 Всего: {len(history)}")
-if history:
-    print(f"   Первая: {history[0]['datetime']}")
-    print(f"   Последняя: {history[-1]['datetime']}")
-print("=" * 50)
+    with open(DATA_FILE, "w", encoding="utf-8") as f:
+        json.dump(history, f, ensure_ascii=False, indent=2)
+
+    # ---------- Итог и уведомление ----------
+    last_price = history[-1]["close"] if history else 0
+    first_date = history[0]["datetime"][:10] if history else "N/A"
+    last_date = history[-1]["datetime"][:10] if history else "N/A"
+
+    summary_msg = (
+        f"📊 <b>ARGUS Market Data Updated</b>\n\n"
+        f"💰 <b>BTC/USDT:</b> ${last_price:,.2f}\n"
+        f"📡 <b>Источник:</b> {source}\n"
+        f"📈 <b>Новых свечей:</b> {new_points}\n"
+        f"📚 <b>Всего в базе:</b> {len(history)} (с {first_date} по {last_date})"
+    )
+    
+    print("=" * 50)
+    print(f"✅ Новых точек: {new_points}")
+    print(f"📊 Всего: {len(history)}")
+    print(f"   Первая: {first_date}")
+    print(f"   Последняя: {last_date}")
+    print("=" * 50)
+    
+    notify(summary_msg)
+
+
+if __name__ == "__main__":
+    main()
