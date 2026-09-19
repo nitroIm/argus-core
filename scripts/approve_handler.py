@@ -1,6 +1,6 @@
 # ============================================================
-# ARGUS — ОБРАБОТКА ОДОБРЕНИЙ
-# v4: с уведомлениями в Telegram (успех/провал)
+# ARGUS — ОБРАБОТКА ОДОБРЕНИЙ (v5)
+# v5: pathlib, sys.exit, надёжная проверка скачивания (через books/)
 # ============================================================
 
 import os
@@ -9,13 +9,17 @@ import json
 import subprocess
 import hashlib
 import requests
+from pathlib import Path
 
-# --- Пути ---
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-REPO_ROOT = os.path.dirname(SCRIPT_DIR)
-PENDING_FILE = os.path.join(REPO_ROOT, "data", "pending_cards.json")
-CANDIDATES_FILE = os.path.join(REPO_ROOT, "data", "scout_candidates.json")
-COLLECTOR = os.path.join(SCRIPT_DIR, "collector.py")
+# --- Пути от корня репо ---
+SCRIPT_DIR = Path(__file__).resolve().parent
+REPO_ROOT = SCRIPT_DIR.parent
+DATA_DIR = REPO_ROOT / "data"
+BOOKS_DIR = REPO_ROOT / "books"
+
+PENDING_FILE = DATA_DIR / "pending_cards.json"
+CANDIDATES_FILE = DATA_DIR / "scout_candidates.json"
+COLLECTOR = SCRIPT_DIR / "collector.py"
 
 # --- Telegram ---
 BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "").strip()
@@ -23,13 +27,17 @@ CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "").strip()
 
 def notify(text: str):
     if not BOT_TOKEN or not CHAT_ID:
-        print(f"[notify] пропуск: нет токена или chat_id")
+        print("[notify] пропуск: нет токена или chat_id")
         return
     try:
         requests.post(
             f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
-            json={"chat_id": CHAT_ID, "text": text, "parse_mode": "HTML",
-                  "disable_web_page_preview": True},
+            json={
+                "chat_id": CHAT_ID, 
+                "text": text, 
+                "parse_mode": "HTML",
+                "disable_web_page_preview": True
+            },
             timeout=15,
         )
     except Exception as e:
@@ -51,16 +59,16 @@ if not URL_INPUT and not ID_INPUT:
     msg = "❌ approve_handler: не указан ни URL, ни short_id"
     print(msg)
     notify(msg)
-    exit(1)
+    sys.exit(1)
 
 # --- Загружаем pending ---
 pending = {}
-if os.path.exists(PENDING_FILE):
+if PENDING_FILE.exists():
     try:
         with open(PENDING_FILE, "r", encoding="utf-8") as f:
             pending = json.load(f)
     except Exception as e:
-        print(f"⚠️ {PENDING_FILE}: {e}")
+        print(f"⚠️ Ошибка чтения {PENDING_FILE}: {e}")
         pending = {}
 
 url = None
@@ -85,88 +93,103 @@ else:
         del pending[ID_INPUT]
         removed_id = ID_INPUT
     else:
-        if os.path.exists(CANDIDATES_FILE):
+        # Fallback: ищем в исходном списке кандидатов по хэшу или индексу
+        if CANDIDATES_FILE.exists():
             try:
                 with open(CANDIDATES_FILE, "r", encoding="utf-8") as f:
                     data = json.load(f)
                 candidates = data.get("candidates", [])
                 for i, c in enumerate(candidates):
                     c_url = c.get("url", "")
-                    c_id = hashlib.md5(c_url.encode()).hexdigest()[:16]
+                    c_id = hashlib.md5(c_url.encode("utf-8")).hexdigest()[:16]
                     if c_id == ID_INPUT or str(i) == ID_INPUT:
                         url = c_url
                         title = c.get("title", title)
                         break
             except Exception as e:
-                print(f"⚠️ scout_candidates.json: {e}")
+                print(f"⚠️ Ошибка чтения {CANDIDATES_FILE}: {e}")
 
 if not url:
-    msg = f"❌ <b>Не найден кандидат</b>\n\n{ID_INPUT or URL_INPUT}"
+    msg = f"❌ <b>Не найден кандидат</b>\n\n<code>{ID_INPUT or URL_INPUT}</code>"
     print(msg)
     notify(msg)
-    exit(1)
+    sys.exit(1)
 
 print(f"📥 Скачиваю: {title}")
 print(f"🔗 URL: {url}")
 
 # --- Скачивание ---
-if not os.path.exists(COLLECTOR):
-    msg = f"❌ Не найден collector: {COLLECTOR}"
+if not COLLECTOR.exists():
+    msg = f"❌ Не найден скрипт collector: {COLLECTOR}"
     print(msg)
     notify(msg)
-    exit(1)
+    sys.exit(1)
+
+# Запоминаем файлы в books/ ДО скачивания, чтобы проверить появление нового
+books_before = set(os.listdir(BOOKS_DIR)) if BOOKS_DIR.exists() else set()
 
 try:
     result = subprocess.run(
-        [sys.executable, COLLECTOR, url],
+        [sys.executable, str(COLLECTOR), url],
         capture_output=True,
         text=True,
-        timeout=600,
+        timeout=600,  # 10 минут на скачивание
     )
 except subprocess.TimeoutExpired:
-    msg = f"⏱ <b>Таймаут скачивания</b>\n\n{title}"
+    msg = f"⏱ <b>Таймаут скачивания (10 мин)</b>\n\n{title[:100]}"
     print(msg)
     notify(msg)
-    exit(1)
+    sys.exit(1)
 
-print(result.stdout)
-if result.stderr:
-    print(result.stderr)
-
-# --- Проверяем успех: искали "Скачано: 1" и НЕ "Ошибка" в выводе ---
 stdout = result.stdout or ""
-success = (
-    result.returncode == 0
-    and "Скачано: 1" in stdout
-    and "Ошибка" not in stdout
-    and "Уже есть" not in stdout   # уже есть — считаем не новым
-)
+stderr = result.stderr or ""
+
+print(stdout)
+if stderr:
+    print("STDERR:", stderr)
+
+# --- Проверяем успех ---
+# 1. Код возврата 0
+# 2. В выводе есть "скачано" или "уже есть" (регистронезависимо)
+# 3. ИЛИ в папке books/ появился новый файл (самая надёжная проверка)
+books_after = set(os.listdir(BOOKS_DIR)) if BOOKS_DIR.exists() else set()
+new_files = books_after - books_before
+
+is_downloaded = "скачано" in stdout.lower()
+is_already_exists = "уже есть" in stdout.lower()
+has_new_file = len(new_files) > 0
+
+success = (result.returncode == 0) and (is_downloaded or has_new_file)
+already_exists = (result.returncode == 0) and is_already_exists
 
 # --- Обновляем pending ---
 try:
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
     with open(PENDING_FILE, "w", encoding="utf-8") as f:
         json.dump(pending, f, ensure_ascii=False, indent=2)
 except Exception as e:
-    print(f"⚠️ {PENDING_FILE}: {e}")
+    print(f"⚠️ Ошибка записи {PENDING_FILE}: {e}")
 
 # --- Уведомление ---
 short_title = title[:150]
+
 if success:
     notify(f"✅ <b>Скачано</b>\n\n{short_title}\n\nДобавлено в books/")
-elif "Уже есть" in stdout:
+elif already_exists:
     notify(f"⏭ <b>Уже в базе</b>\n\n{short_title}")
-elif "Ошибка" in stdout or result.returncode != 0:
-    # найдём строку ошибки
+elif "ошибка" in stdout.lower() or "error" in stderr.lower() or result.returncode != 0:
+    # Находим первую строку с ошибкой
     err_line = ""
-    for line in stdout.splitlines():
-        if "Ошибка" in line or "error" in line.lower():
+    for line in (stdout + "\n" + stderr).splitlines():
+        if "ошибка" in line.lower() or "error" in line.lower() or "failed" in line.lower():
             err_line = line.strip()
             break
-    notify(f"❌ <b>Не скачалось</b>\n\n{short_title}\n\n{err_line[:200]}")
+    
+    notify(f"❌ <b>Не скачалось</b>\n\n{short_title}\n\n<code>{err_line[:200]}</code>")
 else:
-    notify(f"⚠️ <b>Неясный результат</b>\n\n{short_title}")
+    notify(f"⚠️ <b>Неясный результат</b>\n\n{short_title}\n\nПроверь логи Actions.")
 
 if result.returncode != 0:
-    exit(1)
+    sys.exit(1)
 
 print(f"✅ Готово: {title}")
