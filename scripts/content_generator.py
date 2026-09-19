@@ -1,6 +1,7 @@
 # ============================================================
 # ARGUS — ГЕНЕРАТОР ПОСТОВ v2
-# Цитаты берутся из собственных книг (knowledge.json)
+# Цитаты из книг (knowledge.json) + бридж под настроение рынка
+# Публикация ТОЛЬКО по кнопке
 # ============================================================
 
 import os
@@ -18,7 +19,6 @@ NEWS_FILE = os.path.join(DATA_DIR, "news_sentiment.json")
 PRICE_FILE = os.path.join(DATA_DIR, "price_history.json")
 KNOWLEDGE_FILE = os.path.join(DATA_DIR, "knowledge.json")
 POST_FILE = os.path.join(DATA_DIR, "pending_post.json")
-HISTORY_FILE = os.path.join(DATA_DIR, "post_history.json")
 QUOTES_CACHE = os.path.join(DATA_DIR, "quotes_pool.json")
 
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("BOT_TOKEN")
@@ -42,21 +42,18 @@ def save_json(path, data):
 
 
 # ============================================================
-# ИЗВЛЕЧЕНИЕ ЦИТАТ ИЗ КНИГ
+# ЦИТАТЫ ИЗ КНИГ
 # ============================================================
 PHILOSOPHY_HINTS = [
     "знани", "истин", "мудр", "человек", "мысл", "опыт", "наук",
     "природ", "разум", "сила", "власт", "свобод", "доброд",
-    "смысл", "правд", "развити", "прогресс", "будущ",
+    "смысл", "правд", "развити", "прогресс", "будущ", "жизн",
+    "душ", "сердц", "страст", "вол", "характер", "судьб",
     "knowledge", "truth", "wisdom", "power", "mind", "reason",
 ]
 
 
 def extract_quotes_from_books(max_quotes=200):
-    """
-    Проходит по knowledge.json, ищет короткие «афористичные» предложения.
-    Кеширует результат в quotes_pool.json.
-    """
     cached = load_json(QUOTES_CACHE, {})
     if cached.get("quotes") and len(cached.get("quotes", [])) > 20:
         return cached["quotes"]
@@ -75,7 +72,6 @@ def extract_quotes_from_books(max_quotes=200):
         if not text:
             continue
 
-        # Разбиваем на предложения
         sentences = re.split(r"(?<=[.!?])\s+", text)
 
         for s in sentences:
@@ -86,13 +82,10 @@ def extract_quotes_from_books(max_quotes=200):
                 continue
 
             low = s.lower()
-            # Должно содержать философское слово
             if not any(h in low for h in PHILOSOPHY_HINTS):
                 continue
-            # Не должно быть мусора
-            if any(c in s for c in ["http", "@", "…", "(", ")"]):
+            if any(c in s for c in ["http", "@", "…", "(", ")", "[", "]"]):
                 continue
-            # Должно начинаться с заглавной
             if not s[0].isupper():
                 continue
 
@@ -100,7 +93,7 @@ def extract_quotes_from_books(max_quotes=200):
             quotes.append({
                 "text": s,
                 "book": book,
-                "source": book.replace(".pdf", ""),
+                "source": book.replace(".pdf", "").strip(),
             })
 
             if len(quotes) >= max_quotes:
@@ -109,13 +102,16 @@ def extract_quotes_from_books(max_quotes=200):
         if len(quotes) >= max_quotes:
             break
 
-    save_json(QUOTES_CACHE, {"generated_at": datetime.utcnow().isoformat(),
-                             "total": len(quotes), "quotes": quotes})
+    save_json(QUOTES_CACHE, {
+        "generated_at": datetime.utcnow().isoformat(),
+        "total": len(quotes),
+        "quotes": quotes,
+    })
     return quotes
 
 
 # ============================================================
-# ГЕНЕРАЦИЯ БРИДЖА (связь цитаты с рынком)
+# БРИДЖ (связь цитаты с рынком)
 # ============================================================
 BRIDGE_TEMPLATES = [
     "Что это значит для трейдинга? {idea}",
@@ -129,28 +125,28 @@ MARKET_IDEAS = {
     "positive": [
         "рынок растёт, но эйфория — плохой советчик. Правило важнее эмоции.",
         "все видят прибыль, но не все видят риск. Именно поэтому 90% теряют.",
-        "рост без плана — это лотерея. План без роста — тоже лотерея.",
-        "когда все покупают, дисциплина важнее интуиции.",
+        "рост без плана — лотерея. План без роста — тоже лотерея.",
+        "когда все покупают — дисциплина важнее интуиции.",
     ],
     "negative": [
         "страх — плохой советчик. Лучший советчик — твой дневник сделок.",
-        "в падении видно, кто действительно управляет риском, а кто гадает.",
-        "рынок падает не чтобы тебя наказать, а чтобы проверить твои правила.",
+        "в падении видно, кто управляет риском, а кто гадает.",
+        "рынок падает не чтобы наказать, а чтобы проверить твои правила.",
         "просадка — не конец, а тест на дисциплину.",
     ],
     "neutral": [
         "когда рынок спокоен — самое время учиться. В шторме учиться поздно.",
-        "нейтральный рынок — это окно для анализа, а не для агрессии.",
-        "спокойствие на рынке — лучший момент для бэктеста и размышлений.",
-        "равновесие — это пауза перед движением. Готовься.",
+        "нейтральный рынок — окно для анализа, а не для агрессии.",
+        "спокойствие — лучший момент для бэктеста и размышлений.",
+        "равновесие — пауза перед движением. Готовься.",
     ],
 }
 
 
-def build_bridge(sentiment_score):
-    if sentiment_score > 0.15:
+def build_bridge(score):
+    if score > 0.15:
         bucket = "positive"
-    elif sentiment_score < -0.15:
+    elif score < -0.15:
         bucket = "negative"
     else:
         bucket = "neutral"
@@ -206,8 +202,7 @@ def gen_morning():
     prices = get_prices()
     sent = get_sentiment()
 
-    lines = ["Утренняя сводка ARGUS"]
-    lines.append("")
+    lines = ["Утренняя сводка ARGUS", ""]
     if prices.get("btc"):
         lines.append("BTC: $" + "{:,.0f}".format(prices["btc"]))
     if prices.get("eth"):
@@ -218,12 +213,12 @@ def gen_morning():
 
     if sent["top_bull"] and sent["top_bull"][0].get("title"):
         lines.append("")
-        lines.append("Главное позитивное:")
+        lines.append("Позитив:")
         lines.append("- " + str(sent["top_bull"][0]["title"])[:120])
 
     if sent["top_bear"] and sent["top_bear"][0].get("title"):
         lines.append("")
-        lines.append("Главное негативное:")
+        lines.append("Негатив:")
         lines.append("- " + str(sent["top_bear"][0]["title"])[:120])
 
     return "\n".join(lines), "morning"
@@ -234,9 +229,9 @@ def gen_philosophy():
     sent = get_sentiment()
 
     if not quotes:
-        # Резерв — если цитат нет
         return gen_insight()
 
+    random.seed(int(datetime.utcnow().timestamp() * 1000) % 100000)
     q = random.choice(quotes)
 
     text = "Заметка дня"
@@ -272,25 +267,19 @@ def gen_insight():
 
 
 # ============================================================
-# ВЫБОР ТИПА С РОТАЦИЕЙ
+# ВЫБОР ТИПА (ротация по времени, без истории)
 # ============================================================
 def generate_post():
-    history = load_json(HISTORY_FILE, {"types": []})
-    last_types = history.get("types", [])[-3:]
+    now = datetime.utcnow()
+    hour = now.hour
+    minute = now.minute
 
-    now_hour = datetime.utcnow().hour
-    if 4 <= now_hour < 10:
-        candidates = ["morning", "philosophy", "insight"]
-    elif 10 <= now_hour < 17:
-        candidates = ["philosophy", "insight", "morning"]
+    if 4 <= hour < 10:
+        post_type = "morning"
+    elif 10 <= hour < 17:
+        post_type = "philosophy" if (minute % 2 == 0) else "insight"
     else:
-        candidates = ["insight", "philosophy", "morning"]
-
-    fresh = [c for c in candidates if c not in last_types]
-    if not fresh:
-        fresh = candidates
-
-    post_type = fresh[0]
+        post_type = "insight" if (minute % 2 == 0) else "philosophy"
 
     if post_type == "morning":
         text, _ = gen_morning()
@@ -299,16 +288,11 @@ def generate_post():
     else:
         text, _ = gen_insight()
 
-    history["types"].append(post_type)
-    if len(history["types"]) > 50:
-        history["types"] = history["types"][-50:]
-    save_json(HISTORY_FILE, history)
-
     return text, post_type
 
 
 # ============================================================
-# ОТПРАВКА
+# ОТПРАВКА ЧЕРНОВИКА
 # ============================================================
 def send_draft(text, post_type):
     if not BOT_TOKEN or not CHAT_ID:
@@ -350,11 +334,13 @@ def send_draft(text, post_type):
         return False
 
 
+# ============================================================
+# MAIN
+# ============================================================
 def main():
     print("ARGUS CONTENT v2")
     print("=" * 50)
 
-    # Прогреваем пул цитат из книг
     quotes = extract_quotes_from_books()
     print("Цитат в пуле: " + str(len(quotes)))
 
