@@ -20,42 +20,66 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: argus-download
+  cancel-in-progress: false
+
 jobs:
   download:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30  # Увеличено до 30 мин для надежной загрузки больших PDF
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-python@v5
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: Install deps
+      - name: Install dependencies
         run: pip install requests==2.32.3
 
       - name: Run approve handler
         env:
+          # Приоритет: client_payload (от бота), затем inputs (ручной запуск)
           APPROVE_URL: ${{ github.event.client_payload.url || github.event.inputs.url }}
           APPROVE_ID: ${{ github.event.client_payload.candidate_id || github.event.inputs.candidate_id }}
           APPROVE_TITLE: ${{ github.event.client_payload.title || github.event.inputs.title }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: |
-          cd scripts
-          python approve_handler.py
+        run: python scripts/approve_handler.py
 
-      - name: Commit
+      - name: Commit and Push changes
         run: |
           git config user.name "ARGUS"
           git config user.email "argus@github.com"
-          git add -A
-          git diff --staged --quiet || git commit -m "ARGUS: approved download $(date -u +%Y-%m-%dT%H:%M:%SZ)"
-          git pull --rebase origin main || true
-          git push || true
+          
+          # Добавляем только папки с книгами и файлы состояния, избегая мусора
+          git add books/ data/pending_cards.json data/scout_candidates.json || true
+          
+          if git diff --staged --quiet; then
+            echo "Нет изменений для коммита."
+            exit 0
+          fi
+          
+          echo "Есть изменения. Коммичу и пушу..."
+          git commit -m "ARGUS: скачана книга [skip ci]"
+          
+          # Надежный пуш с обработкой конфликтов (race conditions)
+          for i in 1 2 3; do
+            git pull --rebase --autostash origin main
+            if git push origin main; then
+              echo "✅ Успешно отправлено в репозиторий"
+              break
+            else
+              echo "⚠️ Попытка $i не удалась, жду 5 секунд..."
+              sleep 5
+            fi
+          done
 
       - name: Notify on failure
         if: failure()
@@ -63,7 +87,7 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
+          # Используем JSON для надежной отправки спецсимволов и эмодзи
           curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
-            -d "chat_id=${TELEGRAM_CHAT_ID}" \
-            -d "text=⚠️ ARGUS: approved_download упал. Проверь Actions." \
-            -d "parse_mode=HTML"
+            -H "Content-Type: application/json" \
+            -d "{\"chat_id\": \"${TELEGRAM_CHAT_ID}\", \"text\": \"⚠️ <b>ARGUS:</b> approved_download упал. Проверь логи Actions.\", \"parse_mode\": \"HTML\"}"
