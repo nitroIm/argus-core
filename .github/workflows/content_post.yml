@@ -1,0 +1,81 @@
+name: ARGUS Content Post
+
+on:
+  workflow_dispatch:
+  repository_dispatch:
+    types: [post_publish, post_skip]
+  schedule:
+    - cron: '0 6 * * *'
+    - cron: '0 16 * * *'
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - run: pip install requests
+
+      - name: Generate draft
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python scripts/content_generator.py
+
+      - name: Commit draft
+        run: |
+          git config user.name "ARGUS"
+          git config user.email "argus@github.com"
+          git add -A
+          git diff --staged --quiet || git commit -m "ARGUS: draft post $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          git pull --rebase origin main || true
+          git push || true
+
+  publish:
+    if: github.event_name == 'repository_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - run: pip install requests
+
+      - name: Publish or skip
+        env:
+          VK_TOKEN: ${{ secrets.VK_TOKEN }}
+          VK_GROUP_ID: ${{ secrets.VK_GROUP_ID }}
+          TG_CHANNEL_ID: ${{ secrets.TG_CHANNEL_ID }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          if [ "${{ github.event.action }}" = "post_skip" ]; then
+            python scripts/publish_post.py skip
+          else
+            python scripts/publish_post.py go
+          fi
+
+      - name: Commit status
+        run: |
+          git config user.name "ARGUS"
+          git config user.email "argus@github.com"
+          git add -A
+          git diff --staged --quiet || git commit -m "ARGUS: post handled $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          git pull --rebase origin main || true
+          git push || true
