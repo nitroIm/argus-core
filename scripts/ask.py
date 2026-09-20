@@ -1,18 +1,21 @@
 # ============================================================
-# ARGUS — ASK v7 [PRODUCTION]
+# ARGUS — ASK v8 [PRODUCTION]
 # ------------------------------------------------------------
-# v7: продакшн-версия.
-#   • Дедупликация результатов (одинаковые тексты → 1)
+# v8: продакшн-версия.
+#   • Улучшенная дедупликация: нормализация текста перед сравнением
+#     (схлопывание пробелов, чистка кавычек и запятых, сравнение
+#     по первым 300 символам) — убирает "почти-дубли"
 #   • Нормализация rerank_score через сигмоиду (0..100%)
 #   • Красивый вывод: book title без .pdf, компактные метрики
-#   • Совместим с translate.py v3 и reranker.py v2
+#   • Совместим с translate.py v3, reranker.py v2, model_info.json
 #   • Совместим с chunks_for_index.json (новый + legacy формат)
-#   • Совместим с model_info.json (fine-tuned / base)
 # ------------------------------------------------------------
+# v7: первый дедуп, сигмоида для rerank, чистка имени книги
 # v6: chunks_for_index.json, fix reranker API, model_info.json support
 # ============================================================
 
 import os
+import re
 import sys
 import json
 import time
@@ -58,6 +61,35 @@ start_time = time.time()
 def log(msg, level="INFO"):
     ts = time.strftime("%H:%M:%S", time.gmtime())
     print(f"[{ts}] [{level}] {msg}", flush=True)
+
+
+# ============================================================
+# НОРМАЛИЗАЦИЯ ТЕКСТА (для дедупликации)
+# ============================================================
+def normalize_for_dedup(text: str) -> str:
+    """
+    Приводит текст к канонической форме для сравнения:
+    - все пробельные символы → один пробел
+    - убирает множественные запятые и точки
+    - убирает начальные и конечные кавычки/мусор
+    - приводит к нижнему регистру
+    """
+    if not text:
+        return ""
+    # Все виды пробелов → обычный пробел
+    text = re.sub(r"\s+", " ", text)
+    # ,, → ,  и  .... → .
+    text = re.sub(r",{2,}", ",", text)
+    text = re.sub(r"\.{2,}", ".", text)
+    # Убираем ведущие/замыкающие кавычки, тире, звёздочки
+    text = text.strip(' "\'«»""„“”*—-,.;')
+    return text.strip().lower()
+
+
+def dedup_key(text: str) -> str:
+    """Хэш по первым 300 символам нормализованного текста."""
+    norm = normalize_for_dedup(text)
+    return hashlib.md5(norm[:300].encode("utf-8")).hexdigest()
 
 
 # ============================================================
@@ -217,7 +249,7 @@ else:
                 item["_faiss_score"] = c["score"]
                 rerank_input.append(item)
 
-            reranked = rerank_fn(query, rerank_input, top_k=FINAL_TOP_K * 2)
+            reranked = rerank_fn(query, rerank_input, top_k=FINAL_TOP_K * 3)
 
             top = []
             for r in reranked:
@@ -232,22 +264,22 @@ else:
             log(f"Reranker: {len(candidates)} → {len(top)}")
         except Exception as e:
             log(f"Reranker упал: {e}, fallback на FAISS", "WARN")
-            top = candidates[:FINAL_TOP_K]
+            top = candidates[:FINAL_TOP_K * 2]
     else:
-        top = candidates[:FINAL_TOP_K]
+        top = candidates[:FINAL_TOP_K * 2]
 
-    # --- ДЕДУПЛИКАЦИЯ ---
-    seen_text_hashes = set()
+    # --- ДЕДУПЛИКАЦИЯ (нормализованная) ---
+    seen_keys = set()
     deduped_top = []
     duplicates_removed = 0
 
     for r in top:
         text = r["meta"].get("text", "").strip()
-        text_hash = hashlib.md5(text.encode("utf-8")).hexdigest()
-        if text_hash in seen_text_hashes:
+        key = dedup_key(text)
+        if key in seen_keys:
             duplicates_removed += 1
             continue
-        seen_text_hashes.add(text_hash)
+        seen_keys.add(key)
         deduped_top.append(r)
         if len(deduped_top) >= FINAL_TOP_K:
             break
@@ -274,10 +306,8 @@ else:
         if len(text) > 500:
             text = text[:497] + "..."
 
-        # Чистим имя книги от расширений
         book_clean = book.replace(".pdf", "").replace(".txt", "").replace(".md", "").strip()
 
-        # Нормализуем rerank score через сигмоиду
         rerank_norm = None
         raw_rerank = r.get("rerank_score")
         if raw_rerank is not None:
@@ -327,7 +357,8 @@ else:
             "duplicates_removed": duplicates_removed,
         },
     )
-    log(f"Найдено: {len(top)}, переведено: {translated_count}, время: {elapsed_ms} мс")
+    log(f"Найдено: {len(top)}, переведено: {translated_count}, "
+        f"дублей убрано: {duplicates_removed}, время: {elapsed_ms} мс")
 
 
 # ============================================================
