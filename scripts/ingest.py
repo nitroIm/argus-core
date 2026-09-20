@@ -1,6 +1,6 @@
 # ============================================================
-# ARGUS — ЧИТАТЕЛЬ КНИГ (v6)
-# v6: + TXT/MD, дедуп чанков, глобальный chunk_id, защита от битого JSON
+# ARGUS — INGEST (v7)
+# v7: incremental merge, file_hash, stable chunk_id, safe cleanup
 # ============================================================
 
 import os
@@ -10,7 +10,7 @@ import hashlib
 from datetime import datetime, timezone
 import fitz
 
-# --- Пути от корня репо ---
+# --- Пути ---
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.dirname(SCRIPT_DIR)
 
@@ -18,38 +18,29 @@ BOOKS_DIR = os.path.join(REPO_ROOT, "books")
 DATA_DIR = os.path.join(REPO_ROOT, "data")
 KNOWLEDGE_FILE = os.path.join(DATA_DIR, "knowledge.json")
 SUMMARY_FILE = os.path.join(DATA_DIR, "summary.json")
+LAST_INGEST_FILE = os.path.join(DATA_DIR, "last_ingest.json")
 
 os.makedirs(DATA_DIR, exist_ok=True)
 
-# --- Загрузка существующих знаний (с защитой от битого файла) ---
-knowledge = {"books": [], "chunks": []}
-if os.path.exists(KNOWLEDGE_FILE):
-    try:
-        with open(KNOWLEDGE_FILE, "r", encoding="utf-8") as f:
-            data = json.load(f)
-        if isinstance(data, dict) and "chunks" in data:
-            knowledge = data
-        else:
-            print("️ knowledge.json битый — начинаю с нуля")
-    except Exception as e:
-        print(f"⚠️ Не удалось прочитать knowledge.json: {e} — начинаю с нуля")
-
-processed = {b["file"] for b in knowledge.get("books", []) if "file" in b}
-
-# --- Дедупликация уже имеющихся чанков по хэшу ---
-existing_hashes = set()
-for c in knowledge.get("chunks", []):
-    h = hashlib.md5(c.get("text", "").encode("utf-8")).hexdigest()
-    existing_hashes.add(h)
-
 
 # ============================================================
-# ОЧИСТКА
+# УТИЛИТЫ
 # ============================================================
+def md5_file(path, chunk_size=1 << 20):
+    """MD5 содержимого файла. Для больших PDF быстрее, чем читать целиком."""
+    h = hashlib.md5()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(chunk_size), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def md5_text(text):
+    return hashlib.md5(text.encode("utf-8")).hexdigest()
+
+
 def clean_text(text):
-    # Убираем разрывы слов (OCR-артефакты)
-    text = re.sub(r"\b(\w)\s(?=\w\b)", r"\1", text)
-    # Схлопываем повторы символов (-----, =====)
+    # Убираем OCR-артефакты типа "-----" и "====="
     text = re.sub(r"(\S)\1{4,}", r"\1", text)
     # Нормализуем пробелы и переносы
     text = re.sub(r"[ \t]+", " ", text)
@@ -57,23 +48,17 @@ def clean_text(text):
     return text.strip()
 
 
-# ============================================================
-# РАЗБИВКА
-# ============================================================
 def split_into_chunks(text, target=900, min_size=600):
     text = re.sub(r"\n+", " ", text)
     text = re.sub(r"\s+", " ", text).strip()
-
     sentences = re.split(r"(?<=[.!?])\s+", text)
 
     chunks = []
     current = ""
-
     for sentence in sentences:
         sentence = sentence.strip()
         if not sentence:
             continue
-
         if len(current) + len(sentence) + 1 <= target:
             current = (current + " " + sentence) if current else sentence
         else:
@@ -91,7 +76,6 @@ def split_into_chunks(text, target=900, min_size=600):
         chunks[-1] = chunks[-1] + " " + current
     elif current:
         chunks.append(current)
-
     return chunks
 
 
@@ -108,9 +92,7 @@ def is_good_chunk(chunk):
 def parse_pdf(filepath):
     doc = fitz.open(filepath)
     pages = len(doc)
-    text = ""
-    for page in doc:
-        text += page.get_text() + "\n"
+    text = "".join(page.get_text() + "\n" for page in doc)
     doc.close()
     return text, pages
 
@@ -123,7 +105,6 @@ def parse_txt(filepath):
 def parse_md(filepath):
     with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
         text = f.read()
-    # Убираем markdown-разметку: заголовки, ссылки, жирный/курсив
     text = re.sub(r"#{1,6}\s+", "", text)
     text = re.sub(r"\[([^\]]+)\]\([^\)]+\)", r"\1", text)
     text = re.sub(r"[*_]{1,3}([^*_]+)[*_]{1,3}", r"\1", text)
@@ -140,8 +121,37 @@ PARSERS = {
 
 
 # ============================================================
+# ЗАГРУЗКА СУЩЕСТВУЮЩИХ ЗНАНИЙ (merge, не перезапись)
+# ============================================================
+knowledge = {"books": [], "chunks": []}
+if os.path.exists(KNOWLEDGE_FILE):
+    try:
+        with open(KNOWLEDGE_FILE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        if isinstance(data, dict) and "chunks" in data:
+            knowledge = data
+            print(f"📚 Загружено: {len(knowledge['books'])} книг, "
+                  f"{len(knowledge['chunks'])} чанков")
+        else:
+            print("⚠️ knowledge.json битый — начинаю с нуля")
+    except Exception as e:
+        print(f"⚠️ Не удалось прочитать knowledge.json: {e} — начинаю с нуля")
+
+# Множество уже обработанных file_hash (не имён!)
+processed_hashes = {b.get("file_hash") for b in knowledge.get("books", [])
+                    if b.get("file_hash")}
+
+# Множество хэшей текстов — глобальный дедуп
+existing_chunk_hashes = {md5_text(c.get("text", ""))
+                         for c in knowledge.get("chunks", [])}
+
+
+# ============================================================
 # ОБРАБОТКА КНИГ
 # ============================================================
+new_files_ingested = []  # для workflow — что удалять
+total_new_chunks = 0
+
 if not os.path.isdir(BOOKS_DIR):
     print("⚠️ Нет папки books/")
 else:
@@ -150,57 +160,68 @@ else:
         if ext not in PARSERS:
             continue
 
-        if filename in processed:
-            print(f"⏭ Уже обработана: {filename}")
+        filepath = os.path.join(BOOKS_DIR, filename)
+        if not os.path.isfile(filepath):
             continue
 
-        filepath = os.path.join(BOOKS_DIR, filename)
-        print(f"📖 Обработка: {filename}")
+        try:
+            fhash = md5_file(filepath)
+        except Exception as e:
+            print(f"❌ Не могу прочитать {filename}: {e}")
+            continue
 
+        if fhash in processed_hashes:
+            print(f"⏭ Уже обработана (hash): {filename}")
+            continue
+
+        print(f"📖 Обработка: {filename}")
         try:
             text, pages = PARSERS[ext](filepath)
-
             if len(text.strip()) < 100:
-                print("   ⚠️ Мало текста")
+                print("   ⚠️ Слишком мало текста — пропуск (файл НЕ удалим)")
                 continue
 
             cleaned = clean_text(text)
-            print(f"   Очищено: {len(text)} -> {len(cleaned)} символов")
-
             chunks = split_into_chunks(cleaned)
             good_chunks = [c for c in chunks if is_good_chunk(c)]
-            print(f"   Чанков: {len(chunks)} -> {len(good_chunks)} после фильтра")
 
             added = 0
             skipped_dup = 0
             for idx, chunk in enumerate(good_chunks):
-                h = hashlib.md5(chunk.encode("utf-8")).hexdigest()
-                if h in existing_hashes:
+                ch = md5_text(chunk)
+                if ch in existing_chunk_hashes:
                     skipped_dup += 1
                     continue
-                existing_hashes.add(h)
+                existing_chunk_hashes.add(ch)
 
+                # Стабильный уникальный chunk_id
+                chunk_id = f"{fhash[:8]}#{idx:05d}"
                 knowledge["chunks"].append({
-                    "id": f"{os.path.splitext(filename)[0]}#{idx:05d}",
-                    "source": os.path.splitext(filename)[0],
+                    "id": chunk_id,
                     "book": filename,
+                    "source": os.path.splitext(filename)[0],
                     "chunk_index": idx,
                     "text": chunk,
                 })
                 added += 1
 
-            if added > 0 or skipped_dup > 0:
+            # Запись книги добавляется, только если реально что-то попало
+            if added > 0:
                 knowledge["books"].append({
                     "file": filename,
+                    "file_hash": fhash,
                     "pages": pages,
-                    "chunks": added,
-                    "skipped_duplicates": skipped_dup,
+                    "chunks_total": added,
+                    "processed_at": datetime.now(timezone.utc).isoformat(),
                 })
+                new_files_ingested.append(filename)
+                total_new_chunks += added
 
-            print(f"   ✅ Добавлено: {added}, пропущено дублей: {skipped_dup}")
+            print(f"   ✅ Добавлено: {added}, дублей пропущено: {skipped_dup}")
 
         except Exception as e:
-            print(f"   ❌ Ошибка: {e}")
+            print(f"   ❌ Ошибка парсинга {filename}: {e}")
+            # ВАЖНО: файл НЕ добавляется в new_files_ingested — не удалим
 
 
 # ============================================================
@@ -211,23 +232,33 @@ with open(KNOWLEDGE_FILE, "w", encoding="utf-8") as f:
 
 
 # ============================================================
-# СОЗДАНИЕ SUMMARY (для /stats)
+# LAST INGEST — для безопасного удаления PDF в workflow
 # ============================================================
-books_list = []
-for b in knowledge.get("books", []):
-    books_list.append({
-        "file": b.get("file", "?"),
-        "pages": b.get("pages", 0),
-        "chunks": b.get("chunks", 0),
-    })
+with open(LAST_INGEST_FILE, "w", encoding="utf-8") as f:
+    json.dump({
+        "ingested_at": datetime.now(timezone.utc).isoformat(),
+        "files": new_files_ingested,
+        "new_chunks": total_new_chunks,
+    }, f, ensure_ascii=False, indent=2)
+
+
+# ============================================================
+# SUMMARY (для Telegram /stats)
+# ============================================================
+books_list = [{
+    "file": b.get("file", "?"),
+    "pages": b.get("pages", 0),
+    "chunks": b.get("chunks_total", 0),
+} for b in knowledge.get("books", [])]
 
 summary = {
     "generated_at": datetime.now(timezone.utc).isoformat(),
     "total_books": len(books_list),
     "total_chunks": len(knowledge.get("chunks", [])),
+    "new_chunks": total_new_chunks,
+    "new_files": new_files_ingested,
     "books": books_list,
 }
-
 with open(SUMMARY_FILE, "w", encoding="utf-8") as f:
     json.dump(summary, f, ensure_ascii=False, indent=2)
 
@@ -235,8 +266,9 @@ with open(SUMMARY_FILE, "w", encoding="utf-8") as f:
 # ============================================================
 # ИТОГ
 # ============================================================
-print("")
-print("🎉 ARGUS обновил знания.")
-print(f"   Книг: {len(knowledge['books'])}")
-print(f"   Чанков: {len(knowledge['chunks'])}")
-print("   summary.json: создан")
+print()
+print("🎉 INGEST завершён.")
+print(f"   Всего книг:   {len(knowledge['books'])}")
+print(f"   Всего чанков: {len(knowledge['chunks'])}")
+print(f"   Новых чанков: {total_new_chunks}")
+print(f"   Новых файлов: {len(new_files_ingested)}")
