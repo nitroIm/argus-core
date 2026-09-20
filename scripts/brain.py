@@ -1,6 +1,5 @@
 # ============================================================
 # ARGUS — BRAIN (ЦЕНТРАЛЬНЫЙ ПЛАНИРОВЩИК) v2
-# Читает data/schedule.json и запускает задачи по расписанию
 # ============================================================
 
 import os
@@ -18,7 +17,7 @@ STATE_FILE = DATA_DIR / "brain_state.json"
 
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
-GITHUB_PAT = os.getenv("GITHUB_PAT")
+GITHUB_PAT = os.getenv("GITHUB_PAT")  ← ПРАВИЛЬНО! YAML передаёт как GITHUB_PAT
 GITHUB_REPO = os.getenv("GITHUB_REPO")
 
 
@@ -67,7 +66,7 @@ def should_run_task(task_name: str, interval_minutes: int, last_runs: dict) -> b
 
 def trigger_workflow(workflow_name: str) -> bool:
     if not GITHUB_PAT or not GITHUB_REPO:
-        print(f"⚠️ Нет GITHUB_PAT или GITHUB_REPO")
+        print(f"️ Нет GITHUB_PAT или GITHUB_REPO")
         return False
     url = f"https://api.github.com/repos/{GITHUB_REPO}/dispatches"
     headers = {
@@ -88,7 +87,7 @@ def trigger_workflow(workflow_name: str) -> bool:
 
 
 def main():
-    print(f" ARGUS Brain: {datetime.now(timezone.utc).isoformat()}")
+    print(f"🧠 ARGUS Brain: {datetime.now(timezone.utc).isoformat()}")
     print("=" * 60)
     
     schedule = load_schedule()
@@ -128,13 +127,13 @@ def main():
     save_state(state)
     
     if triggered:
-        msg = f" <b>Brain: запущены задачи</b>\n\n"
+        msg = f"🧠 <b>Brain: запущены задачи</b>\n\n"
         for t in triggered:
             msg += f"✅ {t}\n"
         notify(msg)
-        print(f"\n Запущено: {', '.join(triggered)}")
+        print(f"\n🎯 Запущено: {', '.join(triggered)}")
     else:
-        print("\n Все задачи в ожидании")
+        print("\n💤 Все задачи в ожидании")
     
     print("=" * 60)
 
