@@ -1,13 +1,17 @@
 # ============================================================
-# ARGUS — БАЗОВЫЙ АДАПТЕР ИСТОЧНИКОВ
+# ARGUS — БАЗОВЫЙ АДАПТЕР ИСТОЧНИКОВ (v2)
+# v2: FIX — REPO_ROOT считался на уровень выше (лишний dirname)
 # ============================================================
 
 import os
 import requests
+from pathlib import Path
 
-# Корень репозитория
-REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-BOOKS_DIR = os.path.join(REPO_ROOT, "books")
+# SCRIPT_DIR = .../argus-core/sources
+SCRIPT_DIR = Path(__file__).resolve().parent
+# REPO_ROOT = .../argus-core  (на 1 уровень вверх от sources)
+REPO_ROOT = SCRIPT_DIR.parent
+BOOKS_DIR = REPO_ROOT / "books"
 
 
 class Source:
@@ -24,7 +28,7 @@ class Source:
             save_dir = BOOKS_DIR
 
         try:
-            os.makedirs(save_dir, exist_ok=True)
+            save_dir.mkdir(parents=True, exist_ok=True)
 
             filename = url.split("/")[-1].split("?")[0]
             if not filename.endswith(".pdf"):
@@ -32,9 +36,9 @@ class Source:
             if len(filename) > 100:
                 filename = filename[:95] + ".pdf"
 
-            filepath = os.path.join(save_dir, filename)
+            filepath = save_dir / filename
 
-            if os.path.exists(filepath):
+            if filepath.exists():
                 print(f"⏭ Уже есть: {filename}")
                 return filename
 
@@ -48,7 +52,7 @@ class Source:
                     if size > 25 * 1024 * 1024:
                         print(f"⚠️ {filename} больше 25 МБ, пропускаю")
                         f.close()
-                        os.remove(filepath)
+                        filepath.unlink(missing_ok=True)
                         return None
                     f.write(chunk)
 
