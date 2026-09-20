@@ -27,7 +27,7 @@ concurrency:
 jobs:
   download:
     runs-on: ubuntu-latest
-    timeout-minutes: 30  # Увеличено до 30 мин для надежной загрузки больших PDF
+    timeout-minutes: 30
 
     steps:
       - name: Checkout
@@ -45,9 +45,9 @@ jobs:
 
       - name: Run approve handler
         env:
-          # Приоритет: client_payload (от бота), затем inputs (ручной запуск)
+          # ВАЖНО: bot_host.py шлёт "short_id" — читаем его ПЕРВЫМ
           APPROVE_URL: ${{ github.event.client_payload.url || github.event.inputs.url }}
-          APPROVE_ID: ${{ github.event.client_payload.candidate_id || github.event.inputs.candidate_id }}
+          APPROVE_ID: ${{ github.event.client_payload.short_id || github.event.client_payload.candidate_id || github.event.inputs.candidate_id }}
           APPROVE_TITLE: ${{ github.event.client_payload.title || github.event.inputs.title }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
@@ -57,26 +57,19 @@ jobs:
         run: |
           git config user.name "ARGUS"
           git config user.email "argus@github.com"
-          
-          # Добавляем только папки с книгами и файлы состояния, избегая мусора
-          git add books/ data/pending_cards.json data/scout_candidates.json || true
-          
+          git add books/ data/pending_cards.json data/scout_candidates.json data/sent_candidates.json || true
           if git diff --staged --quiet; then
             echo "Нет изменений для коммита."
             exit 0
           fi
-          
-          echo "Есть изменения. Коммичу и пушу..."
           git commit -m "ARGUS: скачана книга [skip ci]"
-          
-          # Надежный пуш с обработкой конфликтов (race conditions)
           for i in 1 2 3; do
             git pull --rebase --autostash origin main
             if git push origin main; then
-              echo "✅ Успешно отправлено в репозиторий"
+              echo "✅ Успешно"
               break
             else
-              echo "⚠️ Попытка $i не удалась, жду 5 секунд..."
+              echo "⚠️ Попытка $i, жду 5 сек..."
               sleep 5
             fi
           done
@@ -87,7 +80,6 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
-          # Используем JSON для надежной отправки спецсимволов и эмодзи
           curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
             -H "Content-Type: application/json" \
             -d "{\"chat_id\": \"${TELEGRAM_CHAT_ID}\", \"text\": \"⚠️ <b>ARGUS:</b> approved_download упал. Проверь логи Actions.\", \"parse_mode\": \"HTML\"}"
