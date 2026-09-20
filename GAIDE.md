@@ -461,7 +461,41 @@ Git push падает 403 GITHUB_TOKEN без прав Убрать token: secre
 ```
 ## Дорожная карта миграции на SQL
 
+
 - [ ] Фаза 1: регистрация Supabase/Neon (готово)
 - [ ] Фаза 2: logger.py → БД (когда knowledge.json >20 МБ)
 - [ ] Фаза 3: brain/observer/analyzer → БД (при включении автономии)
 - [ ] Фаза 4: knowledge + FAISS → pgvector (когда чанков >20k)
+## 🗄️ SQL База (Supabase)
+
+**Статус:** заготовка, не используется (будет использоваться при масштабировании).
+
+**Параметры:**
+- Платформа: Supabase (Free plan)
+- Проект: Argus_db
+- Регион: eu-west-1 (Ирландия, AWS)
+- Версия: PostgreSQL 17.6
+- Хост: aws-1-eu-west-1.pooler.supabase.com:5432
+- Тип подключения: **Session pooler** (IPv4, важно для GitHub Actions!)
+- Расширение: pgvector пока НЕ установлено
+
+**GitHub Secret:** `ARGUS_DB_URL`
+
+**Формат строки:**
+postgresql://postgres.vpawylwqomuurryyqpsk:ПАРОЛЬ@aws-1-eu-west-1.pooler.supabase.com:5432/postgres
+
+⚠️ ВАЖНО: 
+- Не использовать `Direct connection` — там IPv6, GitHub Actions не подключится.
+- Использовать ТОЛЬКО `Session pooler` или `Transaction pooler`.
+- Пароль БД хранится в Supabase (Settings → Connect → Reset password).
+- Строка подключения — в GitHub Secrets (ARGUS_DB_URL).
+
+**Когда будем использовать:**
+- Фаза 2: логирование в БД (когда knowledge.json >20 МБ)
+- Фаза 3: brain/observer/analyzer → БД (при включении автономии)
+- Фаза 4: knowledge + FAISS → pgvector (когда чанков >20k)
+
+**Что делать при первой миграции:**
+1. В Supabase → SQL Editor выполнить: `CREATE EXTENSION IF NOT EXISTS vector;`
+2. Создать таблицы (books, chunks, logs)
+3. Переписать logger.py на INSERT в БД
