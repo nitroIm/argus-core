@@ -1,0 +1,26 @@
+{
+  "version": 2,
+  "description": "Benchmark questions for ARGUS. Positive = about trading/crypto/philosophy. Negative = off-topic (should score low).",
+  "questions": [
+    {"question": "Что такое риск-менеджмент в трейдинге?", "type": "positive", "topic": "trading"},
+    {"question": "Что такое имбаланс на рынке?", "type": "positive", "topic": "trading"},
+    {"question": "Как управлять капиталом в трейдинге?", "type": "positive", "topic": "trading"},
+    {"question": "Что такое диверсификация портфеля?", "type": "positive", "topic": "trading"},
+    {"question": "Что такое ликвидность рынка?", "type": "positive", "topic": "trading"},
+    {"question": "Что такое стоп-лосс и зачем он нужен?", "type": "positive", "topic": "trading"},
+    {"question": "Чем спот-рынок отличается от фьючерсного?", "type": "positive", "topic": "trading"},
+    {"question": "Что такое эмоциональная дисциплина трейдера?", "type": "positive", "topic": "psychology"},
+    {"question": "Что такое соотношение риска и прибыли?", "type": "positive", "topic": "trading"},
+    {"question": "Что такое волатильность рынка?", "type": "positive", "topic": "trading"},
+    {"question": "Как работает технический анализ графиков?", "type": "positive", "topic": "technical_analysis"},
+    {"question": "Что такое маркет-мейкер и его роль на бирже?", "type": "positive", "topic": "market_microstructure"},
+    {"question": "Что такое блокчейн и как он работает?", "type": "positive", "topic": "crypto"},
+    {"question": "Что такое алгоритмическая торговля?", "type": "positive", "topic": "algorithmic_trading"},
+    {"question": "Что такое квантовая запутанность?", "type": "positive", "topic": "quantum"},
+    {"question": "Как приготовить борщ?", "type": "negative"},
+    {"question": "Кто выиграл чемпионат мира по футболу 2022?", "type": "negative"},
+    {"question": "Как настроить Wi-Fi роутер дома?", "type": "negative"},
+    {"question": "Какая погода будет завтра в Москве?", "type": "negative"},
+    {"question": "Как выучить испанский язык за месяц?", "type": "negative"}
+  ]
+}
