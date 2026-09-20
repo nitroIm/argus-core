@@ -15,7 +15,7 @@ concurrency:
 jobs:
   train:
     runs-on: ubuntu-latest
-    timeout-minutes: 360 # 6 часов на обучение больших баз
+    timeout-minutes: 360
 
     outputs:
       skip: ${{ steps.check.outputs.skip }}
@@ -56,6 +56,7 @@ jobs:
 
       # ============================================================
       # ШАГ 1: ПРОВЕРКА НОВЫХ КНИГ (FINGERPRINT)
+      # Если книг нет или они такие же как прошлый раз — пропускаем всё.
       # ============================================================
       - name: Check for new books
         id: check
@@ -79,92 +80,19 @@ jobs:
           fi
 
       # ============================================================
-      # ШАГ 2: АРХИВАЦИЯ СТАРЫХ ЗНАНИЙ (СОХРАНЕНИЕ ПАМЯТИ)
-      # ============================================================
-      - name: Archive old knowledge to tmp
-        if: steps.check.outputs.skip == 'false'
-        run: cp data/knowledge.json /tmp/knowledge_old.json 2>/dev/null || true
-
-      # ============================================================
-      # ШАГ 3: ИНГЕСТ (ЧТЕНИЕ НОВЫХ PDF)
-      # ingest.py создаст временный knowledge.json только с новыми книгами
+      # ШАГ 2: ИНГЕСТ (ЧТЕНИЕ PDF ИЗ BOOKS/)
+      # ingest.py читает ВСЕ файлы из папки books/ и создает knowledge.json
+      # ВАЖНО: Мы НЕ удаляем старые книги из папки books/. 
+      # Поэтому ingest всегда видит полную историю знаний.
       # ============================================================
       - name: Ingest books
         if: steps.check.outputs.skip == 'false'
         run: python scripts/ingest.py
 
       # ============================================================
-      # ШАГ 4: СЛИЯНИЕ ЗНАНИЙ (СТАРЫЕ + НОВЫЕ)
-      # Логика: берем архив старых знаний, добавляем туда новые чанки
-      # Результат: единый knowledge.json со всей историей
-      # ============================================================
-      - name: Merge old and new knowledge
-        if: steps.check.outputs.skip == 'false'
-        run: |
-          python3 << 'PYEOF'
-          import json, os
-          
-          def load(p):
-              if os.path.exists(p):
-                  try:
-                      with open(p, encoding="utf-8") as f:
-                          return json.load(f)
-                  except Exception:
-                      pass
-              return {"books": [], "chunks": []}
-
-          # 1. Грузим старые знания (из архива)
-          old = load("/tmp/knowledge_old.json")
-          
-          # 2. Грузим новые знания (которые создал ingest.py прямо сейчас)
-          new = load("data/knowledge.json")
-          
-          # 3. Определяем список уже известных файлов книг
-          known_files = {str(b.get("file")) for b in old.get("books", []) if b.get("file")}
-          
-          # 4. Объединяем список книг
-          merged_books = list(old.get("books", []))
-          for b in new.get("books", []):
-              fname = str(b.get("file"))
-              if fname not in known_files:
-                  merged_books.append(b)
-                  print(f"+ Новая книга: {fname}")
-          
-          # 5. Объединяем чанки
-          # Чанки привязаны к книге через поле "book" или "source"
-          merged_chunks = list(old.get("chunks", []))
-          added_count = 0
-          
-          for c in new.get("chunks", []):
-              # Ищем имя книги у чанка
-              book_name = None
-              if isinstance(c, dict):
-                  book_name = c.get("book") or c.get("source") or c.get("file")
-              
-              # Если это новая книга (её не было в known_files до этого шага)
-              # То её чанки просто добавляем сверху
-              if book_name and str(book_name) not in known_files:
-                   merged_chunks.append(c)
-                   added_count += 1
-              elif not book_name:
-                   # На всякий случай, если формат странный, но это новый чанк
-                   merged_chunks.append(c)
-                   added_count += 1
-                   
-          # 6. Сохраняем результат обратно в основной файл
-          final_data = dict(new) # Берем структуру нового файла как основу
-          final_data["books"] = merged_books
-          final_data["chunks"] = merged_chunks
-          
-          with open("data/knowledge.json", "w", encoding="utf-8") as f:
-              json.dump(final_data, f, ensure_ascii=False)
-              
-          print(f"MERGE SUCCESS: Книг всего {len(merged_books)}, Чанков добавлено {added_count}, Всего {len(merged_chunks)}")
-          PYEOF
-
-      # ============================================================
-      # ШАГ 5: ОЧИСТКА СТАРОГО ИНДЕКСА
-      # Чтобы train_embeddings не пытался дописать данные в старый фаил
+      # ШАГ 3: ОЧИСТКА СТАРОГО ИНДЕКСА
+      # Удаляем faiss.index и metadata, чтобы build_index создал свежий
+      # поверх актуальной базы знаний.
       # ============================================================
       - name: Clean old index artifacts
         if: steps.check.outputs.skip == 'false'
@@ -174,23 +102,26 @@ jobs:
           echo "✅ Старые артефакты удалены"
 
       # ============================================================
-      # ШАГ 6: ОБУЧЕНИЕ ВЕКТОРОВ (ДЛЯ ВСЕЙ БАЗЫ)
-      # Теперь train_embeddings видит объединенный knowledge.json
-      # Он прогонит модель по всем чанкам (старым и новым)
+      # ШАГ 4: ОБУЧЕНИЕ ВЕКТОРОВ (ДЛЯ ВСЕЙ БАЗЫ)
+      # train_embeddings.py теперь видит полный merged knowledge.json
+      # Он прогонит модель по всем чанкам (старым и новым).
       # ============================================================
       - name: Train Embeddings
         if: steps.check.outputs.skip == 'false'
         run: python scripts/train_embeddings.py
 
       # ============================================================
-      # ШАГ 7: ПОСТРОЕНИЕ ИНДЕКСА FAISS
+      # ШАГ 5: ПОСТРОЕНИЕ ИНДЕКСА FAISS
+      # build_index.py собирает финальный индекс из новых векторов.
+      # Это гарантирует, что chunks_metadata.json будет заполнен правильно.
       # ============================================================
       - name: Build index
         if: steps.check.outputs.skip == 'false'
         run: python scripts/build_index.py
 
       # ============================================================
-      # ШАГ 8: РАСЧЕТ СТАТИСТИКИ
+      # ШАГ 6: РАСЧЕТ СТАТИСТИКИ
+      # Читаем summary.json для уведомления.
       # ============================================================
       - name: Compute summary
         id: summary
@@ -207,14 +138,15 @@ jobs:
           fi
 
       # ============================================================
-      # ШАГ 9: СОХРАНЕНИЕ FINGERPRINT
+      # ШАГ 7: СОХРАНЕНИЕ FINGERPRINT
+      # Чтобы при следующем запуске система поняла, что книг больше нет.
       # ============================================================
       - name: Save fingerprint
         if: steps.check.outputs.skip == 'false'
         run: cp /tmp/new_fingerprint.txt data/last_train_fingerprint.txt
 
       # ============================================================
-      # ШАГ 10: УДАЛЕНИЕ ОБУЧЕННЫХ PDF ИЗ PAPERBOX
+      # ШАГ 8: УДАЛЕНИЕ ОБУЧЕННЫХ PDF ИЗ PAPERBOX ВНУТРИ WORKFLOW
       # Так как текст теперь навсегда в knowledge.json, исходники не нужны
       # ============================================================
       - name: Delete trained PDFs from inbox
@@ -251,7 +183,9 @@ jobs:
           PYEOF
 
       # ============================================================
-      # ШАГ 11: КОММИТ И PUSH
+      # ШАГ 9: КОММИТ И PUSH
+      # Сохраняем обновленную базу знаний, индекс и модели.
+      # Папку books/ мы НЕ трогаем — она остается источником истины.
       # ============================================================
       - name: Commit and Push
         if: steps.check.outputs.skip == 'false'
@@ -261,7 +195,7 @@ jobs:
           git config user.name "ARGUS"
           git config user.email "argus@github.com"
           
-          # Добавляем все изменения: базу знаний, индекс, модели и пустую папку books
+          # Добавляем только данные и модели. Книги остаются в репо навсегда.
           git add data/ models/ books/ || true
           
           if git diff --staged --quiet; then
@@ -269,7 +203,7 @@ jobs:
             exit 0
           fi
           
-          git commit -m "ARGUS: auto-train & cleanup [skip ci]"
+          git commit -m "ARGUS: auto-train [skip ci]"
           
           # Надежный пуш с ретраями
           for i in 1 2 3; do
@@ -300,7 +234,7 @@ jobs:
           if [ "${SKIP_FLAG}" = "true" ]; then
             TEXT="⏸️ Train пропущен (новых книг нет)"
           elif [ "${TRAIN_RESULT}" = "success" ]; then
-            TEXT="🎓 Train завершён!\nКниг: ${BOOKS}, Чанков: ${CHUNKS}\nPDF очищены, знания обновлены."
+            TEXT="🎓 Train завершён!\nКниг: ${BOOKS}, Чанков: ${CHUNKS}\nБаза знаний обновлена."
           else
             TEXT="❌ Train упал\nПроверь логи в Actions."
           fi
