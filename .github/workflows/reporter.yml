@@ -5,20 +5,36 @@ on:
   schedule:
     - cron: "0 9 * * 1"   # каждый понедельник в 9:00 UTC
 
+permissions:
+  contents: read  # Только чтение, так как мы ничего не коммитим
+
+concurrency:
+  group: argus-reporter
+  cancel-in-progress: false
+
 jobs:
   report:
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Install deps
+
+      - name: Install dependencies
         run: pip install requests==2.32.3
+
       - name: Run reporter
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        # ВНИМАНИЕ: Убедись, что файл называется именно reporter.py. 
+        # Если ранее мы назвали его weekly_report.py, поменяй здесь на scripts/weekly_report.py
         run: python scripts/reporter.py
