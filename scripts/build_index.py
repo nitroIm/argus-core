@@ -1,7 +1,6 @@
 # ============================================================
-# ARGUS — BUILD INDEX (v3.2 — совместим с GUIDE)
-# v3.2: chunks_meta.json = [{id, source, book, text}, ...]
-#       как ожидает боевой semantic_search.py
+# ARGUS — BUILD INDEX (v3.3)
+# v3.3: chunks_for_index.json = [{id, source, book, text}, ...]
 # ============================================================
 
 import json
@@ -19,7 +18,7 @@ REPO_ROOT = SCRIPT_DIR.parent
 DATA_DIR = REPO_ROOT / "data"
 KNOWLEDGE_FILE = DATA_DIR / "knowledge.json"
 INDEX_FILE = DATA_DIR / "faiss.index"
-METADATA_FILE = DATA_DIR / "chunks_meta.json"          # ← ИМЯ КАК В semantic_search
+METADATA_FILE = DATA_DIR / "chunks_for_index.json"
 MODEL_INFO_FILE = DATA_DIR / "model_info.json"
 
 TMP_DIR = Path(tempfile.gettempdir()) / "argus_train"
@@ -63,22 +62,28 @@ existing_metadata = []
 
 if INDEX_FILE.exists() and METADATA_FILE.exists():
     try:
-        existing_index = faiss.read_index(str(INDEX_FILE))
         with open(METADATA_FILE, encoding="utf-8") as f:
             existing_metadata = json.load(f)
 
-        if not isinstance(existing_metadata, list):
-            print("⚠️ chunks_meta.json не список — полный пересбор")
+        # Legacy формат (список строк) — полный пересбор
+        if isinstance(existing_metadata, list) and existing_metadata and isinstance(existing_metadata[0], str):
+            print("⚠️ chunks_for_index.json в СТАРОМ формате (список строк) — полный пересбор")
             existing_index = None
             existing_metadata = []
-        elif existing_index.ntotal != len(existing_metadata):
-            print(f"🚨 Рассинхрон: {existing_index.ntotal} векторов vs "
-                  f"{len(existing_metadata)} метаданных — полный пересбор")
+        elif not isinstance(existing_metadata, list):
+            print("⚠️ chunks_for_index.json не список — полный пересбор")
             existing_index = None
             existing_metadata = []
         else:
-            print(f"📊 Существующий индекс: {existing_index.ntotal} векторов, "
-                  f"dim={existing_index.d}")
+            existing_index = faiss.read_index(str(INDEX_FILE))
+            if existing_index.ntotal != len(existing_metadata):
+                print(f"🚨 Рассинхрон: {existing_index.ntotal} векторов vs "
+                      f"{len(existing_metadata)} метаданных — полный пересбор")
+                existing_index = None
+                existing_metadata = []
+            else:
+                print(f"📊 Существующий индекс: {existing_index.ntotal} векторов, "
+                      f"dim={existing_index.d}")
     except Exception as e:
         print(f"⚠️ Не могу прочитать индекс: {e} — полный пересбор")
         existing_index = None
