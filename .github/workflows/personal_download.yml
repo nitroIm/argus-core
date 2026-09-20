@@ -1,0 +1,73 @@
+name: ARGUS Personal Download
+
+on:
+  repository_dispatch:
+    types: [personal_download]
+  workflow_dispatch:
+    inputs:
+      index:
+        description: 'Индекс книги (0, 1, 2...)'
+        required: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: argus-personal-download
+  cancel-in-progress: false
+
+jobs:
+  download:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Cache HuggingFace
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface
+          key: hf-translate-v1
+
+      - name: Install dependencies
+        run: |
+          pip install torch==2.2.0 --index-url https://download.pytorch.org/whl/cpu
+          pip install transformers==4.41.2 sentencepiece requests==2.32.3 PyPDF2==3.1.0
+
+      - name: Run personal downloader
+        env:
+          INDEX: ${{ github.event.client_payload.index || github.event.inputs.index }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python scripts/personal_downloader.py "$INDEX"
+
+      - name: Commit downloaded books
+        run: |
+          git config user.name "ARGUS"
+          git config user.email "argus@github.com"
+          git add personal_books/ || true
+          
+          if git diff --staged --quiet; then
+            echo "Нет изменений"
+            exit 0
+          fi
+          
+          git commit -m "ARGUS: personal book downloaded [skip ci]"
+          for i in 1 2 3; do
+            git pull --rebase --autostash origin main
+            if git push origin main; then
+              echo "✅ Сохранено"
+              break
+            else
+              sleep 5
+            fi
+          done
