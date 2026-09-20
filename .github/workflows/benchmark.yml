@@ -51,6 +51,16 @@ jobs:
           pip install torch==2.2.0 --index-url https://download.pytorch.org/whl/cpu
           pip install transformers==4.41.2 sentence-transformers==3.0.1 faiss-cpu==1.8.0 requests==2.32.3
 
+      - name: Prepare Benchmark Data
+        run: |
+          mkdir -p data
+          if [ -f "data/chunks_meta.json" ]; then
+            echo "Файл data/chunks_meta.json уже есть, пропускаем создание."
+          else
+            echo "Файла нет, создаём..."
+            echo '{"chunks": []}' > data/chunks_meta.json
+          fi
+
       - name: Run benchmark
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
