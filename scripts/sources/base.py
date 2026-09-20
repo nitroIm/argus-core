@@ -1,16 +1,16 @@
 # ============================================================
-# ARGUS — БАЗОВЫЙ АДАПТЕР ИСТОЧНИКОВ (v2)
-# v2: pathlib, современный API
+# ARGUS — БАЗОВЫЙ АДАПТЕР ИСТОЧНИКОВ (v3)
+# v3: FIX — файл лежит в scripts/sources/, надо 3 уровня вверх
 # ============================================================
 
 import requests
 from pathlib import Path
 
-# SCRIPT_DIR = .../argus-core/sources
-SCRIPT_DIR = Path(__file__).resolve().parent
-# REPO_ROOT = .../argus-core
-REPO_ROOT = SCRIPT_DIR.parent
-BOOKS_DIR = REPO_ROOT / "books"
+# __file__ = .../argus-core/scripts/sources/base.py
+SCRIPT_DIR = Path(__file__).resolve().parent          # = .../scripts/sources
+SCRIPTS_DIR = SCRIPT_DIR.parent                       # = .../scripts
+REPO_ROOT = SCRIPTS_DIR.parent                        # = .../argus-core
+BOOKS_DIR = REPO_ROOT / "books"                       # = .../argus-core/books
 
 
 class Source:
