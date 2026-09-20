@@ -11,6 +11,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: argus-guardian
+  cancel-in-progress: false
+
 jobs:
   guardian:
     runs-on: ubuntu-latest
@@ -43,20 +47,36 @@ jobs:
           pip install faiss-cpu==1.8.0
           pip install transformers==4.41.2
           pip install numpy==1.26.4
+          pip install requests==2.32.3  # Добавлено для Telegram-уведомлений из guardian.py
 
       - name: Run guardian
         run: python scripts/guardian.py "${{ github.event.inputs.mode }}"
 
-      - name: Commit
-        if: github.event.inputs.mode == 'test'
+      - name: Commit and Push changes
+        if: github.event.inputs.mode == 'test' || github.event.inputs.mode == 'snapshot'
         run: |
           git config user.name "ARGUS"
           git config user.email "argus@github.com"
-          git add data/quality.json
-          git diff --staged --quiet && echo "Нет изменений" && exit 0
-          git commit -m "ARGUS: тест качества [skip ci]"
+          
+          # Сохраняем результаты тестов и/или новые снимки
+          git add data/quality.json data/snapshots/ || true
+          
+          if git diff --staged --quiet; then
+            echo "Нет изменений для коммита."
+            exit 0
+          fi
+          
+          echo "Есть изменения. Коммичу и пушу..."
+          git commit -m "ARGUS: guardian ${{ github.event.inputs.mode }} [skip ci]"
+          
+          # Надежный пуш с обработкой конфликтов
           for i in 1 2 3; do
             git pull --rebase --autostash origin main
-            git push && break
-            sleep 5
+            if git push origin main; then
+              echo "✅ Данные Guardian успешно сохранены"
+              break
+            else
+              echo "⚠️ Попытка $i не удалась, жду 5 секунд..."
+              sleep 5
+            fi
           done
