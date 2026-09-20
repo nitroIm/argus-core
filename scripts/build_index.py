@@ -1,7 +1,7 @@
 # ============================================================
-# ARGUS — BUILD INDEX (v3.1 — совместим с GUIDE.md)
-# v3.1: chunks_metadata.json = [{id, source, book, text}, ...]
-#       как ожидают ask.py / search.py / reranker.py
+# ARGUS — BUILD INDEX (v3.2 — совместим с GUIDE)
+# v3.2: chunks_meta.json = [{id, source, book, text}, ...]
+#       как ожидает боевой semantic_search.py
 # ============================================================
 
 import json
@@ -12,14 +12,14 @@ from pathlib import Path
 
 import faiss
 
-# --- Пути (pathlib) ---
+# --- Пути ---
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parent
 
 DATA_DIR = REPO_ROOT / "data"
 KNOWLEDGE_FILE = DATA_DIR / "knowledge.json"
 INDEX_FILE = DATA_DIR / "faiss.index"
-METADATA_FILE = DATA_DIR / "chunks_metadata.json"
+METADATA_FILE = DATA_DIR / "chunks_meta.json"          # ← ИМЯ КАК В semantic_search
 MODEL_INFO_FILE = DATA_DIR / "model_info.json"
 
 TMP_DIR = Path(tempfile.gettempdir()) / "argus_train"
@@ -44,7 +44,7 @@ print(f"📥 Загружено: {new_embeddings.shape[0]} новых векто
 
 
 # ============================================================
-# 2. KNOWLEDGE (для маппинга id → {source, book, text})
+# 2. KNOWLEDGE
 # ============================================================
 if not KNOWLEDGE_FILE.exists():
     raise SystemExit("❌ knowledge.json не найден")
@@ -68,7 +68,7 @@ if INDEX_FILE.exists() and METADATA_FILE.exists():
             existing_metadata = json.load(f)
 
         if not isinstance(existing_metadata, list):
-            print("⚠️ chunks_metadata.json не список — полный пересбор")
+            print("⚠️ chunks_meta.json не список — полный пересбор")
             existing_index = None
             existing_metadata = []
         elif existing_index.ntotal != len(existing_metadata):
