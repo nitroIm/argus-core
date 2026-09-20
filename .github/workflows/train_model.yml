@@ -33,7 +33,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v6
         with:
-          python-version: '3.12'
+          python-version: '3.11'
 
       - name: Cache pip
         uses: actions/cache@v5
@@ -46,7 +46,7 @@ jobs:
         uses: actions/cache@v5
         with:
           path: ~/.cache/huggingface
-          key: hf-e5-base-v1
+          key: hf-e5-small-v1
 
       - name: Install dependencies
         run: |
@@ -81,14 +81,14 @@ jobs:
           fi
 
       # ============================================================
-      # ШАГ 2: INGEST (merge, не перезапись)
+      # ШАГ 2: INGEST
       # ============================================================
       - name: Ingest books
         if: steps.check.outputs.skip == 'false'
         run: python scripts/ingest.py
 
       # ============================================================
-      # ШАГ 3: TRAIN (только новые чанки, frozen E5)
+      # ШАГ 3: TRAIN (только новые чанки, авто-детект модели)
       # ============================================================
       - name: Train embeddings (incremental)
         if: steps.check.outputs.skip == 'false'
@@ -129,7 +129,7 @@ jobs:
         run: cp /tmp/new_fingerprint.txt data/last_train_fingerprint.txt
 
       # ============================================================
-      # ШАГ 7: УДАЛЕНИЕ PDF, КОТОРЫЕ УСПЕШНО ПОПАЛИ В БАЗУ
+      # ШАГ 7: CLEANUP PDF (только успешно обработанные)
       # ============================================================
       - name: Cleanup ingested PDFs
         if: steps.check.outputs.skip == 'false'
@@ -169,6 +169,7 @@ jobs:
 
       # ============================================================
       # ШАГ 8: COMMIT & PUSH
+      # models/ НЕ трогаем — там fine-tuned модель
       # ============================================================
       - name: Commit and Push
         if: steps.check.outputs.skip == 'false'
