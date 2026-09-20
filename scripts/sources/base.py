@@ -1,15 +1,14 @@
 # ============================================================
 # ARGUS — БАЗОВЫЙ АДАПТЕР ИСТОЧНИКОВ (v2)
-# v2: FIX — REPO_ROOT считался на уровень выше (лишний dirname)
+# v2: pathlib, современный API
 # ============================================================
 
-import os
 import requests
 from pathlib import Path
 
 # SCRIPT_DIR = .../argus-core/sources
 SCRIPT_DIR = Path(__file__).resolve().parent
-# REPO_ROOT = .../argus-core  (на 1 уровень вверх от sources)
+# REPO_ROOT = .../argus-core
 REPO_ROOT = SCRIPT_DIR.parent
 BOOKS_DIR = REPO_ROOT / "books"
 
@@ -26,6 +25,8 @@ class Source:
     def download(self, url, save_dir=None):
         if save_dir is None:
             save_dir = BOOKS_DIR
+        else:
+            save_dir = Path(save_dir)
 
         try:
             save_dir.mkdir(parents=True, exist_ok=True)
@@ -52,7 +53,8 @@ class Source:
                     if size > 25 * 1024 * 1024:
                         print(f"⚠️ {filename} больше 25 МБ, пропускаю")
                         f.close()
-                        filepath.unlink(missing_ok=True)
+                        if filepath.exists():
+                            filepath.unlink()
                         return None
                     f.write(chunk)
 
