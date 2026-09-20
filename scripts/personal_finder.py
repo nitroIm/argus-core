@@ -1,13 +1,13 @@
 # ============================================================
-# ARGUS — ЛИЧНЫЙ ПОИСК КНИГ (v4 — финал)
-# v4: проверка языка (RU не трогаем / EN переводим),
-#     перевод темы для поиска, фильтр релевантности, HTML-escape
+# ARGUS — ЛИЧНЫЙ ПОИСК КНИГ (v5 — финал)
+# v5: честный фильтр релевантности (границы слов + характерные слова)
 # ============================================================
 
 import os
 import sys
 import json
 import html
+import re
 import requests
 from datetime import datetime, timezone
 from pathlib import Path
@@ -23,8 +23,8 @@ BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("BOT_TOKEN")
 CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
 # --- Настройки выдачи ---
-PAGE_SIZE = 5        # карточек за одно сообщение
-MAX_CARDS = 30       # максимум карточек для перевода
+PAGE_SIZE = 5
+MAX_CARDS = 30
 
 # --- Модели перевода ---
 TRANSLATE_AVAILABLE = False
@@ -79,7 +79,6 @@ def is_cyrillic(text: str) -> bool:
 
 
 def ensure_russian(text: str) -> str:
-    """Русский -> не трогаем. Английский -> переводим в RU."""
     if not text:
         return text
     if is_cyrillic(text):
@@ -88,7 +87,6 @@ def ensure_russian(text: str) -> str:
 
 
 def ensure_english(text: str) -> str:
-    """Английский -> не трогаем. Русский -> переводим в EN."""
     if not text:
         return text
     if not is_cyrillic(text):
@@ -118,7 +116,7 @@ def notify(text: str, keyboard=None):
 
 
 # ============================================================
-# ПОИСК ПО ИСТОЧНИКАМ (запрос всегда на английском)
+# ПОИСК ПО ИСТОЧНИКАМ
 # ============================================================
 def search_arxiv(topic_en: str, limit: int = 10):
     results = []
@@ -165,39 +163,45 @@ def search_arxiv(topic_en: str, limit: int = 10):
 
 def search_zenodo(topic_en: str, limit: int = 10):
     results = []
-    try:
-        r = requests.get(
-            "https://zenodo.org/api/records",
-            params={"q": f'"{topic_en}"', "size": limit, "file_type": "pdf"},
-            timeout=20,
-        )
-        r.raise_for_status()
-        for hit in r.json().get("hits", {}).get("hits", []):
-            try:
-                title = hit.get("metadata", {}).get("title", "?")
-                description = (hit.get("metadata", {}).get("description") or "")[:600]
-                record_id = hit.get("id")
-                pdf_url = None
-                size = 0
-                for f in hit.get("files", []):
-                    if f.get("key", "").lower().endswith(".pdf"):
-                        pdf_url = f["links"]["self"]
-                        size = f.get("size", 0)
-                        break
-                if pdf_url and size / 1024 / 1024 < 100:
-                    results.append({
-                        "title": title,
-                        "summary": description,
-                        "url": pdf_url,
-                        "page_url": f"https://zenodo.org/records/{record_id}",
-                        "source": "zenodo",
-                        "type": "book",
-                        "size_mb": round(size / 1024 / 1024, 1),
-                    })
-            except Exception:
-                continue
-    except Exception as e:
-        print(f"⚠️ Zenodo: {e}")
+    queries = [f'"{topic_en}"', topic_en]
+    for q in queries:
+        try:
+            r = requests.get(
+                "https://zenodo.org/api/records",
+                params={"q": q, "size": limit, "file_type": "pdf"},
+                timeout=20,
+            )
+            r.raise_for_status()
+            for hit in r.json().get("hits", {}).get("hits", []):
+                try:
+                    title = hit.get("metadata", {}).get("title", "?")
+                    description = (hit.get("metadata", {}).get("description") or "")[:600]
+                    record_id = hit.get("id")
+                    pdf_url = None
+                    size = 0
+                    for f in hit.get("files", []):
+                        if f.get("key", "").lower().endswith(".pdf"):
+                            pdf_url = f["links"]["self"]
+                            size = f.get("size", 0)
+                            break
+                    if pdf_url and size / 1024 / 1024 < 100:
+                        if any(x["url"] == pdf_url for x in results):
+                            continue
+                        results.append({
+                            "title": title,
+                            "summary": description,
+                            "url": pdf_url,
+                            "page_url": f"https://zenodo.org/records/{record_id}",
+                            "source": "zenodo",
+                            "type": "book",
+                            "size_mb": round(size / 1024 / 1024, 1),
+                        })
+                except Exception:
+                    continue
+            if len(results) >= 3:
+                break
+        except Exception as e:
+            print(f"⚠️ Zenodo: {e}")
     return results
 
 
@@ -227,15 +231,42 @@ def search_semantic_scholar(topic_en: str, limit: int = 10):
 
 
 # ============================================================
-# ФИЛЬТР РЕЛЕВАНТНОСТИ
+# ФИЛЬТР РЕЛЕВАНТНОСТИ (v5: границы слов + характерные слова)
 # ============================================================
+def _words_present(text: str, words: list) -> int:
+    hits = 0
+    for w in words:
+        if re.search(r"\b" + re.escape(w) + r"\b", text):
+            hits += 1
+    return hits
+
+
 def relevance_score(item: dict, topic_en: str) -> float:
-    words = [w for w in topic_en.lower().split() if len(w) > 2]
-    if not words:
-        return 1.0
+    """
+    Правила:
+    1. Фраза темы целиком в тексте      -> 1.0
+    2. Есть характерные слова (6+ букв) -> доля совпавших
+    3. Тема только из коротких слов     -> нужно ВСЕ слова
+    Иначе 0.0 — карточка отбрасывается.
+    """
     text = (item.get("title", "") + " " + item.get("summary", "")).lower()
-    hits = sum(1 for w in words if w in text)
-    return hits / len(words)
+    phrase = topic_en.lower().strip()
+
+    if phrase and phrase in text:
+        return 1.0
+
+    words_all = [w for w in phrase.split() if len(w) > 2]
+    distinctive = [w for w in words_all if len(w) >= 6]
+
+    if distinctive:
+        hits = _words_present(text, distinctive)
+        return hits / len(distinctive) if hits > 0 else 0.0
+
+    if words_all:
+        hits = _words_present(text, words_all)
+        return 1.0 if hits == len(words_all) else 0.0
+
+    return 0.0
 
 
 # ============================================================
@@ -272,12 +303,10 @@ def main():
 
     _load_models()
 
-    # Тема для поиска: RU -> EN, EN -> как есть
     topic_en = ensure_english(topic)
     print(f"🌐 Тема для поиска (EN): '{topic_en}'")
     print("=" * 60)
 
-    # Поиск по всем источникам
     all_items = []
     for name, fn in [("arXiv", search_arxiv), ("Zenodo", search_zenodo),
                      ("Semantic Scholar", search_semantic_scholar)]:
@@ -291,7 +320,7 @@ def main():
         print("\n❌ Ничего не найдено.")
         return
 
-    # Фильтр релевантности: мусор без единого слова темы отбрасываем
+    # Фильтр релевантности
     for item in all_items:
         item["score"] = relevance_score(item, topic_en)
     scored = [x for x in all_items if x["score"] > 0]
@@ -300,7 +329,12 @@ def main():
     print(f"\n🎯 После фильтра релевантности: {len(scored)} из {len(all_items)}")
 
     if not scored:
-        notify(f"🔍 <b>Личный поиск:</b> {html.escape(topic)}\n\n❌ Ничего подходящего по теме не найдено.")
+        notify(
+            f"🔍 <b>Личный поиск:</b> {html.escape(topic)}\n\n"
+            f"❌ Точных совпадений по теме не найдено.\n"
+            f"💡 Попробуй английское название (например: <i>Marcus Aurelius</i>) "
+            f"или более узкую тему."
+        )
         return
 
     # Перевод карточек: EN -> RU, RU не трогаем
@@ -315,7 +349,7 @@ def main():
         if orig_sum:
             item["summary"] = ensure_russian(orig_sum[:300])
 
-    # Сохраняем всё найденное (для /findnext)
+    # Сохраняем всё найденное
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     candidates = {
         "topic": topic,
@@ -328,7 +362,7 @@ def main():
     with open(CANDIDATES_FILE, "w", encoding="utf-8") as f:
         json.dump(candidates, f, ensure_ascii=False, indent=2)
 
-    # Сообщение: только первые 5 карточек
+    # Сообщение: только первые 5
     first_page = to_translate[:PAGE_SIZE]
     msg_lines = [f"🔍 <b>Личный поиск:</b> <i>{html.escape(topic)}</i>\n"]
     msg_lines.append(f"📚 Релевантных материалов: <b>{len(scored)}</b> (показано {len(first_page)})\n")
