@@ -1,7 +1,11 @@
 # ============================================================
-# ARGUS — PROPOSER (v3.1)
-# v3.1: callback_data в формате approve:<sid> / reject:<sid>
-#       — совместимо с bot_host.py
+# ARGUS — PROPOSER (v3.3)
+# ------------------------------------------------------------
+# v3.3: перевод через локальный translate.py (Helsinki-NLP).
+#       Никакого OpenRouter — всё уже есть.
+# ------------------------------------------------------------
+# v3.2: был вариант с OpenRouter (не понадобился)
+# v3.1: callback_data = approve:<sid>
 # ============================================================
 
 import os
@@ -9,14 +13,14 @@ import sys
 import json
 import hashlib
 import requests
-from datetime import datetime, timezone
-from pathlib import Path
+from datetime import datetime, timezone DATA
+from_DIR pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parent
 DATA_DIR = REPO_ROOT / "data"
 
-ANALYSIS_FILE = DATA_DIR / "analysis.json"
+ANALYSIS_FILE = / "analysis.json"
 CANDIDATES_FILE = DATA_DIR / "scout_candidates.json"
 PENDING_FILE = DATA_DIR / "pending_cards.json"
 OUTPUT_FILE = DATA_DIR / "proposals.json"
@@ -28,6 +32,21 @@ BOT_TOKEN = (os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("BOT_TOKEN") or "").st
 CHAT_ID = (os.getenv("TELEGRAM_CHAT_ID") or "").strip()
 
 
+# --- Локальный переводчик (тот же что в ask.py) ---
+try:
+    from translate import is_english, translate_to_ru
+    HAS_TRANSLATOR = True
+    print("✅ translate.py подключён")
+except ImportError as e:
+    HAS_TRANSLATOR = False
+    def is_english(text): return False
+    def translate_to_ru(text): return text
+    print(f"⚠️ translate.py недоступен: {e}. Перевод отключён.")
+
+
+# ============================================================
+# УТИЛИТЫ
+# ============================================================
 def load_json(path, default):
     if not path.exists():
         return default
@@ -46,23 +65,48 @@ def save_json(path, data):
 
 
 def short_id(url: str) -> str:
-    """md5(url)[:16] — совместимо с approve_handler.py."""
     return hashlib.md5(url.encode("utf-8")).hexdigest()[:16]
 
 
-def send_candidate(title: str, url: str, sid: str, topic: str = ""):
+def translate_title(text: str) -> str:
+    """Переводит заголовок, если он английский. Иначе возвращает как есть."""
+    if not text or not text.strip():
+        return text
+    if not HAS_TRANSLATOR:
+        return text
+    try:
+        if is_english(text):
+            translated = translate_to_ru(text)
+            if translated and translated.strip():
+                return translated.strip()
+    except Exception as e:
+        print(f"⚠️ Ошибка перевода '{text[:30]}': {e}")
+    return text
+
+
+# ============================================================
+# TELEGRAM
+# ============================================================
+def send_candidate(title_en: str, title_ru: str, url: str, sid: str, topic: str = ""):
     if not BOT_TOKEN or not CHAT_ID:
         print("⚠️ Нет TELEGRAM_BOT_TOKEN или TELEGRAM_CHAT_ID")
         return False
 
-    text = (
-        f"📚 <b>Новая книга</b>\n\n"
-        f"<b>{title[:200]}</b>\n"
-        f"{'Тема: ' + topic if topic else ''}\n\n"
-        f"<a href=\"{url}\">Открыть PDF</a>"
-    )
+    lines = ["📚 <b>Новая книга</b>\n"]
 
-    # ВАЖНО: формат approve:<sid> — как ловит bot_host.py
+    if title_ru and title_ru != title_en:
+        lines.append(f"🇷🇺 <b>{title_ru[:250]}</b>")
+        lines.append(f"🇬🇧 <i>{title_en[:200]}</i>")
+    else:
+        lines.append(f"<b>{title_en[:300]}</b>")
+
+    if topic:
+        lines.append(f"\n🔖 Тема: {topic}")
+
+    lines.append(f'\n<a href="{url}">Открыть PDF</a>')
+
+    text = "\n".join(lines)
+
     keyboard = {
         "inline_keyboard": [[
             {"text": "✅ Скачать", "callback_data": f"approve:{sid}"},
@@ -91,8 +135,11 @@ def send_candidate(title: str, url: str, sid: str, topic: str = ""):
         return False
 
 
+# ============================================================
+# MAIN
+# ============================================================
 def main():
-    print("🧠 ARGUS PROPOSER v3.1")
+    print("🧠 ARGUS PROPOSER v3.3")
     print("=" * 50)
 
     # ---- analysis.json ----
@@ -148,26 +195,32 @@ def main():
     print(f"\n📋 Предложений: {len(proposals)}")
     print(f"📚 Свежих кандидатов: {len(fresh)} (из {len(all_candidates)})")
     print(f"📤 Отправим: {len(to_send)}")
+    print(f"🌐 Переводчик: {'✅ включён' if HAS_TRANSLATOR else '❌ отключён'}\n")
 
     sent_now = 0
     for c in to_send:
         sid = c["_sid"]
         url = c["url"]
-        title = c.get("title", "Без названия")
+        title_en = c.get("title", "Без названия")
         topic = c.get("topic", "")
 
-        if send_candidate(title, url, sid, topic):
+        # Перевод
+        title_ru = translate_title(title_en)
+
+        if send_candidate(title_en, title_ru, url, sid, topic):
             pending[sid] = {
                 "url": url,
-                "title": title,
+                "title": title_en,
+                "title_ru": title_ru,
                 "topic": topic,
                 "source": c.get("source", ""),
                 "sent_at": datetime.now(timezone.utc).isoformat(),
             }
             sent_ids.add(sid)
             sent_now += 1
-            print(f"  ✅ {title[:60]}")
+            print(f"  ✅ {title_ru[:60] if title_ru != title_en else title_en[:60]}")
 
+    # Сохраняем
     save_json(PENDING_FILE, pending)
     save_json(SENT_FILE, {"sent_ids": list(sent_ids)})
 
@@ -195,7 +248,7 @@ def main():
             lines.append(f"{icon} {auto} {safe}")
         try:
             requests.post(
-                f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
+               лось f"https://api.tele vsgram.org/bot{BOT_TOKEN}/sendMessage",
                 json={"chat_id": CHAT_ID, "text": "\n".join(lines), "parse_mode": "HTML"},
                 timeout=15,
             )
