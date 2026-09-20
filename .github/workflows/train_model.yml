@@ -110,6 +110,46 @@ jobs:
       - name: Save fingerprint
         if: steps.check.outputs.skip == 'false'
         run: cp /tmp/new_fingerprint.txt data/last_train_fingerprint.txt
+      
+      - name: Save fingerprint
+        if: steps.check.outputs.skip == 'false'
+        run: cp /tmp/new_fingerprint.txt data/last_train_fingerprint.txt
+
+      # 🆕 НОВЫЙ ШАГ: Безопасная очистка успешно обученных книг
+      - name: Cleanup processed books
+        if: steps.check.outputs.skip == 'false'
+        run: python scripts/cleanup_processed_books.py
+
+      - name: Commit and Push
+        if: steps.check.outputs.skip == 'false'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "ARGUS"
+          git config user.email "argus@github.com"
+          
+          # Безопасно добавляем изменения (включая удаление файлов из books/)
+          git add data/ models/ books/ || true
+          
+          if git diff --staged --quiet; then
+            echo "ℹ️ Нет изменений для коммита."
+            exit 0
+          fi
+          
+          echo "Есть изменения. Коммичу и пушу..."
+          git commit -m "ARGUS: auto-train & cleanup [skip ci]"
+          
+          # Надежный пуш с обработкой конфликтов
+          for i in 1 2 3; do
+            git pull --rebase --autostash origin main
+            if git push origin main; then
+              echo "✅ Обучение и очистка успешно сохранены в репозиторий"
+              break
+            else
+              echo "⚠️ Попытка $i не удалась, жду 5 секунд..."
+              sleep 5
+            fi
+          done
 
       - name: Commit and Push
         if: steps.check.outputs.skip == 'false'
