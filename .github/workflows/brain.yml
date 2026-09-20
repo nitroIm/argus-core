@@ -2,9 +2,9 @@ name: ARGUS Brain (Master Scheduler)
 
 on:
   workflow_dispatch:
-  schedule:
-    # Включи эту строку, когда захочешь автоматический запуск каждые 30 минут
-   # - cron: "*/30 * * * *"
+  # Крон отключен для ручной проверки. Раскомментируй нижнюю строку, чтобы включить каждые 30 минут.
+  # schedule:
+  #   - cron: "*/30 * * * *"
 
 permissions:
   contents: write
