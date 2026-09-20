@@ -1,6 +1,8 @@
 # ============================================================
-# ARGUS — BENCHMARK (проверка качества поиска) v2
-# Понимает ОБА формата chunks_metadata.json (строки и словари)
+# ARGUS — BENCHMARK (проверка качества поиска) v3
+# v3: FIX — файл chunks_for_index.json (не chunks_metadata.json)
+#     Поддерживает ОБА формата: список строк и список словарей.
+#     Читает model_info.json для правильных префиксов.
 # ============================================================
 
 import os
@@ -16,7 +18,8 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parent
 DATA_DIR = REPO_ROOT / "data"
 INDEX_FILE = DATA_DIR / "faiss.index"
-META_FILE = DATA_DIR / "chunks_metadata.json"
+META_FILE = DATA_DIR / "chunks_for_index.json"       # ← ИСПРАВЛЕНО
+MODEL_INFO_FILE = DATA_DIR / "model_info.json"
 MODEL_DIR = REPO_ROOT / "models" / "argus-embeddings"
 QUESTIONS_FILE = DATA_DIR / "benchmark_questions.json"
 RESULTS_FILE = DATA_DIR / "benchmark_results.json"
@@ -53,11 +56,19 @@ def notify(text: str):
 
 
 def load_metadata():
-    """Поддерживает старый формат (строки) и новый (словари)."""
+    """Поддерживает оба формата: список строк (legacy) и список словарей."""
     if not META_FILE.exists():
         return []
-    with open(META_FILE, encoding="utf-8") as f:
-        raw = json.load(f)
+    try:
+        with open(META_FILE, encoding="utf-8") as f:
+            raw = json.load(f)
+    except Exception as e:
+        print(f"⚠️ Ошибка чтения {META_FILE.name}: {e}")
+        return []
+
+    if not isinstance(raw, list):
+        return []
+
     out = []
     for i, m in enumerate(raw):
         if isinstance(m, dict):
@@ -87,11 +98,28 @@ def load_questions():
 
 
 def load_model():
+    """Определяет модель и префикс: сначала model_info.json, потом fallback."""
     from sentence_transformers import SentenceTransformer
+
+    # 1. Приоритет — model_info.json (его пишет train_embeddings.py)
+    if MODEL_INFO_FILE.exists():
+        try:
+            with open(MODEL_INFO_FILE, encoding="utf-8") as f:
+                info = json.load(f)
+            model_path = info.get("model_path", "intfloat/multilingual-e5-small")
+            prefix = info.get("query_prefix", "")
+            print(f"🧠 model_info.json: {info.get('model_label', '?')}, prefix='{prefix}'")
+            return SentenceTransformer(model_path), prefix
+        except Exception as e:
+            print(f"⚠️ model_info.json битый: {e}")
+
+    # 2. Fallback — детект папки fine-tuned
     if (MODEL_DIR / "config.json").exists():
-        print("🧠 Загружаю обученную модель...")
+        print("🧠 Загружаю fine-tuned модель (без префикса)...")
         return SentenceTransformer(str(MODEL_DIR)), ""
-    print("🧠 Загружаю базовую модель multilingual-e5-small...")
+
+    # 3. Fallback — базовая e5-small
+    print("🧠 Загружаю базовую multilingual-e5-small (с префиксом 'query: ')...")
     return SentenceTransformer("intfloat/multilingual-e5-small"), "query: "
 
 
@@ -106,12 +134,19 @@ def main():
 
     meta = load_metadata()
     if not meta:
-        notify("⚠️ <b>Бенчмарк:</b> метаданные чанков пусты.")
+        msg = (f"⚠️ <b>Бенчмарк:</b> метаданные пусты.\n"
+               f"Проверь файл <code>{META_FILE.name}</code> — он должен существовать и быть непустым.")
+        print(msg)
+        notify(msg)
         sys.exit(0)
 
     questions = load_questions()
     model, prefix = load_model()
     index = faiss.read_index(str(INDEX_FILE))
+
+    # Синхронизация: если meta меньше индекса — предупреждаем
+    if len(meta) != index.ntotal:
+        print(f"⚠️ Рассинхрон: индекс {index.ntotal} векторов, метаданных {len(meta)}")
 
     texts = [m.get("text", "") for m in meta]
     sources = [m.get("book") or m.get("source") or "?" for m in meta]
@@ -152,7 +187,8 @@ def main():
     history = []
     if HISTORY_FILE.exists():
         try:
-            history = json.load(open(HISTORY_FILE, encoding="utf-8"))
+            with open(HISTORY_FILE, encoding="utf-8") as f:
+                history = json.load(f)
             if history:
                 prev = history[-1].get("avg_top1")
         except Exception:
