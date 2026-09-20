@@ -1,7 +1,7 @@
 # ============================================================
-# ARGUS — TRAIN EMBEDDINGS (v3.1 — совместим с GUIDE.md)
-# v3.1: использует СУЩЕСТВУЮЩУЮ модель (fine-tuned или базовую),
-#       не переобучает, считает ТОЛЬКО новые чанки.
+# ARGUS — TRAIN EMBEDDINGS (v3.2 — совместим с GUIDE)
+# v3.2: chunks_meta.json (как в боевом semantic_search),
+#       использует СУЩЕСТВУЮЩУЮ модель, считает ТОЛЬКО новые чанки.
 # ============================================================
 
 import json
@@ -12,14 +12,14 @@ from pathlib import Path
 
 from sentence_transformers import SentenceTransformer
 
-# --- Пути (pathlib) ---
+# --- Пути ---
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parent
 
 DATA_DIR = REPO_ROOT / "data"
 MODELS_DIR = REPO_ROOT / "models"
 KNOWLEDGE_FILE = DATA_DIR / "knowledge.json"
-METADATA_FILE = DATA_DIR / "chunks_metadata.json"
+METADATA_FILE = DATA_DIR / "chunks_meta.json"          # ← ИМЯ КАК В semantic_search
 MODEL_INFO_FILE = DATA_DIR / "model_info.json"
 
 FINETUNED_MODEL_DIR = MODELS_DIR / "argus-embeddings"
@@ -29,7 +29,7 @@ TMP_DIR.mkdir(parents=True, exist_ok=True)
 NEW_EMBEDDINGS_FILE = TMP_DIR / "new_embeddings.npy"
 NEW_IDS_FILE = TMP_DIR / "new_chunk_ids.json"
 
-# --- Fallback модель ---
+# --- Fallback ---
 FALLBACK_MODEL_NAME = "intfloat/multilingual-e5-small"
 FALLBACK_DIM = 384
 BATCH_SIZE = 32
@@ -64,9 +64,9 @@ if METADATA_FILE.exists():
             existing_ids = {item.get("id") for item in meta if item.get("id")}
             print(f"📊 Существующий индекс: {len(existing_ids)} id")
         else:
-            print("⚠️ chunks_metadata.json не список — все чанки будут новыми")
+            print("⚠️ chunks_meta.json не список — все чанки будут новыми")
     except Exception as e:
-        print(f"⚠️ Не могу прочитать chunks_metadata.json: {e}")
+        print(f"⚠️ Не могу прочитать chunks_meta.json: {e}")
         print("   → будут пересчитаны ВСЕ эмбеддинги")
 
 
@@ -84,7 +84,7 @@ if use_finetuned:
 else:
     MODEL_PATH = FALLBACK_MODEL_NAME
     MODEL_LABEL = FALLBACK_MODEL_NAME
-    print(f"🤖 Fine-tuned модель не найдена, fallback: {MODEL_PATH}")
+    print(f"🤖 Fine-tuned не найдена, fallback: {MODEL_PATH}")
     PREFIX_PASSAGE = "passage: "
     PREFIX_QUERY = "query: "
 
