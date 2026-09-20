@@ -1,0 +1,56 @@
+{
+  "version": "1.0",
+  "description": "Центр управления расписанием ARGUS. Изменяй значения и коммить — brain.yml подхватит изменения.",
+  
+  "enabled": true,
+  
+  "tasks": {
+    "collect_data": {
+      "enabled": true,
+      "cron": "0 * * * *",
+      "description": "Сбор цен BTC/ETH и Fear & Greed",
+      "workflow": "ARGUS Collect Data",
+      "interval_minutes": 60
+    },
+    
+    "brain": {
+      "enabled": true,
+      "cron": "*/30 * * * *",
+      "description": "Автономное мышление: анализ, предложения, действия",
+      "workflow": "ARGUS Brain",
+      "interval_minutes": 30
+    },
+    
+    "benchmark": {
+      "enabled": true,
+      "cron": "0 5 * * 0",
+      "description": "Еженедельная проверка качества поиска (воскресенье 05:00 UTC)",
+      "workflow": "ARGUS Benchmark",
+      "interval_minutes": 10080
+    },
+    
+    "reporter": {
+      "enabled": true,
+      "cron": "0 9 * * 1",
+      "description": "Еженедельный отчёт (понедельник 09:00 UTC)",
+      "workflow": "ARGUS Reporter",
+      "interval_minutes": 10080
+    },
+    
+    "train": {
+      "enabled": false,
+      "cron": "0 */6 * * *",
+      "description": "Автоматическое обучение (отключено — запускай вручную через /train)",
+      "workflow": "ARGUS Train Model",
+      "interval_minutes": 360
+    },
+    
+    "scout": {
+      "enabled": false,
+      "cron": "0 3 * * *",
+      "description": "Плановый поиск новых книг (отключено)",
+      "workflow": "ARGUS Scout",
+      "interval_minutes": 1440
+    }
+  }
+}
