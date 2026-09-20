@@ -1,6 +1,6 @@
 # ============================================================
 # ARGUS — BUILD INDEX (v3.1 — совместим с GUIDE.md)
-# v3.1: формат chunks_metadata.json = [{id, source, book, text}, ...]
+# v3.1: chunks_metadata.json = [{id, source, book, text}, ...]
 #       как ожидают ask.py / search.py / reranker.py
 # ============================================================
 
@@ -12,7 +12,7 @@ from pathlib import Path
 
 import faiss
 
-# --- Пути (pathlib, как в GUIDE) ---
+# --- Пути (pathlib) ---
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parent
 
@@ -28,7 +28,7 @@ NEW_IDS_FILE = TMP_DIR / "new_chunk_ids.json"
 
 
 # ============================================================
-# 1. ПРОВЕРКА ПРОМЕЖУТОЧНЫХ ФАЙЛОВ
+# 1. ПРОВЕРКА ПРОМЕЖУТОЧНЫХ
 # ============================================================
 if not NEW_EMBEDDINGS_FILE.exists():
     raise SystemExit(f"❌ {NEW_EMBEDDINGS_FILE} не найден — сначала train_embeddings.py")
@@ -44,7 +44,7 @@ print(f"📥 Загружено: {new_embeddings.shape[0]} новых векто
 
 
 # ============================================================
-# 2. ЗАГРУЖАЕМ KNOWLEDGE (для маппинга id → {source, book, text})
+# 2. KNOWLEDGE (для маппинга id → {source, book, text})
 # ============================================================
 if not KNOWLEDGE_FILE.exists():
     raise SystemExit("❌ knowledge.json не найден")
@@ -56,10 +56,10 @@ chunk_by_id = {c["id"]: c for c in knowledge.get("chunks", []) if "id" in c}
 
 
 # ============================================================
-# 3. ЗАГРУЗКА СУЩЕСТВУЮЩЕГО ИНДЕКСА
+# 3. СУЩЕСТВУЮЩИЙ ИНДЕКС
 # ============================================================
 existing_index = None
-existing_metadata = []   # список словарей [{id, source, book, text}, ...]
+existing_metadata = []
 
 if INDEX_FILE.exists() and METADATA_FILE.exists():
     try:
@@ -67,12 +67,10 @@ if INDEX_FILE.exists() and METADATA_FILE.exists():
         with open(METADATA_FILE, encoding="utf-8") as f:
             existing_metadata = json.load(f)
 
-        # Мягкая валидация: если формат НЕ список — пересобираем
         if not isinstance(existing_metadata, list):
-            print("⚠️ chunks_metadata.json не в формате списка — полный пересбор")
+            print("⚠️ chunks_metadata.json не список — полный пересбор")
             existing_index = None
             existing_metadata = []
-        # Рассинхрон количества
         elif existing_index.ntotal != len(existing_metadata):
             print(f"🚨 Рассинхрон: {existing_index.ntotal} векторов vs "
                   f"{len(existing_metadata)} метаданных — полный пересбор")
@@ -81,65 +79,59 @@ if INDEX_FILE.exists() and METADATA_FILE.exists():
         else:
             print(f"📊 Существующий индекс: {existing_index.ntotal} векторов, "
                   f"dim={existing_index.d}")
-
     except Exception as e:
-        print(f"⚠️ Не могу прочитать существующий индекс: {e} — полный пересбор")
+        print(f"⚠️ Не могу прочитать индекс: {e} — полный пересбор")
         existing_index = None
         existing_metadata = []
 
 
 # ============================================================
-# 4. ОПРЕДЕЛЯЕМ РАЗМЕРНОСТЬ
+# 4. РАЗМЕРНОСТЬ
 # ============================================================
 if existing_index is not None:
     dim = existing_index.d
 elif new_embeddings.shape[0] > 0:
     dim = new_embeddings.shape[1]
+elif MODEL_INFO_FILE.exists():
+    with open(MODEL_INFO_FILE, encoding="utf-8") as f:
+        dim = json.load(f)["dim"]
 else:
-    # Пустой прогон и нет индекса — берём из model_info или дефолт
-    if MODEL_INFO_FILE.exists():
-        with open(MODEL_INFO_FILE, encoding="utf-8") as f:
-            dim = json.load(f)["dim"]
-    else:
-        dim = 384  # e5-small default
+    dim = 384
 
 print(f"📐 Размерность: {dim}")
 
 
 # ============================================================
-# 5. СОЗДАЁМ ИЛИ ДОПОЛНЯЕМ ИНДЕКС
+# 5. СОЗДАЁМ ИЛИ ДОПОЛНЯЕМ
 # ============================================================
 if existing_index is None:
     print("🆕 Создаю новый индекс с нуля")
     index = faiss.IndexFlatIP(dim)
     all_metadata = []
 else:
-    print(f"➕ Дополняю существующий ({existing_index.ntotal} → +{new_embeddings.shape[0]})")
+    print(f"➕ Дополняю ({existing_index.ntotal} → +{new_embeddings.shape[0]})")
     index = existing_index
     all_metadata = list(existing_metadata)
 
 
 # ============================================================
-# 6. ДОБАВЛЯЕМ НОВЫЕ ВЕКТОРЫ
+# 6. ДОБАВЛЯЕМ НОВЫЕ
 # ============================================================
 if new_embeddings.shape[0] > 0:
     if not np.isfinite(new_embeddings).all():
         raise RuntimeError("❌ В new_embeddings есть NaN или inf")
 
-    # Проверка размерности
     if new_embeddings.shape[1] != dim:
         raise RuntimeError(
-            f"❌ Размерность новых векторов {new_embeddings.shape[1]} != "
-            f"размерности индекса {dim}"
+            f"❌ Dim новых {new_embeddings.shape[1]} != dim индекса {dim}"
         )
 
     index.add(new_embeddings)
 
-    # Добавляем метаданные в формате GUIDE: [{id, source, book, text}, ...]
     for cid in new_ids:
         chunk = chunk_by_id.get(cid)
         if chunk is None:
-            print(f"⚠️ Чанк {cid} не найден в knowledge.json — пропуск метаданных")
+            print(f"⚠️ Чанк {cid} не найден в knowledge.json — пропуск")
             continue
         all_metadata.append({
             "id": cid,
@@ -162,7 +154,6 @@ with open(METADATA_FILE, "w", encoding="utf-8") as f:
 print(f"💾 Сохранено: {INDEX_FILE} ({index.ntotal} векторов)")
 print(f"💾 Сохранено: {METADATA_FILE} ({len(all_metadata)} записей)")
 
-# Чистим промежуточные файлы
 for f in [NEW_EMBEDDINGS_FILE, NEW_IDS_FILE]:
     if f.exists():
         f.unlink()
