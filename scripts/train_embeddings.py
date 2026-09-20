@@ -29,7 +29,7 @@ TMP_DIR.mkdir(parents=True, exist_ok=True)
 NEW_EMBEDDINGS_FILE = TMP_DIR / "new_embeddings.npy"
 NEW_IDS_FILE = TMP_DIR / "new_chunk_ids.json"
 
-# --- Модель ---
+# --- Fallback модель ---
 FALLBACK_MODEL_NAME = "intfloat/multilingual-e5-small"
 FALLBACK_DIM = 384
 BATCH_SIZE = 32
@@ -52,7 +52,7 @@ if len(chunks) == 0:
 
 
 # ============================================================
-# 2. ЗАГРУЗКА СУЩЕСТВУЮЩИХ МЕТАДАННЫХ (формат GUIDE: список)
+# 2. СУЩЕСТВУЮЩИЕ МЕТАДАННЫЕ (формат GUIDE: список)
 # ============================================================
 existing_ids = set()
 
@@ -60,19 +60,18 @@ if METADATA_FILE.exists():
     try:
         with open(METADATA_FILE, encoding="utf-8") as f:
             meta = json.load(f)
-        # Формат GUIDE — список словарей
         if isinstance(meta, list):
             existing_ids = {item.get("id") for item in meta if item.get("id")}
             print(f"📊 Существующий индекс: {len(existing_ids)} id")
         else:
-            print("⚠️ chunks_metadata.json не в формате списка — все чанки будут новыми")
+            print("⚠️ chunks_metadata.json не список — все чанки будут новыми")
     except Exception as e:
         print(f"⚠️ Не могу прочитать chunks_metadata.json: {e}")
         print("   → будут пересчитаны ВСЕ эмбеддинги")
 
 
 # ============================================================
-# 3. ВЫБОР МОДЕЛИ: fine-tuned или fallback
+# 3. ВЫБОР МОДЕЛИ
 # ============================================================
 use_finetuned = FINETUNED_MODEL_DIR.exists() and any(FINETUNED_MODEL_DIR.iterdir())
 
@@ -80,20 +79,18 @@ if use_finetuned:
     MODEL_PATH = str(FINETUNED_MODEL_DIR)
     MODEL_LABEL = "argus-finetuned"
     print(f"🤖 Использую fine-tuned модель: {MODEL_PATH}")
-    # Fine-tuned модель обучена БЕЗ префиксов — не добавляем
     PREFIX_PASSAGE = ""
     PREFIX_QUERY = ""
 else:
     MODEL_PATH = FALLBACK_MODEL_NAME
     MODEL_LABEL = FALLBACK_MODEL_NAME
-    print(f"🤖 Fine-tuned модель не найдена, использую базовую: {MODEL_PATH}")
-    # Базовая E5 требует префиксы
+    print(f"🤖 Fine-tuned модель не найдена, fallback: {MODEL_PATH}")
     PREFIX_PASSAGE = "passage: "
     PREFIX_QUERY = "query: "
 
 
 # ============================================================
-# 4. НАХОДИМ НОВЫЕ ЧАНКИ
+# 4. НОВЫЕ ЧАНКИ
 # ============================================================
 new_chunks = [c for c in chunks if c.get("id") not in existing_ids]
 print(f"✨ Новых чанков для эмбеддинга: {len(new_chunks)}")
@@ -107,7 +104,7 @@ if len(new_chunks) == 0:
 
 
 # ============================================================
-# 5. ЗАГРУЖАЕМ МОДЕЛЬ И СЧИТАЕМ ЭМБЕДДИНГИ
+# 5. СЧИТАЕМ ЭМБЕДДИНГИ
 # ============================================================
 model = SentenceTransformer(MODEL_PATH)
 actual_dim = model.get_sentence_embedding_dimension()
@@ -127,9 +124,7 @@ embeddings = model.encode(
 print(f"✅ Получено: shape={embeddings.shape}")
 
 if embeddings.shape[1] != actual_dim:
-    raise RuntimeError(
-        f"❌ Размерность {embeddings.shape[1]} != {actual_dim}"
-    )
+    raise RuntimeError(f"❌ Размерность {embeddings.shape[1]} != {actual_dim}")
 
 
 # ============================================================
