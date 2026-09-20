@@ -1,6 +1,6 @@
 # ============================================================
-# ARGUS — ЛИЧНЫЙ ПОИСК КНИГ (v1)
-# Ищет книги по теме, переводит заголовки, присылает в Telegram
+# ARGUS — ЛИЧНЫЙ ПОИСК КНИГ (v2)
+# v2: В Telegram шлём только топ-5, остальное сохраняем для /findnext
 # ============================================================
 
 import os
@@ -29,15 +29,25 @@ except Exception:
     def translate_to_ru(t): return t
     def is_english(t): return False
 
+# Сколько карточек показываем за раз
+PAGE_SIZE = 5
 
-def notify(text: str):
+
+def notify(text: str, keyboard=None):
     if not BOT_TOKEN or not CHAT_ID:
         return
     try:
+        payload = {
+            "chat_id": CHAT_ID,
+            "text": text[:4000],
+            "parse_mode": "HTML",
+            "disable_web_page_preview": True,
+        }
+        if keyboard:
+            payload["reply_markup"] = keyboard
         requests.post(
             f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
-            json={"chat_id": CHAT_ID, "text": text, "parse_mode": "HTML",
-                  "disable_web_page_preview": True},
+            json=payload,
             timeout=15,
         )
     except Exception:
@@ -47,7 +57,7 @@ def notify(text: str):
 # ============================================================
 # ПОИСК ПО ИСТОЧНИКАМ
 # ============================================================
-def search_arxiv(topic, limit=5):
+def search_arxiv(topic, limit=10):
     results = []
     try:
         r = requests.get(
@@ -64,7 +74,6 @@ def search_arxiv(topic, limit=5):
                 link = entry.split("<id>")[1].split("</id>")[0].strip()
                 arxiv_id = link.split("/abs/")[-1]
                 
-                # Извлекаем аннотацию (summary)
                 summary = ""
                 try:
                     summary = entry.split("<summary>")[1].split("</summary>")[0].strip()
@@ -88,7 +97,7 @@ def search_arxiv(topic, limit=5):
     return results
 
 
-def search_zenodo(topic, limit=5):
+def search_zenodo(topic, limit=10):
     results = []
     try:
         r = requests.get(
@@ -111,7 +120,7 @@ def search_zenodo(topic, limit=5):
                         size = f.get("size", 0)
                         break
                 
-                if pdf_url and size / 1024 / 1024 < 50:  # Не больше 50 МБ
+                if pdf_url and size / 1024 / 1024 < 50:
                     results.append({
                         "title": title,
                         "summary": description,
@@ -129,12 +138,12 @@ def search_zenodo(topic, limit=5):
     return results
 
 
-def search_semantic_scholar(topic, limit=5):
+def search_semantic_scholar(topic, limit=10):
     results = []
     try:
         r = requests.get(
             "https://api.semanticscholar.org/graph/v1/paper/search",
-            params={"query": topic, "limit": limit, 
+            params={"query": topic, "limit": limit,
                     "fields": "title,abstract,openAccessPdf"},
             timeout=20,
         )
@@ -156,10 +165,9 @@ def search_semantic_scholar(topic, limit=5):
 
 
 # ============================================================
-# ПЕРЕВОД ЗАГОЛОВКОВ
+# ПЕРЕВОД
 # ============================================================
 def translate_item(item):
-    """Переводит заголовок и аннотацию, если они на английском."""
     title = item.get("title", "")
     summary = item.get("summary", "")
     
@@ -169,10 +177,30 @@ def translate_item(item):
     
     if summary and is_english(summary):
         item["summary_original"] = summary
-        # Переводим только первые 300 символов для экономии времени
         item["summary"] = translate_to_ru(summary[:300]) or summary
     
     return item
+
+
+# ============================================================
+# ФОРМИРОВАНИЕ КАРТОЧКИ
+# ============================================================
+def format_card(i: int, item: dict) -> str:
+    """Форматирует одну карточку материала."""
+    title = item.get("title", "Без названия")
+    source = item.get("source", "?")
+    size = item.get("size_mb")
+    size_str = f" ({size} МБ)" if size else ""
+    
+    lines = [f"<b>{i}.</b> {title}"]
+    lines.append(f"   📡 {source}{size_str}")
+    
+    summary = item.get("summary", "")
+    if summary:
+        lines.append(f"   <i>{summary[:200]}{'...' if len(summary) > 200 else ''}</i>")
+    
+    lines.append(f"   🔗 {item.get('page_url', item.get('url', ''))}")
+    return "\n".join(lines)
 
 
 # ============================================================
@@ -188,16 +216,15 @@ def main():
     print(f"🌐 Переводчик: {'активен' if TRANSLATE_AVAILABLE else 'НЕДОСТУПЕН'}")
     print("=" * 60)
     
-    # Ищем по всем источникам
+    # Ищем по всем источникам (больше, чем раньше, чтобы было что пагинировать)
     all_items = []
-    
     for source_name, search_fn in [
         ("arXiv", search_arxiv),
         ("Zenodo", search_zenodo),
         ("Semantic Scholar", search_semantic_scholar),
     ]:
         print(f"\n📡 {source_name}...")
-        results = search_fn(topic, limit=5)
+        results = search_fn(topic, limit=10)
         print(f"   Найдено: {len(results)}")
         all_items.extend(results)
     
@@ -206,76 +233,53 @@ def main():
         print("\n❌ Ничего не найдено.")
         return
     
-    # Переводим заголовки
+    # Переводим все заголовки
     print(f"\n🌐 Переводим {len(all_items)} заголовков...")
     for item in all_items:
         translate_item(item)
     
-    # Сохраняем в JSON
+    # Сохраняем ВСЁ в JSON с offset = 0 (показали первую страницу)
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     candidates = {
         "topic": topic,
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "total": len(all_items),
+        "offset": PAGE_SIZE,  # Уже показали первые PAGE_SIZE
         "items": all_items,
     }
     
     with open(CANDIDATES_FILE, "w", encoding="utf-8") as f:
         json.dump(candidates, f, ensure_ascii=False, indent=2)
     
-    # Формируем сообщение для Telegram
+    # Формируем сообщение ТОЛЬКО с первыми PAGE_SIZE карточками
+    first_page = all_items[:PAGE_SIZE]
+    
     msg_lines = [f"🔍 <b>Личный поиск:</b> <i>{topic}</i>\n"]
-    msg_lines.append(f"📚 Найдено материалов: <b>{len(all_items)}</b>\n")
+    msg_lines.append(f"📚 Найдено материалов: <b>{len(all_items)}</b> (показано {len(first_page)})\n")
     
-    for i, item in enumerate(all_items[:10], 1):  # Максимум 10 карточек
-        title = item.get("title", "Без названия")
-        source = item.get("source", "?")
-        size = item.get("size_mb")
-        size_str = f" ({size} МБ)" if size else ""
-        
-        msg_lines.append(f"\n<b>{i}.</b> {title}")
-        msg_lines.append(f"   📡 {source}{size_str}")
-        
-        summary = item.get("summary", "")
-        if summary:
-            msg_lines.append(f"   <i>{summary[:200]}{'...' if len(summary) > 200 else ''}</i>")
-        
-        msg_lines.append(f"   🔗 {item.get('page_url', item.get('url', ''))}")
+    for i, item in enumerate(first_page, 1):
+        msg_lines.append(format_card(i, item))
+        msg_lines.append("")
     
-    msg_lines.append("\n💡 Для скачивания нажми кнопку ниже.")
-    
-    # Кнопки для скачивания (до 5 штук в первом ряду)
-    keyboard = []
-    for i, item in enumerate(all_items[:5], 1):
-        keyboard.append([{
-            "text": f"📥 {i}. Скачать",
-            "callback_data": f"personal_dl:{i-1}"
+    # Кнопки: скачать (топ-5) + "Показать ещё" если есть что
+    keyboard_buttons = []
+    for i in range(len(first_page)):
+        keyboard_buttons.append([{
+            "text": f"📥 {i+1}. Скачать",
+            "callback_data": f"personal_dl:{i}"
         }])
     
-    # Отправляем сообщение с кнопками
-    if BOT_TOKEN and CHAT_ID:
-        try:
-            payload = {
-                "chat_id": CHAT_ID,
-                "text": "\n".join(msg_lines)[:4000],
-                "parse_mode": "HTML",
-                "disable_web_page_preview": True,
-                "reply_markup": {"inline_keyboard": keyboard}
-            }
-            r = requests.post(
-                f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
-                json=payload,
-                timeout=15,
-            )
-            if r.status_code == 200:
-                print("✅ Отправлено в Telegram")
-            else:
-                print(f"⚠️ Telegram: {r.status_code} {r.text[:200]}")
-        except Exception as e:
-            print(f"⚠️ Ошибка отправки: {e}")
+    if len(all_items) > PAGE_SIZE:
+        keyboard_buttons.append([{
+            "text": f"Показать ещё ▶ ({len(all_items) - PAGE_SIZE} осталось)",
+            "callback_data": "personal_next:0"
+        }])
+    
+    notify("\n".join(msg_lines), {"inline_keyboard": keyboard_buttons})
     
     print("\n" + "=" * 60)
-    print(f"✅ Найдено: {len(all_items)} материалов")
+    print(f"✅ Найдено всего: {len(all_items)}")
+    print(f"📤 Отправлено в Telegram: {len(first_page)}")
     print(f"💾 Сохранено в: {CANDIDATES_FILE}")
 
 
