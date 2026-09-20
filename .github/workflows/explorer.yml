@@ -13,33 +13,58 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: argus-explorer
+  cancel-in-progress: false
+
 jobs:
   explore:
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-python@v5
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: Install deps
-        run: pip install requests
+      - name: Install dependencies
+        run: pip install requests==2.32.3
 
       - name: Run explorer
         env:
           EXPLORE_TOPIC: ${{ github.event.client_payload.topic || github.event.inputs.topic }}
         run: python scripts/explorer.py
 
-      - name: Commit
+      - name: Commit and Push changes
         run: |
           git config user.name "ARGUS"
           git config user.email "argus@github.com"
-          git add -A
-          git diff --staged --quiet || git commit -m "ARGUS: explorer $(date -u +%Y-%m-%dT%H:%M:%SZ)"
-          git pull --rebase origin main || true
-          git push || true
+          
+          # Добавляем только файлы, которые меняет explorer
+          git add data/scout_candidates.json data/explore_seen.json data/explore_log.json || true
+          
+          if git diff --staged --quiet; then
+            echo "Нет изменений для коммита."
+            exit 0
+          fi
+          
+          echo "Есть изменения. Коммичу и пушу..."
+          git commit -m "ARGUS: explorer findings [skip ci]"
+          
+          # Надежный пуш с обработкой конфликтов (race conditions)
+          for i in 1 2 3; do
+            git pull --rebase --autostash origin main
+            if git push origin main; then
+              echo "✅ Успешно отправлено в репозиторий"
+              break
+            else
+              echo "⚠️ Попытка $i не удалась, жду 5 секунд..."
+              sleep 5
+            fi
+          done
