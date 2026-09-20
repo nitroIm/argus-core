@@ -1,6 +1,7 @@
 # ============================================================
-# ARGUS — ASK / SEMANTIC SEARCH (v6)
-# v6: fix reranker API, chunks_meta.json, model_info.json support
+# ARGUS — ASK / SEMANTIC SEARCH (v7)
+# v7: chunks_for_index.json, fix reranker API, model_info support,
+#     защита от пустого/битого/legacy JSON
 # ============================================================
 
 import os
@@ -31,7 +32,7 @@ DATA_DIR = REPO_ROOT / "data"
 MODELS_DIR = REPO_ROOT / "models"
 
 INDEX_FILE = DATA_DIR / "faiss.index"
-META_FILE = DATA_DIR / "chunks_meta.json"
+META_FILE = DATA_DIR / "chunks_for_index.json"
 MODEL_INFO_FILE = DATA_DIR / "model_info.json"
 
 FAISS_TOP_K = 20
@@ -45,9 +46,9 @@ if not INDEX_FILE.exists():
     print("❌ FAISS индекс не найден. Сначала запусти build_index.")
     sys.exit(1)
 
-if not META_FILE.exists():
-    log_action("ask", error="chunks_meta.json not found")
-    print("❌ Файл метаданных чанков не найден.")
+if not META_FILE.exists() or META_FILE.stat().st_size == 0:
+    log_action("ask", error="chunks_for_index.json missing or empty")
+    print("❌ chunks_for_index.json отсутствует или пуст. Запусти /train.")
     sys.exit(1)
 
 # --- 2. Определение модели ---
@@ -84,8 +85,26 @@ model = SentenceTransformer(model_path)
 print("Загружаю индекс...")
 index = faiss.read_index(str(INDEX_FILE))
 
-with open(META_FILE, "r", encoding="utf-8") as f:
-    meta_chunks = json.load(f)
+# Безопасное чтение метаданных
+try:
+    with open(META_FILE, "r", encoding="utf-8") as f:
+        meta_chunks = json.load(f)
+except json.JSONDecodeError as e:
+    log_action("ask", error=f"chunks_for_index.json invalid: {e}")
+    print(f"❌ chunks_for_index.json битый: {e}")
+    sys.exit(1)
+
+if not isinstance(meta_chunks, list) or not meta_chunks:
+    log_action("ask", error="chunks_for_index.json empty or not list")
+    print("❌ chunks_for_index.json пуст или не список. Запусти /train.")
+    sys.exit(1)
+
+# Legacy формат (список строк)
+if isinstance(meta_chunks[0], str):
+    log_action("ask", error="chunks_for_index.json legacy format")
+    print("⚠️ chunks_for_index.json в СТАРОМ формате (список строк).")
+    print("   Запусти /train для пересборки индекса в новом формате.")
+    sys.exit(1)
 
 print(f"Индекс: {index.ntotal} векторов, метаданных: {len(meta_chunks)}")
 
@@ -121,7 +140,7 @@ if not candidates or all(c["score"] < 0.3 for c in candidates):
     log_action("ask", query=query, found_chunks=0)
     print(answer)
 else:
-    # FIX: правильный вызов reranker — передаём словари с "text"
+    # Reranker — правильный API (словари на вход и выход)
     if rerank_fn:
         try:
             rerank_input = []
