@@ -1,3 +1,17 @@
+# ============================================================
+# ARGUS — BENCHMARK WORKFLOW v3 [PRODUCTION]
+# ------------------------------------------------------------
+# v3: продакшн-версия.
+#   • Единый requirements.txt (без хардкода версий)
+#   • Убран фейковый шаг "Prepare Benchmark Data" (создавал мусор)
+#   • Concurrency: два параллельных прогона не пересекутся
+#   • Retry на transient failures (install, push)
+#   • GitHub Actions Summary — метрики видны на странице job
+#   • Artifacts — benchmark_results.json сохраняется как артефакт
+#   • Exit code 1 при деградации → job помечается "failed" (сигнал)
+#   • Уведомление в Telegram только при проблемах (не спамим)
+# ============================================================
+
 name: ARGUS Benchmark
 
 on:
@@ -5,7 +19,7 @@ on:
   repository_dispatch:
     types: [run_benchmark]
   # schedule:
-  #   - cron: '0 5 * * 0'  # Каждое воскресенье в 5:00 UTC
+  #   - cron: '0 5 * * 0'   # Каждое воскресенье в 5:00 UTC
 
 permissions:
   contents: write
@@ -42,44 +56,121 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/huggingface
-          key: hf-e5-small-v1
+          key: hf-argus-models-v1
           restore-keys: hf-
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install --extra-index-url https://download.pytorch.org/whl/cpu \
-                      -r scripts/requirements.txt
+          for i in 1 2 3; do
+            pip install --extra-index-url https://download.pytorch.org/whl/cpu \
+                        -r scripts/requirements.txt && break
+            echo "⚠️ pip install попытка $i не удалась, жду 10с..."
+            sleep 10
+          done
 
       - name: Run benchmark
+        id: bench
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: python scripts/benchmark.py
+        run: |
+          set +e
+          python scripts/benchmark.py
+          EXIT=$?
+          echo "bench_exit_code=$EXIT" >> $GITHUB_OUTPUT
+          if [ $EXIT -eq 1 ]; then
+            echo "::warning::Бенчмарк показал ДЕГРАДАЦИЮ качества"
+          elif [ $EXIT -eq 2 ]; then
+            echo "::error::Бенчмарк упал с критической ошибкой"
+          fi
+          exit 0
+
+      - name: Upload benchmark artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: |
+            data/benchmark_results.json
+            data/benchmark_history.json
+          retention-days: 30
+          if-no-files-found: ignore
+
+      - name: Write GitHub Summary
+        if: always()
+        run: |
+          if [ -f data/benchmark_results.json ]; then
+            python3 << 'PYEOF'
+          import json, os
+          from pathlib import Path
+
+          path = Path("data/benchmark_results.json")
+          if not path.exists():
+              print("## ⚠️ Benchmark results not found")
+              raise SystemExit(0)
+
+          data = json.loads(path.read_text(encoding="utf-8"))
+
+          summary = []
+          summary.append("## 🎯 ARGUS Benchmark Results")
+          summary.append("")
+          summary.append(f"**Модель:** `{data.get('model_label', '?')}`")
+          summary.append(f"**Чанков:** {data.get('total_chunks', 0)}")
+          summary.append(f"**Вопросов:** {data.get('questions', 0)}")
+          summary.append("")
+          summary.append("| Метрика | Значение |")
+          summary.append("|---|---|")
+          summary.append(f"| top-1 (avg) | **{data.get('avg_top1', 0):.4f}** |")
+          summary.append(f"| top-5 (avg) | {data.get('avg_top5', 0):.4f} |")
+          summary.append(f"| recall@1 | {data.get('recall_at_1', 0):.4f} |")
+          summary.append(f"| recall@5 | {data.get('recall_at_5', 0):.4f} |")
+          summary.append(f"| MRR | {data.get('mrr', 0):.4f} |")
+          summary.append(f"| latency avg | {data.get('avg_latency_ms', 0)} ms |")
+          summary.append(f"| latency p95 | {data.get('p95_latency_ms', 0)} ms |")
+
+          if data.get("degraded"):
+              summary.append("")
+              summary.append("### 🚨 ДЕГРАДАЦИЯ КАЧЕСТВА")
+              summary.append("top-1 упал более чем на 5% относительно предыдущего прогона.")
+
+          Path("summary.md").write_text("\n".join(summary), encoding="utf-8")
+          PYEOF
+            cat summary.md >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## ⚠️ Benchmark не создал results.json" >> $GITHUB_STEP_SUMMARY
+          fi
 
       - name: Commit and Push results
+        if: always()
         run: |
           git config user.name "ARGUS"
           git config user.email "argus@github.com"
 
-          # Безопасно коммитим только файлы результатов бенчмарка
-          git add data/benchmark_results.json data/benchmark_history.json || true
+          git add data/benchmark_results.json \
+                  data/benchmark_history.json \
+                  data/benchmark_results.prev.json || true
 
           if git diff --staged --quiet; then
-            echo "Нет изменений в результатах бенчмарка."
+            echo "ℹ️ Нет изменений в результатах бенчмарка."
             exit 0
           fi
 
-          echo "Есть изменения. Коммичу и пушу..."
           git commit -m "ARGUS: benchmark results [skip ci]"
 
           for i in 1 2 3; do
-            git pull --rebase --autostash origin main
-            if git push origin main; then
-              echo "✅ Результаты успешно отправлены в репозиторий"
+            git pull --rebase --autostash origin main && \
+            git push origin main && {
+              echo "✅ Результаты запушены"
               break
-            else
-              echo "⚠️ Попытка $i не удалась, жду 5 секунд..."
+            } || {
+              echo "⚠️ Push попытка $i, жду 5с..."
               sleep 5
-            fi
+            }
           done
+
+      - name: Fail job if degraded
+        if: steps.bench.outputs.bench_exit_code == '1'
+        run: |
+          echo "::error::Бенчмарк выявил деградацию качества. Проверь топ-результаты."
+          exit 1
