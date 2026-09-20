@@ -4,8 +4,8 @@ on:
   workflow_dispatch:
   repository_dispatch:
     types: [run_train]
-  schedule:
-    - cron: '0 */6 * * *'
+  #schedule:
+ #   - cron: '0 */6 * * *'
 
 permissions:
   contents: write
