@@ -1,188 +1,164 @@
 # ============================================================
-# ARGUS - OBuchenIE EMBEDDINGOV (v2.2)
-# v2.2: ASCII-only strings, fix syntax error
+# ARGUS — TRAIN EMBEDDINGS (v3)
+# v3: FROZEN model, incremental — считаем ТОЛЬКО новые чанки.
+#     Никакого fine-tuning'а. Векторы всегда совместимы.
 # ============================================================
 
+import os
 import json
-import random
+import tempfile
+import numpy as np
+from datetime import datetime, timezone
 from pathlib import Path
-from collections import defaultdict
 
-from sentence_transformers import SentenceTransformer, InputExample, losses
-from sentence_transformers.evaluation import EmbeddingSimilarityEvaluator
-from torch.utils.data import DataLoader
+from sentence_transformers import SentenceTransformer
 
-# --- Paths ---
+# --- Пути ---
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parent
 
 DATA_DIR = REPO_ROOT / "data"
-MODELS_DIR = REPO_ROOT / "models"
 KNOWLEDGE_FILE = DATA_DIR / "knowledge.json"
-OUTPUT_DIR = MODELS_DIR / "argus-embeddings"
+METADATA_FILE = DATA_DIR / "chunks_metadata.json"
 
-MODELS_DIR.mkdir(parents=True, exist_ok=True)
-OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+# Промежуточные файлы (не коммитятся) — передаются в build_index.py
+TMP_DIR = Path(tempfile.gettempdir()) / "argus_train"
+TMP_DIR.mkdir(parents=True, exist_ok=True)
+NEW_EMBEDDINGS_FILE = TMP_DIR / "new_embeddings.npy"
+NEW_IDS_FILE = TMP_DIR / "new_chunk_ids.json"
+MODEL_INFO_FILE = DATA_DIR / "model_info.json"
 
-# --- Settings ---
-SEED = 42
-MODEL_NAME = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
-EPOCHS = 3
+# --- Модель (замороженная) ---
+MODEL_NAME = "intfloat/multilingual-e5-base"
+MODEL_DIM = 768
+MODEL_VERSION = "e5-base-v1"
+PASSAGE_PREFIX = "passage: "  # Обязательно для E5!
+
+# --- Параметры ---
 BATCH_SIZE = 32
-VAL_RATIO = 0.15
-MIN_CHUNK_LEN = 150
 
-random.seed(SEED)
 
 # ============================================================
-# 1. LOAD CHUNKS
+# 1. LOAD KNOWLEDGE
 # ============================================================
-print("Loading:", KNOWLEDGE_FILE)
-with open(KNOWLEDGE_FILE, "r", encoding="utf-8") as f:
+if not KNOWLEDGE_FILE.exists():
+    raise SystemExit("❌ knowledge.json не найден — сначала ingest")
+
+with open(KNOWLEDGE_FILE, encoding="utf-8") as f:
     knowledge = json.load(f)
 
 chunks = knowledge.get("chunks", [])
-print("Total chunks:", len(chunks))
+print(f"📚 Всего чанков в knowledge.json: {len(chunks)}")
 
-if len(chunks) < 10:
-    raise RuntimeError("Too few chunks (" + str(len(chunks)) + "). Run ingest first.")
+if len(chunks) == 0:
+    raise SystemExit("❌ knowledge.json пуст")
 
-# Normalize + dedup
-seen_hashes = set()
-unique_chunks = []
-for c in chunks:
-    text = " ".join(c.get("text", "").split())
-    if len(text) < MIN_CHUNK_LEN:
-        continue
-    h = hash(text)
-    if h in seen_hashes:
-        continue
-    seen_hashes.add(h)
-    unique_chunks.append({
-        "id": c.get("id", "chunk_" + str(len(unique_chunks))),
-        "source": c.get("source", c.get("book", "unknown")),
-        "text": text,
-    })
-
-print("After cleanup:", len(unique_chunks), "chunks")
 
 # ============================================================
-# 2. GROUP BY SOURCE (book)
+# 2. LOAD EXISTING METADATA (что уже проэмбеддено)
 # ============================================================
-groups = defaultdict(list)
-for c in unique_chunks:
-    groups[c["source"]].append(c)
+existing_ids = set()
+existing_model = None
+existing_dim = None
 
-sources = list(groups.keys())
-print("Books/sources:", len(sources))
+if METADATA_FILE.exists():
+    try:
+        with open(METADATA_FILE, encoding="utf-8") as f:
+            meta = json.load(f)
+        existing_ids = set(meta.get("ids", []))
+        existing_model = meta.get("model_name")
+        existing_dim = meta.get("dim")
+        print(f"📊 Существующий индекс: {len(existing_ids)} векторов, "
+              f"модель={existing_model}, dim={existing_dim}")
+    except Exception as e:
+        print(f"⚠️ Не могу прочитать chunks_metadata.json: {e}")
+        print("   → будут пересчитаны ВСЕ эмбеддинги")
 
-# ============================================================
-# 3. TRAIN/VAL SPLIT BY BOOKS (no leaks)
-# ============================================================
-random.shuffle(sources)
-n_val = max(1, int(len(sources) * VAL_RATIO))
-n_val = min(n_val, len(sources) - 1) if len(sources) > 1 else 0
-
-val_sources = set(sources[:n_val])
-train_sources = set(sources[n_val:])
-
-print("Train books:", len(train_sources), "Val books:", len(val_sources))
-
-# Build pairs: adjacent chunks within one book
-def build_pairs(chunk_list):
-    pairs = []
-    for i in range(len(chunk_list) - 1):
-        a = chunk_list[i]["text"]
-        b = chunk_list[i + 1]["text"]
-        if a != b:
-            pairs.append((a, b))
-    return pairs
-
-train_chunks = [c for c in unique_chunks if c["source"] in train_sources]
-val_chunks = [c for c in unique_chunks if c["source"] in val_sources]
-
-train_pairs = build_pairs(train_chunks)
-val_pairs = build_pairs(val_chunks)
-
-print("Train pairs:", len(train_pairs), "Val pairs:", len(val_pairs))
-
-# Fallback if few val pairs
-if len(val_pairs) < 5 and train_pairs:
-    print("Warning: few val pairs, adding random from train")
-    extra = random.sample(train_pairs, min(20, len(train_pairs)))
-    val_pairs.extend(extra)
 
 # ============================================================
-# 4. PREPARE DATA
+# 3. ПРОВЕРКА СОВМЕСТИМОСТИ МОДЕЛИ
 # ============================================================
-train_examples = [InputExample(texts=[a, b]) for a, b in train_pairs]
+force_full_rebuild = False
 
-# For validation: positives + negatives
-val_sentences1, val_sentences2, val_scores = [], [], []
-all_val_texts = [c["text"] for c in val_chunks] or [c["text"] for c in unique_chunks]
+if existing_model and existing_model != MODEL_NAME:
+    print(f"🚨 Модель изменилась: {existing_model} → {MODEL_NAME}")
+    print("   → требуется полный пересбор индекса")
+    force_full_rebuild = True
 
-for a, b in val_pairs:
-    val_sentences1.append(a)
-    val_sentences2.append(b)
-    val_scores.append(1.0)
-    
-    # Negative: random chunk not equal to a and b
-    for _ in range(20):
-        neg = random.choice(all_val_texts)
-        if neg != a and neg != b:
-            val_sentences1.append(a)
-            val_sentences2.append(neg)
-            val_scores.append(0.0)
-            break
+if existing_dim and existing_dim != MODEL_DIM:
+    print(f"🚨 Размерность изменилась: {existing_dim} → {MODEL_DIM}")
+    force_full_rebuild = True
 
-evaluator = EmbeddingSimilarityEvaluator(
-    sentences1=val_sentences1,
-    sentences2=val_sentences2,
-    scores=val_scores,
-    name="argus-val",
-)
+if force_full_rebuild:
+    existing_ids = set()
+    # Удаляем старый индекс — build_index.py создаст новый с нуля
+    for f in [DATA_DIR / "faiss.index", METADATA_FILE]:
+        if f.exists():
+            f.unlink()
+            print(f"🗑️ Удалён {f.name} (для полного пересбора)")
+
 
 # ============================================================
-# 5. MODEL AND TRAINING
+# 4. НАХОДИМ НОВЫЕ ЧАНКИ
 # ============================================================
-print("Loading model:", MODEL_NAME)
+new_chunks = [c for c in chunks if c.get("id") not in existing_ids]
+print(f"✨ Новых чанков для эмбеддинга: {len(new_chunks)}")
+
+if len(new_chunks) == 0:
+    print("✅ Все чанки уже проэмбеддены — нечего делать")
+    # Создаём пустые файлы, чтобы build_index.py понял, что ничего нового
+    np.save(NEW_EMBEDDINGS_FILE, np.zeros((0, MODEL_DIM), dtype=np.float32))
+    with open(NEW_IDS_FILE, "w") as f:
+        json.dump([], f)
+    raise SystemExit(0)
+
+
+# ============================================================
+# 5. ЗАГРУЖАЕМ МОДЕЛЬ И СЧИТАЕМ ЭМБЕДДИНГИ
+# ============================================================
+print(f"🤖 Загрузка модели: {MODEL_NAME}")
 model = SentenceTransformer(MODEL_NAME)
 
-train_dataloader = DataLoader(train_examples, shuffle=True, batch_size=BATCH_SIZE, drop_last=False)
-train_loss = losses.MultipleNegativesRankingLoss(model)
+texts = [PASSAGE_PREFIX + c["text"] for c in new_chunks]
+print(f"🧮 Считаю эмбеддинги для {len(texts)} чанков...")
 
-total_steps = len(train_dataloader) * EPOCHS
-warmup = max(0, int(total_steps * 0.1))
-
-print("Epochs:", EPOCHS, "Batch:", BATCH_SIZE, "Steps:", total_steps, "Warmup:", warmup)
-
-model.fit(
-    train_objectives=[(train_dataloader, train_loss)],
-    epochs=EPOCHS,
-    warmup_steps=warmup,
-    optimizer_params={"lr": 2e-5},
+embeddings = model.encode(
+    texts,
+    batch_size=BATCH_SIZE,
+    normalize_embeddings=True,   # critical for cosine
     show_progress_bar=True,
-    evaluator=evaluator,
-    evaluation_steps=max(1, len(train_dataloader)),
-    output_path=str(OUTPUT_DIR),
-    save_best_model=True,
-)
+    convert_to_numpy=True,
+).astype(np.float32)
+
+print(f"✅ Получено: shape={embeddings.shape}, dtype={embeddings.dtype}")
+
+# Проверка размерности
+if embeddings.shape[1] != MODEL_DIM:
+    raise RuntimeError(
+        f"❌ Размерность модели {embeddings.shape[1]} != ожидаемой {MODEL_DIM}"
+    )
+
 
 # ============================================================
-# 6. SAVE
+# 6. СОХРАНЕНИЕ ПРОМЕЖУТОЧНЫХ ФАЙЛОВ
 # ============================================================
-model.save(str(OUTPUT_DIR))
+np.save(NEW_EMBEDDINGS_FILE, embeddings)
+new_ids = [c["id"] for c in new_chunks]
+with open(NEW_IDS_FILE, "w", encoding="utf-8") as f:
+    json.dump(new_ids, f)
 
-info = {
-    "model": MODEL_NAME,
-    "chunks": len(unique_chunks),
-    "train_pairs": len(train_pairs),
-    "val_pairs": len(val_pairs),
-    "epochs": EPOCHS,
-    "batch_size": BATCH_SIZE,
-}
-with open(OUTPUT_DIR / "training_info.json", "w", encoding="utf-8") as f:
-    json.dump(info, f, indent=2)
+with open(MODEL_INFO_FILE, "w", encoding="utf-8") as f:
+    json.dump({
+        "model_name": MODEL_NAME,
+        "model_version": MODEL_VERSION,
+        "dim": MODEL_DIM,
+        "passage_prefix": PASSAGE_PREFIX,
+        "query_prefix": "query: ",  # ВАЖНО для retrieval!
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+    }, f, ensure_ascii=False, indent=2)
 
-print("Model saved:", OUTPUT_DIR)
-print("training_info.json: created")
+print(f"💾 Сохранено: {NEW_EMBEDDINGS_FILE}")
+print(f"💾 Сохранено: {NEW_IDS_FILE}")
+print(f"💾 Сохранено: {MODEL_INFO_FILE}")
+print()
+print(f"🎉 TRAIN завершён. Новых векторов: {embeddings.shape[0]}")
