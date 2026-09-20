@@ -1,6 +1,6 @@
 # ============================================================
 # ARGUS — ASK / SEMANTIC SEARCH (v6)
-# v6: fix reranker API, fix meta filename, model_info.json support
+# v6: fix reranker API, chunks_meta.json, model_info.json support
 # ============================================================
 
 import os
@@ -30,12 +30,10 @@ REPO_ROOT = SCRIPT_DIR.parent
 DATA_DIR = REPO_ROOT / "data"
 MODELS_DIR = REPO_ROOT / "models"
 
-# Файлы (chunks_meta.json — как в рабочем коде)
 INDEX_FILE = DATA_DIR / "faiss.index"
 META_FILE = DATA_DIR / "chunks_meta.json"
 MODEL_INFO_FILE = DATA_DIR / "model_info.json"
 
-# Настройки
 FAISS_TOP_K = 20
 FINAL_TOP_K = 5
 
@@ -59,7 +57,6 @@ BASE_MODEL = "intfloat/multilingual-e5-small"
 use_prefix = False
 model_path = BASE_MODEL
 
-# Приоритет 1: model_info.json (если есть после моего train_embeddings v3.1)
 if MODEL_INFO_FILE.exists():
     try:
         with open(MODEL_INFO_FILE, encoding="utf-8") as f:
@@ -71,13 +68,11 @@ if MODEL_INFO_FILE.exists():
     except Exception as e:
         print(f"⚠️ model_info.json битый: {e}")
 
-# Приоритет 2: детект папки (старая логика)
 elif TRAINED_MODEL.exists() and (TRAINED_MODEL / "config.json").exists():
     model_path = str(TRAINED_MODEL)
     use_prefix = False
     print(f"🎓 Обученная модель: {model_path}")
 
-# Приоритет 3: fallback на базовую с префиксом
 else:
     model_path = BASE_MODEL
     use_prefix = True
@@ -126,7 +121,7 @@ if not candidates or all(c["score"] < 0.3 for c in candidates):
     log_action("ask", query=query, found_chunks=0)
     print(answer)
 else:
-    # FIX: правильный вызов reranker — передаём словари, получаем словари
+    # FIX: правильный вызов reranker — передаём словари с "text"
     if rerank_fn:
         try:
             rerank_input = []
@@ -180,7 +175,7 @@ else:
             "text": text,
         })
 
-    # --- 8. Формирование ответа ---
+    # --- 8. Ответ ---
     answer = f"🔎 <b>Результаты для:</b> <i>{query}</i>\n\n"
     for i, r in enumerate(final_top, 1):
         score_str = f"{r['score']:.2f}"
