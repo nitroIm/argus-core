@@ -1,7 +1,7 @@
 # ============================================================
-# ARGUS — PROPOSER (v3)
-# v3: + читает scout_candidates.json, создаёт pending_cards.json,
-#     отправляет в Telegram с кнопками ✅/❌
+# ARGUS — PROPOSER (v3.1)
+# v3.1: callback_data в формате approve:<sid> / reject:<sid>
+#       — совместимо с bot_host.py
 # ============================================================
 
 import os
@@ -12,7 +12,6 @@ import requests
 from datetime import datetime, timezone
 from pathlib import Path
 
-# --- Пути ---
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parent
 DATA_DIR = REPO_ROOT / "data"
@@ -21,13 +20,10 @@ ANALYSIS_FILE = DATA_DIR / "analysis.json"
 CANDIDATES_FILE = DATA_DIR / "scout_candidates.json"
 PENDING_FILE = DATA_DIR / "pending_cards.json"
 OUTPUT_FILE = DATA_DIR / "proposals.json"
-SENT_FILE = DATA_DIR / "sent_candidates.json"   # уже отправленные (anti-spam)
+SENT_FILE = DATA_DIR / "sent_candidates.json"
 
-# --- Настройки ---
-MAX_CANDIDATES_PER_RUN = 5       # сколько кандидатов шлём за раз
-CANDIDATES_TTL_DAYS = 14         # кандидаты старше — не отправляем
+MAX_CANDIDATES_PER_RUN = 5
 
-# --- Telegram ---
 BOT_TOKEN = (os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("BOT_TOKEN") or "").strip()
 CHAT_ID = (os.getenv("TELEGRAM_CHAT_ID") or "").strip()
 
@@ -50,12 +46,11 @@ def save_json(path, data):
 
 
 def short_id(url: str) -> str:
-    """Стабильный короткий id из URL. Совместим с approve_handler.py."""
+    """md5(url)[:16] — совместимо с approve_handler.py."""
     return hashlib.md5(url.encode("utf-8")).hexdigest()[:16]
 
 
-def send_telegram_with_buttons(title: str, url: str, sid: str, topic: str = ""):
-    """Отправляет сообщение с inline-кнопками ✅/❌."""
+def send_candidate(title: str, url: str, sid: str, topic: str = ""):
     if not BOT_TOKEN or not CHAT_ID:
         print("⚠️ Нет TELEGRAM_BOT_TOKEN или TELEGRAM_CHAT_ID")
         return False
@@ -67,12 +62,11 @@ def send_telegram_with_buttons(title: str, url: str, sid: str, topic: str = ""):
         f"<a href=\"{url}\">Открыть PDF</a>"
     )
 
-    # ВАЖНО: callback_data ограничена 64 байтами.
-    # Формат: "approve_<sid>" и "reject_<sid>" — влезает
+    # ВАЖНО: формат approve:<sid> — как ловит bot_host.py
     keyboard = {
         "inline_keyboard": [[
-            {"text": "✅ Скачать", "callback_data": f"approve_{sid}"},
-            {"text": "❌ Пропустить", "callback_data": f"reject_{sid}"},
+            {"text": "✅ Скачать", "callback_data": f"approve:{sid}"},
+            {"text": "❌ Пропустить", "callback_data": f"reject:{sid}"},
         ]]
     }
 
@@ -93,15 +87,15 @@ def send_telegram_with_buttons(title: str, url: str, sid: str, topic: str = ""):
         print(f"⚠️ Telegram {r.status_code}: {r.text[:200]}")
         return False
     except Exception as e:
-        print(f"⚠️ Telegram ошибка: {e}")
+        print(f"⚠️ Telegram: {e}")
         return False
 
 
 def main():
-    print("🧠 ARGUS PROPOSER v3")
+    print("🧠 ARGUS PROPOSER v3.1")
     print("=" * 50)
 
-    # ---------- 1. Обычные предложения из analysis.json ----------
+    # ---- analysis.json ----
     analysis = load_json(ANALYSIS_FILE, {})
     findings = analysis.get("findings", [])
 
@@ -111,48 +105,34 @@ def main():
         severity = f.get("severity", "medium")
 
         if action == "download_book":
-            proposals.append({
-                "priority": severity, "action": "download_book",
-                "topic": f.get("topic", ""), "can_auto": True,
-                "message": f"📚 Скачать книгу по теме: {f.get('topic', '?')}"
-            })
+            proposals.append({"priority": severity, "action": "download_book",
+                              "can_auto": True,
+                              "message": f"📚 Скачать: {f.get('topic', '?')}"})
         elif action == "download_multiple":
-            proposals.append({
-                "priority": "high", "action": "download_multiple",
-                "can_auto": True,
-                "message": "📚 Загрузить больше книг — много неудачных запросов"
-            })
+            proposals.append({"priority": "high", "action": "download_multiple",
+                              "can_auto": True, "message": "📚 Загрузить больше книг"})
         elif action == "optimize_search":
-            proposals.append({
-                "priority": "medium", "action": "rebuild_index",
-                "can_auto": True,
-                "message": "⚡ Оптимизировать поиск"
-            })
+            proposals.append({"priority": "medium", "action": "rebuild_index",
+                              "can_auto": True, "message": "⚡ Пересобрать индекс"})
         elif action == "check_logs":
-            proposals.append({
-                "priority": "high", "action": "run_observer",
-                "can_auto": True,
-                "message": "🔍 Запустить Observer"
-            })
+            proposals.append({"priority": "high", "action": "run_observer",
+                              "can_auto": True, "message": "🔍 Запустить Observer"})
         else:
-            proposals.append({
-                "priority": severity, "action": action,
-                "can_auto": False,
-                "message": f"⚠️ {f.get('message', 'Неизвестное действие')}"
-            })
+            proposals.append({"priority": severity, "action": action,
+                              "can_auto": False,
+                              "message": f"⚠️ {f.get('message', 'Неизвестное действие')}"})
 
     priority_order = {"high": 0, "medium": 1, "low": 2}
     proposals.sort(key=lambda x: priority_order.get(x["priority"], 3))
 
-    # ---------- 2. Кандидаты из scout_candidates.json ----------
+    # ---- scout_candidates.json ----
     candidates_data = load_json(CANDIDATES_FILE, {"candidates": []})
     all_candidates = candidates_data.get("candidates", [])
 
-    pending = load_json(PENDING_FILE, {})           # {short_id: {...}}
+    pending = load_json(PENDING_FILE, {})
     sent = load_json(SENT_FILE, {"sent_ids": []})
     sent_ids = set(sent.get("sent_ids", []))
 
-    # Фильтруем: не в pending, не отправлены ранее
     fresh = []
     for c in all_candidates:
         url = c.get("url", "")
@@ -163,14 +143,12 @@ def main():
             continue
         fresh.append({**c, "_sid": sid})
 
-    # Берём MAX_CANDIDATES_PER_RUN свежих
     to_send = fresh[:MAX_CANDIDATES_PER_RUN]
 
-    print(f"\n📋 Предложений (analysis): {len(proposals)}")
-    print(f"📚 Свежих кандидатов: {len(fresh)} (из {len(all_candidates)} всего)")
+    print(f"\n📋 Предложений: {len(proposals)}")
+    print(f"📚 Свежих кандидатов: {len(fresh)} (из {len(all_candidates)})")
     print(f"📤 Отправим: {len(to_send)}")
 
-    # ---------- 3. Отправка кандидатов с кнопками ----------
     sent_now = 0
     for c in to_send:
         sid = c["_sid"]
@@ -178,8 +156,7 @@ def main():
         title = c.get("title", "Без названия")
         topic = c.get("topic", "")
 
-        ok = send_telegram_with_buttons(title, url, sid, topic)
-        if ok:
+        if send_candidate(title, url, sid, topic):
             pending[sid] = {
                 "url": url,
                 "title": title,
@@ -189,13 +166,11 @@ def main():
             }
             sent_ids.add(sid)
             sent_now += 1
-            print(f"  ✅ Отправлено: {title[:60]}")
+            print(f"  ✅ {title[:60]}")
 
-    # Сохраняем pending и sent
     save_json(PENDING_FILE, pending)
     save_json(SENT_FILE, {"sent_ids": list(sent_ids)})
 
-    # ---------- 4. Сохранение proposals.json ----------
     output = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "total": len(proposals),
@@ -207,19 +182,17 @@ def main():
     }
     save_json(OUTPUT_FILE, output)
 
-    # ---------- 5. Отправка обычных предложений (одним сообщением) ----------
+    # ---- Обычные предложения ----
     if BOT_TOKEN and CHAT_ID and proposals:
         lines = ["🧠 <b>ARGUS — Предложения</b>\n"]
         lines.append(f"Всего: {len(proposals)}")
         lines.append(f"🤖 Авто: {output['auto_possible']}")
         lines.append(f"👤 Ручных: {output['manual_needed']}\n")
-
         for p in proposals[:10]:
             icon = "🔴" if p["priority"] == "high" else "🟡" if p["priority"] == "medium" else "🟢"
             auto = "🤖" if p["can_auto"] else "👤"
             safe = p['message'].replace("<", "&lt;").replace(">", "&gt;")
             lines.append(f"{icon} {auto} {safe}")
-
         try:
             requests.post(
                 f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
@@ -229,7 +202,6 @@ def main():
         except Exception as e:
             print(f"⚠️ Telegram: {e}")
 
-    # ---------- 6. Вывод ----------
     print("\n" + "=" * 50)
     print(f"✅ Предложений: {len(proposals)}")
     print(f"📤 Кандидатов отправлено: {sent_now}")
