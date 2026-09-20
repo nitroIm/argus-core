@@ -1,10 +1,11 @@
 # ============================================================
-# ARGUS — TRAIN EMBEDDINGS (v3.3)
-# v3.3: chunks_for_index.json (реальное имя в репо)
-#       frozen inference, считает ТОЛЬКО новые чанки
+# ARGUS — TRAIN EMBEDDINGS (v3.json.4)
+# v3.4: fallback — если у чанка нет "id", генерируем из md5(text).
+#       Работает со старым knowledge без пересборки.
 # ============================================================
 
 import json
+import hashlib
 import tempfile
 import numpy as np
 from datetime import datetime, timezone
@@ -35,6 +36,16 @@ FALLBACK_DIM = 384
 BATCH_SIZE = 32
 
 
+def ensure_chunk_id(c: dict) -> str:
+    """Возвращает id чанка. Если нет — генерирует из md5 текста (детерминированно)."""
+    cid = c.get("id")
+    if cid:
+        return cid
+    text = c.get("text", "")
+    h = hashlib.md5(text.encode("utf-8")).hexdigest()
+    return f"auto#{h[:12]}"
+
+
 # ============================================================
 # 1. LOAD KNOWLEDGE
 # ============================================================
@@ -49,6 +60,15 @@ print(f"📚 Всего чанков в knowledge.json: {len(chunks)}")
 
 if len(chunks) == 0:
     raise SystemExit("❌ knowledge.json пуст")
+
+# Проставляем id всем чанкам на лету (если нет)
+missing_id = sum(1 for c in chunks if not c.get("id"))
+if missing_id > 0:
+    print(f"⚠️ У {missing_id} чанков нет 'id' — генерирую из текста (fallback)")
+
+for c in chunks:
+    if not c.get("id"):
+        c["id"] = ensure_chunk_id(c)
 
 
 # ============================================================
@@ -95,7 +115,7 @@ else:
 # ============================================================
 # 4. НОВЫЕ ЧАНКИ
 # ============================================================
-new_chunks = [c for c in chunks if c.get("id") not in existing_ids]
+new_chunks = [c for c in chunks if c["id"] not in existing_ids]
 print(f"✨ Новых чанков для эмбеддинга: {len(new_chunks)}")
 
 if len(new_chunks) == 0:
@@ -113,7 +133,7 @@ model = SentenceTransformer(MODEL_PATH)
 actual_dim = model.get_sentence_embedding_dimension()
 print(f"📐 Размерность модели: {actual_dim}")
 
-texts = [PREFIX_PASSAGE + c["text"] for c in new_chunks]
+texts = [PREFIX_PASSAGE + c.get("text", "") for c in new_chunks]
 print(f"🧮 Считаю эмбеддинги для {len(texts)} чанков...")
 
 embeddings = model.encode(
