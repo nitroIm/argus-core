@@ -1,3 +1,17 @@
+# ============================================================
+# ARGUS — PROPOSER WORKFLOW v2 [PRODUCTION]
+# ------------------------------------------------------------
+# v2: продакшн-версия.
+#   • Полные зависимости через requirements.txt (нужен torch)
+#   • Cache HF models (модель перевода 300 МБ — не тянем каждый раз)
+#   • Cache pip
+#   • Retry на push
+#   • Commit: proposals.json + pending_cards.json + sent_candidates.json
+#     + translation_cache.json
+# ------------------------------------------------------------
+# v1: минимальный pip install requests
+# ============================================================
+
 name: ARGUS Proposer
 
 on:
@@ -13,7 +27,7 @@ concurrency:
 jobs:
   propose:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
 
     steps:
       - name: Checkout
@@ -26,8 +40,29 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-proposer-${{ hashFiles('scripts/requirements.txt') }}
+          restore-keys: pip-proposer-
+
+      - name: Cache HF models
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface
+          key: hf-argus-models-v1
+          restore-keys: hf-
+
       - name: Install dependencies
-        run: pip install requests==2.32.3
+        run: |
+          python -m pip install --upgrade pip
+          for i in 1 2 3; do
+            pip install --extra-index-url https://download.pytorch.org/whl/cpu \
+                        -r scripts/requirements.txt && break
+            echo "⚠️ pip попытка $i, жду 10с..."
+            sleep 10
+          done
 
       - name: Run proposer
         env:
@@ -39,26 +74,26 @@ jobs:
         run: |
           git config user.name "ARGUS"
           git config user.email "argus@github.com"
-          
-          # Добавляем только файл с предложениями
-          git add data/proposals.json || true
-          
+
+          git add data/proposals.json \
+                  data/pending_cards.json \
+                  data/sent_candidates.json \
+                  data/translation_cache.json || true
+
           if git diff --staged --quiet; then
-            echo "Нет изменений для коммита."
+            echo "ℹ️ Нет изменений."
             exit 0
           fi
-          
-          echo "Есть изменения. Коммичу и пушу..."
+
           git commit -m "ARGUS: new proposals [skip ci]"
-          
-          # Надежный пуш с обработкой конфликтов (race conditions)
+
           for i in 1 2 3; do
-            git pull --rebase --autostash origin main
-            if git push origin main; then
-              echo "✅ Предложения успешно сохранены"
+            git pull --rebase --autostash origin main && \
+            git push origin main && {
+              echo "✅ Предложения сохранены"
               break
-            else
-              echo "⚠️ Попытка $i не удалась, жду 5 секунд..."
+            } || {
+              echo "⚠️ Push попытка $i, жду 5с..."
               sleep 5
-            fi
+            }
           done
