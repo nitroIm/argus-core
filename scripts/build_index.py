@@ -1,99 +1,150 @@
 # ============================================================
-# ARGUS — ПОСТРОЕНИЕ ИНДЕКСА (v4)
-# v4: import sys, защита от пустых данных, идеальная синхронизация с train_embeddings.py
+# ARGUS — BUILD INDEX (v3)
+# v3: append новых векторов к существующему faiss.index
 # ============================================================
 
 import os
-import sys
 import json
+import tempfile
 import numpy as np
-import faiss
+from datetime import datetime, timezone
 from pathlib import Path
-from sentence_transformers import SentenceTransformer
 
-# --- Пути от корня репо ---
+import faiss
+
+# --- Пути ---
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parent
 
 DATA_DIR = REPO_ROOT / "data"
-MODELS_DIR = REPO_ROOT / "models"
-
-KNOWLEDGE_FILE = DATA_DIR / "knowledge.json"
 INDEX_FILE = DATA_DIR / "faiss.index"
 METADATA_FILE = DATA_DIR / "chunks_metadata.json"
-TRAINED_MODEL_PATH = MODELS_DIR / "argus-embeddings"
+MODEL_INFO_FILE = DATA_DIR / "model_info.json"
 
-DATA_DIR.mkdir(parents=True, exist_ok=True)
+TMP_DIR = Path(tempfile.gettempdir()) / "argus_train"
+NEW_EMBEDDINGS_FILE = TMP_DIR / "new_embeddings.npy"
+NEW_IDS_FILE = TMP_DIR / "new_chunk_ids.json"
 
-# --- 1. Проверка и загрузка знаний ---
-if not KNOWLEDGE_FILE.exists():
-    print("❌ knowledge.json не найден. Сначала запусти ingest.py")
-    sys.exit(1)
 
-print(f"📚 Загрузка знаний из: {KNOWLEDGE_FILE}")
-with open(KNOWLEDGE_FILE, "r", encoding="utf-8") as f:
-    knowledge = json.load(f)
+# ============================================================
+# 1. ПРОВЕРКА ПРОМЕЖУТОЧНЫХ ФАЙЛОВ
+# ============================================================
+if not NEW_EMBEDDINGS_FILE.exists():
+    raise SystemExit(f"❌ {NEW_EMBEDDINGS_FILE} не найден — сначала train_embeddings.py")
 
-# --- 2. Подготовка данных ---
-texts = []
-metadata = []
+new_embeddings = np.load(NEW_EMBEDDINGS_FILE).astype(np.float32)
+with open(NEW_IDS_FILE, encoding="utf-8") as f:
+    new_ids = json.load(f)
 
-for c in knowledge.get("chunks", []):
-    text = " ".join(c.get("text", "").split())  # нормализация пробелов
-    if len(text) < 100:  # пропускаем мусорные короткие куски
-        continue
-    
-    texts.append(text)
-    metadata.append({
-        "id": c.get("id", f"chunk_{len(metadata)}"),
-        "source": c.get("source", c.get("book", "unknown")),
-        "book": c.get("book", "unknown"),
-        "chunk_index": c.get("chunk_index", len(metadata))
-    })
+assert new_embeddings.shape[0] == len(new_ids), \
+    f"❌ Рассинхрон: {new_embeddings.shape[0]} векторов vs {len(new_ids)} ids"
 
-print(f"✅ Подготовлено {len(texts)} валидных чанков для индексации")
+print(f"📥 Загружено: {new_embeddings.shape[0]} новых векторов, dim={new_embeddings.shape[1] if new_embeddings.shape[0] else 0}")
 
-if not texts:
-    print("❌ Нет валидных чанков для индексации (все слишком короткие или файл пуст).")
-    sys.exit(1)
 
-# --- 3. Загрузка модели ---
-# Сначала пытаемся загрузить ту, которую мы только что обучили
-if TRAINED_MODEL_PATH.exists() and (TRAINED_MODEL_PATH / "config.json").exists():
-    model_path = str(TRAINED_MODEL_PATH)
-    print(f"🧠 Загружаю ОБУЧЕННУЮ модель: {model_path}")
+# ============================================================
+# 2. МОДЕЛЬ (для метаданных)
+# ============================================================
+if not MODEL_INFO_FILE.exists():
+    raise SystemExit(f"❌ {MODEL_INFO_FILE} не найден")
+with open(MODEL_INFO_FILE, encoding="utf-8") as f:
+    model_info = json.load(f)
+
+model_name = model_info["model_name"]
+dim = model_info["dim"]
+
+
+# ============================================================
+# 3. ЗАГРУЗКА СУЩЕСТВУЮЩЕГО ИНДЕКСА (если есть)
+# ============================================================
+existing_index = None
+existing_metadata = {"ids": [], "model_name": None, "dim": None}
+
+if INDEX_FILE.exists() and METADATA_FILE.exists():
+    try:
+        existing_index = faiss.read_index(str(INDEX_FILE))
+        with open(METADATA_FILE, encoding="utf-8") as f:
+            existing_metadata = json.load(f)
+
+        # Проверка совместимости
+        old_dim = existing_index.d
+        old_count = existing_index.ntotal
+        old_ids = existing_metadata.get("ids", [])
+        old_model = existing_metadata.get("model_name")
+
+        print(f"📊 Существующий индекс: {old_count} векторов, dim={old_dim}, model={old_model}")
+
+        # Рассинхрон 1: dim не совпадает с моделью
+        if old_dim != dim:
+            print(f"🚨 dim индекса ({old_dim}) != dim модели ({dim}) — полный пересбор")
+            existing_index = None
+            existing_metadata = {"ids": [], "model_name": None, "dim": None}
+        # Рассинхрон 2: модель не совпадает
+        elif old_model and old_model != model_name:
+            print(f"🚨 модель индекса ({old_model}) != модель ({model_name}) — полный пересбор")
+            existing_index = None
+            existing_metadata = {"ids": [], "model_name": None, "dim": None}
+        # Рассинхрон 3: количество векторов != количество ids
+        elif old_count != len(old_ids):
+            print(f"🚨 Рассинхрон: {old_count} векторов vs {len(old_ids)} ids — полный пересбор")
+            existing_index = None
+            existing_metadata = {"ids": [], "model_name": None, "dim": None}
+
+    except Exception as e:
+        print(f"⚠️ Не могу прочитать существующий индекс: {e} — полный пересбор")
+        existing_index = None
+        existing_metadata = {"ids": [], "model_name": None, "dim": None}
+
+
+# ============================================================
+# 4. СОЗДАЁМ ИЛИ ДОПОЛНЯЕМ ИНДЕКС
+# ============================================================
+if existing_index is None:
+    print("🆕 Создаю новый индекс с нуля")
+    # Inner Product на нормализованных векторах = cosine similarity
+    index = faiss.IndexFlatIP(dim)
+    all_ids = []
 else:
-    # Фоллбэк на базовую, если обученной ещё нет (первый запуск)
-    # Используем ту же модель, что и в train_embeddings.py для консистентности
-    model_path = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
-    print(f"⚠️ Обученная модель не найдена, использую базовую: {model_path}")
+    print(f"➕ Дополняю существующий индекс ({existing_index.ntotal} → +{new_embeddings.shape[0]})")
+    index = existing_index
+    all_ids = list(existing_metadata["ids"])
 
-model = SentenceTransformer(model_path)
 
-# --- 4. Создание эмбеддингов ---
-print("🧠 Векторизация чанков...")
-embeddings = model.encode(
-    texts,
-    normalize_embeddings=True,   # Обязательно для IndexFlatIP (Cosine Similarity)
-    show_progress_bar=True,
-    batch_size=32
-)
-embeddings = np.array(embeddings).astype("float32")
+# Защита: не добавляем пустоту
+if new_embeddings.shape[0] > 0:
+    # Финальная проверка на NaN/inf
+    if not np.isfinite(new_embeddings).all():
+        raise RuntimeError("❌ В new_embeddings есть NaN или inf")
+    index.add(new_embeddings)
+    all_ids.extend(new_ids)
 
-# --- 5. Построение FAISS индекса ---
-dimension = embeddings.shape[1]
-print(f"📐 Размерность вектора: {dimension}")
+print(f"✅ Индекс: {index.ntotal} векторов, dim={index.d}")
 
-# IndexFlatIP (Inner Product) на нормализованных векторах = Cosine Similarity
-index = faiss.IndexFlatIP(dimension)
-index.add(embeddings)
 
-# --- 6. Сохранение ---
+# ============================================================
+# 5. СОХРАНЕНИЕ
+# ============================================================
 faiss.write_index(index, str(INDEX_FILE))
-print(f"✅ FAISS индекс сохранён: {INDEX_FILE} ({index.ntotal} векторов)")
 
 with open(METADATA_FILE, "w", encoding="utf-8") as f:
-    json.dump(metadata, f, ensure_ascii=False, indent=2)
-print(f"✅ Метаданные чанков сохранены: {METADATA_FILE}")
+    json.dump({
+        "model_name": model_name,
+        "model_version": model_info.get("model_version"),
+        "dim": dim,
+        "passage_prefix": model_info.get("passage_prefix"),
+        "query_prefix": model_info.get("query_prefix"),
+        "count": index.ntotal,
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+        "ids": all_ids,
+    }, f, ensure_ascii=False, indent=2)
 
-print("🎉 Индекс успешно построен!")
+print(f"💾 Сохранено: {INDEX_FILE} ({index.ntotal} векторов)")
+print(f"💾 Сохранено: {METADATA_FILE}")
+
+# Чистим промежуточные файлы
+for f in [NEW_EMBEDDINGS_FILE, NEW_IDS_FILE]:
+    if f.exists():
+        f.unlink()
+
+print()
+print(f"🎉 BUILD завершён. Итого векторов: {index.ntotal}")
