@@ -3,8 +3,8 @@ name: ARGUS Brain (Master Scheduler)
 on:
   workflow_dispatch:
   schedule:
-    # Brain работает каждые 30 минут и проверяет, какие задачи нужно запустить
-    # - cron: "*/30 * * * *"
+    # Включи эту строку, когда захочешь автоматический запуск каждые 30 минут
+   # - cron: "*/30 * * * *"
 
 permissions:
   contents: write
@@ -38,26 +38,111 @@ jobs:
           GITHUB_PAT: ${{ secrets.GH_PAT }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: python scripts/brain.py
+        run: |
+          python3 << 'PYEOF'
+          import os
+          import json
+          import requests
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+          REPO_ROOT = Path.cwd()
+          DATA_DIR = REPO_ROOT / "data"
+          SCHEDULE_FILE = DATA_DIR / "schedule.json"
+          STATE_FILE = DATA_DIR / "brain_state.json"
+
+          BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+          CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+          GITHUB_PAT = os.getenv("GITHUB_PAT")
+          GITHUB_REPO = os.getenv("GITHUB_REPO")
+
+          def notify(text):
+              if not BOT_TOKEN or not CHAT_ID: return
+              try:
+                  requests.post(f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
+                                json={"chat_id": CHAT_ID, "text": text, "parse_mode": "HTML"}, timeout=10)
+              except: pass
+
+          def load_json(path, default=None):
+              if path.exists():
+                  try:
+                      with open(path, encoding="utf-8") as f: return json.load(f)
+                  except: pass
+              return default or {}
+
+          def save_json(path, data):
+              with open(path, "w", encoding="utf-8") as f:
+                  json.dump(data, f, ensure_ascii=False, indent=2)
+
+          def should_run(task_name, interval_min, last_runs):
+              last = last_runs.get(task_name)
+              if not last: return True
+              try:
+                  dt_last = datetime.fromisoformat(last.replace('Z', '+00:00'))
+                  mins_since = (datetime.now(timezone.utc) - dt_last).total_seconds() / 60
+                  return mins_since >= interval_min
+              except: return True
+
+          def trigger_workflow(event_type):
+              if not GITHUB_PAT or not GITHUB_REPO: return False
+              url = f"https://api.github.com/repos/{GITHUB_REPO}/dispatches"
+              headers = {"Accept": "application/vnd.github+json",
+                         "Authorization": f"Bearer {GITHUB_PAT}",
+                         "X-GitHub-Api-Version": "2022-11-28"}
+              payload = {"event_type": event_type, "client_payload": {"triggered_by": "brain"}}
+              try:
+                  r = requests.post(url, headers=headers, json=payload, timeout=15)
+                  return r.status_code == 204
+              except: return False
+
+          print(f"🧠 BRAIN START: {datetime.now(timezone.utc).isoformat()}")
+          
+          schedule = load_json(SCHEDULE_FILE, {"enabled": False, "tasks": {}})
+          if not schedule.get("enabled"):
+              print("⏸️ Brain disabled in schedule.json"); exit(0)
+
+          state = load_json(STATE_FILE, {"last_runs": {}})
+          last_runs = state.get("last_runs", {})
+          now_iso = datetime.now(timezone.utc).isoformat()
+          triggered = []
+
+          for task_name, cfg in schedule.get("tasks", {}).items():
+              if not cfg.get("enabled", True): continue
+              
+              interval = cfg.get("interval_minutes", 60)
+              event_type = cfg.get("event_type", f"run_{task_name}")
+              
+              if should_run(task_name, interval, last_runs):
+                  print(f"✅ Triggering: {task_name} ({event_type})")
+                  if trigger_workflow(event_type):
+                      last_runs[task_name] = now_iso
+                      triggered.append(task_name)
+                  else:
+                      print(f"❌ Failed to trigger: {task_name}")
+              else:
+                  print(f"⏳ Waiting: {task_name}")
+
+          state["last_runs"] = last_runs
+          state["last_check"] = now_iso
+          save_json(STATE_FILE, state)
+
+          if triggered:
+              msg = "🧠 <b>Brain активировал задачи:</b>\n\n" + "\n".join([f"✅ {t}" for t in triggered])
+              notify(msg)
+              print(f"\n🎯 Done: {', '.join(triggered)}")
+          else:
+              print("\n💤 No tasks due.")
+          PYEOF
 
       - name: Commit state
         run: |
           git config user.name "ARGUS"
           git config user.email "argus@github.com"
-          git add data/brain_state.json data/brain_decisions.json || true
-          
-          if git diff --staged --quiet; then
-            echo "Нет изменений"
-            exit 0
-          fi
-          
-          git commit -m "ARGUS: brain state [skip ci]"
+          git add data/brain_state.json || true
+          if git diff --staged --quiet; then echo "No changes"; exit 0; fi
+          git commit -m "ARGUS: brain state update [skip ci]"
           for i in 1 2 3; do
             git pull --rebase --autostash origin main
-            if git push origin main; then
-              echo "✅ Сохранено"
-              break
-            else
-              sleep 5
-            fi
+            if git push origin main; then echo "✅ Saved"; break; fi
+            sleep 5
           done
