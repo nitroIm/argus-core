@@ -4,8 +4,8 @@ on:
   workflow_dispatch:
   repository_dispatch:
     types: [run_train]
-  #schedule:
- #   - cron: '0 */6 * * *'
+  # schedule:
+  #   - cron: '0 */6 * * *'
 
 permissions:
   contents: write
@@ -19,19 +19,20 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 120
     
-    # ВАЖНО: экспортируем outputs из job, чтобы notify мог их читать
     outputs:
       skip: ${{ steps.check.outputs.skip }}
       books: ${{ steps.summary.outputs.books }}
       chunks: ${{ steps.summary.outputs.chunks }}
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           lfs: true
 
-      - uses: actions/setup-python@v5
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
@@ -49,7 +50,7 @@ jobs:
           key: hf-multilingual-e5
           restore-keys: hf-
 
-      - name: Install deps
+      - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install torch==2.2.0 --index-url https://download.pytorch.org/whl/cpu
@@ -65,7 +66,6 @@ jobs:
             exit 0
           fi
           
-          # Хэшируем СОДЕРЖИМОЕ файлов, а не ls (старый вариант пропускал изменения внутри файла)
           CURRENT=$(find books -type f -exec md5sum {} + 2>/dev/null | sort | md5sum | cut -d' ' -f1)
           LAST=$(cat data/last_train_fingerprint.txt 2>/dev/null || echo "none")
           
@@ -118,17 +118,29 @@ jobs:
         run: |
           git config user.name "ARGUS"
           git config user.email "argus@github.com"
-          git add -A
+          
+          # Безопасно добавляем только целевые директории
+          git add data/ models/ books/ || true
           
           if git diff --staged --quiet; then
             echo "ℹ️ Нет изменений для коммита."
-          else
-            git commit -m "ARGUS: auto-train $(date -u +%Y-%m-%dT%H:%M:%SZ)"
-            
-            # Безопасный push: pull --rebase перед push, чтобы не сломать при конфликтах
-            git pull --rebase origin main || echo "rebase failed, continuing"
-            git push origin main || echo "push failed"
+            exit 0
           fi
+          
+          echo "Есть изменения. Коммичу и пушу..."
+          git commit -m "ARGUS: auto-train [skip ci]"
+          
+          # Надежный пуш с обработкой конфликтов
+          for i in 1 2 3; do
+            git pull --rebase --autostash origin main
+            if git push origin main; then
+              echo "✅ Обучение успешно сохранено в репозиторий"
+              break
+            else
+              echo "⚠️ Попытка $i не удалась, жду 5 секунд..."
+              sleep 5
+            fi
+          done
 
   notify:
     needs: train
@@ -145,14 +157,14 @@ jobs:
           TRAIN_RESULT: ${{ needs.train.result }}
         run: |
           if [ "${SKIP_FLAG}" = "true" ]; then
-            TEXT="⏸️ <b>Train пропущен</b>%0AНовых книг не обнаружено."
+            TEXT="⏸️ <b>Train пропущен</b>\nНовых книг не обнаружено."
           elif [ "${TRAIN_RESULT}" = "success" ]; then
-            TEXT="🎓 <b>Train завершён</b>%0AКниг: ${BOOKS}, чанков: ${CHUNKS}."
+            TEXT="🎓 <b>Train завершён</b>\nКниг: ${BOOKS}, чанков: ${CHUNKS}."
           else
-            TEXT="❌ <b>Train упал</b>%0AПроверь логи в Actions."
+            TEXT="❌ <b>Train упал</b>\nПроверь логи в Actions."
           fi
           
+          # Используем JSON для надежной отправки \n и HTML
           curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
-            -d "chat_id=${TELEGRAM_CHAT_ID}" \
-            -d "text=${TEXT}" \
-            -d "parse_mode=HTML" || echo "notify failed"
+            -H "Content-Type: application/json" \
+            -d "{\"chat_id\": \"${TELEGRAM_CHAT_ID}\", \"text\": \"${TEXT}\", \"parse_mode\": \"HTML\"}" || echo "notify failed"
