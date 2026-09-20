@@ -1,9 +1,11 @@
 # ============================================================
-# ARGUS — BUILD INDEX (v3.3)
-# v3.3: chunks_for_index.json = [{id, source, book, text}, ...]
+# ARGUS — BUILD INDEX (v3.4)
+# v3.4: fallback — если у чанка нет "id", берём из md5(text).
+#       Совместим со старым knowledge.json.
 # ============================================================
 
 import json
+import hashlib
 import tempfile
 import numpy as np
 from datetime import datetime, timezone
@@ -26,6 +28,15 @@ NEW_EMBEDDINGS_FILE = TMP_DIR / "new_embeddings.npy"
 NEW_IDS_FILE = TMP_DIR / "new_chunk_ids.json"
 
 
+def ensure_chunk_id(c: dict) -> str:
+    cid = c.get("id")
+    if cid:
+        return cid
+    text = c.get("text", "")
+    h = hashlib.md5(text.encode("utf-8")).hexdigest()
+    return f"auto#{h[:12]}"
+
+
 # ============================================================
 # 1. ПРОВЕРКА ПРОМЕЖУТОЧНЫХ
 # ============================================================
@@ -43,7 +54,7 @@ print(f"📥 Загружено: {new_embeddings.shape[0]} новых векто
 
 
 # ============================================================
-# 2. KNOWLEDGE
+# 2. KNOWLEDGE (с fallback id)
 # ============================================================
 if not KNOWLEDGE_FILE.exists():
     raise SystemExit("❌ knowledge.json не найден")
@@ -51,7 +62,12 @@ if not KNOWLEDGE_FILE.exists():
 with open(KNOWLEDGE_FILE, encoding="utf-8") as f:
     knowledge = json.load(f)
 
-chunk_by_id = {c["id"]: c for c in knowledge.get("chunks", []) if "id" in c}
+chunk_by_id = {}
+for c in knowledge.get("chunks", []):
+    cid = ensure_chunk_id(c)
+    chunk_by_id[cid] = c
+
+print(f"📚 Чанков в knowledge.json: {len(chunk_by_id)}")
 
 
 # ============================================================
@@ -65,7 +81,6 @@ if INDEX_FILE.exists() and METADATA_FILE.exists():
         with open(METADATA_FILE, encoding="utf-8") as f:
             existing_metadata = json.load(f)
 
-        # Legacy формат (список строк) — полный пересбор
         if isinstance(existing_metadata, list) and existing_metadata and isinstance(existing_metadata[0], str):
             print("⚠️ chunks_for_index.json в СТАРОМ формате (список строк) — полный пересбор")
             existing_index = None
@@ -140,7 +155,7 @@ if new_embeddings.shape[0] > 0:
             continue
         all_metadata.append({
             "id": cid,
-            "source": chunk.get("source", ""),
+            "source": chunk.get("source", chunk.get("book", "")),
             "book": chunk.get("book", ""),
             "text": chunk.get("text", ""),
         })
