@@ -1,0 +1,60 @@
+name: ARGUS Personal Next
+
+on:
+  repository_dispatch:
+    types: [personal_next]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: argus-personal-next
+  cancel-in-progress: false
+
+jobs:
+  next:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests==2.32.3
+
+      - name: Run personal next
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python scripts/personal_next.py
+
+      - name: Commit offset update
+        run: |
+          git config user.name "ARGUS"
+          git config user.email "argus@github.com"
+          git add data/personal_candidates.json || true
+          
+          if git diff --staged --quiet; then
+            echo "Нет изменений"
+            exit 0
+          fi
+          
+          git commit -m "ARGUS: personal next page [skip ci]"
+          for i in 1 2 3; do
+            git pull --rebase --autostash origin main
+            if git push origin main; then
+              echo "✅ Сохранено"
+              break
+            else
+              sleep 5
+            fi
+          done
