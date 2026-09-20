@@ -1,7 +1,7 @@
 # ============================================================
-# ARGUS — TRAIN EMBEDDINGS (v3.2 — совместим с GUIDE)
-# v3.2: chunks_meta.json (как в боевом semantic_search),
-#       использует СУЩЕСТВУЮЩУЮ модель, считает ТОЛЬКО новые чанки.
+# ARGUS — TRAIN EMBEDDINGS (v3.3)
+# v3.3: chunks_for_index.json (реальное имя в репо)
+#       frozen inference, считает ТОЛЬКО новые чанки
 # ============================================================
 
 import json
@@ -19,7 +19,7 @@ REPO_ROOT = SCRIPT_DIR.parent
 DATA_DIR = REPO_ROOT / "data"
 MODELS_DIR = REPO_ROOT / "models"
 KNOWLEDGE_FILE = DATA_DIR / "knowledge.json"
-METADATA_FILE = DATA_DIR / "chunks_meta.json"          # ← ИМЯ КАК В semantic_search
+METADATA_FILE = DATA_DIR / "chunks_for_index.json"
 MODEL_INFO_FILE = DATA_DIR / "model_info.json"
 
 FINETUNED_MODEL_DIR = MODELS_DIR / "argus-embeddings"
@@ -52,7 +52,7 @@ if len(chunks) == 0:
 
 
 # ============================================================
-# 2. СУЩЕСТВУЮЩИЕ МЕТАДАННЫЕ (формат GUIDE: список)
+# 2. СУЩЕСТВУЮЩИЕ МЕТАДАННЫЕ
 # ============================================================
 existing_ids = set()
 
@@ -60,13 +60,16 @@ if METADATA_FILE.exists():
     try:
         with open(METADATA_FILE, encoding="utf-8") as f:
             meta = json.load(f)
-        if isinstance(meta, list):
+        if isinstance(meta, list) and meta and isinstance(meta[0], dict):
             existing_ids = {item.get("id") for item in meta if item.get("id")}
-            print(f"📊 Существующий индекс: {len(existing_ids)} id")
+            print(f"📊 Существующий индекс: {len(existing_ids)} id (формат: dict)")
+        elif isinstance(meta, list) and meta and isinstance(meta[0], str):
+            print("⚠️ chunks_for_index.json в СТАРОМ формате (список строк)")
+            print("   → все чанки будут переэмбеддены заново")
         else:
-            print("⚠️ chunks_meta.json не список — все чанки будут новыми")
+            print("⚠️ chunks_for_index.json не список — пересбор")
     except Exception as e:
-        print(f"⚠️ Не могу прочитать chunks_meta.json: {e}")
+        print(f"⚠️ Не могу прочитать chunks_for_index.json: {e}")
         print("   → будут пересчитаны ВСЕ эмбеддинги")
 
 
