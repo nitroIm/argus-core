@@ -187,7 +187,7 @@ def load_model():
 # ============================================================
 # МЕТРИКИ
 # ============================================================
-def compute_recall_mrr(scores_1d, ids_1d, meta_count, threshold=0.5):
+def compute_recall_mrr(scores_1d, ids_1d, meta_count, threshold=0.65):
     """
     Recall@k и MRR для одного запроса.
     Recall@k = сколько попало в top-k с score > threshold
