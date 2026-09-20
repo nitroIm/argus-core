@@ -1,17 +1,11 @@
 # ============================================================
-# ARGUS — BENCHMARK (проверка качества поиска) v4 [PRODUCTION]
+# ARGUS — BENCHMARK v5 [PRODUCTION]
 # ------------------------------------------------------------
-# v4: продакшн-версия.
-#   • Метрики: avg_top1, avg_top5, recall@1, recall@5, MRR, p95_latency
-#   • Baseline-контроль: алерт и exit-код при деградации >порога
-#   • Валидация целостности: index.ntotal == len(meta), dim проверка
-#   • Читает model_info.json для правильных префиксов (fine-tuned vs base)
-#   • Расширенное логирование каждого шага
-#   • Сохраняет benchmark_results.json + benchmark_history.json + бэкапы
-#   • Graceful: не падает без индекса, шлёт алерт в Telegram
-#   • Exit code: 0 = OK, 1 = деградация, 2 = критическая ошибка
+# v5: разделение positive/negative вопросов, threshold 0.65,
+#     отдельные метрики для positive и negative.
 # ------------------------------------------------------------
-# ВАЖНО: META_FILE = chunks_for_index.json (НЕ chunks_metadata.json!)
+# ВАЖНО: META_FILE = chunks_for_index.json
+# Exit codes: 0 = OK, 1 = деградация, 2 = критическая ошибка
 # ============================================================
 
 import os
@@ -40,27 +34,16 @@ RESULTS_BACKUP = DATA_DIR / "benchmark_results.prev.json"
 
 # --- Настройки ---
 TOP_K = 5
-DEGRADATION_THRESHOLD = 0.05     # 5% — порог деградации, ниже которого шлём алерт
-HISTORY_MAX = 30                 # сколько запусков хранить
-MIN_QUESTIONS = 3                # минимум вопросов для валидного прогона
+THRESHOLD = 0.65           # порог "уверенного совпадения"
+DEGRADATION_THRESHOLD = 0.05
+HISTORY_MAX = 30
+MIN_QUESTIONS = 3
 
-# --- Telegram ---
+# Negative: top-1 не должен быть выше этого значения
+NEGATIVE_MAX_TOP1 = 0.55
+
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("BOT_TOKEN")
 CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
-
-# --- Базовые вопросы (fallback если нет benchmark_questions.json) ---
-DEFAULT_QUESTIONS = [
-    "Что такое риск-менеджмент в трейдинге?",
-    "Что такое имбаланс на рынке?",
-    "Как управлять капиталом в трейдинге?",
-    "Что такое диверсификация портфеля?",
-    "Что такое ликвидность рынка?",
-    "Что такое стоп-лосс и зачем он нужен?",
-    "Чем спот-рынок отличается от фьючерсного?",
-    "Что такое эмоциональная дисциплина трейдера?",
-    "Что такое соотношение риска и прибыли?",
-    "Что такое волатильность рынка?",
-]
 
 
 # ============================================================
@@ -73,7 +56,7 @@ def log(msg: str, level: str = "INFO"):
 
 def notify(text: str, silent: bool = False):
     if not BOT_TOKEN or not CHAT_ID:
-        log("Telegram не настроен, уведомление пропущено", "WARN")
+        log("Telegram не настроен", "WARN")
         return False
     try:
         r = requests.post(
@@ -105,7 +88,6 @@ def safe_load_json(path: Path, default=None):
 
 
 def atomic_write_json(path: Path, data):
-    """Пишем через .tmp + rename, чтобы не потерять файл при сбое."""
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_suffix(path.suffix + ".tmp")
     with open(tmp, "w", encoding="utf-8") as f:
@@ -117,7 +99,6 @@ def atomic_write_json(path: Path, data):
 # ВАЛИДАЦИЯ
 # ============================================================
 def validate_inputs():
-    """Проверяем, что всё на месте. Возвращаем (ok, error_msg)."""
     if not INDEX_FILE.exists() or INDEX_FILE.stat().st_size == 0:
         return False, "faiss.index отсутствует или пуст. Запусти обучение."
     if not META_FILE.exists() or META_FILE.stat().st_size == 0:
@@ -126,12 +107,9 @@ def validate_inputs():
 
 
 def load_metadata():
-    """Читаем метаданные, поддерживаем оба формата."""
     raw = safe_load_json(META_FILE, [])
     if not isinstance(raw, list):
-        log(f"{META_FILE.name} не список — пустая мета", "WARN")
         return []
-
     out = []
     for i, m in enumerate(raw):
         if isinstance(m, dict) and "text" in m:
@@ -147,25 +125,46 @@ def load_metadata():
 
 
 def load_questions():
-    """Читаем вопросы из файла, fallback — дефолт."""
+    """Возвращает (positive_list, negative_list)."""
     raw = safe_load_json(QUESTIONS_FILE, None)
-    if raw and isinstance(raw, list):
-        qs = []
-        for q in raw:
-            if isinstance(q, dict):
-                qs.append(q.get("question") or q.get("text") or "")
-            else:
-                qs.append(str(q))
-        qs = [q.strip() for q in qs if q.strip()]
-        if len(qs) >= MIN_QUESTIONS:
-            log(f"Загружено вопросов из файла: {len(qs)}")
-            return qs
-    log(f"Использую дефолтные вопросы ({len(DEFAULT_QUESTIONS)})")
-    return list(DEFAULT_QUESTIONS)
+    positives, negatives = [], []
+
+    if raw:
+        # Формат v2: {"questions": [{"question": "...", "type": "positive"}, ...]}
+        items = raw.get("questions", raw) if isinstance(raw, dict) else raw
+        if isinstance(items, list):
+            for q in items:
+                if isinstance(q, dict):
+                    text = q.get("question") or q.get("text") or ""
+                    qtype = q.get("type", "positive").lower()
+                else:
+                    text = str(q)
+                    qtype = "positive"
+                text = text.strip()
+                if not text:
+                    continue
+                if qtype == "negative":
+                    negatives.append(text)
+                else:
+                    positives.append(text)
+
+    # Fallback, если ничего не нашли
+    if not positives:
+        log("Нет positive-вопросов в файле, использую дефолт", "WARN")
+        positives = [
+            "Что такое риск-менеджмент в трейдинге?",
+            "Что такое имбаланс на рынке?",
+            "Как управлять капиталом в трейдинге?",
+            "Что такое диверсификация портфеля?",
+            "Что такое ликвидность рынка?",
+        ]
+    if not negatives:
+        log("Нет negative-вопросов — метрики могут быть завышены", "WARN")
+
+    return positives, negatives
 
 
 def load_model():
-    """Определяем модель + префикс. Приоритет: model_info.json → папка → fallback."""
     from sentence_transformers import SentenceTransformer
 
     if MODEL_INFO_FILE.exists():
@@ -176,9 +175,9 @@ def load_model():
             log(f"Модель из model_info.json: {info.get('model_label', '?')}, prefix='{prefix}'")
             return SentenceTransformer(model_path), prefix, info.get("model_label", "?")
 
-    if (MODEL_DIR / "config.json").exists():
-        log("Fine-tuned модель (без префикса)")
-        return SentenceTransformer(str(MODEL_DIR)), "", "argus-finetuned"
+    if (MODEL TH_DIR / "config.json").exists():
+       RES log("Fine-tuned модель (безH префиксаOLD)")
+        return SentenceTransformer(str(M)ODEL_DIR)), "", "argus-finetuned"
 
     log("Базовая e5-small (с префиксом 'query: ')")
     return SentenceTransformer("intfloat/multilingual-e5-small"), "query: ", "e5-small-base"
@@ -187,22 +186,17 @@ def load_model():
 # ============================================================
 # МЕТРИКИ
 # ============================================================
-def compute_recall_mrr(scores_1d, ids_1d, meta_count, threshold=0.65):
-    """
-    Recall@k и MRR для одного запроса.
-    Recall@k = сколько попало в top-k с score > threshold
-    MRR = 1 / rank первого попадания
-    """
-    hits = [1 for s in scores_1d if s >= threshold]
-    recall_at_1 = 1.0 if (len(scores_1d) > 0 and scores_1d[0] >= threshold) else 0.0
-    recall_at_5 = min(1.0, sum(hits) / max(1, TOP_K))
+def compute_metrics(scores_1d):
+    """Recall@1, Recall@5, MRR по threshold."""
+    recall_at_1 = 1.0 if (len(scores_1d) > 0 and scores_1d[0] >= else 0.0
+    hits_in_5 = sum(1 for s in scores_1d[:TOP_K] if s >= THRESHOLD)
+    recall_at_5 = min(1.0, hits_in_5 / max(1, TOP_K))
 
     mrr = 0.0
     for rank, s in enumerate(scores_1d, 1):
-        if s >= threshold:
+        if s >= THRESHOLD:
             mrr = 1.0 / rank
             break
-
     return recall_at_1, recall_at_5, mrr
 
 
@@ -211,10 +205,9 @@ def compute_recall_mrr(scores_1d, ids_1d, meta_count, threshold=0.65):
 # ============================================================
 def main():
     t_start = time.time()
-    log(f"=== ARGUS BENCHMARK v4 ===")
-    log(f"Запуск: {datetime.now(timezone.utc).isoformat()}")
+    log(f"=== ARGUS BENCHMARK v5 ===")
+    log(f"Threshold: {THRESHOLD}")
 
-    # --- 1. Валидация ---
     ok, err = validate_inputs()
     if not ok:
         log(err, "ERROR")
@@ -223,64 +216,43 @@ def main():
 
     meta = load_metadata()
     if len(meta) < 1:
-        log("Метаданные пусты после парсинга", "ERROR")
         notify("⚠️ <b>Бенчмарк:</b> метаданные пусты.")
         sys.exit(2)
 
-    questions = load_questions()
-    log(f"Чанков в базе: {len(meta)}")
-    log(f"Вопросов: {len(questions)}")
+    positives, negatives = load_questions()
+    log(f"Чанков: {len(meta)}")
+    log(f"Positive вопросов: {len(positives)}")
+    log(f"Negative вопросов: {len(negatives)}")
 
-    # --- 2. Загрузка модели и индекса ---
     model, prefix, model_label = load_model()
     index = faiss.read_index(str(INDEX_FILE))
     dim = index.d
     log(f"Индекс: {index.ntotal} векторов, dim={dim}")
 
-    # Валидация размерности
-    if index.ntotal != len(meta):
-        log(f"РАССИНХРОН: индекс {index.ntotal} vs метаданных {len(meta)}", "WARN")
-        log("Прогон продолжится, но метрики могут быть недостоверны")
-
-    # Проверка dim через тестовый encode
     test_vec = model.encode(["test"], normalize_embeddings=True)
     if test_vec.shape[1] != dim:
-        msg = f"Несовместимость: модель {test_vec.shape[1]}d, индекс {dim}d. Пересобери индекс."
+        msg = f"Модель {test_vec.shape[1]}d vs индекс {dim}d — пересобери индекс."
         log(msg, "ERROR")
         notify(f"❌ <b>Бенчмарк:</b> {msg}")
         sys.exit(2)
 
+    if index.ntotal != len(meta):
+        log(f"РАССИНХРОН: индекс {index.ntotal} vs мета {len(meta)}", "WARN")
+
     texts = [m["text"] for m in meta]
     sources = [m["book"] for m in meta]
 
-    # --- 3. Прогон по вопросам ---
-    log(f"Начинаю прогон {len(questions)} вопросов...")
-    results = []
-    top1s, top5s, r1s, r5s, mrrs, latencies = [], [], [], [], [], []
-
-    for i, q in enumerate(questions, 1):
+    def run_query(q, qtype="positive"):
         t0 = time.time()
-        try:
-            emb = model.encode([prefix + q], normalize_embeddings=True).astype("float32")
-            scores, ids = index.search(emb, TOP_K)
-            latency_ms = (time.time() - t0) * 1000
-        except Exception as e:
-            log(f"  [{i}] ОШИБКА: {q[:40]} → {e}", "ERROR")
-            continue
+        emb = model.encode([prefix + q], normalize_embeddings=True).astype("float32")
+        scores, ids = index.search(emb, TOP_K)
+        latency_ms = (time.time() - t0) * 1000
 
         s = scores[0]
         idx_list = ids[0]
-
         top1 = float(s[0]) if len(s) > 0 else 0.0
         top5 = float(np.mean(s)) if len(s) > 0 else 0.0
-        r1, r5, mrr = compute_recall_mrr(s, idx_list, len(meta))
-
-        top1s.append(top1)
-        top5s.append(top5)
-        r1s.append(r1)
-        r5s.append(r5)
-        mrrs.append(mrr)
-        latencies.append(latency_ms)
+        r1, r5, mrr = compute_metrics(s)
 
         hits = []
         for sc, idx in zip(s, idx_list):
@@ -291,8 +263,9 @@ def main():
                     "text": texts[idx][:200],
                 })
 
-        results.append({
+        return {
             "question": q,
+            "type": qtype,
             "top1": round(top1, 4),
             "top5": round(top5, 4),
             "recall_at_1": round(r1, 4),
@@ -300,117 +273,140 @@ def main():
             "mrr": round(mrr, 4),
             "latency_ms": round(latency_ms, 1),
             "hits": hits,
-        })
+        }
 
-        log(f"  [{i}/{len(questions)}] top1={top1:.3f} r@5={r5:.2f} mrr={mrr:.2f} — {q[:50]}")
+    # --- Positive ---
+    log(f"\n--- POSITIVE ({len(positives)}) ---")
+    pos_results = []
+    for i, q in enumerate(positives, 1):
+        r = run_query(q, "positive")
+        pos_results.append(r)
+        log(f"  [{i}/{len(positives)}] top1={r['top1']:.3f} r@5={r['recall_at_5']:.2f} — {q[:50]}")
 
-    if not results:
-        log("Не удалось обработать ни одного вопроса", "ERROR")
-        notify("❌ <b>Бенчмарк:</b> ни один вопрос не обработан.")
-        sys.exit(2)
+    # --- Negative ---
+    log(f"\n--- NEGATIVE ({len(negatives)}) ---")
+    neg_results = []
+    for i, q in enumerate(negatives, 1):
+        r = run_query(q, "negative")
+        neg_results.append(r)
+        log(f"  [{i}/{len(negatives)}] top1={r['top1']:.3f} (должно быть <{NEGATIVE_MAX_TOP1}) — {q[:50]}")
 
-    # --- 4. Агрегация ---
-    def safe_mean(arr):
-        return round(float(np.mean(arr)), 4) if arr else 0.0
+    # --- Агрегация positive ---
+    def mean(arr, key):
+        vals = [r[key] for r in arr]
+        return round(float(np.mean(vals)), 4) if vals else 0.0
 
-    avg1 = safe_mean(top1s)
-    avg5 = safe_mean(top5s)
-    avg_r1 = safe_mean(r1s)
-    avg_r5 = safe_mean(r5s)
-    avg_mrr = safe_mean(mrrs)
-    p95_latency = round(float(np.percentile(latencies, 95)), 1) if latencies else 0.0
-    avg_latency = safe_mean(latencies)
+    pos_avg1 = mean(pos_results, "top1")
+    pos_avg5 = mean(pos_results, "top5")
+    pos_r1 = mean(pos_results, "recall_at_1")
+    pos_r5 = mean(pos_results, "recall_at_5")
+    pos_mrr = mean(pos_results, "mrr")
+    pos_lat = mean(pos_results, "latency_ms")
 
-    # --- 5. Сравнение с baseline ---
+    # --- Агрегация negative ---
+    neg_avg1 = mean(neg_results, "top1") if neg_results else 0.0
+    neg_false_positives = sum(1 for r in neg_results if r["top1"] >= NEGATIVE_MAX_TOP1)
+    neg_fp_rate = round(neg_false_positives / len(neg_results), 4) if neg_results else 0.0
+
+    # --- Latency p95 ---
+    all_latencies = [r["latency_ms"] for r in pos_results + neg_results]
+    p95_lat = round(float(np.percentile(all_latencies, 95)), 1) if all_latencies else 0.0
+
+    # --- Сравнение с baseline ---
     history = safe_load_json(HISTORY_FILE, []) or []
     if not isinstance(history, list):
         history = []
-
     prev = history[-1] if history else None
     delta_top1 = None
     degraded = False
     if prev and prev.get("avg_top1"):
-        delta_top1 = avg1 - prev["avg_top1"]
+        delta_top1 = pos_avg1 - prev["avg_top1"]
         if delta_top1 < -DEGRADATION_THRESHOLD:
             degraded = True
         log(f"Δ top1 vs предыдущий: {delta_top1:+.4f}")
 
-    # --- 6. Бэкап предыдущих результатов ---
+    # Если negative FP rate > 30% — деградация
+    if neg_results and neg_fp_rate > 0.3:
+        degraded = True
+        log(f"❌ Слишком много false-positives на negative: {neg_fp_rate:.2%}", "WARN")
+
+    # --- Бэкап + запись ---
     if RESULTS_FILE.exists():
         try:
             shutil.copy2(RESULTS_FILE, RESULTS_BACKUP)
         except Exception as e:
             log(f"Бэкап не удался: {e}", "WARN")
 
-    # --- 7. Запись результатов (атомарно) ---
     entry = {
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "model_label": model_label,
         "total_chunks": len(meta),
-        "questions": len(questions),
-        "avg_top1": avg1,
-        "avg_top5": avg5,
-        "recall_at_1": avg_r1,
-        "recall_at_5": avg_r5,
-        "mrr": avg_mrr,
-        "avg_latency_ms": avg_latency,
-        "p95_latency_ms": p95_latency,
+        "threshold": THRESHOLD,
+        "positives": len(pos_results),
+        "negatives": len(neg_results),
+        "avg_top1": pos_avg1,
+        "avg_top5": pos_avg5,
+        "recall_at_1": pos_r1,
+        "recall_at_5": pos_r5,
+        "mrr": pos_mrr,
+        "neg_avg_top1": neg_avg1,
+        "neg_fp_rate": neg_fp_rate,
+        "avg_latency_ms": pos_lat,
+        "p95_latency_ms": p95_lat,
         "degraded": degraded,
     }
 
-    atomic_write_json(RESULTS_FILE, {
-        **entry,
-        "results": results,
-    })
+    atomic_write_json(RESULTS_FILE, {**entry, "results": pos_results + neg_results})
 
     history.append(entry)
     history = history[-HISTORY_MAX:]
     atomic_write_json(HISTORY_FILE, history)
 
-    # --- 8. Отчёт ---
+    # --- Отчёт ---
     delta_str = f"\n📈 Δ top1: <b>{delta_top1:+.4f}</b>" if delta_top1 is not None else ""
-    degraded_str = "\n🚨 <b>ДЕГРАДАЦИЯ! Проверь качество!</b>" if degraded else ""
+    degraded_str = "\n🚨 <b>ДЕГРАДАЦИЯ!</b>" if degraded else ""
 
     elapsed = round(time.time() - t_start, 1)
     msg = (
-        f"🎯 <b>Бенчмарк завершён</b>\n\n"
+        f"🎯 <b>Бенчмарк v5 завершён</b>\n\n"
         f"🤖 Модель: <code>{model_label}</code>\n"
         f"📚 Чанков: {len(meta)}\n"
-        f"❓ Вопросов: {len(questions)}\n\n"
-        f"<b>Метрики:</b>\n"
-        f"• top-1 (avg): <b>{avg1:.4f}</b>\n"
-        f"• top-5 (avg): <b>{avg5:.4f}</b>\n"
-        f"• recall@1: <b>{avg_r1:.4f}</b>\n"
-        f"• recall@5: <b>{avg_r5:.4f}</b>\n"
-        f"• MRR: <b>{avg_mrr:.4f}</b>\n"
-        f"• latency p95: {p95_latency} мс\n"
+        f"⚙️ Threshold: {THRESHOLD}\n\n"
+        f"<b>POSITIVE ({len(pos_results)}):</b>\n"
+        f"• top-1 avg: <b>{pos_avg1:.4f}</b>\n"
+        f"• top-5 avg: {pos_avg5:.4f}\n"
+        f"• recall@1: <b>{pos_r1:.4f}</b>\n"
+        f"• recall@5: <b>{pos_r5:.4f}</b>\n"
+        f"• MRR: <b>{pos_mrr:.4f}</b>\n\n"
+        f"<b>NEGATIVE ({len(neg_results)}):</b>\n"
+        f"• top-1 avg: {neg_avg1:.4f}\n"
+        f"• false-positive rate: <b>{neg_fp_rate:.2%}</b>\n\n"
+        f"<b>Производительность:</b>\n"
+        f"• latency avg: {pos_lat} мс\n"
+        f"• latency p95: {p95_lat} мс\n"
         f"• время прогона: {elapsed} с"
         f"{delta_str}{degraded_str}"
     )
     notify(msg, silent=not degraded)
 
     log("=" * 50)
-    log(f"avg_top1={avg1}  avg_top5={avg5}")
-    log(f"recall@1={avg_r1}  recall@5={avg_r5}  MRR={avg_mrr}")
-    log(f"latency avg={avg_latency}ms  p95={p95_latency}ms")
+    log(f"POSITIVE: top1={pos_avg1}  recall@1={pos_r1}  recall@5={pos_r5}  MRR={pos_mrr}")
+    log(f"NEGATIVE: top1={neg_avg1}  FP rate={neg_fp_rate}")
+    log(f"Latency: avg={pos_lat}ms  p95={p95_lat}ms")
     log(f"degraded={degraded}")
     log("=" * 50)
 
-    # --- 9. Exit code ---
-    if degraded:
-        sys.exit(1)
-    sys.exit(0)
+    sys.exit(1 if degraded else 0)
 
 
 if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        log("Прервано пользователем", "WARN")
         sys.exit(2)
     except Exception as e:
         import traceback
-        log(f"КРИТИЧЕСКАЯ ОШИБКА: {e}", "ERROR")
+        log(f"КРИТИЧЕСКАЯ: {e}", "ERROR")
         traceback.print_exc()
         notify(f"❌ <b>Бенчмарк упал</b>\n\n<code>{str(e)[:300]}</code>")
         sys.exit(2)
