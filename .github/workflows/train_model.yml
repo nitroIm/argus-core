@@ -129,7 +129,7 @@ jobs:
         run: cp /tmp/new_fingerprint.txt data/last_train_fingerprint.txt
 
       # ============================================================
-      # ШАГ 7: CLEANUP PDF (только успешно обработанные)
+      # ШАГ 7: CLEANUP PDF
       # ============================================================
       - name: Cleanup ingested PDFs
         if: steps.check.outputs.skip == 'false'
@@ -169,7 +169,6 @@ jobs:
 
       # ============================================================
       # ШАГ 8: COMMIT & PUSH
-      # models/ НЕ трогаем — там fine-tuned модель
       # ============================================================
       - name: Commit and Push
         if: steps.check.outputs.skip == 'false'
@@ -180,7 +179,7 @@ jobs:
           git config user.email "argus@github.com"
 
           git add data/knowledge.json \
-                  data/chunks_metadata.json \
+                  data/chunks_meta.json \
                   data/faiss.index \
                   data/summary.json \
                   data/last_ingest.json \
