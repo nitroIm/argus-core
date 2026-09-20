@@ -34,6 +34,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.GH_PAT }}
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -43,9 +44,19 @@ jobs:
       - name: Install dependencies
         run: pip install requests==2.32.3
 
+      - name: Ensure books/ tracked
+        run: |
+          echo "=== Проверяю books/ ==="
+          ls -la books/ || echo "books/ нет"
+          if [ ! -f books/.gitkeep ]; then
+            touch books/.gitkeep
+            echo "✅ создан books/.gitkeep"
+          fi
+          echo "=== git ls-files books/ (до download) ==="
+          git ls-files books/ || true
+
       - name: Run approve handler
         env:
-          # ВАЖНО: bot_host.py шлёт "short_id" — читаем его ПЕРВЫМ
           APPROVE_URL: ${{ github.event.client_payload.url || github.event.inputs.url }}
           APPROVE_ID: ${{ github.event.client_payload.short_id || github.event.client_payload.candidate_id || github.event.inputs.candidate_id }}
           APPROVE_TITLE: ${{ github.event.client_payload.title || github.event.inputs.title }}
@@ -53,23 +64,45 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python scripts/approve_handler.py
 
+      - name: Diagnose after download
+        run: |
+          echo "=== Содержимое books/ после download ==="
+          ls -la books/
+          echo "=== Размер папки books/ ==="
+          du -sh books/ || true
+          echo "=== git status (короткий) ==="
+          git status --short
+
       - name: Commit and Push changes
         run: |
           git config user.name "ARGUS"
           git config user.email "argus@github.com"
-          git add books/ data/pending_cards.json data/scout_candidates.json data/sent_candidates.json || true
+
+          # force-add: игнорируем возможный .gitignore
+          git add -f books/
+          git add -f data/pending_cards.json data/sent_candidates.json data/scout_candidates.json || true
+
+          echo "=== git status --short (staged) ==="
+          git status --short
+
+          echo "=== git diff --staged --stat ==="
+          git diff --staged --stat || true
+
           if git diff --staged --quiet; then
-            echo "Нет изменений для коммита."
+            echo "⚠️ НЕТ изменений для коммита. books/ вероятно пустая или .gitignore блокирует."
             exit 0
           fi
+
+          echo "Есть изменения. Коммичу и пушу..."
           git commit -m "ARGUS: скачана книга [skip ci]"
+
           for i in 1 2 3; do
             git pull --rebase --autostash origin main
             if git push origin main; then
-              echo "✅ Успешно"
+              echo "✅ Успешно отправлено в репозиторий"
               break
             else
-              echo "⚠️ Попытка $i, жду 5 сек..."
+              echo "⚠️ Попытка $i не удалась, жду 5 секунд..."
               sleep 5
             fi
           done
