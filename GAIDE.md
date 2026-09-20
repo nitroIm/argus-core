@@ -1,4 +1,4 @@
-# 🦉 ARGUS — Полное Руководство (GUIDE.md)
+ты# 🦉 ARGUS — Полное Руководство (GUIDE.md)
 
 **Autonomous Research & Generative Unified System**  
 Версия системы: v3.0 (Стабильная, синхронизированная, отказоустойчивая)
@@ -154,3 +154,308 @@ Cron в GitHub Actions позволяет запускать workflows авто�
 Если в будущем понадобится добавить новую фичу, просто открой этот `GUIDE.md`, скопируй **Промпт для нового чата** (раздел 6), вставь его в новый диалог, и мы продолжим с того же места, как будто ни секунды не прошло.
 
 Удачи с ARGUS! Если что-то понадобится — ты знаешь, что делать. 🦉
+## 🔧 7. ЖУРНАЛ ИЗМЕНЕНИЙ (сессия «Incremental Pipeline + Explorer Fix»)
+
+### 📌 Что было сломано изначально
+
+1. **`train_model.yml`** — переобучал ВСЁ каждый раз, не было инкремента.
+2. **`ingest.py`** — при повторной обработке плодил дубли, удалял файлы некорректно.
+3. **`ask.py`** — падал с `JSONDecodeError`, потому что искал несуществующий файл.
+4. **`proposer.py`** — не читал `scout_candidates.json`, присылал «0 предложений».
+5. **`sources/base.py`** — сохранял PDF в `scripts/books/` вместо `books/`.
+6. **`approved_download.yml`** — `git add` не подхватывал файлы (без `-f`).
+7. **`requirements.txt`** — не был запинен `tokenizers`, ломалась установка.
+
+---
+
+### 🎯 КЛЮЧЕВЫЕ ФАКТЫ (запомнить навсегда)
+
+| Что | Правильное значение |
+|---|---|
+| Файл метаданных чанков | `data/chunks_for_index.json` |
+| Формат метаданных | `[{"id": "...", "source": "...", "book": "...", "text": "..."}, ...]` |
+| Файл знаний (накопительный) | `data/knowledge.json` — НИКОГДА не удалять |
+| Модель эмбеддингов | fine-tuned в `models/argus-embeddings/` (e5-small, 384 dim) |
+| Префикс для fine-tuned | НЕТ (не добавлять `query:` / `passage:`) |
+| Префикс для базовой E5 | `"query: "` для запроса, `"passage: "` для чанков |
+| Callback формат кнопок | `approve:<short_id>` и `reject:<short_id>` (через ДВОЕТОЧИЕ) |
+| `short_id` | `md5(url)[:16]` |
+| Боевой скрипт `/ask` | `scripts/ask.py` (не `semantic_search.py`) |
+| Промпт-обёртка для локального запуска | `scripts/train.py` (запускает ingest → train → build) |
+| `sources/` лежит в | `scripts/sources/` (вложена в scripts, не в корне!) |
+
+---
+
+### 📁 ФИНАЛЬНАЯ СТРУКТУРА ФАЙЛОВ
+📖 Полный отчёт для GUIDE.md
+
+Ниже — готовый блок. Копируй целиком и вставляй в свой GUIDE.md как новый раздел (например, в конец, перед «Промптом для нового чата»).
+
+---
+
+```markdown
+## 🔧 7. ЖУРНАЛ ИЗМЕНЕНИЙ (сессия «Incremental Pipeline + Explorer Fix»)
+
+### 📌 Что было сломано изначально
+
+1. **`train_model.yml`** — переобучал ВСЁ каждый раз, не было инкремента.
+2. **`ingest.py`** — при повторной обработке плодил дубли, удалял файлы некорректно.
+3. **`ask.py`** — падал с `JSONDecodeError`, потому что искал несуществующий файл.
+4. **`proposer.py`** — не читал `scout_candidates.json`, присылал «0 предложений».
+5. **`sources/base.py`** — сохранял PDF в `scripts/books/` вместо `books/`.
+6. **`approved_download.yml`** — `git add` не подхватывал файлы (без `-f`).
+7. **`requirements.txt`** — не был запинен `tokenizers`, ломалась установка.
+
+---
+
+### 🎯 КЛЮЧЕВЫЕ ФАКТЫ (запомнить навсегда)
+
+| Что | Правильное значение |
+|---|---|
+| Файл метаданных чанков | `data/chunks_for_index.json` |
+| Формат метаданных | `[{"id": "...", "source": "...", "book": "...", "text": "..."}, ...]` |
+| Файл знаний (накопительный) | `data/knowledge.json` — НИКОГДА не удалять |
+| Модель эмбеддингов | fine-tuned в `models/argus-embeddings/` (e5-small, 384 dim) |
+| Префикс для fine-tuned | НЕТ (не добавлять `query:` / `passage:`) |
+| Префикс для базовой E5 | `"query: "` для запроса, `"passage: "` для чанков |
+| Callback формат кнопок | `approve:<short_id>` и `reject:<short_id>` (через ДВОЕТОЧИЕ) |
+| `short_id` | `md5(url)[:16]` |
+| Боевой скрипт `/ask` | `scripts/ask.py` (не `semantic_search.py`) |
+| Промпт-обёртка для локального запуска | `scripts/train.py` (запускает ingest → train → build) |
+| `sources/` лежит в | `scripts/sources/` (вложена в scripts, не в корне!) |
+
+---
+
+### 📁 ФИНАЛЬНАЯ СТРУКТУРА ФАЙЛОВ
+
+```
+
+.github/workflows/
+├── ask.yml                      # вызов: python scripts/ask.py
+├── train_model.yml              # ⚙️ ПЕРЕПИСАН под incremental
+├── approved_download.yml        # ⚙️ ПЕРЕПИСАН (git add -f, диагностика)
+├── explorer.yml                 # без изменений
+├── proposer.yml                 # без изменений
+└── ... (остальные)
+
+scripts/
+├── ingest.py                    # ✅ v7.3 (incremental merge + pathlib)
+├── train_embeddings.py          # ✅ v3.4 (fallback id, frozen inference)
+├── build_index.py               # ✅ v3.4 (chunks_for_index.json)
+├── ask.py                       # ✅ v6 (chunks_for_index, fix reranker API)
+├── proposer.py                  # ✅ v3.1 (кнопки с callback approve:<sid>)
+├── approve_handler.py           # ✅ v6 (короткий, поддержка short_id)
+├── collector.py                 # без изменений
+├── reranker.py                  # без изменений (совместим)
+├── train.py                     # без изменений (обёртка)
+├── requirements.txt             # ✅ v2 (+ tokenizers==0.19.1)
+└── sources/
+└── base.py                  # ✅ v3 (FIX: 3 уровня вверх для REPO_ROOT)
+
+```
+
+---
+
+### 🔧 ЧТО ИМЕННО ИЗМЕНЕНО В КАЖДОМ ФАЙЛЕ
+
+#### 1. `.github/workflows/train_model.yml` — переписан
+- **Было:** `rm faiss.index`, `rm chunks_metadata.json`, пересбор всего
+- **Стало:** fingerprint по книгам, инкрементальный pipeline:
+  - Step 1: `Check for new books` (md5 файлов в `books/`)
+  - Step 2: `python scripts/ingest.py` (merge, не перезапись)
+  - Step 3: `python scripts/train_embeddings.py` (только новые чанки)
+  - Step 4: `python scripts/build_index.py` (append в FAISS)
+  - Step 5-8: summary, fingerprint, cleanup, commit
+- **Ключевое:** `torch` устанавливается только через `requirements.txt` (не отдельно), `--extra-index-url` для CPU-колёс.
+
+#### 2. `scripts/ingest.py` v7.3
+- `pathlib.Path` вместо `os.path`
+- Поле `file_hash` (md5 содержимого) — защита от дублей при переименовании
+- `chunk_id = f"{fhash[:8]}#{idx:05d}"` — стабильный уникальный ID
+- Дубли текста отсекаются по `md5(text)`
+- `last_ingest.json` — список файлов текущего прогона (для безопасного удаления)
+- Файл помечается обработанным **всегда**, если парсинг успешен (даже если 0 новых чанков)
+
+#### 3. `scripts/train_embeddings.py` v3.4
+- **Frozen inference** — модель НЕ переобучается
+- Авто-детект: `models/argus-embeddings/` существует → используем её без префикса
+- Иначе — `intfloat/multilingual-e5-small` с префиксом `passage:`
+- Считает эмбеддинги **только для новых чанков** (не в `chunks_for_index.json`)
+- **Fallback:** если у чанка нет `id` — генерирует `f"auto#{md5(text)[:12]}"`
+- Пишет `model_info.json` с префиксами для `ask.py`
+
+#### 4. `scripts/build_index.py` v3.4
+- **Append** в существующий `faiss.index` (не пересоздание)
+- Формат `chunks_for_index.json` = список словарей (совместим с `ask.py`)
+- Защита от рассинхрона: если `index.ntotal != len(metadata)` → полный пересбор
+- Legacy-формат (список строк) → полный пересбор
+- Fallback `ensure_chunk_id()` — как в train
+
+#### 5. `scripts/ask.py` v6
+- Читает `data/chunks_for_index.json` (правильное имя!)
+- Безопасное чтение JSON: пустой файл / битый / не список / legacy → понятные ошибки, не падение
+- Читает `model_info.json` для определения префикса
+- **Reranker API исправлен:** передаёт словари, получает словари с `rerank_score` и `_orig_index`
+- Фильтр: `if all(c["score"] < 0.3)` → «ничего не найдено»
+
+#### 6. `scripts/proposer.py` v3.1 — ГЛАВНОЕ ИЗМЕНЕНИЕ
+- **Было:** читал только `analysis.json` → 0 предложений
+- **Стало:** + читает `scout_candidates.json`, берёт 5 свежих
+- Создаёт `data/pending_cards.json` = `{short_id: {url, title, topic, ...}}`
+- Пишет `data/sent_candidates.json` (анти-спам, чтобы не слать повторно)
+- **Отправляет в Telegram** с inline-кнопками:
+  - `callback_data = "approve:<sid>"` и `"reject:<sid>"` (через двоеточие!)
+  - Совместимо с `bot_host.py`
+
+#### 7. `.github/workflows/approved_download.yml` — переписан
+- `git add -f books/` — force, игнорирует `.gitignore`
+- Шаг `Ensure books/ tracked` — создаёт `.gitkeep`, если нет
+- Шаг `Diagnose after download` — выводит `ls books/`, `du -sh`, `git status`
+- `APPROVE_ID` читает `client_payload.short_id` **первым** (совместимость с `bot_host`)
+- Убран `token: ${{ secrets.GH_PAT }}` из checkout (достаточно `GITHUB_TOKEN` + `permissions: contents: write`)
+
+#### 8. `scripts/approve_handler.py` v6
+- Поддержка `short_id` от `bot_host.py`
+- Fallback: если `short_id` не в `pending` → ищет в `scout_candidates.json` по `md5(url)[:16]`
+- Проверка успеха: `returncode == 0 AND (is_downloaded OR has_new_file)`
+- Сравнивает `books/` до и после — надёжная проверка
+- Явные логи `=== collector stdout ===`
+
+#### 9. `scripts/sources/base.py` v3 — КРИТИЧНЫЙ ФИКС
+- **Было:** `os.path.dirname(os.path.dirname(...))` — 2 уровня → сохранял в `scripts/books/`
+- **Стало:** `pathlib`, **3 уровня вверх** от `__file__`:
+  ```python
+  SCRIPT_DIR = Path(__file__).resolve().parent   # .../scripts/sources
+  SCRIPTS_DIR = SCRIPT_DIR.parent                # .../scripts
+  REPO_ROOT = SCRIPTS_DIR.parent                 # .../argus-core
+  BOOKS_DIR = REPO_ROOT / "books"                # .../argus-core/books ✅
+```
+
+· Проверка: в логе должно быть .../argus-core/argus-core/books/... — без scripts/.
+
+10. scripts/requirements.txt v2
+
+· ➕ tokenizers==0.19.1 (пин для transformers==4.41.2)
+· Остальное без изменений (torch 2.2.0, sentence-transformers 3.0.1, faiss-cpu 1.8.0, numpy 1.26.4)
+
+---
+
+🔄 КАК РАБОТАЕТ ПОЛНАЯ ЦЕПОЧКА
+
+📚 Поиск книг (Explorer + Proposer + Approved Download)
+
+```
+1. explorer.yml → explorer.py
+   └─ ищет по arXiv/Zenodo/Crossref
+   └─ пишет в data/scout_candidates.json (только добавляет)
+
+2. proposer.yml → proposer.py v3.1
+   └─ читает analysis.json + scout_candidates.json
+   └─ берёт 5 свежих (не в pending и не в sent)
+   └─ создаёт data/pending_cards.json {sid: {url, title, ...}}
+   └─ шлёт в Telegram карточки с кнопками [✅ Скачать] [❌ Пропустить]
+   └─ пишет data/sent_candidates.json (анти-спам)
+
+3. Ты тапаешь ✅ → bot_host.py ловит callback "approve:<sid>"
+   └─ send_dispatch("approved_download", {"short_id": sid})
+
+4. approved_download.yml → approve_handler.py v6
+   └─ ищет url в pending_cards.json по sid
+   └─ вызывает collector.py <url>
+   └─ collector → source adapter → скачивает в books/
+   └─ git add -f books/ + commit + push
+
+5. Следующий /train → ingest.py → train_embeddings.py → build_index.py
+   └─ новая книга попадает в knowledge.json и FAISS
+```
+
+🔍 Поиск по базе (Ask)
+
+```
+bot_host.py /ask → dispatch "run_search"
+   ↓
+ask.yml → python scripts/ask.py
+   ↓
+1. Читает chunks_for_index.json
+2. Определяет модель (fine-tuned или base) → префикс
+3. Эмбеддит запрос → FAISS → top-20
+4. Reranker → top-5
+5. Шлёт в Telegram
+```
+
+🎓 Обучение (Train)
+
+```
+/train → dispatch "run_train"
+   ↓
+train_model.yml
+   ↓
+1. Check for new books (md5 fingerprint)
+2. ingest.py (merge новых в knowledge.json)
+3. train_embeddings.py (эмбеддит ТОЛЬКО новые чанки)
+4. build_index.py (append в faiss.index)
+5. Cleanup: удаляет PDF из books/ (успешно обработанные)
+6. Commit + push
+```
+
+---
+
+⚠️ КРИТИЧНЫЕ ПРАВИЛА (не нарушать)
+
+1. НЕ УДАЛЯТЬ data/knowledge.json — там все знания, восстанавливается только переобработкой.
+2. НЕ УДАЛЯТЬ models/argus-embeddings/ — рабочая fine-tuned модель.
+3. НЕ МЕНЯТЬ имя файла chunks_for_index.json — от него зависит ask.py и build_index.py.
+4. При смене модели (fine-tuned ↔ base) — train_embeddings.py сам задетектит и пересоберёт индекс.
+5. ingest.py никогда не удаляет записи из knowledge.json, только добавляет. Статистика total_books может показывать старые книги — это нормально.
+6. git add в workflow для books/ — обязательно с -f, иначе .gitignore или git-настройки могут заблокировать.
+7. Callback формат — approve:<sid> через двоеточие, не approve_<sid>.
+8. Префиксы E5 — только для базовой модели. Fine-tuned из models/argus-embeddings/ префиксов НЕ требует.
+9. Секреты GitHub — GH_PAT (для dispatch в workflow), GITHUB_PAT (в Python), TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID.
+10. sources/ лежит в scripts/sources/, не в корне репо. В base.py нужен 3 уровня вверх до корня.
+
+---
+
+🚦 БЫСТРАЯ ДИАГНОСТИКА
+
+Проблема Причина Фикс
+ask падает с JSONDecodeError chunks_for_index.json пуст или битый Запусти /train, проверь файл
+ask падает KeyError: 'id' knowledge.json без id train_embeddings.py v3.4 — имеет fallback
+Download говорит «Скачано», файла нет sources/base.py сохраняет не туда Проверь путь в логе: должен быть .../argus-core/books/... БЕЗ scripts/
+Proposer присылает «Всего: 0» Читает только analysis.json proposer.py v3.1 — читает и scout_candidates.json
+Кнопки в Telegram не работают Callback формат не совпадает Должно быть approve:<sid>, не approve_<sid>
+Train падает KeyError: 'id' Старый knowledge.json train_embeddings.py v3.4 — fallback с md5
+Train падает dimension mismatch Смена модели (384 ↔ 768) build_index.py v3.4 сам пересоберёт
+Git push падает 403 GITHUB_TOKEN без прав Убрать token: secrets.GH_PAT из checkout, добавить permissions: contents: write
+
+---
+
+🎯 ЧТО РАБОТАЕТ СЕЙЧАС (на момент последней сессии)
+
+· ✅ Инкрементальный train (только новые чанки)
+· ✅ Накопительная база знаний (knowledge.json не теряет данные)
+· ✅ Explorer находит кандидатов (arXiv, Zenodo, Crossref)
+· ✅ Proposer шлёт карточки в Telegram с кнопками ✅/❌
+· ✅ Кнопка ✅ → скачивание PDF в books/ → коммит
+· ✅ Train подхватывает новые книги → эмбеддинги → FAISS
+· ✅ /ask работает с fine-tuned моделью
+· ✅ Reranker срабатывает (не fallback)
+· ✅ Все скрипты имеют защиту от пустых/битых/legacy файлов
+
+📊 Что осталось на будущее
+
+· Semantic Scholar возвращает 429 (rate limit) — не критично, можно добавить паузу
+· Статистика total_books включает старые книги (можно почистить knowledge.json вручную, но не обязательно)
+· FAISS IndexFlatL2 — при >100k чанков перейти на IndexIVFFlat (пока не актуально)
+
+```
+
+---
+
+## 🚦 Как добавить в GUIDE
+
+1. Открой `GUIDE.md` в GitHub
+2. **Перед** разделом «🚀 6. ПРОМПТ ДЛЯ НОВОГО ЧАТА» вставь этот блок
+3. Commit
+
+**Всё.** Теперь в GUIDE есть весь журнал. При следующем чате можешь скинуть этот кусок ИИ — и он поймёт контекст.
+```
