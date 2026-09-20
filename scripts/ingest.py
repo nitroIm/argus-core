@@ -1,7 +1,7 @@
 # ============================================================
-# ARGUS — INGEST (v7.2)
-# v7.2: pathlib, все файлы помечаются обработанными (fix zombie),
-#       формат chunks: {id, source, book, chunk_index, text}
+# ARGUS — INGEST (v7.3)
+# v7.3: pathlib, fix datetime import, все успешно распарсенные
+#       файлы помечаются обработанными (нет зомби)
 # ============================================================
 
 import re
@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 import fitz
 
-# --- Пути (pathlib, как в GUIDE) ---
+# --- Пути (pathlib) ---
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parent
 
@@ -135,11 +135,9 @@ if KNOWLEDGE_FILE.exists():
     except Exception as e:
         print(f"⚠️ Не удалось прочитать knowledge.json: {e} — начинаю с нуля")
 
-# Множество обработанных file_hash
 processed_hashes = {b.get("file_hash") for b in knowledge.get("books", [])
                     if b.get("file_hash")}
 
-# Глобальный дедуп по хэшу текста чанка
 existing_chunk_hashes = {md5_text(c.get("text", ""))
                          for c in knowledge.get("chunks", [])}
 
@@ -212,26 +210,21 @@ else:
                 })
                 total_new_chunks += added
 
-            # Помечаем обработанным ВСЕГДА, если парсинг успешен
+            # Помечаем ВСЕГДА, если парсинг успешен
             new_files_ingested.append(filename)
 
             print(f"   ✅ Добавлено: {added}, дублей пропущено: {skipped_dup}")
 
         except Exception as e:
             print(f"   ❌ Ошибка парсинга {filename}: {e}")
-            # Файл НЕ в new_files_ingested — не удалим
 
 
 # ============================================================
-# СОХРАНЕНИЕ KNOWLEDGE
+# СОХРАНЕНИЕ
 # ============================================================
 with open(KNOWLEDGE_FILE, "w", encoding="utf-8") as f:
     json.dump(knowledge, f, ensure_ascii=False, indent=2)
 
-
-# ============================================================
-# LAST INGEST
-# ============================================================
 with open(LAST_INGEST_FILE, "w", encoding="utf-8") as f:
     json.dump({
         "ingested_at": datetime.now(timezone.utc).isoformat(),
@@ -239,10 +232,6 @@ with open(LAST_INGEST_FILE, "w", encoding="utf-8") as f:
         "new_chunks": total_new_chunks,
     }, f, ensure_ascii=False, indent=2)
 
-
-# ============================================================
-# SUMMARY
-# ============================================================
 books_list = [{
     "file": b.get("file", "?"),
     "pages": b.get("pages", 0),
@@ -260,10 +249,6 @@ summary = {
 with open(SUMMARY_FILE, "w", encoding="utf-8") as f:
     json.dump(summary, f, ensure_ascii=False, indent=2)
 
-
-# ============================================================
-# ИТОГ
-# ============================================================
 print()
 print("🎉 INGEST завершён.")
 print(f"   Всего книг:   {len(knowledge['books'])}")
