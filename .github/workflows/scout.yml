@@ -1,8 +1,8 @@
 name: ARGUS Scout
 
 on:
-  schedule:
-    - cron: "0 6 * * *"   # каждый день в 6:00 UTC
+  #schedule:
+  #  - cron: "0 6 * * *"   # каждый день в 6:00 UTC
   workflow_dispatch:
 
 permissions:
