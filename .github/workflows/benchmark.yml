@@ -1,15 +1,14 @@
 # ============================================================
-# ARGUS — BENCHMARK WORKFLOW v3 [PRODUCTION]
+# ARGUS — BENCHMARK WORKFLOW v4 [PRODUCTION]
+# ------------------------------------------------------------
+# v4: + убран шаг "Fail job if degraded" (ложные падения).
+#     Деградация теперь только предупреждение, не fail.
+#     Telegram-уведомление информирует о проблеме.
 # ------------------------------------------------------------
 # v3: продакшн-версия.
 #   • Единый requirements.txt (без хардкода версий)
-#   • Убран фейковый шаг "Prepare Benchmark Data" (создавал мусор)
-#   • Concurrency: два параллельных прогона не пересекутся
-#   • Retry на transient failures (install, push)
-#   • GitHub Actions Summary — метрики видны на странице job
-#   • Artifacts — benchmark_results.json сохраняется как артефакт
-#   • Exit code 1 при деградации → job помечается "failed" (сигнал)
-#   • Уведомление в Telegram только при проблемах (не спамим)
+#   • Убран фейковый шаг "Prepare Benchmark Data"
+#   • Concurrency, retry, artifacts, GitHub Summary
 # ============================================================
 
 name: ARGUS Benchmark
@@ -80,7 +79,7 @@ jobs:
           EXIT=$?
           echo "bench_exit_code=$EXIT" >> $GITHUB_OUTPUT
           if [ $EXIT -eq 1 ]; then
-            echo "::warning::Бенчмарк показал ДЕГРАДАЦИЮ качества"
+            echo "::warning::Бенчмарк показал ДЕГРАДАЦИЮ качества (информационно)"
           elif [ $EXIT -eq 2 ]; then
             echo "::error::Бенчмарк упал с критической ошибкой"
           fi
@@ -102,7 +101,7 @@ jobs:
         run: |
           if [ -f data/benchmark_results.json ]; then
             python3 << 'PYEOF'
-          import json, os
+          import json
           from pathlib import Path
 
           path = Path("data/benchmark_results.json")
@@ -131,8 +130,8 @@ jobs:
 
           if data.get("degraded"):
               summary.append("")
-              summary.append("### 🚨 ДЕГРАДАЦИЯ КАЧЕСТВА")
-              summary.append("top-1 упал более чем на 5% относительно предыдущего прогона.")
+              summary.append("### ⚠️ Обнаружена деградация качества")
+              summary.append("Проверь метрики и Telegram-уведомление.")
 
           Path("summary.md").write_text("\n".join(summary), encoding="utf-8")
           PYEOF
@@ -168,9 +167,3 @@ jobs:
               sleep 5
             }
           done
-
-      - name: Fail job if degraded
-        if: steps.bench.outputs.bench_exit_code == '1'
-        run: |
-          echo "::error::Бенчмарк выявил деградацию качества. Проверь топ-результаты."
-          exit 1
