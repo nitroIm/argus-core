@@ -1,11 +1,12 @@
 {
-  "generated_at": "2026-09-20T19:44:57.129461+00:00",
-  "total_books": 27,
-  "total_chunks": 4618,
-  "new_chunks": 451,
+  "generated_at": "2026-09-20T21:01:40.589155+00:00",
+  "total_books": 30,
+  "total_chunks": 5281,
+  "new_chunks": 663,
   "new_files": [
-    "2606.22017v1.pdf",
-    "Френсис Бэкон .pdf"
+    "1202.2447v2.pdf",
+    "1912.04492v1.pdf",
+    "2208.07168v1.pdf"
   ],
   "books": [
     {
@@ -142,6 +143,21 @@
       "file": "Френсис Бэкон .pdf",
       "pages": 244,
       "chunks": 448
+    },
+    {
+      "file": "1202.2447v2.pdf",
+      "pages": 21,
+      "chunks": 24
+    },
+    {
+      "file": "1912.04492v1.pdf",
+      "pages": 398,
+      "chunks": 630
+    },
+    {
+      "file": "2208.07168v1.pdf",
+      "pages": 41,
+      "chunks": 9
     }
   ]
 }
