@@ -88,14 +88,14 @@ jobs:
         run: python scripts/ingest.py
 
       # ============================================================
-      # ШАГ 3: TRAIN (только новые чанки, авто-детект модели)
+      # ШАГ 3: TRAIN
       # ============================================================
       - name: Train embeddings (incremental)
         if: steps.check.outputs.skip == 'false'
         run: python scripts/train_embeddings.py
 
       # ============================================================
-      # ШАГ 4: BUILD/APPEND INDEX
+      # ШАГ 4: BUILD INDEX
       # ============================================================
       - name: Build index (append)
         if: steps.check.outputs.skip == 'false'
@@ -179,7 +179,7 @@ jobs:
           git config user.email "argus@github.com"
 
           git add data/knowledge.json \
-                  data/chunks_meta.json \
+                  data/chunks_for_index.json \
                   data/faiss.index \
                   data/summary.json \
                   data/last_ingest.json \
