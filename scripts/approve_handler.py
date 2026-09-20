@@ -1,6 +1,6 @@
 # ============================================================
-# ARGUS — ОБРАБОТКА ОДОБРЕНИЙ (v5)
-# v5: pathlib, sys.exit, надёжная проверка скачивания (через books/)
+# ARGUS — ОБРАБОТКА ОДОБРЕНИЙ (v6)
+# v6: чистая версия, явные логи, поддержка short_id от bot_host
 # ============================================================
 
 import os
@@ -11,7 +11,7 @@ import hashlib
 import requests
 from pathlib import Path
 
-# --- Пути от корня репо ---
+# --- Пути ---
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parent
 DATA_DIR = REPO_ROOT / "data"
@@ -21,27 +21,28 @@ PENDING_FILE = DATA_DIR / "pending_cards.json"
 CANDIDATES_FILE = DATA_DIR / "scout_candidates.json"
 COLLECTOR = SCRIPT_DIR / "collector.py"
 
-# --- Telegram ---
 BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "").strip()
 CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "").strip()
 
+
 def notify(text: str):
     if not BOT_TOKEN or not CHAT_ID:
-        print("[notify] пропуск: нет токена или chat_id")
+        print("[notify] нет токена/chat_id")
         return
     try:
         requests.post(
             f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
             json={
-                "chat_id": CHAT_ID, 
-                "text": text, 
+                "chat_id": CHAT_ID,
+                "text": text,
                 "parse_mode": "HTML",
-                "disable_web_page_preview": True
+                "disable_web_page_preview": True,
             },
             timeout=15,
         )
     except Exception as e:
         print(f"[notify] ошибка: {e}")
+
 
 # --- Входные данные ---
 URL_INPUT = (os.environ.get("APPROVE_URL") or "").strip() or None
@@ -61,6 +62,9 @@ if not URL_INPUT and not ID_INPUT:
     notify(msg)
     sys.exit(1)
 
+print(f"🎯 ID_INPUT: {ID_INPUT}")
+print(f"🎯 URL_INPUT: {URL_INPUT}")
+
 # --- Загружаем pending ---
 pending = {}
 if PENDING_FILE.exists():
@@ -69,13 +73,12 @@ if PENDING_FILE.exists():
             pending = json.load(f)
     except Exception as e:
         print(f"⚠️ Ошибка чтения {PENDING_FILE}: {e}")
-        pending = {}
 
 url = None
 title = TITLE_INPUT or "manual download"
 removed_id = None
 
-# --- Определяем url ---
+# --- Ищем URL ---
 if URL_INPUT:
     url = URL_INPUT
     for sid, item in list(pending.items()):
@@ -92,8 +95,10 @@ else:
         title = item.get("title", title)
         del pending[ID_INPUT]
         removed_id = ID_INPUT
+        print(f"✅ Найден в pending: {title[:60]}")
     else:
-        # Fallback: ищем в исходном списке кандидатов по хэшу или индексу
+        # Fallback: ищем в scout_candidates.json
+        print(f"⚠️ Не найден в pending по {ID_INPUT}, ищу в candidates...")
         if CANDIDATES_FILE.exists():
             try:
                 with open(CANDIDATES_FILE, "r", encoding="utf-8") as f:
@@ -105,9 +110,10 @@ else:
                     if c_id == ID_INPUT or str(i) == ID_INPUT:
                         url = c_url
                         title = c.get("title", title)
+                        print(f"✅ Найден в candidates: {title[:60]}")
                         break
             except Exception as e:
-                print(f"⚠️ Ошибка чтения {CANDIDATES_FILE}: {e}")
+                print(f"⚠️ Ошибка чтения candidates: {e}")
 
 if not url:
     msg = f"❌ <b>Не найден кандидат</b>\n\n<code>{ID_INPUT or URL_INPUT}</code>"
@@ -118,25 +124,29 @@ if not url:
 print(f"📥 Скачиваю: {title}")
 print(f"🔗 URL: {url}")
 
-# --- Скачивание ---
+# --- Проверка collector ---
 if not COLLECTOR.exists():
-    msg = f"❌ Не найден скрипт collector: {COLLECTOR}"
+    msg = f"❌ Не найден collector: {COLLECTOR}"
     print(msg)
     notify(msg)
     sys.exit(1)
 
-# Запоминаем файлы в books/ ДО скачивания, чтобы проверить появление нового
-books_before = set(os.listdir(BOOKS_DIR)) if BOOKS_DIR.exists() else set()
+# --- Файлы до ---
+books_before = set()
+if BOOKS_DIR.exists():
+    books_before = {p.name for p in BOOKS_DIR.iterdir() if p.is_file()}
+print(f"📂 Файлов в books/ до: {len(books_before)}")
 
+# --- Скачивание ---
 try:
     result = subprocess.run(
         [sys.executable, str(COLLECTOR), url],
         capture_output=True,
         text=True,
-        timeout=600,  # 10 минут на скачивание
+        timeout=600,
     )
 except subprocess.TimeoutExpired:
-    msg = f"⏱ <b>Таймаут скачивания (10 мин)</b>\n\n{title[:100]}"
+    msg = f"⏱ Таймаут скачивания (10 мин)\n\n{title[:100]}"
     print(msg)
     notify(msg)
     sys.exit(1)
@@ -144,18 +154,22 @@ except subprocess.TimeoutExpired:
 stdout = result.stdout or ""
 stderr = result.stderr or ""
 
+print("=== collector stdout ===")
 print(stdout)
 if stderr:
-    print("STDERR:", stderr)
+    print("=== collector stderr ===")
+    print(stderr)
 
-# --- Проверяем успех ---
-# 1. Код возврата 0
-# 2. В выводе есть "скачано" или "уже есть" (регистронезависимо)
-# 3. ИЛИ в папке books/ появился новый файл (самая надёжная проверка)
-books_after = set(os.listdir(BOOKS_DIR)) if BOOKS_DIR.exists() else set()
+# --- Файлы после ---
+books_after = set()
+if BOOKS_DIR.exists():
+    books_after = {p.name for p in BOOKS_DIR.iterdir() if p.is_file()}
 new_files = books_after - books_before
+print(f"📂 Файлов в books/ после: {len(books_after)}")
+print(f"🆕 Новых: {new_files}")
 
-is_downloaded = "скачано" in stdout.lower()
+# --- Проверка успеха ---
+is_downloaded = "скачано" in stdout.lower() or "✅" in stdout
 is_already_exists = "уже есть" in stdout.lower()
 has_new_file = len(new_files) > 0
 
@@ -174,20 +188,17 @@ except Exception as e:
 short_title = title[:150]
 
 if success:
-    notify(f"✅ <b>Скачано</b>\n\n{short_title}\n\nДобавлено в books/")
+    files_info = ", ".join(list(new_files)[:3]) if new_files else "уже был"
+    notify(f"✅ <b>Скачано</b>\n\n{short_title}\n\nФайлы: <code>{files_info}</code>")
 elif already_exists:
     notify(f"⏭ <b>Уже в базе</b>\n\n{short_title}")
-elif "ошибка" in stdout.lower() or "error" in stderr.lower() or result.returncode != 0:
-    # Находим первую строку с ошибкой
+else:
     err_line = ""
     for line in (stdout + "\n" + stderr).splitlines():
         if "ошибка" in line.lower() or "error" in line.lower() or "failed" in line.lower():
             err_line = line.strip()
             break
-    
     notify(f"❌ <b>Не скачалось</b>\n\n{short_title}\n\n<code>{err_line[:200]}</code>")
-else:
-    notify(f"⚠️ <b>Неясный результат</b>\n\n{short_title}\n\nПроверь логи Actions.")
 
 if result.returncode != 0:
     sys.exit(1)
