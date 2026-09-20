@@ -15,7 +15,7 @@ concurrency:
 jobs:
   train:
     runs-on: ubuntu-latest
-    timeout-minutes: 360
+    timeout-minutes: 360 # 6 часов на обучение больших баз
 
     outputs:
       skip: ${{ steps.check.outputs.skip }}
@@ -54,6 +54,9 @@ jobs:
           pip install torch==2.2.0 --index-url https://download.pytorch.org/whl/cpu
           pip install -r scripts/requirements.txt
 
+      # ============================================================
+      # ШАГ 1: ПРОВЕРКА НОВЫХ КНИГ (FINGERPRINT)
+      # ============================================================
       - name: Check for new books
         id: check
         run: |
@@ -62,8 +65,10 @@ jobs:
             echo "skip=true" >> $GITHUB_OUTPUT
             exit 0
           fi
+          
           CURRENT=$(find books -type f -exec md5sum {} + 2>/dev/null | sort | md5sum | cut -d' ' -f1)
           LAST=$(cat data/last_train_fingerprint.txt 2>/dev/null || echo "none")
+          
           if [ "$CURRENT" = "$LAST" ]; then
             echo "skip=true" >> $GITHUB_OUTPUT
             echo "✅ Новых книг нет"
@@ -73,19 +78,32 @@ jobs:
             echo "$CURRENT" > /tmp/new_fingerprint.txt
           fi
 
+      # ============================================================
+      # ШАГ 2: АРХИВАЦИЯ СТАРЫХ ЗНАНИЙ (СОХРАНЕНИЕ ПАМЯТИ)
+      # ============================================================
       - name: Archive old knowledge to tmp
         if: steps.check.outputs.skip == 'false'
         run: cp data/knowledge.json /tmp/knowledge_old.json 2>/dev/null || true
 
+      # ============================================================
+      # ШАГ 3: ИНГЕСТ (ЧТЕНИЕ НОВЫХ PDF)
+      # ingest.py создаст временный knowledge.json только с новыми книгами
+      # ============================================================
       - name: Ingest books
         if: steps.check.outputs.skip == 'false'
         run: python scripts/ingest.py
 
+      # ============================================================
+      # ШАГ 4: СЛИЯНИЕ ЗНАНИЙ (СТАРЫЕ + НОВЫЕ)
+      # Логика: берем архив старых знаний, добавляем туда новые чанки
+      # Результат: единый knowledge.json со всей историей
+      # ============================================================
       - name: Merge old and new knowledge
         if: steps.check.outputs.skip == 'false'
         run: |
           python3 << 'PYEOF'
           import json, os
+          
           def load(p):
               if os.path.exists(p):
                   try:
@@ -94,69 +112,86 @@ jobs:
                   except Exception:
                       pass
               return {"books": [], "chunks": []}
+
+          # 1. Грузим старые знания (из архива)
           old = load("/tmp/knowledge_old.json")
+          
+          # 2. Грузим новые знания (которые создал ingest.py прямо сейчас)
           new = load("data/knowledge.json")
-          known = {str(b.get("file")) for b in old.get("books", []) if b.get("file")}
-          books = list(old.get("books", []))
+          
+          # 3. Определяем список уже известных файлов книг
+          known_files = {str(b.get("file")) for b in old.get("books", []) if b.get("file")}
+          
+          # 4. Объединяем список книг
+          merged_books = list(old.get("books", []))
           for b in new.get("books", []):
-              if b.get("file") and str(b["file"]) not in known:
-                  books.append(b)
-          def bok(c):
-              if not isinstance(c, dict):
-                  return None
-              for k in ("book", "source", "file"):
-                  v = c.get(k)
-                  if v:
-                      return str(v)
-              return None
-          chunks = list(old.get("chunks", []))
-          added = 0
+              fname = str(b.get("file"))
+              if fname not in known_files:
+                  merged_books.append(b)
+                  print(f"+ Новая книга: {fname}")
+          
+          # 5. Объединяем чанки
+          # Чанки привязаны к книге через поле "book" или "source"
+          merged_chunks = list(old.get("chunks", []))
+          added_count = 0
+          
           for c in new.get("chunks", []):
-              b = bok(c)
-              if b is None or b not in known:
-                  chunks.append(c)
-                  added += 1
-          out = dict(new)
-          out["books"] = books
-          out["chunks"] = chunks
+              # Ищем имя книги у чанка
+              book_name = None
+              if isinstance(c, dict):
+                  book_name = c.get("book") or c.get("source") or c.get("file")
+              
+              # Если это новая книга (её не было в known_files до этого шага)
+              # То её чанки просто добавляем сверху
+              if book_name and str(book_name) not in known_files:
+                   merged_chunks.append(c)
+                   added_count += 1
+              elif not book_name:
+                   # На всякий случай, если формат странный, но это новый чанк
+                   merged_chunks.append(c)
+                   added_count += 1
+                   
+          # 6. Сохраняем результат обратно в основной файл
+          final_data = dict(new) # Берем структуру нового файла как основу
+          final_data["books"] = merged_books
+          final_data["chunks"] = merged_chunks
+          
           with open("data/knowledge.json", "w", encoding="utf-8") as f:
-              json.dump(out, f, ensure_ascii=False)
-          print(f"MERGE OK: книг {len(books)}, чанков +{added} = {len(chunks)}")
+              json.dump(final_data, f, ensure_ascii=False)
+              
+          print(f"MERGE SUCCESS: Книг всего {len(merged_books)}, Чанков добавлено {added_count}, Всего {len(merged_chunks)}")
           PYEOF
 
-      - name: Clean old index
+      # ============================================================
+      # ШАГ 5: ОЧИСТКА СТАРОГО ИНДЕКСА
+      # Чтобы train_embeddings не пытался дописать данные в старый фаил
+      # ============================================================
+      - name: Clean old index artifacts
         if: steps.check.outputs.skip == 'false'
         run: |
           rm -f data/faiss.index
           rm -f data/chunks_metadata.json
-          echo "✅ Старая картотека удалена"
+          echo "✅ Старые артефакты удалены"
 
+      # ============================================================
+      # ШАГ 6: ОБУЧЕНИЕ ВЕКТОРОВ (ДЛЯ ВСЕЙ БАЗЫ)
+      # Теперь train_embeddings видит объединенный knowledge.json
+      # Он прогонит модель по всем чанкам (старым и новым)
+      # ============================================================
       - name: Train Embeddings
         if: steps.check.outputs.skip == 'false'
         run: python scripts/train_embeddings.py
 
+      # ============================================================
+      # ШАГ 7: ПОСТРОЕНИЕ ИНДЕКСА FAISS
+      # ============================================================
       - name: Build index
         if: steps.check.outputs.skip == 'false'
         run: python scripts/build_index.py
 
-      - name: Normalize metadata format
-        if: steps.check.outputs.skip == 'false'
-        run: |
-          python3 << 'PYEOF'
-          import json, os
-          p = "data/chunks_metadata.json"
-          if os.path.exists(p):
-              with open(p, encoding="utf-8") as f:
-                  raw = json.load(f)
-              if raw and not isinstance(raw[0], dict):
-                  fixed = [{"id": i, "text": str(m), "source": "unknown", "book": "unknown"} for i, m in enumerate(raw)]
-                  with open(p, "w", encoding="utf-8") as f:
-                      json.dump(fixed, f, ensure_ascii=False)
-                  print(f"✅ Метаданные приведены к новому формату: {len(fixed)} чанков")
-              else:
-                  print("✅ Метаданные уже в новом формате")
-          PYEOF
-
+      # ============================================================
+      # ШАГ 8: РАСЧЕТ СТАТИСТИКИ
+      # ============================================================
       - name: Compute summary
         id: summary
         if: steps.check.outputs.skip == 'false'
@@ -171,31 +206,53 @@ jobs:
             echo "chunks=0" >> $GITHUB_OUTPUT
           fi
 
+      # ============================================================
+      # ШАГ 9: СОХРАНЕНИЕ FINGERPRINT
+      # ============================================================
       - name: Save fingerprint
         if: steps.check.outputs.skip == 'false'
         run: cp /tmp/new_fingerprint.txt data/last_train_fingerprint.txt
 
-      - name: Delete trained PDFs from books
+      # ============================================================
+      # ШАГ 10: УДАЛЕНИЕ ОБУЧЕННЫХ PDF ИЗ PAPERBOX
+      # Так как текст теперь навсегда в knowledge.json, исходники не нужны
+      # ============================================================
+      - name: Delete trained PDFs from inbox
         if: steps.check.outputs.skip == 'false'
         run: |
           python3 << 'PYEOF'
           import json, os
+          
+          # Проверяем, что индекс реально построен
           if not os.path.exists("data/faiss.index"):
-              print("⚠️ Индекс не найден — очистка пропущена")
+              print("⚠️ Индекс не найден — очистка PDF отменена (безопасность)")
               raise SystemExit(0)
+          
+          # Читаем список всех известных книг из итоговой базы знаний
           with open("data/knowledge.json", encoding="utf-8") as f:
               know = json.load(f)
-          files = {str(b.get("file")) for b in know.get("books", []) if b.get("file")}
-          d = 0
-          for name in os.listdir("books"):
-              p = os.path.join("books", name)
-              if os.path.isfile(p) and name in files:
-                  os.remove(p)
-                  d += 1
-                  print("🗑️ Удалено:", name)
-          print(f"CLEANUP OK: {d} PDF удалено, знания остались в knowledge.json")
+          
+          files_to_delete = set()
+          for b in know.get("books", []):
+              fname = b.get("file")
+              if fname:
+                  files_to_delete.add(str(fname))
+          
+          deleted_count = 0
+          if os.path.isdir("books"):
+              for filename in os.listdir("books"):
+                  filepath = os.path.join("books", filename)
+                  if os.path.isfile(filepath) and filename in files_to_delete:
+                      os.remove(filepath)
+                      deleted_count += 1
+                      print(f"🗑️ Удалено: {filename}")
+          
+          print(f"CLEANUP DONE: {deleted_count} файлов удалено из books/")
           PYEOF
 
+      # ============================================================
+      # ШАГ 11: КОММИТ И PUSH
+      # ============================================================
       - name: Commit and Push
         if: steps.check.outputs.skip == 'false'
         env:
@@ -203,19 +260,27 @@ jobs:
         run: |
           git config user.name "ARGUS"
           git config user.email "argus@github.com"
+          
+          # Добавляем все изменения: базу знаний, индекс, модели и пустую папку books
           git add data/ models/ books/ || true
+          
           if git diff --staged --quiet; then
-            echo "ℹ️ Нет изменений"
+            echo "ℹ️ Нет изменений для коммита."
             exit 0
           fi
-          git commit -m "ARGUS: auto-train [skip ci]"
+          
+          git commit -m "ARGUS: auto-train & cleanup [skip ci]"
+          
+          # Надежный пуш с ретраями
           for i in 1 2 3; do
             git pull --rebase --autostash origin main
             if git push origin main; then
-              echo "✅ Сохранено"
+              echo "✅ Все изменения успешно сохранены"
               break
+            else
+              echo "⚠️ Попытка $i не удалась, жду 5 секунд..."
+              sleep 5
             fi
-            sleep 5
           done
 
   notify:
@@ -233,12 +298,13 @@ jobs:
           TRAIN_RESULT: ${{ needs.train.result }}
         run: |
           if [ "${SKIP_FLAG}" = "true" ]; then
-            TEXT="⏸️ Train пропущен"
+            TEXT="⏸️ Train пропущен (новых книг нет)"
           elif [ "${TRAIN_RESULT}" = "success" ]; then
-            TEXT="🎓 Train завершён: книг ${BOOKS}, чанков ${CHUNKS}"
+            TEXT="🎓 Train завершён!\nКниг: ${BOOKS}, Чанков: ${CHUNKS}\nPDF очищены, знания обновлены."
           else
-            TEXT="❌ Train упал"
+            TEXT="❌ Train упал\nПроверь логи в Actions."
           fi
+          
           curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
             -H "Content-Type: application/json" \
             -d "{\"chat_id\": \"${TELEGRAM_CHAT_ID}\", \"text\": \"${TEXT}\", \"parse_mode\": \"HTML\"}" || true
