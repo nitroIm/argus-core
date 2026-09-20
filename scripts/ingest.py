@@ -1,6 +1,7 @@
 # ============================================================
-# ARGUS — INGEST (v7)
-# v7: incremental merge, file_hash, stable chunk_id, safe cleanup
+# ARGUS — INGEST (v7.1)
+# v7.1: fix — все успешно распарсенные файлы помечаются обработанными
+#       (даже если дали 0 новых чанков), чтобы cleanup их удалял.
 # ============================================================
 
 import os
@@ -205,7 +206,7 @@ else:
                 })
                 added += 1
 
-            # Запись книги добавляется, только если реально что-то попало
+            # Запись книги — только если реально что-то попало в базу
             if added > 0:
                 knowledge["books"].append({
                     "file": filename,
@@ -214,14 +215,19 @@ else:
                     "chunks_total": added,
                     "processed_at": datetime.now(timezone.utc).isoformat(),
                 })
-                new_files_ingested.append(filename)
                 total_new_chunks += added
+
+            # FIX v7.1: файл помечаем обработанным ВСЕГДА,
+            # если он успешно распарсился (даже если 0 новых чанков).
+            # Это чтобы cleanup удалял и книги-дубли (иначе висят зомби).
+            new_files_ingested.append(filename)
 
             print(f"   ✅ Добавлено: {added}, дублей пропущено: {skipped_dup}")
 
         except Exception as e:
             print(f"   ❌ Ошибка парсинга {filename}: {e}")
-            # ВАЖНО: файл НЕ добавляется в new_files_ingested — не удалим
+            # ВАЖНО: файл НЕ добавляется в new_files_ingested — не удалим,
+            # чтобы пользователь мог починить/перезалить
 
 
 # ============================================================
