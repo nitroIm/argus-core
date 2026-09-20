@@ -1,7 +1,6 @@
 # ============================================================
-# ARGUS — СКАЧИВАНИЕ ЛИЧНОЙ КНИГИ (v4 — финал)
-# v4: Скачивает до 100 МБ, переводит полностью, удаляет оригинал
-#     В репо остаётся только PDF перевода (экономия места)
+# ARGUS — СКАЧИВАНИЕ ЛИЧНОЙ КНИГИ (v5 — финал)
+# v5: Сохраняем оригинал + перевод, если влезает в 100 МБ
 # ============================================================
 
 import os
@@ -25,7 +24,7 @@ PERSONAL_DIR.mkdir(parents=True, exist_ok=True)
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("BOT_TOKEN")
 CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
-# Жёсткий лимит GitHub на один файл — 100 МБ
+# Жёсткий лимит GitHub — 100 МБ на файл
 GITHUB_HARD_LIMIT_MB = 100
 
 # --- Переводчик ---
@@ -265,29 +264,39 @@ def main():
     print(f"   URL: {url}")
     
     filename = safe_filename(title)
-    temp_pdf = PERSONAL_DIR / f"{filename}_temp.pdf"
+    pdf_path = PERSONAL_DIR / f"{filename}.pdf"
     translation_pdf_path = PERSONAL_DIR / f"{filename}_RU.pdf"
     
-    # Скачиваем во временный файл
-    if not download_pdf(url, temp_pdf):
+    # Скачиваем оригинал
+    if not download_pdf(url, pdf_path):
         notify(f"❌ Не удалось скачать: {title}")
         sys.exit(1)
     
-    size_mb = temp_pdf.stat().st_size / 1024 / 1024
+    size_mb = pdf_path.stat().st_size / 1024 / 1024
     print(f"📏 Размер PDF: {size_mb:.1f} МБ")
     
     # Проверяем лимит GitHub
     fits_in_github = size_mb <= GITHUB_HARD_LIMIT_MB
     
     if not fits_in_github:
-        print(f"⚠️ PDF > 100 МБ — не влезет в GitHub, будет только ссылка")
+        print(f"⚠️ PDF > 100 МБ — не влезет в GitHub")
+        # Удаляем оригинал, оставляем только ссылку
+        pdf_path.unlink()
+        print("🗑️ Оригинальный PDF удалён (слишком большой)")
     
-    # Извлекаем и переводим ВЕСЬ текст (для любого размера)
+    # Извлекаем и переводим ВЕСЬ текст
     translation_created = False
     
     if PDF_AVAILABLE and TRANSLATE_AVAILABLE:
         print("📖 Извлекаю полный текст...")
-        original_text = extract_full_text(temp_pdf)
+        original_text = extract_full_text(pdf_path if fits_in_github else PERSONAL_DIR / f"{filename}_temp.pdf")
+        
+        # Если оригинал удалили, нужно заново скачать для извлечения текста
+        if not fits_in_github:
+            temp_for_extract = PERSONAL_DIR / f"{filename}_temp.pdf"
+            if download_pdf(url, temp_for_extract):
+                original_text = extract_full_text(temp_for_extract)
+                temp_for_extract.unlink()
         
         if original_text.strip():
             print("🌐 Перевожу весь текст...")
@@ -303,31 +312,21 @@ def main():
     else:
         print("⚠️ PyPDF2 или переводчик недоступны")
     
-    # Удаляем временный оригинал — он больше не нужен
-    if temp_pdf.exists():
-        temp_pdf.unlink()
-        print("🗑️ Оригинальный PDF удалён (экономим место в репо)")
-    
     # Уведомление в Telegram
     msg = (
         f"✅ <b>Готово!</b>\n\n"
         f"📚 <b>{title}</b>\n"
-        f"📏 Размер оригинала: {size_mb:.1f} МБ\n"
+        f"📏 Размер: {size_mb:.1f} МБ\n"
     )
+    
+    if fits_in_github:
+        msg += f"📄 <b>Оригинал:</b> {pdf_path.name}\n"
+    else:
+        msg += f"\n📥 <a href=\"{url}\">Скачать PDF на телефон</a>\n"
+        msg += f"<i>(оригинал слишком большой для GitHub)</i>\n"
     
     if translation_created:
         msg += f"🌐 <b>Полный перевод:</b> {translation_pdf_path.name}\n"
-    
-    if fits_in_github and not translation_created:
-        # Редкий случай: не удалось перевести, но файл маленький — сохраняем оригинал
-        final_pdf = PERSONAL_DIR / f"{filename}.pdf"
-        # Нужно заново скачать, т.к. мы уже удалили temp
-        if download_pdf(url, final_pdf):
-            msg += f"📄 Сохранён оригинал (перевод не удался)\n"
-    
-    if not fits_in_github:
-        msg += f"\n📥 <a href=\"{url}\">Скачать PDF на телефон</a>\n"
-        msg += f"<i>(оригинал слишком большой для GitHub)</i>\n"
     
     msg += f"\n🔗 <a href=\"{page_url}\">Страница источника</a>"
     
@@ -335,10 +334,12 @@ def main():
     
     print("\n" + "=" * 60)
     print(f"🎉 Готово!")
+    if fits_in_github:
+        print(f"📄 Оригинал: {pdf_path}")
+    else:
+        print(f"📥 Ссылка на оригинал: {url}")
     if translation_created:
         print(f"🌐 Перевод: {translation_pdf_path}")
-    if not fits_in_github:
-        print(f"📥 Ссылка на оригинал: {url}")
     print("=" * 60)
 
 
