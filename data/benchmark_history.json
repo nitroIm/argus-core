@@ -1,16 +1,16 @@
-{
-  "runs": [
-    {
-      "time": "2026-09-19T00:49:23.760388",
-      "chunks": 2670,
-      "recall_at_k": 100.0,
-      "golden_pass_rate": 50.0
-    },
-    {
-      "time": "2026-09-19T10:03:46.163276",
-      "chunks": 2917,
-      "recall_at_k": 100.0,
-      "golden_pass_rate": 50.0
-    }
-  ]
-}
+[
+  {
+    "timestamp": "2026-09-20T21:42:38.311098+00:00",
+    "model_label": "argus-finetuned",
+    "total_chunks": 5281,
+    "questions": 10,
+    "avg_top1": 0.5995,
+    "avg_top5": 0.5759,
+    "recall_at_1": 1.0,
+    "recall_at_5": 1.0,
+    "mrr": 1.0,
+    "avg_latency_ms": 14.9963,
+    "p95_latency_ms": 16.9,
+    "degraded": false
+  }
+]
