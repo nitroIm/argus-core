@@ -1,10 +1,9 @@
 # ============================================================
-# ARGUS — TRAIN EMBEDDINGS (v3)
-# v3: FROZEN model, incremental — считаем ТОЛЬКО новые чанки.
-#     Никакого fine-tuning'а. Векторы всегда совместимы.
+# ARGUS — TRAIN EMBEDDINGS (v3.1 — совместим с GUIDE.md)
+# v3.1: использует СУЩЕСТВУЮЩУЮ модель (fine-tuned или базовую),
+#       не переобучает, считает ТОЛЬКО новые чанки.
 # ============================================================
 
-import os
 import json
 import tempfile
 import numpy as np
@@ -13,28 +12,26 @@ from pathlib import Path
 
 from sentence_transformers import SentenceTransformer
 
-# --- Пути ---
+# --- Пути (pathlib) ---
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parent
 
 DATA_DIR = REPO_ROOT / "data"
+MODELS_DIR = REPO_ROOT / "models"
 KNOWLEDGE_FILE = DATA_DIR / "knowledge.json"
 METADATA_FILE = DATA_DIR / "chunks_metadata.json"
+MODEL_INFO_FILE = DATA_DIR / "model_info.json"
 
-# Промежуточные файлы (не коммитятся) — передаются в build_index.py
+FINETUNED_MODEL_DIR = MODELS_DIR / "argus-embeddings"
+
 TMP_DIR = Path(tempfile.gettempdir()) / "argus_train"
 TMP_DIR.mkdir(parents=True, exist_ok=True)
 NEW_EMBEDDINGS_FILE = TMP_DIR / "new_embeddings.npy"
 NEW_IDS_FILE = TMP_DIR / "new_chunk_ids.json"
-MODEL_INFO_FILE = DATA_DIR / "model_info.json"
 
-# --- Модель (замороженная) ---
-MODEL_NAME = "intfloat/multilingual-e5-base"
-MODEL_DIM = 768
-MODEL_VERSION = "e5-base-v1"
-PASSAGE_PREFIX = "passage: "  # Обязательно для E5!
-
-# --- Параметры ---
+# --- Модель ---
+FALLBACK_MODEL_NAME = "intfloat/multilingual-e5-small"
+FALLBACK_DIM = 384
 BATCH_SIZE = 32
 
 
@@ -55,47 +52,44 @@ if len(chunks) == 0:
 
 
 # ============================================================
-# 2. LOAD EXISTING METADATA (что уже проэмбеддено)
+# 2. ЗАГРУЗКА СУЩЕСТВУЮЩИХ МЕТАДАННЫХ (формат GUIDE: список)
 # ============================================================
 existing_ids = set()
-existing_model = None
-existing_dim = None
 
 if METADATA_FILE.exists():
     try:
         with open(METADATA_FILE, encoding="utf-8") as f:
             meta = json.load(f)
-        existing_ids = set(meta.get("ids", []))
-        existing_model = meta.get("model_name")
-        existing_dim = meta.get("dim")
-        print(f"📊 Существующий индекс: {len(existing_ids)} векторов, "
-              f"модель={existing_model}, dim={existing_dim}")
+        # Формат GUIDE — список словарей
+        if isinstance(meta, list):
+            existing_ids = {item.get("id") for item in meta if item.get("id")}
+            print(f"📊 Существующий индекс: {len(existing_ids)} id")
+        else:
+            print("⚠️ chunks_metadata.json не в формате списка — все чанки будут новыми")
     except Exception as e:
         print(f"⚠️ Не могу прочитать chunks_metadata.json: {e}")
         print("   → будут пересчитаны ВСЕ эмбеддинги")
 
 
 # ============================================================
-# 3. ПРОВЕРКА СОВМЕСТИМОСТИ МОДЕЛИ
+# 3. ВЫБОР МОДЕЛИ: fine-tuned или fallback
 # ============================================================
-force_full_rebuild = False
+use_finetuned = FINETUNED_MODEL_DIR.exists() and any(FINETUNED_MODEL_DIR.iterdir())
 
-if existing_model and existing_model != MODEL_NAME:
-    print(f"🚨 Модель изменилась: {existing_model} → {MODEL_NAME}")
-    print("   → требуется полный пересбор индекса")
-    force_full_rebuild = True
-
-if existing_dim and existing_dim != MODEL_DIM:
-    print(f"🚨 Размерность изменилась: {existing_dim} → {MODEL_DIM}")
-    force_full_rebuild = True
-
-if force_full_rebuild:
-    existing_ids = set()
-    # Удаляем старый индекс — build_index.py создаст новый с нуля
-    for f in [DATA_DIR / "faiss.index", METADATA_FILE]:
-        if f.exists():
-            f.unlink()
-            print(f"🗑️ Удалён {f.name} (для полного пересбора)")
+if use_finetuned:
+    MODEL_PATH = str(FINETUNED_MODEL_DIR)
+    MODEL_LABEL = "argus-finetuned"
+    print(f"🤖 Использую fine-tuned модель: {MODEL_PATH}")
+    # Fine-tuned модель обучена БЕЗ префиксов — не добавляем
+    PREFIX_PASSAGE = ""
+    PREFIX_QUERY = ""
+else:
+    MODEL_PATH = FALLBACK_MODEL_NAME
+    MODEL_LABEL = FALLBACK_MODEL_NAME
+    print(f"🤖 Fine-tuned модель не найдена, использую базовую: {MODEL_PATH}")
+    # Базовая E5 требует префиксы
+    PREFIX_PASSAGE = "passage: "
+    PREFIX_QUERY = "query: "
 
 
 # ============================================================
@@ -106,8 +100,7 @@ print(f"✨ Новых чанков для эмбеддинга: {len(new_chunks
 
 if len(new_chunks) == 0:
     print("✅ Все чанки уже проэмбеддены — нечего делать")
-    # Создаём пустые файлы, чтобы build_index.py понял, что ничего нового
-    np.save(NEW_EMBEDDINGS_FILE, np.zeros((0, MODEL_DIM), dtype=np.float32))
+    np.save(NEW_EMBEDDINGS_FILE, np.zeros((0, FALLBACK_DIM), dtype=np.float32))
     with open(NEW_IDS_FILE, "w") as f:
         json.dump([], f)
     raise SystemExit(0)
@@ -116,31 +109,31 @@ if len(new_chunks) == 0:
 # ============================================================
 # 5. ЗАГРУЖАЕМ МОДЕЛЬ И СЧИТАЕМ ЭМБЕДДИНГИ
 # ============================================================
-print(f"🤖 Загрузка модели: {MODEL_NAME}")
-model = SentenceTransformer(MODEL_NAME)
+model = SentenceTransformer(MODEL_PATH)
+actual_dim = model.get_sentence_embedding_dimension()
+print(f"📐 Размерность модели: {actual_dim}")
 
-texts = [PASSAGE_PREFIX + c["text"] for c in new_chunks]
+texts = [PREFIX_PASSAGE + c["text"] for c in new_chunks]
 print(f"🧮 Считаю эмбеддинги для {len(texts)} чанков...")
 
 embeddings = model.encode(
     texts,
     batch_size=BATCH_SIZE,
-    normalize_embeddings=True,   # critical for cosine
+    normalize_embeddings=True,
     show_progress_bar=True,
     convert_to_numpy=True,
 ).astype(np.float32)
 
-print(f"✅ Получено: shape={embeddings.shape}, dtype={embeddings.dtype}")
+print(f"✅ Получено: shape={embeddings.shape}")
 
-# Проверка размерности
-if embeddings.shape[1] != MODEL_DIM:
+if embeddings.shape[1] != actual_dim:
     raise RuntimeError(
-        f"❌ Размерность модели {embeddings.shape[1]} != ожидаемой {MODEL_DIM}"
+        f"❌ Размерность {embeddings.shape[1]} != {actual_dim}"
     )
 
 
 # ============================================================
-# 6. СОХРАНЕНИЕ ПРОМЕЖУТОЧНЫХ ФАЙЛОВ
+# 6. СОХРАНЕНИЕ
 # ============================================================
 np.save(NEW_EMBEDDINGS_FILE, embeddings)
 new_ids = [c["id"] for c in new_chunks]
@@ -149,11 +142,12 @@ with open(NEW_IDS_FILE, "w", encoding="utf-8") as f:
 
 with open(MODEL_INFO_FILE, "w", encoding="utf-8") as f:
     json.dump({
-        "model_name": MODEL_NAME,
-        "model_version": MODEL_VERSION,
-        "dim": MODEL_DIM,
-        "passage_prefix": PASSAGE_PREFIX,
-        "query_prefix": "query: ",  # ВАЖНО для retrieval!
+        "model_path": MODEL_PATH,
+        "model_label": MODEL_LABEL,
+        "dim": actual_dim,
+        "passage_prefix": PREFIX_PASSAGE,
+        "query_prefix": PREFIX_QUERY,
+        "is_finetuned": use_finetuned,
         "updated_at": datetime.now(timezone.utc).isoformat(),
     }, f, ensure_ascii=False, indent=2)
 
