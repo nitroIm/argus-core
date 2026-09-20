@@ -4,8 +4,8 @@ on:
   workflow_dispatch:
   repository_dispatch:
     types: [run_benchmark]
-  schedule:
-    - cron: '0 5 * * 0'  # Каждое воскресенье в 5:00 UTC
+  # schedule:
+    #- cron: '0 5 * * 0'  # Каждое воскресенье в 5:00 UTC
 
 permissions:
   contents: write
