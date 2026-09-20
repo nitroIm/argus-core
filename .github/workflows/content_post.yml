@@ -8,6 +8,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: argus-content
+  cancel-in-progress: false
+
 jobs:
   generate:
     if: |
@@ -16,15 +20,18 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-python@v5
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - run: pip install requests
+      - name: Install dependencies
+        run: pip install requests==2.32.3
 
       - name: Generate draft
         env:
@@ -36,10 +43,25 @@ jobs:
         run: |
           git config user.name "ARGUS"
           git config user.email "argus@github.com"
-          git add -A
-          git diff --staged --quiet || git commit -m "ARGUS: draft $(date -u +%Y-%m-%dT%H:%M:%SZ)"
-          git pull --rebase origin main || true
-          git push || true
+          
+          # Безопасно коммитим только файл черновика
+          git add data/pending_post.json || true
+          
+          if git diff --staged --quiet; then
+            echo "Нет изменений для коммита."
+            exit 0
+          fi
+          
+          git commit -m "ARGUS: new draft generated [skip ci]"
+          for i in 1 2 3; do
+            git pull --rebase --autostash origin main
+            if git push origin main; then
+              echo "✅ Черновик сохранен"
+              break
+            else
+              sleep 5
+            fi
+          done
 
   publish:
     if: |
@@ -48,15 +70,18 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-python@v5
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - run: pip install requests
+      - name: Install dependencies
+        run: pip install requests==2.32.3
 
       - name: Publish or skip
         env:
@@ -76,7 +101,21 @@ jobs:
         run: |
           git config user.name "ARGUS"
           git config user.email "argus@github.com"
-          git add -A
-          git diff --staged --quiet || git commit -m "ARGUS: post handled $(date -u +%Y-%m-%dT%H:%M:%SZ)"
-          git pull --rebase origin main || true
-          git push || true
+          
+          git add data/pending_post.json || true
+          
+          if git diff --staged --quiet; then
+            echo "Нет изменений статуса для коммита."
+            exit 0
+          fi
+          
+          git commit -m "ARGUS: post handled [skip ci]"
+          for i in 1 2 3; do
+            git pull --rebase --autostash origin main
+            if git push origin main; then
+              echo "✅ Статус поста сохранен"
+              break
+            else
+              sleep 5
+            fi
+          done
