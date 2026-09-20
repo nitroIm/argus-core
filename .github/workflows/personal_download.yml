@@ -19,7 +19,7 @@ concurrency:
 jobs:
   download:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 90  # Большие книги требуют много времени на перевод
 
     steps:
       - name: Checkout
@@ -38,10 +38,15 @@ jobs:
           path: ~/.cache/huggingface
           key: hf-translate-v1
 
+      - name: Install system fonts
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y fonts-dejavu-core
+
       - name: Install dependencies
         run: |
           pip install torch==2.2.0 --index-url https://download.pytorch.org/whl/cpu
-          pip install transformers==4.41.2 sentencepiece requests==2.32.3 PyPDF2==3.1.0
+          pip install transformers==4.41.2 sentencepiece requests==2.32.3 PyPDF2==3.1.0 fpdf2==2.7.9
 
       - name: Run personal downloader
         env:
@@ -50,7 +55,7 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python scripts/personal_downloader.py "$INDEX"
 
-      - name: Commit downloaded books
+      - name: Commit translation
         run: |
           git config user.name "ARGUS"
           git config user.email "argus@github.com"
@@ -61,7 +66,7 @@ jobs:
             exit 0
           fi
           
-          git commit -m "ARGUS: personal book downloaded [skip ci]"
+          git commit -m "ARGUS: personal translation [skip ci]"
           for i in 1 2 3; do
             git pull --rebase --autostash origin main
             if git push origin main; then
