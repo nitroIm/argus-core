@@ -6,22 +6,28 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: argus-proposer
+  cancel-in-progress: false
+
 jobs:
   propose:
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-python@v5
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: Install deps
-        run: pip install requests
+      - name: Install dependencies
+        run: pip install requests==2.32.3
 
       - name: Run proposer
         env:
@@ -29,11 +35,30 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python scripts/proposer.py
 
-      - name: Commit
+      - name: Commit and Push changes
         run: |
           git config user.name "ARGUS"
           git config user.email "argus@github.com"
-          git add -A
-          git diff --staged --quiet || git commit -m "ARGUS: proposals $(date -u +%Y-%m-%dT%H:%M:%SZ)"
-          git pull --rebase origin main || true
-          git push || true
+          
+          # Добавляем только файл с предложениями
+          git add data/proposals.json || true
+          
+          if git diff --staged --quiet; then
+            echo "Нет изменений для коммита."
+            exit 0
+          fi
+          
+          echo "Есть изменения. Коммичу и пушу..."
+          git commit -m "ARGUS: new proposals [skip ci]"
+          
+          # Надежный пуш с обработкой конфликтов (race conditions)
+          for i in 1 2 3; do
+            git pull --rebase --autostash origin main
+            if git push origin main; then
+              echo "✅ Предложения успешно сохранены"
+              break
+            else
+              echo "⚠️ Попытка $i не удалась, жду 5 секунд..."
+              sleep 5
+            fi
+          done
