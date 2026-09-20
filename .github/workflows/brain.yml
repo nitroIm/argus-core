@@ -1,11 +1,10 @@
-name: ARGUS Brain
+name: ARGUS Brain (Master Scheduler)
 
 on:
   workflow_dispatch:
   schedule:
-    # ИСПРАВЛЕНО: */30 * * * * означает "каждые 30 минут". 
-    # (0 6 * * * означало бы "только в 6:00 утра каждый день")
-   # - cron: "*/0 6 * * *"
+    # Brain работает каждые 30 минут и проверяет, какие задачи нужно запустить
+    # - cron: "*/30 * * * *"
 
 permissions:
   contents: write
@@ -15,7 +14,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  think:
+  scheduler:
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -33,37 +32,32 @@ jobs:
       - name: Install dependencies
         run: pip install requests==2.32.3
 
-      - name: Run brain
+      - name: Run Brain Scheduler
         env:
           GITHUB_REPO: ${{ github.repository }}
-          # ОСТАВЛЯЕМ GH_PAT, так как ключ лежит именно под этим именем в Secrets
           GITHUB_PAT: ${{ secrets.GH_PAT }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python scripts/brain.py
 
-      - name: Commit and Push state
+      - name: Commit state
         run: |
           git config user.name "ARGUS"
           git config user.email "argus@github.com"
-          
           git add data/brain_state.json data/brain_decisions.json || true
           
           if git diff --staged --quiet; then
-            echo "Нет изменений в состоянии мозга."
+            echo "Нет изменений"
             exit 0
           fi
           
-          echo "Есть изменения. Коммичу и пушу..."
-          git commit -m "ARGUS: brain state update [skip ci]"
-          
+          git commit -m "ARGUS: brain state [skip ci]"
           for i in 1 2 3; do
             git pull --rebase --autostash origin main
             if git push origin main; then
-              echo "✅ Состояние мозга успешно сохранено"
+              echo "✅ Сохранено"
               break
             else
-              echo "⚠️ Попытка $i не удалась, жду 5 секунд..."
               sleep 5
             fi
           done
