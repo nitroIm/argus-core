@@ -46,7 +46,7 @@ jobs:
         uses: actions/cache@v5
         with:
           path: ~/.cache/huggingface
-          key: hf-multilingual-e5-base-v1
+          key: hf-e5-base-v1
 
       - name: Install dependencies
         run: |
@@ -56,8 +56,6 @@ jobs:
 
       # ============================================================
       # ШАГ 1: ПРОВЕРКА НОВЫХ КНИГ
-      # Fingerprint считается только по СОДЕРЖИМОМУ файлов в books/
-      # Если файлов нет — skip. Если хэш не изменился — skip.
       # ============================================================
       - name: Check for new books
         id: check
@@ -65,75 +63,58 @@ jobs:
           mkdir -p data
           if [ ! -d books ] || [ -z "$(ls -A books 2>/dev/null)" ]; then
             echo "skip=true" >> $GITHUB_OUTPUT
-            echo "📭 Папка books/ пуста — пропускаем"
+            echo "📭 books/ пуст — пропуск"
             exit 0
           fi
 
-          CURRENT=$(find books -type f \( -name '*.pdf' -o -name '*.epub' -o -name '*.txt' \) -exec md5sum {} + 2>/dev/null | sort | md5sum | cut -d' ' -f1)
+          CURRENT=$(find books -type f \( -name '*.pdf' -o -name '*.txt' -o -name '*.md' \) \
+                    -exec md5sum {} + 2>/dev/null | sort | md5sum | cut -d' ' -f1)
           LAST=$(cat data/last_train_fingerprint.txt 2>/dev/null || echo "none")
 
           if [ "$CURRENT" = "$LAST" ]; then
             echo "skip=true" >> $GITHUB_OUTPUT
-            echo "✅ Новых книг нет — fingerprint совпал"
+            echo "✅ Новых книг нет"
           else
             echo "skip=false" >> $GITHUB_OUTPUT
-            echo "📚 Есть новые книги — запускаем ingest"
+            echo "📚 Есть новые книги"
             echo "$CURRENT" > /tmp/new_fingerprint.txt
           fi
 
       # ============================================================
-      # ШАГ 2: ИНГЕСТ (MERGE, НЕ ПЕРЕЗАПИСЬ)
-      # ingest.py должен:
-      #   - читать ТОЛЬКО новые файлы (по file_hash)
-      #   - добавлять их в существующий knowledge.json
-      #   - не трогать уже обработанные книги
-      #   - сохранять список успешно обработанных файлов
+      # ШАГ 2: INGEST (merge, не перезапись)
       # ============================================================
-      - name: Ingest new books (merge mode)
+      - name: Ingest books
         if: steps.check.outputs.skip == 'false'
-        run: |
-          python scripts/ingest.py --mode=merge
+        run: python scripts/ingest.py
 
       # ============================================================
-      # ШАГ 3: ЭМБЕДДИНГ ТОЛЬКО НОВЫХ ЧАНКОВ
-      # train_embeddings.py должен:
-      #   - загрузить существующий faiss.index
-      #   - найти чанки без эмбеддингов (по chunk_hash)
-      #   - посчитать векторы ТОЛЬКО для них
-      #   - НЕ переобучать старые
+      # ШАГ 3: TRAIN (только новые чанки, frozen E5)
       # ============================================================
       - name: Train embeddings (incremental)
         if: steps.check.outputs.skip == 'false'
-        run: |
-          python scripts/train_embeddings.py --mode=incremental
+        run: python scripts/train_embeddings.py
 
       # ============================================================
-      # ШАГ 4: APPEND В FAISS (НЕ ПЕРЕСБОР)
-      # build_index.py должен:
-      #   - если индекс есть — read_index + add
-      #   - если нет — создать новый
-      #   - проверить размерность (d) — если не совпадает, пересобрать всё
-      #   - обновить chunks_metadata.json
+      # ШАГ 4: BUILD/APPEND INDEX
       # ============================================================
-      - name: Build/append index
+      - name: Build index (append)
         if: steps.check.outputs.skip == 'false'
-        run: |
-          python scripts/build_index.py --mode=append
+        run: python scripts/build_index.py
 
       # ============================================================
-      # ШАГ 5: СТАТИСТИКА
+      # ШАГ 5: SUMMARY
       # ============================================================
       - name: Compute summary
         id: summary
         if: steps.check.outputs.skip == 'false'
         run: |
           if [ -f data/summary.json ]; then
-            BOOKS=$(python -c "import json; d=json.load(open('data/summary.json')); print(d.get('total_books',0))" 2>/dev/null || echo 0)
-            CHUNKS=$(python -c "import json; d=json.load(open('data/summary.json')); print(d.get('total_chunks',0))" 2>/dev/null || echo 0)
-            NEW_CHUNKS=$(python -c "import json; d=json.load(open('data/summary.json')); print(d.get('new_chunks',0))" 2>/dev/null || echo 0)
+            BOOKS=$(python -c "import json;d=json.load(open('data/summary.json'));print(d.get('total_books',0))" 2>/dev/null || echo 0)
+            CHUNKS=$(python -c "import json;d=json.load(open('data/summary.json'));print(d.get('total_chunks',0))" 2>/dev/null || echo 0)
+            NEW=$(python -c "import json;d=json.load(open('data/summary.json'));print(d.get('new_chunks',0))" 2>/dev/null || echo 0)
             echo "books=${BOOKS}" >> $GITHUB_OUTPUT
             echo "chunks=${CHUNKS}" >> $GITHUB_OUTPUT
-            echo "new_chunks=${NEW_CHUNKS}" >> $GITHUB_OUTPUT
+            echo "new_chunks=${NEW}" >> $GITHUB_OUTPUT
           else
             echo "books=0" >> $GITHUB_OUTPUT
             echo "chunks=0" >> $GITHUB_OUTPUT
@@ -141,69 +122,55 @@ jobs:
           fi
 
       # ============================================================
-      # ШАГ 6: СОХРАНЕНИЕ FINGERPRINT
+      # ШАГ 6: FINGERPRINT
       # ============================================================
       - name: Save fingerprint
         if: steps.check.outputs.skip == 'false'
         run: cp /tmp/new_fingerprint.txt data/last_train_fingerprint.txt
 
       # ============================================================
-      # ШАГ 7: УДАЛЕНИЕ УСПЕШНО ОБРАБОТАННЫХ PDF
-      # Удаляем ТОЛЬКО те файлы, которые:
-      #   - успешно попали в knowledge.json
-      #   - имеют эмбеддинг в faiss.index
-      #   - НЕ удаляем, если индекс битый или ingest упал
+      # ШАГ 7: УДАЛЕНИЕ PDF, КОТОРЫЕ УСПЕШНО ПОПАЛИ В БАЗУ
+      # Читаем last_ingest.json — удаляем ТОЛЬКО реально обработанные файлы
       # ============================================================
-      - name: Delete successfully ingested PDFs
+      - name: Cleanup ingested PDFs
         if: steps.check.outputs.skip == 'false'
         run: |
           python3 << 'PYEOF'
           import json, os, sys
 
-          # Защита 1: индекс должен существовать и быть непустым
+          # Защита 1: индекс должен быть валиден
           if not os.path.exists("data/faiss.index") or os.path.getsize("data/faiss.index") == 0:
-              print("⚠️ faiss.index отсутствует или пуст — очистка PDF отменена")
+              print("⚠️ faiss.index пуст — cleanup отменён")
               sys.exit(0)
 
-          if not os.path.exists("data/knowledge.json"):
-              print("⚠️ knowledge.json отсутствует — очистка PDF отменена")
+          if not os.path.exists("data/last_ingest.json"):
+              print("⚠️ last_ingest.json нет — cleanup отменён")
               sys.exit(0)
 
-          with open("data/knowledge.json", encoding="utf-8") as f:
-              know = json.load(f)
+          with open("data/last_ingest.json", encoding="utf-8") as f:
+              last = json.load(f)
 
-          # Защита 2: knowledge.json должен быть непустым и валидным
-          books = know.get("books", [])
-          if not isinstance(books, list) or len(books) == 0:
-              print("⚠️ knowledge.json пуст — очистка PDF отменена")
+          files = last.get("files", [])
+          if not files:
+              print("ℹ️ Нечего удалять")
               sys.exit(0)
-
-          # Собираем file_hash всех книг, у которых есть чанки с эмбеддингами
-          # (это гарантия, что книга реально обработана)
-          ingested_files = set()
-          for b in books:
-              fname = b.get("file")
-              chunk_count = b.get("chunk_count", 0)
-              if fname and chunk_count > 0:
-                  ingested_files.add(os.path.basename(fname))
 
           deleted = 0
-          if os.path.isdir("books"):
-              for filename in os.listdir("books"):
-                  filepath = os.path.join("books", filename)
-                  if os.path.isfile(filepath) and filename in ingested_files:
-                      try:
-                          os.remove(filepath)
-                          deleted += 1
-                          print(f"🗑️ Удалено: {filename}")
-                      except Exception as e:
-                          print(f"⚠️ Не удалось удалить {filename}: {e}")
+          for fname in files:
+              path = os.path.join("books", fname)
+              if os.path.isfile(path):
+                  try:
+                      os.remove(path)
+                      deleted += 1
+                      print(f"🗑️ Удалено: {fname}")
+                  except Exception as e:
+                      print(f"⚠️ Не удалось удалить {fname}: {e}")
 
-          print(f"CLEANUP DONE: {deleted} файлов удалено из books/")
+          print(f"CLEANUP DONE: удалено {deleted} из {len(files)}")
           PYEOF
 
       # ============================================================
-      # ШАГ 8: КОММИТ И PUSH
+      # ШАГ 8: COMMIT & PUSH
       # ============================================================
       - name: Commit and Push
         if: steps.check.outputs.skip == 'false'
@@ -213,24 +180,29 @@ jobs:
           git config user.name "ARGUS"
           git config user.email "argus@github.com"
 
-          git add data/ models/ books/ || true
+          # Добавляем только нужные артефакты (НЕ tmp-файлы)
+          git add data/knowledge.json \
+                  data/chunks_metadata.json \
+                  data/faiss.index \
+                  data/summary.json \
+                  data/last_ingest.json \
+                  data/model_info.json \
+                  data/last_train_fingerprint.txt \
+                  books/ || true
 
           if git diff --staged --quiet; then
-            echo "ℹ️ Нет изменений для коммита."
+            echo "ℹ️ Нет изменений"
             exit 0
           fi
 
           git commit -m "ARGUS: incremental train [skip ci]"
 
           for i in 1 2 3; do
-            git pull --rebase --autostash origin main
-            if git push origin main; then
-              echo "✅ Изменения сохранены"
-              break
-            else
-              echo "⚠️ Попытка $i не удалась, жду 5с..."
-              sleep 5
-            fi
+            git pull --rebase --autostash origin main && git push origin main && {
+              echo "✅ Push успешен"; break;
+            } || {
+              echo "⚠️ Попытка $i неудачна, жду 5с"; sleep 5;
+            }
           done
 
   notify:
@@ -251,9 +223,9 @@ jobs:
           if [ "${SKIP_FLAG}" = "true" ]; then
             TEXT="⏸️ Train пропущен (новых книг нет)"
           elif [ "${TRAIN_RESULT}" = "success" ]; then
-            TEXT="🎓 Инкрементальный train завершён!\n📚 Всего книг: ${BOOKS}\n🧩 Всего чанков: ${CHUNKS}\n✨ Новых чанков: ${NEW_CHUNKS}"
+            TEXT="🎓 Train OK\n📚 Книг: ${BOOKS}\n🧩 Чанков: ${CHUNKS}\n✨ Новых: ${NEW_CHUNKS}"
           else
-            TEXT="❌ Train упал\nПроверь логи в Actions."
+            TEXT="❌ Train упал — смотри логи Actions"
           fi
 
           curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
