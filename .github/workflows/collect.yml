@@ -1,8 +1,8 @@
 name: ARGUS Collect Data
 
 on:
-  schedule:
-    - cron: "0 * * * *"   # каждый час
+  #schedule:
+ #   - cron: "0 * * * *"   # каждый час
   workflow_dispatch:
 
 permissions:
