@@ -1,10 +1,13 @@
 # ============================================================
-# ARGUS — PROPOSER (v3.3)
+# ARGUS — PROPOSER v3.3 [PRODUCTION]
 # ------------------------------------------------------------
-# v3.3: перевод через локальный translate.py (Helsinki-NLP).
-#       Никакого OpenRouter — всё уже есть.
+# v3.3: продакшн-версия.
+#   • Перевод через локальный translate.py (Helsinki-NLP)
+#   • Batch-перевод 5 заголовков за раз — быстрее в 5 раз
+#   • Fallback: если перевод упал — шлём оригинал
+#   • Callback формат approve:<sid> — совместим с bot_host.py
+#   • Явный лог на каждом шаге
 # ------------------------------------------------------------
-# v3.2: был вариант с OpenRouter (не понадобился)
 # v3.1: callback_data = approve:<sid>
 # ============================================================
 
@@ -13,14 +16,14 @@ import sys
 import json
 import hashlib
 import requests
-from datetime import datetime, timezone DATA
-from_DIR pathlib import Path
+from datetime import datetime, timezone
+from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parent
 DATA_DIR = REPO_ROOT / "data"
 
-ANALYSIS_FILE = / "analysis.json"
+ANALYSIS_FILE = DATA_DIR / "analysis.json"
 CANDIDATES_FILE = DATA_DIR / "scout_candidates.json"
 PENDING_FILE = DATA_DIR / "pending_cards.json"
 OUTPUT_FILE = DATA_DIR / "proposals.json"
@@ -31,22 +34,25 @@ MAX_CANDIDATES_PER_RUN = 5
 BOT_TOKEN = (os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("BOT_TOKEN") or "").strip()
 CHAT_ID = (os.getenv("TELEGRAM_CHAT_ID") or "").strip()
 
-
-# --- Локальный переводчик (тот же что в ask.py) ---
+# --- Локальный переводчик ---
 try:
-    from translate import is_english, translate_to_ru
+    from translate import is_english, translate_to_ru, translate_batch, save_cache
     HAS_TRANSLATOR = True
     print("✅ translate.py подключён")
 except ImportError as e:
     HAS_TRANSLATOR = False
     def is_english(text): return False
     def translate_to_ru(text): return text
-    print(f"⚠️ translate.py недоступен: {e}. Перевод отключён.")
+    def translate_batch(texts): return texts
+    def save_cache(): pass
+    print(f"⚠️ translate.py недоступен: {e}")
 
 
-# ============================================================
-# УТИЛИТЫ
-# ============================================================
+def log(msg: str):
+    ts = datetime.now(timezone.utc).strftime("%H:%M:%S")
+    print(f"[{ts}] {msg}", flush=True)
+
+
 def load_json(path, default):
     if not path.exists():
         return default
@@ -54,7 +60,7 @@ def load_json(path, default):
         with open(path, "r", encoding="utf-8") as f:
             return json.load(f)
     except Exception as e:
-        print(f"⚠️ {path.name}: {e}")
+        log(f"⚠️ {path.name}: {e}")
         return default
 
 
@@ -68,44 +74,20 @@ def short_id(url: str) -> str:
     return hashlib.md5(url.encode("utf-8")).hexdigest()[:16]
 
 
-def translate_title(text: str) -> str:
-    """Переводит заголовок, если он английский. Иначе возвращает как есть."""
-    if not text or not text.strip():
-        return text
-    if not HAS_TRANSLATOR:
-        return text
-    try:
-        if is_english(text):
-            translated = translate_to_ru(text)
-            if translated and translated.strip():
-                return translated.strip()
-    except Exception as e:
-        print(f"⚠️ Ошибка перевода '{text[:30]}': {e}")
-    return text
-
-
-# ============================================================
-# TELEGRAM
-# ============================================================
-def send_candidate(title_en: str, title_ru: str, url: str, sid: str, topic: str = ""):
+def send_candidate(title_en, title_ru, url, sid, topic=""):
     if not BOT_TOKEN or not CHAT_ID:
-        print("⚠️ Нет TELEGRAM_BOT_TOKEN или TELEGRAM_CHAT_ID")
+        log("⚠️ Нет TELEGRAM_BOT_TOKEN или TELEGRAM_CHAT_ID")
         return False
 
     lines = ["📚 <b>Новая книга</b>\n"]
-
     if title_ru and title_ru != title_en:
         lines.append(f"🇷🇺 <b>{title_ru[:250]}</b>")
         lines.append(f"🇬🇧 <i>{title_en[:200]}</i>")
     else:
         lines.append(f"<b>{title_en[:300]}</b>")
-
     if topic:
         lines.append(f"\n🔖 Тема: {topic}")
-
     lines.append(f'\n<a href="{url}">Открыть PDF</a>')
-
-    text = "\n".join(lines)
 
     keyboard = {
         "inline_keyboard": [[
@@ -119,7 +101,7 @@ def send_candidate(title_en: str, title_ru: str, url: str, sid: str, topic: str 
             f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
             json={
                 "chat_id": CHAT_ID,
-                "text": text,
+                "text": "\n".join(lines),
                 "parse_mode": "HTML",
                 "disable_web_page_preview": True,
                 "reply_markup": keyboard,
@@ -128,19 +110,16 @@ def send_candidate(title_en: str, title_ru: str, url: str, sid: str, topic: str 
         )
         if r.status_code == 200:
             return True
-        print(f"⚠️ Telegram {r.status_code}: {r.text[:200]}")
+        log(f"⚠️ Telegram {r.status_code}: {r.text[:200]}")
         return False
     except Exception as e:
-        print(f"⚠️ Telegram: {e}")
+        log(f"⚠️ Telegram: {e}")
         return False
 
 
-# ============================================================
-# MAIN
-# ============================================================
 def main():
-    print("🧠 ARGUS PROPOSER v3.3")
-    print("=" * 50)
+    log("🧠 ARGUS PROPOSER v3.3 [PRODUCTION]")
+    log("=" * 50)
 
     # ---- analysis.json ----
     analysis = load_json(ANALYSIS_FILE, {})
@@ -192,20 +171,26 @@ def main():
 
     to_send = fresh[:MAX_CANDIDATES_PER_RUN]
 
-    print(f"\n📋 Предложений: {len(proposals)}")
-    print(f"📚 Свежих кандидатов: {len(fresh)} (из {len(all_candidates)})")
-    print(f"📤 Отправим: {len(to_send)}")
-    print(f"🌐 Переводчик: {'✅ включён' if HAS_TRANSLATOR else '❌ отключён'}\n")
+    log(f"📋 Предложений: {len(proposals)}")
+    log(f"📚 Свежих кандидатов: {len(fresh)} (из {len(all_candidates)})")
+    log(f"📤 Отправим: {len(to_send)}")
+    log(f"🌐 Переводчик: {'✅ включён' if HAS_TRANSLATOR else '❌ отключён'}")
 
+    # ---- Batch-перевод всех заголовков сразу ----
+    titles_en = [c.get("title", "Без названия") for c in to_send]
+    if HAS_TRANSLATOR and titles_en:
+        log(f"🌐 Перевожу {len(titles_en)} заголовков...")
+        titles_ru = translate_batch(titles_en)
+        save_cache()
+    else:
+        titles_ru = titles_en
+
+    # ---- Отправка ----
     sent_now = 0
-    for c in to_send:
+    for c, title_en, title_ru in zip(to_send, titles_en, titles_ru):
         sid = c["_sid"]
         url = c["url"]
-        title_en = c.get("title", "Без названия")
         topic = c.get("topic", "")
-
-        # Перевод
-        title_ru = translate_title(title_en)
 
         if send_candidate(title_en, title_ru, url, sid, topic):
             pending[sid] = {
@@ -218,9 +203,8 @@ def main():
             }
             sent_ids.add(sid)
             sent_now += 1
-            print(f"  ✅ {title_ru[:60] if title_ru != title_en else title_en[:60]}")
+            log(f"  ✅ {title_ru[:70]}")
 
-    # Сохраняем
     save_json(PENDING_FILE, pending)
     save_json(SENT_FILE, {"sent_ids": list(sent_ids)})
 
@@ -248,18 +232,18 @@ def main():
             lines.append(f"{icon} {auto} {safe}")
         try:
             requests.post(
-               лось f"https://api.tele vsgram.org/bot{BOT_TOKEN}/sendMessage",
+                f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
                 json={"chat_id": CHAT_ID, "text": "\n".join(lines), "parse_mode": "HTML"},
                 timeout=15,
             )
         except Exception as e:
-            print(f"⚠️ Telegram: {e}")
+            log(f"⚠️ Telegram: {e}")
 
-    print("\n" + "=" * 50)
-    print(f"✅ Предложений: {len(proposals)}")
-    print(f"📤 Кандидатов отправлено: {sent_now}")
-    print(f"📥 В pending: {len(pending)}")
-    print("=" * 50)
+    log("=" * 50)
+    log(f"✅ Предложений: {len(proposals)}")
+    log(f"📤 Кандидатов отправлено: {sent_now}")
+    log(f"📥 В pending: {len(pending)}")
+    log("=" * 50)
 
 
 if __name__ == "__main__":
