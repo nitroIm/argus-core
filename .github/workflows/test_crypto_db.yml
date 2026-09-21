@@ -1,0 +1,36 @@
+# ============================================================
+# ARGUS-Trader — TEST DB CONNECTION
+# ------------------------------------------------------------
+# Проверяет, что GitHub Actions может подключиться к Supabase
+# через секрет ARGUS_DB_URL, и что 18 таблиц на месте.
+# Временный — удалить после проверки.
+# ============================================================
+
+name: Test Crypto DB
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install psycopg
+        run: pip install "psycopg[binary]==3.2.3"
+
+      - name: Test DB connection
+        env:
+          ARGUS_DB_URL: ${{ secrets.ARGUS_DB_URL }}
+        run: |
+          cd crypto
+          python db.py
