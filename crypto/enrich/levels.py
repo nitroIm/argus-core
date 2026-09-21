@@ -1,14 +1,14 @@
 # ============================================================
-# ARGUS-Trader — LEVELS
+# ARGUS-Trader — LEVELS v3
 # ------------------------------------------------------------
-# Считает уровни цены:
-#   - Round numbers (84k, 85k, 86k)
-#   - Recent highs/lows (7d, 30d, 90d)
-#   - Support/Resistance (где цена отскакивала 3+ раз)
-#   - Volume profile (уровни с макс объёмом)
-# Результат → crypto/data/levels_analysis.json
+# v3: адаптивные уровни — шаг выбирается автоматически
+#     от текущей цены:
+#       $85,000 → major 10k, mid 5k, minor 1k
+#       $8,500  → major 1k, mid 500, minor 100
+#       $850    → major 100, mid 50, minor 10
+#     Диапазон: ±70% от цены (покрывает 10k-200k для BTC).
 # ------------------------------------------------------------
-# v1: начальная версия
+# v2: три уровня приоритета (major/mid/minor)
 # ============================================================
 
 import sys
@@ -37,7 +37,6 @@ log = logging.getLogger("crypto.levels")
 
 
 def fetch_candles(symbol, limit=2000):
-    """Возвращает свечи в порядке от старых к новым."""
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
@@ -65,19 +64,108 @@ def fetch_candles(symbol, limit=2000):
         return []
 
 
-def round_levels(price, step=1000):
-    """Ближайшие круглые уровни вокруг цены."""
-    base = int(price / step) * step
-    return [
-        base - step,
-        base,
-        base + step,
-        base + 2 * step,
-    ]
+def pick_step_size(price):
+    """
+    Подбирает базовый шаг по порядку цены.
+    Возвращает (major_step, mid_step, minor_step).
+    Логика: 1 значащая цифра цены × (1, 0.5, 0.1).
+    """
+    import math
+
+    if price <= 0:
+        return 1, 0.5, 0.1
+
+    # Порядок цены: 85000 → 10000, 8500 → 1000, 850 → 100
+    order = 10 ** (math.floor(math.log10(price)) - 1)  # 10% от порядка
+
+    # Основной шаг — 10% от порядка
+    major = order
+
+    # Если major слишком маленький или большой — корректируем
+    ratio = price / major
+    if ratio > 50:
+        major = major * 10
+    elif ratio < 5:
+        major = major / 10
+
+    mid = major / 2
+    minor = major / 10
+
+    return major, mid, minor
+
+
+def build_round_levels(current_price, range_pct=70):
+    """
+    Строит ВСЕ круглые уровни в диапазоне ±range_pct% от цены.
+    Шаг определяется автоматически от цены.
+    Tier: 1 = major, 2 = mid, 3 = minor (только ближние ±10%).
+    """
+    major, mid, minor = pick_step_size(current_price)
+
+    lower = current_price * (1 - range_pct / 100)
+    upper = current_price * (1 + range_pct / 100)
+
+    # Защита: нижняя граница не меньше нуля
+    if lower <= 0:
+        lower = current_price * 0.01
+
+    levels = []
+
+    # --- Major (1 шаг) ---
+    start = int(lower / major) * major
+    end = int(upper / major + 1) * major
+    v = start
+    while v <= end:
+        if v > 0:
+            levels.append({
+                "price": float(v),
+                "tier": 1,
+                "step": major,
+            })
+        v += major
+
+    # --- Mid (0.5 шага) — исключаем Major ---
+    start = int(lower / mid) * mid
+    end = int(upper / mid + 1) * mid
+    v = start
+    while v <= end:
+        if v > 0 and abs(v % major) > 1e-9:
+            levels.append({
+                "price": float(v),
+                "tier": 2,
+                "step": mid,
+            })
+        v += mid
+
+    # --- Minor (0.1 шага) — только ближние ±10% ---
+    near_lower = current_price * 0.90
+    near_upper = current_price * 1.10
+    start = int(near_lower / minor) * minor
+    end = int(near_upper / minor + 1) * minor
+    v = start
+    while v <= end:
+        if v > 0 and abs(v % mid) > 1e-9 and abs(v % major) > 1e-9:
+            levels.append({
+                "price": float(v),
+                "tier": 3,
+                "step": minor,
+            })
+        v += minor
+
+    # --- Distance ---
+    for lvl in levels:
+        lvl["distance_pct"] = round(
+            (lvl["price"] - current_price) / current_price * 100, 2
+        )
+        lvl["distance_abs"] = round(lvl["price"] - current_price, 2)
+        lvl["position"] = "above" if lvl["price"] > current_price else "below"
+
+    # Сортируем по близости к цене
+    levels.sort(key=lambda x: abs(x["distance_pct"]))
+    return levels
 
 
 def recent_extremes(candles, window):
-    """Max high и min low за window свечей."""
     if len(candles) < window:
         window = len(candles)
     recent = candles[-window:]
@@ -88,8 +176,7 @@ def recent_extremes(candles, window):
     return round(max_high, 2), round(min_low, 2)
 
 
-def find_touches(candles, level, tolerance_pct=0.3):
-    """Сколько раз цена касалась уровня (в пределах tolerance)."""
+def find_touches(candles, level, tolerance_pct=0.15):
     tol = level * tolerance_pct / 100
     touches = 0
     for c in candles:
@@ -99,34 +186,26 @@ def find_touches(candles, level, tolerance_pct=0.3):
 
 
 def find_supports_resistances(candles, current_price, top_n=5):
-    """
-    Ищем уровни где цена отскакивала.
-    Уровень = локальный min (для поддержки) или max (для сопротивления).
-    """
     if len(candles) < 20:
         return [], []
 
-    # --- Локальные экстремумы ---
     local_lows = []
     local_highs = []
 
     for i in range(2, len(candles) - 2):
         c = candles[i]
-        # Локальный минимум
         if (c["low"] < candles[i - 1]["low"] and
-            c["low"] < candles[i - 2]["low"] and
-            c["low"] < candles[i + 1]["low"] and
-            c["low"] < candles[i + 2]["low"]):
+                c["low"] < candles[i - 2]["low"] and
+                c["low"] < candles[i + 1]["low"] and
+                c["low"] < candles[i + 2]["low"]):
             local_lows.append(c["low"])
 
-        # Локальный максимум
         if (c["high"] > candles[i - 1]["high"] and
-            c["high"] > candles[i - 2]["high"] and
-            c["high"] > candles[i + 1]["high"] and
-            c["high"] > candles[i + 2]["high"]):
+                c["high"] > candles[i - 2]["high"] and
+                c["high"] > candles[i + 1]["high"] and
+                c["high"] > candles[i + 2]["high"]):
             local_highs.append(c["high"])
 
-    # --- Поддержки (ниже текущей цены) ---
     supports = []
     for low in sorted(set(local_lows)):
         if low < current_price:
@@ -140,11 +219,9 @@ def find_supports_resistances(candles, current_price, top_n=5):
                     "strength": min(5, touches),
                 })
 
-    # Сортируем: ближайшая поддержка первая
     supports.sort(key=lambda x: x["distance_pct"])
     supports = supports[:top_n]
 
-    # --- Сопротивления (выше текущей цены) ---
     resistances = []
     for high in sorted(set(local_highs)):
         if high > current_price:
@@ -165,7 +242,6 @@ def find_supports_resistances(candles, current_price, top_n=5):
 
 
 def volume_profile(candles, bins=20, top_n=5):
-    """Уровни с максимальным объёмом."""
     if not candles:
         return []
 
@@ -197,6 +273,16 @@ def volume_profile(candles, bins=20, top_n=5):
     return result
 
 
+def format_price(price):
+    """Красивое форматирование цены."""
+    if price >= 1000:
+        return f"${int(price):,}"
+    elif price >= 1:
+        return f"${price:,.2f}"
+    else:
+        return f"${price:.4f}"
+
+
 def analyze_symbol(symbol):
     log.info(f"📊 {symbol} — анализ уровней")
     candles = fetch_candles(symbol, limit=2000)
@@ -208,34 +294,25 @@ def analyze_symbol(symbol):
 
     current = candles[-1]
     current_price = current["close"]
-    log.info(f"   Текущая цена: ${current_price:,.2f}")
+    major, mid, minor = pick_step_size(current_price)
 
-    # --- Round levels ---
-    rounds = round_levels(current_price, step=1000)
-    round_levels_list = []
-    for r in rounds:
-        distance_pct = round((r - current_price) / current_price * 100, 2)
-        round_levels_list.append({
-            "price": r,
-            "distance_pct": distance_pct,
-            "type": "round",
-        })
+    log.info(f"   Текущая цена: {format_price(current_price)}")
+    log.info(f"   Подобранные шаги: major={major:g} | mid={mid:g} | minor={minor:g}")
 
-    # --- Recent extremes ---
+    round_levels = build_round_levels(current_price, range_pct=70)
+
     h7, l7 = recent_extremes(candles, 168)
     h30, l30 = recent_extremes(candles, 720)
     h90, l90 = recent_extremes(candles, 2160)
 
-    # --- Supports / Resistances ---
     supports, resistances = find_supports_resistances(candles, current_price, top_n=5)
-
-    # --- Volume profile ---
     vol_profile = volume_profile(candles, bins=20, top_n=5)
 
     return {
         "symbol": symbol,
         "current_price": round(current_price, 2),
-        "round_levels": round_levels_list,
+        "steps": {"major": major, "mid": mid, "minor": minor},
+        "round_levels": round_levels,
         "extremes": {
             "7d": {"high": h7, "low": l7},
             "30d": {"high": h30, "low": l30},
@@ -249,7 +326,7 @@ def analyze_symbol(symbol):
 
 def main():
     log.info("=" * 60)
-    log.info("📍 ARGUS-Trader LEVELS")
+    log.info("📍 ARGUS-Trader LEVELS v3 (адаптивный)")
     log.info("=" * 60)
 
     all_analysis = {}
@@ -261,26 +338,42 @@ def main():
 
         all_analysis[symbol] = analysis
 
-        # Лог
+        # --- Лог ---
         log.info("")
-        log.info(f"   Круглые уровни:")
-        for r in analysis["round_levels"]:
-            marker = "←" if r["distance_pct"] > 0 else ""
-            log.info(f"     ${r['price']:,} ({r['distance_pct']:+.2f}%) {marker}")
+        log.info(f"   🔵 Major:")
+        major_lvls = [l for l in analysis["round_levels"] if l["tier"] == 1]
+        for l in major_lvls[:10]:
+            arrow = "⬆" if l["position"] == "above" else "⬇"
+            log.info(f"     {arrow} {format_price(l['price'])} "
+                     f"({l['distance_pct']:+.2f}%)")
+
+        log.info(f"   🟢 Mid:")
+        mid_lvls = [l for l in analysis["round_levels"] if l["tier"] == 2]
+        for l in mid_lvls[:6]:
+            arrow = "⬆" if l["position"] == "above" else "⬇"
+            log.info(f"     {arrow} {format_price(l['price'])} "
+                     f"({l['distance_pct']:+.2f}%)")
+
+        log.info(f"   ⚪ Minor (ближние):")
+        minor_lvls = [l for l in analysis["round_levels"] if l["tier"] == 3]
+        for l in minor_lvls[:5]:
+            arrow = "⬆" if l["position"] == "above" else "⬇"
+            log.info(f"     {arrow} {format_price(l['price'])} "
+                     f"({l['distance_pct']:+.2f}%)")
 
         if analysis["supports"]:
-            log.info(f"   Поддержки:")
+            log.info(f"   🛡 Поддержки:")
             for s in analysis["supports"][:3]:
-                log.info(f"     ${s['price']:,} — "
+                log.info(f"     {format_price(s['price'])} — "
                          f"{s['touches']} касаний "
-                         f"({s['distance_pct']:.2f}%)")
+                         f"(-{s['distance_pct']:.2f}%)")
 
         if analysis["resistances"]:
-            log.info(f"   Сопротивления:")
+            log.info(f"   ⚔️ Сопротивления:")
             for r in analysis["resistances"][:3]:
-                log.info(f"     ${r['price']:,} — "
+                log.info(f"     {format_price(r['price'])} — "
                          f"{r['touches']} касаний "
-                         f"({r['distance_pct']:+.2f}%)")
+                         f"(+{r['distance_pct']:.2f}%)")
 
         log.info("")
 
