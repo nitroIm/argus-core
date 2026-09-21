@@ -43,12 +43,12 @@ except Exception as e:
 # ИСТОЧНИКИ RSS + ВЕСА
 # ============================================================
 FEEDS = [
-    {"name": "CoinDesk",      "url": "https://www.coindesk.com/arc/outboundfeeds/rss/", "lang": "en", "weight": 1.5},
     {"name": "Cointelegraph", "url": "https://cointelegraph.com/rss",                    "lang": "en", "weight": 1.3},
-    {"name": "The Block",     "url": "https://www.theblock.co/rss.xml",                  "lang": "en", "weight": 1.4},
     {"name": "Decrypt",       "url": "https://decrypt.co/feed",                          "lang": "en", "weight": 1.1},
     {"name": "Bitcoin.com",   "url": "https://news.bitcoin.com/feed/",                   "lang": "en", "weight": 1.0},
     {"name": "CryptoSlate",   "url": "https://cryptoslate.com/feed/",                    "lang": "en", "weight": 1.0},
+    {"name": "CryptoPotato",  "url": "https://cryptopotato.com/feed/",                   "lang": "en", "weight": 1.0},
+    {"name": "Bitcoinist",    "url": "https://bitcoinist.com/feed/",                     "lang": "en", "weight": 0.9},
     {"name": "ForkLog",       "url": "https://forklog.com/feed",                         "lang": "ru", "weight": 1.2},
 ]
 
