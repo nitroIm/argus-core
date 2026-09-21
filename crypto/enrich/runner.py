@@ -26,14 +26,15 @@ logging.basicConfig(
 )
 log = logging.getLogger("crypto.runner")
 
-
 STEPS = [
     ("features", "enrich.features"),
     ("patterns", "enrich.patterns"),
     ("levels", "enrich.levels"),
     ("events", "enrich.events"),
     ("causal", "enrich.causal"),
+    ("correlate", "enrich.correlate"),
 ]
+
 
 
 def run_step(name, module_name):
