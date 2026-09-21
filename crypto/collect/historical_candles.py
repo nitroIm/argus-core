@@ -1,7 +1,13 @@
 # ============================================================
-# ARGUS — СБОР ДАННЫХ (v3)
-# v3: фикс datetime для Python 3.12+, import sys, Telegram-уведомление
-# MEXC → Binance Vision → CoinGecko
+# ARGUS-Trader — HISTORICAL CANDLES
+# ------------------------------------------------------------
+# Массовая загрузка истории свечей (500 шт за раз) с fallback.
+# Пишет накопительно в crypto/data/price_history.json.
+# Используется для бэктестов и анализа истории.
+# ------------------------------------------------------------
+# v3: fix datetime для Python 3.12+, import sys, Telegram
+# v4: pathlib, запись в crypto/data/
+# Источники: MEXC → Binance Vision → CoinGecko
 # ============================================================
 
 import os
@@ -9,14 +15,25 @@ import sys
 import json
 import requests
 from datetime import datetime, timezone
+from pathlib import Path
 
+# --- Пути (pathlib, от файла) ---
+SCRIPT_DIR = Path(__file__).resolve().parent        # crypto/collect/
+CRYPTO_ROOT = SCRIPT_DIR.parent                     # crypto/
+DATA_DIR = CRYPTO_ROOT / "data"                     # crypto/data/
+DATA_DIR.mkdir(parents=True, exist_ok=True)
+
+DATA_FILE = DATA_DIR / "price_history.json"
+
+# --- Параметры ---
 SYMBOL = "BTCUSDT"
 LIMIT = 500
-DATA_FILE = "data/price_history.json"
+MAX_HISTORY = 20000      # максимум точек в файле
 
 # --- Telegram ---
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("BOT_TOKEN")
 CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+
 
 def notify(text: str):
     if not BOT_TOKEN or not CHAT_ID:
@@ -28,12 +45,12 @@ def notify(text: str):
                 "chat_id": CHAT_ID,
                 "text": text,
                 "parse_mode": "HTML",
-                "disable_web_page_preview": True
+                "disable_web_page_preview": True,
             },
             timeout=10,
         )
     except Exception:
-        pass  # Тихо игнорируем ошибки нотификации
+        pass
 
 
 def parse_candle(candle):
@@ -86,7 +103,7 @@ def fetch_coingecko():
         r = requests.get(url, params=params, timeout=20)
         r.raise_for_status()
         data = r.json()
-        # Формат CoinGecko OHLC: [time(ms), open, high, low, close]
+        # CoinGecko OHLC: [time(ms), open, high, low, close]
         candles = []
         for item in data:
             candles.append({
@@ -95,7 +112,7 @@ def fetch_coingecko():
                 "high": float(item[2]),
                 "low": float(item[3]),
                 "close": float(item[4]),
-                "volume": 0.0,  # CoinGecko OHLC не отдает объем
+                "volume": 0.0,
             })
         return candles
     except Exception as e:
@@ -106,38 +123,43 @@ def fetch_coingecko():
 # ============================================================
 # ОСНОВНОЕ
 # ============================================================
-
 def main():
-    os.makedirs("data", exist_ok=True)
-    
-    if os.path.exists(DATA_FILE):
+    # Загружаем существующую историю
+    if DATA_FILE.exists():
         try:
             with open(DATA_FILE, "r", encoding="utf-8") as f:
                 history = json.load(f)
-        except Exception:
+            if not isinstance(history, list):
+                history = []
+        except Exception as e:
+            print(f"⚠️ Не читается {DATA_FILE.name}: {e}")
             history = []
     else:
         history = []
 
     print(f"📊 Старых точек в истории: {len(history)}")
 
-    # ---------- Пробуем по очереди ----------
+    # ---------- Пробуем источники по очереди ----------
     new_data = None
     source = None
 
-    for fetcher, name in [(fetch_mexc, "MEXC"), (fetch_binance, "Binance Vision"), (fetch_coingecko, "CoinGecko")]:
+    for fetcher, name in [
+        (fetch_mexc, "MEXC"),
+        (fetch_binance, "Binance Vision"),
+        (fetch_coingecko, "CoinGecko"),
+    ]:
         new_data = fetcher()
         if new_data:
             source = name
             break
 
     if not new_data:
-        msg = "❌ ARGUS Collect: Все источники данных недоступны."
+        msg = "❌ ARGUS-Trader Collect: Все источники данных недоступны."
         print(msg)
         notify(msg)
         sys.exit(1)
 
-    print(f"✅ Данные успешно получены с {source}: {len(new_data)} свечей")
+    print(f"✅ Данные получены с {source}: {len(new_data)} свечей")
 
     # ---------- Добавляем новые точки ----------
     existing_times = {p["time"] for p in history}
@@ -146,23 +168,29 @@ def main():
     for candle in new_data:
         if candle["time"] in existing_times:
             continue
-        
-        # ИСПРАВЛЕНО: безопасная работа с часовыми поясами для Python 3.12+
-        candle["datetime"] = datetime.fromtimestamp(candle["time"] / 1000, tz=timezone.utc).isoformat()
+
+        # Безопасная работа с часовыми поясами для Python 3.12+
+        candle["datetime"] = datetime.fromtimestamp(
+            candle["time"] / 1000, tz=timezone.utc
+        ).isoformat()
         candle["source"] = source
-        
+
         history.append(candle)
         new_points += 1
 
-    # Сортируем по времени и обрезаем хвост, чтобы файл не раздувался
+    # Сортируем по времени и обрезаем хвост
     history.sort(key=lambda x: x["time"])
-    if len(history) > 20000:
-        history = history[-20000:]
+    if len(history) > MAX_HISTORY:
+        history = history[-MAX_HISTORY:]
 
-    with open(DATA_FILE, "w", encoding="utf-8") as f:
-        json.dump(history, f, ensure_ascii=False, indent=2)
+    # Сохраняем
+    try:
+        with open(DATA_FILE, "w", encoding="utf-8") as f:
+            json.dump(history, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        print(f"⚠️ Не удалось записать {DATA_FILE.name}: {e}")
 
-    # ---------- Итог и уведомление ----------
+    # ---------- Итог ----------
     last_price = history[-1]["close"] if history else 0
     first_date = history[0]["datetime"][:10] if history else "N/A"
     last_date = history[-1]["datetime"][:10] if history else "N/A"
@@ -174,14 +202,14 @@ def main():
         f"📈 <b>Новых свечей:</b> {new_points}\n"
         f"📚 <b>Всего в базе:</b> {len(history)} (с {first_date} по {last_date})"
     )
-    
+
     print("=" * 50)
     print(f"✅ Новых точек: {new_points}")
     print(f"📊 Всего: {len(history)}")
     print(f"   Первая: {first_date}")
     print(f"   Последняя: {last_date}")
     print("=" * 50)
-    
+
     notify(summary_msg)
 
 
