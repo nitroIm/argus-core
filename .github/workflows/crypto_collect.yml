@@ -1,18 +1,20 @@
 # ============================================================
-# ARGUS-Trader — COLLECT (прод)
+# ARGUS-Trader — COLLECT (прод, инкрементальный)
 # ------------------------------------------------------------
-# Запускается каждый час. Собирает 6 метрик BTC + ETH
-# и пишет в Supabase. Ничего не коммитит в git.
-# ------------------------------------------------------------
-# v1: начальная версия
+# v2: инкрементальный режим — 3 записи за раз.
+#     Время прогона: ~15-30 секунд вместо 8 минут.
 # ============================================================
 
 name: ARGUS Crypto Collect
 
 on:
   workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Режим (incremental / backfill)'
+        required: false
+        default: 'incremental'
   schedule:
-    # Каждый час в 0 минут (UTC)
     - cron: '0 * * * *'
 
 permissions:
@@ -28,11 +30,9 @@ jobs:
     timeout-minutes: 15
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
@@ -53,7 +53,10 @@ jobs:
           ARGUS_DB_URL: ${{ secrets.ARGUS_DB_URL }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: python crypto/collect/pipeline.py
+        run: |
+          MODE="${{ github.event.inputs.mode || 'incremental' }}"
+          echo "Mode: $MODE"
+          python crypto/collect/pipeline.py --mode=$MODE
 
       - name: Notify on failure
         if: failure()
@@ -63,4 +66,4 @@ jobs:
         run: |
           curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
             -H "Content-Type: application/json" \
-            -d "{\"chat_id\": \"${TELEGRAM_CHAT_ID}\", \"text\": \"⚠️ <b>ARGUS Crypto Collect</b> упал. Проверь Actions.\", \"parse_mode\": \"HTML\"}" || true
+            -d "{\"chat_id\": \"${TELEGRAM_CHAT_ID}\", \"text\": \"⚠️ <b>ARGUS Crypto Collect</b> упал.\", \"parse_mode\": \"HTML\"}" || true
