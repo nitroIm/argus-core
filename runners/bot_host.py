@@ -1,29 +1,45 @@
 # ============================================================
-# ARGUS — BOT HOST v2 (ЦЕНТР УПРАВЛЕНИЯ)
+# ARGUS — BOT HOST v2.1 (ЦЕНТР УПРАВЛЕНИЯ)
+# ------------------------------------------------------------
+# v2.1: fix — не передаём пустой inputs в GitHub API (422).
+#       fix — понятный лог если aiogram не установлен.
 # ------------------------------------------------------------
 # v2: центральное управление через кнопки.
-#     - /panel — главное меню
-#     - запуск всех workflow (Train, Collect, Enrich,
-#       Detect, News, Reports)
-#     - /status — сводка по всем системам
-#     - аудиокниги (заглушка, реализация позже)
-#     - никакого спама: один отчёт = одно сообщение
-# ------------------------------------------------------------
 # Требования: GH_PAT должен иметь scope 'workflow'
 # ============================================================
 
 import os
+import sys
 import asyncio
 import logging
 import requests
-from aiogram import Bot, Dispatcher, types, F
-from aiogram.filters import Command
-from aiogram.types import CallbackQuery
-from aiogram.types import InlineKeyboardMarkup
-from aiogram.types import InlineKeyboardButton
-from dotenv import load_dotenv
 
-load_dotenv()
+# ---- Проверка зависимостей ----
+try:
+    from aiogram import Bot, Dispatcher, types, F
+    from aiogram.filters import Command
+    from aiogram.types import CallbackQuery
+    from aiogram.types import InlineKeyboardMarkup
+    from aiogram.types import InlineKeyboardButton
+except ImportError as e:
+    print("=" * 60)
+    print("❌ ОШИБКА: aiogram не установлен")
+    print(f"   {e}")
+    print("=" * 60)
+    print("Решение на VPS:")
+    print("  pip install aiogram==3.13.0")
+    print("  pip install python-dotenv requests")
+    print("=" * 60)
+    sys.exit(1)
+
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    print("⚠️ python-dotenv не установлен")
+    print("  pip install python-dotenv")
+    # продолжаем — переменные могут быть в окружении
+
 
 # ============================================================
 # НАСТРОЙКИ
@@ -37,9 +53,12 @@ GITHUB_PAT = (
 GITHUB_REPO = (os.getenv("GITHUB_REPO") or "").strip()
 
 if not BOT_TOKEN:
-    raise SystemExit("BOT_TOKEN не задан")
+    print("❌ BOT_TOKEN не задан в .env")
+    sys.exit(1)
 if not GITHUB_REPO:
-    raise SystemExit("GITHUB_REPO не задан")
+    print("❌ GITHUB_REPO не задан в .env")
+    sys.exit(1)
+
 
 # ============================================================
 # ЛОГИ
@@ -56,59 +75,46 @@ logger.info(f"GH_PAT: {len(GITHUB_PAT)} символов")
 logger.info(f"REPO: {GITHUB_REPO}")
 logger.info("=" * 50)
 
-bot = Bot(token=BOT_TOKEN)
-dp = Dispatcher()
-
 
 # ============================================================
-# WORKFLOWS — что можно запускать
+# WORKFLOWS
 # ============================================================
 WORKFLOWS = {
     "train": {
         "file": "train_model.yml",
         "label": "🎓 Train ARGUS",
         "confirm": True,
-        "desc": "Обучение ARGUS на книгах (5-30 мин)",
     },
     "collect": {
         "file": "crypto_collect.yml",
         "label": "🪙 Collect Crypto",
         "confirm": False,
-        "desc": "Сбор свежих крипто-данных (~4 мин)",
     },
     "enrich": {
         "file": "crypto_enrich.yml",
         "label": "🧠 Enrich Crypto",
         "confirm": False,
-        "desc": "Признаки + паттерны + события (~1.5 мин)",
     },
     "detect": {
         "file": "crypto_detect.yml",
         "label": "🚨 Detect Anomaly",
         "confirm": False,
-        "desc": "Поиск манипуляций (~20 сек)",
-    },
-    "news": {
-        "file": "news.yml",
-        "label": "📰 News",
-        "confirm": False,
-        "desc": "Сбор новостей + сентимент (~2 мин)",
     },
     "report_week": {
         "file": "crypto_reporter.yml",
         "label": "📊 Отчёт за неделю",
         "confirm": False,
-        "desc": "Недельный отчёт с графиками",
     },
 }
 
 
 # ============================================================
-# GITHUB — ЗАПУСК WORKFLOW
+# GITHUB — ЗАПУСК WORKFLOW (fix v2.1)
 # ============================================================
 def run_workflow(key: str, inputs: dict = None) -> tuple:
     """
     Запускает workflow через workflow_dispatch API.
+    v2.1: если inputs пустой — не передаём ключ вообще.
     Возвращает (success, message).
     """
     wf = WORKFLOWS.get(key)
@@ -124,10 +130,11 @@ def run_workflow(key: str, inputs: dict = None) -> tuple:
         "Authorization": f"Bearer {GITHUB_PAT}",
         "X-GitHub-Api-Version": "2022-11-28",
     }
-    data = {
-        "ref": "main",
-        "inputs": inputs or {},
-    }
+
+    # FIX v2.1: не передаём inputs если он пустой
+    data = {"ref": "main"}
+    if inputs:
+        data["inputs"] = inputs
 
     try:
         r = requests.post(url, headers=headers, json=data, timeout=15)
@@ -136,7 +143,9 @@ def run_workflow(key: str, inputs: dict = None) -> tuple:
         if r.status_code == 404:
             return False, "❌ Workflow не найден"
         if r.status_code == 403:
-            return False, "❌ Нет прав (нужен scope 'workflow')"
+            return False, "❌ Нет прав (scope 'workflow')"
+        if r.status_code == 422:
+            return False, "❌ Ошибка параметров"
         msg = r.text[:150] if r.text else str(r.status_code)
         return False, f"❌ Ошибка: {msg}"
     except Exception as e:
@@ -145,10 +154,9 @@ def run_workflow(key: str, inputs: dict = None) -> tuple:
 
 
 # ============================================================
-# GITHUB — ЧТЕНИЕ JSON ИЗ РЕПО
+# GITHUB — ЧТЕНИЕ JSON
 # ============================================================
 def read_json(path: str) -> dict:
-    """Читает JSON из raw.githubusercontent.com."""
     url = f"https://raw.githubusercontent.com"
     url += f"/{GITHUB_REPO}/main/{path}"
     try:
@@ -161,7 +169,33 @@ def read_json(path: str) -> dict:
 
 
 # ============================================================
-# ФОРМАТТЕРЫ
+# LEGACY DISPATCH (для старых workflow)
+# ============================================================
+def send_dispatch(event_type: str, payload: dict) -> bool:
+    url = f"https://api.github.com/repos/{GITHUB_REPO}/dispatches"
+    headers = {
+        "Accept": "application/vnd.github+json",
+        "Authorization": f"Bearer {GITHUB_PAT}",
+        "X-GitHub-Api-Version": "2022-11-28",
+    }
+    data = {"event_type": event_type, "client_payload": payload}
+    try:
+        r = requests.post(url, headers=headers, json=data, timeout=15)
+        return r.status_code == 204
+    except Exception as e:
+        logger.error(f"dispatch: {e}")
+        return False
+
+
+# ============================================================
+# ИНИЦИАЛИЗАЦИЯ БОТА
+# ============================================================
+bot = Bot(token=BOT_TOKEN)
+dp = Dispatcher()
+
+
+# ============================================================
+# ХЕЛПЕРЫ
 # ============================================================
 def fmt_price(p: float) -> str:
     if p >= 1000:
@@ -172,96 +206,57 @@ def fmt_price(p: float) -> str:
 
 
 def build_argus_status() -> str:
-    """Статус ARGUS по книгам."""
     data = read_json("data/summary.json")
     if not data:
         return "⚠️ Нет данных ARGUS"
-
     books = data.get("total_books", 0)
     chunks = data.get("total_chunks", 0)
-
-    lines = [
-        "🏛️ <b>ARGUS</b>",
-        f"📚 Книг: {books}",
-        f"📄 Чанков: {chunks}",
-    ]
-    return "\n".join(lines)
+    return f"🏛️ <b>ARGUS</b>\n📚 Книг: {books}\n📄 Чанков: {chunks}"
 
 
 def build_crypto_status() -> str:
-    """Статус крипто-системы."""
     patterns = read_json("crypto/data/patterns_analysis.json")
     levels = read_json("crypto/data/levels_analysis.json")
-
     if not patterns and not levels:
         return "⚠️ Нет крипто-данных"
-
     lines = ["🪙 <b>Crypto</b>"]
-
-    # Уровни — цена и support/resistance
     if levels and levels.get("symbols"):
         for sym, data in levels["symbols"].items():
             name = sym.replace("USDT", "")
             price = data.get("current_price", 0)
-            price_str = fmt_price(price)
-            lines.append(f"💰 <b>{name}</b>: {price_str}")
-
+            lines.append(f"💰 <b>{name}</b>: {fmt_price(price)}")
             sup = data.get("supports", [])
             res = data.get("resistances", [])
             if sup:
                 s = sup[0]
-                lines.append(
-                    f"  🛡 {fmt_price(s['price'])} "
-                    f"({-s['distance_pct']:.1f}%)"
-                )
+                lines.append(f"  🛡 {fmt_price(s['price'])}")
             if res:
                 r = res[0]
-                lines.append(
-                    f"  ⚔️ {fmt_price(r['price'])} "
-                    f"(+{r['distance_pct']:.1f}%)"
-                )
-
-    # Паттерны — кратко
+                lines.append(f"  ⚔️ {fmt_price(r['price'])}")
     if patterns and patterns.get("symbols"):
         lines.append("")
         lines.append("🧩 <b>Паттерны</b>")
         for sym, data in patterns["symbols"].items():
             name = sym.replace("USDT", "")
-            up_ratio = data.get("up_ratio", 0) * 100
+            up = data.get("up_ratio", 0) * 100
             mk = data.get("markov", {})
             p10 = mk.get("p_1_given_0", 0)
-            lines.append(
-                f"  {name}: {up_ratio:.0f}% up | "
-                f"P(1|0)={p10:.2f}"
-            )
-
+            lines.append(f"  {name}: {up:.0f}% | P(1|0)={p10:.2f}")
     return "\n".join(lines)
 
 
 def build_full_status() -> str:
-    """Собирает статус из всех источников в одно сообщение."""
-    parts = []
-    parts.append("📊 <b>ARGUS — СТАТУС</b>")
-    parts.append("")
-
+    parts = ["📊 <b>ARGUS — СТАТУС</b>", ""]
     parts.append(build_argus_status())
     parts.append("")
     parts.append(build_crypto_status())
-    parts.append("")
-
-    parts.append(
-        "🔗 <a href=\"https://github.com/"
-        f"{GITHUB_REPO}/actions\">Actions</a>"
-    )
-
     return "\n".join(parts)
 
 
 # ============================================================
-# МЕНЮ — КНОПКИ
+# КЛАВИАТУРЫ
 # ============================================================
-def get_main_menu() -> InlineKeyboardMarkup:
-    """Главное меню."""
+def kb_main() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=[
         [
             InlineKeyboardButton(
@@ -292,8 +287,7 @@ def get_main_menu() -> InlineKeyboardMarkup:
     ])
 
 
-def get_crypto_menu() -> InlineKeyboardMarkup:
-    """Меню крипто-операций."""
+def kb_crypto() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=[
         [
             InlineKeyboardButton(
@@ -310,10 +304,6 @@ def get_crypto_menu() -> InlineKeyboardMarkup:
                 text="🚨 Detect",
                 callback_data="action:detect",
             ),
-            InlineKeyboardButton(
-                text="📰 News",
-                callback_data="action:news",
-            ),
         ],
         [
             InlineKeyboardButton(
@@ -324,8 +314,7 @@ def get_crypto_menu() -> InlineKeyboardMarkup:
     ])
 
 
-def get_reports_menu() -> InlineKeyboardMarkup:
-    """Меню отчётов."""
+def kb_reports() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=[
         [
             InlineKeyboardButton(
@@ -342,8 +331,7 @@ def get_reports_menu() -> InlineKeyboardMarkup:
     ])
 
 
-def get_confirm_menu(action_key: str) -> InlineKeyboardMarkup:
-    """Подтверждение тяжёлой операции."""
+def kb_confirm(action_key: str) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=[
         [
             InlineKeyboardButton(
@@ -365,13 +353,13 @@ def get_confirm_menu(action_key: str) -> InlineKeyboardMarkup:
 async def cmd_start(message: types.Message):
     text = (
         "🏛️ <b>ARGUS</b>\n"
-        "Autonomous Research & Generative Unified System\n\n"
+        "Autonomous Research System\n\n"
         "Главное меню — внизу.\n"
-        "Полный список команд: /help"
+        "Команды: /help"
     )
     await message.answer(
         text,
-        reply_markup=get_main_menu(),
+        reply_markup=kb_main(),
         parse_mode="HTML",
     )
 
@@ -380,7 +368,7 @@ async def cmd_start(message: types.Message):
 async def cmd_panel(message: types.Message):
     await message.answer(
         "🏛️ <b>Центр управления</b>",
-        reply_markup=get_main_menu(),
+        reply_markup=kb_main(),
         parse_mode="HTML",
     )
 
@@ -390,23 +378,23 @@ async def cmd_help(message: types.Message):
     text = (
         "📖 <b>ARGUS — команды</b>\n\n"
         "<b>База знаний:</b>\n"
-        "/ask &lt;вопрос&gt; — поиск по книгам\n"
-        "/find &lt;тема&gt; — найти книги\n"
-        "/findnext — ещё 5 книг\n"
-        "/stats — статистика\n\n"
+        "/ask &lt;вопрос&gt;\n"
+        "/find &lt;тема&gt;\n"
+        "/findnext\n"
+        "/stats\n\n"
         "<b>Управление:</b>\n"
-        "/panel — главное меню\n"
-        "/status — статус систем\n"
-        "/crypto — крипто-меню\n"
-        "/audio — аудиокниги\n\n"
-        "<b>Запуск workflow:</b>\n"
-        "/train — обучение ARGUS\n"
-        "/collect — сбор крипто-данных\n"
-        "/enrich — анализ крипто-данных\n"
+        "/panel — меню\n"
+        "/status — статус\n"
+        "/crypto — крипто\n"
+        "/audio — аудио\n\n"
+        "<b>Быстрые команды:</b>\n"
+        "/train — обучение\n"
+        "/collect — сбор\n"
+        "/enrich — анализ"
     )
     await message.answer(
         text,
-        reply_markup=get_main_menu(),
+        reply_markup=kb_main(),
         parse_mode="HTML",
     )
 
@@ -424,12 +412,10 @@ async def cmd_status(message: types.Message):
 
 @dp.message(Command("stats"))
 async def cmd_stats(message: types.Message):
-    """Статистика ARGUS (быстрая)."""
     data = read_json("data/summary.json")
     if not data:
         await message.answer("⚠️ Нет data/summary.json")
         return
-
     text = (
         f"📊 <b>ARGUS</b>\n\n"
         f"📚 Книг: {data.get('total_books', 0)}\n"
@@ -438,41 +424,24 @@ async def cmd_stats(message: types.Message):
     await message.answer(text, parse_mode="HTML")
 
 
-# ============================================================
-# /ASK — поиск по базе
-# ============================================================
 @dp.message(Command("ask"))
 async def cmd_ask(message: types.Message):
     query = message.text.replace("/ask", "", 1).strip()
     if not query:
         await message.answer(
-            "⚠️ Напиши вопрос после команды.\n"
+            "⚠️ Напиши вопрос.\n"
             "Пример: <code>/ask Что такое риск?</code>",
             parse_mode="HTML",
         )
         return
-
-    await message.answer(
-        "🔍 <b>ARGUS ищет ответ...</b>\n30-60 секунд.",
-        parse_mode="HTML",
-    )
-    # Отправляем через существующий workflow ask.yml
-    ok, _ = run_workflow(
-        "ask",
-        {"query": query, "chat_id": str(message.chat.id)},
-    ) if "ask" in WORKFLOWS else (False, "")
-
-    # Если ask нет в WORKFLOWS — используем dispatch
-    if not ok:
-        send_dispatch("run_search", {
-            "query": query,
-            "chat_id": str(message.chat.id),
-        })
+    await message.answer("🔍 <b>Ищу ответ...</b>\n30-60 секунд.",
+                         parse_mode="HTML")
+    send_dispatch("run_search", {
+        "query": query,
+        "chat_id": str(message.chat.id),
+    })
 
 
-# ============================================================
-# /FIND
-# ============================================================
 @dp.message(Command("find"))
 async def cmd_find(message: types.Message):
     topic = message.text.replace("/find", "", 1).strip()
@@ -483,7 +452,6 @@ async def cmd_find(message: types.Message):
             parse_mode="HTML",
         )
         return
-
     await message.answer(
         f"🔍 Ищу книги: <b>{topic}</b>\n30-60 секунд...",
         parse_mode="HTML",
@@ -500,42 +468,31 @@ async def cmd_findnext(message: types.Message):
     send_dispatch("personal_next", {})
 
 
-# ============================================================
-# /CRYPTO — меню
-# ============================================================
 @dp.message(Command("crypto"))
 async def cmd_crypto(message: types.Message):
     await message.answer(
         "🪙 <b>Crypto управление</b>",
-        reply_markup=get_crypto_menu(),
+        reply_markup=kb_crypto(),
         parse_mode="HTML",
     )
 
 
-# ============================================================
-# /AUDIO — заглушка
-# ============================================================
 @dp.message(Command("audio"))
 async def cmd_audio(message: types.Message):
     await message.answer(
         "🎵 <b>Аудиокниги — скоро</b>\n\n"
-        "Функция в разработке.\n"
-        "Будешь получать mp3 из базы знаний.\n\n"
-        "Ожидается: следующая неделя.",
+        "Функция в разработке.",
         parse_mode="HTML",
     )
 
 
-# ============================================================
-# /TRAIN /COLLECT /ENRICH (быстрые команды)
-# ============================================================
 @dp.message(Command("train"))
 async def cmd_train(message: types.Message):
     await message.answer(
         "⚠️ <b>Train ARGUS</b>\n\n"
         "Обучение займёт 5-30 минут.\n"
         "Запустить?",
-        reply_markup=get_confirm_menu("train"),
+        reply_markup=kb_confirm("train"),
         parse_mode="HTML",
     )
 
@@ -553,32 +510,13 @@ async def cmd_enrich(message: types.Message):
 
 
 # ============================================================
-# LEGACY DISPATCH (для старых workflows)
-# ============================================================
-def send_dispatch(event_type: str, payload: dict) -> bool:
-    url = f"https://api.github.com/repos/{GITHUB_REPO}/dispatches"
-    headers = {
-        "Accept": "application/vnd.github+json",
-        "Authorization": f"Bearer {GITHUB_PAT}",
-        "X-GitHub-Api-Version": "2022-11-28",
-    }
-    data = {"event_type": event_type, "client_payload": payload}
-    try:
-        r = requests.post(url, headers=headers, json=data, timeout=15)
-        return r.status_code == 204
-    except Exception as e:
-        logger.error(f"dispatch: {e}")
-        return False
-
-
-# ============================================================
 # CALLBACK — МЕНЮ
 # ============================================================
 @dp.callback_query(F.data == "menu:main")
 async def cb_menu_main(callback: CallbackQuery):
     await callback.message.edit_text(
         "🏛️ <b>Центр управления</b>",
-        reply_markup=get_main_menu(),
+        reply_markup=kb_main(),
         parse_mode="HTML",
     )
     await callback.answer()
@@ -588,7 +526,7 @@ async def cb_menu_main(callback: CallbackQuery):
 async def cb_menu_crypto(callback: CallbackQuery):
     await callback.message.edit_text(
         "🪙 <b>Crypto управление</b>",
-        reply_markup=get_crypto_menu(),
+        reply_markup=kb_crypto(),
         parse_mode="HTML",
     )
     await callback.answer()
@@ -598,7 +536,7 @@ async def cb_menu_crypto(callback: CallbackQuery):
 async def cb_menu_reports(callback: CallbackQuery):
     await callback.message.edit_text(
         "📊 <b>Отчёты</b>",
-        reply_markup=get_reports_menu(),
+        reply_markup=kb_reports(),
         parse_mode="HTML",
     )
     await callback.answer()
@@ -607,9 +545,8 @@ async def cb_menu_reports(callback: CallbackQuery):
 @dp.callback_query(F.data == "menu:audio")
 async def cb_menu_audio(callback: CallbackQuery):
     await callback.message.edit_text(
-        "🎵 <b>Аудиокниги — скоро</b>\n\n"
-        "Функция в разработке.",
-        reply_markup=get_main_menu(),
+        "🎵 <b>Аудиокниги — скоро</b>",
+        reply_markup=kb_main(),
         parse_mode="HTML",
     )
     await callback.answer()
@@ -621,7 +558,7 @@ async def cb_menu_status(callback: CallbackQuery):
     text = build_full_status()
     await callback.message.edit_text(
         text,
-        reply_markup=get_main_menu(),
+        reply_markup=kb_main(),
         parse_mode="HTML",
         disable_web_page_preview=True,
     )
@@ -633,7 +570,7 @@ async def cb_menu_train(callback: CallbackQuery):
         "⚠️ <b>Train ARGUS</b>\n\n"
         "Обучение займёт 5-30 минут.\n"
         "Запустить?",
-        reply_markup=get_confirm_menu("train"),
+        reply_markup=kb_confirm("train"),
         parse_mode="HTML",
     )
     await callback.answer()
@@ -648,7 +585,7 @@ async def cb_action_collect(callback: CallbackQuery):
     ok, msg = run_workflow("collect")
     await callback.message.edit_text(
         msg + "\n\nРезультат придёт отдельно.",
-        reply_markup=get_crypto_menu(),
+        reply_markup=kb_crypto(),
         parse_mode="HTML",
     )
 
@@ -659,7 +596,7 @@ async def cb_action_enrich(callback: CallbackQuery):
     ok, msg = run_workflow("enrich")
     await callback.message.edit_text(
         msg + "\n\nРезультат придёт отдельно.",
-        reply_markup=get_crypto_menu(),
+        reply_markup=kb_crypto(),
         parse_mode="HTML",
     )
 
@@ -670,18 +607,7 @@ async def cb_action_detect(callback: CallbackQuery):
     ok, msg = run_workflow("detect")
     await callback.message.edit_text(
         msg,
-        reply_markup=get_crypto_menu(),
-        parse_mode="HTML",
-    )
-
-
-@dp.callback_query(F.data == "action:news")
-async def cb_action_news(callback: CallbackQuery):
-    await callback.answer("Запускаю...")
-    ok, msg = run_workflow("news")
-    await callback.message.edit_text(
-        msg,
-        reply_markup=get_crypto_menu(),
+        reply_markup=kb_crypto(),
         parse_mode="HTML",
     )
 
@@ -697,7 +623,7 @@ async def cb_confirm(callback: CallbackQuery):
         ok, msg = run_workflow("train")
         await callback.message.edit_text(
             msg + "\n\nЖди отчёт после завершения.",
-            reply_markup=get_main_menu(),
+            reply_markup=kb_main(),
             parse_mode="HTML",
         )
     else:
@@ -713,13 +639,13 @@ async def cb_report_week(callback: CallbackQuery):
     ok, msg = run_workflow("report_week")
     await callback.message.edit_text(
         msg + "\n\nОтчёт с графиками придёт отдельно.",
-        reply_markup=get_reports_menu(),
+        reply_markup=kb_reports(),
         parse_mode="HTML",
     )
 
 
 # ============================================================
-# LEGACY CALLBACKS (книги, личный поиск)
+# LEGACY CALLBACKS (книги)
 # ============================================================
 @dp.callback_query(F.data.startswith("approve:"))
 async def handle_approve(callback: CallbackQuery):
@@ -768,7 +694,7 @@ async def handle_personal_next(callback: CallbackQuery):
 # ЗАПУСК
 # ============================================================
 async def main():
-    logger.info("🏛️ ARGUS Bot Host v2 запущен")
+    logger.info("🏛️ ARGUS Bot Host v2.1 запущен")
     await dp.start_polling(bot)
 
 
