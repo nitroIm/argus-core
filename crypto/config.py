@@ -1,72 +1,50 @@
 # ============================================================
 # ARGUS-Trader — CONFIG
 # ------------------------------------------------------------
-# Все константы модуля: символы, метрики, лимиты, приоритеты.
-# Импортируется всеми остальными файлами.
-# ------------------------------------------------------------
-# v1: начальная версия
+# v2: fix — max_age_hours для разных метрик, исторические
+#     метрики (OHLCV, funding, oi, ls, taker) — до 90 дней.
+#     Только context — свежий (2 часа).
 # ============================================================
 
 import os
 from pathlib import Path
 
-# ============================================================
-# ПУТИ
-# ============================================================
-SCRIPT_DIR = Path(__file__).resolve().parent          # crypto/
-CRYPTO_ROOT = SCRIPT_DIR                              # crypto/
-DATA_DIR = CRYPTO_ROOT / "data"                       # crypto/data/
-COLLECT_DIR = CRYPTO_ROOT / "collect"                 # crypto/collect/
+SCRIPT_DIR = Path(__file__).resolve().parent
+CRYPTO_ROOT = SCRIPT_DIR
+DATA_DIR = CRYPTO_ROOT / "data"
+COLLECT_DIR = CRYPTO_ROOT / "collect"
 
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
-# ============================================================
-# БАЗА ДАННЫХ (Supabase)
-# ============================================================
+# --- БАЗА ДАННЫХ ---
 DB_URL = (os.getenv("ARGUS_DB_URL") or "").strip()
 
-# ============================================================
-# СИМВОЛЫ
-# ============================================================
-# Внутренний формат: BTCUSDT, ETHUSDT (нормализованный)
-# Каждая биржа имеет свой формат — конвертация в exchanges.py
-
+# --- СИМВОЛЫ ---
 SYMBOLS = ["BTCUSDT", "ETHUSDT"]
 
-# Форматы символов для разных бирж
 SYMBOL_FORMATS = {
     "okx":    {"BTCUSDT": "BTC-USDT-SWAP", "ETHUSDT": "ETH-USDT-SWAP"},
     "bitget": {"BTCUSDT": "BTCUSDT",       "ETHUSDT": "ETHUSDT"},
     "gate":   {"BTCUSDT": "BTC_USDT",      "ETHUSDT": "ETH_USDT"},
     "kucoin": {"BTCUSDT": "XBTUSDTM",      "ETHUSDT": "ETHUSDTM"},
     "mexc":   {"BTCUSDT": "BTCUSDT",       "ETHUSDT": "ETHUSDT"},
-    # CoinGecko использует coin_id, а не symbol
     "coingecko": {"BTCUSDT": "bitcoin",    "ETHUSDT": "ethereum"},
 }
 
-# ============================================================
-# ТАЙМФРЕЙМЫ
-# ============================================================
-TIMEFRAMES = ["1h", "1d"]           # пока только эти
+# --- ТАЙМФРЕЙМЫ ---
+TIMEFRAMES = ["1h", "1d"]
 
-# ============================================================
-# ПРИОРИТЕТЫ ПО МЕТРИКАМ (fallback chain)
-# ============================================================
-# Для каждой метрики — список бирж в порядке приоритета.
-# Если первая упала — идём к следующей.
-
+# --- ПРИОРИТЕТЫ ---
 PRIORITY = {
-    "ohlcv":     ["okx", "bitget", "gate", "kucoin", "mexc"],
+    "ohlcv":     ["okx", "bitget", "gate", "kucoin"],
     "funding":   ["okx", "bitget", "gate", "kucoin"],
     "oi":        ["okx", "bitget", "gate"],
     "ls_ratio":  ["okx", "bitget", "gate"],
     "taker":     ["okx", "gate"],
-    "spot_price": ["okx", "bitget", "mexc", "coingecko"],
+    "spot_price": ["okx", "bitget", "coingecko"],
 }
 
-# ============================================================
-# RETENTION (дни)
-# ============================================================
+# --- RETENTION ---
 RETENTION = {
     "raw_candles":       90,
     "raw_funding":       90,
@@ -74,54 +52,50 @@ RETENTION = {
     "raw_ls":            90,
     "raw_taker":         90,
     "raw_liquidations":  30,
-    # Агрегаты и производные — навсегда (не в этой таблице)
 }
 
-# ============================================================
-# API — БИРЖИ
-# ============================================================
+# --- API ---
 EXCHANGE_ENDPOINTS = {
-    "okx":     "https://www.okx.com",
-    "bitget":  "https://api.bitget.com",
-    "gate":    "https://api.gateio.ws",
-    "kucoin":  "https://api-futures.kucoin.com",
-    "mexc":    "https://api.mexc.com",
+    "okx":       "https://www.okx.com",
+    "bitget":    "https://api.bitget.com",
+    "gate":      "https://api.gateio.ws",
+    "kucoin":    "https://api-futures.kucoin.com",
+    "mexc":      "https://api.mexc.com",
     "coingecko": "https://api.coingecko.com",
 }
 
-# CoinGecko API (можно передавать ключ через env, если есть Pro)
 COINGECKO_API_KEY = (os.getenv("COINGECKO_API_KEY") or "").strip()
 
-# ============================================================
-# ВАЛИДАЦИЯ
-# ============================================================
+# --- ВАЛИДАЦИЯ ---
+# v2: max_age_hours_* — разные для разных метрик.
+#     Исторические данные (OHLCV, funding, oi, ls, taker) — 90 дней.
+#     Context — 2 часа (свежий снимок).
 VALIDATION = {
-    # Минимально допустимая цена (защита от 0 и мусора)
     "min_price": 1.0,
-    # Максимально допустимый |change| за 1 час (защита от выбросов)
     "max_change_pct_1h": 30.0,
-    # Timestamp не должен быть старше N часов (защита от устаревших данных)
-    "max_age_hours": 2,
-    # Timestamp не должен быть в будущем (защита от глюков API)
     "max_future_minutes": 5,
+    # Свежесть по метрикам:
+    "max_age_hours": {
+        "ohlcv":     24 * 90,   # 90 дней
+        "funding":   24 * 90,
+        "oi":        24 * 90,
+        "ls_ratio":  24 * 90,
+        "taker":     24 * 90,
+        "context":   2,          # только context свежий
+    },
+    "default_max_age_hours": 24 * 90,
 }
 
-# ============================================================
-# TELEGRAM
-# ============================================================
+# --- TELEGRAM ---
 TELEGRAM_BOT_TOKEN = (os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("BOT_TOKEN") or "").strip()
 TELEGRAM_CHAT_ID = (os.getenv("TELEGRAM_CHAT_ID") or "").strip()
 
-# ============================================================
-# ЛОГИРОВАНИЕ
-# ============================================================
+# --- ЛОГИ ---
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 
-# ============================================================
-# ТЕСТ
-# ============================================================
+
 if __name__ == "__main__":
-    print("📋 ARGUS-Trader CONFIG")
+    print("📋 ARGUS-Trader CONFIG v2")
     print("=" * 50)
     print(f"CRYPTO_ROOT: {CRYPTO_ROOT}")
     print(f"DATA_DIR:    {DATA_DIR}")
@@ -130,4 +104,5 @@ if __name__ == "__main__":
     print(f"Timeframes:  {TIMEFRAMES}")
     print(f"Retention:   {RETENTION['raw_candles']} дней для свечей")
     print(f"Priority OHLCV: {PRIORITY['ohlcv']}")
+    print(f"max_age по метрикам: {VALIDATION['max_age_hours']}")
     print("=" * 50)
