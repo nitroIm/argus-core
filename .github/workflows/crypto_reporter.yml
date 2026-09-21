@@ -1,0 +1,58 @@
+# ============================================================
+# ARGUS-Trader — WEEKLY REPORTER
+# ------------------------------------------------------------
+# Раз в неделю (воскресенье 5:00 UTC) собирает статистику
+# из Supabase и шлёт сводку в Telegram.
+# Также запускается вручную через workflow_dispatch.
+# ------------------------------------------------------------
+# v1: начальная версия
+# ============================================================
+
+name: ARGUS Crypto Reporter
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Каждое воскресенье в 05:00 UTC
+    - cron: '0 5 * * 0'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: argus-crypto-reporter
+  cancel-in-progress: false
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r crypto/requirements.txt
+
+      - name: Run weekly report
+        env:
+          ARGUS_DB_URL: ${{ secrets.ARGUS_DB_URL }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python crypto/report/weekly.py
+
+      - name: Notify on failure
+        if: failure()
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            -H "Content-Type: application/json" \
+            -d "{\"chat_id\": \"${TELEGRAM_CHAT_ID}\", \"text\": \"⚠️ <b>ARGUS Crypto Reporter</b> упал.\", \"parse_mode\": \"HTML\"}" || true
