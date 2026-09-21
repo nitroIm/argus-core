@@ -1,17 +1,19 @@
 # ============================================================
-# ARGUS-Trader — NEWS ANALYZER v6.1
+# ARGUS-Trader — NEWS ANALYZER v6.2
 # ------------------------------------------------------------
-# v6.1: fix — убраны источники с блокировкой (РБК 403,
-#       CoinMarketCap 0). Добавлены Bitcoin.com, CryptoSlate.
+# v6.2: fix — html.unescape() для &lt; &gt; &#8217; и др.
+#       + clean_text() — нормализация заголовков
+#       + пост-обработка перевода (двойные пробелы, кавычки)
 # ------------------------------------------------------------
-# v6: веса источников, свежесть, fake-эвристики, перекрёстная
-#     проверка, нормализация заголовков
+# v6.1: убраны РБК (403), CoinMarketCap (0)
+# v6: веса источников, свежесть, fake-эвристики, перекрёстка
 # ============================================================
 
 import os
 import re
 import sys
 import json
+import html
 import hashlib
 import requests
 from datetime import datetime, timezone, timedelta
@@ -140,6 +142,26 @@ def _hash(text: str) -> str:
     return hashlib.md5(text.strip().lower().encode("utf-8")).hexdigest()[:16]
 
 
+# ============================================================
+# CLEAN TEXT
+# ============================================================
+def clean_text(text: str) -> str:
+    """Нормализует заголовок: убирает HTML, entities, мусор."""
+    if not text:
+        return ""
+    # HTML entities: &lt; &gt; &#8217; &amp; &quot; и др.
+    text = html.unescape(text)
+    # HTML теги
+    text = re.sub(r"<[^>]+>", "", text)
+    # CDATA
+    text = re.sub(r"<!\[CDATA\[(.*?)\]\]>", r"\1", text, flags=re.IGNORECASE)
+    # Множественные пробелы
+    text = re.sub(r"\s+", " ", text)
+    # Мусорные кавычки
+    text = text.strip(' "\'«»""„""')
+    return text.strip()
+
+
 _translate_cache = load(TRANSLATE_CACHE_FILE, {})
 
 
@@ -154,6 +176,9 @@ def translate_cached(text: str) -> str:
     try:
         translated = translate_to_ru(text)
         if translated and translated.strip():
+            # Пост-обработка перевода
+            translated = clean_text(translated)
+            translated = re.sub(r"\s+", " ", translated)
             _translate_cache[key] = translated
             return translated
     except Exception:
@@ -205,10 +230,8 @@ def fetch_feed(feed):
             if not title_match:
                 continue
 
-            title = title_match.group(1).strip()
-            title = re.sub(r"<!\[CDATA\[(.*?)\]\]>", r"\1", title, flags=re.IGNORECASE)
-            title = re.sub(r"<[^>]+>", "", title)
-            title = " ".join(title.split())
+            raw_title = title_match.group(1).strip()
+            title = clean_text(raw_title)
 
             if len(title) < 15:
                 continue
@@ -290,7 +313,7 @@ def fake_score(title, source_weight):
 
 
 def main():
-    print("📰 ARGUS-Trader NEWS ANALYZER v6.1")
+    print("📰 ARGUS-Trader NEWS ANALYZER v6.2")
     print(f"🌐 Переводчик: {'✅' if TRANSLATE_AVAILABLE else '❌'}")
     print("=" * 60)
 
