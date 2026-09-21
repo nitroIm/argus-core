@@ -1,10 +1,9 @@
 # ============================================================
 # ARGUS-Trader — PIPELINE (главный сборщик)
 # ------------------------------------------------------------
-# v3: + инкрементальный режим (--mode=incremental) — тянет 3 записи
-#     вместо 720. Время прогона: ~15-30 секунд вместо 8 минут.
-#     + режим --mode=backfill для первого прогона.
-#     + кэш CoinGecko context на 10 минут (обход 429).
+# v4: + fix — datetime в кэше CoinGecko (default=str).
+#     + явное закрытие соединения в конце прогона.
+#     + переиспользование соединения через db v3 — ускорение.
 # ============================================================
 
 import sys
@@ -23,7 +22,10 @@ from config import (
     SYMBOLS, TIMEFRAMES, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID,
     LIMITS_INCREMENTAL, LIMITS_BACKFILL, DATA_DIR,
 )
-from db import get_connection, log_collect, log_rejected, log_anomaly
+from db import (
+    get_connection, log_collect, log_rejected, log_anomaly,
+    close_connection,
+)
 from collect.exchanges import CLIENTS
 from collect.priority import get_priority
 from collect.validator import validate
@@ -209,7 +211,7 @@ def _load_cache() -> dict:
 def _save_cache(data: dict):
     try:
         with open(COINGECKO_CACHE_FILE, "w", encoding="utf-8") as f:
-            json.dump(data, f)
+            json.dump(data, f, default=str, ensure_ascii=False)
     except Exception as e:
         log.warning(f"Cache save: {e}")
 
@@ -357,6 +359,8 @@ def run_cycle(mode: str = "incremental"):
     log.info(f"   Всего добавлено строк: {summary['total_added']}")
     log.info("=" * 60)
 
+    close_connection()
+
 
 if __name__ == "__main__":
     import argparse
@@ -370,5 +374,6 @@ if __name__ == "__main__":
         print("🧪 TEST MODE")
         r = collect_metric("ohlcv", symbol="BTCUSDT", timeframe="1h", limit=3)
         print(f"Result: {r}")
+        close_connection()
     else:
         run_cycle(mode=args.mode)
