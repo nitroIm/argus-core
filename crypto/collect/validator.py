@@ -1,12 +1,9 @@
 # ============================================================
 # ARGUS-Trader — VALIDATOR
 # ------------------------------------------------------------
-# Валидация данных перед записью в БД.
-# Правило: если данные подозрительные — в карантин (rejected_data).
-# НЕ пишем в основную таблицу, чтобы не отравить историю.
-# ------------------------------------------------------------
-# v1: начальная версия
-# v2: fix импортов (sys.path для запуска из любой папки)
+# v3: fix — индивидуальный max_age_hours для каждой метрики.
+#     OHLCV/funding/oi/ls/taker — до 90 дней (история).
+#     context — 2 часа (свежий снимок).
 # ============================================================
 
 import sys
@@ -15,9 +12,8 @@ from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from typing import Optional
 
-# --- Путь к crypto/ (для импорта config) ---
-SCRIPT_DIR = Path(__file__).resolve().parent          # crypto/collect/
-CRYPTO_ROOT = SCRIPT_DIR.parent                        # crypto/
+SCRIPT_DIR = Path(__file__).resolve().parent
+CRYPTO_ROOT = SCRIPT_DIR.parent
 sys.path.insert(0, str(CRYPTO_ROOT))
 
 from config import VALIDATION
@@ -25,9 +21,14 @@ from config import VALIDATION
 log = logging.getLogger("crypto.validator")
 
 
-# ============================================================
-# БАЗОВЫЕ ПРОВЕРКИ
-# ============================================================
+def _max_age_for(metric: str) -> int:
+    """Возвращает допустимый возраст в часах для метрики."""
+    ages = VALIDATION.get("max_age_hours", {})
+    if isinstance(ages, dict):
+        return ages.get(metric, VALIDATION.get("default_max_age_hours", 24 * 90))
+    return int(ages)
+
+
 def is_valid_price(price, min_price: float = None) -> bool:
     if price is None:
         return False
@@ -38,15 +39,20 @@ def is_valid_price(price, min_price: float = None) -> bool:
         return False
 
 
-def is_valid_timestamp(ts, allow_future_minutes: int = None, max_age_hours: int = None) -> bool:
+def is_valid_timestamp(ts, metric: str = "ohlcv",
+                       allow_future_minutes: int = None,
+                       max_age_hours: int = None) -> bool:
+    """Проверяет timestamp. max_age_hours зависит от метрики."""
     if not isinstance(ts, datetime):
         return False
     if ts.tzinfo is None:
         return False
 
     now = datetime.now(timezone.utc)
-    max_future = allow_future_minutes if allow_future_minutes is not None else VALIDATION["max_future_minutes"]
-    max_age = max_age_hours if max_age_hours is not None else VALIDATION["max_age_hours"]
+    max_future = allow_future_minutes if allow_future_minutes is not None \
+        else VALIDATION["max_future_minutes"]
+    max_age = max_age_hours if max_age_hours is not None \
+        else _max_age_for(metric)
 
     if ts > now + timedelta(minutes=max_future):
         return False
@@ -74,7 +80,7 @@ def validate_candle(candle: dict) -> tuple:
         if field not in candle:
             return False, f"missing field: {field}"
 
-    if not is_valid_timestamp(candle["timestamp"]):
+    if not is_valid_timestamp(candle["timestamp"], metric="ohlcv"):
         return False, "invalid timestamp (future or too old)"
 
     for field in ["open", "high", "low", "close"]:
@@ -98,13 +104,10 @@ def validate_candle(candle: dict) -> tuple:
     return True, None
 
 
-# ============================================================
-# ВАЛИДАЦИЯ FUNDING
-# ============================================================
 def validate_funding(row: dict) -> tuple:
     if "symbol" not in row or "timestamp" not in row:
         return False, "missing symbol/timestamp"
-    if not is_valid_timestamp(row["timestamp"]):
+    if not is_valid_timestamp(row["timestamp"], metric="funding"):
         return False, "invalid timestamp"
     if row.get("rate") is None:
         return False, "missing rate"
@@ -117,13 +120,10 @@ def validate_funding(row: dict) -> tuple:
     return True, None
 
 
-# ============================================================
-# ВАЛИДАЦИЯ OI
-# ============================================================
 def validate_oi(row: dict) -> tuple:
     if "symbol" not in row or "timestamp" not in row:
         return False, "missing symbol/timestamp"
-    if not is_valid_timestamp(row["timestamp"]):
+    if not is_valid_timestamp(row["timestamp"], metric="oi"):
         return False, "invalid timestamp"
     oi = row.get("oi")
     if oi is None:
@@ -136,13 +136,10 @@ def validate_oi(row: dict) -> tuple:
     return True, None
 
 
-# ============================================================
-# ВАЛИДАЦИЯ LS RATIO
-# ============================================================
 def validate_ls(row: dict) -> tuple:
     if "symbol" not in row or "timestamp" not in row:
         return False, "missing symbol/timestamp"
-    if not is_valid_timestamp(row["timestamp"]):
+    if not is_valid_timestamp(row["timestamp"], metric="ls_ratio"):
         return False, "invalid timestamp"
     ratio = row.get("ls_ratio")
     if ratio is None:
@@ -155,13 +152,10 @@ def validate_ls(row: dict) -> tuple:
     return True, None
 
 
-# ============================================================
-# ВАЛИДАЦИЯ TAKER
-# ============================================================
 def validate_taker(row: dict) -> tuple:
     if "symbol" not in row or "timestamp" not in row:
         return False, "missing symbol/timestamp"
-    if not is_valid_timestamp(row["timestamp"]):
+    if not is_valid_timestamp(row["timestamp"], metric="taker"):
         return False, "invalid timestamp"
     for field in ["buy_vol", "sell_vol"]:
         v = row.get(field)
@@ -175,11 +169,8 @@ def validate_taker(row: dict) -> tuple:
     return True, None
 
 
-# ============================================================
-# ВАЛИДАЦИЯ MARKET CONTEXT
-# ============================================================
 def validate_context(row: dict) -> tuple:
-    if not is_valid_timestamp(row.get("timestamp"), max_age_hours=6):
+    if not is_valid_timestamp(row.get("timestamp"), metric="context"):
         return False, "invalid timestamp"
 
     for field in ["btc_price_usd", "eth_price_usd"]:
@@ -197,9 +188,6 @@ def validate_context(row: dict) -> tuple:
     return True, None
 
 
-# ============================================================
-# УНИВЕРСАЛЬНЫЙ ДИСПЕТЧЕР
-# ============================================================
 VALIDATORS = {
     "ohlcv": validate_candle,
     "funding": validate_funding,
@@ -217,33 +205,30 @@ def validate(metric: str, row: dict) -> tuple:
     return validator(row)
 
 
-# ============================================================
-# ТЕСТ
-# ============================================================
 if __name__ == "__main__":
     from datetime import datetime, timezone
 
-    print("🔍 ARGUS-Trader — тест валидатора")
+    print("🔍 ARGUS-Trader — тест валидатора v3")
     print("=" * 50)
 
-    now = datetime.now(timezone.utc)
     past = datetime.now(timezone.utc) - timedelta(hours=1)
     future = datetime.now(timezone.utc) + timedelta(hours=2)
+    old = datetime.now(timezone.utc) - timedelta(days=30)  # 30 дней назад
 
     tests = [
-        ("✅ Валидная свеча", "ohlcv", {
+        ("✅ Свежая свеча", "ohlcv", {
             "symbol": "BTCUSDT", "timeframe": "1h", "timestamp": past,
             "open": 60000, "high": 61000, "low": 59500, "close": 60500, "volume": 100,
         }),
-        ("❌ Битый OHLC (high < close)", "ohlcv", {
-            "symbol": "BTCUSDT", "timeframe": "1h", "timestamp": past,
-            "open": 60000, "high": 59000, "low": 59500, "close": 60500, "volume": 100,
+        ("✅ Свеча 30 дней назад (не отсеивается)", "ohlcv", {
+            "symbol": "BTCUSDT", "timeframe": "1h", "timestamp": old,
+            "open": 60000, "high": 61000, "low": 59500, "close": 60500, "volume": 100,
         }),
         ("❌ Timestamp в будущем", "ohlcv", {
             "symbol": "BTCUSDT", "timeframe": "1h", "timestamp": future,
             "open": 60000, "high": 61000, "low": 59500, "close": 60500, "volume": 100,
         }),
-        ("✅ Валидный funding", "funding", {
+        ("✅ Свежий funding", "funding", {
             "symbol": "BTCUSDT", "timestamp": past, "rate": 0.0001,
         }),
         ("❌ Битый funding (>1%)", "funding", {
@@ -253,7 +238,8 @@ if __name__ == "__main__":
 
     for label, metric, row in tests:
         ok, reason = validate(metric, row)
-        status = "PASS" if ok == label.startswith("✅") else "FAIL"
+        expected_ok = label.startswith("✅")
+        status = "PASS" if ok == expected_ok else "FAIL"
         print(f"[{status}] {label}: ok={ok}, reason={reason or 'none'}")
 
     print("=" * 50)
