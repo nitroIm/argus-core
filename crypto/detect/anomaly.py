@@ -1,29 +1,26 @@
 # ============================================================
-# ARGUS-Trader — ANOMALY DETECTORS
+# ARGUS-Trader — ANOMALY DETECTORS v2
 # ------------------------------------------------------------
+# v2: короткие строки — не рвутся при копипасте с телефона.
 # 4 детектора манипуляций:
-#   1. pump_dump       — резкий рост + объём + падение
-#   2. cross_exchange  — расхождение цен между биржами
-#   3. wash_trading    — огромный объём без движения
-#   4. stop_hunting    — свеча с длинным хвостом
-# Пишет в anomaly_log + Telegram.
-# ------------------------------------------------------------
-# v1: начальная версия
+#   pump_dump, cross_exchange, wash_trading, stop_hunting
 # ============================================================
 
 import sys
-import json
 import logging
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 CRYPTO_ROOT = SCRIPT_DIR.parent
-DATA_DIR = CRYPTO_ROOT / "data"
 sys.path.insert(0, str(CRYPTO_ROOT))
 
-from config import SYMBOLS, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
-from db import get_connection, close_connection, log_anomaly
+from config import SYMBOLS
+from config import TELEGRAM_BOT_TOKEN
+from config import TELEGRAM_CHAT_ID
+from db import get_connection
+from db import close_connection
+from db import log_anomaly
 
 logging.basicConfig(
     level=logging.INFO,
@@ -33,163 +30,174 @@ logging.basicConfig(
 log = logging.getLogger("crypto.anomaly")
 
 
-# ============================================================
-# ПОРОГИ ДЕТЕКТОРОВ
-# ============================================================
-PUMP_PCT = 5.0                # +5% за час = pump
-PUMP_VOLUME_RATIO = 3.0       # объём ×3 от среднего
-DUMP_PCT = -3.0               # следующий час -3% = подтверждение
-WASH_VOLUME_RATIO = 10.0      # объём ×10
-WASH_RANGE_PCT = 0.5          # при этом range < 0.5%
-WICK_PCT = 50.0               # хвост > 50% от range
-CROSS_DIFF_PCT = 0.5          # расхождение цен > 0.5%
+# Пороги
+PUMP_PCT = 5.0
+PUMP_VOL_RATIO = 3.0
+DUMP_PCT = -3.0
+WASH_VOL_RATIO = 10.0
+WASH_RANGE_PCT = 0.5
+WICK_PCT = 50.0
+CROSS_DIFF_PCT = 0.5
 
 
-def notify(text: str):
-    if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
+def notify(text):
+    if not TELEGRAM_BOT_TOKEN:
+        return
+    if not TELEGRAM_CHAT_ID:
         return
     try:
         import requests
+        url = "https://api.telegram.org/bot"
+        url += TELEGRAM_BOT_TOKEN
+        url += "/sendMessage"
         requests.post(
-            f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage",
+            url,
             json={
                 "chat_id": TELEGRAM_CHAT_ID,
                 "text": text,
                 "parse_mode": "HTML",
-                "disable_web_page_preview": True,
             },
             timeout=15,
         )
     except Exception as e:
-        log.warning(f"Telegram: {e}")
+        log.warning("telegram: " + str(e))
 
 
-# ============================================================
-# ЗАГРУЗeКА СВЕЧ}")
-ЕЙ
-# ============================================================
-def fetch_recent_candles(symbol, hours=48):
+def fetch_candles(symbol, hours=48):
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
-                start = datetime.now(timezone.utc) - timedelta(hours=hours)
-                cur.execute(
-                    "SELECT timestamp, open, high, low, close, volume "
-                    "FROM candles WHERE symbol = %s AND timeframe = '1h' "
-                    "AND timestamp >= %s ORDER BY timestamp",
-                    (symbol, start),
+                start = datetime.now(timezone.utc)
+                start = start - timedelta(hours=hours)
+                sql = (
+                    "SELECT timestamp, open, high, low, "
+                    "close, volume FROM candles "
+                    "WHERE symbol = %s "
+                    "AND timeframe = '1h' "
+                    "AND timestamp >= %s "
+                    "ORDER BY timestamp"
                 )
-                return [
-                    {
+                cur.execute(sql, (symbol, start))
+                rows = cur.fetchall()
+                result = []
+                for r in rows:
+                    result.append({
                         "timestamp": r[0],
                         "open": float(r[1]),
                         "high": float(r[2]),
                         "low": float(r[3]),
                         "close": float(r[4]),
                         "volume": float(r[5]),
-                    }
-                    for r in cur.fetchall()
-                ]
-    except Exception as e       :
-        log.error(f"fetch_re returncent_candles: { []
+                    })
+                return result
+    except Exception as e:
+        log.error("fetch_candles: " + str(e))
+        return []
 
 
 def fetch_avg_volume(symbol, hours=24):
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
-                start = datetime.now(timezone.utc) - timedelta(hours=hours)
-                cur.execute(
+                start = datetime.now(timezone.utc)
+                start = start - timedelta(hours=hours)
+                sql = (
                     "SELECT AVG(volume) FROM candles "
-                    "WHERE symbol = %s AND timeframe = '1h' AND timestamp >= %s",
-                    (symbol, start),
+                    "WHERE symbol = %s "
+                    "AND timeframe = '1h' "
+                    "AND timestamp >= %s"
                 )
+                cur.execute(sql, (symbol, start))
                 row = cur.fetchone()
-                return float(row[0]) if row and row[0] else 0
+                if row and row[0]:
+                    return float(row[0])
+                return 0
     except Exception:
         return 0
 
 
-def fetch_cross_check(symbol, hours=1):
+def fetch_cross(symbol, hours=1):
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
-                start = datetime.now(timezone.utc) - timedelta(hours=hours)
-                cur.execute(
-                    "SELECT timestamp, diff_pct, price_primary, price_secondary "
-                    "FROM cross_check WHERE symbol = %s AND timestamp >= %s "
-                    "ORDER BY timestamp DESC LIMIT 5",
-                    (symbol, start),
+                start = datetime.now(timezone.utc)
+                start = start - timedelta(hours=hours)
+                sql = (
+                    "SELECT timestamp, diff_pct, "
+                    "price_primary, price_secondary "
+                    "FROM cross_check "
+                    "WHERE symbol = %s "
+                    "AND timestamp >= %s "
+                    "ORDER BY timestamp DESC LIMIT 5"
                 )
-                return [
-                    {
+                cur.execute(sql, (symbol, start))
+                rows = cur.fetchall()
+                result = []
+                for r in rows:
+                    result.append({
                         "timestamp": r[0],
                         "diff_pct": float(r[1]) if r[1] else 0,
                         "primary": float(r[2]) if r[2] else 0,
                         "secondary": float(r[3]) if r[3] else 0,
-                    }
-                    for r in cur.fetchall()
-                ]
+                    })
+                return result
     except Exception:
         return []
 
 
-def anomaly_exists(symbol, anomaly_type, hours=24):
-    """Проверка, была ли уже такая аномалия за последние N часов."""
+def exists(symbol, atype, hours=24):
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
-                start = datetime.now(timezone.utc) - timedelta(hours=hours)
-                cur.execute(
+                start = datetime.now(timezone.utc)
+                start = start - timedelta(hours=hours)
+                sql = (
                     "SELECT COUNT(*) FROM anomaly_log "
-                    "WHERE symbol = %s AND anomaly_type = %s AND created_at >= %s",
-                    (symbol, anomaly_type, start),
+                    "WHERE symbol = %s "
+                    "AND anomaly_type = %s "
+                    "AND created_at >= %s"
                 )
+                cur.execute(sql, (symbol, atype, start))
                 return cur.fetchone()[0] > 0
     except Exception:
         return False
 
 
-# ============================================================
-# ДЕТЕКТОР 1: PUMP & DUMP
-# ============================================================
-def detect_pump_dump(symbol, candles, avg_volume):
+def detect_pump_dump(candles, avg_vol):
     if len(candles) < 2:
         return None
-
-    # Смотрим последние 3 часа — ищем pump
-    for i in range(max(0, len(candles) - 3), len(candles) - 1):
+    start_idx = max(0, len(candles) - 3)
+    for i in range(start_idx, len(candles) - 1):
         c = candles[i]
         if c["open"] == 0:
             continue
-
         change = (c["close"] - c["open"]) / c["open"] * 100
-
-        if change >= PUMP_PCT and avg_volume > 0:
-            vol_ratio = c["volume"] / avg_volume
-
-            if vol_ratio >= PUMP_VOLUME_RATIO:
-                # Проверяем следующий час — падение?
-                next_c = candles[i + 1] if i + 1 < len(candles) else None
-                next_change = None
-                if next_c and next_c["open"] != 0:
-                    next_change = (next_c["close"] - next_c["open"]) / next_c["open"] * 100
-
-                if next_change is not None and next_change <= DUMP_PCT:
-                    return {
-                        "timestamp": c["timestamp"],
-                        "change_pct": round(change, 2),
-                        "next_change": round(next_change, 2),
-                        "volume_ratio": round(vol_ratio, 2),
-                    }
+        if change < PUMP_PCT:
+            continue
+        if avg_vol <= 0:
+            continue
+        vol_ratio = c["volume"] / avg_vol
+        if vol_ratio < PUMP_VOL_RATIO:
+            continue
+        if i + 1 >= len(candles):
+            continue
+        nc = candles[i + 1]
+        if nc["open"] == 0:
+            continue
+        nc_change = (nc["close"] - nc["open"])
+        nc_change = nc_change / nc["open"] * 100
+        if nc_change <= DUMP_PCT:
+            return {
+                "timestamp": c["timestamp"],
+                "change_pct": round(change, 2),
+                "next_change": round(nc_change, 2),
+                "volume_ratio": round(vol_ratio, 2),
+            }
     return None
 
 
-# ============================================================
-# ДЕТЕКТОР 2: CROSS-EXCHANGE
-# ============================================================
-def detect_cross_exchange(symbol, cross_checks):
-    for cc in cross_checks:
+def detect_cross(cross_data):
+    for cc in cross_data:
         if abs(cc["diff_pct"]) > CROSS_DIFF_PCT:
             return {
                 "timestamp": cc["timestamp"],
@@ -200,147 +208,135 @@ def detect_cross_exchange(symbol, cross_checks):
     return None
 
 
-# ============================================================
-# ДЕТЕКТОР 3: WASH TRADING
-# ============================================================
-def detect_wash_trading(symbol, candles, avg_volume):
-    if not candles or avg_volume <= 0:
+def detect_wash(candles, avg_vol):
+    if not candles or avg_vol <= 0:
         return None
-
-    # Последние 6 часов
     for c in candles[-6:]:
         if c["open"] == 0:
             continue
-        rng_pct = (c["high"] - c["low"]) / c["open"] * 100
-        vol_ratio = c["volume"] / avg_volume
-
-        if vol_ratio >= WASH_VOLUME_RATIO and rng_pct < WASH_RANGE_PCT:
-            return {
-                "timestamp": c["timestamp"],
-                "range_pct": round(rng_pct, 3),
-                "volume_ratio": round(vol_ratio, 2),
-            }
+        rng = (c["high"] - c["low"]) / c["open"] * 100
+        vol_ratio = c["volume"] / avg_vol
+        if vol_ratio >= WASH_VOL_RATIO:
+            if rng < WASH_RANGE_PCT:
+                return {
+                    "timestamp": c["timestamp"],
+                    "range_pct": round(rng, 3),
+                    "volume_ratio": round(vol_ratio, 2),
+                }
     return None
 
 
-# ============================================================
-# ДЕТЕКТОР 4: STOP HUNTING
-# ============================================================
-def detect_stop_hunting(symbol, candles):
+def detect_stop_hunt(candles):
     if not candles:
         return None
-
     for c in candles[-3:]:
         rng = c["high"] - c["low"]
         if rng <= 0:
             continue
-
-        upper_wick = c["high"] - max(c["open"], c["close"])
-        lower_wick = min(c["open"], c["close"]) - c["low"]
-
-        upper_pct = upper_wick / rng * 100
-        lower_pct = lower_wick / rng * 100
-
-        if upper_pct >= WICK_PCT:
+        up_wick = c["high"] - max(c["open"], c["close"])
+        low_wick = min(c["open"], c["close"]) - c["low"]
+        up_pct = up_wick / rng * 100
+        low_pct = low_wick / rng * 100
+        if up_pct >= WICK_PCT:
             return {
                 "timestamp": c["timestamp"],
                 "wick_type": "upper",
-                "wick_pct": round(upper_pct, 1),
+                "wick_pct": round(up_pct, 1),
                 "price": c["close"],
             }
-        if lower_pct >= WICK_PCT:
+        if low_pct >= WICK_PCT:
             return {
                 "timestamp": c["timestamp"],
                 "wick_type": "lower",
-                "wick_pct": round(lower_pct, 1),
+                "wick_pct": round(low_pct, 1),
                 "price": c["close"],
             }
     return None
 
 
-# ============================================================
-# ОБРАБОТКА СИМВОЛА
-# ============================================================
 def process_symbol(symbol):
-    log.info(f"🔍 {symbol}")
-    candles = fetch_recent_candles(symbol, hours=48)
+    log.info("--- " + symbol + " ---")
+    candles = fetch_candles(symbol, hours=48)
     if not candles:
-        log.warning(f"   нет свечей")
+        log.warning("   no candles")
         return 0
 
-    avg_volume = fetch_avg_volume(symbol, hours=24)
-    log.info(f"   свечей: {len(candles)} | avg_volume={avg_volume:.2f}")
+    avg_vol = fetch_avg_volume(symbol, hours=24)
+    log.info("   candles: " + str(len(candles)))
+    log.info("   avg_vol: " + str(round(avg_vol, 2)))
 
     found = 0
 
-    # --- Pump & Dump ---
-    pd = detect_pump_dump(symbol, candles, avg_volume)
-    if pd and not anomaly_exists(symbol, "pump_dump"):
+    # 1. pump_dump
+    pd = detect_pump_dump(candles, avg_vol)
+    if pd and not exists(symbol, "pump_dump"):
         log_anomaly(
-            symbol=symbol, timestamp=pd["timestamp"],
-            anomaly_type="pump_dump", severity="high",
+            symbol=symbol,
+            timestamp=pd["timestamp"],
+            anomaly_type="pump_dump",
+            severity="high",
             details=pd,
         )
-        notify(
-            f"🚨 <b>PUMP & DUMP</b> {symbol}\n"
-            f"Рост: <b>{pd['change_pct']:+.2f}%</b>\n"
-            f"Падение: <b>{pd['next_change']:+.2f}%</b>\n"
-            f"Объём: ×{pd['volume_ratio']}"
-        )
+        msg = "PUMP_AND_DUMP " + symbol
+        msg += "\nup " + str(pd["change_pct"]) + "%"
+        msg += "\ndown " + str(pd["next_change"]) + "%"
+        notify(msg)
         found += 1
-        log.info(f"   🚨 pump_dump найден")
+        log.info("   pump_dump FOUND")
 
-    # --- Cross-exchange ---
-    cross_checks = fetch_cross_check(symbol, hours=1)
-    ce = detect_cross_exchange(symbol, cross_checks)
-    if ce and not anomaly_exists(symbol, "cross_exchange"):
+    # 2. cross_exchange
+    cross_data = fetch_cross(symbol, hours=1)
+    ce = detect_cross(cross_data)
+    if ce and not exists(symbol, "cross_exchange"):
         log_anomaly(
-            symbol=symbol, timestamp=ce["timestamp"],
-            anomaly_type="cross_exchange", severity="medium",
+            symbol=symbol,
+            timestamp=ce["timestamp"],
+            anomaly_type="cross_exchange",
+            severity="medium",
             details=ce,
         )
-        notify(
-            f"⚠️ <b>Cross-exchange</b> {symbol}\n"
-            f"Расхождение: <b>{ce['diff_pct']:.2f}%</b>\n"
-            f"OKX: ${ce['primary']:,.2f}\n"
-            f"CG: ${ce['secondary']:,.2f}"
-        )
+        msg = "CROSS_EXCHANGE " + symbol
+        msg += "\ndiff " + str(ce["diff_pct"]) + "%"
+        notify(msg)
         found += 1
-        log.info(f"   ⚠️ cross_exchange найден")
+        log.info("   cross_exchange FOUND")
 
-    # --- Wash trading ---
-    wt = detect_wash_trading(symbol, candles, avg_volume)
-    if wt and not anomaly_exists(symbol, "wash_trading"):
+    # 3. wash_trading
+    wt = detect_wash(candles, avg_vol)
+    if wt and not exists(symbol, "wash_trading"):
         log_anomaly(
-            symbol=symbol, timestamp=wt["timestamp"],
-            anomaly_type="wash_trading", severity="high",
+            symbol=symbol,
+            timestamp=wt["timestamp"],
+            anomaly_type="wash_trading",
+            severity="high",
             details=wt,
         )
-        notify(
-            f"🚨 <b>WASH TRADING</b> {symbol}\n"
-            f"Объём ×{wt['volume_ratio']} при range {wt['range_pct']:.2f}%"
-        )
+        msg = "WASH_TRADING " + symbol
+        msg += "\nvol x" + str(wt["volume_ratio"])
+        notify(msg)
         found += 1
-        log.info(f"   🚨 wash_trading найден")
+        log.info("   wash_trading FOUND")
 
-    # --- Stop hunting ---
-    sh = detect_stop_hunting(symbol, candles)
-    if sh and not anomaly_exists(symbol, "stop_hunting"):
+    # 4. stop_hunting
+    sh = detect_stop_hunt(candles)
+    if sh and not exists(symbol, "stop_hunting"):
         log_anomaly(
-            symbol=symbol, timestamp=sh["timestamp"],
-            anomaly_type="stop_hunting", severity="medium",
+            symbol=symbol,
+            timestamp=sh["timestamp"],
+            anomaly_type="stop_hunting",
+            severity="medium",
             details=sh,
         )
         found += 1
-        log.info(f"   ⚠️ stop_hunting найден ({sh['wick_type']} wick {sh['wick_pct']}%)")
+        log.info("   stop_hunting FOUND")
 
-    log.info(f"   ✅ Найдено аномалий: {found}")
+    log.info("   total: " + str(found))
     return found
 
 
 def main():
     log.info("=" * 60)
-    log.info("🚨 ARGUS-Trader ANOMALY DETECTORS")
+    log.info("ANOMALY DETECTORS")
     log.info("=" * 60)
 
     total = 0
@@ -349,7 +345,7 @@ def main():
         log.info("")
 
     log.info("=" * 60)
-    log.info(f"✅ ANOMALY DONE. Найдено: {total}")
+    log.info("DONE. found: " + str(total))
     log.info("=" * 60)
 
     close_connection()
