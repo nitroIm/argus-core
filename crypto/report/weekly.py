@@ -1,10 +1,12 @@
 # ============================================================
-# ARGUS-Trader — НЕДЕЛЬНЫЙ ОТЧЁТ v4
+# ARGUS-Trader — НЕДЕЛЬНЫЙ ОТЧЁТ v5
 # ------------------------------------------------------------
-# v4: + графики (свечи, паттерн, Markov) через charts.py
-#     Отправляет текст + 3 картинки через sendPhoto.
+# v5: осмысленные подписи к графикам:
+#     - свечи: цена, %, support, resistance
+#     - паттерн: up/down, P(1|0), топ n-грамма
+#     - Markov: P(1|1), P(1|0), интерпретация
 # ------------------------------------------------------------
-# v3: события, паттерны, корреляции, уровни
+# v4: графики через charts.py
 # ============================================================
 
 import os
@@ -22,7 +24,6 @@ sys.path.insert(0, str(CRYPTO_ROOT))
 from db import get_connection
 from db import close_connection
 
-# Опциональный импорт charts
 try:
     from report.charts import plot_candles
     from report.charts import plot_pattern
@@ -30,7 +31,7 @@ try:
     HAS_CHARTS = True
 except Exception as e:
     HAS_CHARTS = False
-    print("charts недоступен: " + str(e))
+    print("charts: " + str(e))
 
 SENTIMENT_FILE = DATA_DIR / "news_sentiment.json"
 PATTERNS_FILE = DATA_DIR / "patterns_analysis.json"
@@ -51,9 +52,17 @@ def load_json(path, default=None):
         return default if default is not None else {}
 
 
+def fmt_price(p):
+    if p >= 1000:
+        return f"${int(p):,}"
+    if p >= 1:
+        return f"${p:,.2f}"
+    return f"${p:.4f}"
+
+
 def send_message(text):
     if not BOT_TOKEN or not CHAT_ID:
-        print("Нет токена/чата — вывод в консоль")
+        print("no token — console only")
         clean = text.replace("<b>", "").replace("</b>", "")
         clean = clean.replace("<i>", "").replace("</i>", "")
         print(clean)
@@ -74,10 +83,10 @@ def send_message(text):
         if r.status_code == 200:
             print("message sent")
             return True
-        print("Telegram " + str(r.status_code))
+        print("tg " + str(r.status_code))
         return False
     except Exception as e:
-        print("Telegram error: " + str(e))
+        print("tg error: " + str(e))
         return False
 
 
@@ -95,14 +104,16 @@ def send_photo(path, caption=""):
             if caption:
                 data["caption"] = caption
                 data["parse_mode"] = "HTML"
-            r = requests.post(url, data=data, files=files, timeout=30)
+            r = requests.post(
+                url, data=data, files=files, timeout=30,
+            )
         if r.status_code == 200:
-            print("photo sent: " + path)
+            print("photo: " + path)
             return True
         print("sendPhoto " + str(r.status_code))
         return False
     except Exception as e:
-        print("sendPhoto error: " + str(e))
+        print("sendPhoto: " + str(e))
         return False
 
 
@@ -118,7 +129,9 @@ def fetch_stats():
         "events": {"total": 0, "week": 0, "by_type": {}},
         "causal_links": {"total": 0},
         "anomaly_log": {"total": 0, "week": 0},
-        "collect_week": {"runs": 0, "ok": 0, "fail": 0, "rows": 0},
+        "collect_week": {
+            "runs": 0, "ok": 0, "fail": 0, "rows": 0,
+        },
     }
 
     try:
@@ -126,35 +139,47 @@ def fetch_stats():
             with conn.cursor() as cur:
                 cur.execute("SELECT COUNT(*) FROM candles")
                 stats["candles"]["total"] = cur.fetchone()[0]
-                cur.execute(
+
+                sql = (
                     "SELECT COUNT(*) FROM candles "
-                    "WHERE symbol='BTCUSDT' AND timeframe='1h'"
+                    "WHERE symbol='BTCUSDT' "
+                    "AND timeframe='1h'"
                 )
+                cur.execute(sql)
                 stats["candles"]["btc_1h"] = cur.fetchone()[0]
-                cur.execute(
+
+                sql = (
                     "SELECT COUNT(*) FROM candles "
-                    "WHERE symbol='ETHUSDT' AND timeframe='1h'"
+                    "WHERE symbol='ETHUSDT' "
+                    "AND timeframe='1h'"
                 )
+                cur.execute(sql)
                 stats["candles"]["eth_1h"] = cur.fetchone()[0]
 
-                for t in ["funding_rates", "open_interest",
-                          "long_short_ratio", "taker_flow",
-                          "features_hourly", "price_patterns",
-                          "events", "causal_links"]:
+                tables = [
+                    "funding_rates", "open_interest",
+                    "long_short_ratio", "taker_flow",
+                    "features_hourly", "price_patterns",
+                    "events", "causal_links",
+                ]
+                for t in tables:
                     cur.execute("SELECT COUNT(*) FROM " + t)
                     stats[t]["total"] = cur.fetchone()[0]
 
                 sql = (
                     "SELECT COUNT(*) FROM events "
-                    "WHERE created_at > NOW() - INTERVAL '7 days'"
+                    "WHERE created_at > "
+                    "NOW() - INTERVAL '7 days'"
                 )
                 cur.execute(sql)
                 stats["events"]["week"] = cur.fetchone()[0] or 0
 
                 sql = (
                     "SELECT event_type, COUNT(*) FROM events "
-                    "WHERE created_at > NOW() - INTERVAL '7 days' "
-                    "GROUP BY event_type ORDER BY 2 DESC LIMIT 5"
+                    "WHERE created_at > "
+                    "NOW() - INTERVAL '7 days' "
+                    "GROUP BY event_type "
+                    "ORDER BY 2 DESC LIMIT 5"
                 )
                 cur.execute(sql)
                 stats["events"]["by_type"] = {
@@ -163,21 +188,27 @@ def fetch_stats():
 
                 sql = (
                     "SELECT COUNT(*) FROM anomaly_log "
-                    "WHERE created_at > NOW() - INTERVAL '7 days'"
+                    "WHERE created_at > "
+                    "NOW() - INTERVAL '7 days'"
                 )
                 cur.execute(sql)
                 stats["anomaly_log"]["week"] = cur.fetchone()[0] or 0
 
                 sql = (
-                    "SELECT COUNT(*) FILTER (WHERE job_name LIKE 'pipeline_%'), "
-                    "COUNT(*) FILTER (WHERE job_name LIKE 'pipeline_%' "
-                    "AND status = 'ok'), "
-                    "COUNT(*) FILTER (WHERE job_name LIKE 'pipeline_%' "
-                    "AND status = 'fail'), "
+                    "SELECT "
+                    "COUNT(*) FILTER "
+                    "(WHERE job_name LIKE 'pipeline_%'), "
+                    "COUNT(*) FILTER "
+                    "(WHERE job_name LIKE 'pipeline_%' "
+                    "AND status='ok'), "
+                    "COUNT(*) FILTER "
+                    "(WHERE job_name LIKE 'pipeline_%' "
+                    "AND status='fail'), "
                     "COALESCE(SUM(records_added) FILTER "
                     "(WHERE job_name LIKE 'pipeline_%'), 0) "
                     "FROM collect_log "
-                    "WHERE started_at > NOW() - INTERVAL '7 days'"
+                    "WHERE started_at > "
+                    "NOW() - INTERVAL '7 days'"
                 )
                 cur.execute(sql)
                 row = cur.fetchone()
@@ -188,7 +219,7 @@ def fetch_stats():
                     stats["collect_week"]["rows"] = row[3] or 0
 
     except Exception as e:
-        print("db error: " + str(e))
+        print("db: " + str(e))
 
     return stats
 
@@ -198,26 +229,27 @@ def fetch_candles_for_chart(symbol, limit=100):
         with get_connection() as conn:
             with conn.cursor() as cur:
                 sql = (
-                    "SELECT timestamp, open, high, low, close, volume "
-                    "FROM candles WHERE symbol = %s "
+                    "SELECT timestamp, open, high, low, "
+                    "close, volume FROM candles "
+                    "WHERE symbol = %s "
                     "AND timeframe = '1h' "
                     "ORDER BY timestamp DESC LIMIT %s"
                 )
                 cur.execute(sql, (symbol, limit))
                 rows = list(reversed(cur.fetchall()))
-                return [
-                    {
+                result = []
+                for r in rows:
+                    result.append({
                         "timestamp": r[0],
                         "open": float(r[1]),
                         "high": float(r[2]),
                         "low": float(r[3]),
                         "close": float(r[4]),
                         "volume": float(r[5]),
-                    }
-                    for r in rows
-                ]
+                    })
+                return result
     except Exception as e:
-        print("fetch_candles: " + str(e))
+        print("candles: " + str(e))
         return []
 
 
@@ -226,32 +258,46 @@ def build_report():
     week_ago = now - timedelta(days=7)
 
     lines = []
-    lines.append("🪙 <b>ARGUS-Trader — недельный отчёт v4</b>")
+    lines.append("🪙 <b>ARGUS-Trader — недельный v5</b>")
     lines.append(f"📅 {now.strftime('%d.%m.%Y %H:%M')} UTC")
-    lines.append(f"<i>{week_ago.strftime('%d.%m')} — "
-                 f"{now.strftime('%d.%m')}</i>")
+    lines.append(
+        f"<i>{week_ago.strftime('%d.%m')} — "
+        f"{now.strftime('%d.%m')}</i>"
+    )
     lines.append("")
 
     stats = fetch_stats()
     c = stats["candles"]
 
     lines.append("📊 <b>Данные в БД</b>")
-    lines.append(f"  Свечей: <b>{c['total']:,}</b> "
-                 f"(BTC {c['btc_1h']} | ETH {c['eth_1h']})")
-    lines.append(f"  Features: {stats['features_hourly']['total']:,}")
-    lines.append(f"  Patterns: {stats['price_patterns']['total']:,}")
+    lines.append(
+        f"  Свечей: <b>{c['total']:,}</b> "
+        f"(BTC {c['btc_1h']} | ETH {c['eth_1h']})"
+    )
+    lines.append(
+        f"  Features: "
+        f"{stats['features_hourly']['total']:,}"
+    )
+    lines.append(
+        f"  Patterns: "
+        f"{stats['price_patterns']['total']:,}"
+    )
     lines.append(f"  Events: {stats['events']['total']:,}")
-    lines.append(f"  Causal: {stats['causal_links']['total']:,}")
+    lines.append(
+        f"  Causal: {stats['causal_links']['total']:,}"
+    )
     lines.append("")
 
     cw = stats["collect_week"]
     if cw["runs"] > 0:
         lines.append("⚙️ <b>Сбор за неделю</b>")
-        lines.append(f"  Прогонов: {cw['runs']} | "
-                     f"Успешных: {cw['ok']}")
+        lines.append(
+            f"  Прогонов: {cw['runs']} | "
+            f"OK: {cw['ok']}"
+        )
         if cw["fail"] > 0:
             lines.append(f"  ⚠️ Сбоев: {cw['fail']}")
-        lines.append(f"  Добавлено строк: {cw['rows']:,}")
+        lines.append(f"  Строк: {cw['rows']:,}")
         lines.append("")
 
     ev = stats["events"]
@@ -261,7 +307,6 @@ def build_report():
             lines.append(f"  • {t}: {n}")
         lines.append("")
 
-    # Паттерны
     patterns = load_json(PATTERNS_FILE, {})
     if patterns and patterns.get("symbols"):
         lines.append("🧩 <b>Паттерны</b>")
@@ -272,16 +317,20 @@ def build_report():
             lines.append(f"  <b>{name}</b>: {up:.1f}% роста")
             p11 = mk.get("p_1_given_1", 0)
             p10 = mk.get("p_1_given_0", 0)
-            lines.append(f"    P(1|1)={p11:.2f} | P(1|0)={p10:.2f}")
+            lines.append(
+                f"    P(1|1)={p11:.2f} | "
+                f"P(1|0)={p10:.2f}"
+            )
             top = data.get("ngrams_top", [])[:2]
             for item in top:
                 ng = item["ngram"]
                 p_up = item["p_up"] * 100
                 n = item["count"]
-                lines.append(f"    `{ng}` → ↑ {p_up:.0f}% (N={n})")
+                lines.append(
+                    f"    `{ng}` → ↑ {p_up:.0f}% (N={n})"
+                )
         lines.append("")
 
-    # Корреляции
     corr = load_json(CORRELATIONS_FILE, {})
     if corr and corr.get("symbols"):
         all_rules = []
@@ -292,7 +341,9 @@ def build_report():
                 all_rules.append(r)
         if all_rules:
             all_rules.sort(
-                key=lambda x: (x["confidence"], x["samples"]),
+                key=lambda x: (
+                    x["confidence"], x["samples"]
+                ),
                 reverse=True,
             )
             lines.append("🧠 <b>Закономерности</b>")
@@ -301,12 +352,13 @@ def build_report():
                 arrow = "↑" if d == "up" else "↓"
                 conf = r["confidence"] * 100
                 lines.append(
-                    f"  {arrow} [{r['symbol']}] {r['rule']}\n"
-                    f"     <i>{conf:.0f}% (N={r['samples']})</i>"
+                    f"  {arrow} [{r['symbol']}] "
+                    f"{r['rule']}\n"
+                    f"     <i>{conf:.0f}% "
+                    f"(N={r['samples']})</i>"
                 )
             lines.append("")
 
-    # Уровни
     levels = load_json(LEVELS_FILE, {})
     if levels and levels.get("symbols"):
         lines.append("📍 <b>Уровни</b>")
@@ -315,104 +367,220 @@ def build_report():
             price = data.get("current_price", 0)
             sup = data.get("supports", [])
             res = data.get("resistances", [])
-            if price >= 1000:
-                price_str = f"${int(price):,}"
-            else:
-                price_str = f"${price:,.2f}"
-            lines.append(f"  <b>{name}</b>: {price_str}")
+            lines.append(
+                f"  <b>{name}</b>: {fmt_price(price)}"
+            )
             if sup:
                 s = sup[0]
-                if s["price"] >= 1000:
-                    sp = f"${int(s['price']):,}"
-                else:
-                    sp = f"${s['price']:,.2f}"
-                lines.append(f"    🛡 Support: {sp} "
-                             f"({-s['distance_pct']:.2f}%)")
+                lines.append(
+                    f"    🛡 {fmt_price(s['price'])} "
+                    f"({-s['distance_pct']:.2f}%)"
+                )
             if res:
                 r = res[0]
-                if r["price"] >= 1000:
-                    rp = f"${int(r['price']):,}"
-                else:
-                    rp = f"${r['price']:,.2f}"
-                lines.append(f"    ⚔️ Resist: {rp} "
-                             f"(+{r['distance_pct']:.2f}%)")
+                lines.append(
+                    f"    ⚔️ {fmt_price(r['price'])} "
+                    f"(+{r['distance_pct']:.2f}%)"
+                )
         lines.append("")
 
-    # Аномалии
     anom = stats["anomaly_log"]
     if anom["week"] > 0:
         lines.append(f"🚨 <b>Аномалии: {anom['week']}</b>")
     else:
-        lines.append("🚨 <b>Аномалии:</b> не обнаружено ✅")
+        lines.append("🚨 <b>Аномалии:</b> нет ✅")
     lines.append("")
 
-    # Новости
     sent = load_json(SENTIMENT_FILE, {})
     if sent and sent.get("total_news", 0) > 0:
         lines.append("📰 <b>Новости</b>")
-        lines.append(f"  Всего: {sent.get('total_news', 0)}")
-        lines.append(f"  Настроение: {sent.get('mood', '?')}")
+        lines.append(
+            f"  Всего: {sent.get('total_news', 0)}"
+        )
+        lines.append(
+            f"  Настроение: {sent.get('mood', '?')}"
+        )
         lines.append("")
 
-    lines.append("🔧 <i>ARGUS-Trader работает стабильно.</i>")
+    lines.append("🔧 <i>ARGUS-Trader стабилен.</i>")
+
+    return "\n".join(lines)
+
+
+def build_candle_caption(symbol, candles,
+                         supports, resistances):
+    name = symbol.replace("USDT", "")
+    lines = [f"📊 <b>{name} — 100h</b>"]
+
+    if candles:
+        first = candles[0]["close"]
+        last = candles[-1]["close"]
+        ch = (last - first) / first * 100
+        lines.append(
+            f"💰 {fmt_price(last)} ({ch:+.2f}%)"
+        )
+
+        highs = [c["high"] for c in candles]
+        lows = [c["low"] for c in candles]
+        lines.append(
+            f"⬆️ High: {fmt_price(max(highs))}"
+        )
+        lines.append(
+            f"⬇️ Low: {fmt_price(min(lows))}"
+        )
+
+    if supports:
+        s = supports[0]
+        lines.append(
+            f"🛡 Support: {fmt_price(s['price'])} "
+            f"({-s['distance_pct']:.2f}%)"
+        )
+    if resistances:
+        r = resistances[0]
+        lines.append(
+            f"⚔️ Resist: {fmt_price(r['price'])} "
+            f"(+{r['distance_pct']:.2f}%)"
+        )
+
+    return "\n".join(lines)
+
+
+def build_pattern_caption(symbol, data):
+    name = symbol.replace("USDT", "")
+    lines = [f"🧩 <b>{name} — 50h pattern</b>"]
+
+    up = data.get("up_count", 0)
+    down = data.get("down_count", 0)
+    ratio = data.get("up_ratio", 0) * 100
+    total = up + down
+
+    lines.append(
+        f"⬆️ {up} | ⬇️ {down} "
+        f"({ratio:.0f}% up, N={total})"
+    )
+    lines.append(
+        f"📈 Max streak up: "
+        f"{data.get('max_streak_up', 0)}"
+    )
+    lines.append(
+        f"📉 Max streak down: "
+        f"{data.get('max_streak_down', 0)}"
+    )
+
+    top = data.get("ngrams_top", [])[:1]
+    if top:
+        t = top[0]
+        p_up = t["p_up"] * 100
+        lines.append(
+            f"🔥 Top: `{t['ngram']}` → "
+            f"↑ {p_up:.0f}% (N={t['count']})"
+        )
+
+    return "\n".join(lines)
+
+
+def build_markov_caption(symbol, markov):
+    name = symbol.replace("USDT", "")
+    lines = [f"🧠 <b>{name} — Markov</b>"]
+
+    p11 = markov.get("p_1_given_1", 0)
+    p10 = markov.get("p_1_given_0", 0)
+    p00 = markov.get("p_0_given_0", 0)
+    p01 = markov.get("p_0_given_1", 0)
+
+    lines.append(f"P(1|1) = {p11:.2f} — после роста")
+    lines.append(f"P(1|0) = {p10:.2f} — после падения")
+    lines.append(f"P(0|0) = {p00:.2f}")
+    lines.append(f"P(0|1) = {p01:.2f}")
+    lines.append("")
+
+    if p10 > 0.55:
+        lines.append("📌 Mean reversion: после падения — отскок")
+    elif p10 < 0.45:
+        lines.append("📌 Momentum: после падения — падение")
+    else:
+        lines.append("📌 Neutral: нет явной тенденции")
 
     return "\n".join(lines)
 
 
 def main():
-    print("ARGUS-Trader weekly report v4")
+    print("ARGUS-Trader weekly v5")
     print("=" * 50)
 
     try:
         message = build_report()
         if len(message) > 4000:
-            message = message[:3950] + "\n\n<i>... (обрезано)</i>"
+            message = message[:3950] + "\n..."
         send_message(message)
 
-        # Графики
-        if HAS_CHARTS:
-            print("Генерирую графики...")
+        if not HAS_CHARTS:
+            print("charts off")
+            return
 
-            patterns = load_json(PATTERNS_FILE, {})
-            levels = load_json(LEVELS_FILE, {})
+        print("generating charts...")
 
-            for symbol in ["BTCUSDT", "ETHUSDT"]:
-                name = symbol.replace("USDT", "")
+        patterns = load_json(PATTERNS_FILE, {})
+        levels = load_json(LEVELS_FILE, {})
 
-                # 1. Свечной график
-                candles = fetch_candles_for_chart(symbol, limit=100)
-                if candles:
-                    sym_levels = levels.get("symbols", {}).get(symbol, {})
-                    supports = sym_levels.get("supports", [])
-                    resistances = sym_levels.get("resistances", [])
-                    path = plot_candles(
+        for symbol in ["BTCUSDT", "ETHUSDT"]:
+            print("--- " + symbol)
+
+            # --- 1. Свечи ---
+            candles = fetch_candles_for_chart(
+                symbol, limit=100,
+            )
+            if candles:
+                sym_levels = levels.get(
+                    "symbols", {},
+                ).get(symbol, {})
+                supports = sym_levels.get(
+                    "supports", [],
+                )
+                resistances = sym_levels.get(
+                    "resistances", [],
+                )
+
+                path = plot_candles(
+                    symbol, candles,
+                    supports=supports,
+                    resistances=resistances,
+                )
+                if path:
+                    cap = build_candle_caption(
                         symbol, candles,
-                        supports=supports,
-                        resistances=resistances,
+                        supports, resistances,
                     )
-                    if path:
-                        send_photo(path, f"📊 {name} — 100h")
+                    send_photo(path, cap)
 
-                # 2. Паттерн 0/1
-                sym_patterns = patterns.get("symbols", {}).get(symbol, {})
-                binary = sym_patterns.get("binary_string", "")
-                if binary:
-                    path = plot_pattern(symbol, binary)
-                    if path:
-                        send_photo(path, f"🧩 {name} — pattern")
+            # --- 2. Паттерн ---
+            sym_p = patterns.get(
+                "symbols", {},
+            ).get(symbol, {})
+            binary = sym_p.get("binary_string", "")
+            if binary:
+                path = plot_pattern(symbol, binary)
+                if path:
+                    cap = build_pattern_caption(
+                        symbol, sym_p,
+                    )
+                    send_photo(path, cap)
 
-                # 3. Markov
-                markov = sym_patterns.get("markov", {})
-                if markov:
-                    path = plot_markov(symbol, markov)
-                    if path:
-                        send_photo(path, f"🧠 {name} — Markov")
+            # --- 3. Markov ---
+            mk = sym_p.get("markov", {})
+            if mk:
+                path = plot_markov(symbol, mk)
+                if path:
+                    cap = build_markov_caption(
+                        symbol, mk,
+                    )
+                    send_photo(path, cap)
 
     except Exception as e:
         import traceback
         traceback.print_exc()
         send_message(
-            "❌ <b>ARGUS-Trader</b> ошибка отчёта\n"
+            "❌ ARGUS ошибка:\n"
             f"<code>{str(e)[:200]}</code>"
         )
         sys.exit(1)
