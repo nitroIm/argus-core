@@ -6,11 +6,19 @@
 # НЕ пишем в основную таблицу, чтобы не отравить историю.
 # ------------------------------------------------------------
 # v1: начальная версия
+# v2: fix импортов (sys.path для запуска из любой папки)
 # ============================================================
 
+import sys
 import logging
 from datetime import datetime, timezone, timedelta
+from pathlib import Path
 from typing import Optional
+
+# --- Путь к crypto/ (для импорта config) ---
+SCRIPT_DIR = Path(__file__).resolve().parent          # crypto/collect/
+CRYPTO_ROOT = SCRIPT_DIR.parent                        # crypto/
+sys.path.insert(0, str(CRYPTO_ROOT))
 
 from config import VALIDATION
 
@@ -21,7 +29,6 @@ log = logging.getLogger("crypto.validator")
 # БАЗОВЫЕ ПРОВЕРКИ
 # ============================================================
 def is_valid_price(price, min_price: float = None) -> bool:
-    """Цена должна быть > min_price и не None."""
     if price is None:
         return False
     min_p = min_price if min_price is not None else VALIDATION["min_price"]
@@ -32,11 +39,8 @@ def is_valid_price(price, min_price: float = None) -> bool:
 
 
 def is_valid_timestamp(ts, allow_future_minutes: int = None, max_age_hours: int = None) -> bool:
-    """Timestamp не должен быть в будущем и не должен быть слишком старым."""
     if not isinstance(ts, datetime):
         return False
-
-    # Убеждаемся, что tz-aware
     if ts.tzinfo is None:
         return False
 
@@ -44,21 +48,16 @@ def is_valid_timestamp(ts, allow_future_minutes: int = None, max_age_hours: int 
     max_future = allow_future_minutes if allow_future_minutes is not None else VALIDATION["max_future_minutes"]
     max_age = max_age_hours if max_age_hours is not None else VALIDATION["max_age_hours"]
 
-    # Не в будущем (с допуском)
     if ts > now + timedelta(minutes=max_future):
         return False
-
-    # Не старше N часов
     if ts < now - timedelta(hours=max_age):
         return False
-
     return True
 
 
 def is_valid_change_pct(change_pct, max_change: float = None) -> bool:
-    """Изменение цены за период не должно превышать max_change."""
     if change_pct is None:
-        return True  # если не передали — не проверяем
+        return True
     max_c = max_change if max_change is not None else VALIDATION["max_change_pct_1h"]
     try:
         return abs(float(change_pct)) <= max_c
@@ -69,34 +68,25 @@ def is_valid_change_pct(change_pct, max_change: float = None) -> bool:
 # ============================================================
 # ВАЛИДАЦИЯ СВЕЧЕЙ
 # ============================================================
-def validate_candle(candle: dict) -> tuple[bool, Optional[str]]:
-    """
-    Проверяет одну свечу OHLCV.
-    Возвращает (ok, reason). reason=None если ok=True.
-    """
-    # Обязательные поля
+def validate_candle(candle: dict) -> tuple:
     required = ["symbol", "timeframe", "timestamp", "open", "high", "low", "close"]
     for field in required:
         if field not in candle:
             return False, f"missing field: {field}"
 
-    # Timestamp
     if not is_valid_timestamp(candle["timestamp"]):
         return False, "invalid timestamp (future or too old)"
 
-    # Цены
     for field in ["open", "high", "low", "close"]:
         if not is_valid_price(candle[field]):
             return False, f"invalid {field}: {candle[field]}"
 
-    # Логика OHLC: high >= max(open, close), low <= min(open, close)
     o, h, l, c = (candle["open"], candle["high"], candle["low"], candle["close"])
     if h < max(o, c):
         return False, f"high < max(open, close): h={h}, max={max(o, c)}"
     if l > min(o, c):
         return False, f"low > min(open, close): l={l}, min={min(o, c)}"
 
-    # Volume >= 0
     vol = candle.get("volume")
     if vol is not None:
         try:
@@ -111,8 +101,7 @@ def validate_candle(candle: dict) -> tuple[bool, Optional[str]]:
 # ============================================================
 # ВАЛИДАЦИЯ FUNDING
 # ============================================================
-def validate_funding(row: dict) -> tuple[bool, Optional[str]]:
-    """Funding rate: разумный диапазон ±1% за период (обычно ±0.1%)."""
+def validate_funding(row: dict) -> tuple:
     if "symbol" not in row or "timestamp" not in row:
         return False, "missing symbol/timestamp"
     if not is_valid_timestamp(row["timestamp"]):
@@ -121,8 +110,7 @@ def validate_funding(row: dict) -> tuple[bool, Optional[str]]:
         return False, "missing rate"
     try:
         rate = float(row["rate"])
-        # Защита от глюков API
-        if abs(rate) > 0.01:  # 1% за 8ч — явный глюк
+        if abs(rate) > 0.01:
             return False, f"funding rate out of range: {rate}"
     except (ValueError, TypeError):
         return False, f"invalid rate: {row.get('rate')}"
@@ -132,8 +120,7 @@ def validate_funding(row: dict) -> tuple[bool, Optional[str]]:
 # ============================================================
 # ВАЛИДАЦИЯ OI
 # ============================================================
-def validate_oi(row: dict) -> tuple[bool, Optional[str]]:
-    """Open Interest должен быть > 0."""
+def validate_oi(row: dict) -> tuple:
     if "symbol" not in row or "timestamp" not in row:
         return False, "missing symbol/timestamp"
     if not is_valid_timestamp(row["timestamp"]):
@@ -152,8 +139,7 @@ def validate_oi(row: dict) -> tuple[bool, Optional[str]]:
 # ============================================================
 # ВАЛИДАЦИЯ LS RATIO
 # ============================================================
-def validate_ls(row: dict) -> tuple[bool, Optional[str]]:
-    """LS ratio должен быть > 0."""
+def validate_ls(row: dict) -> tuple:
     if "symbol" not in row or "timestamp" not in row:
         return False, "missing symbol/timestamp"
     if not is_valid_timestamp(row["timestamp"]):
@@ -172,8 +158,7 @@ def validate_ls(row: dict) -> tuple[bool, Optional[str]]:
 # ============================================================
 # ВАЛИДАЦИЯ TAKER
 # ============================================================
-def validate_taker(row: dict) -> tuple[bool, Optional[str]]:
-    """Taker buy/sell: объёмы >= 0."""
+def validate_taker(row: dict) -> tuple:
     if "symbol" not in row or "timestamp" not in row:
         return False, "missing symbol/timestamp"
     if not is_valid_timestamp(row["timestamp"]):
@@ -193,8 +178,7 @@ def validate_taker(row: dict) -> tuple[bool, Optional[str]]:
 # ============================================================
 # ВАЛИДАЦИЯ MARKET CONTEXT
 # ============================================================
-def validate_context(row: dict) -> tuple[bool, Optional[str]]:
-    """Контекст рынка: цены и доминация в разумных пределах."""
+def validate_context(row: dict) -> tuple:
     if not is_valid_timestamp(row.get("timestamp"), max_age_hours=6):
         return False, "invalid timestamp"
 
@@ -210,7 +194,6 @@ def validate_context(row: dict) -> tuple[bool, Optional[str]]:
                 return False, f"btc_dominance out of range: {d}"
         except (ValueError, TypeError):
             return False, f"invalid btc_dominance: {dom}"
-
     return True, None
 
 
@@ -227,11 +210,10 @@ VALIDATORS = {
 }
 
 
-def validate(metric: str, row: dict) -> tuple[bool, Optional[str]]:
-    """Выбирает валидатор по метрике."""
+def validate(metric: str, row: dict) -> tuple:
     validator = VALIDATORS.get(metric)
     if not validator:
-        return True, None  # неизвестная метрика — пропускаем
+        return True, None
     return validator(row)
 
 
@@ -246,39 +228,32 @@ if __name__ == "__main__":
 
     now = datetime.now(timezone.utc)
     past = datetime.now(timezone.utc) - timedelta(hours=1)
-
-    # Тест 1: валидная свеча
-    ok, reason = validate("ohlcv", {
-        "symbol": "BTCUSDT", "timeframe": "1h", "timestamp": past,
-        "open": 60000, "high": 61000, "low": 59500, "close": 60500, "volume": 100,
-    })
-    print(f"✅ Валидная свеча: {ok} ({reason or 'ok'})")
-
-    # Тест 2: битый OHLC
-    ok, reason = validate("ohlcv", {
-        "symbol": "BTCUSDT", "timeframe": "1h", "timestamp": past,
-        "open": 60000, "high": 59000, "low": 59500, "close": 60500, "volume": 100,
-    })
-    print(f"❌ Битый OHLC: {ok} ({reason})")
-
-    # Тест 3: timestamp в будущем
     future = datetime.now(timezone.utc) + timedelta(hours=2)
-    ok, reason = validate("ohlcv", {
-        "symbol": "BTCUSDT", "timeframe": "1h", "timestamp": future,
-        "open": 60000, "high": 61000, "low": 59500, "close": 60500, "volume": 100,
-    })
-    print(f"❌ Timestamp в будущем: {ok} ({reason})")
 
-    # Тест 4: валидный funding
-    ok, reason = validate("funding", {
-        "symbol": "BTCUSDT", "timestamp": past, "rate": 0.0001,
-    })
-    print(f"✅ Валидный funding: {ok} ({reason or 'ok'})")
+    tests = [
+        ("✅ Валидная свеча", "ohlcv", {
+            "symbol": "BTCUSDT", "timeframe": "1h", "timestamp": past,
+            "open": 60000, "high": 61000, "low": 59500, "close": 60500, "volume": 100,
+        }),
+        ("❌ Битый OHLC (high < close)", "ohlcv", {
+            "symbol": "BTCUSDT", "timeframe": "1h", "timestamp": past,
+            "open": 60000, "high": 59000, "low": 59500, "close": 60500, "volume": 100,
+        }),
+        ("❌ Timestamp в будущем", "ohlcv", {
+            "symbol": "BTCUSDT", "timeframe": "1h", "timestamp": future,
+            "open": 60000, "high": 61000, "low": 59500, "close": 60500, "volume": 100,
+        }),
+        ("✅ Валидный funding", "funding", {
+            "symbol": "BTCUSDT", "timestamp": past, "rate": 0.0001,
+        }),
+        ("❌ Битый funding (>1%)", "funding", {
+            "symbol": "BTCUSDT", "timestamp": past, "rate": 0.5,
+        }),
+    ]
 
-    # Тест 5: битый funding
-    ok, reason = validate("funding", {
-        "symbol": "BTCUSDT", "timestamp": past, "rate": 0.5,
-    })
-    print(f"❌ Битый funding: {ok} ({reason})")
+    for label, metric, row in tests:
+        ok, reason = validate(metric, row)
+        status = "PASS" if ok == label.startswith("✅") else "FAIL"
+        print(f"[{status}] {label}: ok={ok}, reason={reason or 'none'}")
 
     print("=" * 50)
