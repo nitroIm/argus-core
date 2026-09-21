@@ -1,9 +1,11 @@
 # ============================================================
-# ARGUS-Trader — PIPELINE (главный сборщик)
+# ARGUS-Trader — PIPELINE (главный сборщик) v5
 # ------------------------------------------------------------
-# v4: + fix — datetime в кэше CoinGecko (default=str).
-#     + явное закрытие соединения в конце прогона.
-#     + переиспользование соединения через db v3 — ускорение.
+# v5: одна запись в collect_log на весь прогон (было 12).
+#     Это упрощает статистику в отчётах.
+#     job_name = "pipeline", а метрики — в error/details.
+# ------------------------------------------------------------
+# v4: fix datetime в кэше, закрытие соединения
 # ============================================================
 
 import sys
@@ -305,34 +307,24 @@ def run_cycle(mode: str = "incremental"):
     log.info("=" * 60)
 
     summary = {"ok": 0, "no_new": 0, "fail": 0, "total_added": 0}
+    results = []  # все результаты метрик
 
     for symbol in SYMBOLS:
         for tf in TIMEFRAMES:
             r = collect_metric("ohlcv", symbol=symbol, timeframe=tf,
                                limit=limits["ohlcv"])
-            log_collect(
-                job_name="pipeline_ohlcv", status=r["status"],
-                metric="ohlcv", symbol=symbol,
-                records_added=r["added"], source_used=r["source"],
-                fallback_count=r["fallback_count"], error=r["error"],
-                started_at=started_at,
-            )
             summary[r["status"]] = summary.get(r["status"], 0) + 1
             summary["total_added"] += r["added"]
+            results.append(r)
 
     for metric in ["funding", "oi", "ls_ratio", "taker"]:
         for symbol in SYMBOLS:
             r = collect_metric(metric, symbol=symbol, limit=limits[metric])
-            log_collect(
-                job_name=f"pipeline_{metric}", status=r["status"],
-                metric=metric, symbol=symbol,
-                records_added=r["added"], source_used=r["source"],
-                fallback_count=r["fallback_count"], error=r["error"],
-                started_at=started_at,
-            )
             summary[r["status"]] = summary.get(r["status"], 0) + 1
             summary["total_added"] += r["added"]
+            results.append(r)
 
+    # --- Context ---
     try:
         ctx = fetch_context_cached()
         if ctx:
@@ -342,6 +334,7 @@ def run_cycle(mode: str = "incremental"):
     except Exception as e:
         log.error(f"Context: {e}")
 
+    # --- Cross-check ---
     for symbol in SYMBOLS:
         cc = cross_check_price(symbol)
         if cc:
@@ -352,7 +345,28 @@ def run_cycle(mode: str = "incremental"):
                 f"(diff {cc['diff_pct']:.3f}%)"
             )
 
+    # --- Итог ---
     elapsed = (datetime.now(timezone.utc) - started_at).total_seconds()
+
+    # --- ОДНА запись в collect_log на весь прогон ---
+    overall_status = "ok" if summary["fail"] == 0 else ("partial" if summary["ok"] > 0 else "fail")
+    error_summary = None
+    if summary["fail"] > 0:
+        failed_metrics = [f"{r['metric']}/{r['symbol']}" for r in results if r["status"] == "fail"]
+        error_summary = f"failed: {', '.join(failed_metrics)}"
+
+    log_collect(
+        job_name=f"pipeline_{mode}",
+        status=overall_status,
+        metric=None,
+        symbol=None,
+        records_added=summary["total_added"],
+        source_used="okx",
+        fallback_count=0,
+        error=error_summary,
+        started_at=started_at,
+    )
+
     log.info("=" * 60)
     log.info(f"✅ PIPELINE DONE [{mode}] за {elapsed:.1f}с")
     log.info(f"   OK: {summary['ok']}, NO_NEW: {summary['no_new']}, FAIL: {summary['fail']}")
