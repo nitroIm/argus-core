@@ -1,10 +1,9 @@
 # ============================================================
-# ARGUS — BOT HOST v2.1 (ЦЕНТР УПРАВЛЕНИЯ)
+# ARGUS — BOT HOST v2.2
 # ------------------------------------------------------------
-# v2.1: fix — не передаём пустой inputs в GitHub API (422).
-#       fix — понятный лог если aiogram не установлен.
+# v2.2: подробный /help, кнопка "Помощь" в меню.
+# v2.1: fix пустой inputs, проверка aiogram.
 # ------------------------------------------------------------
-# v2: центральное управление через кнопки.
 # Требования: GH_PAT должен иметь scope 'workflow'
 # ============================================================
 
@@ -14,7 +13,6 @@ import asyncio
 import logging
 import requests
 
-# ---- Проверка зависимостей ----
 try:
     from aiogram import Bot, Dispatcher, types, F
     from aiogram.filters import Command
@@ -38,7 +36,6 @@ try:
 except ImportError:
     print("⚠️ python-dotenv не установлен")
     print("  pip install python-dotenv")
-    # продолжаем — переменные могут быть в окружении
 
 
 # ============================================================
@@ -109,14 +106,9 @@ WORKFLOWS = {
 
 
 # ============================================================
-# GITHUB — ЗАПУСК WORKFLOW (fix v2.1)
+# GITHUB — ЗАПУСК WORKFLOW
 # ============================================================
 def run_workflow(key: str, inputs: dict = None) -> tuple:
-    """
-    Запускает workflow через workflow_dispatch API.
-    v2.1: если inputs пустой — не передаём ключ вообще.
-    Возвращает (success, message).
-    """
     wf = WORKFLOWS.get(key)
     if not wf:
         return False, f"Неизвестный workflow: {key}"
@@ -131,7 +123,6 @@ def run_workflow(key: str, inputs: dict = None) -> tuple:
         "X-GitHub-Api-Version": "2022-11-28",
     }
 
-    # FIX v2.1: не передаём inputs если он пустой
     data = {"ref": "main"}
     if inputs:
         data["inputs"] = inputs
@@ -169,7 +160,7 @@ def read_json(path: str) -> dict:
 
 
 # ============================================================
-# LEGACY DISPATCH (для старых workflow)
+# LEGACY DISPATCH
 # ============================================================
 def send_dispatch(event_type: str, payload: dict) -> bool:
     url = f"https://api.github.com/repos/{GITHUB_REPO}/dispatches"
@@ -254,6 +245,114 @@ def build_full_status() -> str:
 
 
 # ============================================================
+# ТЕКСТ ПОМОЩИ
+# ============================================================
+def help_text() -> str:
+    return (
+        "📖 <b>ARGUS — ПОЛНАЯ СПРАВКА</b>\n"
+        "\n"
+        "🏛️ <b>Что такое ARGUS?</b>\n"
+        "Система из двух модулей:\n"
+        "• <b>ARGUS</b> — база знаний по книгам\n"
+        "• <b>Crypto</b> — рыно/ETH\n"
+        "\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "📚 <b>КНИГИ И ПОИСК</b>\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "\n"
+        "/ask &lt;вопрос&gt;\n"
+        "  Поиск ответа по базе знаний.\n"
+        "  <i>Пример:</i> <code>/ask Что такое риск?</code>\n"
+        "\n"
+        "/find &lt;тема&gt;\n"
+        "  Поиск книг (arXiv, Zenodo, Semantic Scholar)\n"
+        "  с переводом на русский.\n"
+        "  <i>Пример:</i> <code>/find stoicism</code>\n"
+        "\n"
+        "/findnext\n"
+        "  Показать следующие 5 книг после /find\n"
+        "\n"
+        "/stats\n"
+        "  Количество книг и чанков в базе\n"
+        "\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "🪙 <b>КРИПТО</b>\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "\n"
+        "/crypto\n"
+        "  Меню крипто-операций (кнопки)\n"
+        "\n"
+        "/collect\n"
+        "  Собрать свежие данные BTC/ETH\n"
+        "  (запускает GitHub Actions, ~4 мин)\n"
+        "\n"
+        "/enrich\n"
+        "  Обновить признаки, паттерны, события\n"
+        "  (~1.5 мин)\n"
+        "\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "⚙️ <b>УПРАВЛЕНИЕ</b>\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "\n"
+        "/panel\n"
+        "  Главное меню с кнопками\n"
+        "\n"
+        "/status\n"
+        "  Сводка: книги, паттерны, цены, уровни\n"
+        "\n"
+        "/train\n"
+        "  Обучение ARGUS на новых книгах\n"
+        "  (5-30 минут, требует подтверждения)\n"
+        "\n"
+        "/audio\n"
+        "  Аудиокниги (в разработке)\n"
+        "\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "🎛 <b>КНОПКИ ГЛАВНОГО МЕНЮ</b>\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "\n"
+        "🎓 <b>Train ARGUS</b>\n"
+        "  Обучение на новых книгах в books/\n"
+        "  Запускает workflow train_model.yml\n"
+        "\n"
+        "🪙 <b>Crypto</b>\n"
+        "  Подменю: Collect, Enrich, Detect\n"
+        "  Сбор → анализ → детект аномалий\n"
+        "\n"
+        "📊 <b>Отчёты</b>\n"
+        "  Недельный отчёт с графиками BTC/ETH\n"
+        "  (текст + свечи + паттерн + Markov)\n"
+        "\n"
+        "🎵 <b>Аудиокниги</b>\n"
+        "  Раздел в разработке\n"
+        "  Будет озвучивать твои personal-книги\n"
+        "\n"
+        "⚙️ <b>Статус</b>\n"
+        "  Показывает актуальные данные:\n"
+        "  книги, чанки, паттерны, цены, уровни\n"
+        "\n"
+        "❓ <b>Помощь</b>\n"
+        "  Эта справка\n"
+        "\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "💡 <b>СОВЕТЫ</b>\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "\n"
+        "• Train запускается 5-30 мин,\n"
+        "  результат придёт автоматически\n"
+        "\n"
+        "• Collect/Enrich запускаются каждый час\n"
+        "  сами через cron GitHub\n"
+        "\n"
+        "• После /find появятся кнопки\n"
+        "  [📥 1. Скачать] [📥 2. Скачать] ...\n"
+        "\n"
+        "• После скачивания книга уйдёт\n"
+        "  в личную папку, в ARGUS не попадёт\n"
+    )
+
+
+# ============================================================
 # КЛАВИАТУРЫ
 # ============================================================
 def kb_main() -> InlineKeyboardMarkup:
@@ -282,6 +381,10 @@ def kb_main() -> InlineKeyboardMarkup:
             InlineKeyboardButton(
                 text="⚙️ Статус",
                 callback_data="menu:status",
+            ),
+            InlineKeyboardButton(
+                text="❓ Помощь",
+                callback_data="menu:help",
             ),
         ],
     ])
@@ -355,7 +458,7 @@ async def cmd_start(message: types.Message):
         "🏛️ <b>ARGUS</b>\n"
         "Autonomous Research System\n\n"
         "Главное меню — внизу.\n"
-        "Команды: /help"
+        "Полная справка: /help"
     )
     await message.answer(
         text,
@@ -375,27 +478,14 @@ async def cmd_panel(message: types.Message):
 
 @dp.message(Command("help"))
 async def cmd_help(message: types.Message):
-    text = (
-        "📖 <b>ARGUS — команды</b>\n\n"
-        "<b>База знаний:</b>\n"
-        "/ask &lt;вопрос&gt;\n"
-        "/find &lt;тема&gt;\n"
-        "/findnext\n"
-        "/stats\n\n"
-        "<b>Управление:</b>\n"
-        "/panel — меню\n"
-        "/status — статус\n"
-        "/crypto — крипто\n"
-        "/audio — аудио\n\n"
-        "<b>Быстрые команды:</b>\n"
-        "/train — обучение\n"
-        "/collect — сбор\n"
-        "/enrich — анализ"
-    )
+    text = help_text()
+    # Если слишком длинно — режем
+    if len(text) > 4000:
+        text = text[:3950] + "\n\n<i>...обрезано</i>"
     await message.answer(
         text,
-        reply_markup=kb_main(),
         parse_mode="HTML",
+        disable_web_page_preview=True,
     )
 
 
@@ -434,8 +524,10 @@ async def cmd_ask(message: types.Message):
             parse_mode="HTML",
         )
         return
-    await message.answer("🔍 <b>Ищу ответ...</b>\n30-60 секунд.",
-                         parse_mode="HTML")
+    await message.answer(
+        "🔍 <b>Ищу ответ...</b>\n30-60 секунд.",
+        parse_mode="HTML",
+    )
     send_dispatch("run_search", {
         "query": query,
         "chat_id": str(message.chat.id),
@@ -576,6 +668,19 @@ async def cb_menu_train(callback: CallbackQuery):
     await callback.answer()
 
 
+@dp.callback_query(F.data == "menu:help")
+async def cb_menu_help(callback: CallbackQuery):
+    await callback.answer()
+    text = help_text()
+    if len(text) > 4000:
+        text = text[:3950] + "\n\n<i>...обрезано</i>"
+    await callback.message.answer(
+        text,
+        parse_mode="HTML",
+        disable_web_page_preview=True,
+    )
+
+
 # ============================================================
 # CALLBACK — ДЕЙСТВИЯ
 # ============================================================
@@ -694,7 +799,7 @@ async def handle_personal_next(callback: CallbackQuery):
 # ЗАПУСК
 # ============================================================
 async def main():
-    logger.info("🏛️ ARGUS Bot Host v2.1 запущен")
+    logger.info("🏛️ ARGUS Bot Host v2.2 запущен")
     await dp.start_polling(bot)
 
 
