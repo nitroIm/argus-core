@@ -1,7 +1,14 @@
 # ============================================================
-# ARGUS — INGEST (v7.3)
-# v7.3: pathlib, fix datetime import, все успешно распарсенные
-#       файлы помечаются обработанными (нет зомби)
+# ARGUS — INGEST v7.4 [PRODUCTION]
+# ------------------------------------------------------------
+# v7.4: FIX — файлы, уже находящиеся в processed_hashes, теперь
+#       тоже попадают в new_files_ingested → cleanup их удаляет.
+#       Раньше: файл в базе → пропуск → PDF оставался навсегда.
+# ------------------------------------------------------------
+# v7.3: pathlib, file_hash, stable chunk_id, last_ingest.json,
+#       все успешно распарсенные файлы помечаются обработанными
+# v7.2: + pathlib для всех операций, fix zombie files
+# v7.1: fix — успешно распарсенные файлы помечаются всегда
 # ============================================================
 
 import re
@@ -11,7 +18,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 import fitz
 
-# --- Пути (pathlib) ---
+# --- Пути (pathlib, как в GUIDE) ---
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parent
 
@@ -135,9 +142,11 @@ if KNOWLEDGE_FILE.exists():
     except Exception as e:
         print(f"⚠️ Не удалось прочитать knowledge.json: {e} — начинаю с нуля")
 
+# Множество уже обработанных file_hash
 processed_hashes = {b.get("file_hash") for b in knowledge.get("books", [])
                     if b.get("file_hash")}
 
+# Глобальный дедуп по хэшу текста чанка
 existing_chunk_hashes = {md5_text(c.get("text", ""))
                          for c in knowledge.get("chunks", [])}
 
@@ -147,6 +156,7 @@ existing_chunk_hashes = {md5_text(c.get("text", ""))
 # ============================================================
 new_files_ingested = []
 total_new_chunks = 0
+skipped_already_in_db = 0
 
 if not BOOKS_DIR.is_dir():
     print("⚠️ Нет папки books/")
@@ -166,8 +176,13 @@ else:
             print(f"❌ Не могу прочитать {filename}: {e}")
             continue
 
+        # ============================================================
+        # ФАЙЛ УЖЕ В БАЗЕ — помечаем как обработанный для cleanup
+        # ============================================================
         if fhash in processed_hashes:
-            print(f"⏭ Уже обработана (hash): {filename}")
+            print(f"⏭ Уже обработана (hash): {filename} — помечаю для cleanup")
+            new_files_ingested.append(filename)   # FIX v7.4
+            skipped_already_in_db += 1
             continue
 
         print(f"📖 Обработка: {filename}")
@@ -210,7 +225,6 @@ else:
                 })
                 total_new_chunks += added
 
-            # Помечаем ВСЕГДА, если парсинг успешен
             new_files_ingested.append(filename)
 
             print(f"   ✅ Добавлено: {added}, дублей пропущено: {skipped_dup}")
@@ -220,22 +234,31 @@ else:
 
 
 # ============================================================
-# СОХРАНЕНИЕ
+# СОХРАНЕНИЕ KNOWLEDGE
 # ============================================================
 with open(KNOWLEDGE_FILE, "w", encoding="utf-8") as f:
     json.dump(knowledge, f, ensure_ascii=False, indent=2)
 
+
+# ============================================================
+# LAST INGEST
+# ============================================================
 with open(LAST_INGEST_FILE, "w", encoding="utf-8") as f:
     json.dump({
         "ingested_at": datetime.now(timezone.utc).isoformat(),
         "files": new_files_ingested,
         "new_chunks": total_new_chunks,
+        "skipped_already_in_db": skipped_already_in_db,
     }, f, ensure_ascii=False, indent=2)
 
+
+# ============================================================
+# SUMMARY
+# ============================================================
 books_list = [{
     "file": b.get("file", "?"),
     "pages": b.get("pages", 0),
-    "chunks": b.get("chunks_total", 0),
+    "chunks": b.get("chunks_total", b.get("chunks", 0)),
 } for b in knowledge.get("books", [])]
 
 summary = {
@@ -244,14 +267,20 @@ summary = {
     "total_chunks": len(knowledge.get("chunks", [])),
     "new_chunks": total_new_chunks,
     "new_files": new_files_ingested,
+    "skipped_already_in_db": skipped_already_in_db,
     "books": books_list,
 }
 with open(SUMMARY_FILE, "w", encoding="utf-8") as f:
     json.dump(summary, f, ensure_ascii=False, indent=2)
 
+
+# ============================================================
+# ИТОГ
+# ============================================================
 print()
 print("🎉 INGEST завершён.")
 print(f"   Всего книг:   {len(knowledge['books'])}")
 print(f"   Всего чанков: {len(knowledge['chunks'])}")
 print(f"   Новых чанков: {total_new_chunks}")
-print(f"   Новых файлов: {len(new_files_ingested)}")
+print(f"   Файлов на cleanup: {len(new_files_ingested)}")
+print(f"   Уже было в базе: {skipped_already_in_db}")
