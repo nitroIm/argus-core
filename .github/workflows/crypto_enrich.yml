@@ -1,0 +1,64 @@
+# ============================================================
+# ARGUS-Trader — ENRICH (постоянный)
+# ------------------------------------------------------------
+# Каждый час после collect запускает всю цепочку:
+#   features → patterns → levels → events → causal
+# Всё в одном workflow — данные передаются через workspace.
+# ------------------------------------------------------------
+# v1: начальная версия
+# ============================================================
+
+name: ARGUS Crypto Enrich
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '15 * * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: argus-crypto-enrich
+  cancel-in-progress: false
+
+jobs:
+  enrich:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-crypto-${{ hashFiles('crypto/requirements.txt') }}
+          restore-keys: pip-crypto-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r crypto/requirements.txt
+
+      - name: Run enrich pipeline
+        env:
+          ARGUS_DB_URL: ${{ secrets.ARGUS_DB_URL }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python crypto/enrich/runner.py
+
+      - name: Notify on failure
+        if: failure()
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            -H "Content-Type: application/json" \
+            -d "{\"chat_id\": \"${TELEGRAM_CHAT_ID}\", \"text\": \"⚠️ <b>ARGUS Crypto Enrich</b> упал.\", \"parse_mode\": \"HTML\"}" || true
