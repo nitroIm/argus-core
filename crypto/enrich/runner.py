@@ -28,11 +28,11 @@ log = logging.getLogger("crypto.runner")
 
 
 STEPS = [
-    ("features", "crypto.enrich.features"),
-    ("patterns", "crypto.enrich.patterns"),
-    ("levels", "crypto.enrich.levels"),
-    ("events", "crypto.enrich.events"),
-    ("causal", "crypto.enrich.causal"),
+    ("features", "enrich.features"),
+    ("patterns", "enrich.patterns"),
+    ("levels", "enrich.levels"),
+    ("events", "enrich.events"),
+    ("causal", "enrich.causal"),
 ]
 
 
