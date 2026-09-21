@@ -15,11 +15,7 @@ jobs:
           python-version: '3.11'
 
       - name: Test priority
-        run: |
-          cd crypto/collect
-          python priority.py
+        run: python crypto/collect/priority.py
 
       - name: Test validator
-        run: |
-          cd crypto/collect
-          python validator.py
+        run: python crypto/collect/validator.py
