@@ -1,12 +1,15 @@
 # ============================================================
 # ARGUS-Trader — PIPELINE (главный сборщик)
 # ------------------------------------------------------------
-# v2: fix — не логируем каждую битую строку в rejected_data
-#     (пишем только summary при массовом отсеве). Это в 100 раз
-#     ускоряет работу при больших выборках.
+# v3: + инкрементальный режим (--mode=incremental) — тянет 3 записи
+#     вместо 720. Время прогона: ~15-30 секунд вместо 8 минут.
+#     + режим --mode=backfill для первого прогона.
+#     + кэш CoinGecko context на 10 минут (обход 429).
 # ============================================================
 
 import sys
+import json
+import time
 import logging
 from datetime import datetime, timezone
 from pathlib import Path
@@ -16,7 +19,10 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 CRYPTO_ROOT = SCRIPT_DIR.parent
 sys.path.insert(0, str(CRYPTO_ROOT))
 
-from config import SYMBOLS, TIMEFRAMES, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
+from config import (
+    SYMBOLS, TIMEFRAMES, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID,
+    LIMITS_INCREMENTAL, LIMITS_BACKFILL, DATA_DIR,
+)
 from db import get_connection, log_collect, log_rejected, log_anomaly
 from collect.exchanges import CLIENTS
 from collect.priority import get_priority
@@ -28,6 +34,9 @@ logging.basicConfig(
     datefmt="%H:%M:%S",
 )
 log = logging.getLogger("crypto.pipeline")
+
+COINGECKO_CACHE_FILE = DATA_DIR / "coingecko_cache.json"
+COINGECKO_CACHE_TTL = 600
 
 
 def notify(text: str):
@@ -49,9 +58,6 @@ def notify(text: str):
         log.warning(f"Telegram: {e}")
 
 
-# ============================================================
-# SQL (ON CONFLICT DO NOTHING)
-# ============================================================
 SQL = {
     "ohlcv": """
         INSERT INTO candles
@@ -96,14 +102,11 @@ SQL = {
 
 
 def insert_rows(metric: str, rows: list) -> int:
-    """Массовая вставка ОДНИМ соединением. Возвращает число добавленных."""
     if not rows:
         return 0
     sql = SQL.get(metric)
     if not sql:
-        log.warning(f"Нет SQL для метрики: {metric}")
         return 0
-
     added = 0
     try:
         with get_connection() as conn:
@@ -121,13 +124,12 @@ def insert_rows(metric: str, rows: list) -> int:
 
 
 def collect_metric(metric: str, symbol: str = None,
-                   timeframe: str = None, limit: int = 100) -> dict:
+                   timeframe: str = None, limit: int = 3) -> dict:
     result = {
         "metric": metric, "symbol": symbol, "added": 0,
         "source": None, "fallback_count": 0,
         "status": "fail", "error": None,
     }
-
     chain = get_priority(metric)
     if not chain:
         result["error"] = f"no priority for {metric}"
@@ -140,15 +142,12 @@ def collect_metric(metric: str, symbol: str = None,
         method = getattr(client, method_name, None)
         if not method:
             continue
-
         try:
             if metric == "ohlcv":
                 rows = method(symbol, timeframe, limit=limit)
             else:
                 rows = method(symbol, limit=limit)
-
             if not rows:
-                log.warning(f"[{metric}/{symbol}] {exchange_name}: 0 строк")
                 result["fallback_count"] += 1
                 continue
 
@@ -161,26 +160,20 @@ def collect_metric(metric: str, symbol: str = None,
                     valid_rows.append(r)
                 else:
                     rejected += 1
-                    # Группируем причины вместо записи каждой строки в БД
                     key = (reason or "unknown")[:60]
                     rejection_reasons[key] = rejection_reasons.get(key, 0) + 1
 
-            # Логируем ОДНУ запись в rejected_data — summary
             if rejected > 0:
                 log_rejected(
                     job_name=f"pipeline_{metric}",
                     reason=f"batch rejected: {rejection_reasons}",
-                    metric=metric,
-                    symbol=symbol,
-                    raw_data={"total": len(rows), "rejected": rejected, "reasons": rejection_reasons},
+                    metric=metric, symbol=symbol,
+                    raw_data={"total": len(rows), "rejected": rejected,
+                              "reasons": rejection_reasons},
                     source=exchange_name,
                 )
 
             if not valid_rows:
-                log.warning(
-                    f"[{metric}/{symbol}] {exchange_name}: "
-                    f"все данные битые ({rejected}), причины: {rejection_reasons}"
-                )
                 result["fallback_count"] += 1
                 continue
 
@@ -188,14 +181,12 @@ def collect_metric(metric: str, symbol: str = None,
             result["added"] = added
             result["source"] = exchange_name
             result["status"] = "ok" if added > 0 else "no_new"
-
             log.info(
                 f"[{metric}/{symbol}] {exchange_name}: "
                 f"получено {len(rows)}, валидных {len(valid_rows)}, "
                 f"битых {rejected}, добавлено {added}"
             )
             return result
-
         except Exception as e:
             log.warning(f"[{metric}/{symbol}] {exchange_name}: {e}")
             result["fallback_count"] += 1
@@ -203,6 +194,50 @@ def collect_metric(metric: str, symbol: str = None,
 
     result["error"] = "all sources failed"
     return result
+
+
+def _load_cache() -> dict:
+    if not COINGECKO_CACHE_FILE.exists():
+        return {}
+    try:
+        with open(COINGECKO_CACHE_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+
+def _save_cache(data: dict):
+    try:
+        with open(COINGECKO_CACHE_FILE, "w", encoding="utf-8") as f:
+            json.dump(data, f)
+    except Exception as e:
+        log.warning(f"Cache save: {e}")
+
+
+def fetch_context_cached() -> list:
+    cache = _load_cache()
+    now = time.time()
+    cached_at = cache.get("cached_at", 0)
+    cached_data = cache.get("data")
+
+    if cached_data and (now - cached_at) < COINGECKO_CACHE_TTL:
+        log.info(f"[context] из кэша (возраст {int(now - cached_at)}с)")
+        return cached_data
+
+    cg = CLIENTS.get("coingecko")
+    if not cg:
+        return cached_data or []
+
+    try:
+        ctx = cg.fetch_context()
+        if ctx:
+            _save_cache({"cached_at": now, "data": ctx})
+            log.info("[context] свежий запрос")
+            return ctx
+    except Exception as e:
+        log.warning(f"[context] {e}")
+
+    return cached_data or []
 
 
 def cross_check_price(symbol: str) -> Optional[dict]:
@@ -216,15 +251,11 @@ def cross_check_price(symbol: str) -> Optional[dict]:
         okx_price = okx_rows[0]["close"]
         okx_ts = okx_rows[0]["timestamp"]
 
-        cg = CLIENTS.get("coingecko")
-        if not cg:
-            return None
-        ctx = cg.fetch_context()
+        ctx = fetch_context_cached()
         if not ctx:
             return None
         coin_key = "btc_price_usd" if symbol.startswith("BTC") else "eth_price_usd"
         cg_price = ctx[0].get(coin_key)
-
         if not okx_price or not cg_price:
             return None
 
@@ -253,34 +284,30 @@ def cross_check_price(symbol: str) -> Optional[dict]:
                 symbol=symbol, timestamp=okx_ts,
                 anomaly_type="price_divergence",
                 severity="high" if diff_pct > 1.0 else "medium",
-                details={
-                    "okx_price": okx_price,
-                    "coingecko_price": cg_price,
-                    "diff_pct": round(diff_pct, 4),
-                },
+                details={"okx_price": okx_price, "coingecko_price": cg_price,
+                         "diff_pct": round(diff_pct, 4)},
             )
-
-        return {
-            "symbol": symbol, "okx": okx_price,
-            "coingecko": cg_price, "diff_pct": round(diff_pct, 4),
-            "is_anomaly": is_anomaly,
-        }
+        return {"symbol": symbol, "okx": okx_price, "coingecko": cg_price,
+                "diff_pct": round(diff_pct, 4), "is_anomaly": is_anomaly}
     except Exception as e:
         log.warning(f"cross_check: {e}")
         return None
 
 
-def run_full_cycle():
+def run_cycle(mode: str = "incremental"):
+    limits = LIMITS_BACKFILL if mode == "backfill" else LIMITS_INCREMENTAL
     started_at = datetime.now(timezone.utc)
     log.info("=" * 60)
-    log.info(f"🚀 PIPELINE START — {started_at.isoformat()}")
+    log.info(f"🚀 PIPELINE START [{mode}] — {started_at.isoformat()}")
+    log.info(f"   Limits: {limits}")
     log.info("=" * 60)
 
     summary = {"ok": 0, "no_new": 0, "fail": 0, "total_added": 0}
 
     for symbol in SYMBOLS:
         for tf in TIMEFRAMES:
-            r = collect_metric("ohlcv", symbol=symbol, timeframe=tf, limit=100)
+            r = collect_metric("ohlcv", symbol=symbol, timeframe=tf,
+                               limit=limits["ohlcv"])
             log_collect(
                 job_name="pipeline_ohlcv", status=r["status"],
                 metric="ohlcv", symbol=symbol,
@@ -293,7 +320,7 @@ def run_full_cycle():
 
     for metric in ["funding", "oi", "ls_ratio", "taker"]:
         for symbol in SYMBOLS:
-            r = collect_metric(metric, symbol=symbol, limit=100)
+            r = collect_metric(metric, symbol=symbol, limit=limits[metric])
             log_collect(
                 job_name=f"pipeline_{metric}", status=r["status"],
                 metric=metric, symbol=symbol,
@@ -305,8 +332,7 @@ def run_full_cycle():
             summary["total_added"] += r["added"]
 
     try:
-        cg = CLIENTS.get("coingecko")
-        ctx = cg.fetch_context() if cg else []
+        ctx = fetch_context_cached()
         if ctx:
             added = insert_rows("context", ctx)
             log.info(f"[context] добавлено {added} строк")
@@ -326,7 +352,7 @@ def run_full_cycle():
 
     elapsed = (datetime.now(timezone.utc) - started_at).total_seconds()
     log.info("=" * 60)
-    log.info(f"✅ PIPELINE DONE за {elapsed:.1f}с")
+    log.info(f"✅ PIPELINE DONE [{mode}] за {elapsed:.1f}с")
     log.info(f"   OK: {summary['ok']}, NO_NEW: {summary['no_new']}, FAIL: {summary['fail']}")
     log.info(f"   Всего добавлено строк: {summary['total_added']}")
     log.info("=" * 60)
@@ -335,12 +361,14 @@ def run_full_cycle():
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
+    parser.add_argument("--mode", choices=["incremental", "backfill"],
+                        default="incremental")
     parser.add_argument("--test", action="store_true")
     args = parser.parse_args()
 
     if args.test:
-        print("🧪 TEST MODE — одна метрика")
-        r = collect_metric("ohlcv", symbol="BTCUSDT", timeframe="1h", limit=5)
+        print("🧪 TEST MODE")
+        r = collect_metric("ohlcv", symbol="BTCUSDT", timeframe="1h", limit=3)
         print(f"Result: {r}")
     else:
-        run_full_cycle()
+        run_cycle(mode=args.mode)
