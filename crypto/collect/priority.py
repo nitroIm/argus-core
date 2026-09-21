@@ -3,13 +3,19 @@
 # ------------------------------------------------------------
 # Таблица приоритетов: какая метрика с каких бирж берётся.
 # Каждая метрика — независимая fallback-цепочка.
-# Если основная биржа не отдала — идём к следующей.
 # ------------------------------------------------------------
 # v1: начальная версия
+# v2: fix импортов (sys.path для запуска из любой папки)
 # ============================================================
 
+import sys
 import logging
-from typing import Optional
+from pathlib import Path
+
+# --- Путь к crypto/ (для импорта config) ---
+SCRIPT_DIR = Path(__file__).resolve().parent          # crypto/collect/
+CRYPTO_ROOT = SCRIPT_DIR.parent                        # crypto/
+sys.path.insert(0, str(CRYPTO_ROOT))
 
 log = logging.getLogger("crypto.priority")
 
