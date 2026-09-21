@@ -1,5 +1,5 @@
 {
-  "probed_at": "2026-09-19T22:35:02.508202+00:00",
+  "probed_at": "2026-09-21T09:58:59.074036+00:00",
   "exchanges": {
     "binance": {
       "metrics": {
@@ -95,31 +95,31 @@
           "ok": true,
           "status": 200,
           "records": 100,
-          "bytes_100": 10160
+          "bytes_100": 10156
         },
         "funding_rate_history": {
           "ok": true,
           "status": 200,
           "records": 100,
-          "bytes_100": 19292
+          "bytes_100": 19220
         },
         "open_interest": {
           "ok": true,
           "status": 200,
           "records": 720,
-          "bytes_100": 37814
+          "bytes_100": 37817
         },
         "long_short_ratio": {
           "ok": true,
           "status": 200,
           "records": 720,
-          "bytes_100": 17900
+          "bytes_100": 17892
         },
         "taker_volume": {
           "ok": true,
           "status": 200,
           "records": 72,
-          "bytes_100": 3487
+          "bytes_100": 3543
         }
       },
       "monthly_estimate": {
@@ -130,7 +130,7 @@
         },
         "funding_rate_history": {
           "monthly_records": 720,
-          "monthly_kb": 135.6,
+          "monthly_kb": 135.1,
           "monthly_mb": 0.13
         },
         "open_interest": {
@@ -140,12 +140,12 @@
         },
         "long_short_ratio": {
           "monthly_records": 720,
-          "monthly_kb": 125.9,
+          "monthly_kb": 125.8,
           "monthly_mb": 0.12
         },
         "taker_volume": {
           "monthly_records": 720,
-          "monthly_kb": 24.5,
+          "monthly_kb": 24.9,
           "monthly_mb": 0.02
         }
       }
@@ -156,7 +156,7 @@
           "ok": true,
           "status": 200,
           "records": 350,
-          "bytes_300": 21088
+          "bytes_300": 21087
         },
         "derivatives": {
           "ok": false,
@@ -177,30 +177,30 @@
           "ok": true,
           "status": 200,
           "records": 721,
-          "bytes": 59441
+          "bytes": 59416
         },
         "futures_tickers": {
           "ok": true,
           "status": 200,
-          "bytes": 149112
+          "bytes": 149271
         },
         "funding_history": {
           "ok": false,
           "status": 404,
           "records": 0,
-          "bytes": 126
+          "bytes": 127
         }
       },
       "monthly_estimate": {
         "ohlcv_spot_1h": {
           "monthly_records": 720,
-          "monthly_kb": 41794.5,
-          "monthly_mb": 40.81
+          "monthly_kb": 41776.9,
+          "monthly_mb": 40.8
         },
         "futures_tickers": {
           "monthly_records": 720,
-          "monthly_kb": 104844.4,
-          "monthly_mb": 102.39
+          "monthly_kb": 104956.2,
+          "monthly_mb": 102.5
         }
       }
     },
@@ -210,13 +210,13 @@
           "ok": true,
           "status": 200,
           "records": 100,
-          "bytes_100": 8509
+          "bytes_100": 8516
         },
         "funding_rate_history": {
           "ok": true,
           "status": 200,
           "records": 100,
-          "bytes_100": 7626
+          "bytes_100": 7622
         },
         "open_interest_now": {
           "ok": true,
@@ -232,7 +232,7 @@
       "monthly_estimate": {
         "ohlcv_futures_1h": {
           "monthly_records": 720,
-          "monthly_kb": 59.8,
+          "monthly_kb": 59.9,
           "monthly_mb": 0.06
         },
         "funding_rate_history": {
@@ -253,35 +253,35 @@
           "ok": true,
           "status": 200,
           "records": 200,
-          "bytes": 13581
+          "bytes": 13582
         },
         "funding_history": {
           "ok": true,
           "status": 200,
           "records": 21,
-          "bytes": 1477
+          "bytes": 1476
         },
         "contracts_list": {
           "ok": true,
           "status": 200,
-          "bytes": 1400380
+          "bytes": 1400627
         }
       },
       "monthly_estimate": {
         "ohlcv_futures_1h": {
           "monthly_records": 720,
-          "monthly_kb": 9549.1,
+          "monthly_kb": 9549.8,
           "monthly_mb": 9.33
         },
         "funding_history": {
           "monthly_records": 720,
-          "monthly_kb": 1038.5,
+          "monthly_kb": 1037.8,
           "monthly_mb": 1.01
         },
         "contracts_list": {
           "monthly_records": 720,
-          "monthly_kb": 984642.2,
-          "monthly_mb": 961.56
+          "monthly_kb": 984815.9,
+          "monthly_mb": 961.73
         }
       }
     },
@@ -291,19 +291,19 @@
           "ok": true,
           "status": 200,
           "records": 100,
-          "bytes_100": 10783
+          "bytes_100": 10779
         },
         "funding_history": {
           "ok": true,
           "status": 200,
           "records": 90,
-          "bytes_100": 2864
+          "bytes_100": 2868
         },
         "contract_stats": {
           "ok": true,
           "status": 200,
           "records": 100,
-          "bytes_100": 65594,
+          "bytes_100": 65406,
           "note": "OI + LS + taker в одном"
         }
       },
@@ -315,12 +315,12 @@
         },
         "funding_history": {
           "monthly_records": 720,
-          "monthly_kb": 20.1,
+          "monthly_kb": 20.2,
           "monthly_mb": 0.02
         },
         "contract_stats": {
           "monthly_records": 720,
-          "monthly_kb": 461.2,
+          "monthly_kb": 459.9,
           "monthly_mb": 0.45
         }
       }
@@ -328,6 +328,6 @@
   },
   "summary": {
     "total_metrics_available": 17,
-    "total_mb_per_month_all": 1116.42
+    "total_mb_per_month_all": 1116.69
   }
 }
