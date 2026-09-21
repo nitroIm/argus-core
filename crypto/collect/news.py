@@ -1,11 +1,11 @@
 # ============================================================
-# ARGUS-Trader — NEWS ANALYZER v6
+# ARGUS-Trader — NEWS ANALYZER v6.1
 # ------------------------------------------------------------
-# v6: + веса источников (CoinDesk 1.5×, ForkLog 1.0×)
-#     + свежесть новости (pubDate → вес)
-#     + fake-score эвристики (кликбейт, CAPS, эмодзи)
-#     + перекрёстная проверка (одинаковые новости)
-#     + нормализация заголовков для сверки
+# v6.1: fix — убраны источники с блокировкой (РБК 403,
+#       CoinMarketCap 0). Добавлены Bitcoin.com, CryptoSlate.
+# ------------------------------------------------------------
+# v6: веса источников, свежесть, fake-эвристики, перекрёстная
+#     проверка, нормализация заголовков
 # ============================================================
 
 import os
@@ -40,22 +40,16 @@ except Exception as e:
 # ============================================================
 # ИСТОЧНИКИ RSS + ВЕСА
 # ============================================================
-# Вес влияет на общий сентимент: мнение CoinDesk весит больше чем ForkLog.
-# 1.0 = базовый вес, 1.5 = авторитетный, 0.8 = второстепенный
-
 FEEDS = [
     {"name": "CoinDesk",      "url": "https://www.coindesk.com/arc/outboundfeeds/rss/", "lang": "en", "weight": 1.5},
     {"name": "Cointelegraph", "url": "https://cointelegraph.com/rss",                    "lang": "en", "weight": 1.3},
     {"name": "The Block",     "url": "https://www.theblock.co/rss.xml",                  "lang": "en", "weight": 1.4},
     {"name": "Decrypt",       "url": "https://decrypt.co/feed",                          "lang": "en", "weight": 1.1},
-    {"name": "CoinMarketCap", "url": "https://blog.coinmarketcap.com/feed/",             "lang": "en", "weight": 1.0},
+    {"name": "Bitcoin.com",   "url": "https://news.bitcoin.com/feed/",                   "lang": "en", "weight": 1.0},
+    {"name": "CryptoSlate",   "url": "https://cryptoslate.com/feed/",                    "lang": "en", "weight": 1.0},
     {"name": "ForkLog",       "url": "https://forklog.com/feed",                         "lang": "ru", "weight": 1.2},
-    {"name": "РБК Крипто",    "url": "https://www.rbc.ru/crypto/rss",                    "lang": "ru", "weight": 1.3},
 ]
 
-# ============================================================
-# ВЕСА СЛОВ (сентимент)
-# ============================================================
 BULLISH_WEIGHTS = {
     "moon": 2.0, "surge": 1.5, "rally": 1.5, "breakout": 1.5, "soar": 1.5,
     "gain": 1.0, "rise": 1.0, "jump": 1.0, "high": 1.0, "growth": 1.0,
@@ -78,25 +72,16 @@ BEARISH_WEIGHTS = {
     "предупрежд": 1.2,
 }
 
-# ============================================================
-# ФЕЙК-ЭВРИСТИКИ
-# ============================================================
 CLICKBAIT_PATTERNS = [
-    r"!!!+",               # восклицания
-    r"\?!!",               # вопросительно-восклицательные
+    r"!!!+",
+    r"\?!!",
     r"\b(shocking|unbelievable|you won't believe|must see|urgent)\b",
     r"\b(шок|срочно|не поверите|вы не поверите)\b",
-    r"(🚀|🔥|💎|🌙|⚡){2,}",  # повторы эмодзи
-    r"\b(AI|Bot|bot)\s*(says|predicts|reveals)",  # бот-предсказания
-    r"\b(top|best|worst)\s+\d+\b",  # топ-N кликбейт
+    r"(🚀|🔥|💎|🌙|⚡){2,}",
+    r"\b(AI|Bot|bot)\s*(says|predicts|reveals)",
+    r"\b(top|best|worst)\s+\d+\b",
 ]
 
-# Источники в сером списке (подозрительные)
-GRAYLIST_SOURCES = []
-
-# ============================================================
-# ФАЙЛЫ
-# ============================================================
 SENTIMENT_FILE = DATA_DIR / "news_sentiment.json"
 NEWS_HISTORY_FILE = DATA_DIR / "news_history.json"
 TRANSLATE_CACHE_FILE = DATA_DIR / "translate_cache.json"
@@ -187,11 +172,7 @@ def save_translate_cache():
         pass
 
 
-# ============================================================
-# NORMALIZE ДЛЯ ПЕРЕКРЁСТНОЙ ПРОВЕРКИ
-# ============================================================
 def normalize_title(title: str) -> str:
-    """Убирает пунктуацию, приводит к lower, берёт ключевые слова."""
     text = title.lower()
     text = re.sub(r"[^\w\s]", " ", text)
     text = re.sub(r"\s+", " ", text).strip()
@@ -199,16 +180,12 @@ def normalize_title(title: str) -> str:
 
 
 def keywords(text: str, min_len: int = 4) -> set:
-    """Значимые слова длиной >= min_len."""
     stop = {"with", "that", "from", "this", "will", "have", "what", "your",
             "который", "которая", "этого", "чтобы", "будет", "может"}
     words = normalize_title(text).split()
     return {w for w in words if len(w) >= min_len and w not in stop}
 
 
-# ============================================================
-# FETCH RSS
-# ============================================================
 def fetch_feed(feed):
     items = []
     try:
@@ -236,7 +213,6 @@ def fetch_feed(feed):
             if len(title) < 15:
                 continue
 
-            # Дата публикации
             pub_date = None
             for tag in ["pubDate", "published", "updated", "dc:date"]:
                 m = re.search(rf"<{tag}\b[^>]*>(.*?)</{tag}>", b,
@@ -264,9 +240,6 @@ def fetch_feed(feed):
     return items
 
 
-# ============================================================
-# СЕНТИМЕНТ
-# ============================================================
 def analyze_sentiment(title):
     text = title.lower()
     bull = sum(BULLISH_WEIGHTS.get(w, 0) for w in BULLISH_WEIGHTS if w in text)
@@ -279,7 +252,6 @@ def analyze_sentiment(title):
 
 
 def freshness_weight(pub_date_iso):
-    """Возвращает коэффициент свежести: 1.5 если <1ч, 1.0 если <6ч, 0.7 если старше."""
     if not pub_date_iso:
         return 1.0
     try:
@@ -300,40 +272,25 @@ def freshness_weight(pub_date_iso):
 
 
 def fake_score(title, source_weight):
-    """
-    Эвристика: 0.0 = чисто, 1.0 = похоже на фейк.
-    """
     score = 0.0
-    text = title
-
     for pattern in CLICKBAIT_PATTERNS:
-        if re.search(pattern, text, re.IGNORECASE):
+        if re.search(pattern, title, re.IGNORECASE):
             score += 0.25
-
-    # Больше 30% CAPS → подозрительно
-    letters = [c for c in text if c.isalpha()]
+    letters = [c for c in title if c.isalpha()]
     if letters:
         caps = sum(1 for c in letters if c.isupper())
         if caps / len(letters) > 0.3:
             score += 0.2
-
-    # Эмодзи больше 3 → подозрительно
-    emoji_count = len(re.findall(r"[\U0001F300-\U0001FAFF]", text))
+    emoji_count = len(re.findall(r"[\U0001F300-\U0001FAFF]", title))
     if emoji_count > 3:
         score += 0.15
-
-    # Источник в сером списке
     if source_weight < 1.0:
         score += 0.1
-
     return round(min(1.0, score), 2)
 
 
-# ============================================================
-# ОСНОВНАЯ ЛОГИКА
-# ============================================================
 def main():
-    print("📰 ARGUS-Trader NEWS ANALYZER v6")
+    print("📰 ARGUS-Trader NEWS ANALYZER v6.1")
     print(f"🌐 Переводчик: {'✅' if TRANSLATE_AVAILABLE else '❌'}")
     print("=" * 60)
 
@@ -360,8 +317,6 @@ def main():
             item["freshness"] = fresh
             item["fake_score"] = fake
             item["collected_at"] = datetime.now(timezone.utc).isoformat()
-
-            # Итоговый вес новости = источник × свежесть × (1 - fake)
             item["effective_weight"] = round(
                 item["source_weight"] * fresh * (1.0 - fake), 3
             )
@@ -379,7 +334,6 @@ def main():
         notify("❌ <b>ARGUS News:</b> не удалось собрать новости.")
         return
 
-    # --- Перекрёстная проверка ---
     print("\n🔍 Перекрёстная проверка...")
     for i, n1 in enumerate(all_news):
         kw1 = keywords(n1["title_original"])
@@ -391,19 +345,16 @@ def main():
             if i == j:
                 continue
             kw2 = keywords(n2["title_original"])
-            common = kw1 & kw2
-            if len(common) >= 3:
+            if len(kw1 & kw2) >= 3:
                 count += 1
         n1["cross_check"] = count
 
-    # --- Взвешенный сентимент ---
     total_weight = sum(n["effective_weight"] for n in all_news)
     if total_weight > 0:
         avg_sentiment = sum(n["sentiment"] * n["effective_weight"] for n in all_news) / total_weight
     else:
         avg_sentiment = 0.0
 
-    # --- Статистика ---
     bullish = sum(1 for n in all_news if n["sentiment"] > 0.2)
     bearish = sum(1 for n in all_news if n["sentiment"] < -0.2)
     neutral = len(all_news) - bullish - bearish
@@ -419,7 +370,6 @@ def main():
     else:
         mood = "🟡 НЕЙТРАЛЬНОЕ"
 
-    # --- Топ новости (с фильтром фейков) ---
     clean_news = [n for n in all_news if n["fake_score"] < 0.4]
     top_bull = sorted(
         [n for n in clean_news if n["sentiment"] > 0.2],
@@ -431,7 +381,6 @@ def main():
         key=lambda x: x["sentiment"] * x["effective_weight"]
     )[:5]
 
-    # --- Статистика по источникам ---
     by_source = {}
     for n in all_news:
         src = n["source"]
@@ -461,7 +410,6 @@ def main():
 
     save(SENTIMENT_FILE, result)
 
-    # История
     history = load(NEWS_HISTORY_FILE, {"days": []})
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     history["days"] = [d for d in history.get("days", []) if d.get("date") != today]
@@ -477,7 +425,6 @@ def main():
 
     save_translate_cache()
 
-    # --- Лог ---
     print("=" * 60)
     print(f"📊 Всего: {len(all_news)}")
     print(f"🎭 Настроение: {mood}")
