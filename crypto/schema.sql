@@ -1,17 +1,12 @@
 -- ============================================================
 -- ARGUS-Trader — СХЕМА БД
--- ------------------------------------------------------------
--- Все таблицы модуля. Запускается один раз в Supabase SQL Editor.
--- Идемпотентно: повторный запуск не сломает существующие данные.
--- ------------------------------------------------------------
--- v1: начальная версия
+-- v2: fix — causal_links имел два PRIMARY KEY
 -- ============================================================
 
 -- ============================================================
 -- RAW: СЫРЬЁ (retention 90 дней)
 -- ============================================================
 
--- Свечи OHLCV (основная таблица)
 CREATE TABLE IF NOT EXISTS candles (
     symbol       TEXT NOT NULL,
     timeframe    TEXT NOT NULL,
@@ -28,7 +23,6 @@ CREATE TABLE IF NOT EXISTS candles (
 CREATE INDEX IF NOT EXISTS idx_candles_symbol_ts
     ON candles (symbol, timestamp DESC);
 
--- Funding rate (каждые 8 часов)
 CREATE TABLE IF NOT EXISTS funding_rates (
     symbol       TEXT NOT NULL,
     timestamp    TIMESTAMPTZ NOT NULL,
@@ -40,7 +34,6 @@ CREATE TABLE IF NOT EXISTS funding_rates (
 CREATE INDEX IF NOT EXISTS idx_funding_symbol_ts
     ON funding_rates (symbol, timestamp DESC);
 
--- Open Interest
 CREATE TABLE IF NOT EXISTS open_interest (
     symbol       TEXT NOT NULL,
     timestamp    TIMESTAMPTZ NOT NULL,
@@ -51,7 +44,6 @@ CREATE TABLE IF NOT EXISTS open_interest (
     PRIMARY KEY (symbol, timestamp)
 );
 
--- Long/Short ratio
 CREATE TABLE IF NOT EXISTS long_short_ratio (
     symbol       TEXT NOT NULL,
     timestamp    TIMESTAMPTZ NOT NULL,
@@ -63,7 +55,6 @@ CREATE TABLE IF NOT EXISTS long_short_ratio (
     PRIMARY KEY (symbol, timestamp)
 );
 
--- Taker buy/sell volume
 CREATE TABLE IF NOT EXISTS taker_flow (
     symbol       TEXT NOT NULL,
     timestamp    TIMESTAMPTZ NOT NULL,
@@ -74,7 +65,6 @@ CREATE TABLE IF NOT EXISTS taker_flow (
     PRIMARY KEY (symbol, timestamp)
 );
 
--- Liquidations (позже через WebSocket)
 CREATE TABLE IF NOT EXISTS liquidations (
     symbol       TEXT NOT NULL,
     timestamp    TIMESTAMPTZ NOT NULL,
@@ -91,23 +81,22 @@ CREATE TABLE IF NOT EXISTS liquidations (
 -- ============================================================
 
 CREATE TABLE IF NOT EXISTS market_context (
-    timestamp    TIMESTAMPTZ PRIMARY KEY,
-    btc_mcap     NUMERIC(30, 2),
-    eth_mcap     NUMERIC(30, 2),
-    btc_dominance NUMERIC(10, 4),
-    total_mcap   NUMERIC(30, 2),
+    timestamp        TIMESTAMPTZ PRIMARY KEY,
+    btc_mcap         NUMERIC(30, 2),
+    eth_mcap         NUMERIC(30, 2),
+    btc_dominance    NUMERIC(10, 4),
+    total_mcap       NUMERIC(30, 2),
     total_volume_24h NUMERIC(30, 2),
-    btc_price_usd NUMERIC(20, 8),
-    eth_price_usd NUMERIC(20, 8),
-    source       TEXT DEFAULT 'coingecko',
-    inserted_at  TIMESTAMPTZ DEFAULT NOW()
+    btc_price_usd    NUMERIC(20, 8),
+    eth_price_usd    NUMERIC(20, 8),
+    source           TEXT DEFAULT 'coingecko',
+    inserted_at      TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- ============================================================
 -- AUDIT: СЛУЖЕБНЫЕ
 -- ============================================================
 
--- Журнал сбора
 CREATE TABLE IF NOT EXISTS collect_log (
     id             SERIAL PRIMARY KEY,
     job_name       TEXT NOT NULL,
@@ -124,7 +113,6 @@ CREATE TABLE IF NOT EXISTS collect_log (
 CREATE INDEX IF NOT EXISTS idx_collect_log_started
     ON collect_log (started_at DESC);
 
--- Карантин: битые/подозрительные данные
 CREATE TABLE IF NOT EXISTS rejected_data (
     id             SERIAL PRIMARY KEY,
     job_name       TEXT,
@@ -138,23 +126,21 @@ CREATE TABLE IF NOT EXISTS rejected_data (
 CREATE INDEX IF NOT EXISTS idx_rejected_at
     ON rejected_data (rejected_at DESC);
 
--- Cross-check: сверка цен между биржами
 CREATE TABLE IF NOT EXISTS cross_check (
-    symbol          TEXT NOT NULL,
-    timestamp       TIMESTAMPTZ NOT NULL,
-    source_primary  TEXT NOT NULL,
+    symbol           TEXT NOT NULL,
+    timestamp        TIMESTAMPTZ NOT NULL,
+    source_primary   TEXT NOT NULL,
     source_secondary TEXT NOT NULL,
-    price_primary   NUMERIC(20, 8),
-    price_secondary NUMERIC(20, 8),
-    diff_pct        NUMERIC(10, 4),
-    is_anomaly      BOOLEAN DEFAULT FALSE,
-    checked_at      TIMESTAMPTZ DEFAULT NOW(),
+    price_primary    NUMERIC(20, 8),
+    price_secondary  NUMERIC(20, 8),
+    diff_pct         NUMERIC(10, 4),
+    is_anomaly       BOOLEAN DEFAULT FALSE,
+    checked_at       TIMESTAMPTZ DEFAULT NOW(),
     PRIMARY KEY (symbol, timestamp, source_primary, source_secondary)
 );
 CREATE INDEX IF NOT EXISTS idx_cross_check_anomaly
     ON cross_check (symbol, timestamp DESC) WHERE is_anomaly = TRUE;
 
--- Аномалии (детектированные события)
 CREATE TABLE IF NOT EXISTS anomaly_log (
     id             SERIAL PRIMARY KEY,
     symbol         TEXT,
@@ -168,7 +154,6 @@ CREATE TABLE IF NOT EXISTS anomaly_log (
 CREATE INDEX IF NOT EXISTS idx_anomaly_ts
     ON anomaly_log (timestamp DESC);
 
--- Журнал удалений (retention)
 CREATE TABLE IF NOT EXISTS retention_log (
     id             SERIAL PRIMARY KEY,
     table_name     TEXT NOT NULL,
@@ -180,51 +165,34 @@ CREATE TABLE IF NOT EXISTS retention_log (
 -- ============================================================
 -- PRODUCTION: ПРИЗНАКИ, ПАТТЕРНЫ, СОБЫТИЯ, ML
 -- ============================================================
--- Создаём сразу, чтобы не мигрировать позже.
--- Наполняются на Фазе 2-5.
 
--- Признаки (по каждому часу)
 CREATE TABLE IF NOT EXISTS features_hourly (
     symbol           TEXT NOT NULL,
     timestamp        TIMESTAMPTZ NOT NULL,
-
-    -- Движение цены
     change_pct       NUMERIC(10, 4),
     range_pct        NUMERIC(10, 4),
     body_pct         NUMERIC(10, 4),
     upper_wick_pct   NUMERIC(10, 4),
     lower_wick_pct   NUMERIC(10, 4),
-
-    -- Объём
     volume_ratio_24h NUMERIC(10, 4),
-
-    -- Волатильность
     volatility_24h   NUMERIC(10, 4),
     volatility_7d    NUMERIC(10, 4),
-
-    -- Тренды
     change_4h        NUMERIC(10, 4),
     change_24h       NUMERIC(10, 4),
     change_7d        NUMERIC(10, 4),
-
-    -- Деривативы
     funding_rate     NUMERIC(20, 10),
     funding_trend    NUMERIC(20, 10),
     oi_change_pct    NUMERIC(10, 4),
     ls_ratio         NUMERIC(20, 6),
     taker_ratio      NUMERIC(10, 4),
-
-    -- Цель для ML (что было через час)
     next_change_pct  NUMERIC(10, 4),
     next_direction   SMALLINT,
-
     computed_at      TIMESTAMPTZ DEFAULT NOW(),
     PRIMARY KEY (symbol, timestamp)
 );
 CREATE INDEX IF NOT EXISTS idx_features_symbol_ts
     ON features_hourly (symbol, timestamp DESC);
 
--- 0/1 графики
 CREATE TABLE IF NOT EXISTS price_patterns (
     symbol       TEXT NOT NULL,
     timestamp    TIMESTAMPTZ NOT NULL,
@@ -236,7 +204,6 @@ CREATE TABLE IF NOT EXISTS price_patterns (
     PRIMARY KEY (symbol, timestamp)
 );
 
--- События (движения > N%)
 CREATE TABLE IF NOT EXISTS events (
     id              SERIAL PRIMARY KEY,
     symbol          TEXT NOT NULL,
@@ -250,11 +217,10 @@ CREATE TABLE IF NOT EXISTS events (
 CREATE INDEX IF NOT EXISTS idx_events_symbol_ts
     ON events (symbol, timestamp DESC);
 
--- Lead indicators (что предшествовало)
+-- FIX: убрал id SERIAL PRIMARY KEY (оставлен только составной ключ)
 CREATE TABLE IF NOT EXISTS causal_links (
-    id              SERIAL PRIMARY KEY,
     event_id        INTEGER REFERENCES events(id) ON DELETE CASCADE,
-    hours_before    INTEGER,
+    hours_before    INTEGER NOT NULL,
     funding_rate    NUMERIC(20, 10),
     oi_change_pct   NUMERIC(10, 4),
     ls_ratio        NUMERIC(20, 6),
@@ -266,7 +232,6 @@ CREATE TABLE IF NOT EXISTS causal_links (
     PRIMARY KEY (event_id, hours_before)
 );
 
--- Предсказания модели
 CREATE TABLE IF NOT EXISTS predictions (
     id              SERIAL PRIMARY KEY,
     symbol          TEXT NOT NULL,
@@ -281,7 +246,6 @@ CREATE TABLE IF NOT EXISTS predictions (
 CREATE INDEX IF NOT EXISTS idx_predictions_symbol_ts
     ON predictions (symbol, timestamp DESC);
 
--- Модели (метаданные)
 CREATE TABLE IF NOT EXISTS ml_models (
     id              SERIAL PRIMARY KEY,
     version         TEXT UNIQUE,
@@ -296,11 +260,3 @@ CREATE TABLE IF NOT EXISTS ml_models (
     metadata        JSONB,
     is_active       BOOLEAN DEFAULT FALSE
 );
-
--- ============================================================
--- КОНЕЦ
--- ============================================================
--- Проверка:
---   SELECT tablename FROM pg_tables WHERE schemaname = 'public';
--- Ожидаемые таблицы: 17 штук.
--- ============================================================
