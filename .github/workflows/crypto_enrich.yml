@@ -1,9 +1,9 @@
 # ============================================================
 # ARGUS - ENRICH
 # ------------------------------------------------------------
-# v2: теперь коммитит JSON в crypto/data/
-#     (levels, patterns, events, causal, correlations)
-#     иначе утренний отчёт их не видит.
+# v3: общая очередь с detect (argus-crypto-pipeline).
+#     git pull -X theirs — авто-разрешение конфликта.
+# v2: коммит JSON в crypto/data/
 # ============================================================
 
 name: ARGUS Crypto Enrich
@@ -16,8 +16,10 @@ on:
 permissions:
   contents: write
 
+# ОБЩАЯ очередь с detect и collect.
+# Одновременно выполняется только один.
 concurrency:
-  group: argus-crypto-enrich
+  group: argus-crypto-pipeline
   cancel-in-progress: false
 
 jobs:
@@ -36,7 +38,8 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/pip
-          key: pip-crypto-${{ hashFiles('crypto/requirements.txt') }}
+          key: >-
+            pip-crypto-${{ hashFiles('crypto/requirements.txt') }}
           restore-keys: pip-crypto-
 
       - name: Install deps
@@ -46,9 +49,12 @@ jobs:
 
       - name: Run enrich
         env:
-          ARGUS_DB_URL: ${{ secrets.ARGUS_DB_URL }}
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          ARGUS_DB_URL: >-
+            ${{ secrets.ARGUS_DB_URL }}
+          TELEGRAM_BOT_TOKEN: >-
+            ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: >-
+            ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python crypto/enrich/runner.py
 
       - name: Commit JSON
@@ -62,7 +68,8 @@ jobs:
           fi
           git commit -m "ARGUS: enrich data [skip ci]"
           for i in 1 2 3; do
-            git pull --rebase --autostash origin main
+            git pull --rebase -X theirs \
+              --autostash origin main || true
             if git push origin main; then
               echo "Push OK"
               break
@@ -74,9 +81,14 @@ jobs:
       - name: Notify on failure
         if: failure()
         env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_BOT_TOKEN: >-
+            ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: >-
+            ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
-          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+          curl -s -X POST \
+            "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
             -H "Content-Type: application/json" \
-            -d "{\"chat_id\": \"${TELEGRAM_CHAT_ID}\", \"text\": \"Enrich упал\", \"parse_mode\": \"HTML\"}" || true
+            -d "{\"chat_id\": \"${TELEGRAM_CHAT_ID}\", \
+                 \"text\": \"Enrich упал\", \
+                 \"parse_mode\": \"HTML\"}" || true
