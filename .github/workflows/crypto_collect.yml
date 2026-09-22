@@ -1,8 +1,7 @@
 # ============================================================
-# ARGUS-Trader — COLLECT (прод, инкрементальный)
+# ARGUS - COLLECT
 # ------------------------------------------------------------
-# v2: инкрементальный режим — 3 записи за раз.
-#     Время прогона: ~15-30 секунд вместо 8 минут.
+# v2: коммитит crypto/data/coingecko_cache.json
 # ============================================================
 
 name: ARGUS Crypto Collect
@@ -11,14 +10,14 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: 'Режим (incremental / backfill)'
+        description: 'incremental или backfill'
         required: false
         default: 'incremental'
   schedule:
     - cron: '0 * * * *'
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: argus-crypto-collect
@@ -43,7 +42,7 @@ jobs:
           key: pip-crypto-${{ hashFiles('crypto/requirements.txt') }}
           restore-keys: pip-crypto-
 
-      - name: Install dependencies
+      - name: Install deps
         run: |
           python -m pip install --upgrade pip
           pip install -r crypto/requirements.txt
@@ -58,12 +57,22 @@ jobs:
           echo "Mode: $MODE"
           python crypto/collect/pipeline.py --mode=$MODE
 
-      - name: Notify on failure
-        if: failure()
-        env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      - name: Commit cache
         run: |
-          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
-            -H "Content-Type: application/json" \
-            -d "{\"chat_id\": \"${TELEGRAM_CHAT_ID}\", \"text\": \"⚠️ <b>ARGUS Crypto Collect</b> упал.\", \"parse_mode\": \"HTML\"}" || true
+          git config user.name "ARGUS"
+          git config user.email "argus@github.com"
+          git add crypto/data/ || true
+          if git diff --staged --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          git commit -m "ARGUS: cache update [skip ci]"
+          for i in 1 2 3; do
+            git pull --rebase --autostash origin main
+            if git push origin main; then
+              echo "Push OK"
+              break
+            fi
+            echo "Retry $i"
+            sleep 5
+          done
