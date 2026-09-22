@@ -1,0 +1,63 @@
+# ============================================================
+# ARGUS - УТРЕННИЙ ОТЧЁТ РЫНКА
+# ------------------------------------------------------------
+# Каждое утро 07:00 UTC (09:00 Калининград).
+# Текст + 6 графиков в Telegram.
+# ============================================================
+
+name: ARGUS Morning Report
+
+on:
+  workflow_dispatch:
+  repository_dispatch:
+    types: [run_morning]
+  schedule:
+    - cron: '0 7 * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: argus-morning-report
+  cancel-in-progress: false
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-morning-${{ hashFiles('crypto/requirements.txt') }}
+          restore-keys: pip-morning-
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r crypto/requirements.txt
+
+      - name: Morning report
+        env:
+          ARGUS_DB_URL: ${{ secrets.ARGUS_DB_URL }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python crypto/report/morning.py
+
+      - name: Notify on failure
+        if: failure()
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            -H "Content-Type: application/json" \
+            -d "{\"chat_id\": \"${TELEGRAM_CHAT_ID}\", \"text\": \"⚠️ Утренний отчёт упал\", \"parse_mode\": \"HTML\"}" || true
