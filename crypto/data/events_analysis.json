@@ -1,0 +1,140 @@
+{
+  "generated_at": "2026-09-22T10:01:13.832964+00:00",
+  "symbols": {
+    "BTCUSDT": {
+      "symbol": "BTCUSDT",
+      "total_events": 12,
+      "new_events": 0,
+      "saved": 0,
+      "by_type": {
+        "rise_1h": 2,
+        "volume_spike": 4,
+        "rise_4h": 6
+      },
+      "recent_events": [
+        {
+          "timestamp": "2026-09-21 11:00:00+00:00",
+          "type": "rise_4h",
+          "change_pct": 3.8191,
+          "magnitude": 3.8191
+        },
+        {
+          "timestamp": "2026-09-21 10:00:00+00:00",
+          "type": "rise_4h",
+          "change_pct": 3.4007,
+          "magnitude": 3.4007
+        },
+        {
+          "timestamp": "2026-09-21 09:00:00+00:00",
+          "type": "rise_4h",
+          "change_pct": 3.7633,
+          "magnitude": 3.7633
+        },
+        {
+          "timestamp": "2026-09-21 09:00:00+00:00",
+          "type": "volume_spike",
+          "change_pct": 1.0845,
+          "magnitude": 3.884
+        },
+        {
+          "timestamp": "2026-09-21 08:00:00+00:00",
+          "type": "rise_1h",
+          "change_pct": 2.47,
+          "magnitude": 2.47
+        },
+        {
+          "timestamp": "2026-09-21 08:00:00+00:00",
+          "type": "volume_spike",
+          "change_pct": 2.47,
+          "magnitude": 5.325
+        },
+        {
+          "timestamp": "2026-09-18 16:00:00+00:00",
+          "type": "rise_4h",
+          "change_pct": 3.5795,
+          "magnitude": 3.5795
+        },
+        {
+          "timestamp": "2026-09-18 15:00:00+00:00",
+          "type": "rise_4h",
+          "change_pct": 3.4071,
+          "magnitude": 3.4071
+        },
+        {
+          "timestamp": "2026-09-18 14:00:00+00:00",
+          "type": "rise_4h",
+          "change_pct": 3.3783,
+          "magnitude": 3.3783
+        },
+        {
+          "timestamp": "2026-09-18 14:00:00+00:00",
+          "type": "volume_spike",
+          "change_pct": 1.0753,
+          "magnitude": 3.381
+        },
+        {
+          "timestamp": "2026-09-18 13:00:00+00:00",
+          "type": "rise_1h",
+          "change_pct": 2.6127,
+          "magnitude": 2.6127
+        },
+        {
+          "timestamp": "2026-09-18 13:00:00+00:00",
+          "type": "volume_spike",
+          "change_pct": 2.6127,
+          "magnitude": 5.521
+        }
+      ]
+    },
+    "ETHUSDT": {
+      "symbol": "ETHUSDT",
+      "total_events": 6,
+      "new_events": 0,
+      "saved": 0,
+      "by_type": {
+        "rise_1h": 2,
+        "volume_spike": 1,
+        "rise_4h": 2,
+        "fall_1h": 1
+      },
+      "recent_events": [
+        {
+          "timestamp": "2026-09-21 00:00:00+00:00",
+          "type": "rise_1h",
+          "change_pct": 1.6891,
+          "magnitude": 1.6891
+        },
+        {
+          "timestamp": "2026-09-20 02:00:00+00:00",
+          "type": "fall_1h",
+          "change_pct": -1.7368,
+          "magnitude": 1.7368
+        },
+        {
+          "timestamp": "2026-09-18 16:00:00+00:00",
+          "type": "rise_4h",
+          "change_pct": 3.7554,
+          "magnitude": 3.7554
+        },
+        {
+          "timestamp": "2026-09-18 15:00:00+00:00",
+          "type": "rise_4h",
+          "change_pct": 3.0234,
+          "magnitude": 3.0234
+        },
+        {
+          "timestamp": "2026-09-18 13:00:00+00:00",
+          "type": "rise_1h",
+          "change_pct": 2.0964,
+          "magnitude": 2.0964
+        },
+        {
+          "timestamp": "2026-09-18 13:00:00+00:00",
+          "type": "volume_spike",
+          "change_pct": 2.0964,
+          "magnitude": 3.914
+        }
+      ]
+    }
+  }
+}
