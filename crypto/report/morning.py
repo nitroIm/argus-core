@@ -1,17 +1,15 @@
 # ============================================================
-# ARGUS - УТРЕННИЙ ОТЧЁТ РЫНКА
+# ARGUS - УТРЕННИЙ ОТЧЁТ РЫНКА v2
 # ------------------------------------------------------------
-# Каждое утро в 07:00 UTC (09:00 Калининград):
-#   1. Читает свечи, паттерны, уровни, новости
-#   2. Генерит 6 графиков (BTC/ETH candles/pattern/markov)
-#   3. Отправляет текст + 6 фото в Telegram
+# v2: все графики в ОДНОМ сообщении (media group).
+#     Раньше: 7 сообщений. Теперь: 2 (текст + альбом).
 # ============================================================
 
 import os
 import sys
 import json
 import requests
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -39,9 +37,6 @@ CHAT_ID = (
 ).strip()
 
 
-# ------------------------------------------------------------
-# HELPERS
-# ------------------------------------------------------------
 def load_json(path, default=None):
     if not path.exists():
         return default if default is not None else {}
@@ -86,26 +81,67 @@ def send_message(text):
         return False
 
 
-def send_photo(path, caption=""):
+def send_media_group(photos):
+    """
+    Отправляет все графики одним альбомом.
+    photos: список (path, caption).
+    Максимум 10.
+    """
     if not BOT_TOKEN or not CHAT_ID:
         return False
-    if not path or not Path(path).exists():
+    if not photos:
         return False
+
+    photos = photos[:10]
+    media = []
+    files = {}
+
+    for i, (path, caption) in enumerate(photos):
+        if not Path(path).exists():
+            continue
+        attach_name = "file" + str(i)
+        media_item = {
+            "type": "photo",
+            "media": "attach://" + attach_name,
+        }
+        if i == 0 and caption:
+            media_item["caption"] = caption[:1000]
+            media_item["parse_mode"] = "HTML"
+        media.append(media_item)
+
+        files[attach_name] = (
+            Path(path).name,
+            open(path, "rb"),
+            "image/png",
+        )
+
+    if not media:
+        return False
+
     try:
         url = "https://api.telegram.org/bot"
-        url += BOT_TOKEN + "/sendPhoto"
-        with open(path, "rb") as f:
-            files = {"photo": f}
-            data = {"chat_id": CHAT_ID}
-            if caption:
-                data["caption"] = caption[:1000]
-                data["parse_mode"] = "HTML"
-            r = requests.post(
-                url, data=data, files=files, timeout=40,
-            )
-        return r.status_code == 200
+        url += BOT_TOKEN + "/sendMediaGroup"
+        data = {
+            "chat_id": CHAT_ID,
+            "media": json.dumps(media),
+        }
+        r = requests.post(
+            url, data=data, files=files, timeout=60,
+        )
+
+        for f in files.values():
+            try:
+                f[1].close()
+            except Exception:
+                pass
+
+        if r.status_code == 200:
+            print("album sent: " + str(len(media)) + " photos")
+            return True
+        print("album err: " + r.text[:200])
+        return False
     except Exception as e:
-        print("photo: " + str(e))
+        print("album: " + str(e))
         return False
 
 
@@ -138,9 +174,6 @@ def fetch_candles(symbol, limit=100):
         return []
 
 
-# ------------------------------------------------------------
-# ТЕКСТ ОТЧЁТА
-# ------------------------------------------------------------
 def build_report_text():
     now = datetime.now(timezone.utc)
     lines = []
@@ -153,7 +186,7 @@ def build_report_text():
     corr = load_json(DATA_DIR / "correlations.json")
     sentiment = load_json(DATA_DIR / "news_sentiment.json")
 
-    # --- Цены и уровни ---
+    # Цены и уровни
     lines.append("💰 Цены и уровни")
     if levels and levels.get("symbols"):
         for sym, d in levels["symbols"].items():
@@ -178,7 +211,7 @@ def build_report_text():
         lines.append("нет данных")
     lines.append("")
 
-    # --- Паттерны ---
+    # Паттерны
     lines.append("🧩 Паттерны")
     if patterns and patterns.get("symbols"):
         for sym, d in patterns["symbols"].items():
@@ -188,9 +221,7 @@ def build_report_text():
             p10 = mk.get("p_1_given_0", 0)
             p11 = mk.get("p_1_given_1", 0)
             lines.append(name + ":")
-            lines.append(
-                "  " + format(up, ".0f") + "% up"
-            )
+            lines.append("  " + format(up, ".0f") + "% up")
             lines.append(
                 "  P(1|0)=" + format(p10, ".2f")
                 + "  P(1|1)=" + format(p11, ".2f")
@@ -199,7 +230,7 @@ def build_report_text():
         lines.append("нет данных")
     lines.append("")
 
-    # --- Сценарий ---
+    # Сценарий
     lines.append("🎯 Сценарий на день")
     if patterns and patterns.get("symbols"):
         for sym, d in patterns["symbols"].items():
@@ -215,7 +246,7 @@ def build_report_text():
             lines.append(name + ": " + mood)
     lines.append("")
 
-    # --- Закономерности ---
+    # Закономерности
     if corr and corr.get("symbols"):
         rules = []
         for sym, d in corr["symbols"].items():
@@ -239,7 +270,7 @@ def build_report_text():
                 lines.append(line)
             lines.append("")
 
-    # --- Новости ---
+    # Новости
     if sentiment and sentiment.get("total_news", 0) > 0:
         lines.append("📰 Новости")
         lines.append("  Всего: " + str(sentiment.get("total_news", 0)))
@@ -265,23 +296,20 @@ def build_report_text():
                 lines.append("   - " + t)
             lines.append("")
 
-    lines.append("📊 Графики ниже")
+    lines.append("📊 Графики ниже одним альбомом")
 
     return "\n".join(lines)
 
 
-# ------------------------------------------------------------
-# MAIN
-# ------------------------------------------------------------
 def main():
-    print("Morning report - start")
+    print("Morning report v2 - start")
 
     # 1. Текст
     text = build_report_text()
     send_message(text)
     print("text sent")
 
-    # 2. Данные для графиков
+    # 2. Собираем все графики
     levels = load_json(DATA_DIR / "levels_analysis.json")
     patterns = load_json(DATA_DIR / "patterns_analysis.json")
 
@@ -289,6 +317,8 @@ def main():
         ("BTCUSDT", "BTC", "btc"),
         ("ETHUSDT", "ETH", "eth"),
     ]
+
+    photos = []
 
     for symbol, name, prefix in pairs:
         print("--- " + symbol)
@@ -306,15 +336,7 @@ def main():
                 output_path=str(path),
                 title=name,
             )
-
-            # Caption
-            first = candles[0]["close"]
-            last = candles[-1]["close"]
-            ch = (last - first) / first * 100
-            cap = "📊 " + name + " - 100h свечи\n"
-            cap += fmt_price(last) + " "
-            cap += "(" + format(ch, "+.2f") + "%)"
-            send_photo(path, cap)
+            photos.append((str(path), ""))
 
         # Паттерн
         sym_p = patterns.get("symbols", {}).get(symbol, {})
@@ -322,23 +344,23 @@ def main():
         if binary:
             path = TMP_DIR / (prefix + "_pattern.png")
             plot_pattern(symbol, binary, output_path=str(path))
-            up = sym_p.get("up_count", 0)
-            dn = sym_p.get("down_count", 0)
-            cap = "🧩 " + name + " - 50h pattern\n"
-            cap += "up " + str(up) + " / down " + str(dn)
-            send_photo(path, cap)
+            photos.append((str(path), ""))
 
         # Markov
         mk = sym_p.get("markov", {})
         if mk:
             path = TMP_DIR / (prefix + "_markov.png")
             plot_markov(symbol, mk, output_path=str(path))
-            p10 = mk.get("p_1_given_0", 0)
-            p11 = mk.get("p_1_given_1", 0)
-            cap = "🧠 " + name + " - Markov\n"
-            cap += "P(1|0)=" + format(p10, ".2f")
-            cap += "  P(1|1)=" + format(p11, ".2f")
-            send_photo(path, cap)
+            photos.append((str(path), ""))
+
+    # 3. Отправляем альбомом
+    if photos:
+        first_cap = "📊 Графики: BTC/ETH\nсвечи, паттерны, Markov"
+        photos_with_cap = [(photos[0][0], first_cap)] + photos[1:]
+        ok = send_media_group(photos_with_cap)
+        print("album: " + str(ok))
+    else:
+        print("no charts")
 
     close_connection()
     print("Morning report - done")
