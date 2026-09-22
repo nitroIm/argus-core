@@ -1,7 +1,9 @@
 # ============================================================
 # ARGUS - COLLECT
 # ------------------------------------------------------------
-# v2: коммитит crypto/data/coingecko_cache.json
+# v3: общая очередь argus-crypto-pipeline
+#     git pull -X theirs
+# v2: коммит coingecko_cache
 # ============================================================
 
 name: ARGUS Crypto Collect
@@ -20,13 +22,13 @@ permissions:
   contents: write
 
 concurrency:
-  group: argus-crypto-collect
+  group: argus-crypto-pipeline
   cancel-in-progress: false
 
 jobs:
   collect:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
 
     steps:
       - uses: actions/checkout@v4
@@ -39,7 +41,8 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/pip
-          key: pip-crypto-${{ hashFiles('crypto/requirements.txt') }}
+          key: >-
+            pip-crypto-${{ hashFiles('crypto/requirements.txt') }}
           restore-keys: pip-crypto-
 
       - name: Install deps
@@ -47,15 +50,20 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r crypto/requirements.txt
 
-      - name: Run pipeline
+      - name: Run collect
         env:
-          ARGUS_DB_URL: ${{ secrets.ARGUS_DB_URL }}
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          ARGUS_DB_URL: >-
+            ${{ secrets.ARGUS_DB_URL }}
+          TELEGRAM_BOT_TOKEN: >-
+            ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: >-
+            ${{ secrets.TELEGRAM_CHAT_ID }}
+          MODE: >-
+            ${{ github.event.inputs.mode
+             || 'incremental' }}
         run: |
-          MODE="${{ github.event.inputs.mode || 'incremental' }}"
-          echo "Mode: $MODE"
-          python crypto/collect/pipeline.py --mode=$MODE
+          python crypto/collect/pipeline.py \
+            --mode="${MODE}"
 
       - name: Commit cache
         run: |
@@ -66,9 +74,10 @@ jobs:
             echo "No changes"
             exit 0
           fi
-          git commit -m "ARGUS: cache update [skip ci]"
+          git commit -m "ARGUS: collect cache [skip ci]"
           for i in 1 2 3; do
-            git pull --rebase --autostash origin main
+            git pull --rebase -X theirs \
+              --autostash origin main || true
             if git push origin main; then
               echo "Push OK"
               break
@@ -76,3 +85,18 @@ jobs:
             echo "Retry $i"
             sleep 5
           done
+
+      - name: Notify on failure
+        if: failure()
+        env:
+          TELEGRAM_BOT_TOKEN: >-
+            ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: >-
+            ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          curl -s -X POST \
+            "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            -H "Content-Type: application/json" \
+            -d "{\"chat_id\": \"${TELEGRAM_CHAT_ID}\", \
+                 \"text\": \"Collect упал\", \
+                 \"parse_mode\": \"HTML\"}" || true
