@@ -2,7 +2,7 @@
 # ARGUS - DETECT
 # ------------------------------------------------------------
 # v2: общая очередь argus-crypto-pipeline
-#     gitX theirs
+#     git pull -X theirs
 # ============================================================
 
 name: ARGUS Crypto Detect
@@ -52,7 +52,7 @@ jobs:
             ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: >-
             ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: python crypto/detect/runner.py
+        run: python crypto/detect/anomaly.py
 
       - name: Commit JSON
         run: |
