@@ -1,6 +1,7 @@
 # ============================================================
-# ARGUS - УТРЕННИЙ ОТЧЁТ v4.1
+# ARGUS - УТРЕННИЙ ОТЧЁТ v5
 # ------------------------------------------------------------
+# v5: + торговые сетапы с рисками (R:R, стоп, цель)
 # v4: + spot цена (актуальная, не от 1h свечи)
 # ============================================================
 
@@ -28,6 +29,10 @@ from report.charts import plot_rsi
 from report.charts import plot_funding
 from report.charts import plot_oi
 from report.charts import compute_rsi
+from report.risk import compute_atr
+from report.risk import compute_rsi as risk_rsi
+from report.risk import build_setup
+from report.risk import fmt_setup
 
 BOT_TOKEN = (
     os.getenv("TELEGRAM_BOT_TOKEN")
@@ -39,7 +44,6 @@ CHAT_ID = (
     or ""
 ).strip()
 
-# Биржи для spot (fallback)
 SPOT_SOURCES = [
     {
         "name": "MEXC",
@@ -66,7 +70,6 @@ SPOT_SOURCES = [
 
 
 def fetch_spot(symbol):
-    """Текущая spot цена через fallback бирж."""
     for src in SPOT_SOURCES:
         try:
             url = src["url"]
@@ -301,22 +304,6 @@ def fetch_oi(symbol, limit=100):
         return []
 
 
-def compute_atr(candles, period=14):
-    if len(candles) < period + 1:
-        return None
-    trs = []
-    for i in range(1, len(candles)):
-        h = candles[i]["high"]
-        l = candles[i]["low"]
-        pc = candles[i - 1]["close"]
-        tr = max(h - l, abs(h - pc), abs(l - pc))
-        trs.append(tr)
-    if len(trs) < period:
-        return None
-    atr = sum(trs[-period:]) / period
-    return round(atr, 4)
-
-
 def build_scenario(name, patterns, levels):
     p = patterns.get("symbols", {}).get(
         name + "USDT", {}
@@ -434,6 +421,8 @@ def build_report_text():
         ("ETHUSDT", "ETH", "ETH"),
     ]
 
+    setups = []
+
     for symbol, name, _ in pairs:
         candles = fetch_candles(symbol, 200)
         if not candles:
@@ -470,8 +459,34 @@ def build_report_text():
 
         scenario = build_scenario(name, patterns, levels)
         lines.append("  🎯 Сценарий: " + scenario)
+
+        # Торговый сетап
+        closes = [c["close"] for c in candles]
+        rsi_val = risk_rsi(closes, 14)
+        setup = build_setup(
+            symbol, name, candles, levels,
+            rsi_val, funding_data,
+        )
+        if setup:
+            setups.append(setup)
+
         lines.append("")
 
+    # --- Торговые сетапы ---
+    long_setups = [
+        s for s in setups
+        if s.get("action") == "LONG"
+    ]
+
+    if long_setups:
+        lines.append("")
+        lines.append("💼 <b>Торговые возможности</b>")
+        lines.append("")
+        for s in long_setups:
+            lines.append(fmt_setup(s))
+            lines.append("")
+
+    # Закономерности
     if corr and corr.get("symbols"):
         rules = []
         for sym, d in corr["symbols"].items():
@@ -509,7 +524,7 @@ def build_report_text():
 
 
 def main():
-    print("Morning report v4.1 - start")
+    print("Morning report v5 - start")
 
     text = build_report_text()
     print("text len: " + str(len(text)))
