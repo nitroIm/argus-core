@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-09-23T08:53:44.831854+00:00",
+  "generated_at": "2026-09-23T09:10:36.637597+00:00",
   "symbols": {
     "BTCUSDT": {
       "symbol": "BTCUSDT",
-      "total_events": 12,
-      "new_events": 0,
-      "saved": 0,
+      "total_events": 15,
+      "new_events": 3,
+      "saved": 3,
       "by_type": {
+        "volume_spike": 7,
         "rise_1h": 2,
-        "volume_spike": 4,
         "rise_4h": 6
       },
       "recent_events": [
@@ -34,7 +34,7 @@
           "timestamp": "2026-09-21 09:00:00+00:00",
           "type": "volume_spike",
           "change_pct": 1.0845,
-          "magnitude": 3.884
+          "magnitude": 5.324
         },
         {
           "timestamp": "2026-09-21 08:00:00+00:00",
@@ -46,7 +46,19 @@
           "timestamp": "2026-09-21 08:00:00+00:00",
           "type": "volume_spike",
           "change_pct": 2.47,
-          "magnitude": 5.325
+          "magnitude": 10.198
+        },
+        {
+          "timestamp": "2026-09-21 01:00:00+00:00",
+          "type": "volume_spike",
+          "change_pct": -0.7384,
+          "magnitude": 3.332
+        },
+        {
+          "timestamp": "2026-09-20 02:00:00+00:00",
+          "type": "volume_spike",
+          "change_pct": -0.9494,
+          "magnitude": 4.902
         },
         {
           "timestamp": "2026-09-18 16:00:00+00:00",
@@ -70,7 +82,7 @@
           "timestamp": "2026-09-18 14:00:00+00:00",
           "type": "volume_spike",
           "change_pct": 1.0753,
-          "magnitude": 3.381
+          "magnitude": 4.213
         },
         {
           "timestamp": "2026-09-18 13:00:00+00:00",
@@ -82,22 +94,40 @@
           "timestamp": "2026-09-18 13:00:00+00:00",
           "type": "volume_spike",
           "change_pct": 2.6127,
-          "magnitude": 5.521
+          "magnitude": 8.627
+        },
+        {
+          "timestamp": "2026-09-17 12:00:00+00:00",
+          "type": "volume_spike",
+          "change_pct": 0.33,
+          "magnitude": 3.385
         }
       ]
     },
     "ETHUSDT": {
       "symbol": "ETHUSDT",
-      "total_events": 6,
-      "new_events": 0,
-      "saved": 0,
+      "total_events": 13,
+      "new_events": 7,
+      "saved": 7,
       "by_type": {
+        "volume_spike": 8,
         "rise_1h": 2,
-        "volume_spike": 1,
         "rise_4h": 2,
         "fall_1h": 1
       },
       "recent_events": [
+        {
+          "timestamp": "2026-09-21 09:00:00+00:00",
+          "type": "volume_spike",
+          "change_pct": 0.9128,
+          "magnitude": 3.525
+        },
+        {
+          "timestamp": "2026-09-21 08:00:00+00:00",
+          "type": "volume_spike",
+          "change_pct": 1.288,
+          "magnitude": 3.395
+        },
         {
           "timestamp": "2026-09-21 00:00:00+00:00",
           "type": "rise_1h",
@@ -105,10 +135,28 @@
           "magnitude": 1.6891
         },
         {
+          "timestamp": "2026-09-21 00:00:00+00:00",
+          "type": "volume_spike",
+          "change_pct": 1.6891,
+          "magnitude": 4.386
+        },
+        {
+          "timestamp": "2026-09-20 16:00:00+00:00",
+          "type": "volume_spike",
+          "change_pct": 1.0354,
+          "magnitude": 3.289
+        },
+        {
           "timestamp": "2026-09-20 02:00:00+00:00",
           "type": "fall_1h",
           "change_pct": -1.7368,
           "magnitude": 1.7368
+        },
+        {
+          "timestamp": "2026-09-20 02:00:00+00:00",
+          "type": "volume_spike",
+          "change_pct": -1.7368,
+          "magnitude": 4.545
         },
         {
           "timestamp": "2026-09-18 16:00:00+00:00",
@@ -123,6 +171,12 @@
           "magnitude": 3.0234
         },
         {
+          "timestamp": "2026-09-18 14:00:00+00:00",
+          "type": "volume_spike",
+          "change_pct": 1.0799,
+          "magnitude": 3.333
+        },
+        {
           "timestamp": "2026-09-18 13:00:00+00:00",
           "type": "rise_1h",
           "change_pct": 2.0964,
@@ -132,7 +186,13 @@
           "timestamp": "2026-09-18 13:00:00+00:00",
           "type": "volume_spike",
           "change_pct": 2.0964,
-          "magnitude": 3.914
+          "magnitude": 5.147
+        },
+        {
+          "timestamp": "2026-09-17 12:00:00+00:00",
+          "type": "volume_spike",
+          "change_pct": 0.7168,
+          "magnitude": 4.495
         }
       ]
     }
