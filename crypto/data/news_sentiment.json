@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-09-23T14:22:50.852551+00:00",
+  "generated_at": "2026-09-23T14:35:41.452691+00:00",
   "total_news": 128,
-  "avg_sentiment": 0.071,
+  "avg_sentiment": 0.075,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
   "bullish_count": 27,
   "bearish_count": 16,
@@ -58,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-09-23T14:22:50.729592+00:00",
+      "collected_at": "2026-09-23T14:35:41.327523+00:00",
       "effective_weight": 1.8,
       "title_original": "Raiffeisen подготовила запуск криптосервисов в 11 странах Европы",
       "cross_check": 1
@@ -74,7 +74,7 @@
       "bear_weight": 0.0,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-09-23T14:22:49.762177+00:00",
+      "collected_at": "2026-09-23T14:35:40.228386+00:00",
       "effective_weight": 1.5,
       "title_original": "Bitcoin Price Analysis: BTC Faces First Major Test After 13% Weekly Rally",
       "cross_check": 4
@@ -90,7 +90,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-09-23T14:22:49.284361+00:00",
+      "collected_at": "2026-09-23T14:35:39.812635+00:00",
       "effective_weight": 1.3,
       "title_original": "MoonPay to buy North Capital in all-stock deal worth over $60M",
       "cross_check": 1
@@ -106,7 +106,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-09-23T14:22:49.284524+00:00",
+      "collected_at": "2026-09-23T14:35:39.812818+00:00",
       "effective_weight": 1.3,
       "title_original": "CFTC chair pushes tokenization as SEC opens door to onchain stocks",
       "cross_check": 1
@@ -122,29 +122,13 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-09-23T14:22:50.730040+00:00",
+      "collected_at": "2026-09-23T14:35:41.328035+00:00",
       "effective_weight": 1.2,
       "title_original": "Приток в биткоин-ETF превысил $1,7 млрд за два дня",
       "cross_check": 1
     }
   ],
   "top_bearish": [
-    {
-      "title": "Altcoin demand meets $18B threat as flows move into RWA perps as just 19% of traders keep alts",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-09-23T13:30:50+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.0,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-09-23T14:22:49.653922+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Altcoin demand meets $18B threat as flows move into RWA perps as just 19% of traders keep alts",
-      "cross_check": 1
-    },
     {
       "title": "CFTC предупредила о рисках манипуляций в прогнозных контрактах",
       "source": "ForkLog",
@@ -156,7 +140,7 @@
       "bear_weight": 1.2,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-09-23T14:22:50.730086+00:00",
+      "collected_at": "2026-09-23T14:35:41.328085+00:00",
       "effective_weight": 1.2,
       "title_original": "CFTC предупредила о рисках манипуляций в прогнозных контрактах",
       "cross_check": 1
@@ -172,7 +156,7 @@
       "bear_weight": 1.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-09-23T14:22:49.284896+00:00",
+      "collected_at": "2026-09-23T14:35:39.813218+00:00",
       "effective_weight": 1.04,
       "title_original": "Malicious iOS app FomoPeek linked to $580K crypto theft, SlowMist says",
       "cross_check": 1
@@ -188,7 +172,7 @@
       "bear_weight": 1.2,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-09-23T14:22:49.285042+00:00",
+      "collected_at": "2026-09-23T14:35:39.813376+00:00",
       "effective_weight": 1.04,
       "title_original": "CFTC issues warning over risky prediction market ‘mention’ contracts",
       "cross_check": 2
@@ -204,10 +188,26 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-09-23T14:22:49.285193+00:00",
+      "collected_at": "2026-09-23T14:35:39.813543+00:00",
       "effective_weight": 1.04,
       "title_original": "Canada’s six largest banks explore tokenized Canadian dollar deposits",
       "cross_check": 1
+    },
+    {
+      "title": "Bitcoin price seeks $86K as new support after oil dips below $90",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-09-22T16:01:55+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.0,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-09-23T14:35:39.813640+00:00",
+      "effective_weight": 1.04,
+      "title_original": "Bitcoin price seeks $86K as new support after oil dips below $90",
+      "cross_check": 2
     }
   ]
 }
