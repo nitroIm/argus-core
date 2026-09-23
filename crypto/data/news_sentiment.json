@@ -1,0 +1,213 @@
+{
+  "generated_at": "2026-09-23T12:24:42.735876+00:00",
+  "total_news": 128,
+  "avg_sentiment": -0.023,
+  "mood": "🟡 НЕЙТРАЛЬНОЕ",
+  "bullish_count": 25,
+  "bearish_count": 25,
+  "neutral_count": 78,
+  "fake_count": 0,
+  "cross_confirmed": 8,
+  "single_source": 97,
+  "by_source": {
+    "Cointelegraph": {
+      "total": 25,
+      "bull": 4,
+      "bear": 11
+    },
+    "Decrypt": {
+      "total": 25,
+      "bull": 3,
+      "bear": 4
+    },
+    "Bitcoin.com": {
+      "total": 10,
+      "bull": 1,
+      "bear": 1
+    },
+    "CryptoSlate": {
+      "total": 10,
+      "bull": 1,
+      "bear": 4
+    },
+    "CryptoPotato": {
+      "total": 25,
+      "bull": 13,
+      "bear": 2
+    },
+    "Bitcoinist": {
+      "total": 8,
+      "bull": 1,
+      "bear": 0
+    },
+    "ForkLog": {
+      "total": 25,
+      "bull": 2,
+      "bear": 3
+    }
+  },
+  "top_bullish": [
+    {
+      "title": "Етерей (ETH) 15% еженедельно и сейчас входит в «интересную зону»:",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-09-23T11:44:37+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1,
+      "bear_weight": 0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-09-23T12:24:01.535125+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Ethereum (ETH) Soars 15% Weekly and Now Enters an ‘Interesting Zone:’ Analyst",
+      "cross_check": 1
+    },
+    {
+      "title": "Рынок бука биткоина \" подтвержден \", но 90 000 000 долл. США представляют собой риск, связанный с получением прибыли: анализ",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-09-23T10:05:10+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1,
+      "bear_weight": 0,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-09-23T12:22:31.174730+00:00",
+      "effective_weight": 1.3,
+      "title_original": "Bitcoin bull market ‘confirmed’ but $90K presents profit-taking risk: Analysis",
+      "cross_check": 2
+    },
+    {
+      "title": "Биткоинские ETF принимают в 1,7B за 2 дня в качестве базы для расчета расходов владельца BTC",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-09-23T07:25:05+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1,
+      "bear_weight": 0,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-09-23T12:22:36.206179+00:00",
+      "effective_weight": 1.3,
+      "title_original": "Bitcoin ETFs take in $1.7B in 2 days as BTC tops holder cost basis",
+      "cross_check": 2
+    },
+    {
+      "title": "Приток в биткоин-ETF превысил $1,7 млрд за два дня",
+      "source": "ForkLog",
+      "source_weight": 1.2,
+      "lang": "ru",
+      "pub_date": "2026-09-23T09:02:47+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1,
+      "bear_weight": 0,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-09-23T12:24:42.610539+00:00",
+      "effective_weight": 1.2,
+      "title_original": "Приток в биткоин-ETF превысил $1,7 млрд за два дня",
+      "cross_check": 1
+    },
+    {
+      "title": "В BlackRock назвали развитие ИИ драйвером роста крипторынка",
+      "source": "ForkLog",
+      "source_weight": 1.2,
+      "lang": "ru",
+      "pub_date": "2026-09-23T07:34:24+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1,
+      "bear_weight": 0,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-09-23T12:24:42.610738+00:00",
+      "effective_weight": 1.2,
+      "title_original": "В BlackRock назвали развитие ИИ драйвером роста крипторынка",
+      "cross_check": 1
+    }
+  ],
+  "top_bearish": [
+    {
+      "title": "Европа\" - это центральные банки, которые хотят списать этот резерв конюшни.",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-09-23T11:30:31+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0,
+      "bear_weight": 1,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-09-23T12:23:50.335070+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Europe’s central banks want to scrap this stablecoin reserve safeguard",
+      "cross_check": 2
+    },
+    {
+      "title": "Стулья ККДТ подталкивают к символизации, поскольку КЦБ открывает двери для цепных запасов",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-09-23T10:06:55+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0,
+      "bear_weight": 1,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-09-23T12:22:25.885862+00:00",
+      "effective_weight": 1.3,
+      "title_original": "CFTC chair pushes tokenization as SEC opens door to onchain stocks",
+      "cross_check": 1
+    },
+    {
+      "title": "CFTC предупредила о рисках манипуляций в прогнозных контрактах",
+      "source": "ForkLog",
+      "source_weight": 1.2,
+      "lang": "ru",
+      "pub_date": "2026-09-23T09:00:00+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0,
+      "bear_weight": 1,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-09-23T12:24:42.610582+00:00",
+      "effective_weight": 1.2,
+      "title_original": "CFTC предупредила о рисках манипуляций в прогнозных контрактах",
+      "cross_check": 1
+    },
+    {
+      "title": "Alpenglow вышел на этап активации в тестнете Solana",
+      "source": "ForkLog",
+      "source_weight": 1.2,
+      "lang": "ru",
+      "pub_date": "2026-09-23T08:22:08+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0,
+      "bear_weight": 1,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-09-23T12:24:42.610659+00:00",
+      "effective_weight": 1.2,
+      "title_original": "Alpenglow вышел на этап активации в тестнете Solana",
+      "cross_check": 1
+    },
+    {
+      "title": "SlowMist связала приложение FomoPeek с кражей криптоактивов",
+      "source": "ForkLog",
+      "source_weight": 1.2,
+      "lang": "ru",
+      "pub_date": "2026-09-23T07:00:00+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0,
+      "bear_weight": 1,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-09-23T12:24:42.610778+00:00",
+      "effective_weight": 1.2,
+      "title_original": "SlowMist связала приложение FomoPeek с кражей криптоактивов",
+      "cross_check": 1
+    }
+  ]
+}
