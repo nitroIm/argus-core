@@ -1,13 +1,13 @@
 # ============================================================
-# ARGUS - SIMULATOR 01 v1 [PRODUCTION]
+# ARGUS - SIMULATOR 01 v2 [PRODUCTION]
 # ------------------------------------------------------------
-# Виртуальный LONG-трейдер.
-# Сигнал: RSI < 30 + цена у поддержки.
-# Баланс: $50. Позиция: $10.
-# Всё в JSON. БЕЗ БД.
-# ------------------------------------------------------------
-# Требования:
-#   pip install requests
+# v2: сигнал из нескольких источников:
+#     - уровни (support)
+#     - RSI < 30
+#     - Markov P(1|0) > 0.55
+#     - correlations (N >= 5)
+#     Нужно 2+ совпадения.
+# v1: только уровни
 # ============================================================
 
 import os
@@ -16,9 +16,9 @@ import json
 import logging
 import requests
 from datetime import datetime, timezone
+from datetime import timedelta
 from pathlib import Path
 
-# --- Пути ---
 SCRIPT_DIR = Path(__file__).resolve().parent
 MEXC_DIR = SCRIPT_DIR.parent
 CRYPTO_ROOT = MEXC_DIR.parent
@@ -30,8 +30,9 @@ sys.path.insert(0, str(MEXC_DIR))
 sys.path.insert(0, str(CRYPTO_ROOT))
 
 from client import MexcClient
+from db import get_connection
+from db import close_connection
 
-# --- Логгер ---
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
@@ -39,12 +40,10 @@ logging.basicConfig(
 )
 log = logging.getLogger("sim01")
 
-# --- Файлы состояния ---
 PORTFOLIO_FILE = STATE_DIR / "portfolio.json"
 POSITIONS_FILE = STATE_DIR / "positions.json"
 TRADES_FILE = STATE_DIR / "trades.json"
 
-# --- Константы ---
 START_BALANCE = 50.0
 POSITION_SIZE = 10.0
 MAX_POSITIONS = 1
@@ -53,7 +52,6 @@ SLIPPAGE = 0.0005
 
 SYMBOLS = ["BTCUSDT", "ETHUSDT"]
 
-# --- Telegram ---
 BOT_TOKEN = (
     os.getenv("TELEGRAM_BOT_TOKEN")
     or os.getenv("BOT_TOKEN")
@@ -146,10 +144,9 @@ def save_trades(trades):
 
 
 # ============================================================
-# MARKET DATA
+# MARKET
 # ============================================================
 def get_price(client, symbol):
-    """Spot цена с MEXC."""
     data = client.public_get(
         "/api/v3/ticker/price",
         {"symbol": symbol},
@@ -160,89 +157,213 @@ def get_price(client, symbol):
 
 
 # ============================================================
-# SIGNAL (из наших analysis JSON)
+# ANALYSIS
 # ============================================================
 def load_analysis(name):
-    path = DATA_DIR / name
-    return load_json(path, {})
+    return load_json(DATA_DIR / name, {})
 
 
-def get_rsi_from_analysis(symbol):
-    """
-    RSI из patterns_analysis (последнее).
-    Если нет — None.
-    """
+def get_candles(symbol, limit=200):
+    try:
+        with get_connection() as conn:
+            with conn.cursor() as cur:
+                sql = (
+                    "SELECT timestamp, open, high, "
+                    "low, close, volume FROM candles "
+                    "WHERE symbol = %s "
+                    "AND timeframe = '1h' "
+                    "ORDER BY timestamp DESC LIMIT %s"
+                )
+                cur.execute(sql, (symbol, limit))
+                rows = list(reversed(cur.fetchall()))
+                out = []
+                for r in rows:
+                    out.append({
+                        "timestamp": r[0],
+                        "open": float(r[1]),
+                        "high": float(r[2]),
+                        "low": float(r[3]),
+                        "close": float(r[4]),
+                        "volume": float(r[5]),
+                    })
+                return out
+    except Exception as e:
+        log.warning("candles %s: %s", symbol, e)
+        return []
+
+
+def compute_rsi(closes, period=14):
+    if len(closes) < period + 1:
+        return None
+    gains = []
+    losses = []
+    for i in range(1, len(closes)):
+        diff = closes[i] - closes[i - 1]
+        gains.append(max(0, diff))
+        losses.append(max(0, -diff))
+
+    avg_gain = sum(gains[:period]) / period
+    avg_loss = sum(losses[:period]) / period
+
+    for i in range(period, len(gains)):
+        avg_gain = (
+            avg_gain * (period - 1) + gains[i]
+        ) / period
+        avg_loss = (
+            avg_loss * (period - 1) + losses[i]
+        ) / period
+
+    if avg_loss == 0:
+        return 100.0
+    rs = avg_gain / avg_loss
+    return round(100 - 100 / (1 + rs), 2)
+
+
+def compute_atr(candles, period=14):
+    if len(candles) < period + 1:
+        return None
+    trs = []
+    for i in range(1, len(candles)):
+        h = candles[i]["high"]
+        l = candles[i]["low"]
+        pc = candles[i - 1]["close"]
+        tr = max(h - l, abs(h - pc), abs(l - pc))
+        trs.append(tr)
+    if len(trs) < period:
+        return None
+    return round(sum(trs[-period:]) / period, 4)
+
+
+def get_support(symbol, price):
+    lv = load_analysis("levels_analysis.json")
+    sym = lv.get("symbols", {}).get(symbol, {})
+    supports = sym.get("supports", [])
+    below = [
+        s for s in supports if s["price"] < price
+    ]
+    if not below:
+        return None
+    return min(
+        below, key=lambda x: price - x["price"],
+    )
+
+
+def get_resistance(symbol, price):
+    lv = load_analysis("levels_analysis.json")
+    sym = lv.get("symbols", {}).get(symbol, {})
+    resistances = sym.get("resistances", [])
+    above = [
+        r for r in resistances if r["price"] > price
+    ]
+    if not above:
+        return None
+    return min(
+        above, key=lambda x: x["price"] - price,
+    )
+
+
+def get_markov_p10(symbol):
+    """P(1|0) — вероятность роста после падения."""
     p = load_analysis("patterns_analysis.json")
     sym = p.get("symbols", {}).get(symbol, {})
-    # RSI считается в отчёте, не в patterns
-    # Пока пропустим — вернём None
-    return None
+    mk = sym.get("markov", {})
+    return mk.get("p_1_given_0", 0)
 
 
-def get_levels(symbol):
-    levels = load_analysis("levels_analysis.json")
-    sym = levels.get("symbols", {}).get(symbol, {})
-    return {
-        "supports": sym.get("supports", []),
-        "resistances": sym.get("resistances", []),
-        "price": sym.get("current_price", 0),
-    }
+def get_rules(symbol):
+    """Правила из correlations."""
+    c = load_analysis("correlations.json")
+    sym = c.get("symbols", {}).get(symbol, {})
+    return sym.get("rules", [])
 
 
 def check_signal(client, symbol):
     """
-    Проверяет вход.
-    Сейчас упрощённо:
-      - цена у поддержки (< 1%)
-      - есть сопротивление > 2%
-    Возвращает dict или None.
+    Комбинированный сигнал.
+    Нужно 2+ совпадения.
     """
     price = get_price(client, symbol)
     if not price:
         return None
 
-    lvl = get_levels(symbol)
-    supports = lvl["supports"]
-    resistances = lvl["resistances"]
-
-    if not supports or not resistances:
+    candles = get_candles(symbol, 100)
+    if len(candles) < 20:
         return None
 
-    # Ближайшая поддержка ниже цены
-    sup_below = [
-        s for s in supports if s["price"] < price
+    closes = [c["close"] for c in candles]
+    rsi = compute_rsi(closes, 14)
+    atr = compute_atr(candles, 14)
+
+    if not rsi or not atr:
+        return None
+
+    # --- Голосование ---
+    votes = []
+    reasons = []
+
+    # 1. RSI перепродан
+    if rsi < 30:
+        votes.append("RSI")
+        reasons.append("RSI " + format(rsi, ".1f"))
+
+    # 2. Markov
+    p10 = get_markov_p10(symbol)
+    if p10 > 0.55:
+        votes.append("Markov")
+        reasons.append("P(1|0)=" + format(p10, ".2f"))
+
+    # 3. Уровни
+    sup = get_support(symbol, price)
+    res = get_resistance(symbol, price)
+
+    if sup and res:
+        gap = (price - sup["price"]) / price * 100
+        if gap <= 1.5:
+            votes.append("Level")
+            reasons.append(
+                "у поддержки "
+                + format(sup["price"], ".0f")
+            )
+
+    # 4. Correlations
+    rules = get_rules(symbol)
+    bull_rules = [
+        r for r in rules
+        if r.get("direction") == "up"
+        and r.get("samples", 0) >= 5
+        and r.get("confidence", 0) >= 0.6
     ]
-    if not sup_below:
-        return None
-    sup = min(
-        sup_below,
-        key=lambda x: price - x["price"],
-    )
+    if bull_rules:
+        votes.append("Rules")
+        reasons.append(
+            str(len(bull_rules)) + " правил"
+        )
 
-    # Ближайшее сопротивление выше
-    res_above = [
-        r for r in resistances if r["price"] > price
-    ]
-    if not res_above:
-        return None
-    res = min(
-        res_above,
-        key=lambda x: x["price"] - price,
-    )
-
-    # Расстояние до поддержки
-    gap_pct = (price - sup["price"]) / price * 100
-    if gap_pct > 1.0:
+    # Нужно 2+ голоса
+    if len(votes) < 2:
         return None
 
-    # Стоп — 0.5% ниже поддержки
-    stop = sup["price"] * 0.995
-    # Цель — сопротивление
-    target = res["price"]
+    # Стоп — по ATR (1.5×)
+    stop = price - atr * 1.5
 
+    # Если есть поддержка — стоп ниже неё
+    if sup:
+        stop_sup = sup["price"] * 0.995
+        stop = min(stop, stop_sup)
+
+    if stop >= price:
+        return None
+
+    # Цель
     risk = price - stop
+    target = price + risk * 2.0
+
+    # Если есть сопротивление ближе — берём его
+    if res and res["price"] < target:
+        target = res["price"]
+
     reward = target - price
-    if risk <= 0 or reward <= 0:
+    if reward <= 0:
         return None
 
     rr = reward / risk
@@ -255,38 +376,37 @@ def check_signal(client, symbol):
         "stop": stop,
         "target": target,
         "rr": round(rr, 2),
-        "support": sup["price"],
-        "resistance": res["price"],
+        "atr": atr,
+        "rsi": rsi,
+        "votes": votes,
+        "reasons": reasons,
+        "p10": p10,
+        "support": sup["price"] if sup else None,
+        "resistance": res["price"] if res else None,
     }
 
 
 # ============================================================
-# EXECUTION (VIRTUAL)
+# EXECUTION
 # ============================================================
 def open_position(signal):
-    """Открывает виртуальную позицию."""
     portfolio = get_portfolio()
     positions = get_positions()
 
-    # Проверка баланса
     if portfolio["balance"] < POSITION_SIZE:
         log.warning("мало баланса")
         return None
 
-    # Уже есть позиция по этому символу?
     for p in positions:
         if p["symbol"] == signal["symbol"]:
             return None
 
-    # Лимит позиций
     if len(positions) >= MAX_POSITIONS:
         return None
 
-    # Вход с slippage (покупаем дороже)
     entry = signal["price"] * (1 + SLIPPAGE)
     fee = POSITION_SIZE * TAKER_FEE
 
-    # Списание с баланса
     portfolio["balance"] -= POSITION_SIZE
 
     size_coins = POSITION_SIZE / entry
@@ -305,39 +425,45 @@ def open_position(signal):
         "target": round(signal["target"], 6),
         "entry_fee": round(fee, 6),
         "rr_planned": signal["rr"],
-        "support": signal["support"],
-        "resistance": signal["resistance"],
+        "rsi_entry": signal["rsi"],
+        "atr_entry": signal["atr"],
+        "markov_p10": signal["p10"],
+        "votes": signal["votes"],
+        "reasons": signal["reasons"],
     }
 
     positions.append(pos)
     save_positions(positions)
     save_json(PORTFOLIO_FILE, portfolio)
 
-    msg = "🟢 ОТКРЫТА LONG\n"
-    msg += signal["symbol"].replace(
-        "USDT", ""
-    ) + "\n"
-    msg += "Вход: $" + format(entry, ".4f") + "\n"
-    msg += "Стоп: $" + format(
-        signal["stop"], ".4f"
-    ) + "\n"
-    msg += "Цель: $" + format(
-        signal["target"], ".4f"
-    ) + "\n"
-    msg += "R:R 1:" + str(signal["rr"]) + "\n"
-    msg += "Размер: $" + str(POSITION_SIZE)
-    notify(msg)
+    lines = []
+    lines.append("🟢 ОТКРЫТА LONG")
+    lines.append(
+        signal["symbol"].replace("USDT", "")
+    )
+    lines.append(
+        "Вход: $" + format(entry, ".4f")
+    )
+    lines.append(
+        "Стоп: $" + format(signal["stop"], ".4f")
+    )
+    lines.append(
+        "Цель: $" + format(signal["target"], ".4f")
+    )
+    lines.append("R:R 1:" + str(signal["rr"]))
+    lines.append(
+        "Причины: " + ", ".join(signal["reasons"])
+    )
+    notify("\n".join(lines))
     log.info("OPEN " + signal["symbol"])
 
     return pos
 
 
 def close_position(pos, exit_price, reason):
-    """Закрывает позицию."""
     portfolio = get_portfolio()
     positions = get_positions()
 
-    # Выход с slippage (продаём дешевле)
     exit_real = exit_price * (1 - SLIPPAGE)
     proceeds = pos["size_coins"] * exit_real
     exit_fee = proceeds * TAKER_FEE
@@ -348,7 +474,6 @@ def close_position(pos, exit_price, reason):
     pnl -= exit_fee
     pnl_pct = pnl / entry_cost * 100
 
-    # Возврат на баланс
     portfolio["balance"] += entry_cost + pnl
     portfolio["realized_pnl"] += pnl
     portfolio["total_trades"] += 1
@@ -357,14 +482,12 @@ def close_position(pos, exit_price, reason):
     else:
         portfolio["losses"] += 1
 
-    # Убираем из открытых
     positions = [
         p for p in positions
         if p["id"] != pos["id"]
     ]
     save_positions(positions)
 
-    # В историю
     trades = get_trades()
     trade = dict(pos)
     trade["exit_price"] = round(exit_real, 6)
@@ -380,17 +503,22 @@ def close_position(pos, exit_price, reason):
     save_json(PORTFOLIO_FILE, portfolio)
 
     emoji = "✅" if pnl > 0 else "❌"
-    msg = emoji + " ЗАКРЫТА\n"
-    msg += pos["symbol"].replace(
-        "USDT", ""
-    ) + "\n"
-    msg += "Причина: " + reason + "\n"
-    msg += "PnL: $" + format(pnl, "+.4f")
-    msg += " (" + format(pnl_pct, "+.2f") + "%)\n"
-    msg += "Баланс: $" + format(
-        portfolio["balance"], ".2f"
+    lines = []
+    lines.append(emoji + " ЗАКРЫТА")
+    lines.append(
+        pos["symbol"].replace("USDT", "")
     )
-    notify(msg)
+    lines.append("Причина: " + reason)
+    lines.append(
+        "PnL: $" + format(pnl, "+.4f")
+        + " (" + format(pnl_pct, "+.2f") + "%)"
+    )
+    lines.append(
+        "Баланс: $" + format(
+            portfolio["balance"], ".2f"
+        )
+    )
+    notify("\n".join(lines))
     log.info(
         "CLOSE %s PnL=%.4f (%s)",
         pos["symbol"], pnl, reason,
@@ -398,24 +526,21 @@ def close_position(pos, exit_price, reason):
 
 
 def check_positions(client):
-    """Проверяет стоп/цель открытых позиций."""
     positions = get_positions()
     if not positions:
         return
 
     for pos in list(positions):
-        symbol = pos["symbol"]
-        price = get_price(client, symbol)
+        price = get_price(client, pos["symbol"])
         if not price:
             continue
 
-        stop = pos["stop"]
-        target = pos["target"]
-
-        if price <= stop:
-            close_position(pos, stop, "stop")
-        elif price >= target:
-            close_position(pos, target, "target")
+        if price <= pos["stop"]:
+            close_position(pos, pos["stop"], "stop")
+        elif price >= pos["target"]:
+            close_position(
+                pos, pos["target"], "target",
+            )
 
 
 # ============================================================
@@ -423,24 +548,28 @@ def check_positions(client):
 # ============================================================
 def main():
     log.info("=" * 50)
-    log.info("SIMULATOR 01 v1")
+    log.info("SIMULATOR 01 v2")
     log.info("=" * 50)
 
     client = MexcClient()
 
-    # 1. Проверяем открытые
     check_positions(client)
 
-    # 2. Ищем новые сигналы
     positions = get_positions()
     if len(positions) < MAX_POSITIONS:
         for symbol in SYMBOLS:
             signal = check_signal(client, symbol)
             if signal:
+                log.info(
+                    "сигнал %s: %s",
+                    symbol,
+                    ", ".join(signal["reasons"]),
+                )
                 open_position(signal)
                 break
+            else:
+                log.info("сигнал %s: нет", symbol)
 
-    # 3. Итоги
     portfolio = get_portfolio()
     positions = get_positions()
     trades = get_trades()
@@ -448,12 +577,10 @@ def main():
     log.info("")
     log.info("=== ИТОГИ ===")
     log.info(
-        "Баланс: $%.2f",
-        portfolio["balance"],
+        "Баланс: $%.2f", portfolio["balance"]
     )
     log.info(
-        "PnL: $%+.4f",
-        portfolio["realized_pnl"],
+        "PnL: $%+.4f", portfolio["realized_pnl"]
     )
     log.info(
         "Сделок: %d (%d W / %d L)",
@@ -461,23 +588,19 @@ def main():
         portfolio["wins"],
         portfolio["losses"],
     )
-    log.info(
-        "Открыто: %d", len(positions),
-    )
+    log.info("Открыто: %d", len(positions))
     if trades:
         wins = [
             t for t in trades if t["pnl_usd"] > 0
         ]
         wr = len(wins) / len(trades) * 100
-        avg_pnl = sum(
+        avg = sum(
             t["pnl_usd"] for t in trades
         ) / len(trades)
-        log.info(
-            "Win rate: %.1f%%", wr,
-        )
-        log.info(
-            "Avg PnL: $%+.4f", avg_pnl,
-        )
+        log.info("Win rate: %.1f%%", wr)
+        log.info("Avg PnL: $%+.4f", avg)
+
+    close_connection()
 
 
 if __name__ == "__main__":
