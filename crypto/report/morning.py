@@ -1,10 +1,10 @@
 # ============================================================
-# ARGUS - УТРЕННИЙ ОТЧЁТ РЫНКА v3
+# ARGUS - УТРЕННИЙ ОТЧЁТ РЫНКА v3.1
 # ------------------------------------------------------------
-# v3: + ATR, стоп-лоссы, RSI, funding, OI
+# v3.1: fix — разбивка длинного текста на части
+# v3: + ATR, RSI, funding, OI, стоп-лоссы
 #     + торговые рекомендации
 #     + 10 графиков в альбоме
-# v2: media group
 # ============================================================
 
 import os
@@ -65,23 +65,50 @@ def send_message(text):
     if not BOT_TOKEN or not CHAT_ID:
         print("no token")
         return False
-    try:
-        url = "https://api.telegram.org/bot"
-        url += BOT_TOKEN + "/sendMessage"
-        r = requests.post(
-            url,
-            json={
-                "chat_id": CHAT_ID,
-                "text": text[:4000],
-                "parse_mode": "HTML",
-                "disable_web_page_preview": True,
-            },
-            timeout=20,
-        )
-        return r.status_code == 200
-    except Exception as e:
-        print("send: " + str(e))
-        return False
+
+    MAX = 3800
+    if len(text) <= MAX:
+        parts = [text]
+    else:
+        parts = []
+        current = ""
+        for line in text.split("\n"):
+            if len(current) + len(line) + 1 > MAX:
+                if current:
+                    parts.append(current)
+                current = line
+            else:
+                if current:
+                    current = current + "\n" + line
+                else:
+                    current = line
+        if current:
+            parts.append(current)
+
+    ok_all = True
+    for i, part in enumerate(parts):
+        try:
+            url = "https://api.telegram.org/bot"
+            url += BOT_TOKEN + "/sendMessage"
+            r = requests.post(
+                url,
+                json={
+                    "chat_id": CHAT_ID,
+                    "text": part,
+                    "parse_mode": "HTML",
+                    "disable_web_page_preview": True,
+                },
+                timeout=20,
+            )
+            if r.status_code != 200:
+                print("send err " + str(r.status_code)
+                      + ": " + r.text[:200])
+                ok_all = False
+        except Exception as e:
+            print("send: " + str(e))
+            ok_all = False
+    print("text sent: " + str(len(parts)) + " parts")
+    return ok_all
 
 
 def send_media_group(photos):
@@ -210,7 +237,6 @@ def fetch_oi(symbol, limit=100):
 
 
 def compute_atr(candles, period=14):
-    """ATR-14 — средняя волатильность."""
     if len(candles) < period + 1:
         return None
     trs = []
@@ -227,7 +253,6 @@ def compute_atr(candles, period=14):
 
 
 def build_scenario(name, patterns, levels):
-    """Текстовое описание сценария дня."""
     p = patterns.get("symbols", {}).get(name + "USDT", {})
     mk = p.get("markov", {})
     p10 = mk.get("p_1_given_0", 0)
@@ -244,7 +269,6 @@ def build_scenario(name, patterns, levels):
 
 def build_trade_advice(name, symbol, candles, levels,
                        patterns, funding_data, oi_data):
-    """Торговая рекомендация по монете."""
     lines = []
     if not candles:
         return lines
@@ -256,7 +280,6 @@ def build_trade_advice(name, symbol, candles, levels,
     supports = sym_lvl.get("supports", [])
     resistances = sym_lvl.get("resistances", [])
 
-    # ATR → стоп
     if atr:
         stop_tight = round(price - atr * 1.5, 2)
         stop_wide = round(price - atr * 2.5, 2)
@@ -268,7 +291,6 @@ def build_trade_advice(name, symbol, candles, levels,
             + fmt_price(stop_wide) + " (широкий)"
         )
 
-    # RSI
     closes = [c["close"] for c in candles]
     rsi = compute_rsi(closes, 14)
     if rsi and rsi[-1] is not None:
@@ -283,7 +305,6 @@ def build_trade_advice(name, symbol, candles, levels,
             "  RSI(14): " + format(r, ".1f") + " — " + state
         )
 
-    # Funding
     if funding_data:
         cur_f = funding_data[-1]["rate"] * 100
         if cur_f > 0.01:
@@ -297,7 +318,6 @@ def build_trade_advice(name, symbol, candles, levels,
             + "% — " + state
         )
 
-    # OI
     if oi_data and len(oi_data) >= 2:
         first = oi_data[0]["oi"]
         cur = oi_data[-1]["oi"]
@@ -314,7 +334,6 @@ def build_trade_advice(name, symbol, candles, levels,
                 + "% — " + state
             )
 
-    # Уровни для торговли
     if supports and resistances:
         s1 = supports[0]["price"]
         r1 = resistances[0]["price"]
@@ -350,10 +369,11 @@ def build_report_text():
             continue
 
         price = candles[-1]["close"]
-        first = candles[0]["close"]
-        change_24h = (price - candles[-25]["close"]) \
-            / candles[-25]["close"] * 100 \
-            if len(candles) >= 25 else 0
+        change_24h = 0
+        if len(candles) >= 25:
+            prev = candles[-25]["close"]
+            if prev:
+                change_24h = (price - prev) / prev * 100
 
         lines.append(
             "💰 <b>" + name + "</b>: " + fmt_price(price)
@@ -373,7 +393,6 @@ def build_report_text():
         lines.append("  🎯 Сценарий: " + scenario)
         lines.append("")
 
-    # Закономерности
     if corr and corr.get("symbols"):
         rules = []
         for sym, d in corr["symbols"].items():
@@ -402,11 +421,11 @@ def build_report_text():
 
 
 def main():
-    print("Morning report v3 - start")
+    print("Morning report v3.1 - start")
 
     text = build_report_text()
+    print("text len: " + str(len(text)))
     send_message(text)
-    print("text sent")
 
     levels = load_json(DATA_DIR / "levels_analysis.json")
     patterns = load_json(DATA_DIR / "patterns_analysis.json")
@@ -429,7 +448,6 @@ def main():
         sup = sym_lvl.get("supports", [])
         res = sym_lvl.get("resistances", [])
 
-        # Свечи + EMA + уровни
         path = TMP_DIR / (prefix + "_candles.png")
         plot_candles(
             symbol, candles,
@@ -439,12 +457,10 @@ def main():
         )
         photos.append((str(path), ""))
 
-        # RSI
         path = TMP_DIR / (prefix + "_rsi.png")
         if plot_rsi(symbol, candles, output_path=str(path)):
             photos.append((str(path), ""))
 
-        # Funding
         funding_data = fetch_funding(symbol, 50)
         if funding_data:
             path = TMP_DIR / (prefix + "_funding.png")
@@ -453,7 +469,6 @@ def main():
             ):
                 photos.append((str(path), ""))
 
-        # OI
         oi_data = fetch_oi(symbol, 100)
         if oi_data:
             path = TMP_DIR / (prefix + "_oi.png")
@@ -462,7 +477,6 @@ def main():
             ):
                 photos.append((str(path), ""))
 
-        # Паттерн
         sym_p = patterns.get("symbols", {}).get(symbol, {})
         binary = sym_p.get("binary_string", "")
         if binary:
