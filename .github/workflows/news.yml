@@ -1,7 +1,7 @@
 # ============================================================
 # ARGUS - NEWS
 # ------------------------------------------------------------
-# v2: правильные пути (analyzer из crypto/collect)
+# v3: NLLB перевод + правильные пути.
 # ============================================================
 
 name: ARGUS News
@@ -44,17 +44,18 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/huggingface
-          key: hf-opus-mt-en-ru-v1
-          restore-keys: hf-
+          key: hf-nllb-200-news-v1
+          restore-keys: hf-nllb-
 
       - name: Install deps
         run: |
           python -m pip install --upgrade pip
           pip install requests
+          pip install langdetect==1.0.9
           pip install torch==2.2.0 \
             --index-url https://download.pytorch.org/whl/cpu
           pip install transformers==4.41.2
-          pip install sentencepiece sacremoses
+          pip install sentencepiece
 
       - name: Run news analyzer
         env:
@@ -70,7 +71,7 @@ jobs:
             ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: >-
             ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: python scripts/news_report.py
+        run: python crypto/report/news_report.py
 
       - name: Commit
         run: |
