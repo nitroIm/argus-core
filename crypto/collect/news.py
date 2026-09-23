@@ -1,8 +1,10 @@
 # ============================================================
-# ARGUS-Trader — NEWS ANALYZER v6.3
+# ARGUS-Trader — NEWS ANALYZER v6.4
 # ------------------------------------------------------------
-# v6.3: translate.py теперь в crypto/report/
-# v6.2: html.unescape, clean_text, пост-обработка перевода
+# v6.4: перевод убран отсюда — только sentiment по оригиналу.
+#       Перевод топ-3 делается в news_report.py.
+# v6.3: пути к translate
+# v6.2: html.unescape, clean_text
 # ============================================================
 
 import os
@@ -20,20 +22,8 @@ from urllib3.util.retry import Retry
 SCRIPT_DIR = Path(__file__).resolve().parent
 CRYPTO_ROOT = SCRIPT_DIR.parent
 DATA_DIR = CRYPTO_ROOT / "data"
-REPORT_DIR = CRYPTO_ROOT / "report"
 
 DATA_DIR.mkdir(parents=True, exist_ok=True)
-
-sys.path.insert(0, str(REPORT_DIR))
-try:
-    from translate import translate_to_ru
-    from translate import is_english
-    TRANSLATE_AVAILABLE = True
-except Exception as e:
-    TRANSLATE_AVAILABLE = False
-    def translate_to_ru(t): return t
-    def is_english(t): return False
-    print("translate unavailable: " + str(e))
 
 # ============================================================
 # ИСТОЧНИКИ RSS + ВЕСА
@@ -82,7 +72,6 @@ CLICKBAIT_PATTERNS = [
 
 SENTIMENT_FILE = DATA_DIR / "news_sentiment.json"
 NEWS_HISTORY_FILE = DATA_DIR / "news_history.json"
-TRANSLATE_CACHE_FILE = DATA_DIR / "translate_cache.json"
 
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("BOT_TOKEN")
 CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
@@ -138,9 +127,6 @@ def _hash(text: str) -> str:
     return hashlib.md5(text.strip().lower().encode("utf-8")).hexdigest()[:16]
 
 
-# ============================================================
-# CLEAN TEXT
-# ============================================================
 def clean_text(text: str) -> str:
     """Нормализует заголовок: убирает HTML, entities, мусор."""
     if not text:
@@ -151,40 +137,6 @@ def clean_text(text: str) -> str:
     text = re.sub(r"\s+", " ", text)
     text = text.strip(' "\'«»""„""')
     return text.strip()
-
-
-_translate_cache = load(TRANSLATE_CACHE_FILE, {})
-
-
-def translate_cached(text: str) -> str:
-    if not text or not text.strip():
-        return text
-    if re.search(r"[а-яА-ЯёЁ]", text):
-        return text
-    key = _hash(text)
-    if key in _translate_cache:
-        return _translate_cache[key]
-    try:
-        translated = translate_to_ru(text)
-        if translated and translated.strip():
-            translated = clean_text(translated)
-            translated = re.sub(r"\s+", " ", translated)
-            _translate_cache[key] = translated
-            return translated
-    except Exception:
-        pass
-    return text
-
-
-def save_translate_cache():
-    try:
-        cache = _translate_cache
-        if len(cache) > 5000:
-            keys = list(cache.keys())[-3000:]
-            cache = {k: cache[k] for k in keys}
-        save(TRANSLATE_CACHE_FILE, cache)
-    except Exception:
-        pass
 
 
 def normalize_title(title: str) -> str:
@@ -303,8 +255,8 @@ def fake_score(title, source_weight):
 
 
 def main():
-    print("📰 ARGUS-Trader NEWS ANALYZER v6.3")
-    print(f"🌐 Переводчик: {'✅' if TRANSLATE_AVAILABLE else '❌'}")
+    print("📰 ARGUS-Trader NEWS ANALYZER v6.4")
+    print("(перевод вынесен в news_report.py)")
     print("=" * 60)
 
     all_news = []
@@ -334,11 +286,7 @@ def main():
                 item["source_weight"] * fresh * (1.0 - fake), 3
             )
 
-            original = item["title"]
-            item["title_original"] = original
-
-            if feed["lang"] == "en" or is_english(original):
-                item["title"] = translate_cached(original)
+            item["title_original"] = item["title"]
 
             all_news.append(item)
 
@@ -436,8 +384,6 @@ def main():
         history["days"] = history["days"][-90:]
     save(NEWS_HISTORY_FILE, history)
 
-    save_translate_cache()
-
     print("=" * 60)
     print(f"📊 Всего: {len(all_news)}")
     print(f"🎭 Настроение: {mood}")
@@ -450,12 +396,12 @@ def main():
     if top_bull:
         print("\n🟢 Топ бычьих:")
         for n in top_bull[:3]:
-            print(f"   + {n['title'][:80]}")
+            print(f"   + {n['title_original'][:80]}")
 
     if top_bear:
         print("\n🔴 Топ медвежьих:")
         for n in top_bear[:3]:
-            print(f"   - {n['title'][:80]}")
+            print(f"   - {n['title_original'][:80]}")
     print("=" * 60)
 
 
