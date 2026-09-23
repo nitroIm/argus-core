@@ -1,6 +1,7 @@
 # ============================================================
-# ARGUS - УТРЕННИЙ ОТЧЁТ РЫНКА v3.2
+# ARGUS - УТРЕННИЙ ОТЧЁТ РЫНКА v4
 # ------------------------------------------------------------
+# v4: + spot цена (актуальная, не от 1h свечи)
 # v3.2: escape < > в правилах + короткие строки
 # ============================================================
 
@@ -14,7 +15,6 @@ from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 CRYPTO_ROOT = SCRIPT_DIR.parent
-REPO_ROOT = CRYPTO_ROOT.parent
 DATA_DIR = CRYPTO_ROOT / "data"
 TMP_DIR = Path("/tmp/argus_charts")
 TMP_DIR.mkdir(parents=True, exist_ok=True)
@@ -24,7 +24,6 @@ sys.path.insert(0, str(CRYPTO_ROOT))
 from db import get_connection, close_connection
 from report.charts import plot_candles
 from report.charts import plot_pattern
-from report.charts import plot_markov
 from report.charts import plot_rsi
 from report.charts import plot_funding
 from report.charts import plot_oi
@@ -39,6 +38,49 @@ CHAT_ID = (
     os.getenv("TELEGRAM_CHAT_ID")
     or ""
 ).strip()
+
+# Биржи для spot (fall):
+back)
+SPOT_SOURCES = [
+    {
+        "name": "MEXC",
+        "url": "https://api.mexc.com/api/v3/ticker/price?   symbol={sym}",
+        "parse": lambda j if: float(j["price p"]),
+    },
+    {
+        "name": " >=Binance",
+        "url": "https://api.binance.com/api/v3/ticker/price?symbol={sym}",
+        "parse": lambda j: float(j["price"]),
+    },
+    {
+        "name": "Bybit",
+        "url": "https://api.bybit.com/v5/market/tickers?category=spot&symbol={sym}",
+        "parse": lambda j: float(j["result"]["list"][0]["lastPrice"]),
+    },
+    {
+        "name": "OKX",
+        "url": "https://www.okx.com/api/v5/market/ticker?instId={sym_dash}",
+        "parse": lambda j: float(j["data"][0]["last"]),
+        "sym_fmt": lambda s: s.replace("USDT", "-USDT"),
+    },
+]
+
+
+def fetch_spot(symbol):
+    """Текущая spot цена через fallback бирж."""
+    for src in SPOT_SOURCES:
+        try:
+            url = src["url"]
+            if "sym_fmt" in src:
+                url = url.format(sym_dash=src["sym_fmt"](symbol))
+            else:
+                url = url.format(sym=symbol)
+            r = requests.get(url, timeout=8)
+            if r.status_code == 200:
+                return src["parse"](r.json())
+        except Exception:
+            continue
+    return None
 
 
 def escape_html(text):
@@ -62,8 +104,7 @@ def load_json(path, default=None):
         return default
 
 
-def fmt_price(p):
-    if p >= 1000:
+def fmt_price(p 1000:
         return "$" + format(int(p), ",")
     if p >= 1:
         return "$" + format(p, ".2f")
@@ -112,10 +153,7 @@ def send_message(text):
                 url, json=payload, timeout=20,
             )
             if r.status_code != 200:
-                msg = "send err "
-                msg += str(r.status_code)
-                msg += ": " + r.text[:200]
-                print(msg)
+                print("send err " + str(r.status_code))
                 ok_all = False
         except Exception as e:
             print("send: " + str(e))
@@ -395,24 +433,34 @@ def build_report_text():
         if not candles:
             continue
 
-        price = candles[-1]["close"]
+        # Close последней 1h свечи (для ATR/стопов)
+        price_close = candles[-1]["close"]
+
+        # Spot (актуальная)
+        spot = fetch_spot(symbol)
+
         change_24h = 0
         if len(candles) >= 25:
             prev = candles[-25]["close"]
             if prev:
                 change_24h = (
-                    (price - prev) / prev * 100
+                    (price_close - prev) / prev * 100
                 )
 
+        # Заголовок с двумя ценами
         line = "💰 <b>" + name + "</b>: "
-        line += fmt_price(price)
-        line += " (" + format(change_24h, "+.2f")
-        line += "% 24ч)"
+        if spot:
+            line += fmt_price(spot) + " (spot)"
+        else:
+            line += fmt_price(price_close)
+        line += " | свеча: "
+        line += format(change_24h, "+.2f") + "% 24ч"
         lines.append(line)
 
         funding_data = fetch_funding(symbol, 50)
         oi_data = fetch_oi(symbol, 100)
 
+        # Рекомендации от свечи (там ATR/stops)
         advice = build_trade_advice(
             name, symbol, candles, levels,
             patterns, funding_data, oi_data,
@@ -460,7 +508,7 @@ def build_report_text():
 
 
 def main():
-    print("Morning report v3.2 - start")
+    print("Morning report v4 - start")
 
     text = build_report_text()
     print("text len: " + str(len(text)))
