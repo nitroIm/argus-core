@@ -771,3 +771,305 @@ Retention и партиционирование —
 SELECT column_name
 FROM information_schema.columns
 WHERE table_name = 'X';
+## 🔧 26. ЖУРНАЛ СЕССИИ — Crypto v3 (2026-09-23)
+
+Что делали, что работает, что на паузе.
+
+────────────────────
+ОТЧЁТЫ — ЧТО ЕСТЬ
+────────────────────
+
+**Утренний отчёт** (`crypto/report/morning.py` v5):
+- Запуск: 09:00 КЛГ (07:00 UTC)
+- Workflow: `morning_market_report.yml`
+- Spot цена с MEXC/Binance/Bybit/OKX (fallback)
+- ATR(14) + стоп-уровни (узкий/широкий)
+- RSI(14) с интерпретацией
+- Funding + OI с трендом
+- Уровни support/resistance
+- Блок «Торговые возможности» (риски)
+- 10 графиков в одном альбоме
+  (свечи+EMA, RSI, funding, OI, pattern × BTC/ETH)
+
+**Вечерний техотчёт** (`crypto/report/evening.py` v2.2):
+- Запуск: 20:00 КЛГ (18:00 UTC)
+- Workflow: `evening_report.yml`
+- Workflows за 24ч + last ok/fail
+- Свежесть (candles/features/patterns)
+- События за 24ч с деталями
+- Аномалии за 24ч с деталями
+- Всего в БД (10 таблиц)
+- Проблемы (только реальные)
+
+**News отчёт** (`crypto/report/news_report.py` v3):
+- Запуск: 08:00 КЛГ (06:00 UTC)
+- Workflow: `news.yml`
+- Настроение + сентимент
+- **Перевод только топ-3+3** через MyMemory
+- Дедупликация (не повторяет один и тот же заголовок 7 дней)
+
+**Недельный** (`crypto/report/weekly.py`):
+- Воскресенье 05:00 UTC
+- Статистика + графики
+
+────────────────────
+МОДУЛЬ РИСКОВ
+────────────────────
+
+**`crypto/report/risk.py` v1**
+
+- Вход: $10 (POSITION_USD)
+- Только LONG (spot)
+- Стоп: ATR × 1.5, но не ниже support
+- Цель: 2× risk, но не ниже resistance
+- R:R минимум 1.5
+- Trailing уровни показываются
+
+**Логика сигнала:**
+- RSI < 30 + цена у support (<1%) → LONG
+- Иначе → WAIT (не показывается)
+
+────────────────────
+НОВОСТИ — ПЕРЕВОД
+────────────────────
+
+**`crypto/report/translate.py` v6**
+
+- **MyMemory** — основной переводчик
+  (бесплатно, без API-ключа)
+- **Google** — fallback
+- **Словарь замен** после перевода:
+  Бикотинский → Bitcoin
+  КЦБ → SEC, ККДТ → CFTC
+  Попрос → Спрос
+- Кэш: `crypto/data/news_translate_cache.json`
+- **Переводим только топ-3+3** в news_report
+- Analyzer (`crypto/collect/news.py` v6.5)
+  работает **без перевода** — считает сентимент
+  по оригиналу
+
+**Sentiment v6.5:**
+- CONTEXT_RULES (фразы):
+  `sec opens/approves` → +
+  `sec sues/blocks` → -
+  `etf inflows` → +
+  `etf outflows` → -
+- Одиночные слова SEC/CFTC убраны
+  (контекст важнее)
+
+────────────────────
+MEXC МОДУЛЬ
+────────────────────
+
+**Папка `crypto/mexc/`**
+
+Файлы:
+- `client.py` — базовый (HMAC SHA256)
+- `account.py` — баланс (read)
+- `market.py` — стакан, сделки, 24h
+- `orders.py` v2 — открытые + история
+- `trades.py` — история сделок
+
+**Ключ на MEXC:**
+- Права: Read + Trade (Spot + Futures)
+- Без вывода (никогда)
+- Без IP whitelist (GitHub меняет IP)
+- ⚠️ Срок жизни без IP = 90 дней
+  → создать новый через ~80 дней
+
+**GitHub Secrets:**
+- `MEXC_API_KEY`
+- `MEXC_API_SECRET`
+
+**Структура MEXC клиента:**
+- Public GET (без подписи)
+- Signed GET/POST/DELETE
+- Timestamp + recvWindow 5000
+
+────────────────────
+СИМУЛЯТОР 01
+────────────────────
+
+**Папка `crypto/mexc/simulator_01/`**
+
+Файлы:
+- `runner.py` v1 (залит)
+- `runner.py` v2 (готов, но НЕ залит)
+- `state/portfolio.json`
+- `state/positions.json`
+- `state/trades.json`
+
+**Параметры:**
+- Стартовый баланс: $50
+- Размер позиции: $10
+- Max позиций: 1
+- Только LONG (spot)
+- Учёт комиссий (0.05% taker)
+- Учёт slippage (0.05%)
+- Только 2 монеты: BTCUSDT, ETHUSDT
+
+**Изоляция:**
+- НЕ трогает Supabase
+- Всё в JSON внутри папки
+- НЕ смешивается с основными данными
+
+**v1 (залит):**
+- Сигнал: только уровни
+- Работает, но мало сигналов
+
+**v2 (готов, НЕ залит):**
+- Сигнал: голосование 2+ из 4:
+  • RSI < 30
+  • Markov P(1|0) > 0.55
+  • Цена у support (<1.5%)
+  • Correlations (N≥5, conf≥0.6)
+- Стоп: ATR × 1.5
+- Цель: 2× risk (макс — resistance)
+- Все причины сохраняются в position
+  (votes, reasons, rsi_entry, atr_entry)
+
+**Workflow:** `simulator_01.yml`
+- cron в cron-job.org: `5 * * * *`
+- Уведомления в TG при open/close
+
+────────────────────
+CRON-JOB.ORG
+────────────────────
+
+Всего **9 задач:**
+
+| Название | Cron |
+|---|---|
+| ARGUS Collect | `0 * * * *` |
+| ARGUS Enrich | `15 * * * *` |
+| ARGUS Detect | `30 * * * *` |
+| ARGUS Simulator | `5 * * * *` |
+| ARGUS News | `0 6 * * *` |
+| ARGUS Morning | `0 7 * * *` |
+| ARGUS Evening | `0 18 * * *` |
+
+(Simulator + News + Morning могут быть
+ещё не добавлены — проверить)
+
+**Headers у всех:**
+- Authorization: Bearer ghp_...
+- Accept: application/vnd.github+json
+- Content-Type: application/json
+
+**Body:** `{"ref":"main"}`
+**Method:** POST
+**Timezone:** Europe/Kaliningrad
+
+────────────────────
+ТЕКУЩИЕ ЗНАЧЕНИЯ
+────────────────────
+
+**Схема БД (подтверждена):**
+
+`funding_rates`:
+symbol, timestamp, rate, source, inserted_at
+
+`features_hourly` (PK: symbol+timestamp):
+symbol, timestamp,
+change_pct, range_pct, body_pct,
+upper_wick_pct, lower_wick_pct,
+volume_ratio_24h,
+volatility_24h, volatility_7d,
+change_4h, change_24h, change_7d,
+funding_rate, funding_trend,
+oi_change_pct, ls_ratio, taker_ratio,
+next_change_pct, next_direction,
+computed_at
+
+`collect_log`:
+id, job_name, metric, symbol,
+started_at, finished_at,
+records_added, source_used,
+fallback_count, status, error
+
+`open_interest`:
+symbol, timestamp, oi, oi_value,
+source, inserted_at
+
+**Пороги:**
+- CROSS_DIFF_PCT = 1.2% (было 0.5)
+- MIN_SAMPLES (correlate) = 3
+- RSI oversold = 30
+- RSI overbought = 70
+
+────────────────────
+ЧТО РАБОТАЕТ
+────────────────────
+
+- ✅ 10 таблиц в Supabase
+- ✅ Collect каждый час (13+ запусков/сутки)
+- ✅ Enrich с funding (PK защищает от дублей)
+- ✅ Detect (pump/cross/wash/stop_hunt)
+- ✅ Утренний + вечерний + news отчёты
+- ✅ Графики в альбоме (10 шт)
+- ✅ MEXC client + account + market
+- ✅ Симулятор 01 v1 (пустой, ждёт сигнала)
+
+────────────────────
+ЧТО В ОЧЕРЕДИ
+────────────────────
+
+1. **Залить `runner.py` v2** симулятора
+2. **NULL-колонки** в features:
+   `oi_change_pct`, `ls_ratio`, `taker_ratio`
+3. **`next_direction`, `next_change_pct`**
+   для ML (заполнять при следующей свече)
+4. **Similarity search** — похожие окна
+5. **ML LightGBM** — 500+ свечей
+6. **MEXC order book imbalance** —
+   признак для features
+7. **Симулятор 02** — сравнение стратегий
+8. **Retention 90 дней** для сырья
+
+────────────────────
+ТЕХНИЧЕСКИЕ ЗАМЕТКИ
+────────────────────
+
+**При правке YAML/Python:**
+- Строки ≤ 55 символов (телефон)
+- Длинные Python-строки рвутся при копипасте
+- В f-строках не используем сложные выражения
+- Импорты разбивать по одному на строку
+
+**При правке cron-job.org:**
+- Клонировать задачу от Enrich
+- Менять только Title / URL / Cron
+- Headers/Body не трогать
+- Всегда ТЕСТОВЫЙ ЗАПУСК (204 = OK)
+- Если 404 — слетели Headers
+
+**При SQL-запросах:**
+- По одному (SQL Editor склеивает)
+- Имена колонок — сначала
+  information_schema.columns
+- Не выдумывать — проверять
+
+**Воркфлоу с cron-job:**
+- `schedule:` в YAML закомментирован
+- Только внешний cron-job.org
+- Иначе двойные запуски
+
+**Concurrency:**
+- crypto_collect/enrich/detect → общая
+  группа `argus-crypto-pipeline`
+- Симулятор — своя `argus-simulator-01`
+- News — своя `argus-news`
+
+────────────────────
+СОЗНАТЕЛЬНО НЕ ДЕЛАЕМ
+────────────────────
+
+- ❌ Автоторговля (до 2-3 месяцев)
+- ❌ Ордера на MEXC (только чтение)
+- ❌ Слияние симулятора с основными данными
+- ❌ ML на < 500 свечах
+- ❌ Retention (данные не пухнут)
+- ❌ Реальный PnL симулятора → в БД
+  (всё в JSON)
+
+────────────────────
