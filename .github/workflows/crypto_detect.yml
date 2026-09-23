@@ -9,8 +9,8 @@ name: ARGUS Crypto Detect
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '30 * * * *'
+  # schedule:
+    # - cron: '30 * * * *'
 
 permissions:
   contents: write
