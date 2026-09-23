@@ -1,10 +1,9 @@
 # ============================================================
-# ARGUS - УТРЕННИЙ ОТЧЁТ РЫНКА v3.1
+# ARGUS - УТРЕННИЙ ОТЧЁТ РЫНКА v3.2
 # ------------------------------------------------------------
-# v3.1: fix — разбивка длинного текста на части
+# v3.2: fix — escape < и > в правилах (HTML parse error)
+# v3.1: fix — разбивка длинного текста
 # v3: + ATR, RSI, funding, OI, стоп-лоссы
-#     + торговые рекомендации
-#     + 10 графиков в альбоме
 # ============================================================
 
 import os
@@ -41,6 +40,15 @@ CHAT_ID = (
     os.getenv("TELEGRAM_CHAT_ID")
     or ""
 ).strip()
+
+
+def escape_html(text):
+    """Экранирование < > для Telegram HTML."""
+    if not text:
+        return ""
+    return text.replace("&", "&amp;").replace(
+        "<", "&lt;"
+    ).replace(">", "&gt;")
 
 
 def load_json(path, default=None):
@@ -259,12 +267,12 @@ def build_scenario(name, patterns, levels):
     p11 = mk.get("p_1_given_1", 0)
 
     if p10 > 0.58:
-        return "после падения — отскок (mean reversion)"
+        return "после падения — отскок"
     if p10 < 0.42:
-        return "падение продолжается (momentum)"
+        return "падение продолжается"
     if p11 > 0.58:
-        return "рост продолжается (momentum)"
-    return "нейтрально, ждём пробоя уровней"
+        return "рост продолжается"
+    return "нейтрально, ждём пробоя"
 
 
 def build_trade_advice(name, symbol, candles, levels,
@@ -285,10 +293,9 @@ def build_trade_advice(name, symbol, candles, levels,
         stop_wide = round(price - atr * 2.5, 2)
         lines.append(
             "  ATR(14): " + fmt_price(atr)
-            + " | стоп-лосс: "
+            + " | стоп: "
             + fmt_price(stop_tight)
-            + " (узкий) / "
-            + fmt_price(stop_wide) + " (широкий)"
+            + " / " + fmt_price(stop_wide)
         )
 
     closes = [c["close"] for c in candles]
@@ -296,9 +303,9 @@ def build_trade_advice(name, symbol, candles, levels,
     if rsi and rsi[-1] is not None:
         r = rsi[-1]
         if r >= 70:
-            state = "перекуплен — риск отката"
+            state = "перекуплен"
         elif r <= 30:
-            state = "перепродан — возможен отскок"
+            state = "перепродан"
         else:
             state = "нейтрально"
         lines.append(
@@ -308,9 +315,9 @@ def build_trade_advice(name, symbol, candles, levels,
     if funding_data:
         cur_f = funding_data[-1]["rate"] * 100
         if cur_f > 0.01:
-            state = "лонги платят — перегрев лонгов"
+            state = "перегрев лонгов"
         elif cur_f < -0.01:
-            state = "шорты платят — перегрев шортов"
+            state = "перегрев шортов"
         else:
             state = "сбалансирован"
         lines.append(
@@ -324,9 +331,9 @@ def build_trade_advice(name, symbol, candles, levels,
         if first:
             oi_ch = (cur - first) / first * 100
             if oi_ch > 1:
-                state = "растёт — тренд усиливается"
+                state = "тренд усиливается"
             elif oi_ch < -1:
-                state = "падает — тренд слабеет"
+                state = "тренд слабеет"
             else:
                 state = "флэт"
             lines.append(
@@ -338,10 +345,8 @@ def build_trade_advice(name, symbol, candles, levels,
         s1 = supports[0]["price"]
         r1 = resistances[0]["price"]
         lines.append(
-            "  Вход/выход: поддержка "
-            + fmt_price(s1)
-            + " | сопротивление "
-            + fmt_price(r1)
+            "  Уровни: " + fmt_price(s1)
+            + " / " + fmt_price(r1)
         )
 
     return lines
@@ -355,11 +360,11 @@ def build_report_text():
     lines.append("")
 
     levels = load_json(DATA_DIR / "levels_analysis.json")
-    patterns = load_json(DATA_DIR / "patterns_analysis.json")
-    corr = load_json(DATA_DIR / "correlations.json")
+    patterns = load_json(DATA_DIR / "_ "patterns_analysis.json")
+    corr = load_json(DATAc_DIR / "correlations.json")
 
     pairs = [
-        ("BTCUSDT", "BTC", "BTC"),
+andles        ("BTCUSDT",.png "BTC", "BTC"),
         ("ETHUSDT", "ETH", "ETH"),
     ]
 
@@ -408,9 +413,13 @@ def build_report_text():
             lines.append("🧠 Закономерности:")
             for r in rules[:3]:
                 arrow = "↑" if r["direction"] == "up" else "↓"
-                line = "  " + arrow + " [" + r["symbol"] + "] "
-                line += r["rule"]
-                line += " (" + format(r["confidence"] * 100, ".0f")
+                sym_safe = escape_html(r["symbol"])
+                rule_safe = escape_html(r["rule"])
+                line = "  " + arrow + " [" + sym_safe + "] "
+                line += rule_safe
+                line += " (" + format(
+                    r["confidence"] * 100, ".0f"
+                )
                 line += "%, N=" + str(r["samples"]) + ")"
                 lines.append(line)
             lines.append("")
@@ -421,7 +430,7 @@ def build_report_text():
 
 
 def main():
-    print("Morning report v3.1 - start")
+    print("Morning report v3.2 - start")
 
     text = build_report_text()
     print("text len: " + str(len(text)))
@@ -448,7 +457,7 @@ def main():
         sup = sym_lvl.get("supports", [])
         res = sym_lvl.get("resistances", [])
 
-        path = TMP_DIR / (prefix + "_candles.png")
+        path = TMP_DIR / (prefix +")
         plot_candles(
             symbol, candles,
             supports=sup, resistances=res,
