@@ -1,9 +1,9 @@
 # ============================================================
-# ARGUS - TRANSLATE (any -> RU) v4 [PRODUCTION]
+# ARGUS - TRANSLATE (any -> RU) v6 [PRODUCTION]
 # ------------------------------------------------------------
-# v4: пост-обработка — словарь замен имён собственных.
-#     Бикотинский → Bitcoin, биткойн → Bitcoin и т.д.
-# v3: Google Translate публичный endpoint.
+# v6: MyMemory как основной, Google как fallback.
+# v5: пост-проверка непереведённых
+# v4: словарь замен
 # ============================================================
 
 import os
@@ -27,17 +27,16 @@ logging.basicConfig(
 )
 log = logging.getLogger("crypto.translate")
 
+# --- MyMemory ---
+MM_URL = "https://api.mymemory.translated.net/get"
+MM_TIMEOUT = 20
+
+# --- Google (fallback) ---
 GT_URL = "https://translate.googleapis.com/translate_a/single"
-GT_PARAMS_BASE = {
-    "client": "gtx",
-    "sl": "auto",
-    "tl": "ru",
-    "dt": "t",
-}
+GT_TIMEOUT = 20
+
 DELAY_BETWEEN = 0.5
-TIMEOUT = 20
 CACHE_MAX_SIZE = 5000
-MAX_CHARS_PER_REQ = 4000
 
 HEADERS = {
     "User-Agent": (
@@ -47,37 +46,25 @@ HEADERS = {
     ),
 }
 
-# Пост-обработка: словарь замен после Google Translate.
-# Ключ — что искать, значение — на что менять.
 REPLACEMENTS = [
-    # Bitcoin
     (r"\bБикотинск\w*", "Bitcoin"),
     (r"\bбикотинск\w*", "Bitcoin"),
     (r"\bБиткойн\b", "Bitcoin"),
     (r"\bбиткойн\b", "Bitcoin"),
     (r"\bБиткоин\b", "Bitcoin"),
     (r"\bбиткоин\b", "Bitcoin"),
-    # Ethereum
     (r"\bЭфириум\b", "Ethereum"),
     (r"\bэфириум\b", "Ethereum"),
-    (r"\bЭфир\b", "Ethereum"),
-    (r"\bэфир\b", "Ethereum"),
-    # Solana
     (r"\bСолана\b", "Solana"),
     (r"\bсолана\b", "Solana"),
-    # Аббревиатуры (Google иногда переводит)
     (r"\bКЦБ\b", "SEC"),
     (r"\bкцб\b", "SEC"),
     (r"\bКФТК\b", "CFTC"),
     (r"\bкфтк\b", "CFTC"),
     (r"\bККДТ\b", "CFTC"),
     (r"\bккдт\b", "CFTC"),
-    # Прочее
     (r"\bПопрос\b", "Спрос"),
     (r"\bпопрос\b", "спрос"),
-    (r"\bАльткойн\w*\b", "альткоин"),
-    (r"\bТокеннизаци\w*\b", "токенизация"),
-    (r"\bETF\b", "ETF"),
     (r"\bЕТФ\b", "ETF"),
 ]
 
@@ -127,7 +114,6 @@ def _key(text):
 
 
 def _postprocess(text):
-    """Словарь замен после перевода."""
     if not text:
         return text
     for pattern, repl in REPLACEMENTS:
@@ -173,27 +159,92 @@ def _should_skip(text):
     return False
 
 
-def _gt_translate_one(text):
-    if not text or not text.strip():
-        return text
-    if len(text) > MAX_CHARS_PER_REQ:
-        text = text[:MAX_CHARS_PER_REQ]
+def _looks_untranslated(original, translated):
+    if not translated:
+        return True
+    o = original.strip().lower()
+    t = translated.strip().lower()
+    if o == t:
+        return True
+    if not re.search(r"[а-яА-ЯёЁ]", translated):
+        return True
+    return False
 
-    params = dict(GT_PARAMS_BASE)
-    params["q"] = text
+
+# ============================================================
+# MYMEMORY
+# ============================================================
+def _mm_translate(text):
+    """MyMemory — основной переводчик."""
+    if not text or not text.strip():
+        return None
+    if len(text) > 500:
+        text = text[:500]
+
+    params = {
+        "q": text,
+        "langpair": "en|ru",
+    }
+
+    try:
+        r = requests.get(
+            MM_URL,
+            params=params,
+            headers=HEADERS,
+            timeout=MM_TIMEOUT,
+        )
+        if r.status_code != 200:
+            log.warning(
+                "mm %d: %s",
+                r.status_code, r.text[:150],
+            )
+            return None
+
+        data = r.json()
+        if data.get("responseStatus") != 200:
+            log.warning(
+                "mm status: %s",
+                data.get("responseStatus"),
+            )
+            return None
+
+        result = data.get("responseData", {}).get(
+            "translatedText", ""
+        )
+        result = result.strip()
+        if result and not _looks_untranslated(text, result):
+            return _postprocess(result)
+        return None
+    except Exception as e:
+        log.warning("mm err: " + str(e))
+        return None
+
+
+# ============================================================
+# GOOGLE (fallback)
+# ============================================================
+def _gt_translate(text):
+    if not text or not text.strip():
+        return None
+    if len(text) > 2000:
+        text = text[:2000]
+
+    params = {
+        "client": "gtx",
+        "sl": "auto",
+        "tl": "ru",
+        "dt": "t",
+        "q": text,
+    }
 
     try:
         r = requests.get(
             GT_URL,
             params=params,
             headers=HEADERS,
-            timeout=TIMEOUT,
+            timeout=GT_TIMEOUT,
         )
         if r.status_code != 200:
-            log.warning(
-                "gt %d: %s",
-                r.status_code, r.text[:150],
-            )
             return None
 
         data = r.json()
@@ -207,7 +258,7 @@ def _gt_translate_one(text):
             if chunk and len(chunk) > 0 and chunk[0]:
                 pieces.append(chunk[0])
         result = "".join(pieces).strip()
-        if result:
+        if result and not _looks_untranslated(text, result):
             return _postprocess(result)
         return None
     except Exception as e:
@@ -215,65 +266,25 @@ def _gt_translate_one(text):
         return None
 
 
-def _gt_translate_batch(texts):
-    if not texts:
-        return []
+# ============================================================
+# PUBLIC
+# ============================================================
+def _translate_one(text):
+    """MyMemory → Google → оригинал."""
+    # 1. MyMemory
+    r1 = _mm_translate(text)
+    if r1:
+        return r1
 
-    combined = "\n".join(texts)
-    if len(combined) > MAX_CHARS_PER_REQ:
-        results = []
-        for t in texts:
-            results.append(_gt_translate_one(t))
-            time.sleep(DELAY_BETWEEN)
-        return results
+    time.sleep(0.3)
 
-    params = dict(GT_PARAMS_BASE)
-    params["q"] = combined
+    # 2. Google
+    r2 = _gt_translate(text)
+    if r2:
+        return r2
 
-    try:
-        r = requests.get(
-            GT_URL,
-            params=params,
-            headers=HEADERS,
-            timeout=TIMEOUT,
-        )
-        if r.status_code != 200:
-            log.warning(
-                "gt batch %d: %s",
-                r.status_code, r.text[:150],
-            )
-            return [None] * len(texts)
-
-        data = r.json()
-        if not data or not isinstance(data, list):
-            return [None] * len(texts)
-        if not data[0]:
-            return [None] * len(texts)
-
-        pieces = []
-        for chunk in data[0]:
-            if chunk and len(chunk) > 0 and chunk[0]:
-                pieces.append(chunk[0])
-        full = "".join(pieces).strip()
-
-        translated = [p.strip() for p in full.split("\n")]
-
-        if len(translated) != len(texts):
-            log.warning(
-                "gt batch len mismatch: %d vs %d",
-                len(translated), len(texts),
-            )
-            results = []
-            for t in texts:
-                results.append(_gt_translate_one(t))
-                time.sleep(DELAY_BETWEEN)
-            return results
-
-        # Пост-обработка каждой строки
-        return [_postprocess(t) for t in translated]
-    except Exception as e:
-        log.warning("gt batch err: " + str(e))
-        return [None] * len(texts)
+    # 3. Оригинал
+    return text
 
 
 def translate_batch(texts):
@@ -308,26 +319,16 @@ def translate_batch(texts):
         return results
 
     log.info(
-        "translating %d texts via Google",
+        "translating %d texts (MyMemory)",
         len(to_translate_texts),
     )
 
-    batch_size = 20
-    for start in range(0, len(to_translate_texts), batch_size):
-        batch = to_translate_texts[start:start + batch_size]
-        idxs = to_translate_idx[start:start + batch_size]
-
-        translations = _gt_translate_batch(batch)
-
-        for k, tr in enumerate(translations):
-            idx = idxs[k]
-            if tr and tr.strip():
-                results[idx] = tr.strip()
-                cache[_key(texts[idx])] = tr.strip()
-            else:
-                results[idx] = texts[idx]
-
-        if start + batch_size < len(to_translate_texts):
+    for k, text in enumerate(to_translate_texts):
+        idx = to_translate_idx[k]
+        result = _translate_one(text)
+        results[idx] = result
+        cache[_key(text)] = result
+        if k < len(to_translate_texts) - 1:
             time.sleep(DELAY_BETWEEN)
 
     _save_cache()
