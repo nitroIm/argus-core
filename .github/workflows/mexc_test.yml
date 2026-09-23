@@ -1,0 +1,34 @@
+# ============================================================
+# ARGUS - MEXC тест чтения аккаунта
+# ============================================================
+
+name: ARGUS MEXC Test
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mexc:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: pip install requests==2.32.3
+
+      - name: Read account
+        env:
+          MEXC_API_KEY: >-
+            ${{ secrets.MEXC_API_KEY }}
+          MEXC_API_SECRET: >-
+            ${{ secrets.MEXC_API_SECRET }}
+        run: python crypto/mexc/account.py
