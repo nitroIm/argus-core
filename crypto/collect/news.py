@@ -1,10 +1,9 @@
 # ============================================================
-# ARGUS-Trader — NEWS ANALYZER v6.4
+# ARGUS-Trader — NEWS ANALYZER v6.5
 # ------------------------------------------------------------
-# v6.4: перевод убран отсюда — только sentiment по оригиналу.
-#       Перевод топ-3 делается в news_report.py.
-# v6.3: пути к translate
-# v6.2: html.unescape, clean_text
+# v6.5: fix sentiment — SEC/CFTC не однозначно негатив.
+#       Контекстные правила (SEC opens = позитив).
+# v6.4: перевод убран — только sentiment по оригиналу.
 # ============================================================
 
 import os
@@ -25,9 +24,6 @@ DATA_DIR = CRYPTO_ROOT / "data"
 
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
-# ============================================================
-# ИСТОЧНИКИ RSS + ВЕСА
-# ============================================================
 FEEDS = [
     {"name": "Cointelegraph", "url": "https://cointelegraph.com/rss",                    "lang": "en", "weight": 1.3},
     {"name": "Decrypt",       "url": "https://decrypt.co/feed",                          "lang": "en", "weight": 1.1},
@@ -38,6 +34,7 @@ FEEDS = [
     {"name": "ForkLog",       "url": "https://forklog.com/feed",                         "lang": "ru", "weight": 1.2},
 ]
 
+# Одиночные слова — веса
 BULLISH_WEIGHTS = {
     "moon": 2.0, "surge": 1.5, "rally": 1.5, "breakout": 1.5, "soar": 1.5,
     "gain": 1.0, "rise": 1.0, "jump": 1.0, "high": 1.0, "growth": 1.0,
@@ -52,13 +49,49 @@ BEARISH_WEIGHTS = {
     "crash": 2.0, "dump": 1.5, "plunge": 1.5, "collapse": 1.5, "fear": 1.2,
     "drop": 1.0, "fall": 1.0, "low": 1.0, "panic": 1.5, "negative": 1.0,
     "warning": 1.2, "ban": 1.5, "hack": 1.5, "scam": 1.5, "fraud": 1.5,
-    "lawsuit": 1.2, "sec": 1.2, "regulation": 1.2, "liquidation": 1.2,
-    "bankruptcy": 1.5, "bear": 1.2,
+    "lawsuit": 1.2, "liquidation": 1.2, "bankruptcy": 1.5, "bear": 1.2,
     "падение": 1.0, "медвежий": 1.2, "обвал": 1.5, "провал": 1.2, "запрет": 1.5,
     "взлом": 1.5, "мошенничество": 1.5, "иск": 1.2, "регуляц": 1.2,
     "ликвидац": 1.2, "банкротств": 1.5, "паник": 1.5, "негатив": 1.0,
     "предупрежд": 1.2,
 }
+
+# Контекстные правила: если фраза найдена → смещает sentiment.
+# Проверяются ДО одиночных слов.
+CONTEXT_RULES = [
+    # SEC/CFTC — позитив
+    (r"sec\s+(opens|approves|greenlights|allows|clears|permits)", 2.0),
+    (r"sec\s+chair\s+(pushes|backs|supports)", 1.2),
+    # SEC/CFTC — негатив
+    (r"sec\s+(sues|charges|blocks|rejects|bans|delays)", -2.0),
+    (r"cftc\s+(sues|charges|blocks|rejects|bans)", -1.5),
+    (r"cftc\s+warns?", -0.8),
+    # ETF
+    (r"etf\s+(inflows?|approval|approves|greenlight)", 1.5),
+    (r"etf\s+outflows?", -1.2),
+    # Adoption
+    (r"(adopts?|adoption\s+of)\s+bitcoin", 1.5),
+    (r"country\s+adopts?\s+crypto", 1.5),
+    # Regulation
+    (r"regulat(ion|ory)\s+clarity", 1.2),
+    (r"crypto\s+(ban|bans|banning)", -2.0),
+    # Price
+    (r"all[- ]time\s+high", 1.8),
+    (r"all[- ]time\s+low", -1.8),
+    (r"new\s+high", 1.3),
+    (r"new\s+low", -1.3),
+    # Liquidations
+    (r"liquidation[s]?\s+(cascade|wave|surge)", -1.5),
+    # Hacks
+    (r"(hacked|hack|exploit)\s+(for|of|at)", -1.8),
+    (r"stolen\s+(funds|crypto|bitcoin)", -1.8),
+    # Partnerships
+    (r"partner(ship)?\s+with", 1.0),
+    (r"acquire[sd]?\s+", 0.8),
+    # Риски
+    (r"(risk|risks)\s+of\s+(correction|pullback|crash)", -1.2),
+    (r"profit[- ]taking", -0.7),
+]
 
 CLICKBAIT_PATTERNS = [
     r"!!!+",
@@ -128,7 +161,6 @@ def _hash(text: str) -> str:
 
 
 def clean_text(text: str) -> str:
-    """Нормализует заголовок: убирает HTML, entities, мусор."""
     if not text:
         return ""
     text = html.unescape(text)
@@ -206,14 +238,35 @@ def fetch_feed(feed):
 
 
 def analyze_sentiment(title):
+    """Сначала контекстные правила, потом одиночные слова."""
     text = title.lower()
-    bull = sum(BULLISH_WEIGHTS.get(w, 0) for w in BULLISH_WEIGHTS if w in text)
-    bear = sum(BEARISH_WEIGHTS.get(w, 0) for w in BEARISH_WEIGHTS if w in text)
+
+    bull = 0.0
+    bear = 0.0
+
+    # 1. Контекстные фразы
+    for pattern, weight in CONTEXT_RULES:
+        if re.search(pattern, text):
+            if weight > 0:
+                bull += weight
+            else:
+                bear += abs(weight)
+
+    # 2. Одиночные слова
+    for w, weight in BULLISH_WEIGHTS.items():
+        if w in text:
+            bull += weight
+
+    for w, weight in BEARISH_WEIGHTS.items():
+        if w in text:
+            bear += weight
+
     total = bull + bear
     if total == 0:
         return 0.0, 0, 0
     score = (bull - bear) / total
-    return round(score, 3), int(bull), int(bear)
+    score = max(-1.0, min(1.0, score))
+    return round(score, 3), round(bull, 2), round(bear, 2)
 
 
 def freshness_weight(pub_date_iso):
@@ -255,8 +308,8 @@ def fake_score(title, source_weight):
 
 
 def main():
-    print("📰 ARGUS-Trader NEWS ANALYZER v6.4")
-    print("(перевод вынесен в news_report.py)")
+    print("📰 ARGUS-Trader NEWS ANALYZER v6.5")
+    print("(sentiment: контекстные правила + слова)")
     print("=" * 60)
 
     all_news = []
