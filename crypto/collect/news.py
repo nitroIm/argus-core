@@ -1,12 +1,8 @@
 # ============================================================
-# ARGUS-Trader — NEWS ANALYZER v6.2
+# ARGUS-Trader — NEWS ANALYZER v6.3
 # ------------------------------------------------------------
-# v6.2: fix — html.unescape() для &lt; &gt; &#8217; и др.
-#       + clean_text() — нормализация заголовков
-#       + пост-обработка перевода (двойные пробелы, кавычки)
-# ------------------------------------------------------------
-# v6.1: убраны РБК (403), CoinMarketCap (0)
-# v6: веса источников, свежесть, fake-эвристики, перекрёстка
+# v6.3: translate.py теперь в crypto/report/
+# v6.2: html.unescape, clean_text, пост-обработка перевода
 # ============================================================
 
 import os
@@ -23,21 +19,21 @@ from urllib3.util.retry import Retry
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 CRYPTO_ROOT = SCRIPT_DIR.parent
-REPO_ROOT = CRYPTO_ROOT.parent
 DATA_DIR = CRYPTO_ROOT / "data"
-SCRIPTS_DIR = REPO_ROOT / "scripts"
+REPORT_DIR = CRYPTO_ROOT / "report"
 
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
-sys.path.insert(0, str(SCRIPTS_DIR))
+sys.path.insert(0, str(REPORT_DIR))
 try:
-    from translate import translate_to_ru, is_english
+    from translate import translate_to_ru
+    from translate import is_english
     TRANSLATE_AVAILABLE = True
 except Exception as e:
     TRANSLATE_AVAILABLE = False
     def translate_to_ru(t): return t
     def is_english(t): return False
-    print(f"⚠️ translate.py недоступен: {e}")
+    print("translate unavailable: " + str(e))
 
 # ============================================================
 # ИСТОЧНИКИ RSS + ВЕСА
@@ -149,15 +145,10 @@ def clean_text(text: str) -> str:
     """Нормализует заголовок: убирает HTML, entities, мусор."""
     if not text:
         return ""
-    # HTML entities: &lt; &gt; &#8217; &amp; &quot; и др.
     text = html.unescape(text)
-    # HTML теги
     text = re.sub(r"<[^>]+>", "", text)
-    # CDATA
     text = re.sub(r"<!\[CDATA\[(.*?)\]\]>", r"\1", text, flags=re.IGNORECASE)
-    # Множественные пробелы
     text = re.sub(r"\s+", " ", text)
-    # Мусорные кавычки
     text = text.strip(' "\'«»""„""')
     return text.strip()
 
@@ -176,7 +167,6 @@ def translate_cached(text: str) -> str:
     try:
         translated = translate_to_ru(text)
         if translated and translated.strip():
-            # Пост-обработка перевода
             translated = clean_text(translated)
             translated = re.sub(r"\s+", " ", translated)
             _translate_cache[key] = translated
@@ -313,7 +303,7 @@ def fake_score(title, source_weight):
 
 
 def main():
-    print("📰 ARGUS-Trader NEWS ANALYZER v6.2")
+    print("📰 ARGUS-Trader NEWS ANALYZER v6.3")
     print(f"🌐 Переводчик: {'✅' if TRANSLATE_AVAILABLE else '❌'}")
     print("=" * 60)
 
