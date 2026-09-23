@@ -1,15 +1,17 @@
 # ============================================================
-# ARGUS - УТРЕННИЙ ОТЧЁТ РЫНКА v2
+# ARGUS - УТРЕННИЙ ОТЧЁТ РЫНКА v3
 # ------------------------------------------------------------
-# v2: все графики в ОДНОМ сообщении (media group).
-#     Раньше: 7 сообщений. Теперь: 2 (текст + альбом).
+# v3: + ATR, стоп-лоссы, RSI, funding, OI
+#     + торговые рекомендации
+#     + 10 графиков в альбоме
+# v2: media group
 # ============================================================
 
 import os
 import sys
 import json
 import requests
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -25,6 +27,10 @@ from db import get_connection, close_connection
 from report.charts import plot_candles
 from report.charts import plot_pattern
 from report.charts import plot_markov
+from report.charts import plot_rsi
+from report.charts import plot_funding
+from report.charts import plot_oi
+from report.charts import compute_rsi
 
 BOT_TOKEN = (
     os.getenv("TELEGRAM_BOT_TOKEN")
@@ -58,9 +64,6 @@ def fmt_price(p):
 def send_message(text):
     if not BOT_TOKEN or not CHAT_ID:
         print("no token")
-        clean = text.replace("<b>", "").replace("</b>", "")
-        clean = clean.replace("<i>", "").replace("</i>", "")
-        print(clean)
         return False
     try:
         url = "https://api.telegram.org/bot"
@@ -82,11 +85,6 @@ def send_message(text):
 
 
 def send_media_group(photos):
-    """
-    Отправляет все графики одним альбомом.
-    photos: список (path, caption).
-    Максимум 10.
-    """
     if not BOT_TOKEN or not CHAT_ID:
         return False
     if not photos:
@@ -136,7 +134,7 @@ def send_media_group(photos):
                 pass
 
         if r.status_code == 200:
-            print("album sent: " + str(len(media)) + " photos")
+            print("album: " + str(len(media)))
             return True
         print("album err: " + r.text[:200])
         return False
@@ -145,15 +143,14 @@ def send_media_group(photos):
         return False
 
 
-def fetch_candles(symbol, limit=100):
+def fetch_candles(symbol, limit=200):
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
                 sql = (
                     "SELECT timestamp, open, high, low, "
                     "close, volume FROM candles "
-                    "WHERE symbol = %s "
-                    "AND timeframe = '1h' "
+                    "WHERE symbol = %s AND timeframe = '1h' "
                     "ORDER BY timestamp DESC LIMIT %s"
                 )
                 cur.execute(sql, (symbol, limit))
@@ -174,77 +171,207 @@ def fetch_candles(symbol, limit=100):
         return []
 
 
+def fetch_funding(symbol, limit=50):
+    try:
+        with get_connection() as conn:
+            with conn.cursor() as cur:
+                sql = (
+                    "SELECT timestamp, rate FROM funding_rates "
+                    "WHERE symbol = %s AND rate IS NOT NULL "
+                    "ORDER BY timestamp DESC LIMIT %s"
+                )
+                cur.execute(sql, (symbol, limit))
+                rows = list(reversed(cur.fetchall()))
+                return [
+                    {"timestamp": r[0], "rate": float(r[1])}
+                    for r in rows
+                ]
+    except Exception:
+        return []
+
+
+def fetch_oi(symbol, limit=100):
+    try:
+        with get_connection() as conn:
+            with conn.cursor() as cur:
+                sql = (
+                    "SELECT timestamp, oi FROM open_interest "
+                    "WHERE symbol = %s AND oi IS NOT NULL "
+                    "ORDER BY timestamp DESC LIMIT %s"
+                )
+                cur.execute(sql, (symbol, limit))
+                rows = list(reversed(cur.fetchall()))
+                return [
+                    {"timestamp": r[0], "oi": float(r[1])}
+                    for r in rows
+                ]
+    except Exception:
+        return []
+
+
+def compute_atr(candles, period=14):
+    """ATR-14 — средняя волатильность."""
+    if len(candles) < period + 1:
+        return None
+    trs = []
+    for i in range(1, len(candles)):
+        h = candles[i]["high"]
+        l = candles[i]["low"]
+        pc = candles[i - 1]["close"]
+        tr = max(h - l, abs(h - pc), abs(l - pc))
+        trs.append(tr)
+    if len(trs) < period:
+        return None
+    atr = sum(trs[-period:]) / period
+    return round(atr, 4)
+
+
+def build_scenario(name, patterns, levels):
+    """Текстовое описание сценария дня."""
+    p = patterns.get("symbols", {}).get(name + "USDT", {})
+    mk = p.get("markov", {})
+    p10 = mk.get("p_1_given_0", 0)
+    p11 = mk.get("p_1_given_1", 0)
+
+    if p10 > 0.58:
+        return "после падения — отскок (mean reversion)"
+    if p10 < 0.42:
+        return "падение продолжается (momentum)"
+    if p11 > 0.58:
+        return "рост продолжается (momentum)"
+    return "нейтрально, ждём пробоя уровней"
+
+
+def build_trade_advice(name, symbol, candles, levels,
+                       patterns, funding_data, oi_data):
+    """Торговая рекомендация по монете."""
+    lines = []
+    if not candles:
+        return lines
+
+    price = candles[-1]["close"]
+    atr = compute_atr(candles, 14)
+
+    sym_lvl = levels.get("symbols", {}).get(symbol, {})
+    supports = sym_lvl.get("supports", [])
+    resistances = sym_lvl.get("resistances", [])
+
+    # ATR → стоп
+    if atr:
+        stop_tight = round(price - atr * 1.5, 2)
+        stop_wide = round(price - atr * 2.5, 2)
+        lines.append(
+            "  ATR(14): " + fmt_price(atr)
+            + " | стоп-лосс: "
+            + fmt_price(stop_tight)
+            + " (узкий) / "
+            + fmt_price(stop_wide) + " (широкий)"
+        )
+
+    # RSI
+    closes = [c["close"] for c in candles]
+    rsi = compute_rsi(closes, 14)
+    if rsi and rsi[-1] is not None:
+        r = rsi[-1]
+        if r >= 70:
+            state = "перекуплен — риск отката"
+        elif r <= 30:
+            state = "перепродан — возможен отскок"
+        else:
+            state = "нейтрально"
+        lines.append(
+            "  RSI(14): " + format(r, ".1f") + " — " + state
+        )
+
+    # Funding
+    if funding_data:
+        cur_f = funding_data[-1]["rate"] * 100
+        if cur_f > 0.01:
+            state = "лонги платят — перегрев лонгов"
+        elif cur_f < -0.01:
+            state = "шорты платят — перегрев шортов"
+        else:
+            state = "сбалансирован"
+        lines.append(
+            "  Funding: " + format(cur_f, "+.4f")
+            + "% — " + state
+        )
+
+    # OI
+    if oi_data and len(oi_data) >= 2:
+        first = oi_data[0]["oi"]
+        cur = oi_data[-1]["oi"]
+        if first:
+            oi_ch = (cur - first) / first * 100
+            if oi_ch > 1:
+                state = "растёт — тренд усиливается"
+            elif oi_ch < -1:
+                state = "падает — тренд слабеет"
+            else:
+                state = "флэт"
+            lines.append(
+                "  OI: " + format(oi_ch, "+.2f")
+                + "% — " + state
+            )
+
+    # Уровни для торговли
+    if supports and resistances:
+        s1 = supports[0]["price"]
+        r1 = resistances[0]["price"]
+        lines.append(
+            "  Вход/выход: поддержка "
+            + fmt_price(s1)
+            + " | сопротивление "
+            + fmt_price(r1)
+        )
+
+    return lines
+
+
 def build_report_text():
     now = datetime.now(timezone.utc)
     lines = []
-    lines.append("☀️ ARGUS - отчёт рынка")
+    lines.append("☀️ ARGUS — утренний отчёт")
     lines.append(now.strftime("%d.%m.%Y %H:%M UTC"))
     lines.append("")
 
     levels = load_json(DATA_DIR / "levels_analysis.json")
     patterns = load_json(DATA_DIR / "patterns_analysis.json")
     corr = load_json(DATA_DIR / "correlations.json")
-    sentiment = load_json(DATA_DIR / "news_sentiment.json")
 
-    # Цены и уровни
-    lines.append("💰 Цены и уровни")
-    if levels and levels.get("symbols"):
-        for sym, d in levels["symbols"].items():
-            name = sym.replace("USDT", "")
-            price = d.get("current_price", 0)
-            lines.append(name + ": " + fmt_price(price))
-            sup = d.get("supports", [])
-            if sup:
-                s1 = sup[0]
-                line = "  support " + fmt_price(s1["price"])
-                line += " (" + str(s1.get("touches", 0))
-                line += " касаний)"
-                lines.append(line)
-            res = d.get("resistances", [])
-            if res:
-                r1 = res[0]
-                line = "  resist " + fmt_price(r1["price"])
-                line += " (" + str(r1.get("touches", 0))
-                line += " касаний)"
-                lines.append(line)
-    else:
-        lines.append("нет данных")
-    lines.append("")
+    pairs = [
+        ("BTCUSDT", "BTC", "BTC"),
+        ("ETHUSDT", "ETH", "ETH"),
+    ]
 
-    # Паттерны
-    lines.append("🧩 Паттерны")
-    if patterns and patterns.get("symbols"):
-        for sym, d in patterns["symbols"].items():
-            name = sym.replace("USDT", "")
-            up = d.get("up_ratio", 0) * 100
-            mk = d.get("markov", {})
-            p10 = mk.get("p_1_given_0", 0)
-            p11 = mk.get("p_1_given_1", 0)
-            lines.append(name + ":")
-            lines.append("  " + format(up, ".0f") + "% up")
-            lines.append(
-                "  P(1|0)=" + format(p10, ".2f")
-                + "  P(1|1)=" + format(p11, ".2f")
-            )
-    else:
-        lines.append("нет данных")
-    lines.append("")
+    for symbol, name, _ in pairs:
+        candles = fetch_candles(symbol, 200)
+        if not candles:
+            continue
 
-    # Сценарий
-    lines.append("🎯 Сценарий на день")
-    if patterns and patterns.get("symbols"):
-        for sym, d in patterns["symbols"].items():
-            name = sym.replace("USDT", "")
-            mk = d.get("markov", {})
-            p10 = mk.get("p_1_given_0", 0)
-            if p10 > 0.58:
-                mood = "бычий (mean reversion)"
-            elif p10 < 0.42:
-                mood = "медвежий (momentum)"
-            else:
-                mood = "нейтральный"
-            lines.append(name + ": " + mood)
-    lines.append("")
+        price = candles[-1]["close"]
+        first = candles[0]["close"]
+        change_24h = (price - candles[-25]["close"]) \
+            / candles[-25]["close"] * 100 \
+            if len(candles) >= 25 else 0
+
+        lines.append(
+            "💰 <b>" + name + "</b>: " + fmt_price(price)
+            + " (" + format(change_24h, "+.2f") + "% 24ч)"
+        )
+
+        funding_data = fetch_funding(symbol, 50)
+        oi_data = fetch_oi(symbol, 100)
+
+        advice = build_trade_advice(
+            name, symbol, candles, levels,
+            patterns, funding_data, oi_data,
+        )
+        lines.extend(advice)
+
+        scenario = build_scenario(name, patterns, levels)
+        lines.append("  🎯 Сценарий: " + scenario)
+        lines.append("")
 
     # Закономерности
     if corr and corr.get("symbols"):
@@ -259,41 +386,14 @@ def build_report_text():
             reverse=True,
         )
         if rules:
-            lines.append("🧠 Закономерности")
+            lines.append("🧠 Закономерности:")
             for r in rules[:3]:
-                arrow = "up" if r["direction"] == "up" else "down"
-                line = "  " + r["symbol"] + ": "
+                arrow = "↑" if r["direction"] == "up" else "↓"
+                line = "  " + arrow + " [" + r["symbol"] + "] "
                 line += r["rule"]
-                line += " -> " + arrow
                 line += " (" + format(r["confidence"] * 100, ".0f")
                 line += "%, N=" + str(r["samples"]) + ")"
                 lines.append(line)
-            lines.append("")
-
-    # Новости
-    if sentiment and sentiment.get("total_news", 0) > 0:
-        lines.append("📰 Новости")
-        lines.append("  Всего: " + str(sentiment.get("total_news", 0)))
-        lines.append("  Настроение: " + str(sentiment.get("mood", "?")))
-        lines.append(
-            "  " + format(sentiment.get("avg_sentiment", 0), "+.3f")
-        )
-        lines.append("")
-
-        top_bull = sentiment.get("top_bullish", [])[:2]
-        if top_bull:
-            lines.append("  Top bullish:")
-            for n in top_bull:
-                t = n.get("title", "")[:70]
-                lines.append("   + " + t)
-            lines.append("")
-
-        top_bear = sentiment.get("top_bearish", [])[:2]
-        if top_bear:
-            lines.append("  Top bearish:")
-            for n in top_bear:
-                t = n.get("title", "")[:70]
-                lines.append("   - " + t)
             lines.append("")
 
     lines.append("📊 Графики ниже одним альбомом")
@@ -302,14 +402,12 @@ def build_report_text():
 
 
 def main():
-    print("Morning report v2 - start")
+    print("Morning report v3 - start")
 
-    # 1. Текст
     text = build_report_text()
     send_message(text)
     print("text sent")
 
-    # 2. Собираем все графики
     levels = load_json(DATA_DIR / "levels_analysis.json")
     patterns = load_json(DATA_DIR / "patterns_analysis.json")
 
@@ -323,39 +421,59 @@ def main():
     for symbol, name, prefix in pairs:
         print("--- " + symbol)
 
-        # Свечи
-        candles = fetch_candles(symbol, 100)
-        if candles:
-            sym_lvl = levels.get("symbols", {}).get(symbol, {})
-            sup = sym_lvl.get("supports", [])
-            res = sym_lvl.get("resistances", [])
-            path = TMP_DIR / (prefix + "_candles.png")
-            plot_candles(
-                symbol, candles,
-                supports=sup, resistances=res,
-                output_path=str(path),
-                title=name,
-            )
+        candles = fetch_candles(symbol, 200)
+        if not candles:
+            continue
+
+        sym_lvl = levels.get("symbols", {}).get(symbol, {})
+        sup = sym_lvl.get("supports", [])
+        res = sym_lvl.get("resistances", [])
+
+        # Свечи + EMA + уровни
+        path = TMP_DIR / (prefix + "_candles.png")
+        plot_candles(
+            symbol, candles,
+            supports=sup, resistances=res,
+            output_path=str(path),
+            title=name,
+        )
+        photos.append((str(path), ""))
+
+        # RSI
+        path = TMP_DIR / (prefix + "_rsi.png")
+        if plot_rsi(symbol, candles, output_path=str(path)):
             photos.append((str(path), ""))
+
+        # Funding
+        funding_data = fetch_funding(symbol, 50)
+        if funding_data:
+            path = TMP_DIR / (prefix + "_funding.png")
+            if plot_funding(
+                symbol, funding_data, output_path=str(path)
+            ):
+                photos.append((str(path), ""))
+
+        # OI
+        oi_data = fetch_oi(symbol, 100)
+        if oi_data:
+            path = TMP_DIR / (prefix + "_oi.png")
+            if plot_oi(
+                symbol, oi_data, output_path=str(path)
+            ):
+                photos.append((str(path), ""))
 
         # Паттерн
         sym_p = patterns.get("symbols", {}).get(symbol, {})
         binary = sym_p.get("binary_string", "")
         if binary:
             path = TMP_DIR / (prefix + "_pattern.png")
-            plot_pattern(symbol, binary, output_path=str(path))
-            photos.append((str(path), ""))
+            if plot_pattern(
+                symbol, binary, output_path=str(path)
+            ):
+                photos.append((str(path), ""))
 
-        # Markov
-        mk = sym_p.get("markov", {})
-        if mk:
-            path = TMP_DIR / (prefix + "_markov.png")
-            plot_markov(symbol, mk, output_path=str(path))
-            photos.append((str(path), ""))
-
-    # 3. Отправляем альбомом
     if photos:
-        first_cap = "📊 Графики: BTC/ETH\nсвечи, паттерны, Markov"
+        first_cap = "📊 " + str(len(photos)) + " графиков"
         photos_with_cap = [(photos[0][0], first_cap)] + photos[1:]
         ok = send_media_group(photos_with_cap)
         print("album: " + str(ok))
