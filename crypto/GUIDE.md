@@ -559,3 +559,215 @@ UTC везде,
 ━━━━━━━━━━━━━━━━━━━━
 Конец ARGUS-Trader GUIDE v4
 ━━━━━━━━━━━━━━━━━━━━
+## 🔧 25. ЖУРНАЛ СЕССИИ — ARGUS-Trader
+_Дата: 2026-09-23_
+
+Что делали, что починили, где мы сейчас.
+
+────────────────────
+ЧТО СДЕЛАНО
+────────────────────
+
+**Crypto — сбор и enrich:**
+
+- Сбор идёт по cron-job.org:
+  - `:00` Collect
+  - `:15` Enrich
+  - `:30` Detect
+- Убран `schedule:` из YAML — только внешний
+  cron (GitHub внутренний тормозил).
+- Общая очередь `argus-crypto-pipeline`
+  для всех трёх workflow. Одновременно
+  выполняется только один.
+- `git pull --rebase -X theirs` — авто-
+  разрешение конфликтов в JSON.
+- Проверены 7 файлов enrich:
+  `causal`, `correlate`, `events`,
+  `features`, `levels`, `patterns`,
+  `runner` — все рабочие.
+
+**Supabase:**
+
+- `funding_rate` в `features_hourly`
+  заполняется (было NULL).
+- `features_hourly`: 270 строк,
+  уникальных пар 270 → дублей 0.
+- Схема БД проверена, актуальные
+  имена колонок — ниже.
+
+────────────────────
+ЧТО ИСПРАВЛЕНО
+────────────────────
+
+**1. `features.py` — колонка `rate`**
+
+В таблице `funding_rates` колонка
+называется **`rate`** (не `funding_rate`).
+Строка в `fetch_funding`:
+`SELECT timestamp, rate FROM funding_rates`
+
+**2. `features.py` — ON CONFLICT**
+
+Было `DO NOTHING` → строки не
+обновлялись, `funding_rate` оставался
+NULL. Стало `DO UPDATE SET ...` —
+существующие строки обновляются.
+
+**3. Двойные триггеры**
+
+Были и `schedule:` в YAML, и
+cron-job.org. Enrich/Detect срабатывали
+2× за час, Collect — 1×. Убрали
+`schedule:` — теперь только внешний cron.
+
+**4. Concurrency**
+
+Collect/Enrich/Detect конфликтовали
+на коммите JSON. Поставили общую
+группу `argus-crypto-pipeline` + `-X theirs`.
+
+────────────────────
+СХЕМА БД (АКТУАЛЬНАЯ)
+────────────────────
+
+**`funding_rates`:**
+`symbol, timestamp, rate, source,
+inserted_at`
+
+**`features_hourly`:**
+`symbol, timestamp,
+change_pct, range_pct, body_pct,
+upper_wick_pct, lower_wick_pct,
+volume_ratio_24h,
+volatility_24h, volatility_7d,
+change_4h, change_24h, change_7d,
+funding_rate, funding_trend,
+oi_change_pct, ls_ratio, taker_ratio,
+next_change_pct, next_direction,
+computed_at`
+
+**PK `features_hourly`:**
+`(symbol, timestamp)`
+
+**Единицы funding:**
+- `funding_rates.rate` — сырое (0.0000536)
+- `features_hourly.funding_rate` — %
+  (0.005360870)
+- `causal_links.funding_rate` — сырое
+
+Это не баг: отчёты читают %
+из features, правила — сырое из causal.
+При ML надо будет унифицировать.
+
+────────────────────
+ИНФРАСТРУКТУРА
+────────────────────
+
+**GitHub Actions:**
+- `crypto_collect.yml` → `pipeline.py`
+- `crypto_enrich.yml` → `enrich/runner.py`
+- `crypto_detect.yml` → `detect/anomaly.py`
+- `evening_report.yml` — не залит ещё
+- `morning_market_report.yml` — работает
+- `crypto_reporter.yml` — работает
+
+**cron-job.org — 3 задачи:**
+
+| Название | Cron |
+|---|---|
+| ARGUS Collect | `0 * * * *` |
+| ARGUS Enrich | `15 * * * *` |
+| ARGUS Detect | `30 * * * *` |
+
+**У каждой задачи:**
+- Method: POST
+- URL: `.../crypto_X.yml/dispatches`
+- Headers: `Authorization: Bearer ghp_...`,
+  `Accept: application/vnd.github+json`,
+  `Content-Type: application/json`
+- Body: `{"ref":"main"}`
+
+⚠️ Headers иногда слетают — проверяй
+ТЕСТОВЫМ ЗАПУСКОМ (ждём 204).
+
+────────────────────
+ЛИМИТЫ SUPABASE FREE
+────────────────────
+
+| Ресурс | Лимит | Используем |
+|---|---|---|
+| БД | 500 МБ | ~5 МБ |
+| Egress | 10 ГБ/мес | ~0.8 ГБ |
+
+**Прогноз:** при текущем темпе
+~370 строк/день, 500 МБ хватит
+на **5-11 лет**.
+
+Retention и партиционирование —
+не нужны ещё годы. Мониторить раз
+в месяц:
+`SELECT pg_size_pretty(
+  pg_database_size('postgres'));`
+
+Если >300 МБ — вводим retention.
+
+────────────────────
+ЧТО ЕЩЁ NULL В features_hourly
+────────────────────
+
+Заполняются **отдельно** (не features.py):
+
+- `oi_change_pct` — из `open_interest`
+- `ls_ratio` — из `long_short_ratio`
+- `taker_ratio` — из `taker_flow`
+- `funding_trend` — тренд funding
+- `next_change_pct` — целевая ML
+- `next_direction` — целевая ML
+- `computed_at` — время расчёта
+
+Это следующий блок работы.
+
+────────────────────
+ЧТО ДАЛЬШЕ ПО ПЛАНУ
+────────────────────
+
+**Ближайшее (когда вернёмся):**
+
+1. Заполнить `oi_change_pct`, `ls_ratio`,
+   `taker_ratio` в features_hourly
+2. `computed_at` — просто DEFAULT NOW()
+3. `next_change_pct` + `next_direction`
+   для ML
+
+**Потом:**
+
+4. Similarity search (похожие окна)
+5. Доработка графиков
+6. Вечерний техотчёт — залить
+7. ML LightGBM (при 500+ свечах)
+
+**Финальное:**
+
+8. brain/controller.py — автономия
+9. VPS в EU + Binance как 2-й донор
+
+────────────────────
+ПРАВИЛА — НЕ ВЫДУМЫВАТЬ
+────────────────────
+
+⚠️ Если не знаешь имени колонки —
+спроси. Не гадать.
+
+**Проверено фактически:**
+
+- `funding_rates` → `rate`
+- `features_hourly` → `funding_rate`
+- `causal_links` → `funding_rate`
+- PK features: `(symbol, timestamp)`
+- Timestamp с tz (UTC)
+
+**Перед SQL-запросом:**
+```sql
+SELECT column_name
+FROM information_schema.columns
+WHERE table_name = 'X';
