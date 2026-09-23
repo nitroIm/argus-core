@@ -1,31 +1,24 @@
 # ============================================================
-# ARGUS - TRANSLATE (any -> RU) v1 [PRODUCTION]
+# ARGUS - TRANSLATE (any -> RU) v4 [PRODUCTION]
 # ------------------------------------------------------------
-# NLLB-200: 200+ языков -> русский напрямую.
-# Для news + отчётов crypto.
-# ------------------------------------------------------------
-# Требования:
-#   pip install transformers==4.41.2 sentencepiece
-#               torch==2.2.0 langdetect
+# v4: пост-обработка — словарь замен имён собственных.
+#     Бикотинский → Bitcoin, биткойн → Bitcoin и т.д.
+# v3: Google Translate публичный endpoint.
 # ============================================================
 
+import os
+import re
 import json
+import time
 import hashlib
 import logging
-import threading
+import requests
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 CRYPTO_ROOT = SCRIPT_DIR.parent
 DATA_DIR = CRYPTO_ROOT / "data"
 CACHE_FILE = DATA_DIR / "news_translate_cache.json"
-
-MODEL_NAME = "facebook/nllb-200-distilled-600M"
-TGT_LANG = "rus_Cyrl"
-MAX_CHARS = 500
-CACHE_MAX_SIZE = 5000
-MIN_TRANSLATE_CHARS = 8
-BROKEN_RATIO = 0.5
 
 logging.basicConfig(
     level=logging.INFO,
@@ -34,44 +27,64 @@ logging.basicConfig(
 )
 log = logging.getLogger("crypto.translate")
 
-LANG_MAP = {
-    "en": "eng_Latn",
-    "es": "spa_Latn",
-    "de": "deu_Latn",
-    "fr": "fra_Latn",
-    "it": "ita_Latn",
-    "pt": "por_Latn",
-    "nl": "nld_Latn",
-    "pl": "pol_Latn",
-    "ru": "rus_Cyrl",
-    "uk": "ukr_Cyrl",
-    "zh-cn": "zho_Hans",
-    "zh-tw": "zho_Hant",
-    "ja": "jpn_Jpan",
-    "ko": "kor_Hang",
-    "ar": "arb_Arab",
-    "tr": "tur_Latn",
-    "vi": "vie_Latn",
-    "hi": "hin_Deva",
-    "cs": "ces_Latn",
-    "sv": "swe_Latn",
-    "da": "dan_Latn",
-    "fi": "fin_Latn",
-    "no": "nob_Latn",
-    "el": "ell_Grek",
-    "he": "heb_Hebr",
-    "hu": "hun_Latn",
-    "ro": "ron_Latn",
-    "bg": "bul_Cyrl",
+GT_URL = "https://translate.googleapis.com/translate_a/single"
+GT_PARAMS_BASE = {
+    "client": "gtx",
+    "sl": "auto",
+    "tl": "ru",
+    "dt": "t",
+}
+DELAY_BETWEEN = 0.5
+TIMEOUT = 20
+CACHE_MAX_SIZE = 5000
+MAX_CHARS_PER_REQ = 4000
+
+HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/120.0.0.0 Safari/537.36"
+    ),
 }
 
-_model = None
-_tokenizer = None
-_lock = threading.Lock()
+# Пост-обработка: словарь замен после Google Translate.
+# Ключ — что искать, значение — на что менять.
+REPLACEMENTS = [
+    # Bitcoin
+    (r"\bБикотинск\w*", "Bitcoin"),
+    (r"\bбикотинск\w*", "Bitcoin"),
+    (r"\bБиткойн\b", "Bitcoin"),
+    (r"\bбиткойн\b", "Bitcoin"),
+    (r"\bБиткоин\b", "Bitcoin"),
+    (r"\bбиткоин\b", "Bitcoin"),
+    # Ethereum
+    (r"\bЭфириум\b", "Ethereum"),
+    (r"\bэфириум\b", "Ethereum"),
+    (r"\bЭфир\b", "Ethereum"),
+    (r"\bэфир\b", "Ethereum"),
+    # Solana
+    (r"\bСолана\b", "Solana"),
+    (r"\bсолана\b", "Solana"),
+    # Аббревиатуры (Google иногда переводит)
+    (r"\bКЦБ\b", "SEC"),
+    (r"\bкцб\b", "SEC"),
+    (r"\bКФТК\b", "CFTC"),
+    (r"\bкфтк\b", "CFTC"),
+    (r"\bККДТ\b", "CFTC"),
+    (r"\bккдт\b", "CFTC"),
+    # Прочее
+    (r"\bПопрос\b", "Спрос"),
+    (r"\bпопрос\b", "спрос"),
+    (r"\bАльткойн\w*\b", "альткоин"),
+    (r"\bТокеннизаци\w*\b", "токенизация"),
+    (r"\bETF\b", "ETF"),
+    (r"\bЕТФ\b", "ETF"),
+]
+
 _cache = None
 
 
-def _load_cache() -> dict:
+def _load_cache():
     global _cache
     if _cache is not None:
         return _cache
@@ -88,7 +101,7 @@ def _load_cache() -> dict:
     return _cache
 
 
-def _save_cache() -> None:
+def _save_cache():
     if _cache is None:
         return
     try:
@@ -99,7 +112,6 @@ def _save_cache() -> None:
                 new_cache[k] = _cache[k]
             _cache.clear()
             _cache.update(new_cache)
-
         DATA_DIR.mkdir(parents=True, exist_ok=True)
         with open(CACHE_FILE, "w", encoding="utf-8") as f:
             json.dump(
@@ -110,29 +122,21 @@ def _save_cache() -> None:
         log.warning("cache save: " + str(e))
 
 
-def _cache_key(text: str) -> str:
+def _key(text):
     return hashlib.md5(text.encode("utf-8")).hexdigest()
 
 
-def detect_lang(text: str) -> str:
-    try:
-        from langdetect import detect
-        return detect(text[:500])
-    except Exception:
-        return "en"
+def _postprocess(text):
+    """Словарь замен после перевода."""
+    if not text:
+        return text
+    for pattern, repl in REPLACEMENTS:
+        text = re.sub(pattern, repl, text)
+    text = re.sub(r"\s+", " ", text).strip()
+    return text
 
 
-def get_nllb_code(lang: str) -> str:
-    lang = lang.lower()
-    if lang in LANG_MAP:
-        return LANG_MAP[lang]
-    short = lang[:2]
-    if short in LANG_MAP:
-        return LANG_MAP[short]
-    return "eng_Latn"
-
-
-def is_russian(text: str) -> bool:
+def is_russian(text):
     if not text:
         return False
     sample = text[:3000]
@@ -146,18 +150,22 @@ def is_russian(text: str) -> bool:
     return (cyr / len(letters)) > 0.5
 
 
-def is_english(text: str) -> bool:
+def is_english(text):
     if not text:
         return False
     try:
-        return detect_lang(text) == "en"
+        letters = [c for c in text if c.isalpha()]
+        if not letters:
+            return False
+        latin = sum(1 for c in letters if c.isascii())
+        return (latin / len(letters)) > 0.6
     except Exception:
         return False
 
 
-def _should_skip(text: str) -> bool:
+def _should_skip(text):
     t = text.strip()
-    if len(t) < MIN_TRANSLATE_CHARS:
+    if len(t) < 8:
         return True
     letters = sum(1 for c in t if c.isalpha())
     if letters < 3:
@@ -165,115 +173,175 @@ def _should_skip(text: str) -> bool:
     return False
 
 
-def looks_broken(text: str) -> bool:
-    if not text:
-        return False
-    words = text.split()
-    if len(words) < 5:
-        return False
-    from collections import Counter
-    counts = Counter(words)
-    top = counts.most_common(1)[0]
-    if top[1] / len(words) > BROKEN_RATIO:
-        return True
-    if len(words) >= 3:
-        if words[-1] == words[-2] == words[-3]:
-            return True
-    return False
-
-
-def _load_model():
-    global _model, _tokenizer
-    with _lock:
-        if _model is None:
-            import torch
-            from transformers import (
-                AutoModelForSeq2SeqLM,
-                AutoTokenizer,
-            )
-            log.info("loading NLLB: " + MODEL_NAME)
-            _tokenizer = AutoTokenizer.from_pretrained(
-                MODEL_NAME, src_lang="eng_Latn",
-            )
-            _model = AutoModelForSeq2SeqLM.from_pretrained(
-                MODEL_NAME
-            )
-            _model.eval()
-            log.info("NLLB ready")
-    return _model, _tokenizer
-
-
-def _generate(model, tokenizer, texts):
-    import torch
-    tokens = tokenizer(
-        texts,
-        return_tensors="pt",
-        padding=True,
-        truncation=True,
-        max_length=512,
-    )
-    with torch.no_grad():
-        out = model.generate(
-            **tokens,
-            forced_bos_token_id=(
-                tokenizer.convert_tokens_to_ids(TGT_LANG)
-            ),
-            max_new_tokens=400,
-            num_beams=1,
-            no_repeat_ngram_size=4,
-            repetition_penalty=1.3,
-            length_penalty=1.0,
-        )
-    return tokenizer.batch_decode(
-        out, skip_special_tokens=True
-    )
-
-
-def translate_to_ru(text: str) -> str:
+def _gt_translate_one(text):
     if not text or not text.strip():
         return text
+    if len(text) > MAX_CHARS_PER_REQ:
+        text = text[:MAX_CHARS_PER_REQ]
 
-    cache = _load_cache()
-    key = _cache_key(text)
-    if key in cache:
-        return cache[key]
-
-    if is_russian(text):
-        cache[key] = text
-        return text
-
-    if _should_skip(text):
-        cache[key] = text
-        return text
-
-    src_lang = detect_lang(text)
-    nllb_src = get_nllb_code(src_lang)
+    params = dict(GT_PARAMS_BASE)
+    params["q"] = text
 
     try:
-        model, tokenizer = _load_model()
-        tokenizer.src_lang = nllb_src
-        truncated = text[:MAX_CHARS]
-        decoded = _generate(
-            model, tokenizer, [truncated],
+        r = requests.get(
+            GT_URL,
+            params=params,
+            headers=HEADERS,
+            timeout=TIMEOUT,
         )
-        result = decoded[0].strip() if decoded else ""
+        if r.status_code != 200:
+            log.warning(
+                "gt %d: %s",
+                r.status_code, r.text[:150],
+            )
+            return None
 
-        if result and not looks_broken(result):
-            cache[key] = result
-            return result
-        log.warning("broken, keep original")
+        data = r.json()
+        if not data or not isinstance(data, list):
+            return None
+        if not data[0]:
+            return None
+
+        pieces = []
+        for chunk in data[0]:
+            if chunk and len(chunk) > 0 and chunk[0]:
+                pieces.append(chunk[0])
+        result = "".join(pieces).strip()
+        if result:
+            return _postprocess(result)
+        return None
     except Exception as e:
-        log.error("translate err: " + str(e))
-
-    cache[key] = text
-    return text
+        log.warning("gt err: " + str(e))
+        return None
 
 
-def translate_batch(texts: list) -> list:
+def _gt_translate_batch(texts):
     if not texts:
         return []
-    return [translate_to_ru(t) for t in texts]
+
+    combined = "\n".join(texts)
+    if len(combined) > MAX_CHARS_PER_REQ:
+        results = []
+        for t in texts:
+            results.append(_gt_translate_one(t))
+            time.sleep(DELAY_BETWEEN)
+        return results
+
+    params = dict(GT_PARAMS_BASE)
+    params["q"] = combined
+
+    try:
+        r = requests.get(
+            GT_URL,
+            params=params,
+            headers=HEADERS,
+            timeout=TIMEOUT,
+        )
+        if r.status_code != 200:
+            log.warning(
+                "gt batch %d: %s",
+                r.status_code, r.text[:150],
+            )
+            return [None] * len(texts)
+
+        data = r.json()
+        if not data or not isinstance(data, list):
+            return [None] * len(texts)
+        if not data[0]:
+            return [None] * len(texts)
+
+        pieces = []
+        for chunk in data[0]:
+            if chunk and len(chunk) > 0 and chunk[0]:
+                pieces.append(chunk[0])
+        full = "".join(pieces).strip()
+
+        translated = [p.strip() for p in full.split("\n")]
+
+        if len(translated) != len(texts):
+            log.warning(
+                "gt batch len mismatch: %d vs %d",
+                len(translated), len(texts),
+            )
+            results = []
+            for t in texts:
+                results.append(_gt_translate_one(t))
+                time.sleep(DELAY_BETWEEN)
+            return results
+
+        # Пост-обработка каждой строки
+        return [_postprocess(t) for t in translated]
+    except Exception as e:
+        log.warning("gt batch err: " + str(e))
+        return [None] * len(texts)
 
 
-def save_cache() -> None:
+def translate_batch(texts):
+    if not texts:
+        return []
+
+    cache = _load_cache()
+    results = [None] * len(texts)
+    to_translate_idx = []
+    to_translate_texts = []
+
+    for i, text in enumerate(texts):
+        if not text or not text.strip():
+            results[i] = text
+            continue
+        if is_russian(text):
+            results[i] = text
+            continue
+        if _should_skip(text):
+            results[i] = text
+            continue
+
+        key = _key(text)
+        if key in cache:
+            results[i] = cache[key]
+            continue
+
+        to_translate_idx.append(i)
+        to_translate_texts.append(text)
+
+    if not to_translate_texts:
+        return results
+
+    log.info(
+        "translating %d texts via Google",
+        len(to_translate_texts),
+    )
+
+    batch_size = 20
+    for start in range(0, len(to_translate_texts), batch_size):
+        batch = to_translate_texts[start:start + batch_size]
+        idxs = to_translate_idx[start:start + batch_size]
+
+        translations = _gt_translate_batch(batch)
+
+        for k, tr in enumerate(translations):
+            idx = idxs[k]
+            if tr and tr.strip():
+                results[idx] = tr.strip()
+                cache[_key(texts[idx])] = tr.strip()
+            else:
+                results[idx] = texts[idx]
+
+        if start + batch_size < len(to_translate_texts):
+            time.sleep(DELAY_BETWEEN)
+
+    _save_cache()
+    return [
+        r if r is not None else texts[i]
+        for i, r in enumerate(results)
+    ]
+
+
+def translate_to_ru(text):
+    if not text:
+        return text
+    return translate_batch([text])[0]
+
+
+def save_cache():
     _save_cache()
