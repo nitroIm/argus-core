@@ -1,9 +1,9 @@
 # ============================================================
 # ARGUS-Trader — FEATURES
 # ------------------------------------------------------------
-# v3.1: fix — в funding_rates колонка называется rate.
+# v3.2: ON CONFLICT DO UPDATE — обновляем существующие.
+# v3.1: fix — колонка rate в funding_rates.
 # v3: полная защита.
-# v2: + funding_rate
 # ============================================================
 
 import sys
@@ -203,7 +203,6 @@ def fetch_candles(symbol, timeframe="1h", limit=500):
 
 
 def fetch_funding(symbol):
-    """Колонка в funding_rates называется rate."""
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
@@ -269,7 +268,25 @@ def save_features(symbol, features):
                             "%s, %s, %s, %s, %s, %s, %s, "
                             "%s, %s) "
                             "ON CONFLICT (symbol, timestamp) "
-                            "DO NOTHING",
+                            "DO UPDATE SET "
+                            "change_pct = EXCLUDED.change_pct, "
+                            "range_pct = EXCLUDED.range_pct, "
+                            "body_pct = EXCLUDED.body_pct, "
+                            "upper_wick_pct = "
+                            "EXCLUDED.upper_wick_pct, "
+                            "lower_wick_pct = "
+                            "EXCLUDED.lower_wick_pct, "
+                            "volume_ratio_24h = "
+                            "EXCLUDED.volume_ratio_24h, "
+                            "volatility_24h = "
+                            "EXCLUDED.volatility_24h, "
+                            "volatility_7d = "
+                            "EXCLUDED.volatility_7d, "
+                            "change_4h = EXCLUDED.change_4h, "
+                            "change_24h = EXCLUDED.change_24h, "
+                            "change_7d = EXCLUDED.change_7d, "
+                            "funding_rate = "
+                            "EXCLUDED.funding_rate",
                             (
                                 symbol,
                                 f["timestamp"],
@@ -391,13 +408,13 @@ def process_symbol(symbol, timeframe="1h"):
     log.info(f"   funding заполнен: {filled}")
 
     added = save_features(symbol, base_features)
-    log.info(f"   ✅ Добавлено: {added}")
+    log.info(f"   ✅ Записано: {added}")
     return added
 
 
 def main():
     log.info("=" * 60)
-    log.info("🧮 ARGUS-Trader FEATURES v3.1")
+    log.info("🧮 ARGUS-Trader FEATURES v3.2")
     log.info("=" * 60)
 
     total = 0
