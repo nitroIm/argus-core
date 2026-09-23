@@ -1,12 +1,22 @@
+# ============================================================
+# ARGUS - NEWS
+# ------------------------------------------------------------
+# v2: правильные пути (analyzer из crypto/collect)
+# ============================================================
+
 name: ARGUS News
 
 on:
   workflow_dispatch:
   # schedule:
-  #   - cron: '0 */4 * * *'   # каждые 4 часа (включи, когда захочешь)
+  #   - cron: '0 */4 * * *'
 
 permissions:
   contents: write
+
+concurrency:
+  group: argus-news
+  cancel-in-progress: false
 
 jobs:
   news:
@@ -26,10 +36,11 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/pip
-          key: pip-news-${{ hashFiles('scripts/requirements.txt') }}
+          key: >-
+            pip-news-${{ hashFiles('scripts/requirements.txt') }}
           restore-keys: pip-news-
 
-      - name: Cache HuggingFace models
+      - name: Cache HuggingFace
         uses: actions/cache@v4
         with:
           path: ~/.cache/huggingface
@@ -40,30 +51,56 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install requests
-          pip install torch==2.2.0 --index-url https://download.pytorch.org/whl/cpu
-          pip install transformers==4.41.2 sentencepiece sacremoses
+          pip install torch==2.2.0 \
+            --index-url https://download.pytorch.org/whl/cpu
+          pip install transformers==4.41.2
+          pip install sentencepiece sacremoses
 
       - name: Run news analyzer
         env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: |
-          cd scripts
-          python news.py
+          TELEGRAM_BOT_TOKEN: >-
+            ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: >-
+            ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python crypto/collect/news.py
 
       - name: Run news report
         env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: |
-          cd scripts
-          python news_report.py
+          TELEGRAM_BOT_TOKEN: >-
+            ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: >-
+            ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python scripts/news_report.py
 
       - name: Commit
         run: |
           git config user.name "ARGUS"
           git config user.email "argus@github.com"
           git add -A
-          git diff --staged --quiet || git commit -m "ARGUS: news $(date -u +%Y-%m-%dT%H:%M:%SZ)"
-          git pull --rebase origin main || true
-          git push || true
+          if git diff --staged --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          git commit -m "ARGUS: news [skip ci]"
+          for i in 1 2 3; do
+            git pull --rebase --autostash origin main || true
+            if git push origin main; then
+              break
+            fi
+            sleep 5
+          done
+
+      - name: Notify on failure
+        if: failure()
+        env:
+          TELEGRAM_BOT_TOKEN: >-
+            ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: >-
+            ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          curl -s -X POST \
+            "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            -H "Content-Type: application/json" \
+            -d "{\"chat_id\": \"${TELEGRAM_CHAT_ID}\", \
+                 \"text\": \"News упал\", \
+                 \"parse_mode\": \"HTML\"}" || true
