@@ -1,19 +1,19 @@
 {
-  "generated_at": "2026-09-23T12:53:04.168814+00:00",
+  "generated_at": "2026-09-23T13:34:27.750733+00:00",
   "total_news": 128,
-  "avg_sentiment": 0.002,
+  "avg_sentiment": -0.01,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
-  "bullish_count": 26,
+  "bullish_count": 25,
   "bearish_count": 23,
-  "neutral_count": 79,
+  "neutral_count": 80,
   "fake_count": 0,
-  "cross_confirmed": 8,
-  "single_source": 97,
+  "cross_confirmed": 6,
+  "single_source": 100,
   "by_source": {
     "Cointelegraph": {
       "total": 25,
       "bull": 4,
-      "bear": 10
+      "bear": 9
     },
     "Decrypt": {
       "total": 25,
@@ -28,11 +28,11 @@
     "CryptoSlate": {
       "total": 10,
       "bull": 1,
-      "bear": 3
+      "bear": 4
     },
     "CryptoPotato": {
       "total": 25,
-      "bull": 13,
+      "bull": 12,
       "bear": 2
     },
     "Bitcoinist": {
@@ -48,23 +48,23 @@
   },
   "top_bullish": [
     {
-      "title": "Утренняя минута: Биткойн достиг 86 000 долларов в качестве слайдов нефти и ETFs предложить",
-      "source": "Decrypt",
-      "source_weight": 1.1,
+      "title": "MoonPay to buy North Capital in all-stock deal worth over $60M",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
       "lang": "en",
-      "pub_date": "2026-09-23T12:26:07+00:00",
+      "pub_date": "2026-09-23T13:00:00+00:00",
       "sentiment": 1.0,
-      "bull_weight": 1,
+      "bull_weight": 2,
       "bear_weight": 0,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-09-23T12:52:57.778471+00:00",
-      "effective_weight": 1.65,
-      "title_original": "Morning Minute: Bitcoin Hits $86,000 as Oil Slides and ETFs Bid",
-      "cross_check": 2
+      "collected_at": "2026-09-23T13:34:26.296077+00:00",
+      "effective_weight": 1.95,
+      "title_original": "MoonPay to buy North Capital in all-stock deal worth over $60M",
+      "cross_check": 1
     },
     {
-      "title": "Рынок бука биткоина \" подтвержден \", но 90 000 000 долл. США представляют собой риск, связанный с получением прибыли: анализ",
+      "title": "Bitcoin bull market ‘confirmed’ but $90K presents profit-taking risk: Analysis",
       "source": "Cointelegraph",
       "source_weight": 1.3,
       "lang": "en",
@@ -74,25 +74,9 @@
       "bear_weight": 0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-09-23T12:52:57.685692+00:00",
+      "collected_at": "2026-09-23T13:34:26.296277+00:00",
       "effective_weight": 1.3,
       "title_original": "Bitcoin bull market ‘confirmed’ but $90K presents profit-taking risk: Analysis",
-      "cross_check": 2
-    },
-    {
-      "title": "Биткоинские ETF принимают в 1,7B за 2 дня в качестве базы для расчета расходов владельца BTC",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-09-23T07:25:05+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1,
-      "bear_weight": 0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-09-23T12:52:57.685917+00:00",
-      "effective_weight": 1.3,
-      "title_original": "Bitcoin ETFs take in $1.7B in 2 days as BTC tops holder cost basis",
       "cross_check": 2
     },
     {
@@ -106,31 +90,63 @@
       "bear_weight": 0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-09-23T12:53:03.977870+00:00",
+      "collected_at": "2026-09-23T13:34:27.628369+00:00",
       "effective_weight": 1.2,
       "title_original": "Приток в биткоин-ETF превысил $1,7 млрд за два дня",
       "cross_check": 1
     },
     {
-      "title": "В BlackRock назвали развитие ИИ драйвером роста крипторынка",
-      "source": "ForkLog",
-      "source_weight": 1.2,
-      "lang": "ru",
-      "pub_date": "2026-09-23T07:34:24+00:00",
+      "title": "Morning Minute: Bitcoin Hits $86,000 as Oil Slides and ETFs Bid",
+      "source": "Decrypt",
+      "source_weight": 1.1,
+      "lang": "en",
+      "pub_date": "2026-09-23T12:26:07+00:00",
       "sentiment": 1.0,
       "bull_weight": 1,
       "bear_weight": 0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-09-23T12:53:03.997740+00:00",
-      "effective_weight": 1.2,
-      "title_original": "В BlackRock назвали развитие ИИ драйвером роста крипторынка",
-      "cross_check": 1
+      "collected_at": "2026-09-23T13:34:26.360570+00:00",
+      "effective_weight": 1.1,
+      "title_original": "Morning Minute: Bitcoin Hits $86,000 as Oil Slides and ETFs Bid",
+      "cross_check": 2
+    },
+    {
+      "title": "Bitcoin ETFs take in $1.7B in 2 days as BTC tops holder cost basis",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-09-23T07:25:05+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1,
+      "bear_weight": 0,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-09-23T13:34:26.296448+00:00",
+      "effective_weight": 1.04,
+      "title_original": "Bitcoin ETFs take in $1.7B in 2 days as BTC tops holder cost basis",
+      "cross_check": 2
     }
   ],
   "top_bearish": [
     {
-      "title": "Стулья ККДТ подталкивают к символизации, поскольку КЦБ открывает двери для цепных запасов",
+      "title": "Altcoin demand meets $18B threat as flows move into RWA perps as just 19% of traders keep alts",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-09-23T13:30:50+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0,
+      "bear_weight": 1,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-09-23T13:34:26.636382+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Altcoin demand meets $18B threat as flows move into RWA perps as just 19% of traders keep alts",
+      "cross_check": 1
+    },
+    {
+      "title": "CFTC chair pushes tokenization as SEC opens door to onchain stocks",
       "source": "Cointelegraph",
       "source_weight": 1.3,
       "lang": "en",
@@ -140,7 +156,7 @@
       "bear_weight": 1,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-09-23T12:52:57.685622+00:00",
+      "collected_at": "2026-09-23T13:34:26.296227+00:00",
       "effective_weight": 1.3,
       "title_original": "CFTC chair pushes tokenization as SEC opens door to onchain stocks",
       "cross_check": 1
@@ -156,7 +172,7 @@
       "bear_weight": 1,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-09-23T12:53:03.983786+00:00",
+      "collected_at": "2026-09-23T13:34:27.628407+00:00",
       "effective_weight": 1.2,
       "title_original": "CFTC предупредила о рисках манипуляций в прогнозных контрактах",
       "cross_check": 1
@@ -172,29 +188,13 @@
       "bear_weight": 1,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-09-23T12:53:03.988533+00:00",
+      "collected_at": "2026-09-23T13:34:27.628474+00:00",
       "effective_weight": 1.2,
       "title_original": "Alpenglow вышел на этап активации в тестнете Solana",
       "cross_check": 1
     },
     {
-      "title": "SlowMist связала приложение FomoPeek с кражей криптоактивов",
-      "source": "ForkLog",
-      "source_weight": 1.2,
-      "lang": "ru",
-      "pub_date": "2026-09-23T07:00:00+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0,
-      "bear_weight": 1,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-09-23T12:53:04.001897+00:00",
-      "effective_weight": 1.2,
-      "title_original": "SlowMist связала приложение FomoPeek с кражей криптоактивов",
-      "cross_check": 1
-    },
-    {
-      "title": "Секретарь Казначейства США становится лидером Трампс-Ай царской роли: доклад",
+      "title": "US Treasury secretary emerges as frontrunner for Trump’s AI czar role: Report",
       "source": "Cointelegraph",
       "source_weight": 1.3,
       "lang": "en",
@@ -204,7 +204,7 @@
       "bear_weight": 1,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-09-23T12:52:57.686025+00:00",
+      "collected_at": "2026-09-23T13:34:26.296526+00:00",
       "effective_weight": 1.04,
       "title_original": "US Treasury secretary emerges as frontrunner for Trump’s AI czar role: Report",
       "cross_check": 1
