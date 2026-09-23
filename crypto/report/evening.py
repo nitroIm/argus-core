@@ -1,8 +1,13 @@
 # ============================================================
 # ARGUS-Trader — ВЕЧЕРНИЙ ТЕХОТЧЁТ v2.2 [PRODUCTION]
 # ------------------------------------------------------------
-# Полный аудит: workflows, свежесть, активность,
-# детали событий и аномалий, счётчики БД, проблемы.
+# Полный аудит системы:
+#   - workflows за 24ч (ok/fail/added, время)
+#   - свежесть candles/features/patterns
+#   - события за 24ч с деталями
+#   - аномалии за 24ч с деталями
+#   - всего в БД
+#   - проблемы
 # Отправка 18:00 UTC (20:00 КЛГ).
 # ------------------------------------------------------------
 # Требования:
@@ -143,15 +148,16 @@ def send_message(text: str) -> bool:
 def _esc(s) -> str:
     if not s:
         return ""
-    return str(s).replace("&", "&amp;").replace(
-        "<", "&lt;").replace(">", "&gt;"
-    )
+    s = str(s)
+    s = s.replace("&", "&amp;")
+    s = s.replace("<", "&lt;")
+    s = s.replace(">", "&gt;")
+    return s
 
 
 def _since(hours: int) -> datetime:
-    return datetime.now(timezone.utc) - timedelta(
-        hours=hours
-    )
+    now = datetime.now(timezone.utc)
+    return now - timedelta(hours=hours)
 
 
 # ============================================================
@@ -272,12 +278,16 @@ def fetch_events_24h() -> list:
                 )
                 cur.execute(sql, (since,))
                 for r in cur.fetchall():
+                    cp = r[3]
+                    if cp is not None:
+                        cp = float(cp)
+                    else:
+                        cp = 0
                     out.append({
                         "symbol": r[0] or "?",
                         "timestamp": r[1],
                         "type": r[2] or "?",
-                        "change_pct": float(r[3]) \
-                            if r[3] is not None else 0,
+                        "change_pct": cp,
                     })
     except Exception as e:
         log.exception("fetch_events_24h: %s", e)
@@ -369,16 +379,16 @@ def fmt_time_short(ts) -> str:
 # ============================================================
 # REPORT SECTIONS
 # ============================================================
-def _section_workflows(lines: list, grouped: dict,
-                       runs: list) -> None:
+def _section_workflows(lines: list, grouped: dict) -> None:
     lines.append("⚙️ <b>Workflows за 24ч</b>")
     if not grouped:
         lines.append("  ⚠️ Запусков не было")
         lines.append("  ❗ Проверь cron-job.org")
         return
 
-    total_runs = sum(g["ok"] + g["fail"]
-                     for g in grouped.values())
+    total_runs = 0
+    for g in grouped.values():
+        total_runs += g["ok"] + g["fail"]
     lines.append(
         "  всего запусков: " + str(total_runs)
     )
@@ -417,7 +427,6 @@ def _section_events(lines: list, events: list) -> None:
         lines.append("  нет (рынок в боковике)")
         return
 
-    # Группировка по типу
     by_type = {}
     for e in events:
         t = e["type"]
@@ -425,25 +434,24 @@ def _section_events(lines: list, events: list) -> None:
 
     total = len(events)
     parts = []
-    for t, n in sorted(
+    sorted_types = sorted(
         by_type.items(), key=lambda x: -x[1]
-    ):
-        parts.append(_esc(t) + " " + str(n))
-    lines.append(
-        "  всего: " + str(total)
-        + " (" + ", ".join(parts) + ")"
     )
+    for t, n in sorted_types:
+        parts.append(_esc(t) + " " + str(n))
 
-    # Последние 5
+    line = "  всего: " + str(total)
+    line += " (" + ", ".join(parts) + ")"
+    lines.append(line)
+
     for e in events[:5]:
         sym = e["symbol"].replace("USDT", "")
         t = fmt_time_short(e["timestamp"])
-        line = "    " + t + " " + sym
+        line = "    " + t + " " + _esc(sym)
         line += " " + _esc(e["type"])
         if e["change_pct"]:
-            line += " (" + format(
-                e["change_pct"], "+.2f"
-            ) + "%)"
+            cp = format(e["change_pct"], "+.2f")
+            line += " (" + cp + "%)"
         lines.append(line)
 
 
@@ -453,7 +461,6 @@ def _section_anomalies(lines: list, anomalies: list) -> None:
         lines.append("  нет")
         return
 
-    # Группировка по типу
     by_type = {}
     for a in anomalies:
         t = a["type"]
@@ -461,21 +468,21 @@ def _section_anomalies(lines: list, anomalies: list) -> None:
 
     total = len(anomalies)
     parts = []
-    for t, n in sorted(
+    sorted_types = sorted(
         by_type.items(), key=lambda x: -x[1]
-    ):
-        parts.append(_esc(t) + " " + str(n))
-    lines.append(
-        "  всего: " + str(total)
-        + " (" + ", ".join(parts) + ")"
     )
+    for t, n in sorted_types:
+        parts.append(_esc(t) + " " + str(n))
 
-    # Последние 5 с деталями
+    line = "  всего: " + str(total)
+    line += " (" + ", ".join(parts) + ")"
+    lines.append(line)
+
     for a in anomalies[:5]:
         sym = a["symbol"].replace("USDT", "")
         t = fmt_time_short(a["timestamp"])
         sev = _esc(a["severity"])
-        line = "    " + t + " " + sym
+        line = "    " + t + " " + _esc(sym)
         line += " " + _esc(a["type"])
         line += " [" + sev + "]"
         lines.append(line)
@@ -493,34 +500,29 @@ def _section_stats(lines: list, stats: dict) -> None:
         lines.append(line)
 
 
-def _collect_problems(grouped: dict, fresh: dict,
-                      runs: list) -> list:
+def _collect_problems(grouped: dict, fresh: dict) -> list:
     problems = []
 
-    # Workflows
     for job, g in grouped.items():
         if g["fail"] > 0:
-            problems.append(
-                "workflow " + _esc(job)
-                + ": " + str(g["fail"]) + " fail"
-            )
+            line = "workflow " + _esc(job)
+            line += ": " + str(g["fail"]) + " fail"
+            problems.append(line)
 
-    # Сколько запусков collect
     if grouped:
-        main = max(
-            grouped.items(),
-            key=lambda x: x[1]["ok"] + x[1]["fail"],
-        )
-        total = main[1]["ok"] + main[1]["fail"]
-        if total < MIN_COLLECT_RUNS:
-            problems.append(
-                "мало запусков (" + str(total)
-                + " за 24ч, ожидаем 8+)"
-            )
+        total_max = 0
+        for g in grouped.values():
+            t = g["ok"] + g["fail"]
+            if t > total_max:
+                total_max = t
+        if total_max < MIN_COLLECT_RUNS:
+            line = "мало запусков ("
+            line += str(total_max)
+            line += " за 24ч, ожидаем 8+)"
+            problems.append(line)
     else:
         problems.append("нет данных о запусках")
 
-    # Freshness
     for table, info in fresh.items():
         exp = FRESHNESS_EXPECTED.get(table, 120)
         age = info["age_min"]
@@ -548,7 +550,7 @@ def build_report() -> str:
 
     runs = fetch_runs(LOOKBACK_HOURS)
     grouped = group_runs(runs)
-    _section_workflows(lines, grouped, runs)
+    _section_workflows(lines, grouped)
     lines.append("")
 
     fresh = fetch_freshness()
@@ -567,9 +569,7 @@ def build_report() -> str:
     _section_stats(lines, stats)
     lines.append("")
 
-    problems = _collect_problems(
-        grouped, fresh, runs,
-    )
+    problems = _collect_problems(grouped, fresh)
     if not problems:
         lines.append("✨ <i>Всё штатно</i>")
     else:
@@ -592,17 +592,19 @@ def main() -> None:
     try:
         text = build_report()
         log.info("report: %d chars", len(text))
-        if not send_message(text):
+        ok = send_message(text)
+        if not ok:
             log.warning("send_message returned False")
         else:
             log.info("report sent")
     except Exception as e:
         log.exception("main: %s", e)
         try:
-            send_message(
-                "❌ Техотчёт упал\n"
-                "<code>" + str(e)[:200] + "</code>"
-            )
+            err_text = "❌ Техотчёт упал\n"
+            err_text += "<code>"
+            err_text += str(e)[:200]
+            err_text += "</code>"
+            send_message(err_text)
         except Exception:
             pass
         exit_code = 1
