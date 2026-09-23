@@ -1,0 +1,67 @@
+# ============================================================
+# ARGUS - Simulator 01
+# ------------------------------------------------------------
+# Виртуальная торговля. Каждый час.
+# ============================================================
+
+name: ARGUS Simulator 01
+
+on:
+  workflow_dispatch:
+  # schedule:
+  #   - cron: '0 * * * *'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: argus-simulator-01
+  cancel-in-progress: false
+
+jobs:
+  sim:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: pip install requests==2.32.3
+
+      - name: Run simulator
+        env:
+          MEXC_API_KEY: >-
+            ${{ secrets.MEXC_API_KEY }}
+          MEXC_API_SECRET: >-
+            ${{ secrets.MEXC_API_SECRET }}
+          TELEGRAM_BOT_TOKEN: >-
+            ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: >-
+            ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python crypto/mexc/simulator_01/runner.py
+
+      - name: Commit state
+        run: |
+          git config user.name "ARGUS"
+          git config user.email "argus@github.com"
+          git add crypto/mexc/simulator_01/state/ || true
+          if git diff --staged --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          git commit -m "sim01: state [skip ci]"
+          for i in 1 2 3; do
+            git pull --rebase -X theirs \
+              --autostash origin main || true
+            if git push origin main; then
+              break
+            fi
+            sleep 5
+          done
