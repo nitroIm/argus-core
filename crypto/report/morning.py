@@ -1,8 +1,7 @@
 # ============================================================
-# ARGUS - УТРЕННИЙ ОТЧЁТ РЫНКА v4
+# ARGUS - УТРЕННИЙ ОТЧЁТ v4.1
 # ------------------------------------------------------------
 # v4: + spot цена (актуальная, не от 1h свечи)
-# v3.2: escape < > в правилах + короткие строки
 # ============================================================
 
 import os
@@ -21,7 +20,8 @@ TMP_DIR.mkdir(parents=True, exist_ok=True)
 
 sys.path.insert(0, str(CRYPTO_ROOT))
 
-from db import get_connection, close_connection
+from db import get_connection
+from db import close_connection
 from report.charts import plot_candles
 from report.charts import plot_pattern
 from report.charts import plot_rsi
@@ -39,16 +39,15 @@ CHAT_ID = (
     or ""
 ).strip()
 
-# Биржи для spot (fall):
-back)
+# Биржи для spot (fallback)
 SPOT_SOURCES = [
     {
         "name": "MEXC",
-        "url": "https://api.mexc.com/api/v3/ticker/price?   symbol={sym}",
-        "parse": lambda j if: float(j["price p"]),
+        "url": "https://api.mexc.com/api/v3/ticker/price?symbol={sym}",
+        "parse": lambda j: float(j["price"]),
     },
     {
-        "name": " >=Binance",
+        "name": "Binance",
         "url": "https://api.binance.com/api/v3/ticker/price?symbol={sym}",
         "parse": lambda j: float(j["price"]),
     },
@@ -72,7 +71,9 @@ def fetch_spot(symbol):
         try:
             url = src["url"]
             if "sym_fmt" in src:
-                url = url.format(sym_dash=src["sym_fmt"](symbol))
+                url = url.format(
+                    sym_dash=src["sym_fmt"](symbol)
+                )
             else:
                 url = url.format(sym=symbol)
             r = requests.get(url, timeout=8)
@@ -104,7 +105,8 @@ def load_json(path, default=None):
         return default
 
 
-def fmt_price(p 1000:
+def fmt_price(p):
+    if p >= 1000:
         return "$" + format(int(p), ",")
     if p >= 1:
         return "$" + format(p, ".2f")
@@ -153,7 +155,9 @@ def send_message(text):
                 url, json=payload, timeout=20,
             )
             if r.status_code != 200:
-                print("send err " + str(r.status_code))
+                msg = "send err "
+                msg += str(r.status_code)
+                print(msg)
                 ok_all = False
         except Exception as e:
             print("send: " + str(e))
@@ -341,7 +345,9 @@ def build_trade_advice(
     price = candles[-1]["close"]
     atr = compute_atr(candles, 14)
 
-    sym_lvl = levels.get("symbols", {}).get(symbol, {})
+    sym_lvl = levels.get("symbols", {}).get(
+        symbol, {}
+    )
     supports = sym_lvl.get("supports", [])
     resistances = sym_lvl.get("resistances", [])
 
@@ -433,10 +439,7 @@ def build_report_text():
         if not candles:
             continue
 
-        # Close последней 1h свечи (для ATR/стопов)
         price_close = candles[-1]["close"]
-
-        # Spot (актуальная)
         spot = fetch_spot(symbol)
 
         change_24h = 0
@@ -447,7 +450,6 @@ def build_report_text():
                     (price_close - prev) / prev * 100
                 )
 
-        # Заголовок с двумя ценами
         line = "💰 <b>" + name + "</b>: "
         if spot:
             line += fmt_price(spot) + " (spot)"
@@ -460,7 +462,6 @@ def build_report_text():
         funding_data = fetch_funding(symbol, 50)
         oi_data = fetch_oi(symbol, 100)
 
-        # Рекомендации от свечи (там ATR/stops)
         advice = build_trade_advice(
             name, symbol, candles, levels,
             patterns, funding_data, oi_data,
@@ -508,7 +509,7 @@ def build_report_text():
 
 
 def main():
-    print("Morning report v4 - start")
+    print("Morning report v4.1 - start")
 
     text = build_report_text()
     print("text len: " + str(len(text)))
