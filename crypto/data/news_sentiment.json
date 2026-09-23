@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-09-23T14:10:23.812803+00:00",
+  "generated_at": "2026-09-23T14:22:50.852551+00:00",
   "total_news": 128,
-  "avg_sentiment": 0.068,
+  "avg_sentiment": 0.071,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
   "bullish_count": 27,
   "bearish_count": 16,
@@ -58,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-09-23T14:10:23.715789+00:00",
+      "collected_at": "2026-09-23T14:22:50.729592+00:00",
       "effective_weight": 1.8,
       "title_original": "Raiffeisen подготовила запуск криптосервисов в 11 странах Европы",
       "cross_check": 1
@@ -74,7 +74,7 @@
       "bear_weight": 0.0,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-09-23T14:10:22.860880+00:00",
+      "collected_at": "2026-09-23T14:22:49.762177+00:00",
       "effective_weight": 1.5,
       "title_original": "Bitcoin Price Analysis: BTC Faces First Major Test After 13% Weekly Rally",
       "cross_check": 4
@@ -90,7 +90,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-09-23T14:10:22.283637+00:00",
+      "collected_at": "2026-09-23T14:22:49.284361+00:00",
       "effective_weight": 1.3,
       "title_original": "MoonPay to buy North Capital in all-stock deal worth over $60M",
       "cross_check": 1
@@ -106,7 +106,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-09-23T14:10:22.283751+00:00",
+      "collected_at": "2026-09-23T14:22:49.284524+00:00",
       "effective_weight": 1.3,
       "title_original": "CFTC chair pushes tokenization as SEC opens door to onchain stocks",
       "cross_check": 1
@@ -122,7 +122,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-09-23T14:10:23.716158+00:00",
+      "collected_at": "2026-09-23T14:22:50.730040+00:00",
       "effective_weight": 1.2,
       "title_original": "Приток в биткоин-ETF превысил $1,7 млрд за два дня",
       "cross_check": 1
@@ -140,7 +140,7 @@
       "bear_weight": 1.0,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-09-23T14:10:22.695360+00:00",
+      "collected_at": "2026-09-23T14:22:49.653922+00:00",
       "effective_weight": 1.5,
       "title_original": "Altcoin demand meets $18B threat as flows move into RWA perps as just 19% of traders keep alts",
       "cross_check": 1
@@ -156,25 +156,9 @@
       "bear_weight": 1.2,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-09-23T14:10:23.716194+00:00",
+      "collected_at": "2026-09-23T14:22:50.730086+00:00",
       "effective_weight": 1.2,
       "title_original": "CFTC предупредила о рисках манипуляций в прогнозных контрактах",
-      "cross_check": 1
-    },
-    {
-      "title": "Alpenglow вышел на этап активации в тестнете Solana",
-      "source": "ForkLog",
-      "source_weight": 1.2,
-      "lang": "ru",
-      "pub_date": "2026-09-23T08:22:08+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-09-23T14:10:23.716260+00:00",
-      "effective_weight": 1.2,
-      "title_original": "Alpenglow вышел на этап активации в тестнете Solana",
       "cross_check": 1
     },
     {
@@ -188,7 +172,7 @@
       "bear_weight": 1.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-09-23T14:10:22.284051+00:00",
+      "collected_at": "2026-09-23T14:22:49.284896+00:00",
       "effective_weight": 1.04,
       "title_original": "Malicious iOS app FomoPeek linked to $580K crypto theft, SlowMist says",
       "cross_check": 1
@@ -204,10 +188,26 @@
       "bear_weight": 1.2,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-09-23T14:10:22.284164+00:00",
+      "collected_at": "2026-09-23T14:22:49.285042+00:00",
       "effective_weight": 1.04,
       "title_original": "CFTC issues warning over risky prediction market ‘mention’ contracts",
       "cross_check": 2
+    },
+    {
+      "title": "Canada’s six largest banks explore tokenized Canadian dollar deposits",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-09-22T19:56:48+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-09-23T14:22:49.285193+00:00",
+      "effective_weight": 1.04,
+      "title_original": "Canada’s six largest banks explore tokenized Canadian dollar deposits",
+      "cross_check": 1
     }
   ]
 }
