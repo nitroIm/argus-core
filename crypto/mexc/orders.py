@@ -1,15 +1,13 @@
 # ============================================================
-# ARGUS - MEXC ORDERS v1 [PRODUCTION]
+# ARGUS - MEXC ORDERS v2 [PRODUCTION]
 # ------------------------------------------------------------
-# История ордеров и открытые ордера.
-# Требует API-ключ.
+# v2: убран startTime (MEXC ограничение 7 дней)
+# v1: чтение открытых + истории
 # ============================================================
 
 import sys
 import logging
 from pathlib import Path
-from datetime import datetime, timezone
-from datetime import timedelta
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 CRYPTO_ROOT = SCRIPT_DIR.parent
@@ -28,7 +26,6 @@ log = logging.getLogger("mexc.orders")
 
 
 def get_open_orders(client, symbol=None):
-    """Открытые ордера."""
     params = {}
     if symbol:
         params["symbol"] = symbol
@@ -37,25 +34,18 @@ def get_open_orders(client, symbol=None):
     )
 
 
-def get_all_orders(client, symbol, days=7, limit=100):
-    """История ордеров за N дней."""
-    since = (
-        datetime.now(timezone.utc)
-        - timedelta(days=days)
-    )
-    start_ms = int(since.timestamp() * 1000)
+def get_all_orders(client, symbol, limit=100):
+    """История ордеров (MEXC: только 7 дней)."""
     return client.signed_get(
         "/api/v3/allOrders",
         {
             "symbol": symbol,
-            "startTime": start_ms,
             "limit": limit,
         },
     )
 
 
 def fmt_order(o):
-    """Формат одного ордера."""
     side = o.get("side", "?")
     otype = o.get("type", "?")
     price = o.get("price", "?")
@@ -72,7 +62,7 @@ def fmt_order(o):
 
 
 def main():
-    log.info("MEXC orders v1")
+    log.info("MEXC orders v2")
 
     if not is_configured():
         log.error("MEXC_API_KEY / MEXC_API_SECRET not set")
@@ -85,7 +75,7 @@ def main():
 
         opens = get_open_orders(client, symbol)
         if opens is None:
-            log.warning("  Не удалось прочитать open orders")
+            log.warning("  Ошибка чтения open orders")
             continue
 
         if not opens:
@@ -98,13 +88,15 @@ def main():
                 log.info(fmt_order(o))
 
         history = get_all_orders(
-            client, symbol, days=7, limit=50,
+            client, symbol, limit=100,
         )
         if history:
             log.info(
-                "  История за 7 дней: %d",
+                "  История: %d ордеров",
                 len(history),
             )
+            for o in history[:5]:
+                log.info(fmt_order(o))
         else:
             log.info("  История пустая")
 
