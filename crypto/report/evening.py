@@ -1,23 +1,39 @@
 # ============================================================
-# ARGUS-Trader — ВЕЧЕРНИЙ ТЕХОТЧЁТ v2
+# ARGUS-Trader — ВЕЧЕРНИЙ ТЕХОТЧЁТ v2.0 [PRODUCTION]
 # ------------------------------------------------------------
-# v2: схема collect_log подтверждена.
-# v1: workflows + свежесть + всего в БД
+# Аудит всей системы: workflows, свежесть,
+# счётчики БД, проблемы за 24ч.
+# Отправка в Telegram 18:00 UTC (20:00 КЛГ).
+# ------------------------------------------------------------
+# Требования:
+#   pip install requests psycopg[binary]
 # ============================================================
 
 import os
 import sys
+import logging
+import traceback
 import requests
 from datetime import datetime, timezone
 from datetime import timedelta
 from pathlib import Path
 
+# --- Пути ---
 SCRIPT_DIR = Path(__file__).resolve().parent
 CRYPTO_ROOT = SCRIPT_DIR.parent
 sys.path.insert(0, str(CRYPTO_ROOT))
 
 from db import get_connection, close_connection
 
+# --- Логгер ---
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
+log = logging.getLogger("crypto.evening")
+
+# --- Telegram ---
 BOT_TOKEN = (
     os.getenv("TELEGRAM_BOT_TOKEN")
     or os.getenv("BOT_TOKEN")
@@ -28,13 +44,48 @@ CHAT_ID = (
     or ""
 ).strip()
 
+# --- Константы ---
+LOOKBACK_HOURS = 24
+MAX_MESSAGE_LEN = 3800
 
-def log(msg):
-    ts = datetime.now(timezone.utc).strftime("%H:%M:%S")
-    print("[" + ts + "] " + str(msg), flush=True)
+# Ожидаемая свежесть (мин)
+FRESHNESS_EXPECTED = {
+    "candles": 90,
+    "features_hourly": 120,
+    "price_patterns": 120,
+    "events": 240,
+    "anomaly_log": 120,
+}
+
+# Таблицы для подсчёта
+DB_TABLES = [
+    ("candles", "candles"),
+    ("funding_rates", "funding"),
+    ("open_interest", "OI"),
+    ("long_short_ratio", "LS"),
+    ("taker_flow", "taker"),
+    ("features_hourly", "features"),
+    ("price_patterns", "patterns"),
+    ("events", "events"),
+    ("causal_links", "causal"),
+    ("anomaly_log", "anomaly"),
+]
+
+# Проверки свежести: (таблица, колонка, метка)
+FRESHNESS_CHECKS = [
+    ("candles", "timestamp", "свечи"),
+    ("features_hourly", "timestamp", "features"),
+    ("price_patterns", "timestamp", "patterns"),
+    ("events", "timestamp", "события"),
+    ("anomaly_log", "created_at", "аномалии"),
+]
 
 
-def split_text(text, max_len=3800):
+# ============================================================
+# TELEGRAM
+# ============================================================
+def split_text(text: str, max_len: int) -> list:
+    """Режет длинный текст по строкам."""
     if len(text) <= max_len:
         return [text]
     parts = []
@@ -54,38 +105,50 @@ def split_text(text, max_len=3800):
     return parts
 
 
-def send_message(text):
+def send_message(text: str) -> bool:
+    """Отправляет текст в Telegram. Длинный — частями."""
     if not BOT_TOKEN or not CHAT_ID:
-        log("no telegram")
-        print(text)
+        log.warning("TELEGRAM not configured")
+        log.info(text)
         return False
-    parts = split_text(text, 3800)
+
+    parts = split_text(text, MAX_MESSAGE_LEN)
     ok_all = True
-    for part in parts:
+
+    for i, part in enumerate(parts):
         try:
             url = "https://api.telegram.org/bot"
             url += BOT_TOKEN + "/sendMessage"
+            payload = {
+                "chat_id": CHAT_ID,
+                "text": part,
+                "parse_mode": "HTML",
+                "disable_web_page_preview": True,
+            }
             r = requests.post(
-                url,
-                json={
-                    "chat_id": CHAT_ID,
-                    "text": part,
-                    "parse_mode": "HTML",
-                    "disable_web_page_preview": True,
-                },
-                timeout=20,
+                url, json=payload, timeout=20,
             )
             if r.status_code != 200:
-                log("send err: " + r.text[:200])
+                log.error(
+                    "tg err %d: %s",
+                    r.status_code, r.text[:200],
+                )
                 ok_all = False
+            else:
+                log.info("part %d/%d sent",
+                         i + 1, len(parts))
         except Exception as e:
-            log("send: " + str(e))
+            log.exception("send_message: %s", e)
             ok_all = False
-    log("sent " + str(len(parts)) + " parts")
+
     return ok_all
 
 
-def fetch_runs(hours=24):
+# ============================================================
+# DB QUERIES
+# ============================================================
+def fetch_runs(hours: int = LOOKBACK_HOURS) -> list:
+    """Запуски collect_log за N часов."""
     since = datetime.now(timezone.utc)
     since = since - timedelta(hours=hours)
     out = []
@@ -108,11 +171,12 @@ def fetch_runs(hours=24):
                         "added": row[3] or 0,
                     })
     except Exception as e:
-        log("runs err: " + str(e))
+        log.exception("fetch_runs: %s", e)
     return out
 
 
-def group_runs(runs):
+def group_runs(runs: list) -> dict:
+    """Группирует запуски по job_name."""
     grouped = {}
     for r in runs:
         key = r["job"]
@@ -129,37 +193,30 @@ def group_runs(runs):
     return grouped
 
 
-def fetch_stats():
+def fetch_stats() -> dict:
+    """COUNT(*) по всем таблицам."""
     stats = {}
-    tables = [
-        "candles",
-        "funding_rates",
-        "open_interest",
-        "long_short_ratio",
-        "taker_flow",
-        "features_hourly",
-        "price_patterns",
-        "events",
-        "causal_links",
-        "anomaly_log",
-    ]
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
-                for t in tables:
+                for table, _ in DB_TABLES:
                     try:
                         cur.execute(
-                            "SELECT COUNT(*) FROM " + t
+                            "SELECT COUNT(*) FROM " + table
                         )
-                        stats[t] = cur.fetchone()[0] or 0
-                    except Exception:
-                        stats[t] = -1
+                        stats[table] = cur.fetchone()[0] or 0
+                    except Exception as e:
+                        log.warning(
+                            "count %s: %s", table, e
+                        )
+                        stats[table] = -1
     except Exception as e:
-        log("stats err: " + str(e))
+        log.exception("fetch_stats: %s", e)
     return stats
 
 
-def max_ts(cur, table, col):
+def _max_ts(cur, table: str, col: str):
+    """MAX(col) как UTC datetime или None."""
     try:
         cur.execute(
             "SELECT MAX(" + col + ") FROM " + table
@@ -170,26 +227,20 @@ def max_ts(cur, table, col):
             if ts.tzinfo is None:
                 ts = ts.replace(tzinfo=timezone.utc)
             return ts
-    except Exception:
-        pass
+    except Exception as e:
+        log.warning("max_ts %s: %s", table, e)
     return None
 
 
-def fetch_freshness():
-    checks = [
-        ("candles", "timestamp", "свечи"),
-        ("features_hourly", "timestamp", "features"),
-        ("price_patterns", "timestamp", "patterns"),
-        ("events", "timestamp", "события"),
-        ("anomaly_log", "created_at", "аномалии"),
-    ]
+def fetch_freshness() -> dict:
+    """Свежесть ключевых таблиц."""
     now = datetime.now(timezone.utc)
     out = {}
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
-                for table, col, label in checks:
-                    ts = max_ts(cur, table, col)
+                for table, col, label in FRESHNESS_CHECKS:
+                    ts = _max_ts(cur, table, col)
                     if ts:
                         mins = int(
                             (now - ts).total_seconds() / 60
@@ -204,11 +255,14 @@ def fetch_freshness():
                             "age_min": None,
                         }
     except Exception as e:
-        log("fresh err: " + str(e))
+        log.exception("fetch_freshness: %s", e)
     return out
 
 
-def fmt_age(mins):
+# ============================================================
+# FORMATTERS
+# ============================================================
+def fmt_age(mins) -> str:
     if mins is None:
         return "нет данных"
     if mins < 60:
@@ -218,7 +272,7 @@ def fmt_age(mins):
     return str(mins // 1440) + " д"
 
 
-def icon_age(mins, expected):
+def icon_age(mins, expected: int) -> str:
     if mins is None:
         return "❌"
     if mins <= expected:
@@ -228,79 +282,48 @@ def icon_age(mins, expected):
     return "❌"
 
 
-def build_report():
-    now = datetime.now(timezone.utc)
-    lines = []
-    lines.append("🌙 <b>ARGUS — техотчёт</b>")
-    lines.append(now.strftime("%d.%m.%Y %H:%M UTC"))
-    lines.append("")
-
-    # Workflows
-    runs = fetch_runs(24)
-    grouped = group_runs(runs)
-
+# ============================================================
+# REPORT
+# ============================================================
+def _section_workflows(lines: list, grouped: dict) -> None:
     lines.append("⚙️ <b>Workflows за 24ч</b>")
     if not grouped:
         lines.append("  ⚠️ Запусков не было")
-    else:
-        for job in sorted(grouped.keys()):
-            g = grouped[job]
-            if g["fail"] == 0:
-                icon = "✅"
-            else:
-                icon = "⚠️"
-            line = "  " + icon + " " + job + ": "
-            line += str(g["ok"]) + " ok"
-            if g["fail"]:
-                line += " / " + str(g["fail"]) + " fail"
-            line += " / +" + str(g["added"])
-            lines.append(line)
-    lines.append("")
+        return
+    for job in sorted(grouped.keys()):
+        g = grouped[job]
+        icon = "✅" if g["fail"] == 0 else "⚠️"
+        line = "  " + icon + " " + job + ": "
+        line += str(g["ok"]) + " ok"
+        if g["fail"]:
+            line += " / " + str(g["fail"]) + " fail"
+        line += " / +" + str(g["added"])
+        lines.append(line)
 
-    # Свежесть
-    fresh = fetch_freshness()
-    expected = {
-        "candles": 90,
-        "features_hourly": 120,
-        "price_patterns": 120,
-        "events": 240,
-        "anomaly_log": 120,
-    }
+
+def _section_freshness(lines: list, fresh: dict) -> None:
     lines.append("🕐 <b>Свежесть</b>")
     for table, info in fresh.items():
-        exp = expected.get(table, 120)
+        exp = FRESHNESS_EXPECTED.get(table, 120)
         icon = icon_age(info["age_min"], exp)
-        label = info["label"]
-        age = fmt_age(info["age_min"])
-        lines.append("  " + icon + " " + label + ": " + age)
-    lines.append("")
+        line = "  " + icon + " " + info["label"]
+        line += ": " + fmt_age(info["age_min"])
+        lines.append(line)
 
-    # Всего в БД
-    stats = fetch_stats()
+
+def _section_stats(lines: list, stats: dict) -> None:
     lines.append("📊 <b>Всего в БД</b>")
-    order = [
-        ("candles", "candles"),
-        ("funding_rates", "funding"),
-        ("open_interest", "OI"),
-        ("long_short_ratio", "LS"),
-        ("taker_flow", "taker"),
-        ("features_hourly", "features"),
-        ("price_patterns", "patterns"),
-        ("events", "events"),
-        ("causal_links", "causal"),
-        ("anomaly_log", "anomaly"),
-    ]
-    for key, label in order:
+    for key, label in DB_TABLES:
         n = stats.get(key, -1)
         if n < 0:
-            lines.append("  " + label + ": ошибка")
+            line = "  " + label + ": ошибка"
         else:
-            lines.append(
-                "  " + label + ": " + format(n, ",")
-            )
-    lines.append("")
+            line = "  " + label + ": "
+            line += format(n, ",")
+        lines.append(line)
 
-    # Проблемы
+
+def _collect_problems(grouped: dict, fresh: dict) -> list:
     problems = []
     for job, g in grouped.items():
         if g["fail"] > 0:
@@ -308,15 +331,41 @@ def build_report():
                 job + ": " + str(g["fail"]) + " fail"
             )
     for table, info in fresh.items():
-        exp = expected.get(table, 120)
+        exp = FRESHNESS_EXPECTED.get(table, 120)
         age = info["age_min"]
         if age is None:
-            problems.append(info["label"] + ": нет данных")
+            problems.append(
+                info["label"] + ": нет данных"
+            )
         elif age > exp * 2:
             problems.append(
                 info["label"] + ": " + fmt_age(age)
             )
+    return problems
 
+
+def build_report() -> str:
+    """Собирает полный текст отчёта."""
+    now = datetime.now(timezone.utc)
+    lines = []
+    lines.append("🌙 <b>ARGUS — техотчёт</b>")
+    lines.append(now.strftime("%d.%m.%Y %H:%M UTC"))
+    lines.append("")
+
+    runs = fetch_runs(LOOKBACK_HOURS)
+    grouped = group_runs(runs)
+    _section_workflows(lines, grouped)
+    lines.append("")
+
+    fresh = fetch_freshness()
+    _section_freshness(lines, fresh)
+    lines.append("")
+
+    stats = fetch_stats()
+    _section_stats(lines, stats)
+    lines.append("")
+
+    problems = _collect_problems(grouped, fresh)
     if not problems:
         lines.append("✨ <i>Всё штатно</i>")
     else:
@@ -327,23 +376,41 @@ def build_report():
     return "\n".join(lines)
 
 
-def main():
-    log("=" * 50)
-    log("evening report v2")
-    log("=" * 50)
+# ============================================================
+# MAIN
+# ============================================================
+def main() -> None:
+    log.info("=" * 50)
+    log.info("evening report v2.0")
+    log.info("=" * 50)
+
+    exit_code = 0
     try:
         text = build_report()
-        send_message(text)
+        log.info("report built: %d chars", len(text))
+        if not send_message(text):
+            log.warning("send_message returned False")
+        else:
+            log.info("report sent")
     except Exception as e:
-        import traceback
-        traceback.print_exc()
-        send_message(
-            "❌ Техотчёт упал\n<code>"
-            + str(e)[:200] + "</code>"
-        )
-        sys.exit(1)
+        log.exception("main: %s", e)
+        try:
+            send_message(
+                "❌ Техотчёт упал\n"
+                "<code>" + str(e)[:200] + "</code>"
+            )
+        except Exception:
+            pass
+        exit_code = 1
     finally:
-        close_connection()
+        try:
+            close_connection()
+        except Exception:
+            pass
+
+    log.info("done")
+    if exit_code:
+        sys.exit(exit_code)
 
 
 if __name__ == "__main__":
