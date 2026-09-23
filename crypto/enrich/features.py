@@ -1,13 +1,9 @@
 # ============================================================
 # ARGUS-Trader — FEATURES
 # ------------------------------------------------------------
+# v3.1: fix — в funding_rates колонка называется rate.
 # v3: полная защита.
-#     - fix avg_volume_24h (per-point rolling)
-#     - валидация ВСЕХ полей перед INSERT
-#     - проверка timestamp (не в будущем)
-#     - funding только свежий (<24ч)
 # v2: + funding_rate
-# v1: базовые признаки
 # ============================================================
 
 import sys
@@ -29,7 +25,6 @@ logging.basicConfig(
 )
 log = logging.getLogger("crypto.features")
 
-# --- Лимиты валидации ---
 LIMITS = {
     "change_pct": 50.0,
     "range_pct": 100.0,
@@ -68,7 +63,6 @@ def safe_val(val, limit):
 
 
 def ts_is_sane(ts):
-    """Timestamp не в будущем и не старше 1 года."""
     if ts is None:
         return False
     if ts.tzinfo is None:
@@ -81,9 +75,6 @@ def ts_is_sane(ts):
     return True
 
 
-# ============================================================
-# BASE
-# ============================================================
 def compute_features_from_row(row):
     o = row["open"]
     h = row["high"]
@@ -135,11 +126,7 @@ def compute_features_from_row(row):
     }
 
 
-# ============================================================
-# ROLLING (per-point)
-# ============================================================
 def rolling_avg(features_list, idx, window, field):
-    """Среднее field за window свечей ДО idx."""
     start = max(0, idx - window)
     if start >= idx:
         return None
@@ -165,7 +152,9 @@ def rolling_volatility(features_list, idx, window):
     if len(values) < 2:
         return None
     mean = sum(values) / len(values)
-    var = sum((x - mean) ** 2 for x in values) / len(values)
+    var = sum(
+        (x - mean) ** 2 for x in values
+    ) / len(values)
     return var ** 0.5
 
 
@@ -183,9 +172,6 @@ def rolling_sum(features_list, idx, window):
     return sum(values)
 
 
-# ============================================================
-# FETCH
-# ============================================================
 def fetch_candles(symbol, timeframe="1h", limit=500):
     try:
         with get_connection() as conn:
@@ -217,14 +203,15 @@ def fetch_candles(symbol, timeframe="1h", limit=500):
 
 
 def fetch_funding(symbol):
+    """Колонка в funding_rates называется rate."""
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute(
-                    "SELECT timestamp, funding_rate "
+                    "SELECT timestamp, rate "
                     "FROM funding_rates "
                     "WHERE symbol = %s "
-                    "AND funding_rate IS NOT NULL "
+                    "AND rate IS NOT NULL "
                     "ORDER BY timestamp",
                     (symbol,),
                 )
@@ -243,7 +230,6 @@ def fetch_funding(symbol):
 
 
 def funding_at(funding_list, ts):
-    """Последний funding <= ts, не старше 24ч."""
     if ts.tzinfo is None:
         ts = ts.replace(tzinfo=timezone.utc)
     result = None
@@ -260,9 +246,6 @@ def funding_at(funding_list, ts):
     return result[1]
 
 
-# ============================================================
-# SAVE
-# ============================================================
 def save_features(symbol, features):
     if not features:
         return 0
@@ -307,17 +290,12 @@ def save_features(symbol, features):
                         if cur.rowcount and cur.rowcount > 0:
                             added += cur.rowcount
                     except Exception as e:
-                        log.warning(
-                            f"INSERT skip: {e}"
-                        )
+                        log.warning(f"INSERT skip: {e}")
     except Exception as e:
         log.error(f"save_features: {e}")
     return added
 
 
-# ============================================================
-# PROCESS
-# ============================================================
 def process_symbol(symbol, timeframe="1h"):
     log.info(f"📊 {symbol} — загружаю свечи")
     candles = fetch_candles(symbol, timeframe, limit=500)
@@ -339,12 +317,13 @@ def process_symbol(symbol, timeframe="1h"):
             base_features.append(f)
 
     if skipped_ts:
-        log.warning(f"   Пропущено по timestamp: {skipped_ts}")
+        log.warning(
+            f"   Пропущено по timestamp: {skipped_ts}"
+        )
 
     if not base_features:
         return 0
 
-    # --- Per-point rolling ---
     for idx, f in enumerate(base_features):
         avg_vol = rolling_avg(
             base_features, idx, 24, "volume"
@@ -392,7 +371,6 @@ def process_symbol(symbol, timeframe="1h"):
             LIMITS["change_7d"],
         )
 
-    # --- Funding ---
     funding = fetch_funding(symbol)
     log.info(f"   funding точек: {len(funding)}")
 
@@ -419,7 +397,7 @@ def process_symbol(symbol, timeframe="1h"):
 
 def main():
     log.info("=" * 60)
-    log.info("🧮 ARGUS-Trader FEATURES v3")
+    log.info("🧮 ARGUS-Trader FEATURES v3.1")
     log.info("=" * 60)
 
     total = 0
