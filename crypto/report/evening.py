@@ -1,9 +1,9 @@
 # ============================================================
-# ARGUS-Trader — ВЕЧЕРНИЙ ТЕХОТЧЁТ v2.0 [PRODUCTION]
+# ARGUS-Trader — ВЕЧЕРНИЙ ТЕХОТЧЁТ v2.1 [PRODUCTION]
 # ------------------------------------------------------------
-# Аудит всей системы: workflows, свежесть,
-# счётчики БД, проблемы за 24ч.
-# Отправка в Telegram 18:00 UTC (20:00 КЛГ).
+# v2.1: активность за 24ч (события, аномалии).
+#       Убрал events/anomaly из "свежести".
+# v2.0: продакшн-стиль, logger, короткие строки.
 # ------------------------------------------------------------
 # Требования:
 #   pip install requests psycopg[binary]
@@ -12,7 +12,6 @@
 import os
 import sys
 import logging
-import traceback
 import requests
 from datetime import datetime, timezone
 from datetime import timedelta
@@ -48,13 +47,11 @@ CHAT_ID = (
 LOOKBACK_HOURS = 24
 MAX_MESSAGE_LEN = 3800
 
-# Ожидаемая свежесть (мин)
+# Свежесть: только регулярные данные
 FRESHNESS_EXPECTED = {
     "candles": 90,
     "features_hourly": 120,
     "price_patterns": 120,
-    "events": 240,
-    "anomaly_log": 120,
 }
 
 # Таблицы для подсчёта
@@ -76,8 +73,6 @@ FRESHNESS_CHECKS = [
     ("candles", "timestamp", "свечи"),
     ("features_hourly", "timestamp", "features"),
     ("price_patterns", "timestamp", "patterns"),
-    ("events", "timestamp", "события"),
-    ("anomaly_log", "created_at", "аномалии"),
 ]
 
 
@@ -135,8 +130,10 @@ def send_message(text: str) -> bool:
                 )
                 ok_all = False
             else:
-                log.info("part %d/%d sent",
-                         i + 1, len(parts))
+                log.info(
+                    "part %d/%d sent",
+                    i + 1, len(parts),
+                )
         except Exception as e:
             log.exception("send_message: %s", e)
             ok_all = False
@@ -259,6 +256,60 @@ def fetch_freshness() -> dict:
     return out
 
 
+def fetch_events_24h() -> dict:
+    """События за 24ч, группировка по типу."""
+    since = datetime.now(timezone.utc)
+    since = since - timedelta(hours=24)
+    out = {"total": 0, "by_type": {}}
+    try:
+        with get_connection() as conn:
+            with conn.cursor() as cur:
+                sql = (
+                    "SELECT event_type, COUNT(*) "
+                    "FROM events "
+                    "WHERE timestamp > %s "
+                    "GROUP BY event_type "
+                    "ORDER BY 2 DESC"
+                )
+                cur.execute(sql, (since,))
+                rows = cur.fetchall()
+                for r in rows:
+                    t = r[0] or "?"
+                    n = r[1] or 0
+                    out["by_type"][t] = n
+                    out["total"] += n
+    except Exception as e:
+        log.exception("fetch_events_24h: %s", e)
+    return out
+
+
+def fetch_anomalies_24h() -> dict:
+    """Аномалии за 24ч, группировка по типу."""
+    since = datetime.now(timezone.utc)
+    since = since - timedelta(hours=24)
+    out = {"total": 0, "by_type": {}}
+    try:
+        with get_connection() as conn:
+            with conn.cursor() as cur:
+                sql = (
+                    "SELECT anomaly_type, COUNT(*) "
+                    "FROM anomaly_log "
+                    "WHERE created_at > %s "
+                    "GROUP BY anomaly_type "
+                    "ORDER BY 2 DESC"
+                )
+                cur.execute(sql, (since,))
+                rows = cur.fetchall()
+                for r in rows:
+                    t = r[0] or "?"
+                    n = r[1] or 0
+                    out["by_type"][t] = n
+                    out["total"] += n
+    except Exception as e:
+        log.exception("fetch_anomalies_24h: %s", e)
+    return out
+
+
 # ============================================================
 # FORMATTERS
 # ============================================================
@@ -283,7 +334,7 @@ def icon_age(mins, expected: int) -> str:
 
 
 # ============================================================
-# REPORT
+# REPORT SECTIONS
 # ============================================================
 def _section_workflows(lines: list, grouped: dict) -> None:
     lines.append("⚙️ <b>Workflows за 24ч</b>")
@@ -311,6 +362,35 @@ def _section_freshness(lines: list, fresh: dict) -> None:
         lines.append(line)
 
 
+def _section_activity(lines: list, events: dict,
+                      anomalies: dict) -> None:
+    lines.append("📅 <b>Активность за 24ч</b>")
+
+    # События
+    if events["total"] == 0:
+        lines.append("  • событий: 0")
+    else:
+        line = "  • событий: " + str(events["total"])
+        types = []
+        for t, n in events["by_type"].items():
+            types.append(t + " " + str(n))
+        if types:
+            line += " (" + ", ".join(types) + ")"
+        lines.append(line)
+
+    # Аномалии
+    if anomalies["total"] == 0:
+        lines.append("  • аномалий: 0")
+    else:
+        line = "  🚨 аномалий: " + str(anomalies["total"])
+        types = []
+        for t, n in anomalies["by_type"].items():
+            types.append(t + " " + str(n))
+        if types:
+            line += " (" + ", ".join(types) + ")"
+        lines.append(line)
+
+
 def _section_stats(lines: list, stats: dict) -> None:
     lines.append("📊 <b>Всего в БД</b>")
     for key, label in DB_TABLES:
@@ -324,6 +404,7 @@ def _section_stats(lines: list, stats: dict) -> None:
 
 
 def _collect_problems(grouped: dict, fresh: dict) -> list:
+    """Только реальные проблемы (workflows + свежесть)."""
     problems = []
     for job, g in grouped.items():
         if g["fail"] > 0:
@@ -344,6 +425,9 @@ def _collect_problems(grouped: dict, fresh: dict) -> list:
     return problems
 
 
+# ============================================================
+# REPORT
+# ============================================================
 def build_report() -> str:
     """Собирает полный текст отчёта."""
     now = datetime.now(timezone.utc)
@@ -359,6 +443,11 @@ def build_report() -> str:
 
     fresh = fetch_freshness()
     _section_freshness(lines, fresh)
+    lines.append("")
+
+    events = fetch_events_24h()
+    anomalies = fetch_anomalies_24h()
+    _section_activity(lines, events, anomalies)
     lines.append("")
 
     stats = fetch_stats()
@@ -381,7 +470,7 @@ def build_report() -> str:
 # ============================================================
 def main() -> None:
     log.info("=" * 50)
-    log.info("evening report v2.0")
+    log.info("evening report v2.1")
     log.info("=" * 50)
 
     exit_code = 0
