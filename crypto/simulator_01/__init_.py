@@ -1,0 +1,1 @@
+# Simulator 01 — first trading strategy
