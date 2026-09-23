@@ -1,5 +1,7 @@
 # ============================================================
-# ARGUS - MEXC тест чтения аккаунта
+# ARGUS - MEXC тест
+# ------------------------------------------------------------
+# Читает: account, market, orders, trades.
 # ============================================================
 
 name: ARGUS MEXC Test
@@ -13,7 +15,7 @@ permissions:
 jobs:
   mexc:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
 
     steps:
       - uses: actions/checkout@v4
@@ -25,10 +27,34 @@ jobs:
       - name: Install deps
         run: pip install requests==2.32.3
 
-      - name: Read account
+      - name: Account
         env:
           MEXC_API_KEY: >-
             ${{ secrets.MEXC_API_KEY }}
           MEXC_API_SECRET: >-
             ${{ secrets.MEXC_API_SECRET }}
         run: python crypto/mexc/account.py
+
+      - name: Market (public)
+        env:
+          MEXC_API_KEY: >-
+            ${{ secrets.MEXC_API_KEY }}
+          MEXC_API_SECRET: >-
+            ${{ secrets.MEXC_API_SECRET }}
+        run: python crypto/mexc/market.py
+
+      - name: Orders
+        env:
+          MEXC_API_KEY: >-
+            ${{ secrets.MEXC_API_KEY }}
+          MEXC_API_SECRET: >-
+            ${{ secrets.MEXC_API_SECRET }}
+        run: python crypto/mexc/orders.py
+
+      - name: Trades
+        env:
+          MEXC_API_KEY: >-
+            ${{ secrets.MEXC_API_KEY }}
+          MEXC_API_SECRET: >-
+            ${{ secrets.MEXC_API_SECRET }}
+        run: python crypto/mexc/trades.py
