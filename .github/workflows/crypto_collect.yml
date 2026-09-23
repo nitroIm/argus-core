@@ -15,8 +15,8 @@ on:
         description: 'incremental или backfill'
         required: false
         default: 'incremental'
-  schedule:
-    - cron: '0 * * * *'
+  # schedule:
+   # - cron: '0 * * * *'
 
 permissions:
   contents: write
