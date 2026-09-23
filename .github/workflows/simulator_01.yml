@@ -2,6 +2,7 @@
 # ARGUS - Simulator 01
 # ------------------------------------------------------------
 # Виртуальная торговля. Каждый час.
+# v2: + psycopg для чтения candles
 # ============================================================
 
 name: ARGUS Simulator 01
@@ -9,7 +10,7 @@ name: ARGUS Simulator 01
 on:
   workflow_dispatch:
   # schedule:
-  #   - cron: '0 * * * *'
+  #   - cron: '5 * * * *'
 
 permissions:
   contents: write
@@ -33,10 +34,14 @@ jobs:
           python-version: '3.11'
 
       - name: Install deps
-        run: pip install requests==2.32.3
+        run: |
+          pip install requests==2.32.3
+          pip install "psycopg[binary]==3.2.3"
 
       - name: Run simulator
         env:
+          ARGUS_DB_URL: >-
+            ${{ secrets.ARGUS_DB_URL }}
           MEXC_API_KEY: >-
             ${{ secrets.MEXC_API_KEY }}
           MEXC_API_SECRET: >-
