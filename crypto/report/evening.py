@@ -1,9 +1,9 @@
 # ============================================================
-# ARGUS-Trader — ВЕЧЕРНИЙ ТЕХОТЧЁТ v2.1 [PRODUCTION]
+# ARGUS-Trader — ВЕЧЕРНИЙ ТЕХОТЧЁТ v2.2 [PRODUCTION]
 # ------------------------------------------------------------
-# v2.1: активность за 24ч (события, аномалии).
-#       Убрал events/anomaly из "свежести".
-# v2.0: продакшн-стиль, logger, короткие строки.
+# Полный аудит: workflows, свежесть, активность,
+# детали событий и аномалий, счётчики БД, проблемы.
+# Отправка 18:00 UTC (20:00 КЛГ).
 # ------------------------------------------------------------
 # Требования:
 #   pip install requests psycopg[binary]
@@ -46,15 +46,14 @@ CHAT_ID = (
 # --- Константы ---
 LOOKBACK_HOURS = 24
 MAX_MESSAGE_LEN = 3800
+MIN_COLLECT_RUNS = 8
 
-# Свежесть: только регулярные данные
 FRESHNESS_EXPECTED = {
     "candles": 90,
     "features_hourly": 120,
     "price_patterns": 120,
 }
 
-# Таблицы для подсчёта
 DB_TABLES = [
     ("candles", "candles"),
     ("funding_rates", "funding"),
@@ -68,7 +67,6 @@ DB_TABLES = [
     ("anomaly_log", "anomaly"),
 ]
 
-# Проверки свежести: (таблица, колонка, метка)
 FRESHNESS_CHECKS = [
     ("candles", "timestamp", "свечи"),
     ("features_hourly", "timestamp", "features"),
@@ -80,7 +78,6 @@ FRESHNESS_CHECKS = [
 # TELEGRAM
 # ============================================================
 def split_text(text: str, max_len: int) -> list:
-    """Режет длинный текст по строкам."""
     if len(text) <= max_len:
         return [text]
     parts = []
@@ -101,7 +98,6 @@ def split_text(text: str, max_len: int) -> list:
 
 
 def send_message(text: str) -> bool:
-    """Отправляет текст в Telegram. Длинный — частями."""
     if not BOT_TOKEN or not CHAT_ID:
         log.warning("TELEGRAM not configured")
         log.info(text)
@@ -142,12 +138,27 @@ def send_message(text: str) -> bool:
 
 
 # ============================================================
-# DB QUERIES
+# HELPERS
+# ============================================================
+def _esc(s) -> str:
+    if not s:
+        return ""
+    return str(s).replace("&", "&amp;").replace(
+        "<", "&lt;").replace(">", "&gt;"
+    )
+
+
+def _since(hours: int) -> datetime:
+    return datetime.now(timezone.utc) - timedelta(
+        hours=hours
+    )
+
+
+# ============================================================
+# WORKFLOWS
 # ============================================================
 def fetch_runs(hours: int = LOOKBACK_HOURS) -> list:
-    """Запуски collect_log за N часов."""
-    since = datetime.now(timezone.utc)
-    since = since - timedelta(hours=hours)
+    since = _since(hours)
     out = []
     try:
         with get_connection() as conn:
@@ -173,47 +184,34 @@ def fetch_runs(hours: int = LOOKBACK_HOURS) -> list:
 
 
 def group_runs(runs: list) -> dict:
-    """Группирует запуски по job_name."""
     grouped = {}
     for r in runs:
         key = r["job"]
         if key not in grouped:
             grouped[key] = {
-                "ok": 0, "fail": 0, "added": 0,
+                "ok": 0,
+                "fail": 0,
+                "added": 0,
+                "last_fail": None,
+                "last_ok": None,
             }
         g = grouped[key]
         if r["status"] == "ok":
             g["ok"] += 1
+            if g["last_ok"] is None:
+                g["last_ok"] = r["started"]
         else:
             g["fail"] += 1
+            if g["last_fail"] is None:
+                g["last_fail"] = r["started"]
         g["added"] += r["added"]
     return grouped
 
 
-def fetch_stats() -> dict:
-    """COUNT(*) по всем таблицам."""
-    stats = {}
-    try:
-        with get_connection() as conn:
-            with conn.cursor() as cur:
-                for table, _ in DB_TABLES:
-                    try:
-                        cur.execute(
-                            "SELECT COUNT(*) FROM " + table
-                        )
-                        stats[table] = cur.fetchone()[0] or 0
-                    except Exception as e:
-                        log.warning(
-                            "count %s: %s", table, e
-                        )
-                        stats[table] = -1
-    except Exception as e:
-        log.exception("fetch_stats: %s", e)
-    return stats
-
-
+# ============================================================
+# FRESHNESS
+# ============================================================
 def _max_ts(cur, table: str, col: str):
-    """MAX(col) как UTC datetime или None."""
     try:
         cur.execute(
             "SELECT MAX(" + col + ") FROM " + table
@@ -230,7 +228,6 @@ def _max_ts(cur, table: str, col: str):
 
 
 def fetch_freshness() -> dict:
-    """Свежесть ключевых таблиц."""
     now = datetime.now(timezone.utc)
     out = {}
     try:
@@ -256,62 +253,90 @@ def fetch_freshness() -> dict:
     return out
 
 
-def fetch_events_24h() -> dict:
-    """События за 24ч, группировка по типу."""
-    since = datetime.now(timezone.utc)
-    since = since - timedelta(hours=24)
-    out = {"total": 0, "by_type": {}}
+# ============================================================
+# ACTIVITY
+# ============================================================
+def fetch_events_24h() -> list:
+    since = _since(24)
+    out = []
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
                 sql = (
-                    "SELECT event_type, COUNT(*) "
+                    "SELECT symbol, timestamp, "
+                    "event_type, change_pct "
                     "FROM events "
                     "WHERE timestamp > %s "
-                    "GROUP BY event_type "
-                    "ORDER BY 2 DESC"
+                    "ORDER BY timestamp DESC "
+                    "LIMIT 20"
                 )
                 cur.execute(sql, (since,))
-                rows = cur.fetchall()
-                for r in rows:
-                    t = r[0] or "?"
-                    n = r[1] or 0
-                    out["by_type"][t] = n
-                    out["total"] += n
+                for r in cur.fetchall():
+                    out.append({
+                        "symbol": r[0] or "?",
+                        "timestamp": r[1],
+                        "type": r[2] or "?",
+                        "change_pct": float(r[3]) \
+                            if r[3] is not None else 0,
+                    })
     except Exception as e:
         log.exception("fetch_events_24h: %s", e)
     return out
 
 
-def fetch_anomalies_24h() -> dict:
-    """Аномалии за 24ч, группировка по типу."""
-    since = datetime.now(timezone.utc)
-    since = since - timedelta(hours=24)
-    out = {"total": 0, "by_type": {}}
+def fetch_anomalies_24h() -> list:
+    since = _since(24)
+    out = []
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
                 sql = (
-                    "SELECT anomaly_type, COUNT(*) "
+                    "SELECT symbol, timestamp, "
+                    "anomaly_type, severity "
                     "FROM anomaly_log "
                     "WHERE created_at > %s "
-                    "GROUP BY anomaly_type "
-                    "ORDER BY 2 DESC"
+                    "ORDER BY timestamp DESC "
+                    "LIMIT 20"
                 )
                 cur.execute(sql, (since,))
-                rows = cur.fetchall()
-                for r in rows:
-                    t = r[0] or "?"
-                    n = r[1] or 0
-                    out["by_type"][t] = n
-                    out["total"] += n
+                for r in cur.fetchall():
+                    out.append({
+                        "symbol": r[0] or "?",
+                        "timestamp": r[1],
+                        "type": r[2] or "?",
+                        "severity": r[3] or "?",
+                    })
     except Exception as e:
         log.exception("fetch_anomalies_24h: %s", e)
     return out
 
 
 # ============================================================
-# FORMATTERS
+# STATS
+# ============================================================
+def fetch_stats() -> dict:
+    stats = {}
+    try:
+        with get_connection() as conn:
+            with conn.cursor() as cur:
+                for table, _ in DB_TABLES:
+                    try:
+                        cur.execute(
+                            "SELECT COUNT(*) FROM " + table
+                        )
+                        stats[table] = cur.fetchone()[0] or 0
+                    except Exception as e:
+                        log.warning(
+                            "count %s: %s", table, e
+                        )
+                        stats[table] = -1
+    except Exception as e:
+        log.exception("fetch_stats: %s", e)
+    return stats
+
+
+# ============================================================
+# FORMAT
 # ============================================================
 def fmt_age(mins) -> str:
     if mins is None:
@@ -333,23 +358,47 @@ def icon_age(mins, expected: int) -> str:
     return "❌"
 
 
+def fmt_time_short(ts) -> str:
+    if not ts:
+        return "?"
+    if ts.tzinfo is None:
+        ts = ts.replace(tzinfo=timezone.utc)
+    return ts.strftime("%H:%M")
+
+
 # ============================================================
 # REPORT SECTIONS
 # ============================================================
-def _section_workflows(lines: list, grouped: dict) -> None:
+def _section_workflows(lines: list, grouped: dict,
+                       runs: list) -> None:
     lines.append("⚙️ <b>Workflows за 24ч</b>")
     if not grouped:
         lines.append("  ⚠️ Запусков не было")
+        lines.append("  ❗ Проверь cron-job.org")
         return
+
+    total_runs = sum(g["ok"] + g["fail"]
+                     for g in grouped.values())
+    lines.append(
+        "  всего запусков: " + str(total_runs)
+    )
+
     for job in sorted(grouped.keys()):
         g = grouped[job]
         icon = "✅" if g["fail"] == 0 else "⚠️"
-        line = "  " + icon + " " + job + ": "
+        line = "  " + icon + " " + _esc(job) + ": "
         line += str(g["ok"]) + " ok"
         if g["fail"]:
             line += " / " + str(g["fail"]) + " fail"
         line += " / +" + str(g["added"])
         lines.append(line)
+
+        if g["fail"] > 0 and g["last_fail"]:
+            t = fmt_time_short(g["last_fail"])
+            lines.append("     last fail: " + t)
+        elif g["last_ok"]:
+            t = fmt_time_short(g["last_ok"])
+            lines.append("     last ok: " + t)
 
 
 def _section_freshness(lines: list, fresh: dict) -> None:
@@ -362,32 +411,73 @@ def _section_freshness(lines: list, fresh: dict) -> None:
         lines.append(line)
 
 
-def _section_activity(lines: list, events: dict,
-                      anomalies: dict) -> None:
-    lines.append("📅 <b>Активность за 24ч</b>")
+def _section_events(lines: list, events: list) -> None:
+    lines.append("📅 <b>События за 24ч</b>")
+    if not events:
+        lines.append("  нет (рынок в боковике)")
+        return
 
-    # События
-    if events["total"] == 0:
-        lines.append("  • событий: 0")
-    else:
-        line = "  • событий: " + str(events["total"])
-        types = []
-        for t, n in events["by_type"].items():
-            types.append(t + " " + str(n))
-        if types:
-            line += " (" + ", ".join(types) + ")"
+    # Группировка по типу
+    by_type = {}
+    for e in events:
+        t = e["type"]
+        by_type[t] = by_type.get(t, 0) + 1
+
+    total = len(events)
+    parts = []
+    for t, n in sorted(
+        by_type.items(), key=lambda x: -x[1]
+    ):
+        parts.append(_esc(t) + " " + str(n))
+    lines.append(
+        "  всего: " + str(total)
+        + " (" + ", ".join(parts) + ")"
+    )
+
+    # Последние 5
+    for e in events[:5]:
+        sym = e["symbol"].replace("USDT", "")
+        t = fmt_time_short(e["timestamp"])
+        line = "    " + t + " " + sym
+        line += " " + _esc(e["type"])
+        if e["change_pct"]:
+            line += " (" + format(
+                e["change_pct"], "+.2f"
+            ) + "%)"
         lines.append(line)
 
-    # Аномалии
-    if anomalies["total"] == 0:
-        lines.append("  • аномалий: 0")
-    else:
-        line = "  🚨 аномалий: " + str(anomalies["total"])
-        types = []
-        for t, n in anomalies["by_type"].items():
-            types.append(t + " " + str(n))
-        if types:
-            line += " (" + ", ".join(types) + ")"
+
+def _section_anomalies(lines: list, anomalies: list) -> None:
+    lines.append("🚨 <b>Аномалии за 24ч</b>")
+    if not anomalies:
+        lines.append("  нет")
+        return
+
+    # Группировка по типу
+    by_type = {}
+    for a in anomalies:
+        t = a["type"]
+        by_type[t] = by_type.get(t, 0) + 1
+
+    total = len(anomalies)
+    parts = []
+    for t, n in sorted(
+        by_type.items(), key=lambda x: -x[1]
+    ):
+        parts.append(_esc(t) + " " + str(n))
+    lines.append(
+        "  всего: " + str(total)
+        + " (" + ", ".join(parts) + ")"
+    )
+
+    # Последние 5 с деталями
+    for a in anomalies[:5]:
+        sym = a["symbol"].replace("USDT", "")
+        t = fmt_time_short(a["timestamp"])
+        sev = _esc(a["severity"])
+        line = "    " + t + " " + sym
+        line += " " + _esc(a["type"])
+        line += " [" + sev + "]"
         lines.append(line)
 
 
@@ -403,14 +493,34 @@ def _section_stats(lines: list, stats: dict) -> None:
         lines.append(line)
 
 
-def _collect_problems(grouped: dict, fresh: dict) -> list:
-    """Только реальные проблемы (workflows + свежесть)."""
+def _collect_problems(grouped: dict, fresh: dict,
+                      runs: list) -> list:
     problems = []
+
+    # Workflows
     for job, g in grouped.items():
         if g["fail"] > 0:
             problems.append(
-                job + ": " + str(g["fail"]) + " fail"
+                "workflow " + _esc(job)
+                + ": " + str(g["fail"]) + " fail"
             )
+
+    # Сколько запусков collect
+    if grouped:
+        main = max(
+            grouped.items(),
+            key=lambda x: x[1]["ok"] + x[1]["fail"],
+        )
+        total = main[1]["ok"] + main[1]["fail"]
+        if total < MIN_COLLECT_RUNS:
+            problems.append(
+                "мало запусков (" + str(total)
+                + " за 24ч, ожидаем 8+)"
+            )
+    else:
+        problems.append("нет данных о запусках")
+
+    # Freshness
     for table, info in fresh.items():
         exp = FRESHNESS_EXPECTED.get(table, 120)
         age = info["age_min"]
@@ -422,6 +532,7 @@ def _collect_problems(grouped: dict, fresh: dict) -> list:
             problems.append(
                 info["label"] + ": " + fmt_age(age)
             )
+
     return problems
 
 
@@ -429,7 +540,6 @@ def _collect_problems(grouped: dict, fresh: dict) -> list:
 # REPORT
 # ============================================================
 def build_report() -> str:
-    """Собирает полный текст отчёта."""
     now = datetime.now(timezone.utc)
     lines = []
     lines.append("🌙 <b>ARGUS — техотчёт</b>")
@@ -438,7 +548,7 @@ def build_report() -> str:
 
     runs = fetch_runs(LOOKBACK_HOURS)
     grouped = group_runs(runs)
-    _section_workflows(lines, grouped)
+    _section_workflows(lines, grouped, runs)
     lines.append("")
 
     fresh = fetch_freshness()
@@ -446,15 +556,20 @@ def build_report() -> str:
     lines.append("")
 
     events = fetch_events_24h()
+    _section_events(lines, events)
+    lines.append("")
+
     anomalies = fetch_anomalies_24h()
-    _section_activity(lines, events, anomalies)
+    _section_anomalies(lines, anomalies)
     lines.append("")
 
     stats = fetch_stats()
     _section_stats(lines, stats)
     lines.append("")
 
-    problems = _collect_problems(grouped, fresh)
+    problems = _collect_problems(
+        grouped, fresh, runs,
+    )
     if not problems:
         lines.append("✨ <i>Всё штатно</i>")
     else:
@@ -470,13 +585,13 @@ def build_report() -> str:
 # ============================================================
 def main() -> None:
     log.info("=" * 50)
-    log.info("evening report v2.1")
+    log.info("evening report v2.2")
     log.info("=" * 50)
 
     exit_code = 0
     try:
         text = build_report()
-        log.info("report built: %d chars", len(text))
+        log.info("report: %d chars", len(text))
         if not send_message(text):
             log.warning("send_message returned False")
         else:
