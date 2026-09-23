@@ -1,14 +1,15 @@
 # ============================================================
-# ARGUS-Trader — ВЕЧЕРНИЙ ТЕХОТЧЁТ v1
+# ARGUS-Trader — ВЕЧЕРНИЙ ТЕХОТЧЁТ v2
 # ------------------------------------------------------------
-# Отправляет в Telegram: workflows за 24ч, свежесть,
-# всего в БД, проблемы. 18:00 UTC = 20:00 КЛГ.
+# v2: схема collect_log подтверждена.
+# v1: workflows + свежесть + всего в БД
 # ============================================================
 
 import os
 import sys
 import requests
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
+from datetime import timedelta
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -20,14 +21,12 @@ from db import get_connection, close_connection
 BOT_TOKEN = (
     os.getenv("TELEGRAM_BOT_TOKEN")
     or os.getenv("BOT_TOKEN")
-)
-CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
-
-EXPECTED = {
-    "pipeline_collect": 24,
-    "pipeline_enrich": 24,
-    "pipeline_detect": 24,
-}
+    or ""
+).strip()
+CHAT_ID = (
+    os.getenv("TELEGRAM_CHAT_ID")
+    or ""
+).strip()
 
 
 def log(msg):
@@ -35,62 +34,114 @@ def log(msg):
     print("[" + ts + "] " + str(msg), flush=True)
 
 
-def send_telegram(text):
+def split_text(text, max_len=3800):
+    if len(text) <= max_len:
+        return [text]
+    parts = []
+    current = ""
+    for line in text.split("\n"):
+        if len(current) + len(line) + 1 > max_len:
+            if current:
+                parts.append(current)
+            current = line
+        else:
+            if current:
+                current = current + "\n" + line
+            else:
+                current = line
+    if current:
+        parts.append(current)
+    return parts
+
+
+def send_message(text):
     if not BOT_TOKEN or not CHAT_ID:
         log("no telegram")
         print(text)
         return False
-    try:
-        url = "https://api.telegram.org/bot"
-        url += BOT_TOKEN + "/sendMessage"
-        r = requests.post(
-            url,
-            json={
-                "chat_id": CHAT_ID,
-                "text": text[:4000],
-                "parse_mode": "HTML",
-                "disable_web_page_preview": True,
-            },
-            timeout=15,
-        )
-        return r.status_code == 200
-    except Exception as e:
-        log("tg err: " + str(e))
-        return False
+    parts = split_text(text, 3800)
+    ok_all = True
+    for part in parts:
+        try:
+            url = "https://api.telegram.org/bot"
+            url += BOT_TOKEN + "/sendMessage"
+            r = requests.post(
+                url,
+                json={
+                    "chat_id": CHAT_ID,
+                    "text": part,
+                    "parse_mode": "HTML",
+                    "disable_web_page_preview": True,
+                },
+                timeout=20,
+            )
+            if r.status_code != 200:
+                log("send err: " + r.text[:200])
+                ok_all = False
+        except Exception as e:
+            log("send: " + str(e))
+            ok_all = False
+    log("sent " + str(len(parts)) + " parts")
+    return ok_all
 
 
 def fetch_runs(hours=24):
-    since = datetime.now(timezone.utc) - timedelta(hours=hours)
-    result = []
+    since = datetime.now(timezone.utc)
+    since = since - timedelta(hours=hours)
+    out = []
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
-                cur.execute("""
-                    SELECT job_name, status, started_at,
-                           records_added
-                    FROM collect_log
-                    WHERE started_at > %s
-                    ORDER BY started_at DESC
-                    LIMIT 200
-                """, (since,))
+                sql = (
+                    "SELECT job_name, status, "
+                    "started_at, records_added "
+                    "FROM collect_log "
+                    "WHERE started_at > %s "
+                    "ORDER BY started_at DESC"
+                )
+                cur.execute(sql, (since,))
                 for row in cur.fetchall():
-                    result.append({
-                        "job": row[0],
-                        "status": row[1],
+                    out.append({
+                        "job": row[0] or "?",
+                        "status": row[1] or "?",
                         "started": row[2],
                         "added": row[3] or 0,
                     })
     except Exception as e:
         log("runs err: " + str(e))
-    return result
+    return out
+
+
+def group_runs(runs):
+    grouped = {}
+    for r in runs:
+        key = r["job"]
+        if key not in grouped:
+            grouped[key] = {
+                "ok": 0, "fail": 0, "added": 0,
+            }
+        g = grouped[key]
+        if r["status"] == "ok":
+            g["ok"] += 1
+        else:
+            g["fail"] += 1
+        g["added"] += r["added"]
+    return grouped
 
 
 def fetch_stats():
     stats = {}
     tables = [
-        "candles", "features_hourly",
-        "price_patterns", "events",
-        "causal_links", "anomaly_log",
+        "candles",
+        "funding_rates",
+        "open_interest",
+        "long_short_ratio",
+        "taker_flow",
+        "features_hourly",
+        "price_patterns",
+        "events",
+        "causal_links",
+        "anomaly_log",
     ]
     try:
         with get_connection() as conn:
@@ -108,54 +159,67 @@ def fetch_stats():
     return stats
 
 
+def max_ts(cur, table, col):
+    try:
+        cur.execute(
+            "SELECT MAX(" + col + ") FROM " + table
+        )
+        row = cur.fetchone()
+        if row and row[0]:
+            ts = row[0]
+            if ts.tzinfo is None:
+                ts = ts.replace(tzinfo=timezone.utc)
+            return ts
+    except Exception:
+        pass
+    return None
+
+
 def fetch_freshness():
-    fresh = {}
     checks = [
-        ("candles", "timestamp"),
-        ("features_hourly", "timestamp"),
-        ("events", "created_at"),
+        ("candles", "timestamp", "свечи"),
+        ("features_hourly", "timestamp", "features"),
+        ("price_patterns", "timestamp", "patterns"),
+        ("events", "timestamp", "события"),
+        ("anomaly_log", "created_at", "аномалии"),
     ]
     now = datetime.now(timezone.utc)
+    out = {}
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
-                for table, col in checks:
-                    try:
-                        cur.execute(
-                            "SELECT MAX(" + col + ") FROM " + table
+                for table, col, label in checks:
+                    ts = max_ts(cur, table, col)
+                    if ts:
+                        mins = int(
+                            (now - ts).total_seconds() / 60
                         )
-                        row = cur.fetchone()
-                        ts = row[0] if row else None
-                        if ts and ts.tzinfo is None:
-                            ts = ts.replace(tzinfo=timezone.utc)
-                        if ts:
-                            mins = int(
-                                (now - ts).total_seconds() / 60
-                            )
-                            fresh[table] = mins
-                        else:
-                            fresh[table] = None
-                    except Exception:
-                        fresh[table] = -1
+                        out[table] = {
+                            "label": label,
+                            "age_min": mins,
+                        }
+                    else:
+                        out[table] = {
+                            "label": label,
+                            "age_min": None,
+                        }
     except Exception as e:
         log("fresh err: " + str(e))
-    return fresh
+    return out
 
 
 def fmt_age(mins):
     if mins is None:
         return "нет данных"
-    if mins == -1:
-        return "ошибка"
     if mins < 60:
-        return str(mins) + " мин назад"
+        return str(mins) + " мин"
     if mins < 1440:
-        return str(mins // 60) + " ч назад"
-    return str(mins // 1440) + " д назад"
+        return str(mins // 60) + " ч"
+    return str(mins // 1440) + " д"
 
 
-def fmt_icon(mins, expected):
-    if mins is None or mins == -1:
+def icon_age(mins, expected):
+    if mins is None:
         return "❌"
     if mins <= expected:
         return "✅"
@@ -164,28 +228,14 @@ def fmt_icon(mins, expected):
     return "❌"
 
 
-def group_runs(runs):
-    grouped = {}
-    for r in runs:
-        key = r["job"]
-        if key not in grouped:
-            grouped[key] = {"ok": 0, "fail": 0, "added": 0}
-        g = grouped[key]
-        if r["status"] == "ok":
-            g["ok"] += 1
-        else:
-            g["fail"] += 1
-        g["added"] += r["added"]
-    return grouped
-
-
 def build_report():
     now = datetime.now(timezone.utc)
     lines = []
-    lines.append("🌙 <b>ARGUS — вечерний техотчёт</b>")
-    lines.append("📅 " + now.strftime("%d.%m.%Y %H:%M UTC"))
+    lines.append("🌙 <b>ARGUS — техотчёт</b>")
+    lines.append(now.strftime("%d.%m.%Y %H:%M UTC"))
     lines.append("")
 
+    # Workflows
     runs = fetch_runs(24)
     grouped = group_runs(runs)
 
@@ -193,8 +243,12 @@ def build_report():
     if not grouped:
         lines.append("  ⚠️ Запусков не было")
     else:
-        for job, g in sorted(grouped.items()):
-            icon = "✅" if g["fail"] == 0 else "⚠️"
+        for job in sorted(grouped.keys()):
+            g = grouped[job]
+            if g["fail"] == 0:
+                icon = "✅"
+            else:
+                icon = "⚠️"
             line = "  " + icon + " " + job + ": "
             line += str(g["ok"]) + " ok"
             if g["fail"]:
@@ -203,68 +257,70 @@ def build_report():
             lines.append(line)
     lines.append("")
 
-    lines.append("📋 <b>План / факт</b>")
-    for job, expected in EXPECTED.items():
-        got = grouped.get(job, {}).get("ok", 0)
-        if got == 0:
-            icon = "❌"
-        elif got < expected * 0.8:
-            icon = "⚠️"
-        else:
-            icon = "✅"
-        line = "  " + icon + " " + job + ": "
-        line += str(got) + "/" + str(expected)
-        lines.append(line)
-    lines.append("")
-
+    # Свежесть
     fresh = fetch_freshness()
+    expected = {
+        "candles": 90,
+        "features_hourly": 120,
+        "price_patterns": 120,
+        "events": 240,
+        "anomaly_log": 120,
+    }
     lines.append("🕐 <b>Свежесть</b>")
-    checks = [
-        ("candles", 90, "свечи"),
-        ("features_hourly", 120, "features"),
-        ("events", 180, "события"),
-    ]
-    for tbl, exp, label in checks:
-        mins = fresh.get(tbl)
-        icon = fmt_icon(mins, exp)
-        lines.append(
-            "  " + icon + " " + label + ": "
-            + fmt_age(mins)
-        )
+    for table, info in fresh.items():
+        exp = expected.get(table, 120)
+        icon = icon_age(info["age_min"], exp)
+        label = info["label"]
+        age = fmt_age(info["age_min"])
+        lines.append("  " + icon + " " + label + ": " + age)
     lines.append("")
 
+    # Всего в БД
     stats = fetch_stats()
     lines.append("📊 <b>Всего в БД</b>")
-    lines.append("  Candles: " + str(stats.get("candles", 0)))
-    lines.append(
-        "  Features: " + str(stats.get("features_hourly", 0))
-    )
-    lines.append(
-        "  Patterns: " + str(stats.get("price_patterns", 0))
-    )
-    lines.append("  Events: " + str(stats.get("events", 0)))
-    lines.append(
-        "  Causal: " + str(stats.get("causal_links", 0))
-    )
-    lines.append(
-        "  Anomalies: " + str(stats.get("anomaly_log", 0))
-    )
+    order = [
+        ("candles", "candles"),
+        ("funding_rates", "funding"),
+        ("open_interest", "OI"),
+        ("long_short_ratio", "LS"),
+        ("taker_flow", "taker"),
+        ("features_hourly", "features"),
+        ("price_patterns", "patterns"),
+        ("events", "events"),
+        ("causal_links", "causal"),
+        ("anomaly_log", "anomaly"),
+    ]
+    for key, label in order:
+        n = stats.get(key, -1)
+        if n < 0:
+            lines.append("  " + label + ": ошибка")
+        else:
+            lines.append(
+                "  " + label + ": " + format(n, ",")
+            )
     lines.append("")
 
+    # Проблемы
     problems = []
-    for job, expected in EXPECTED.items():
-        got = grouped.get(job, {}).get("ok", 0)
-        if got < expected * 0.8:
-            problems.append(job + " " + str(got) + "/" + str(expected))
-    for tbl, exp, label in checks:
-        mins = fresh.get(tbl)
-        if mins is None or mins == -1 or mins > exp * 2:
-            problems.append(label + " устарели")
+    for job, g in grouped.items():
+        if g["fail"] > 0:
+            problems.append(
+                job + ": " + str(g["fail"]) + " fail"
+            )
+    for table, info in fresh.items():
+        exp = expected.get(table, 120)
+        age = info["age_min"]
+        if age is None:
+            problems.append(info["label"] + ": нет данных")
+        elif age > exp * 2:
+            problems.append(
+                info["label"] + ": " + fmt_age(age)
+            )
 
     if not problems:
-        lines.append("✨ <i>Штатно</i>")
+        lines.append("✨ <i>Всё штатно</i>")
     else:
-        lines.append("⚠️ <b>Внимание:</b>")
+        lines.append("⚠️ <b>Внимание</b>")
         for p in problems:
             lines.append("  • " + p)
 
@@ -272,17 +328,16 @@ def build_report():
 
 
 def main():
-    log("evening report v1")
+    log("=" * 50)
+    log("evening report v2")
+    log("=" * 50)
     try:
         text = build_report()
-        if len(text) > 4000:
-            text = text[:3950] + "\n..."
-        send_telegram(text)
-        log("sent")
+        send_message(text)
     except Exception as e:
         import traceback
         traceback.print_exc()
-        send_telegram(
+        send_message(
             "❌ Техотчёт упал\n<code>"
             + str(e)[:200] + "</code>"
         )
