@@ -1,12 +1,12 @@
 # ============================================================
 # ARGUS-Trader — FEATURES
 # ------------------------------------------------------------
-# Считает признаки из свечей OHLCV.
-# Подтягивает funding_rate из funding_rates.
-# Записывает в features_hourly (Supabase).
-# ------------------------------------------------------------
-# v2: + funding_rate (последний <= timestamp)
-#     + валидация значений
+# v3: полная защита.
+#     - fix avg_volume_24h (per-point rolling)
+#     - валидация ВСЕХ полей перед INSERT
+#     - проверка timestamp (не в будущем)
+#     - funding только свежий (<24ч)
+# v2: + funding_rate
 # v1: базовые признаки
 # ============================================================
 
@@ -30,20 +30,33 @@ logging.basicConfig(
 log = logging.getLogger("crypto.features")
 
 # --- Лимиты валидации ---
-MAX_CHANGE_PCT = 50.0
-MAX_RANGE_PCT = 100.0
-MAX_FUNDING_PCT = 5.0
+LIMITS = {
+    "change_pct": 50.0,
+    "range_pct": 100.0,
+    "body_pct": 100.0,
+    "upper_wick_pct": 100.0,
+    "lower_wick_pct": 100.0,
+    "volume_ratio_24h": 100.0,
+    "volatility_24h": 20.0,
+    "volatility_7d": 20.0,
+    "change_4h": 100.0,
+    "change_24h": 200.0,
+    "change_7d": 500.0,
+    "funding_rate": 5.0,
+}
+
+MAX_FUTURE_MIN = 5
+MAX_FUNDING_AGE_H = 24
 
 
 def is_valid(val, limit):
-    """True если значение в разумных пределах."""
     if val is None:
         return False
     try:
         v = float(val)
     except (TypeError, ValueError):
         return False
-    if v != v:  # NaN
+    if v != v:
         return False
     if abs(v) > limit:
         return False
@@ -51,12 +64,25 @@ def is_valid(val, limit):
 
 
 def safe_val(val, limit):
-    """Возвращает val если валидно, иначе None."""
     return val if is_valid(val, limit) else None
 
 
+def ts_is_sane(ts):
+    """Timestamp не в будущем и не старше 1 года."""
+    if ts is None:
+        return False
+    if ts.tzinfo is None:
+        ts = ts.replace(tzinfo=timezone.utc)
+    now = datetime.now(timezone.utc)
+    if ts > now + timedelta(minutes=MAX_FUTURE_MIN):
+        return False
+    if ts < now - timedelta(days=365):
+        return False
+    return True
+
+
 # ============================================================
-# BASE FEATURES
+# BASE
 # ============================================================
 def compute_features_from_row(row):
     o = row["open"]
@@ -66,6 +92,10 @@ def compute_features_from_row(row):
     v = row["volume"]
 
     if not o or not h or not l or not c:
+        return None
+    if o <= 0 or h <= 0 or l <= 0 or c <= 0:
+        return None
+    if h < l:
         return None
 
     change_pct = round((c - o) / o * 100, 4)
@@ -83,16 +113,22 @@ def compute_features_from_row(row):
 
     pattern_bit = 1 if c > o else 0
 
-    # Валидация
-    change_pct = safe_val(change_pct, MAX_CHANGE_PCT)
-    range_pct = safe_val(range_pct, MAX_RANGE_PCT)
-
     return {
-        "change_pct": change_pct,
-        "range_pct": range_pct,
-        "body_pct": body_pct,
-        "upper_wick_pct": upper_wick_pct,
-        "lower_wick_pct": lower_wick_pct,
+        "change_pct": safe_val(
+            change_pct, LIMITS["change_pct"]
+        ),
+        "range_pct": safe_val(
+            range_pct, LIMITS["range_pct"]
+        ),
+        "body_pct": safe_val(
+            body_pct, LIMITS["body_pct"]
+        ),
+        "upper_wick_pct": safe_val(
+            upper_wick_pct, LIMITS["upper_wick_pct"]
+        ),
+        "lower_wick_pct": safe_val(
+            lower_wick_pct, LIMITS["lower_wick_pct"]
+        ),
         "pattern_bit": pattern_bit,
         "volume": v,
         "close": c,
@@ -100,50 +136,51 @@ def compute_features_from_row(row):
 
 
 # ============================================================
-# ROLLING
+# ROLLING (per-point)
 # ============================================================
-def compute_rolling_features(features_list, idx,
-                             window, field):
+def rolling_avg(features_list, idx, window, field):
+    """Среднее field за window свечей ДО idx."""
     start = max(0, idx - window)
     if start >= idx:
         return None
     values = [
-        f[field] for f in features_list[start:idx]
-        if f.get(field) is not None
+        features_list[i].get(field)
+        for i in range(start, idx)
     ]
+    values = [v for v in values if v is not None]
     if not values:
         return None
-    return round(sum(values) / len(values), 4)
+    return sum(values) / len(values)
 
 
-def compute_volatility(features_list, idx, window):
+def rolling_volatility(features_list, idx, window):
     start = max(0, idx - window)
     if start >= idx:
         return None
     values = [
-        f["change_pct"] for f in features_list[start:idx]
-        if f.get("change_pct") is not None
+        features_list[i].get("change_pct")
+        for i in range(start, idx)
     ]
+    values = [v for v in values if v is not None]
     if len(values) < 2:
         return None
     mean = sum(values) / len(values)
-    var = sum(
-        (x - mean) ** 2 for x in values
-    ) / len(values)
-    return round(var ** 0.5, 4)
+    var = sum((x - mean) ** 2 for x in values) / len(values)
+    return var ** 0.5
 
 
-def compute_change_sum(features_list, idx, window):
+def rolling_sum(features_list, idx, window):
     start = max(0, idx - window)
     if start >= idx:
         return None
     values = [
-        f["change_pct"] for f in features_list[start:idx]
-        if f.get("change_pct") is not None
+        features_list[i].get("change_pct")
+        for i in range(start, idx)
     ]
+    values = [v for v in values if v is not None]
     if not values:
         return None
-    return round(sum(values), 4)
+    return sum(values)
 
 
 # ============================================================
@@ -180,7 +217,6 @@ def fetch_candles(symbol, timeframe="1h", limit=500):
 
 
 def fetch_funding(symbol):
-    """Все funding_rate для символа."""
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
@@ -188,16 +224,18 @@ def fetch_funding(symbol):
                     "SELECT timestamp, funding_rate "
                     "FROM funding_rates "
                     "WHERE symbol = %s "
+                    "AND funding_rate IS NOT NULL "
                     "ORDER BY timestamp",
                     (symbol,),
                 )
                 result = []
                 for r in cur.fetchall():
                     ts = r[0]
-                    rate = r[1]
-                    if rate is not None:
-                        rate = float(rate)
-                    result.append((ts, rate))
+                    rate = float(r[1]) if r[1] else None
+                    if ts and rate is not None:
+                        if ts.tzinfo is None:
+                            ts = ts.replace(tzinfo=timezone.utc)
+                        result.append((ts, rate))
                 return result
     except Exception as e:
         log.error(f"fetch_funding: {e}")
@@ -205,14 +243,21 @@ def fetch_funding(symbol):
 
 
 def funding_at(funding_list, ts):
-    """Последний funding <= ts."""
+    """Последний funding <= ts, не старше 24ч."""
+    if ts.tzinfo is None:
+        ts = ts.replace(tzinfo=timezone.utc)
     result = None
     for f_ts, f_rate in funding_list:
         if f_ts <= ts:
-            result = f_rate
+            result = (f_ts, f_rate)
         else:
             break
-    return result
+    if result is None:
+        return None
+    age = ts - result[0]
+    if age > timedelta(hours=MAX_FUNDING_AGE_H):
+        return None
+    return result[1]
 
 
 # ============================================================
@@ -263,7 +308,7 @@ def save_features(symbol, features):
                             added += cur.rowcount
                     except Exception as e:
                         log.warning(
-                            f"INSERT features skip: {e}"
+                            f"INSERT skip: {e}"
                         )
     except Exception as e:
         log.error(f"save_features: {e}")
@@ -283,46 +328,71 @@ def process_symbol(symbol, timeframe="1h"):
     log.info(f"   Свечей: {len(candles)}")
 
     base_features = []
+    skipped_ts = 0
     for c in candles:
+        if not ts_is_sane(c["timestamp"]):
+            skipped_ts += 1
+            continue
         f = compute_features_from_row(c)
         if f:
             f["timestamp"] = c["timestamp"]
             base_features.append(f)
 
+    if skipped_ts:
+        log.warning(f"   Пропущено по timestamp: {skipped_ts}")
+
     if not base_features:
         return 0
 
-    avg_volume_24h = compute_rolling_features(
-        base_features, len(base_features),
-        24, "volume",
-    )
-
+    # --- Per-point rolling ---
     for idx, f in enumerate(base_features):
-        if avg_volume_24h and avg_volume_24h > 0:
-            f["volume_ratio_24h"] = round(
-                f["volume"] / avg_volume_24h, 3
+        avg_vol = rolling_avg(
+            base_features, idx, 24, "volume"
+        )
+        if avg_vol and avg_vol > 0:
+            ratio = f["volume"] / avg_vol
+            f["volume_ratio_24h"] = safe_val(
+                round(ratio, 3),
+                LIMITS["volume_ratio_24h"],
             )
         else:
             f["volume_ratio_24h"] = None
 
-        f["volatility_24h"] = compute_volatility(
+        vol24 = rolling_volatility(
             base_features, idx, 24
         )
-        f["volatility_7d"] = compute_volatility(
+        f["volatility_24h"] = safe_val(
+            round(vol24, 4) if vol24 is not None else None,
+            LIMITS["volatility_24h"],
+        )
+
+        vol7d = rolling_volatility(
             base_features, idx, 168
         )
-        f["change_4h"] = compute_change_sum(
-            base_features, idx, 4
+        f["volatility_7d"] = safe_val(
+            round(vol7d, 4) if vol7d is not None else None,
+            LIMITS["volatility_7d"],
         )
-        f["change_24h"] = compute_change_sum(
-            base_features, idx, 24
+
+        ch4 = rolling_sum(base_features, idx, 4)
+        f["change_4h"] = safe_val(
+            round(ch4, 4) if ch4 is not None else None,
+            LIMITS["change_4h"],
         )
-        f["change_7d"] = compute_change_sum(
-            base_features, idx, 168
+
+        ch24 = rolling_sum(base_features, idx, 24)
+        f["change_24h"] = safe_val(
+            round(ch24, 4) if ch24 is not None else None,
+            LIMITS["change_24h"],
+        )
+
+        ch7d = rolling_sum(base_features, idx, 168)
+        f["change_7d"] = safe_val(
+            round(ch7d, 4) if ch7d is not None else None,
+            LIMITS["change_7d"],
         )
 
     # --- Funding ---
-    log.info(f"   Загружаю funding...")
     funding = fetch_funding(symbol)
     log.info(f"   funding точек: {len(funding)}")
 
@@ -330,23 +400,26 @@ def process_symbol(symbol, timeframe="1h"):
     for f in base_features:
         rate = funding_at(funding, f["timestamp"])
         if rate is not None:
-            rate = safe_val(
-                rate * 100, MAX_FUNDING_PCT
+            rate_pct = rate * 100
+            rate_pct = safe_val(
+                rate_pct, LIMITS["funding_rate"]
             )
-            if rate is not None:
+            if rate_pct is not None:
                 filled += 1
-        f["funding_rate"] = rate
+            f["funding_rate"] = rate_pct
+        else:
+            f["funding_rate"] = None
 
     log.info(f"   funding заполнен: {filled}")
 
     added = save_features(symbol, base_features)
-    log.info(f"   ✅ Добавлено features: {added}")
+    log.info(f"   ✅ Добавлено: {added}")
     return added
 
 
 def main():
     log.info("=" * 60)
-    log.info("🧮 ARGUS-Trader FEATURES v2")
+    log.info("🧮 ARGUS-Trader FEATURES v3")
     log.info("=" * 60)
 
     total = 0
@@ -355,7 +428,7 @@ def main():
         total += n
 
     log.info("=" * 60)
-    log.info(f"✅ FEATURES DONE. Всего: {total}")
+    log.info(f"✅ DONE. Всего: {total}")
     log.info("=" * 60)
 
     close_connection()
