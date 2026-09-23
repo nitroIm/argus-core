@@ -1,8 +1,9 @@
 # ============================================================
-# ARGUS - NEWS REPORT v1 [PRODUCTION]
+# ARGUS - NEWS REPORT v2 [PRODUCTION]
 # ------------------------------------------------------------
 # Читает crypto/data/news_sentiment.json.
-# Отправляет сводку настроения в Telegram.
+# Переводит ТОЛЬКО топ-3 позитив + топ-3 негатив.
+# Отправляет сводку в Telegram.
 # ============================================================
 
 import os
@@ -23,6 +24,17 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 log = logging.getLogger("crypto.news_report")
+
+# Translate из той же папки
+sys.path.insert(0, str(SCRIPT_DIR))
+TRANSLATE_AVAILABLE = False
+try:
+    from translate import translate_batch
+    TRANSLATE_AVAILABLE = True
+except Exception as e:
+    log.warning("translate unavailable: " + str(e))
+    def translate_batch(t):
+        return t
 
 BOT_TOKEN = (
     os.getenv("TELEGRAM_BOT_TOKEN")
@@ -118,6 +130,50 @@ def load_json(path: Path) -> dict:
         return {}
 
 
+def _get_originals(items, n=3):
+    out = []
+    for it in items[:n]:
+        t = it.get("title_original")
+        if not t:
+            t = it.get("title", "")
+        if t:
+            out.append(t)
+    return out
+
+
+def translate_top(data):
+    """Переводит title_original топ-3 позитив и топ-3 негатив."""
+    if not TRANSLATE_AVAILABLE:
+        return [], []
+
+    top_bull = data.get("top_bullish", [])
+    top_bear = data.get("top_bearish", [])
+
+    bull_orig = _get_originals(top_bull, 3)
+    bear_orig = _get_originals(top_bear, 3)
+
+    bull_ru = []
+    bear_ru = []
+
+    try:
+        if bull_orig:
+            log.info(
+                "translating %d bullish",
+                len(bull_orig),
+            )
+            bull_ru = translate_batch(bull_orig)
+        if bear_orig:
+            log.info(
+                "translating %d bearish",
+                len(bear_orig),
+            )
+            bear_ru = translate_batch(bear_orig)
+    except Exception as e:
+        log.exception("translate_top: %s", e)
+
+    return bull_ru, bear_ru
+
+
 def build_report(data: dict) -> str:
     mood = data.get("mood", "Неизвестно")
     avg = data.get("avg_sentiment", 0.0)
@@ -127,6 +183,8 @@ def build_report(data: dict) -> str:
     neu = data.get("neutral_count", 0)
     fake = data.get("fake_count", 0)
     cross = data.get("cross_confirmed", 0)
+
+    bull_ru, bear_ru = translate_top(data)
 
     lines = []
     lines.append("📰 <b>ARGUS — Настроение рынка</b>")
@@ -151,20 +209,16 @@ def build_report(data: dict) -> str:
         )
     lines.append("")
 
-    top_bull = data.get("top_bullish", [])[:3]
-    if top_bull:
+    if bull_ru:
         lines.append("🟢 <b>Позитив:</b>")
-        for n in top_bull:
-            t = n.get("title", "?")[:110]
-            lines.append("  • " + esc(t))
+        for t in bull_ru[:3]:
+            lines.append("  • " + esc(t[:150]))
         lines.append("")
 
-    top_bear = data.get("top_bearish", [])[:3]
-    if top_bear:
+    if bear_ru:
         lines.append("🔴 <b>Негатив:</b>")
-        for n in top_bear:
-            t = n.get("title", "?")[:110]
-            lines.append("  • " + esc(t))
+        for t in bear_ru[:3]:
+            lines.append("  • " + esc(t[:150]))
         lines.append("")
 
     lines.append(
@@ -176,7 +230,7 @@ def build_report(data: dict) -> str:
 
 
 def main() -> None:
-    log.info("news report v1")
+    log.info("news report v2")
     log.info("reading: %s", SENTIMENT_FILE)
 
     if not SENTIMENT_FILE.exists():
