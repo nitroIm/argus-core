@@ -1,13 +1,14 @@
 {
-  "generated_at": "2026-09-24T13:39:22.433528+00:00",
-  "total_books": 31,
-  "total_chunks": 5311,
-  "new_chunks": 30,
+  "generated_at": "2026-09-24T14:46:19.819889+00:00",
+  "total_books": 28,
+  "total_chunks": 5655,
+  "new_chunks": 344,
   "new_files": [
-    "20410730_7. Asst. Prof. Manohar Vinod  Pathre,.pdf",
-    "2306.04338v1.pdf"
+    "13325217_EJAET-8-6-94-100.pdf",
+    "13758622_SSRN.pdf",
+    "1806.06632v1.pdf"
   ],
-  "skipped_already_in_db": 0,
+  "skipped_already_in_db": 1,
   "books": [
     {
       "file": "Френсис Бэкон .pdf",
@@ -138,7 +139,16 @@
       "file": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,.pdf",
       "pages": 9,
       "chunks": 30
+    },
+    {
+      "file": "13325217_EJAET-8-6-94-100.pdf",
+      "pages": 7,
+      "chunks": 32
+    },
+    {
+      "file": "13758622_SSRN.pdf",
+      "pages": 167,
+      "chunks": 312
     }
-  ],
-  "audit_cleaned_at": "2026-09-24T14:23:22.522611+00:00"
+  ]
 }
