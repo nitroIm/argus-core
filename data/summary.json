@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-09-24T14:46:19.819889+00:00",
-  "total_books": 28,
-  "total_chunks": 5655,
-  "new_chunks": 344,
+  "generated_at": "2026-09-24T17:07:49.447426+00:00",
+  "total_books": 29,
+  "total_chunks": 5692,
+  "new_chunks": 37,
   "new_files": [
-    "13325217_EJAET-8-6-94-100.pdf",
-    "13758622_SSRN.pdf",
-    "1806.06632v1.pdf"
+    "10792788_119-130.pdf",
+    "10939382_P05_1-10_Aditya-Dadhich.pdf",
+    "2608.17342v1.pdf"
   ],
-  "skipped_already_in_db": 1,
+  "skipped_already_in_db": 2,
   "books": [
     {
       "file": "Френсис Бэкон .pdf",
@@ -149,6 +149,11 @@
       "file": "13758622_SSRN.pdf",
       "pages": 167,
       "chunks": 312
+    },
+    {
+      "file": "10792788_119-130.pdf",
+      "pages": 12,
+      "chunks": 37
     }
   ]
 }
