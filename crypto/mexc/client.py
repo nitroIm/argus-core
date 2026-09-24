@@ -1,8 +1,8 @@
 # ============================================================
-# ARGUS - MEXC CLIENT v1 [PRODUCTION]
+# ARGUS - MEXC CLIENT v2 [PRODUCTION]
 # ------------------------------------------------------------
-# Базовый клиент для MEXC API v3.
-# Подпись запросов, GET/POST/DELETE.
+# v2: retry, body для POST/DELETE,
+#     обработка code в ответе, ключи в __init__.
 # ------------------------------------------------------------
 # Требования:
 #   pip install requests
@@ -25,18 +25,25 @@ log = logging.getLogger("mexc.client")
 
 BASE_URL = "https://api.mexc.com"
 TIMEOUT = 15
-RECV_WINDOW = 5000
-
-API_KEY = os.getenv("MEXC_API_KEY", "").strip()
-API_SECRET = os.getenv("MEXC_API_SECRET", "").strip()
+RECV_WINDOW = 10000
+MAX_RETRIES = 3
+RETRY_SLEEP = 2
 
 
 class MexcClient:
     """Клиент MEXC API v3."""
 
     def __init__(self, api_key=None, api_secret=None):
-        self.api_key = api_key or API_KEY
-        secret = api_secret or API_SECRET
+        self.api_key = (
+            api_key
+            or os.getenv("MEXC_API_KEY", "").strip()
+        )
+        secret = (
+            api_secret
+            or os.getenv(
+                "MEXC_API_SECRET", ""
+            ).strip()
+        )
         self.api_secret = secret.encode("utf-8")
 
     def _sign(self, params):
@@ -54,106 +61,163 @@ class MexcClient:
             "Content-Type": "application/json",
         }
 
-    def public_get(self, path, params=None):
-        url = BASE_URL + path
-        try:
-            r = requests.get(
-                url, params=params, timeout=TIMEOUT,
-            )
-            if r.status_code == 200:
-                return r.json()
+    def _check_response(self, data, path):
+        """MEXC отдаёт 200 + code != 0 при ошибке."""
+        if not isinstance(data, dict):
+            return data
+        code = data.get("code")
+        if code is not None and code != 0:
             log.warning(
-                "GET %s -> %d: %s",
-                path, r.status_code, r.text[:200],
+                "%s: code=%s msg=%s",
+                path, code,
+                data.get("msg", "?"),
             )
-        except Exception as e:
-            log.error("GET %s: %s", path, e)
+            return None
+        return data
+
+    def _request(self, method, path,
+                 params=None, headers=None,
+                 use_body=False):
+        url = BASE_URL + path
+        last_err = None
+
+        for attempt in range(1, MAX_RETRIES + 1):
+            try:
+                if use_body and params:
+                    kwargs = {
+                        "data": urlencode(params),
+                        "timeout": TIMEOUT,
+                    }
+                else:
+                    kwargs = {
+                        "params": params,
+                        "timeout": TIMEOUT,
+                    }
+                if headers:
+                    kwargs["headers"] = headers
+
+                r = requests.request(
+                    method, url, **kwargs,
+                )
+
+                if r.status_code == 200:
+                    try:
+                        return self._check_response(
+                            r.json(), path,
+                        )
+                    except Exception:
+                        log.error(
+                            "%s: bad json", path,
+                        )
+                        return None
+
+                # 5xx - retry
+                if r.status_code >= 500:
+                    last_err = r.status_code
+                    log.warning(
+                        "%s -> %d (try %d/%d)",
+                        path, r.status_code,
+                        attempt, MAX_RETRIES,
+                    )
+                    time.sleep(
+                        RETRY_SLEEP * attempt
+                    )
+                    continue
+
+                log.warning(
+                    "%s -> %d: %s",
+                    path, r.status_code,
+                    r.text[:200],
+                )
+                return None
+
+            except requests.exceptions.Timeout:
+                last_err = "timeout"
+                log.warning(
+                    "%s: timeout (try %d/%d)",
+                    path, attempt, MAX_RETRIES,
+                )
+                time.sleep(RETRY_SLEEP * attempt)
+            except requests.exceptions.ConnectionError:
+                last_err = "conn"
+                log.warning(
+                    "%s: conn error (try %d/%d)",
+                    path, attempt, MAX_RETRIES,
+                )
+                time.sleep(RETRY_SLEEP * attempt)
+            except Exception as e:
+                log.error("%s: %s", path, e)
+                return None
+
+        log.error(
+            "%s: all retries failed (%s)",
+            path, last_err,
+        )
         return None
+
+    def public_get(self, path, params=None):
+        return self._request(
+            "GET", path, params=params,
+        )
 
     def signed_get(self, path, params=None):
         if not self.api_key or not self.api_secret:
-            log.error("API key/secret not set")
+            log.error("API keys not set")
             return None
 
         params = dict(params or {})
-        params["timestamp"] = int(time.time() * 1000)
+        params["timestamp"] = int(
+            time.time() * 1000
+        )
         params["recvWindow"] = RECV_WINDOW
         params["signature"] = self._sign(params)
 
-        url = BASE_URL + path
-        try:
-            r = requests.get(
-                url,
-                params=params,
-                headers=self._headers(),
-                timeout=TIMEOUT,
-            )
-            if r.status_code == 200:
-                return r.json()
-            log.warning(
-                "GET %s -> %d: %s",
-                path, r.status_code, r.text[:200],
-            )
-        except Exception as e:
-            log.error("GET %s: %s", path, e)
-        return None
+        return self._request(
+            "GET", path,
+            params=params,
+            headers=self._headers(),
+        )
 
     def signed_post(self, path, params=None):
         if not self.api_key or not self.api_secret:
-            log.error("API key/secret not set")
+            log.error("API keys not set")
             return None
 
         params = dict(params or {})
-        params["timestamp"] = int(time.time() * 1000)
+        params["timestamp"] = int(
+            time.time() * 1000
+        )
         params["recvWindow"] = RECV_WINDOW
         params["signature"] = self._sign(params)
 
-        url = BASE_URL + path
-        try:
-            r = requests.post(
-                url,
-                params=params,
-                headers=self._headers(),
-                timeout=TIMEOUT,
-            )
-            if r.status_code == 200:
-                return r.json()
-            log.warning(
-                "POST %s -> %d: %s",
-                path, r.status_code, r.text[:200],
-            )
-        except Exception as e:
-            log.error("POST %s: %s", path, e)
-        return None
+        return self._request(
+            "POST", path,
+            params=params,
+            headers=self._headers(),
+            use_body=True,
+        )
 
     def signed_delete(self, path, params=None):
         if not self.api_key or not self.api_secret:
-            log.error("API key/secret not set")
+            log.error("API keys not set")
             return None
 
         params = dict(params or {})
-        params["timestamp"] = int(time.time() * 1000)
+        params["timestamp"] = int(
+            time.time() * 1000
+        )
         params["recvWindow"] = RECV_WINDOW
         params["signature"] = self._sign(params)
 
-        url = BASE_URL + path
-        try:
-            r = requests.delete(
-                url,
-                params=params,
-                headers=self._headers(),
-                timeout=TIMEOUT,
-            )
-            if r.status_code == 200:
-                return r.json()
-            log.warning(
-                "DELETE %s -> %d: %s",
-                path, r.status_code, r.text[:200],
-            )
-        except Exception as e:
-            log.error("DELETE %s: %s", path, e)
-        return None
+        return self._request(
+            "DELETE", path,
+            params=params,
+            headers=self._headers(),
+            use_body=True,
+        )
 
 
 def is_configured():
-    return bool(API_KEY and API_SECRET)
+    key = os.getenv("MEXC_API_KEY", "").strip()
+    sec = os.getenv("MEXC_API_SECRET", "").strip()
+    return bool(key and sec)
