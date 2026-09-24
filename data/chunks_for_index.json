@@ -31684,5 +31684,185 @@
     "source": "2208.07168v1",
     "book": "2208.07168v1.pdf",
     "text": "For the model, the data set was split into training and test data in an 80:20 ratio. Then the hyperparameter tuning was done in Python with the RandomizedSearchCV command. Therefor, lists were created for the number of leafs, the distances, for the weights and for the determination of K, which were then tested to obtain the best possible parameters. The ﬁnal result is shown in the table below. Table 9: Hyperparameters after tuning the kNN Model Tuning Parameter Selected Value Leaf size 15 Distance Manhattan Weight Distance No. K 5 Algorithm Auto In the ﬁgure 15 the predicted Signals vs. the real signals and the confusion matrix are shown. The signals ﬂuctuate very ﬁrmly with this model. Occasionally, there are periods in which the model remains in the same class for a certain time. However, the confusion matrix shows that the two classes (0 and 1) are very balanced."
+  },
+  {
+    "id": "b27221a8#00000",
+    "source": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,",
+    "book": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,.pdf",
+    "text": "ISSN–2278-5655 AMIERJ Volume–XV, Special Issue– I (b) March – April, 2026 SJIF Impact Factor: 8.648 A Peer Reviewed Referred Journal 51 Aarhat Multidisciplinary International Education Research Journal Original Research Article A STUDY ON ALGORITHMIC TRADING AND ITS INFLUENCE ON STOCK MARKET EFFICIENCY * Mr. Manohar Vinod Pathre, **Ms. Subhaangi Koshlesh Bharti Singh & ***Mr. Kishan Singh * Assistant Professor, Research Scholar , ** Assistant Professor, Research Scholar , N. G. Acharya & D. K. Marathe College of Arts, Science & Commerce, Mumbai * PG Student , Bunts Sangha's S.M. Shetty College of Science, Commerce and Management Studies. Abstract: The rapid advancement of digital technologies and automated trading systems has significantly transformed the structure and functioning of global financial markets."
+  },
+  {
+    "id": "b27221a8#00001",
+    "source": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,",
+    "book": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,.pdf",
+    "text": "Among these developments, algorithmic trading has emerged as a prominent mechanism through which investors execute trades using computer-based programs that follow predefined instructions related to price, timing, and trading volume. The increasing adoption of such automated strategies has raised important questions regarding their influence on stock market efficiency, liquidity, and price discovery. The primary objective of this study is to examine the relationship between algorithmic trading activity and stock market efficiency, and to analyze its impact on market liquidity and the price discovery process. The study adopts a quantitative research design based on secondary data collected from major Indian stock exchanges, focusing on actively traded large-cap companies."
+  },
+  {
+    "id": "b27221a8#00002",
+    "source": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,",
+    "book": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,.pdf",
+    "text": "Statistical techniques including correlation analysis and multiple regression analysis were employed to evaluate the association between algorithmic trading activity and key market efficiency indicators. The results of the data analysis reveal a strong positive relationship between algorithmic trading and market liquidity, along with a significant contribution to efficient price discovery and reduced bid–ask spreads. The regression results further confirm that algorithmic trading significantly improves overall stock market efficiency. However, the study also indicates that excessive automated trading activity may contribute to short-term market volatility. Overall, the study highlights the growing importance of algorithmic trading in enhancing the efficiency and transparency of modern capital markets."
+  },
+  {
+    "id": "b27221a8#00003",
+    "source": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,",
+    "book": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,.pdf",
+    "text": "Keywords: Algorithmic Trading, Market Efficiency, High-Frequency Trading, Stock Market Liquidity, Price Discovery Copyright © 2026 The Author(s): This is an open-access article distributed under the terms of the Creative Commons Attribution 4.0 International License (CC BY-NC 4.0) which permits unrestricted use, distribution, and reproduction in any medium for non-commercial use provided the original author and source are credited. Introduction: Financial markets have undergone a profound transformation over the past two decades due to rapid technological innovation, increased computational power, and the digitalisation of trading systems. One of the most significant developments in this transformation is the emergence of algorithmic trading, which involves the use of computer algorithms to automatically execute trading orders based on predefined rules and quantitative models. Algorithmic trading allows market participants to process vast volumes of market data and execute trades at extremely high speeds, thereby fundamentally altering the structure and functioning of modern stock markets. In an ideal financial market, stock prices fully and quickly reflect all available information, a concept widely explained by the Efficient Market Hypothesis (EMH). Efficient markets facilitate accurate price discovery, reduce information asymmetry, and ensure optimal allocation of financial resources."
+  },
+  {
+    "id": "b27221a8#00004",
+    "source": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,",
+    "book": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,.pdf",
+    "text": "With the introduction of algorithmic trading systems, proponents argue that automated trading enhances market efficiency by increasing trading speed, improving liquidity, narrowing bid-ask spreads, and ISSN–2278-5655 AMIERJ Volume–XV, Special Issue– I (b) March – April, 2026 SJIF Impact Factor: 8.648 A Peer Reviewed Referred Journal 52 Aarhat Multidisciplinary International Education Research Journal Original Research Article facilitating rapid information incorporation into asset prices. However, critics contend that algorithmic trading, particularly high-frequency trading, may increase short-term volatility, encourage speculative behaviour, and occasionally contribute to market disruptions such as flash crashes. Despite the theoretical advantages of algorithmic trading, empirical evidence regarding its actual influence on stock market efficiency remains inconclusive."
+  },
+  {
+    "id": "b27221a8#00005",
+    "source": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,",
+    "book": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,.pdf",
+    "text": "While several studies have reported improvements in liquidity and price discovery following the adoption of algorithmic trading technologies, other research has highlighted potential risks associated with excessive automated trading activity. These conflicting findings suggest that the relationship between algorithmic trading and market efficiency is complex and influenced by multiple market conditions and structural factors. Previous studies have attempted to examine this relationship using different methodological approaches and datasets across developed financial markets. However, many of these studies focus primarily on high-frequency trading in advanced markets, leaving limited empirical evidence from emerging economies where market structures and regulatory frameworks differ significantly."
+  },
+  {
+    "id": "b27221a8#00006",
+    "source": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,",
+    "book": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,.pdf",
+    "text": "Furthermore, existing research often concentrates on individual aspects of market efficiency such as liquidity or volatility rather than providing a comprehensive assessment of the broader efficiency implications of algorithmic trading. The consequences of inadequate understanding in this area can be substantial. If algorithmic trading improves market efficiency, regulators and policymakers may encourage its adoption. Conversely, if excessive algorithmic trading introduces systemic risks, regulatory intervention may be required to maintain market stability. Therefore, the present study aims to examine the influence of algorithmic trading on stock market efficiency by analysing its impact on key indicators such as liquidity and price discovery."
+  },
+  {
+    "id": "b27221a8#00007",
+    "source": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,",
+    "book": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,.pdf",
+    "text": "By integrating insights from market microstructure theory and empirical financial analysis, the study seeks to address the existing knowledge gap and provide evidence that contributes to the ongoing debate regarding the role of automated trading in modern financial markets. Research Objectives: 1. To examine the relationship between algorithmic trading activity and stock market efficiency. 2. To analyze the impact of algorithmic trading on market liquidity and price discovery. Hypothesis of the Study: H1: There is a significant relationship between algorithmic trading activity and stock market efficiency. H2: Algorithmic trading activity has a positive impact on market liquidity. H3: Algorithmic trading significantly influences the price discovery process in stock markets. Literature Review: Chaboud et al."
+  },
+  {
+    "id": "b27221a8#00008",
+    "source": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,",
+    "book": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,.pdf",
+    "text": "(2014) examined the impact of algorithmic trading on foreign exchange markets in a study published in the Journal of Finance. The authors employed high-frequency transaction data and econometric analysis to investigate how automated trading systems affect market liquidity and volatility. Their findings indicated that algorithmic trading improved liquidity and enhanced price efficiency by facilitating faster incorporation of information into exchange rates. The study highlighted the potential role of algorithmic trading in strengthening market efficiency. Hendershott, Jones, and Menkveld (2011) investigated the relationship between algorithmic trading and market quality in the Journal of Finance."
+  },
+  {
+    "id": "b27221a8#00009",
+    "source": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,",
+    "book": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,.pdf",
+    "text": "Using data from the New York Stock Exchange and applying regression analysis, the study found that algorithmic trading significantly improved market ISSN–2278-5655 AMIERJ Volume–XV, Special Issue– I (b) March – April, 2026 SJIF Impact Factor: 8.648 A Peer Reviewed Referred Journal 53 Aarhat Multidisciplinary International Education Research Journal Original Research Article liquidity and reduced bid-ask spreads. The authors concluded that algorithmic trading enhances market efficiency by improving price discovery and reducing transaction costs. Brogaard (2015) analyzed the contribution of high- frequency traders to price discovery in equity markets. Published in the Journal of Financial Economics, the study utilized intraday trading data and statistical modeling techniques to evaluate how algorithmic traders respond to new information."
+  },
+  {
+    "id": "b27221a8#00010",
+    "source": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,",
+    "book": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,.pdf",
+    "text": "The findings demonstrated that algorithmic trading contributes positively to price discovery and market efficiency by rapidly incorporating public information into stock prices. Kirilenko et al. (2017) explored the role of high- frequency trading during extreme market events in a study published in the Journal of Finance. The research used transaction-level data from the Chicago Mercantile Exchange to analyze the causes of the 2010 Flash Crash. The results suggested that while algorithmic trading provides liquidity under normal conditions, it may amplify volatility during periods of market stress. This study highlighted the complex impact of automated trading on market stability and efficiency. Hasbrouck and Saar (2013) examined the effects of low-latency trading and algorithmic strategies on market microstructure."
+  },
+  {
+    "id": "b27221a8#00011",
+    "source": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,",
+    "book": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,.pdf",
+    "text": "Published in the Journal of Financial Markets, the study employed econometric techniques to analyze order book data and trading activity. The findings indicated that algorithmic trading reduces execution costs and enhances liquidity, thereby contributing to more efficient markets. Zhang (2010) investigated whether high-frequency trading increases market volatility in a study published in the Financial Analysts Journal. Using panel data analysis across multiple stock markets, the study found that increased algorithmic trading activity may contribute to short-term volatility even though it enhances trading efficiency. The research highlighted the dual nature of algorithmic trading in influencing market efficiency and stability. Overall, the existing literature suggests that algorithmic trading plays a significant role in shaping market efficiency, liquidity, and volatility."
+  },
+  {
+    "id": "b27221a8#00012",
+    "source": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,",
+    "book": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,.pdf",
+    "text": "However, the mixed findings indicate that further empirical investigation is necessary to fully understand its broader implications for modern stock markets. Need of the Study: • To address the limited empirical evidence on the influence of algorithmic trading on stock market efficiency in contemporary financial markets. • To provide insights into how automated trading systems affect liquidity and price discovery mechanisms in stock exchanges. • To assist policymakers and regulatory authorities in understanding the implications of algorithmic trading for market stability and regulation. • To contribute to the academic literature on financial market microstructure and technological innovation in capital markets. Scope of the Study: • The study focuses on analyzing the influence of algorithmic trading on stock market efficiency during the period 2015–2024. • The geographical scope primarily covers major stock exchanges operating in emerging and developed financial markets. • The study relies on secondary data obtained from stock exchange databases, financial reports, and market trading records. • The research examines variables related to algorithmic trading activity, market liquidity, price discovery, and stock market efficiency. Limitations of the Study • The study relies primarily on secondary data, which may limit the availability of detailed information on proprietary algorithmic trading strategies."
+  },
+  {
+    "id": "b27221a8#00013",
+    "source": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,",
+    "book": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,.pdf",
+    "text": "ISSN–2278-5655 AMIERJ Volume–XV, Special Issue– I (b) March – April, 2026 SJIF Impact Factor: 8.648 A Peer Reviewed Referred Journal 54 Aarhat Multidisciplinary International Education Research Journal Original Research Article • The analysis focuses on a specific time period, which may not fully capture long-term structural changes in financial markets. • The use of quantitative statistical techniques may not completely explain behavioral aspects influencing trading activities. • The findings of the study may have limited generalizability across all global stock markets due to differences in regulatory environments and market structures. Research Methodology: The present study adopts a quantitative research design to examine the influence of algorithmic trading on stock market efficiency."
+  },
+  {
+    "id": "b27221a8#00014",
+    "source": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,",
+    "book": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,.pdf",
+    "text": "The research primarily relies on secondary data collected from reliable financial databases, stock exchange reports, and published financial market statistics. Secondary data related to trading activity, market liquidity, and price movements were obtained from recognized financial databases such as stock exchange publications, financial market reports, and economic databases. These data sources provide comprehensive information regarding trading volumes, bid-ask spreads, transaction frequency, and other relevant indicators associated with algorithmic trading activity. The study sample consists of selected stocks actively traded in major stock exchanges where algorithmic trading participation is significant. The research period covers ten years from 2015 to 2024 in order to capture recent developments in automated trading technologies and their influence on market performance."
+  },
+  {
+    "id": "b27221a8#00015",
+    "source": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,",
+    "book": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,.pdf",
+    "text": "In this study, stock market efficiency serves as the dependent variable, which is measured through indicators such as price discovery efficiency and market liquidity. The independent variable is algorithmic trading activity, which is proxied by measures such as trading volume, order execution speed, and trade frequency. To examine the relationship between the variables, statistical techniques such as correlation analysis and multiple regression analysis are employed. Correlation analysis helps identify the strength and direction of relationships between algorithmic trading activity and market efficiency indicators. Regression analysis is used to evaluate the impact of algorithmic trading on stock market efficiency while controlling for other market factors."
+  },
+  {
+    "id": "b27221a8#00016",
+    "source": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,",
+    "book": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,.pdf",
+    "text": "The results derived from these statistical analyses provide empirical evidence regarding whether algorithmic trading enhances or influences the efficiency of modern stock markets. Data Analysis and Interpretation: To empirically examine the influence of algorithmic trading on stock market efficiency, secondary data relating to trading activity, liquidity indicators, and price discovery measures were analysed for selected large-cap companies listed on the National Stock Exchange of India. These companies were selected because they represent highly liquid securities where algorithmic trading participation is relatively high. Recent evidence suggests that algorithmic trading has become a dominant feature of Indian capital markets, accounting for over half of equity cash market transactions and nearly seventy percent of derivatives trades."
+  },
+  {
+    "id": "b27221a8#00017",
+    "source": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,",
+    "book": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,.pdf",
+    "text": "This significant penetration of automated trading systems provides a suitable environment to examine how algorithmic activity affects stock market efficiency indicators such as liquidity and price discovery. The analysis focuses on selected Nifty-50 companies where trading activity is substantial and algorithmic trading participation is significant. Variables considered in the analysis include algorithmic trading volume ratio, bid-ask spread, trade frequency, and price discovery efficiency. ISSN–2278-5655 AMIERJ Volume–XV, Special Issue– I (b) March – April, 2026 SJIF Impact Factor: 8.648 A Peer Reviewed Referred Journal 55 Aarhat Multidisciplinary International Education Research Journal Original Research Article Table 1 Selected Sample Companies for Analysis S. No Company Sector Exchange 1 Reliance Industries Energy & Conglomerate NSE 2 Tata Consultancy Services Information Technology NSE 3 HDFC Bank Banking NSE 4 Infosys Information Technology NSE 5 ICICI Bank Banking NSE 6 State Bank of India Banking NSE 7 Larsen & Toubro Infrastructure NSE 8 ITC Limited FMCG NSE These companies represent multiple sectors including banking, technology, energy, infrastructure, and consumer goods, thereby providing a diversified representation of Indian capital markets."
+  },
+  {
+    "id": "b27221a8#00018",
+    "source": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,",
+    "book": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,.pdf",
+    "text": "Table 2 Algorithmic Trading Activity and Market Efficiency Indicators Company Algo Trading Volume (%) Average Daily Trades Bid-Ask Spread (%) Liquidity Index Price Discovery Score Reliance Industries 62 185,000 0.28 0.87 0.84 Tata Consultancy Services 58 142,000 0.31 0.82 0.80 HDFC Bank 64 210,000 0.25 0.90 0.86 Infosys 60 165,000 0.29 0.85 0.83 ICICI Bank 63 205,000 0.26 0.89 0.85 State Bank of India 66 230,000 0.24 0.91 0.88 Larsen & Toubro 57 138,000 0.32 0.81 0.79 ITC Limited 55 125,000 0.34 0.78 0.77 Interpretation of Table 2 The table indicates that algorithmic trading participation ranges between 55% and 66% among the selected companies. Banking stocks such as HDFC Bank, ICICI Bank, and State Bank of India exhibit higher algorithmic trading participation compared to other sectors. These stocks also demonstrate lower bid-ask spreads and higher liquidity indices, suggesting that algorithmic trading contributes to improved market liquidity. Similarly, firms with higher algorithmic trading volume also show better price discovery scores, indicating that automated trading mechanisms may facilitate faster incorporation of information into stock prices."
+  },
+  {
+    "id": "b27221a8#00019",
+    "source": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,",
+    "book": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,.pdf",
+    "text": "ISSN–2278-5655 AMIERJ Volume–XV, Special Issue– I (b) March – April, 2026 SJIF Impact Factor: 8.648 A Peer Reviewed Referred Journal 56 Aarhat Multidisciplinary International Education Research Journal Original Research Article Table 3 Correlation Analysis Variables Algorithmic Trading Liquidity Index Price Discovery Bid-Ask Spread Algorithmic Trading 1.00 0.78 0.74 -0.69 Liquidity Index 0.78 1.00 0.81 -0.72 Price Discovery 0.74 0.81 1.00 -0.65 Bid-Ask Spread -0.69 -0.72 -0.65 1.00 Interpretation of Correlation Analysis The correlation matrix reveals several important relationships: • Algorithmic trading shows a strong positive correlation with market liquidity (0.78), indicating that higher automated trading activity improves liquidity in stock markets. • A positive correlation (0.74) exists between algorithmic trading and price discovery efficiency."
+  },
+  {
+    "id": "b27221a8#00020",
+    "source": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,",
+    "book": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,.pdf",
+    "text": "• Algorithmic trading shows a negative correlation with bid-ask spreads (-0.69), suggesting that automated trading reduces transaction costs and enhances market efficiency. These results indicate that increased algorithmic trading activity contributes positively to multiple dimensions of stock market efficiency. Table 4 Regression Analysis: Impact of Algorithmic Trading on Market Efficiency Dependent Variable: Market Efficiency Index Variable Coefficient Standard Error t-Value Significance Constant 0.421 0.084 5.01 0.000 Algorithmic Trading Volume 0.63 0.12 5.25 0.001 Liquidity Index 0.48 0.10 4.80 0.002 Bid-Ask Spread -0.37 0.09 -4.11 0.003 R² = 0.71 Adjusted R² = 0.67 F-Statistic = 12.84 Interpretation of Regression Analysis: The regression results demonstrate that algorithmic trading has a positive and statistically significant impact on stock market efficiency. The coefficient value of 0.63 indicates that higher levels of algorithmic trading activity significantly improve the efficiency of the stock market. The R² value of 0.71 indicates that approximately 71% of the variation in market efficiency can be explained by algorithmic trading activity, liquidity conditions, and bid-ask spreads. The negative coefficient for bid-ask spread suggests that narrower spreads contribute positively to overall market efficiency."
+  },
+  {
+    "id": "b27221a8#00021",
+    "source": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,",
+    "book": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,.pdf",
+    "text": "ISSN–2278-5655 AMIERJ Volume–XV, Special Issue– I (b) March – April, 2026 SJIF Impact Factor: 8.648 A Peer Reviewed Referred Journal 57 Aarhat Multidisciplinary International Education Research Journal Original Research Article Hypothesis Testing: Hypothesis Statement Result H1 There is a significant relationship between algorithmic trading and stock market efficiency Accepted H2 Algorithmic trading has a positive impact on market liquidity Accepted H3 Algorithmic trading significantly influences price discovery Accepted Findings of the Study: The empirical analysis provides several important insights regarding the influence of algorithmic trading on stock market efficiency: 1. Algorithmic trading participation is significantly high among large-capitalisation stocks listed on the National Stock Exchange. 2."
+  },
+  {
+    "id": "b27221a8#00022",
+    "source": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,",
+    "book": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,.pdf",
+    "text": "Stocks with higher algorithmic trading participation exhibit greater liquidity and narrower bid-ask spreads, indicating improved trading efficiency. 3. Algorithmic trading significantly enhances the price discovery mechanism by facilitating faster information incorporation into stock prices. 4. Regression analysis confirms that algorithmic trading has a statistically significant positive impact on market efficiency. 5. Banking and technology sector stocks show relatively higher algorithmic trading participation compared to other sectors. 6. While algorithmic trading improves liquidity and efficiency, excessive automated trading may also increase short-term market volatility under certain conditions."
+  },
+  {
+    "id": "b27221a8#00023",
+    "source": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,",
+    "book": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,.pdf",
+    "text": "Conclusion: • The study concludes that algorithmic trading has become a dominant component of modern financial markets, significantly influencing the structure and functioning of stock exchanges. The empirical analysis indicates that increased participation of automated trading systems contributes to improved market efficiency, particularly in highly liquid securities. • The results of correlation and regression analysis demonstrate a strong positive relationship between algorithmic trading activity and market liquidity, suggesting that automated trading mechanisms enhance trading volume and reduce bid–ask spreads, thereby lowering transaction costs for investors."
+  },
+  {
+    "id": "b27221a8#00024",
+    "source": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,",
+    "book": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,.pdf",
+    "text": "• The findings further reveal that algorithmic trading significantly improves the price discovery process, as automated trading systems are capable of processing large volumes of market information and incorporating new information into stock prices more rapidly than traditional manual trading methods. • The statistical analysis also confirms that algorithmic trading has a significant impact on stock market efficiency, supporting the hypothesis that technological innovation in trading mechanisms contributes positively to the overall functioning of capital markets. • Sectoral observations indicate that companies in banking and information technology sectors exhibit relatively higher levels of algorithmic trading participation, reflecting the strong institutional trading activity and high liquidity typically associated with these sectors."
+  },
+  {
+    "id": "b27221a8#00025",
+    "source": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,",
+    "book": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,.pdf",
+    "text": "• Despite these advantages, the study also acknowledges that excessive algorithmic trading activity may contribute to short-term volatility and potential market instability during periods of extreme market stress, highlighting the need for effective regulatory oversight. ISSN–2278-5655 AMIERJ Volume–XV, Special Issue– I (b) March – April, 2026 SJIF Impact Factor: 8.648 A Peer Reviewed Referred Journal 58 Aarhat Multidisciplinary International Education Research Journal Original Research Article • Overall, the research confirms that algorithmic trading plays a critical role in enhancing liquidity, accelerating information dissemination, and improving the efficiency of modern stock markets, thereby contributing to more transparent and efficient financial systems."
+  },
+  {
+    "id": "b27221a8#00026",
+    "source": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,",
+    "book": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,.pdf",
+    "text": "Future Scope of the Study: • Future research may examine the impact of high- frequency trading (HFT) as a specialised form of algorithmic trading and its influence on intraday volatility and market stability in emerging economies. • Further studies could expand the analysis by incorporating cross-country comparisons to evaluate how algorithmic trading affects stock market efficiency under different regulatory frameworks and market structures. • Researchers may also explore the role of artificial intelligence and machine learning-based trading algorithms, which represent the next generation of automated trading systems and may further transform financial markets. • Additional studies could include behavioral and institutional perspectives, analysing how algorithmic trading influences the decision-making behaviour of retail investors, institutional traders, and market makers."
+  },
+  {
+    "id": "b27221a8#00027",
+    "source": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,",
+    "book": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,.pdf",
+    "text": "• Future empirical work may utilise high-frequency transaction-level data to obtain deeper insights into the microstructure dynamics of algorithmic trading and its real-time impact on price formation and liquidity provision. • Finally, further research may focus on evaluating the effectiveness of regulatory policies and risk management frameworks designed to monitor algorithmic trading activities and ensure long-term financial market stability. References: 1. Andrei Shleifer, A., & Robert W. Vishny. (1997). The limits of arbitrage. The Journal of Finance, 52(1), 35–55. 2. Eric Budish, Peter Cramton, & John J. Shim. (2015). The high-frequency trading arms race: Frequent batch auctions as a market design response. The Quarterly Journal of Economics, 130(4), 1547–1621. 3. Alain Chaboud, Benjamin Chiquoine, Erik Hjalmarsson, & Clara Vega. (2014)."
+  },
+  {
+    "id": "b27221a8#00028",
+    "source": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,",
+    "book": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,.pdf",
+    "text": "Rise of the machines: Algorithmic trading in the foreign exchange market. The Journal of Finance, 69(5), 2045–2084. 4. Terrence Hendershott, Charles M. Jones, & Albert J. Menkveld. (2011). Does algorithmic trading improve liquidity? The Journal of Finance, 66(1), 1–33. 5. Jonathan Brogaard. (2015). High-frequency trading and its impact on market quality. Journal of Financial Economics, 116(2), 223–245. 6. Andrei Kirilenko, Albert Kyle, Mehrdad Samadi, & Tugkan Tuzun. (2017). The flash crash: High- frequency trading in an electronic market. The Journal of Finance, 72(3), 967–998. 7. Joel Hasbrouck, & Gideon Saar. (2013). Low- latency trading. Journal of Financial Markets, 16(4), 646–679. 8. Frank Zhang. (2010). High-frequency trading, stock volatility, and price discovery. Financial Analysts Journal, 66(2), 20–34. 9. Burton G. Malkiel. (2003)."
+  },
+  {
+    "id": "b27221a8#00029",
+    "source": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,",
+    "book": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,.pdf",
+    "text": "The efficient market hypothesis and its critics. Journal of Economic Perspectives, 17(1), 59–82. 10. Eugene F. Fama. (1970). Efficient capital markets: A review of theory and empirical work. The Journal of Finance, 25(2), 383–417. ISSN–2278-5655 AMIERJ Volume–XV, Special Issue– I (b) March – April, 2026 SJIF Impact Factor: 8.648 A Peer Reviewed Referred Journal 59 Aarhat Multidisciplinary International Education Research Journal Original Research Article 11. Securities and Exchange Board of India. (2023). Algorithmic trading guidelines and risk management framework. Mumbai: SEBI. 12. National Stock Exchange of India. (2024). Market microstructure and algorithmic trading statistics report. Mumbai: NSE India. 13. Bombay Stock Exchange. (2023). Annual report 2022–2023. Mumbai: BSE India. 14. Reserve Bank of India. (2023). Financial stability report. Mumbai: RBI. 15. World Federation of Exchanges. (2022). Market structure and trading technology report. London: WFE. Cite This Article: Mr. Pathre M.V., Ms. Singh S.K.B. & Mr. Singh K. (2026). A Study on Algorithmic Trading and its Influence on Stock Market Efficiency. In Aarhat Multidisciplinary International Education Research Journal: Vol. XV (Number II, pp. 51–59) Doi: https://doi.org/10.5281/zenodo.20410730"
   }
 ]

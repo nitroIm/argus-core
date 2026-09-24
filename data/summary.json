@@ -1,14 +1,13 @@
 {
-  "generated_at": "2026-09-21T00:14:02.756899+00:00",
-  "total_books": 30,
-  "total_chunks": 5281,
-  "new_chunks": 0,
+  "generated_at": "2026-09-24T13:39:22.433528+00:00",
+  "total_books": 31,
+  "total_chunks": 5311,
+  "new_chunks": 30,
   "new_files": [
-    "1202.2447v2.pdf",
-    "1912.04492v1.pdf",
-    "2208.07168v1.pdf"
+    "20410730_7. Asst. Prof. Manohar Vinod  Pathre,.pdf",
+    "2306.04338v1.pdf"
   ],
-  "skipped_already_in_db": 3,
+  "skipped_already_in_db": 0,
   "books": [
     {
       "file": "Френсис Бэкон .pdf",
@@ -159,6 +158,11 @@
       "file": "2208.07168v1.pdf",
       "pages": 41,
       "chunks": 9
+    },
+    {
+      "file": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,.pdf",
+      "pages": 9,
+      "chunks": 30
     }
   ]
 }
