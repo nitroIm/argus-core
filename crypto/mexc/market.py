@@ -1,23 +1,17 @@
 # ============================================================
-# ARGUS - MEXC MARKET v1 [PRODUCTION]
+# ARGUS - MEXC MARKET v2 [PRODUCTION]
 # ------------------------------------------------------------
-# Публичные данные с MEXC:
-#   - Order book (стакан)
-#   - Recent trades
-#   - 24h ticker
-# Без API-ключа.
+# v2: топ-10 стакана, чистый naming,
+#     sanity-check bid<ask.
+# Публичные данные, без ключа.
 # ============================================================
 
 import sys
-import json
 import logging
 from pathlib import Path
-from datetime import datetime, timezone
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 CRYPTO_ROOT = SCRIPT_DIR.parent
-DATA_DIR = CRYPTO_ROOT / "data"
-
 sys.path.insert(0, str(SCRIPT_DIR))
 
 from client import MexcClient
@@ -29,63 +23,87 @@ logging.basicConfig(
 )
 log = logging.getLogger("mexc.market")
 
+BOOK_TOP_N = 10
+
 
 def fetch_order_book(client, symbol, limit=20):
-    """Стакан: bids + asks."""
-    data = client.public_get(
+    return client.public_get(
         "/api/v3/depth",
         {"symbol": symbol, "limit": limit},
     )
-    return data
 
 
 def fetch_recent_trades(client, symbol, limit=50):
-    """Последние сделки."""
-    data = client.public_get(
+    return client.public_get(
         "/api/v3/trades",
         {"symbol": symbol, "limit": limit},
     )
-    return data
 
 
 def fetch_ticker_24h(client, symbol):
-    """24h тикер."""
-    data = client.public_get(
+    return client.public_get(
         "/api/v3/ticker/24hr",
         {"symbol": symbol},
     )
-    return data
 
 
-def analyze_order_book(book):
-    """Анализ стакана: бид/аск imbalance."""
+def analyze_order_book(book, top_n=BOOK_TOP_N):
     if not book:
         return None
 
-    bids = book.get("bids", [])
-    asks = book.get("asks", [])
+    bids = book.get("bids", [])[:top_n]
+    asks = book.get("asks", [])[:top_n]
 
-    bid_vol = sum(
-        float(b[1]) for b in bids if len(b) >= 2
-    )
-    ask_vol = sum(
-        float(a[1]) for a in asks if len(a) >= 2
-    )
-
-    if bid_vol + ask_vol == 0:
+    if not bids or not asks:
         return None
 
-    bid_pct = bid_vol / (bid_vol + ask_vol) * 100
+    try:
+        best_bid = float(bids[0][0])
+        best_ask = float(asks[0][0])
+    except Exception:
+        return None
+
+    if best_bid >= best_ask:
+        log.warning(
+            "book cross: bid=%s ask=%s",
+            best_bid, best_ask,
+        )
+        return None
+
+    bid_vol = 0.0
+    ask_vol = 0.0
+    for b in bids:
+        try:
+            bid_vol += float(b[1])
+        except Exception:
+            continue
+    for a in asks:
+        try:
+            ask_vol += float(a[1])
+        except Exception:
+            continue
+
+    total = bid_vol + ask_vol
+    if total == 0:
+        return None
+
+    bid_pct = bid_vol / total * 100
     ask_pct = 100 - bid_pct
 
     if bid_pct > 60:
-        state = "BID-heavy (покупатели доминируют)"
+        state = "BID-heavy"
     elif ask_pct > 60:
-        state = "ASK-heavy (продавцы доминируют)"
+        state = "ASK-heavy"
     else:
         state = "balanced"
 
     return {
+        "best_bid": best_bid,
+        "best_ask": best_ask,
+        "spread_pct": round(
+            (best_ask - best_bid)
+            / best_bid * 100, 4,
+        ),
         "bid_vol": round(bid_vol, 4),
         "ask_vol": round(ask_vol, 4),
         "bid_pct": round(bid_pct, 2),
@@ -95,18 +113,22 @@ def analyze_order_book(book):
 
 
 def analyze_trades(trades):
-    """Анализ потока: buy vs sell."""
     if not trades:
         return None
 
-    buy_vol = 0
-    sell_vol = 0
+    buy_vol = 0.0
+    sell_vol = 0.0
 
     for t in trades:
-        qty = float(t.get("qty", 0))
-        is_buyer = t.get("isBuyerMaker", False)
-        # isBuyerMaker=True → продавец агрессивен (sell flow)
-        if is_buyer:
+        try:
+            qty = float(t.get("qty", 0))
+        except Exception:
+            continue
+        # isBuyerMaker=True -> продавец агрессор
+        is_buyer_maker = t.get(
+            "isBuyerMaker", False,
+        )
+        if is_buyer_maker:
             sell_vol += qty
         else:
             buy_vol += qty
@@ -136,32 +158,39 @@ def analyze_trades(trades):
 
 
 def main():
-    log.info("MEXC market v1")
+    log.info("MEXC market v2")
 
     client = MexcClient()
 
     for symbol in ["BTCUSDT", "ETHUSDT"]:
         log.info("--- " + symbol)
 
-        book = fetch_order_book(client, symbol, 50)
-        book_stats = analyze_order_book(book)
-        if book_stats:
+        book = fetch_order_book(
+            client, symbol, 20,
+        )
+        bs = analyze_order_book(book)
+        if bs:
             log.info(
-                "  Order book: bid %.1f%% / ask %.1f%% (%s)",
-                book_stats["bid_pct"],
-                book_stats["ask_pct"],
-                book_stats["state"],
+                "  Book: bid %.1f%% / ask %.1f%% "
+                "(%s) spread=%.4f%%",
+                bs["bid_pct"],
+                bs["ask_pct"],
+                bs["state"],
+                bs["spread_pct"],
             )
 
-        trades = fetch_recent_trades(client, symbol, 100)
-        trade_stats = analyze_trades(trades)
-        if trade_stats:
+        trades = fetch_recent_trades(
+            client, symbol, 100,
+        )
+        ts = analyze_trades(trades)
+        if ts:
             log.info(
-                "  Trades: buy %.1f%% / sell %.1f%% (%s) [%d trades]",
-                trade_stats["buy_pct"],
-                trade_stats["sell_pct"],
-                trade_stats["state"],
-                trade_stats["trades_count"],
+                "  Trades: buy %.1f%% / sell %.1f%% "
+                "(%s) [%d]",
+                ts["buy_pct"],
+                ts["sell_pct"],
+                ts["state"],
+                ts["trades_count"],
             )
 
         ticker = fetch_ticker_24h(client, symbol)
