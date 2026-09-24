@@ -1,14 +1,12 @@
 # ============================================================
-# ARGUS — INGEST v7.4 [PRODUCTION]
+# ARGUS — INGEST v7.5 [PRODUCTION]
 # ------------------------------------------------------------
-# v7.4: FIX — файлы, уже находящиеся в processed_hashes, теперь
-#       тоже попадают в new_files_ingested → cleanup их удаляет.
-#       Раньше: файл в базе → пропуск → PDF оставался навсегда.
+# v7.5: + защита от мусора (HTML, entity, bad_chars, long_word)
+#       + дедуп по filename (не только по file_hash)
+#       + чанки < 200 символов после чистки — не добавляются
 # ------------------------------------------------------------
-# v7.3: pathlib, file_hash, stable chunk_id, last_ingest.json,
-#       все успешно распарсенные файлы помечаются обработанными
-# v7.2: + pathlib для всех операций, fix zombie files
-# v7.1: fix — успешно распарсенные файлы помечаются всегда
+# v7.4: файлы в processed_hashes помечаются для cleanup
+# v7.3: pathlib, file_hash, stable chunk_id, last_ingest.json
 # ============================================================
 
 import re
@@ -18,7 +16,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 import fitz
 
-# --- Пути (pathlib, как в GUIDE) ---
+# --- Пути ---
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parent
 
@@ -29,6 +27,30 @@ SUMMARY_FILE = DATA_DIR / "summary.json"
 LAST_INGEST_FILE = DATA_DIR / "last_ingest.json"
 
 DATA_DIR.mkdir(parents=True, exist_ok=True)
+
+# --- Лимиты ---
+MIN_CHUNK_LEN = 200
+MAX_WORD_LEN = 30
+MAX_BAD_RUN = 6
+
+# --- HTML/entity ---
+HTML_TAG_RE = re.compile(r"<[^>]{1,80}>")
+ENTITY_RE = re.compile(r"&[a-z]{2,8};")
+ENTITY_MAP = {
+    "&amp;": "&",
+    "&lt;": "<",
+    "&gt;": ">",
+    "&quot;": '"',
+    "&nbsp;": " ",
+    "&#39;": "'",
+    "&apos;": "'",
+}
+BAD_CHARS_RE = re.compile(
+    r"([^\w\s])\1{%d,}" % (MAX_BAD_RUN - 1)
+)
+LONG_WORD_RE = re.compile(
+    r"([A-Za-zА-Яа-яЁё]{%d,})" % MAX_WORD_LEN
+)
 
 
 # ============================================================
@@ -47,6 +69,24 @@ def md5_text(text: str) -> str:
 
 
 def clean_text(text: str) -> str:
+    """Чистит мусор ДО нарезки на чанки."""
+    # HTML теги
+    if HTML_TAG_RE.search(text):
+        text = HTML_TAG_RE.sub(" ", text)
+    # entity
+    if ENTITY_RE.search(text):
+        for k, v in ENTITY_MAP.items():
+            text = text.replace(k, v)
+    # long words (аааааааааа)
+    if LONG_WORD_RE.search(text):
+        text = LONG_WORD_RE.sub(
+            lambda m: m.group(1)[:MAX_WORD_LEN],
+            text,
+        )
+    # bad chars (=====, .....)
+    if BAD_CHARS_RE.search(text):
+        text = BAD_CHARS_RE.sub(r"\1", text)
+    # старая логика
     text = re.sub(r"(\S)\1{4,}", r"\1", text)
     text = re.sub(r"[ \t]+", " ", text)
     text = re.sub(r"\n{3,}", "\n\n", text)
@@ -85,7 +125,7 @@ def split_into_chunks(text: str, target: int = 900, min_size: int = 600):
 
 
 def is_good_chunk(chunk: str) -> bool:
-    if len(chunk) < 200:
+    if len(chunk) < MIN_CHUNK_LEN:
         return False
     letters = sum(1 for c in chunk if c.isalpha())
     return letters / len(chunk) > 0.5
@@ -126,7 +166,7 @@ PARSERS = {
 
 
 # ============================================================
-# ЗАГРУЗКА СУЩЕСТВУЮЩИХ ЗНАНИЙ (merge)
+# ЗАГРУЗКА СУЩЕСТВУЮЩИХ ЗНАНИЙ
 # ============================================================
 knowledge = {"books": [], "chunks": []}
 if KNOWLEDGE_FILE.exists():
@@ -142,9 +182,13 @@ if KNOWLEDGE_FILE.exists():
     except Exception as e:
         print(f"⚠️ Не удалось прочитать knowledge.json: {e} — начинаю с нуля")
 
-# Множество уже обработанных file_hash
+# Дедуп по hash файла
 processed_hashes = {b.get("file_hash") for b in knowledge.get("books", [])
                     if b.get("file_hash")}
+
+# NEW v7.5: дедуп по filename (для старых записей без hash)
+processed_names = {b.get("file") for b in knowledge.get("books", [])
+                   if b.get("file")}
 
 # Глобальный дедуп по хэшу текста чанка
 existing_chunk_hashes = {md5_text(c.get("text", ""))
@@ -176,12 +220,10 @@ else:
             print(f"❌ Не могу прочитать {filename}: {e}")
             continue
 
-        # ============================================================
-        # ФАЙЛ УЖЕ В БАЗЕ — помечаем как обработанный для cleanup
-        # ============================================================
-        if fhash in processed_hashes:
-            print(f"⏭ Уже обработана (hash): {filename} — помечаю для cleanup")
-            new_files_ingested.append(filename)   # FIX v7.4
+        # NEW v7.5: дедуп по hash ИЛИ по filename
+        if fhash in processed_hashes or filename in processed_names:
+            print(f"⏭ Уже обработана: {filename} — cleanup")
+            new_files_ingested.append(filename)
             skipped_already_in_db += 1
             continue
 
@@ -189,7 +231,7 @@ else:
         try:
             text, pages = PARSERS[ext](filepath)
             if len(text.strip()) < 100:
-                print("   ⚠️ Слишком мало текста — пропуск (файл НЕ удалим)")
+                print("   ⚠️ Слишком мало текста — пропуск")
                 continue
 
             cleaned = clean_text(text)
@@ -224,25 +266,23 @@ else:
                     "processed_at": datetime.now(timezone.utc).isoformat(),
                 })
                 total_new_chunks += added
+                processed_names.add(filename)  # NEW v7.5
+                processed_hashes.add(fhash)
 
             new_files_ingested.append(filename)
 
-            print(f"   ✅ Добавлено: {added}, дублей пропущено: {skipped_dup}")
+            print(f"   ✅ Добавлено: {added}, дублей: {skipped_dup}")
 
         except Exception as e:
             print(f"   ❌ Ошибка парсинга {filename}: {e}")
 
 
 # ============================================================
-# СОХРАНЕНИЕ KNOWLEDGE
+# СОХРАНЕНИЕ
 # ============================================================
 with open(KNOWLEDGE_FILE, "w", encoding="utf-8") as f:
     json.dump(knowledge, f, ensure_ascii=False, indent=2)
 
-
-# ============================================================
-# LAST INGEST
-# ============================================================
 with open(LAST_INGEST_FILE, "w", encoding="utf-8") as f:
     json.dump({
         "ingested_at": datetime.now(timezone.utc).isoformat(),
@@ -251,10 +291,6 @@ with open(LAST_INGEST_FILE, "w", encoding="utf-8") as f:
         "skipped_already_in_db": skipped_already_in_db,
     }, f, ensure_ascii=False, indent=2)
 
-
-# ============================================================
-# SUMMARY
-# ============================================================
 books_list = [{
     "file": b.get("file", "?"),
     "pages": b.get("pages", 0),
@@ -273,10 +309,6 @@ summary = {
 with open(SUMMARY_FILE, "w", encoding="utf-8") as f:
     json.dump(summary, f, ensure_ascii=False, indent=2)
 
-
-# ============================================================
-# ИТОГ
-# ============================================================
 print()
 print("🎉 INGEST завершён.")
 print(f"   Всего книг:   {len(knowledge['books'])}")
