@@ -1,8 +1,11 @@
 # ============================================================
-# ARGUS - SIMULATOR 01 v2.1 [PRODUCTION]
+# ARGUS - SIMULATOR 01 v3 [PRODUCTION]
 # ------------------------------------------------------------
-# v2.1: детальное логирование check_signal
-# v2: голосование 2+ из 4
+# v3: улучшенная логика стоп/цель.
+#     - стоп прямо под support (не ниже)
+#     - цель ищет resistance с R:R >= MIN_RR
+#     - если нет — цель 2x risk
+# v2.1: детальное логирование
 # ============================================================
 
 import os
@@ -44,6 +47,11 @@ POSITION_SIZE = 10.0
 MAX_POSITIONS = 1
 TAKER_FEE = 0.0005
 SLIPPAGE = 0.0005
+
+MIN_RR = 1.5
+STOP_BELOW_SUP_PCT = 0.5
+ATR_MULT = 1.5
+TARGET_RR = 2.0
 
 SYMBOLS = ["BTCUSDT", "ETHUSDT"]
 
@@ -231,18 +239,16 @@ def get_support(symbol, price):
     )
 
 
-def get_resistance(symbol, price):
+def get_resistances(symbol, price):
+    """Все сопротивления выше цены, отсортированные."""
     lv = load_analysis("levels_analysis.json")
     sym = lv.get("symbols", {}).get(symbol, {})
     resistances = sym.get("resistances", [])
     above = [
         r for r in resistances if r["price"] > price
     ]
-    if not above:
-        return None
-    return min(
-        above, key=lambda x: x["price"] - price,
-    )
+    above.sort(key=lambda x: x["price"])
+    return above
 
 
 def get_markov_p10(symbol):
@@ -258,10 +264,46 @@ def get_rules(symbol):
     return sym.get("rules", [])
 
 
+def build_levels(price, sup, resistances, atr):
+    """Строит стоп и цель."""
+    # Стоп: под support, если есть
+    if sup:
+        stop = sup["price"] * (
+            1 - STOP_BELOW_SUP_PCT / 100
+        )
+        # Но не дальше ATR * 2.5
+        max_stop_dist = atr * 2.5
+        if price - stop > max_stop_dist:
+            stop = price - max_stop_dist
+    else:
+        stop = price - atr * ATR_MULT
+
+    if stop >= price:
+        return None, None, None
+
+    risk = price - stop
+
+    # Ищем resistance с подходящим R:R
+    target = None
+    for res in resistances:
+        reward = res["price"] - price
+        if reward / risk >= MIN_RR:
+            target = res["price"]
+            break
+
+    # Если нет — цель по 2× risk
+    if not target:
+        target = price + risk * TARGET_RR
+
+    reward = target - price
+    if reward <= 0:
+        return None, None, None
+
+    rr = reward / risk
+    return stop, target, rr
+
+
 def check_signal(client, symbol):
-    """
-    v2.1: детальное логирование.
-    """
     price = get_price(client, symbol)
     if not price:
         log.info("  %s: нет цены", symbol)
@@ -283,20 +325,17 @@ def check_signal(client, symbol):
         log.info("  %s: RSI/ATR не считались", symbol)
         return None
 
-    # --- Голосование ---
     votes = []
     reasons = []
     details = []
 
     details.append("RSI=" + format(rsi, ".1f"))
 
-    # 1. RSI
     if rsi < 30:
         votes.append("RSI")
         reasons.append("RSI " + format(rsi, ".1f"))
         details.append("RSI+")
 
-    # 2. Markov
     p10 = get_markov_p10(symbol)
     details.append("P10=" + format(p10, ".2f"))
     if p10 > 0.55:
@@ -306,10 +345,10 @@ def check_signal(client, symbol):
         )
         details.append("Markov+")
 
-    # 3. Уровни
     sup = get_support(symbol, price)
-    res = get_resistance(symbol, price)
-    if sup and res:
+    resistances = get_resistances(symbol, price)
+
+    if sup:
         gap = (price - sup["price"]) / price * 100
         details.append("gap=" + format(gap, ".2f") + "%")
         if gap <= 1.5:
@@ -320,7 +359,6 @@ def check_signal(client, symbol):
             )
             details.append("Level+")
 
-    # 4. Правила
     rules = get_rules(symbol)
     bull_rules = [
         r for r in rules
@@ -336,7 +374,6 @@ def check_signal(client, symbol):
         )
         details.append("Rules+")
 
-    # Логируем что получилось
     log.info(
         "  %s: price=%.2f votes=%d [%s] | %s",
         symbol,
@@ -349,30 +386,18 @@ def check_signal(client, symbol):
     if len(votes) < 2:
         return None
 
-    # Стоп
-    stop = price - atr * 1.5
-    if sup:
-        stop_sup = sup["price"] * 0.995
-        stop = min(stop, stop_sup)
+    stop, target, rr = build_levels(
+        price, sup, resistances, atr,
+    )
 
-    if stop >= price:
+    if not stop:
+        log.info("  %s: стоп не построен", symbol)
         return None
 
-    risk = price - stop
-    target = price + risk * 2.0
-
-    if res and res["price"] < target:
-        target = res["price"]
-
-    reward = target - price
-    if reward <= 0:
-        return None
-
-    rr = reward / risk
-    if rr < 1.5:
+    if rr < MIN_RR:
         log.info(
-            "  %s: R:R=%.2f < 1.5, пропуск",
-            symbol, rr,
+            "  %s: R:R=%.2f < %.1f, пропуск",
+            symbol, rr, MIN_RR,
         )
         return None
 
@@ -388,9 +413,7 @@ def check_signal(client, symbol):
         "reasons": reasons,
         "p10": p10,
         "support": sup["price"] if sup else None,
-        "resistance": (
-            res["price"] if res else None
-        ),
+        "resistance": target,
     }
 
 
@@ -550,7 +573,7 @@ def check_positions(client):
 
 def main():
     log.info("=" * 50)
-    log.info("SIMULATOR 01 v2.1")
+    log.info("SIMULATOR 01 v3")
     log.info("=" * 50)
 
     client = MexcClient()
