@@ -1,20 +1,29 @@
 # ============================================================
 # ARGUS - аудит данных
 # ------------------------------------------------------------
-# Проверяет целостность knowledge / summary / books / faiss
-# v2: только аудит, без записи. Отчёт в TG.
-# Cron: 03:00 UTC = 05:00 КЛГ (после ночного train)
+# Без флага  : отчёт (read-only)
+# С --fix    : чистка + бэкапы + commit
+# Cron       : 03:00 UTC = 05:00 КЛГ (audit only)
 # ============================================================
 
 name: ARGUS Data Audit
 
 on:
   workflow_dispatch:
+    inputs:
+      fix:
+        description: 'Fix mode (чистка)'
+        required: false
+        default: 'no'
+        type: choice
+        options:
+          - 'no'
+          - 'yes'
   schedule:
     - cron: '0 3 * * *'
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: argus-data-audit
@@ -23,10 +32,12 @@ concurrency:
 jobs:
   audit:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
 
       - uses: actions/setup-python@v5
         with:
@@ -35,13 +46,48 @@ jobs:
       - name: Install deps
         run: pip install requests==2.32.3
 
-      - name: Run audit
+      - name: Run audit or fix
+        id: run
         env:
           TELEGRAM_BOT_TOKEN: >-
             ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: >-
             ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: python scripts/data_audit.py
+        run: |
+          if [ "${{ inputs.fix }}" = "yes" ]; then
+            echo "mode=fix" >> $GITHUB_OUTPUT
+            python scripts/data_audit.py --fix
+          else
+            echo "mode=audit" >> $GITHUB_OUTPUT
+            python scripts/data_audit.py
+          fi
+
+      - name: Commit changes (fix only)
+        if: inputs.fix == 'yes'
+        run: |
+          git config user.name "ARGUS Bot"
+          git config user.email "argus@bot.local"
+
+          # Удаляем бэкапы из staging (не коммитим)
+          rm -f data/*.bak.* 2>/dev/null || true
+          rm -f data/*.tmp 2>/dev/null || true
+
+          # Stage только нужные файлы
+          git add data/knowledge.json 2>/dev/null || true
+          git add data/summary.json 2>/dev/null || true
+          git add -u data/faiss.index 2>/dev/null || true
+          git add -u data/chunks_for_index.json 2>/dev/null || true
+
+          if git diff --staged --quiet; then
+            echo "no changes to commit"
+            exit 0
+          fi
+
+          git commit -m \
+            "audit: auto-fix [skip ci]"
+
+          git pull --rebase origin main || true
+          git push
 
       - name: Notify on failure
         if: failure()
@@ -55,5 +101,5 @@ jobs:
             "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
             -H "Content-Type: application/json" \
             -d "{\"chat_id\": \"${TELEGRAM_CHAT_ID}\", \
-                 \"text\": \"Data Audit упал\", \
+                 \"text\": \"❌ Data Audit упал\", \
                  \"parse_mode\": \"HTML\"}" || true
