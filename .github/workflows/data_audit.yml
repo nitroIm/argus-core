@@ -2,14 +2,16 @@
 # ARGUS - аудит данных
 # ------------------------------------------------------------
 # Проверяет целостность knowledge / summary / books / faiss
+# v2: только аудит, без записи. Отчёт в TG.
+# Cron: 03:00 UTC = 05:00 КЛГ (после ночного train)
 # ============================================================
 
 name: ARGUS Data Audit
 
 on:
   workflow_dispatch:
-  # schedule:
-  #   - cron: '0 3 * * *'
+  schedule:
+    - cron: '0 3 * * *'
 
 permissions:
   contents: read
