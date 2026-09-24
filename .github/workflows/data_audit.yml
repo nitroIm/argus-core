@@ -19,8 +19,8 @@ on:
         options:
           - 'no'
           - 'yes'
-  schedule:
-    - cron: '0 3 * * *'
+  # schedule:
+  #  - cron: '0 3 * * *'
 
 permissions:
   contents: write
