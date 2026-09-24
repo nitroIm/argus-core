@@ -1,11 +1,11 @@
 # ============================================================
 # ARGUS-Trader - FEATURES
 # ------------------------------------------------------------
-# v4.2: all logs ASCII-safe (no emoji, no cyrillic)
+# v4.3: fix OI - fallback на oi если oi_value NULL
+# v4.2: all logs ASCII-safe
 # v4.1: + ls_ratio, taker_ratio
 # v4:   + oi_change_pct, funding_trend,
 #         + next_change_pct, next_direction
-# v3.2: ON CONFLICT DO UPDATE
 # ============================================================
 
 import sys
@@ -244,17 +244,22 @@ def fetch_open_interest(symbol):
         with get_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute(
-                    "SELECT timestamp, oi_value "
+                    "SELECT timestamp, oi, oi_value "
                     "FROM open_interest "
                     "WHERE symbol = %s "
-                    "AND oi_value IS NOT NULL "
+                    "AND (oi IS NOT NULL "
+                    "OR oi_value IS NOT NULL) "
                     "ORDER BY timestamp",
                     (symbol,),
                 )
                 result = []
                 for r in cur.fetchall():
                     ts = r[0]
-                    val = float(r[1]) if r[1] else None
+                    val = None
+                    if r[2] is not None:
+                        val = float(r[2])
+                    elif r[1] is not None:
+                        val = float(r[1])
                     if ts and val is not None:
                         if ts.tzinfo is None:
                             ts = ts.replace(
@@ -721,7 +726,7 @@ def process_symbol(symbol, timeframe="1h"):
 
 def main():
     log.info("=" * 60)
-    log.info("ARGUS-Trader FEATURES v4.2")
+    log.info("ARGUS-Trader FEATURES v4.3")
     log.info("=" * 60)
 
     total = 0
