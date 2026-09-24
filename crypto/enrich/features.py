@@ -1,9 +1,10 @@
 # ============================================================
-# ARGUS-Trader — FEATURES
+# ARGUS-Trader - FEATURES
 # ------------------------------------------------------------
+# v4.2: all logs ASCII-safe (no emoji, no cyrillic)
 # v4.1: + ls_ratio, taker_ratio
-# v4: + oi_change_pct, funding_trend,
-#     + next_change_pct, next_direction
+# v4:   + oi_change_pct, funding_trend,
+#         + next_change_pct, next_direction
 # v3.2: ON CONFLICT DO UPDATE
 # ============================================================
 
@@ -206,7 +207,7 @@ def fetch_candles(symbol, timeframe="1h", limit=500):
                     for r in rows
                 ]
     except Exception as e:
-        log.error(f"fetch_candles: {e}")
+        log.error("fetch_candles: %s", e)
         return []
 
 
@@ -228,11 +229,13 @@ def fetch_funding(symbol):
                     rate = float(r[1]) if r[1] else None
                     if ts and rate is not None:
                         if ts.tzinfo is None:
-                            ts = ts.replace(tzinfo=timezone.utc)
+                            ts = ts.replace(
+                                tzinfo=timezone.utc
+                            )
                         result.append((ts, rate))
                 return result
     except Exception as e:
-        log.error(f"fetch_funding: {e}")
+        log.error("fetch_funding: %s", e)
         return []
 
 
@@ -254,11 +257,13 @@ def fetch_open_interest(symbol):
                     val = float(r[1]) if r[1] else None
                     if ts and val is not None:
                         if ts.tzinfo is None:
-                            ts = ts.replace(tzinfo=timezone.utc)
+                            ts = ts.replace(
+                                tzinfo=timezone.utc
+                            )
                         result.append((ts, val))
                 return result
     except Exception as e:
-        log.error(f"fetch_oi: {e}")
+        log.error("fetch_oi: %s", e)
         return []
 
 
@@ -280,11 +285,13 @@ def fetch_long_short(symbol):
                     val = float(r[1]) if r[1] else None
                     if ts and val is not None:
                         if ts.tzinfo is None:
-                            ts = ts.replace(tzinfo=timezone.utc)
+                            ts = ts.replace(
+                                tzinfo=timezone.utc
+                            )
                         result.append((ts, val))
                 return result
     except Exception as e:
-        log.error(f"fetch_ls: {e}")
+        log.error("fetch_ls: %s", e)
         return []
 
 
@@ -308,11 +315,13 @@ def fetch_taker(symbol):
                     sv = float(r[2]) if r[2] else None
                     if ts and bv is not None and sv is not None:
                         if ts.tzinfo is None:
-                            ts = ts.replace(tzinfo=timezone.utc)
+                            ts = ts.replace(
+                                tzinfo=timezone.utc
+                            )
                         result.append((ts, bv, sv))
                 return result
     except Exception as e:
-        log.error(f"fetch_taker: {e}")
+        log.error("fetch_taker: %s", e)
         return []
 
 
@@ -343,7 +352,9 @@ def funding_trend_at(funding_list, ts):
         return None
     last = relevant[-1]
     prev = relevant[-2]
-    if ts - last[0] > timedelta(hours=MAX_FUNDING_AGE_H):
+    if ts - last[0] > timedelta(
+        hours=MAX_FUNDING_AGE_H
+    ):
         return None
     diff = last[1] - prev[1]
     if abs(diff) < 1e-9:
@@ -364,7 +375,9 @@ def oi_at(oi_list, ts):
             break
     if result is None:
         return None
-    if ts - result[0] > timedelta(hours=MAX_OI_AGE_H):
+    if ts - result[0] > timedelta(
+        hours=MAX_OI_AGE_H
+    ):
         return None
     return result[1]
 
@@ -386,7 +399,9 @@ def ls_at(ls_list, ts):
             break
     if result is None:
         return None
-    if ts - result[0] > timedelta(hours=MAX_LS_AGE_H):
+    if ts - result[0] > timedelta(
+        hours=MAX_LS_AGE_H
+    ):
         return None
     return result[1]
 
@@ -404,7 +419,9 @@ def taker_at(taker_list, ts):
             break
     if result is None:
         return None
-    if ts - result[0] > timedelta(hours=MAX_TAKER_AGE_H):
+    if ts - result[0] > timedelta(
+        hours=MAX_TAKER_AGE_H
+    ):
         return None
     total = result[1] + result[2]
     if total <= 0:
@@ -504,20 +521,20 @@ def save_features(symbol, features):
                         if cur.rowcount and cur.rowcount > 0:
                             added += cur.rowcount
                     except Exception as e:
-                        log.warning(f"INSERT skip: {e}")
+                        log.warning("INSERT skip: %s", e)
     except Exception as e:
-        log.error(f"save_features: {e}")
+        log.error("save_features: %s", e)
     return added
 
 
 def process_symbol(symbol, timeframe="1h"):
-    log.info(f"📊 {symbol} — загружаю свечи")
+    log.info("%s - loading candles", symbol)
     candles = fetch_candles(symbol, timeframe, limit=500)
     if not candles:
-        log.warning(f"{symbol}: свечей нет")
+        log.warning("%s: no candles", symbol)
         return 0
 
-    log.info(f"   Свечей: {len(candles)}")
+    log.info("   candles: %d", len(candles))
 
     base_features = []
     skipped_ts = 0
@@ -531,9 +548,7 @@ def process_symbol(symbol, timeframe="1h"):
             base_features.append(f)
 
     if skipped_ts:
-        log.warning(
-            f"   Пропущено по timestamp: {skipped_ts}"
-        )
+        log.warning("   skipped by ts: %d", skipped_ts)
 
     if not base_features:
         return 0
@@ -563,15 +578,13 @@ def process_symbol(symbol, timeframe="1h"):
         vol7d = rolling_volatility(
             base_features, idx, 168
         )
-        f["vol =atility_7d"] = safe_val(
- None            round(vol7d,
-
- 4)
-            if vol7d        is not None else None,
-            LIMITS f["volatility_7d"],
+        f["volatility_7d"] = safe_val(
+            round(vol7d, 4)
+            if vol7d is not None else None,
+            LIMITS["volatility_7d"],
         )
 
-        ch4 = rolling_sum(base_features, idx, ["4)
+        ch4 = rolling_sum(base_features, idx, 4)
         f["change_4h"] = safe_val(
             round(ch4, 4) if ch4 is not None else None,
             LIMITS["change_4h"],
@@ -617,7 +630,7 @@ def process_symbol(symbol, timeframe="1h"):
             f["next_direction"] = None
 
     funding = fetch_funding(symbol)
-    log.info(f"   funding точек: {len(funding)}")
+    log.info("   funding points: %d", len(funding))
 
     filled_f = 0
     filled_t = 0
@@ -632,19 +645,21 @@ def process_symbol(symbol, timeframe="1h"):
                 filled_f += 1
             f["funding_rate"] = rate_pct
         else:
-            f["funding_rate"]funding_trend"] = funding_trend_at(
+            f["funding_rate"] = None
+
+        f["funding_trend"] = funding_trend_at(
             funding, f["timestamp"]
         )
         if f["funding_trend"] is not None:
             filled_t += 1
 
     log.info(
-        f"   funding: rate={filled_f} "
-        f"trend={filled_t}"
+        "   funding: rate=%d trend=%d",
+        filled_f, filled_t,
     )
 
     oi = fetch_open_interest(symbol)
-    log.info(f"   OI точек: {len(oi)}")
+    log.info("   OI points: %d", len(oi))
 
     filled_oi = 0
     for f in base_features:
@@ -661,10 +676,10 @@ def process_symbol(symbol, timeframe="1h"):
         else:
             f["oi_change_pct"] = None
 
-    log.info(f"   OI change: {filled_oi}")
+    log.info("   OI change: %d", filled_oi)
 
     ls = fetch_long_short(symbol)
-    log.info(f"   LS точек: {len(ls)}")
+    log.info("   LS points: %d", len(ls))
 
     filled_ls = 0
     for f in base_features:
@@ -679,10 +694,10 @@ def process_symbol(symbol, timeframe="1h"):
         else:
             f["ls_ratio"] = None
 
-    log.info(f"   LS ratio: {filled_ls}")
+    log.info("   LS ratio: %d", filled_ls)
 
     taker = fetch_taker(symbol)
-    log.info(f"   Taker точек: {len(taker)}")
+    log.info("   Taker points: %d", len(taker))
 
     filled_tk = 0
     for f in base_features:
@@ -697,16 +712,16 @@ def process_symbol(symbol, timeframe="1h"):
         else:
             f["taker_ratio"] = None
 
-    log.info(f"   Taker ratio: {filled_tk}")
+    log.info("   Taker ratio: %d", filled_tk)
 
     added = save_features(symbol, base_features)
-    log.info(f"   ✅ Записано: {added}")
+    log.info("   saved: %d", added)
     return added
 
 
 def main():
     log.info("=" * 60)
-    log.info("🧮 ARGUS-Trader FEATURES v4.1")
+    log.info("ARGUS-Trader FEATURES v4.2")
     log.info("=" * 60)
 
     total = 0
@@ -715,7 +730,7 @@ def main():
         total += n
 
     log.info("=" * 60)
-    log.info(f"✅ DONE. Всего: {total}")
+    log.info("DONE. Total: %d", total)
     log.info("=" * 60)
 
     close_connection()
