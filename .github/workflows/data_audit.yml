@@ -1,0 +1,57 @@
+# ============================================================
+# ARGUS - аудит данных
+# ------------------------------------------------------------
+# Проверяет целостность knowledge / summary / books / faiss
+# ============================================================
+
+name: ARGUS Data Audit
+
+on:
+  workflow_dispatch:
+  # schedule:
+  #   - cron: '0 3 * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: argus-data-audit
+  cancel-in-progress: false
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: pip install requests==2.32.3
+
+      - name: Run audit
+        env:
+          TELEGRAM_BOT_TOKEN: >-
+            ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: >-
+            ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python scripts/data_audit.py
+
+      - name: Notify on failure
+        if: failure()
+        env:
+          TELEGRAM_BOT_TOKEN: >-
+            ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: >-
+            ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          curl -s -X POST \
+            "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            -H "Content-Type: application/json" \
+            -d "{\"chat_id\": \"${TELEGRAM_CHAT_ID}\", \
+                 \"text\": \"Data Audit упал\", \
+                 \"parse_mode\": \"HTML\"}" || true
