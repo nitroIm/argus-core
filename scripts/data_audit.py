@@ -1,15 +1,15 @@
 # ============================================================
-# ARGUS - DATA AUDIT v2 [PRODUCTION]
+# ARGUS - DATA AUDIT v2 [AUDIT ONLY]
 # ------------------------------------------------------------
-# Проверяет + чистит данные ARGUS Core.
+# Только проверка. Ничего не пишет, не удаляет.
+# Цель: собрать полную картину проблем.
+# Фиксы будут добавлены отдельно (v3).
+# ------------------------------------------------------------
 # v2 vs v1:
 #   - knowledge.json читается как dict
 #   - faiss.index: data/faiss.index
-#   - автофикс дублей в summary.json
-#   - автофикс HTML в chunks_for_index.json
-#   - marker data/reindex_needed.txt
-#   - тихий режим если чисто
-#   - --dry-run, --force
+#   - cross-check knowledge vs chunks
+#   - больше деталей по каждой проверке
 # ------------------------------------------------------------
 # Требования:
 #   pip install requests
@@ -17,9 +17,8 @@
 
 import os
 import re
-import sys
 import json
-import argparse
+import hashlib
 import logging
 import requests
 from pathlib import Path
@@ -36,7 +35,6 @@ KNOWLEDGE_FILE = DATA_DIR / "knowledge.json"
 SUMMARY_FILE = DATA_DIR / "summary.json"
 CHUNKS_FILE = DATA_DIR / "chunks_for_index.json"
 FAISS_FILE = DATA_DIR / "faiss.index"
-REINDEX_FLAG = DATA_DIR / "reindex_needed.txt"
 
 # --- Логгер ---
 logging.basicConfig(
@@ -60,6 +58,7 @@ CHAT_ID = (
 # --- Лимиты ---
 MIN_CHUNK_LEN = 20
 MAX_CHUNK_LEN = 5000
+MAX_BAD_CHARS_RUN = 6
 MAX_WORD_LEN = 30
 MAX_MSG_LEN = 3800
 
@@ -80,19 +79,20 @@ def load_json(path, default=None):
         return default
 
 
-def save_json(path, data):
-    try:
-        with open(path, "w", encoding="utf-8") as f:
-            json.dump(
-                data, f,
-                ensure_ascii=False,
-                indent=2,
-            )
-        log.info("wrote: %s", path.name)
-        return True
-    except Exception as e:
-        log.exception("save %s: %s", path.name, e)
-        return False
+def md5(text):
+    return hashlib.md5(
+        text.encode("utf-8")
+    ).hexdigest()
+
+
+def esc(text):
+    """Экранирует HTML для Telegram."""
+    return (
+        str(text)
+        .replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+    )
 
 
 def split_text(text, max_len):
@@ -151,105 +151,75 @@ def send_message(text):
     return ok
 
 
-def esc(text):
-    """Экранирует HTML для Telegram."""
-    return (
-        str(text)
-        .replace("&", "&amp;")
-        .replace("<", "&lt;")
-        .replace(">", "&gt;")
-    )
-
-
 # ============================================================
-# HTML CLEANER
+# ARTIFACT DETECTORS
 # ============================================================
 HTML_TAG_RE = re.compile(r"<[^>]{1,80}>")
 ENTITY_RE = re.compile(r"&[a-z]{2,8};")
-ENTITY_MAP = {
-    "&amp;": "&",
-    "&lt;": "<",
-    "&gt;": ">",
-    "&quot;": '"',
-    "&nbsp;": " ",
-    "&#39;": "'",
-    "&apos;": "'",
-}
+BAD_CHARS_RE = re.compile(
+    r"[^\w\s]{%d,}" % MAX_BAD_CHARS_RUN
+)
+LONG_WORD_RE = re.compile(
+    r"[A-Za-zА-Яа-яЁё]{%d,}" % MAX_WORD_LEN
+)
 
 
-def clean_html(text):
-    """Убирает HTML и сущности. Возвращает (text, changed)."""
-    if not text:
-        return text, False
-    before = text
-    # Сначала сущности — чтобы &lt;p&gt; стал <p>
-    # и потом срезался как тег
-    for k, v in ENTITY_MAP.items():
-        if k in text:
-            text = text.replace(k, v)
-    # Убираем теги
+def scan_text_artifacts(text):
+    """Возвращает список типов мусора."""
+    flags = []
     if HTML_TAG_RE.search(text):
-        text = HTML_TAG_RE.sub(" ", text)
-    # Схлопываем лишние пробелы
-    text = re.sub(r"[ \t]{2,}", " ", text)
-    text = re.sub(r"\n{3,}", "\n\n", text)
-    text = text.strip()
-    return text, (before != text)
-
-
-def has_html(text):
-    if not text:
-        return False
-    if HTML_TAG_RE.search(text):
-        return True
+        flags.append("html")
     if ENTITY_RE.search(text):
-        return True
-    return False
+        flags.append("entity")
+    if BAD_CHARS_RE.search(text):
+        flags.append("bad_chars")
+    if LONG_WORD_RE.search(text):
+        flags.append("long_word")
+    return flags
 
 
 # ============================================================
-# REINDEX FLAG
-# ============================================================
-def write_reindex_flag(reason):
-    try:
-        REINDEX_FLAG.write_text(
-            datetime.now(timezone.utc).isoformat()
-            + "\nreason: " + reason + "\n",
-            encoding="utf-8",
-        )
-        log.info("reindex flag: %s", reason)
-    except Exception as e:
-        log.exception("flag: %s", e)
-
-
-# ============================================================
-# CHECK: knowledge.json = {"books":[...]}
+# CHECK 1: knowledge.json = {"books":[...]}
 # ============================================================
 def check_knowledge():
     log.info("check: knowledge.json")
-    data = load_json(KNOWLEDGE_FILE, {})
+    data = load_json(KNOWLEDGE_FILE, None)
+    if data is None:
+        return {"error": "file missing or bad json"}
     if not isinstance(data, dict):
         return {"error": "not a dict"}
 
-    books = data.get("books", [])
+    books = data.get("books", None)
+    if books is None:
+        return {"error": "no 'books' key"}
     if not isinstance(books, list):
-        return {"error": "books not a list"}
+        return {"error": "'books' not a list"}
 
     names = []
     total_pages = 0
-    total_chunks = 0
+    total_chunks_meta = 0
     no_file = 0
+    bad_entry = 0
 
     for b in books:
         if not isinstance(b, dict):
+            bad_entry += 1
             continue
         name = b.get("file", "")
         if not name:
             no_file += 1
             continue
         names.append(name)
-        total_pages += int(b.get("pages", 0) or 0)
-        total_chunks += int(b.get("chunks", 0) or 0)
+        try:
+            total_pages += int(b.get("pages", 0) or 0)
+        except Exception:
+            pass
+        try:
+            total_chunks_meta += int(
+                b.get("chunks", 0) or 0
+            )
+        except Exception:
+            pass
 
     counts = Counter(names)
     dups = {
@@ -261,128 +231,144 @@ def check_knowledge():
         "unique": len(set(names)),
         "duplicates": dups,
         "no_file": no_file,
+        "bad_entry": bad_entry,
         "total_pages": total_pages,
-        "total_chunks": total_chunks,
-        "generated_at": data.get("generated_at", "?"),
+        "total_chunks_meta": total_chunks_meta,
+        "generated_at": str(
+            data.get("generated_at", "?")
+        )[:19],
     }
 
 
 # ============================================================
-# CLEAN: summary.json (dedupe books)
+# CHECK 2: summary.json
 # ============================================================
-def clean_summary(dry_run):
-    log.info("clean: summary.json")
-    if not SUMMARY_FILE.exists():
-        return {"error": "not found"}
-
-    data = load_json(SUMMARY_FILE, {})
+def check_summary():
+    log.info("check: summary.json")
+    data = load_json(SUMMARY_FILE, None)
+    if data is None:
+        return {"error": "file missing or bad json"}
     if not isinstance(data, dict):
         return {"error": "not a dict"}
 
-    books = data.get("books", [])
+    books = data.get("books", None)
+    if books is None:
+        return {"error": "no 'books' key"}
     if not isinstance(books, list):
-        return {"error": "books not a list"}
+        return {"error": "'books' not a list"}
 
-    seen = set()
-    unique = []
-    removed = []
+    names = []
+    no_file = 0
     for b in books:
         if not isinstance(b, dict):
             continue
         name = b.get("file", "")
-        if name in seen:
-            removed.append(name)
+        if not name:
+            no_file += 1
             continue
-        seen.add(name)
-        unique.append(b)
+        names.append(name)
 
-    result = {
-        "before": len(books),
-        "after": len(unique),
-        "removed": removed,
-        "written": False,
+    counts = Counter(names)
+    dups = {
+        n: c for n, c in counts.items() if c > 1
+    }
+    dup_total = sum(c - 1 for c in dups.values())
+
+    return {
+        "total": len(books),
+        "unique": len(set(names)),
+        "duplicates": dups,
+        "dup_total": dup_total,
+        "no_file": no_file,
+        "generated_at": str(
+            data.get("generated_at", "?")
+        )[:19],
     }
 
-    if removed:
-        if dry_run:
-            log.info("dry-run: skip write summary")
-        else:
-            data["books"] = unique
-            data["audit_cleaned_at"] = (
-                datetime.now(timezone.utc).isoformat()
-            )
-            if save_json(SUMMARY_FILE, data):
-                result["written"] = True
-
-    return result
-
 
 # ============================================================
-# CLEAN: chunks_for_index.json (HTML)
+# CHECK 3: chunks_for_index.json
 # ============================================================
-def clean_chunks(dry_run):
-    log.info("clean: chunks_for_index.json")
-    if not CHUNKS_FILE.exists():
-        return {"error": "not found"}
-
-    data = load_json(CHUNKS_FILE, [])
+def check_chunks():
+    log.info("check: chunks_for_index.json")
+    data = load_json(CHUNKS_FILE, None)
+    if data is None:
+        return {"error": "file missing or bad json"}
     if not isinstance(data, list):
         return {"error": "not a list"}
 
     total = len(data)
-    fixed = 0
-    empty_after = 0
-    still_html = 0
-    samples = []
+    empty_ids = 0
+    empty_text = 0
+    too_short = 0
+    too_long = 0
+    dup_ids = 0
+    dup_text = 0
+    with_artifacts = 0
+    artifact_types = Counter()
+    book_artifacts = Counter()
+    books_seen = Counter()
+
+    seen_ids = set()
+    seen_text = set()
 
     for item in data:
         if not isinstance(item, dict):
             continue
+
+        cid = item.get("id", "")
+        book = item.get("book", "?")
         text = item.get("text", "") or ""
-        if not text:
+
+        books_seen[book] += 1
+
+        if not cid:
+            empty_ids += 1
+        elif cid in seen_ids:
+            dup_ids += 1
+        else:
+            seen_ids.add(cid)
+
+        if not text.strip():
+            empty_text += 1
             continue
 
-        cleaned, changed = clean_html(text)
-
-        if changed:
-            fixed += 1
-            if len(samples) < 3:
-                samples.append(
-                    text[:60].replace("\n", " ")
-                )
-            item["text"] = cleaned
-
-        if not cleaned.strip():
-            empty_after += 1
-        if has_html(cleaned):
-            still_html += 1
-
-    result = {
-        "total": total,
-        "fixed_html": fixed,
-        "empty_after": empty_after,
-        "still_html": still_html,
-        "samples": samples,
-        "written": False,
-    }
-
-    if fixed > 0:
-        if dry_run:
-            log.info("dry-run: skip write chunks")
+        h = md5(text)
+        if h in seen_text:
+            dup_text += 1
         else:
-            if save_json(CHUNKS_FILE, data):
-                result["written"] = True
-                write_reindex_flag(
-                    "chunks_for_index.json changed "
-                    "(" + str(fixed) + " chunks) — "
-                    "faiss.index is stale"
-                )
+            seen_text.add(h)
 
-    return result
+        if len(text) < MIN_CHUNK_LEN:
+            too_short += 1
+        if len(text) > MAX_CHUNK_LEN:
+            too_long += 1
+
+        flags = scan_text_artifacts(text)
+        if flags:
+            with_artifacts += 1
+            for f in flags:
+                artifact_types[f] += 1
+            book_artifacts[book] += 1
+
+    return {
+        "total": total,
+        "books_count": len(books_seen),
+        "empty_ids": empty_ids,
+        "empty_text": empty_text,
+        "too_short": too_short,
+        "too_long": too_long,
+        "dup_ids": dup_ids,
+        "dup_text": dup_text,
+        "with_artifacts": with_artifacts,
+        "artifact_types": artifact_types,
+        "book_artifacts": book_artifacts,
+        "books_seen": books_seen,
+    }
 
 
 # ============================================================
-# CHECK: books/
+# CHECK 4: books/
 # ============================================================
 def check_books_dir():
     log.info("check: books/")
@@ -411,227 +397,287 @@ def check_books_dir():
 
 
 # ============================================================
-# CHECK: faiss.index
+# CHECK 5: faiss.index
 # ============================================================
 def check_faiss():
     log.info("check: faiss.index")
     if not FAISS_FILE.exists():
         return {"error": "not found at data/"}
     size_mb = round(
-        FAISS_FILE.stat().st_size / 1024 / 1024, 1
+        FAISS_FILE.stat().st_size / 1024 / 1024, 2
     )
-    return {"exists": True, "size_mb": size_mb}
+    return {
+        "exists": True,
+        "size_mb": size_mb,
+        "size_bytes": FAISS_FILE.stat().st_size,
+    }
+
+
+# ============================================================
+# CROSS-CHECK: knowledge vs chunks
+# ============================================================
+def cross_check(kn, ch):
+    log.info("cross-check: knowledge vs chunks")
+    if "error" in kn or "error" in ch:
+        return {"error": "skipped"}
+
+    meta_chunks = kn["total_chunks_meta"]
+    file_chunks = ch["total"]
+    diff = meta_chunks - file_chunks
+
+    # Книги в knowledge, но не в chunks
+    kn_books = set()
+    # Тут we don't have per-book from knowledge easily
+    # (only names). Compare counts.
+    ch_books = set(ch["books_seen"].keys())
+
+    return {
+        "meta_chunks": meta_chunks,
+        "file_chunks": file_chunks,
+        "diff": diff,
+        "ch_books": ch_books,
+    }
 
 
 # ============================================================
 # BUILD REPORT
 # ============================================================
-def build_report(kn, sm, ch, bd, fs,
-                 dry_run, flag_exists):
+def build_report(kn, sm, ch, bd, fs, cc):
     now = datetime.now(timezone.utc)
-    lines = []
-    lines.append("🔍 <b>ARGUS — аудит данных v2</b>")
-    lines.append(now.strftime("%d.%m.%Y %H:%M UTC"))
-    if dry_run:
-        lines.append("<i>dry-run (без записи)</i>")
-    lines.append("")
+    L = []
+    L.append("🔍 <b>ARGUS — аудит данных v2</b>")
+    L.append(now.strftime("%d.%m.%Y %H:%M UTC"))
+    L.append("")
 
-    # knowledge.json
-    lines.append("📚 <b>knowledge.json</b>")
+    # 1. knowledge.json
+    L.append("📚 <b>knowledge.json</b>")
     if "error" in kn:
-        lines.append("  ❌ " + esc(kn["error"]))
+        L.append("  ❌ " + esc(kn["error"]))
     else:
-        lines.append(
-            "  книг: " + str(kn["total"])
-        )
-        lines.append(
+        L.append("  книг: " + str(kn["total"]))
+        L.append(
             "  уникальных: " + str(kn["unique"])
         )
-        lines.append(
+        L.append(
             "  страниц: "
             + format(kn["total_pages"], ",")
         )
-        lines.append(
-            "  чанков (meta): "
-            + format(kn["total_chunks"], ",")
+        L.append(
+            "  chunks (meta): "
+            + format(kn["total_chunks_meta"], ",")
         )
+        L.append(
+            "  generated: " + esc(kn["generated_at"])
+        )
+        probs = []
         if kn["no_file"]:
-            lines.append(
+            probs.append(
                 "  ⚠️ без file: "
                 + str(kn["no_file"])
             )
+        if kn["bad_entry"]:
+            probs.append(
+                "  ⚠️ битых записей: "
+                + str(kn["bad_entry"])
+            )
         if kn["duplicates"]:
-            lines.append(
-                "  ⚠️ дубли: "
+            probs.append(
+                "  ⚠️ дублей книг: "
                 + str(len(kn["duplicates"]))
             )
+        if probs:
+            L.extend(probs)
+        else:
+            L.append("  ✅ структура ok")
+    L.append("")
+
+    # 2. summary.json
+    L.append("📋 <b>summary.json</b>")
+    if "error" in sm:
+        L.append("  ❌ " + esc(sm["error"]))
+    else:
+        L.append("  записей: " + str(sm["total"]))
+        L.append(
+            "  уникальных: " + str(sm["unique"])
+        )
+        L.append(
+            "  generated: " + esc(sm["generated_at"])
+        )
+        if sm["duplicates"]:
+            L.append(
+                "  ⚠️ <b>дублей: "
+                + str(sm["dup_total"])
+                + "</b> ("
+                + str(len(sm["duplicates"]))
+                + " имён)"
+            )
             for n, c in list(
-                kn["duplicates"].items()
-            )[:5]:
-                lines.append(
+                sm["duplicates"].items()
+            )[:8]:
+                L.append(
                     "    • " + esc(n[:40])
                     + " ×" + str(c)
                 )
         else:
-            lines.append("  ✅ дублей нет")
-    lines.append("")
-
-    # summary.json
-    lines.append("📋 <b>summary.json</b>")
-    if "error" in sm:
-        lines.append("  ❌ " + esc(sm["error"]))
-    else:
-        lines.append(
-            "  было: " + str(sm["before"])
-            + " → стало: " + str(sm["after"])
-        )
-        if sm["removed"]:
-            lines.append(
-                "  🧹 удалено дублей: "
-                + str(len(sm["removed"]))
+            L.append("  ✅ дублей нет")
+        if sm["no_file"]:
+            L.append(
+                "  ⚠️ без file: " + str(sm["no_file"])
             )
-            for n in sm["removed"][:8]:
-                lines.append(
-                    "    • " + esc(n[:40])
-                )
-            if sm["written"]:
-                lines.append("  ✅ записано")
-            elif dry_run:
-                lines.append("  (dry-run)")
-        else:
-            lines.append("  ✅ чисто")
-    lines.append("")
+    L.append("")
 
-    # chunks
-    lines.append("🗂 <b>chunks_for_index.json</b>")
+    # 3. chunks_for_index.json
+    L.append("🗂 <b>chunks_for_index.json</b>")
     if "error" in ch:
-        lines.append("  ❌ " + esc(ch["error"]))
+        L.append("  ❌ " + esc(ch["error"]))
     else:
-        lines.append(
+        L.append(
             "  всего: " + format(ch["total"], ",")
         )
-        if ch["fixed_html"]:
-            lines.append(
-                "  🧹 очищено от HTML: "
-                + str(ch["fixed_html"])
+        L.append(
+            "  книг: " + str(ch["books_count"])
+        )
+        probs = []
+        if ch["empty_ids"]:
+            probs.append(
+                "  ⚠️ пустых id: "
+                + str(ch["empty_ids"])
             )
-            for s in ch["samples"]:
-                lines.append(
-                    "    • " + esc(s)
-                )
-            if ch["written"]:
-                lines.append("  ✅ записано")
-            elif dry_run:
-                lines.append("  (dry-run)")
+        if ch["dup_ids"]:
+            probs.append(
+                "  ⚠️ дублей id: "
+                + str(ch["dup_ids"])
+            )
+        if ch["empty_text"]:
+            probs.append(
+                "  ⚠️ пустого текста: "
+                + str(ch["empty_text"])
+            )
+        if ch["too_short"]:
+            probs.append(
+                "  ⚠️ коротких (<"
+                + str(MIN_CHUNK_LEN)
+                + "): " + str(ch["too_short"])
+            )
+        if ch["too_long"]:
+            probs.append(
+                "  ⚠️ длинных (>"
+                + str(MAX_CHUNK_LEN)
+                + "): " + str(ch["too_long"])
+            )
+        if ch["dup_text"]:
+            probs.append(
+                "  ⚠️ дублей текста: "
+                + str(ch["dup_text"])
+            )
+        if ch["with_artifacts"]:
+            probs.append(
+                "  ⚠️ с артефактами: "
+                + str(ch["with_artifacts"])
+            )
+        if probs:
+            L.extend(probs)
         else:
-            lines.append("  ✅ HTML нет")
-        if ch["empty_after"]:
-            lines.append(
-                "  ⚠️ пустых после чистки: "
-                + str(ch["empty_after"])
-            )
-        if ch["still_html"]:
-            lines.append(
-                "  ⚠️ остался HTML: "
-                + str(ch["still_html"])
-            )
-    lines.append("")
+            L.append("  ✅ чисто")
+    L.append("")
 
-    # books/
-    lines.append("📁 <b>books/</b>")
-    if "error" in bd:
-        lines.append("  ❌ " + esc(bd["error"]))
+    # 4. Артефакты
+    if ("error" not in ch
+            and ch.get("with_artifacts")):
+        L.append("🧹 <b>Типы артефактов</b>")
+        for t, n in ch[
+            "artifact_types"
+        ].most_common(5):
+            L.append(
+                "  • " + esc(t) + ": " + str(n)
+            )
+        L.append("")
+        L.append("📖 <b>Книги с артефактами</b>")
+        for b, n in ch[
+            "book_artifacts"
+        ].most_common(8):
+            L.append(
+                "  • " + esc(b[:45])
+                + ": " + str(n)
+            )
+        L.append("")
+
+    # 5. Cross-check
+    L.append("🔗 <b>Cross-check</b>")
+    if "error" in cc:
+        L.append("  ❌ " + esc(cc["error"]))
     else:
-        lines.append("  PDF: " + str(bd["count"]))
-        lines.append(
-            "  размер: " + str(bd["total_mb"]) + " МБ"
+        L.append(
+            "  chunks в knowledge: "
+            + format(cc["meta_chunks"], ",")
+        )
+        L.append(
+            "  chunks в файле: "
+            + format(cc["file_chunks"], ",")
+        )
+        d = cc["diff"]
+        if d == 0:
+            L.append("  ✅ совпадает")
+        else:
+            L.append(
+                "  ⚠️ расхождение: "
+                + str(d)
+            )
+    L.append("")
+
+    # 6. books/
+    L.append("📁 <b>books/</b>")
+    if "error" in bd:
+        L.append("  ❌ " + esc(bd["error"]))
+    else:
+        L.append("  PDF: " + str(bd["count"]))
+        L.append(
+            "  размер: " + str(bd["total_mb"])
+            + " МБ"
         )
         if bd["zero_bytes"]:
-            lines.append(
+            L.append(
                 "  ⚠️ пустых: "
                 + str(len(bd["zero_bytes"]))
             )
-    lines.append("")
+    L.append("")
 
-    # faiss
-    lines.append("🧠 <b>faiss.index</b>")
+    # 7. faiss.index
+    L.append("🧠 <b>faiss.index</b>")
     if "error" in fs:
-        lines.append("  ❌ " + esc(fs["error"]))
+        L.append("  ❌ " + esc(fs["error"]))
     else:
-        lines.append(
-            "  размер: " + str(fs["size_mb"]) + " МБ"
+        L.append(
+            "  размер: " + str(fs["size_mb"])
+            + " МБ"
         )
-    if flag_exists:
-        lines.append(
-            "  ⚠️ <b>нужен reindex</b> "
-            "(data/reindex_needed.txt)"
-        )
-    lines.append("")
+    L.append("")
 
-    lines.append(
-        "<i>Тихий режим: молчит если чисто</i>"
+    L.append(
+        "<i>Режим: audit only (без записи)</i>"
     )
 
-    return "\n".join(lines)
+    return "\n".join(L)
 
 
 # ============================================================
 # MAIN
 # ============================================================
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--dry-run", action="store_true",
-        help="не писать файлы, только отчёт",
-    )
-    parser.add_argument(
-        "--force", action="store_true",
-        help="отчёт даже если чисто",
-    )
-    args = parser.parse_args()
-
     log.info("=" * 50)
-    log.info("ARGUS data audit v2")
-    log.info(
-        "dry_run=%s force=%s",
-        args.dry_run, args.force,
-    )
+    log.info("ARGUS data audit v2 (audit only)")
     log.info("=" * 50)
 
     kn = check_knowledge()
-    sm = clean_summary(args.dry_run)
-    ch = clean_chunks(args.dry_run)
+    sm = check_summary()
+    ch = check_chunks()
     bd = check_books_dir()
     fs = check_faiss()
+    cc = cross_check(kn, ch)
 
-    flag_exists = REINDEX_FLAG.exists()
-
-    # Что-то изменилось?
-    changed = False
-    if isinstance(sm, dict) and sm.get("removed"):
-        changed = True
-    if isinstance(ch, dict) and ch.get("fixed_html"):
-        changed = True
-
-    # Что-то сломано?
-    problems = False
-    for r in (kn, sm, ch, bd, fs):
-        if isinstance(r, dict) and "error" in r:
-            problems = True
-    if isinstance(kn, dict) and kn.get("duplicates"):
-        problems = True
-    if isinstance(bd, dict) and bd.get("zero_bytes"):
-        problems = True
-
-    if not (changed or problems or args.force):
-        log.info("quiet: all clean, skip report")
-        return
-
-    text = build_report(
-        kn, sm, ch, bd, fs,
-        args.dry_run, flag_exists,
-    )
+    text = build_report(kn, sm, ch, bd, fs, cc)
     log.info("report: %d chars", len(text))
+
     send_message(text)
     log.info("done")
 
