@@ -1,10 +1,9 @@
 # ============================================================
-# ARGUS - MEXC TRADES v1 [PRODUCTION]
+# ARGUS - MEXC TRADES v2 [PRODUCTION]
 # ------------------------------------------------------------
-# История реальных сделок (fills).
-# Считает комиссии, PnL по факту.
-# Требует API-ключ.
-# ============================================================
+# v2: группировка комиссий по asset,
+#     ясный комментарий isBuyer.
+# ------------------------------------------------------------
 
 import sys
 import logging
@@ -14,7 +13,6 @@ from datetime import timedelta
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 CRYPTO_ROOT = SCRIPT_DIR.parent
-
 sys.path.insert(0, str(SCRIPT_DIR))
 
 from client import MexcClient
@@ -29,7 +27,6 @@ log = logging.getLogger("mexc.trades")
 
 
 def get_my_trades(client, symbol, days=30, limit=100):
-    """История сделок за N дней."""
     since = (
         datetime.now(timezone.utc)
         - timedelta(days=days)
@@ -46,46 +43,61 @@ def get_my_trades(client, symbol, days=30, limit=100):
 
 
 def analyze_trades(trades):
-    """Анализ: buy/sell volume, fees."""
+    """
+    isBuyer=True  -> это МОЯ покупка
+    isBuyer=False -> это МОЯ продажа
+    (не путать с isBuyerMaker в market)
+    """
     if not trades:
         return None
 
-    buy_vol = 0
-    sell_vol = 0
-    fees_total = 0
-    fees_asset = None
+    buy_usdt = 0.0
+    sell_usdt = 0.0
+    fees_by_asset = {}
     count = len(trades)
 
     for t in trades:
-        qty = float(t.get("qty", 0))
-        price = float(t.get("price", 0))
+        try:
+            qty = float(t.get("qty", 0))
+            price = float(t.get("price", 0))
+            commission = float(
+                t.get("commission", 0)
+            )
+        except Exception:
+            continue
+
         is_buyer = t.get("isBuyer", False)
-        commission = float(t.get("commission", 0))
-        comm_asset = t.get("commissionAsset", "?")
+        comm_asset = t.get(
+            "commissionAsset", "?",
+        )
 
         if is_buyer:
-            buy_vol += qty * price
+            buy_usdt += qty * price
         else:
-            sell_vol += qty * price
+            sell_usdt += qty * price
 
-        fees_total += commission
-        if fees_asset is None:
-            fees_asset = comm_asset
+        if comm_asset not in fees_by_asset:
+            fees_by_asset[comm_asset] = 0.0
+        fees_by_asset[comm_asset] += commission
+
+    fees_clean = {
+        k: round(v, 8)
+        for k, v in fees_by_asset.items()
+    }
 
     return {
         "count": count,
-        "buy_usdt": round(buy_vol, 4),
-        "sell_usdt": round(sell_vol, 4),
-        "fees": round(fees_total, 8),
-        "fees_asset": fees_asset,
+        "buy_usdt": round(buy_usdt, 4),
+        "sell_usdt": round(sell_usdt, 4),
+        "fees_by_asset": fees_clean,
     }
 
 
 def main():
-    log.info("MEXC trades v1")
+    log.info("MEXC trades v2")
 
     if not is_configured():
-        log.error("MEXC_API_KEY / MEXC_API_SECRET not set")
+        log.error("Keys not set")
         sys.exit(1)
 
     client = MexcClient()
@@ -98,28 +110,29 @@ def main():
         )
 
         if trades is None:
-            log.warning("  Не удалось прочитать")
+            log.warning("  read error")
             continue
 
         if not trades:
-            log.info("  Сделок за 30 дней нет")
+            log.info("  no trades 30d")
             continue
 
         stats = analyze_trades(trades)
         if stats:
             log.info(
-                "  Сделок: %d", stats["count"]
+                "  trades: %d", stats["count"]
             )
             log.info(
-                "  Buy: $%.2f | Sell: $%.2f",
+                "  buy: $%.2f | sell: $%.2f",
                 stats["buy_usdt"],
                 stats["sell_usdt"],
             )
-            log.info(
-                "  Комиссии: %s %s",
-                stats["fees"],
-                stats["fees_asset"],
-            )
+            for asset, amt in (
+                stats["fees_by_asset"].items()
+            ):
+                log.info(
+                    "  fee: %s %s", amt, asset,
+                )
 
     log.info("done")
 
