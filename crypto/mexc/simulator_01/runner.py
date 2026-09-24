@@ -1,7 +1,15 @@
 # ============================================================
-# ARGUS - SIMULATOR 01 v6.1 [PRODUCTION]
+# ARGUS - SIMULATOR 01 v7 [PRODUCTION]
 # ------------------------------------------------------------
-# v6.1: все логи на английском (не рвутся при копипасте)
+# v7: защита от кривых данных
+#   - проверка свежести candles и analysis
+#   - cooldown после стопа
+#   - sanity-check цены
+#   - fallback get_price
+#   - UUID для id позиции
+#   - rules только если свежие
+# ------------------------------------------------------------
+# v6.1: все логи на английском
 # v6: watch loop внутри скрипта
 # ============================================================
 
@@ -9,6 +17,7 @@ import os
 import sys
 import json
 import time
+import uuid
 import logging
 import requests
 from datetime import datetime, timezone
@@ -38,6 +47,7 @@ log = logging.getLogger("sim01")
 PORTFOLIO_FILE = STATE_DIR / "portfolio.json"
 POSITIONS_FILE = STATE_DIR / "positions.json"
 TRADES_FILE = STATE_DIR / "trades.json"
+COOLDOWN_FILE = STATE_DIR / "cooldowns.json"
 
 START_BALANCE = 50.0
 POSITION_SIZE = 10.0
@@ -49,6 +59,12 @@ MIN_RR = 1.5
 STOP_BELOW_SUP_PCT = 0.5
 ATR_MULT = 1.5
 TARGET_RR = 2.0
+MAX_STOP_ATR = 2.5
+
+COOLDOWN_HOURS = 2
+ANALYSIS_MAX_AGE_H = 3
+CANDLES_MAX_AGE_H = 2
+RULES_MAX_AGE_H = 24
 
 WATCH_INTERVAL_SEC = 600
 WATCH_MAX_MIN = 55
@@ -106,6 +122,35 @@ def save_json(path, data):
         log.error("save %s: %s", path.name, e)
 
 
+# ============================================================
+# FRESHNESS
+# ============================================================
+def file_age_hours(path):
+    if not path.exists():
+        return None
+    return (
+        time.time() - path.stat().st_mtime
+    ) / 3600
+
+
+def load_analysis(name, max_age_h=ANALYSIS_MAX_AGE_H):
+    path = DATA_DIR / name
+    age = file_age_hours(path)
+    if age is None:
+        log.warning("%s: missing", name)
+        return {}
+    if age > max_age_h:
+        log.warning(
+            "%s: stale (%.1fh > %dh)",
+            name, age, max_age_h,
+        )
+        return {}
+    return load_json(path, {})
+
+
+# ============================================================
+# STATE
+# ============================================================
 def get_portfolio():
     p = load_json(PORTFOLIO_FILE, None)
     if p is None:
@@ -128,25 +173,58 @@ def get_positions():
     return load_json(POSITIONS_FILE, [])
 
 
-def save_positions(positions):
-    save_json(POSITIONS_FILE, positions)
+def save_positions(p):
+    save_json(POSITIONS_FILE, p)
 
 
 def get_trades():
     return load_json(TRADES_FILE, [])
 
 
-def save_trades(trades):
-    save_json(TRADES_FILE, trades)
+def save_trades(t):
+    save_json(TRADES_FILE, t)
 
 
+def get_cooldowns():
+    return load_json(COOLDOWN_FILE, {})
+
+
+def set_cooldown(symbol):
+    cd = get_cooldowns()
+    cd[symbol] = datetime.now(
+        timezone.utc
+    ).isoformat()
+    save_json(COOLDOWN_FILE, cd)
+
+
+def in_cooldown(symbol):
+    cd = get_cooldowns()
+    ts = cd.get(symbol)
+    if not ts:
+        return False
+    try:
+        dt = datetime.fromisoformat(ts)
+    except Exception:
+        return False
+    delta = (
+        datetime.now(timezone.utc) - dt
+    ).total_seconds() / 3600
+    return delta < COOLDOWN_HOURS
+
+
+# ============================================================
+# MEXC
+# ============================================================
 def get_price(client, symbol):
-    data = client.public_get(
-        "/api/v3/ticker/price",
-        {"symbol": symbol},
-    )
-    if data and "price" in data:
-        return float(data["price"])
+    try:
+        data = client.public_get(
+            "/api/v3/ticker/price",
+            {"symbol": symbol},
+        )
+        if data and "price" in data:
+            return float(data["price"])
+    except Exception as e:
+        log.warning("price %s: %s", symbol, e)
     return None
 
 
@@ -176,10 +254,9 @@ def get_klines_1m(client, symbol, limit=180):
     return out
 
 
-def load_analysis(name):
-    return load_json(DATA_DIR / name, {})
-
-
+# ============================================================
+# DB CANDLES
+# ============================================================
 def get_candles(symbol, limit=200):
     try:
         with get_connection() as conn:
@@ -209,6 +286,32 @@ def get_candles(symbol, limit=200):
         return []
 
 
+def candles_are_fresh(candles):
+    if not candles:
+        return False
+    last = candles[-1].get("timestamp")
+    if last is None:
+        return False
+    try:
+        if isinstance(last, datetime):
+            age = (
+                datetime.now(timezone.utc) - last
+            ).total_seconds() / 3600
+        else:
+            return True
+        if age > CANDLES_MAX_AGE_H:
+            log.warning(
+                "candles stale: %.1fh", age
+            )
+            return False
+        return True
+    except Exception:
+        return True
+
+
+# ============================================================
+# INDICATORS
+# ============================================================
 def compute_rsi(closes, period=14):
     if len(closes) < period + 1:
         return None
@@ -251,17 +354,22 @@ def compute_atr(candles, period=14):
     return round(sum(trs[-period:]) / period, 4)
 
 
+# ============================================================
+# ANALYSIS HELPERS
+# ============================================================
 def get_support(symbol, price):
     lv = load_analysis("levels_analysis.json")
     sym = lv.get("symbols", {}).get(symbol, {})
     supports = sym.get("supports", [])
     below = [
-        s for s in supports if s["price"] < price
+        s for s in supports
+        if s.get("price", 0) < price
     ]
     if not below:
         return None
     return min(
-        below, key=lambda x: price - x["price"],
+        below,
+        key=lambda x: price - x["price"],
     )
 
 
@@ -270,7 +378,8 @@ def get_resistances(symbol, price):
     sym = lv.get("symbols", {}).get(symbol, {})
     resistances = sym.get("resistances", [])
     above = [
-        r for r in resistances if r["price"] > price
+        r for r in resistances
+        if r.get("price", 0) > price
     ]
     above.sort(key=lambda x: x["price"])
     return above
@@ -284,19 +393,51 @@ def get_markov_p10(symbol):
 
 
 def get_rules(symbol):
-    c = load_analysis("correlations.json")
+    c = load_analysis(
+        "correlations.json",
+        max_age_h=RULES_MAX_AGE_H,
+    )
     sym = c.get("symbols", {}).get(symbol, {})
     return sym.get("rules", [])
 
 
+def filter_bull_rules(rules):
+    """Только up + проверка свежести/качества."""
+    out = []
+    for r in rules:
+        if r.get("direction") != "up":
+            continue
+        if r.get("samples", 0) < 5:
+            continue
+        if r.get("confidence", 0) < 0.6:
+            continue
+        out.append(r)
+    return out
+
+
+# ============================================================
+# LEVELS
+# ============================================================
 def build_levels(price, sup, resistances, atr):
+    """
+    Возвращает (stop, target, rr) или (None,...).
+    Если support слишком далеко (> MAX_STOP_ATR)
+    - отказ (не входим), а не обрезаем стоп.
+    """
     if sup:
         stop = sup["price"] * (
             1 - STOP_BELOW_SUP_PCT / 100
         )
-        max_stop_dist = atr * 2.5
-        if price - stop > max_stop_dist:
-            stop = price - max_stop_dist
+        stop_dist = price - stop
+        if stop_dist > atr * MAX_STOP_ATR:
+            log.info(
+                "  sup too far: %.2f > %.2f",
+                stop_dist,
+                atr * MAX_STOP_ATR,
+            )
+            return None, None, None
+        if stop_dist <= 0:
+            return None, None, None
     else:
         stop = price - atr * ATR_MULT
 
@@ -304,6 +445,8 @@ def build_levels(price, sup, resistances, atr):
         return None, None, None
 
     risk = price - stop
+    if risk <= 0:
+        return None, None, None
 
     target = None
     for res in resistances:
@@ -323,7 +466,14 @@ def build_levels(price, sup, resistances, atr):
     return stop, target, rr
 
 
+# ============================================================
+# SIGNAL
+# ============================================================
 def check_signal(client, symbol):
+    if in_cooldown(symbol):
+        log.info("  %s: in cooldown", symbol)
+        return None
+
     price = get_price(client, symbol)
     if not price:
         log.info("  %s: no price", symbol)
@@ -335,6 +485,10 @@ def check_signal(client, symbol):
             "  %s: few candles (%d)",
             symbol, len(candles),
         )
+        return None
+
+    if not candles_are_fresh(candles):
+        log.info("  %s: candles stale", symbol)
         return None
 
     closes = [c["close"] for c in candles]
@@ -370,7 +524,9 @@ def check_signal(client, symbol):
 
     if sup:
         gap = (price - sup["price"]) / price * 100
-        details.append("gap=" + format(gap, ".2f") + "%")
+        details.append(
+            "gap=" + format(gap, ".2f") + "%"
+        )
         if gap <= 1.5:
             votes.append("Level")
             reasons.append(
@@ -381,12 +537,7 @@ def check_signal(client, symbol):
             details.append("Level+")
 
     rules = get_rules(symbol)
-    bull_rules = [
-        r for r in rules
-        if r.get("direction") == "up"
-        and r.get("samples", 0) >= 5
-        and r.get("confidence", 0) >= 0.6
-    ]
+    bull_rules = filter_bull_rules(rules)
     details.append("rules=" + str(len(bull_rules)))
     if bull_rules:
         votes.append("Rules")
@@ -415,6 +566,15 @@ def check_signal(client, symbol):
         log.info("  %s: no stop", symbol)
         return None
 
+    # sanity check
+    if not (stop < price < target):
+        log.warning(
+            "  %s: sanity fail stop=%.4f "
+            "price=%.4f target=%.4f",
+            symbol, stop, price, target,
+        )
+        return None
+
     if rr < MIN_RR:
         log.info(
             "  %s: R:R=%.2f < %.1f, skip",
@@ -438,6 +598,9 @@ def check_signal(client, symbol):
     }
 
 
+# ============================================================
+# OPEN / CLOSE
+# ============================================================
 def open_position(signal):
     portfolio = get_portfolio()
     positions = get_positions()
@@ -455,13 +618,11 @@ def open_position(signal):
 
     entry = signal["price"] * (1 + SLIPPAGE)
     fee = POSITION_SIZE * TAKER_FEE
-
     portfolio["balance"] -= POSITION_SIZE
-
     size_coins = POSITION_SIZE / entry
 
     pos = {
-        "id": len(get_trades()) + len(positions) + 1,
+        "id": str(uuid.uuid4()),
         "symbol": signal["symbol"],
         "direction": "LONG",
         "entry_price": round(entry, 6),
@@ -485,29 +646,21 @@ def open_position(signal):
     save_positions(positions)
     save_json(PORTFOLIO_FILE, portfolio)
 
-    lines = []
-    lines.append("LONG OPENED")
-    lines.append(
-        signal["symbol"].replace("USDT", "")
-    )
-    lines.append(
-        "Entry: $" + format(entry, ".4f")
-    )
-    lines.append(
-        "Stop: $" + format(signal["stop"], ".4f")
-    )
-    lines.append(
+    lines = [
+        "LONG OPENED",
+        signal["symbol"].replace("USDT", ""),
+        "Entry: $" + format(entry, ".4f"),
+        "Stop: $" + format(signal["stop"], ".4f"),
         "Target: $" + format(
             signal["target"], ".4f"
-        )
-    )
-    lines.append("R:R 1:" + str(signal["rr"]))
-    lines.append(
-        "Reasons: " + ", ".join(signal["reasons"])
-    )
+        ),
+        "R:R 1:" + str(signal["rr"]),
+        "Reasons: " + ", ".join(
+            signal["reasons"]
+        ),
+    ]
     notify("\n".join(lines))
     log.info("OPEN " + signal["symbol"])
-
     return pos
 
 
@@ -553,26 +706,21 @@ def close_position(pos, exit_price, reason):
     save_trades(trades)
     save_json(PORTFOLIO_FILE, portfolio)
 
-    if pnl > 0:
-        emoji = "[WIN]"
-    else:
-        emoji = "[LOSS]"
+    # cooldown после стопа
+    if reason == "stop":
+        set_cooldown(pos["symbol"])
 
-    lines = []
-    lines.append(emoji + " CLOSED")
-    lines.append(
-        pos["symbol"].replace("USDT", "")
-    )
-    lines.append("Reason: " + reason)
-    lines.append(
+    emoji = "[WIN]" if pnl > 0 else "[LOSS]"
+    lines = [
+        emoji + " CLOSED",
+        pos["symbol"].replace("USDT", ""),
+        "Reason: " + reason,
         "PnL: $" + format(pnl, "+.4f")
-        + " (" + format(pnl_pct, "+.2f") + "%)"
-    )
-    lines.append(
+        + " (" + format(pnl_pct, "+.2f") + "%)",
         "Balance: $" + format(
             portfolio["balance"], ".2f"
-        )
-    )
+        ),
+    ]
     notify("\n".join(lines))
     log.info(
         "CLOSE %s PnL=%.4f (%s)",
@@ -581,6 +729,9 @@ def close_position(pos, exit_price, reason):
     return True
 
 
+# ============================================================
+# CHECK POSITION
+# ============================================================
 def check_one_position(client, pos):
     try:
         entry_dt = datetime.fromisoformat(
@@ -637,11 +788,14 @@ def check_one_position(client, pos):
     return False
 
 
+# ============================================================
+# WATCH
+# ============================================================
 def watch_position(client):
     log.info("")
     log.info("=" * 50)
     log.info(
-        "WATCH LOOP start interval=%ds max=%dmin",
+        "WATCH start interval=%ds max=%dmin",
         WATCH_INTERVAL_SEC,
         WATCH_MAX_MIN,
     )
@@ -662,19 +816,19 @@ def watch_position(client):
 
         positions = get_positions()
         if not positions:
-            log.info("  watch: no positions, exit")
+            log.info("  watch: no positions")
             break
 
         iteration += 1
         log.info(
-            "  watch #%d (elapsed %.0fs)",
+            "  watch #%d (%.0fs)",
             iteration, elapsed,
         )
 
         closed = False
         for pos in list(positions):
             if check_one_position(client, pos):
-                log.info("  watch: position closed")
+                log.info("  position closed")
                 closed = True
                 break
 
@@ -697,12 +851,15 @@ def watch_position(client):
         )
         time.sleep(WATCH_INTERVAL_SEC)
 
-    log.info("WATCH LOOP done")
+    log.info("WATCH done")
 
 
+# ============================================================
+# MAIN
+# ============================================================
 def main():
     log.info("=" * 50)
-    log.info("SIMULATOR 01 v6.1")
+    log.info("SIMULATOR 01 v7")
     log.info("=" * 50)
 
     client = MexcClient()
