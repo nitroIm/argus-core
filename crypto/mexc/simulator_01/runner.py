@@ -1,13 +1,8 @@
 # ============================================================
-# ARGUS - SIMULATOR 01 v2 [PRODUCTION]
+# ARGUS - SIMULATOR 01 v2.1 [PRODUCTION]
 # ------------------------------------------------------------
-# v2: сигнал из нескольких источников:
-#     - уровни (support)
-#     - RSI < 30
-#     - Markov P(1|0) > 0.55
-#     - correlations (N >= 5)
-#     Нужно 2+ совпадения.
-# v1: только уровни
+# v2.1: детальное логирование check_signal
+# v2: голосование 2+ из 4
 # ============================================================
 
 import os
@@ -82,9 +77,6 @@ def notify(text):
         pass
 
 
-# ============================================================
-# JSON HELPERS
-# ============================================================
 def load_json(path, default):
     if not path.exists():
         return default
@@ -106,9 +98,6 @@ def save_json(path, data):
         log.error("save %s: %s", path.name, e)
 
 
-# ============================================================
-# STATE
-# ============================================================
 def get_portfolio():
     p = load_json(PORTFOLIO_FILE, None)
     if p is None:
@@ -143,9 +132,6 @@ def save_trades(trades):
     save_json(TRADES_FILE, trades)
 
 
-# ============================================================
-# MARKET
-# ============================================================
 def get_price(client, symbol):
     data = client.public_get(
         "/api/v3/ticker/price",
@@ -156,9 +142,6 @@ def get_price(client, symbol):
     return None
 
 
-# ============================================================
-# ANALYSIS
-# ============================================================
 def load_analysis(name):
     return load_json(DATA_DIR / name, {})
 
@@ -263,7 +246,6 @@ def get_resistance(symbol, price):
 
 
 def get_markov_p10(symbol):
-    """P(1|0) — вероятность роста после падения."""
     p = load_analysis("patterns_analysis.json")
     sym = p.get("symbols", {}).get(symbol, {})
     mk = sym.get("markov", {})
@@ -271,7 +253,6 @@ def get_markov_p10(symbol):
 
 
 def get_rules(symbol):
-    """Правила из correlations."""
     c = load_analysis("correlations.json")
     sym = c.get("symbols", {}).get(symbol, {})
     return sym.get("rules", [])
@@ -279,15 +260,19 @@ def get_rules(symbol):
 
 def check_signal(client, symbol):
     """
-    Комбинированный сигнал.
-    Нужно 2+ совпадения.
+    v2.1: детальное логирование.
     """
     price = get_price(client, symbol)
     if not price:
+        log.info("  %s: нет цены", symbol)
         return None
 
     candles = get_candles(symbol, 100)
     if len(candles) < 20:
+        log.info(
+            "  %s: мало свечей (%d)",
+            symbol, len(candles),
+        )
         return None
 
     closes = [c["close"] for c in candles]
@@ -295,37 +280,47 @@ def check_signal(client, symbol):
     atr = compute_atr(candles, 14)
 
     if not rsi or not atr:
+        log.info("  %s: RSI/ATR не считались", symbol)
         return None
 
     # --- Голосование ---
     votes = []
     reasons = []
+    details = []
 
-    # 1. RSI перепродан
+    details.append("RSI=" + format(rsi, ".1f"))
+
+    # 1. RSI
     if rsi < 30:
         votes.append("RSI")
         reasons.append("RSI " + format(rsi, ".1f"))
+        details.append("RSI+")
 
     # 2. Markov
     p10 = get_markov_p10(symbol)
+    details.append("P10=" + format(p10, ".2f"))
     if p10 > 0.55:
         votes.append("Markov")
-        reasons.append("P(1|0)=" + format(p10, ".2f"))
+        reasons.append(
+            "P(1|0)=" + format(p10, ".2f")
+        )
+        details.append("Markov+")
 
     # 3. Уровни
     sup = get_support(symbol, price)
     res = get_resistance(symbol, price)
-
     if sup and res:
         gap = (price - sup["price"]) / price * 100
+        details.append("gap=" + format(gap, ".2f") + "%")
         if gap <= 1.5:
             votes.append("Level")
             reasons.append(
                 "у поддержки "
                 + format(sup["price"], ".0f")
             )
+            details.append("Level+")
 
-    # 4. Correlations
+    # 4. Правила
     rules = get_rules(symbol)
     bull_rules = [
         r for r in rules
@@ -333,20 +328,29 @@ def check_signal(client, symbol):
         and r.get("samples", 0) >= 5
         and r.get("confidence", 0) >= 0.6
     ]
+    details.append("rules=" + str(len(bull_rules)))
     if bull_rules:
         votes.append("Rules")
         reasons.append(
             str(len(bull_rules)) + " правил"
         )
+        details.append("Rules+")
 
-    # Нужно 2+ голоса
+    # Логируем что получилось
+    log.info(
+        "  %s: price=%.2f votes=%d [%s] | %s",
+        symbol,
+        price,
+        len(votes),
+        ", ".join(votes) if votes else "нет",
+        " ".join(details),
+    )
+
     if len(votes) < 2:
         return None
 
-    # Стоп — по ATR (1.5×)
+    # Стоп
     stop = price - atr * 1.5
-
-    # Если есть поддержка — стоп ниже неё
     if sup:
         stop_sup = sup["price"] * 0.995
         stop = min(stop, stop_sup)
@@ -354,11 +358,9 @@ def check_signal(client, symbol):
     if stop >= price:
         return None
 
-    # Цель
     risk = price - stop
     target = price + risk * 2.0
 
-    # Если есть сопротивление ближе — берём его
     if res and res["price"] < target:
         target = res["price"]
 
@@ -368,6 +370,10 @@ def check_signal(client, symbol):
 
     rr = reward / risk
     if rr < 1.5:
+        log.info(
+            "  %s: R:R=%.2f < 1.5, пропуск",
+            symbol, rr,
+        )
         return None
 
     return {
@@ -382,13 +388,12 @@ def check_signal(client, symbol):
         "reasons": reasons,
         "p10": p10,
         "support": sup["price"] if sup else None,
-        "resistance": res["price"] if res else None,
+        "resistance": (
+            res["price"] if res else None
+        ),
     }
 
 
-# ============================================================
-# EXECUTION
-# ============================================================
 def open_position(signal):
     portfolio = get_portfolio()
     positions = get_positions()
@@ -543,12 +548,9 @@ def check_positions(client):
             )
 
 
-# ============================================================
-# MAIN
-# ============================================================
 def main():
     log.info("=" * 50)
-    log.info("SIMULATOR 01 v2")
+    log.info("SIMULATOR 01 v2.1")
     log.info("=" * 50)
 
     client = MexcClient()
@@ -560,15 +562,8 @@ def main():
         for symbol in SYMBOLS:
             signal = check_signal(client, symbol)
             if signal:
-                log.info(
-                    "сигнал %s: %s",
-                    symbol,
-                    ", ".join(signal["reasons"]),
-                )
                 open_position(signal)
                 break
-            else:
-                log.info("сигнал %s: нет", symbol)
 
     portfolio = get_portfolio()
     positions = get_positions()
