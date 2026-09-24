@@ -1,8 +1,8 @@
 # ============================================================
-# ARGUS - MEXC ORDERS v2 [PRODUCTION]
+# ARGUS - MEXC ORDERS v3 [PRODUCTION]
 # ------------------------------------------------------------
-# v2: убран startTime (MEXC ограничение 7 дней)
-# v1: чтение открытых + истории
+# v3: фильтр по статусу, orderId в выводе.
+# v2: убран startTime (MEXC ограничение 7 дней).
 # ============================================================
 
 import sys
@@ -11,7 +11,6 @@ from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 CRYPTO_ROOT = SCRIPT_DIR.parent
-
 sys.path.insert(0, str(SCRIPT_DIR))
 
 from client import MexcClient
@@ -35,7 +34,7 @@ def get_open_orders(client, symbol=None):
 
 
 def get_all_orders(client, symbol, limit=100):
-    """История ордеров (MEXC: только 7 дней)."""
+    """История (MEXC: только 7 дней)."""
     return client.signed_get(
         "/api/v3/allOrders",
         {
@@ -45,7 +44,17 @@ def get_all_orders(client, symbol, limit=100):
     )
 
 
+def filter_by_status(orders, status):
+    if not orders:
+        return []
+    return [
+        o for o in orders
+        if o.get("status") == status
+    ]
+
+
 def fmt_order(o):
+    oid = str(o.get("orderId", "?"))[-8:]
     side = o.get("side", "?")
     otype = o.get("type", "?")
     price = o.get("price", "?")
@@ -53,7 +62,8 @@ def fmt_order(o):
     status = o.get("status", "?")
     executed = o.get("executedQty", "0")
     return (
-        "  " + side + " " + otype
+        "  #" + oid
+        + " " + side + " " + otype
         + " price=" + str(price)
         + " qty=" + str(qty)
         + " exec=" + str(executed)
@@ -62,10 +72,10 @@ def fmt_order(o):
 
 
 def main():
-    log.info("MEXC orders v2")
+    log.info("MEXC orders v3")
 
     if not is_configured():
-        log.error("MEXC_API_KEY / MEXC_API_SECRET not set")
+        log.error("Keys not set")
         sys.exit(1)
 
     client = MexcClient()
@@ -75,14 +85,14 @@ def main():
 
         opens = get_open_orders(client, symbol)
         if opens is None:
-            log.warning("  Ошибка чтения open orders")
+            log.warning("  read error")
             continue
 
         if not opens:
-            log.info("  Открытых ордеров нет")
+            log.info("  no open orders")
         else:
             log.info(
-                "  Открытых ордеров: %d", len(opens)
+                "  open: %d", len(opens),
             )
             for o in opens[:10]:
                 log.info(fmt_order(o))
@@ -91,14 +101,17 @@ def main():
             client, symbol, limit=100,
         )
         if history:
-            log.info(
-                "  История: %d ордеров",
-                len(history),
+            filled = filter_by_status(
+                history, "FILLED",
             )
-            for o in history[:5]:
+            log.info(
+                "  history: %d (filled: %d)",
+                len(history), len(filled),
+            )
+            for o in filled[:5]:
                 log.info(fmt_order(o))
         else:
-            log.info("  История пустая")
+            log.info("  history empty")
 
     log.info("done")
 
