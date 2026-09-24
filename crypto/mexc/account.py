@@ -1,8 +1,8 @@
 # ============================================================
-# ARGUS - MEXC ACCOUNT READER v1 [PRODUCTION]
+# ARGUS - MEXC ACCOUNT READER v2 [PRODUCTION]
 # ------------------------------------------------------------
-# Читает spot + futures баланс.
-# Показывает общую сумму в USDT.
+# v2: USDC по курсу, обработка ошибок.
+# Spot баланс.
 # ------------------------------------------------------------
 # Требования:
 #   pip install requests
@@ -46,8 +46,11 @@ def get_spot_balance(client):
 
     out = []
     for b in data.get("balances", []):
-        free = float(b.get("free", 0))
-        locked = float(b.get("locked", 0))
+        try:
+            free = float(b.get("free", 0))
+            locked = float(b.get("locked", 0))
+        except Exception:
+            continue
         total = free + locked
         if total > 0:
             out.append({
@@ -86,9 +89,7 @@ def get_account_summary(client):
         asset = b["asset"]
         total = b["total"]
 
-        if asset == "USDT":
-            usd_value = total
-        elif asset == "USDC":
+        if asset in ("USDT", "USDC"):
             usd_value = total
         else:
             symbol = asset + "USDT"
@@ -96,7 +97,8 @@ def get_account_summary(client):
                 client, symbol,
             )
             usd_value = (
-                total * price if price else 0
+                total * price
+                if price else 0
             )
 
         b["usd_value"] = round(usd_value, 4)
@@ -137,15 +139,12 @@ def fmt_summary(summary):
 
 def main():
     log.info("=" * 50)
-    log.info("MEXC account reader v1")
+    log.info("MEXC account reader v2")
     log.info("=" * 50)
 
     if not is_configured():
-        log.error("MEXC_API_KEY / MEXC_API_SECRET not set")
-        log.error("Добавь в GitHub Secrets")
+        log.error("MEXC_API_KEY / SECRET not set")
         sys.exit(1)
-
-    log.info("Ключи найдены, читаю аккаунт...")
 
     client = MexcClient()
     summary = get_account_summary(client)
@@ -155,9 +154,9 @@ def main():
     log.info("")
 
     if summary["total_usdt"] > 0:
-        log.info("✅ OK")
+        log.info("OK")
     else:
-        log.warning("Пустой баланс или нет доступа")
+        log.warning("Empty balance or no access")
 
 
 if __name__ == "__main__":
