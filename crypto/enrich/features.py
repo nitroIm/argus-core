@@ -1,9 +1,10 @@
 # ============================================================
 # ARGUS-Trader — FEATURES
 # ------------------------------------------------------------
-# v3.2: ON CONFLICT DO UPDATE — обновляем существующие.
-# v3.1: fix — колонка rate в funding_rates.
-# v3: полная защита.
+# v4.1: + ls_ratio, taker_ratio
+# v4: + oi_change_pct, funding_trend,
+#     + next_change_pct, next_direction
+# v3.2: ON CONFLICT DO UPDATE
 # ============================================================
 
 import sys
@@ -38,10 +39,17 @@ LIMITS = {
     "change_24h": 200.0,
     "change_7d": 500.0,
     "funding_rate": 5.0,
+    "oi_change_pct": 100.0,
+    "ls_ratio": 20.0,
+    "taker_ratio": 5.0,
+    "next_change_pct": 50.0,
 }
 
 MAX_FUTURE_MIN = 5
 MAX_FUNDING_AGE_H = 24
+MAX_OI_AGE_H = 2
+MAX_LS_AGE_H = 2
+MAX_TAKER_AGE_H = 2
 
 
 def is_valid(val, limit):
@@ -228,6 +236,86 @@ def fetch_funding(symbol):
         return []
 
 
+def fetch_open_interest(symbol):
+    try:
+        with get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT timestamp, oi_value "
+                    "FROM open_interest "
+                    "WHERE symbol = %s "
+                    "AND oi_value IS NOT NULL "
+                    "ORDER BY timestamp",
+                    (symbol,),
+                )
+                result = []
+                for r in cur.fetchall():
+                    ts = r[0]
+                    val = float(r[1]) if r[1] else None
+                    if ts and val is not None:
+                        if ts.tzinfo is None:
+                            ts = ts.replace(tzinfo=timezone.utc)
+                        result.append((ts, val))
+                return result
+    except Exception as e:
+        log.error(f"fetch_oi: {e}")
+        return []
+
+
+def fetch_long_short(symbol):
+    try:
+        with get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT timestamp, ls_ratio "
+                    "FROM long_short_ratio "
+                    "WHERE symbol = %s "
+                    "AND ls_ratio IS NOT NULL "
+                    "ORDER BY timestamp",
+                    (symbol,),
+                )
+                result = []
+                for r in cur.fetchall():
+                    ts = r[0]
+                    val = float(r[1]) if r[1] else None
+                    if ts and val is not None:
+                        if ts.tzinfo is None:
+                            ts = ts.replace(tzinfo=timezone.utc)
+                        result.append((ts, val))
+                return result
+    except Exception as e:
+        log.error(f"fetch_ls: {e}")
+        return []
+
+
+def fetch_taker(symbol):
+    try:
+        with get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT timestamp, buy_vol, "
+                    "sell_vol FROM taker_flow "
+                    "WHERE symbol = %s "
+                    "AND buy_vol IS NOT NULL "
+                    "AND sell_vol IS NOT NULL "
+                    "ORDER BY timestamp",
+                    (symbol,),
+                )
+                result = []
+                for r in cur.fetchall():
+                    ts = r[0]
+                    bv = float(r[1]) if r[1] else None
+                    sv = float(r[2]) if r[2] else None
+                    if ts and bv is not None and sv is not None:
+                        if ts.tzinfo is None:
+                            ts = ts.replace(tzinfo=timezone.utc)
+                        result.append((ts, bv, sv))
+                return result
+    except Exception as e:
+        log.error(f"fetch_taker: {e}")
+        return []
+
+
 def funding_at(funding_list, ts):
     if ts.tzinfo is None:
         ts = ts.replace(tzinfo=timezone.utc)
@@ -245,48 +333,150 @@ def funding_at(funding_list, ts):
     return result[1]
 
 
+def funding_trend_at(funding_list, ts):
+    if ts.tzinfo is None:
+        ts = ts.replace(tzinfo=timezone.utc)
+    relevant = [
+        f for f in funding_list if f[0] <= ts
+    ]
+    if len(relevant) < 2:
+        return None
+    last = relevant[-1]
+    prev = relevant[-2]
+    if ts - last[0] > timedelta(hours=MAX_FUNDING_AGE_H):
+        return None
+    diff = last[1] - prev[1]
+    if abs(diff) < 1e-9:
+        return 0
+    return 1 if diff > 0 else -1
+
+
+def oi_at(oi_list, ts):
+    if not oi_list:
+        return None
+    if ts.tzinfo is None:
+        ts = ts.replace(tzinfo=timezone.utc)
+    result = None
+    for o_ts, o_val in oi_list:
+        if o_ts <= ts:
+            result = (o_ts, o_val)
+        else:
+            break
+    if result is None:
+        return None
+    if ts - result[0] > timedelta(hours=MAX_OI_AGE_H):
+        return None
+    return result[1]
+
+
+def oi_at_ago(oi_list, ts, hours):
+    return oi_at(oi_list, ts - timedelta(hours=hours))
+
+
+def ls_at(ls_list, ts):
+    if not ls_list:
+        return None
+    if ts.tzinfo is None:
+        ts = ts.replace(tzinfo=timezone.utc)
+    result = None
+    for l_ts, l_val in ls_list:
+        if l_ts <= ts:
+            result = (l_ts, l_val)
+        else:
+            break
+    if result is None:
+        return None
+    if ts - result[0] > timedelta(hours=MAX_LS_AGE_H):
+        return None
+    return result[1]
+
+
+def taker_at(taker_list, ts):
+    if not taker_list:
+        return None
+    if ts.tzinfo is None:
+        ts = ts.replace(tzinfo=timezone.utc)
+    result = None
+    for t_ts, bv, sv in taker_list:
+        if t_ts <= ts:
+            result = (t_ts, bv, sv)
+        else:
+            break
+    if result is None:
+        return None
+    if ts - result[0] > timedelta(hours=MAX_TAKER_AGE_H):
+        return None
+    total = result[1] + result[2]
+    if total <= 0:
+        return None
+    return result[1] / total
+
+
 def save_features(symbol, features):
     if not features:
         return 0
 
     added = 0
+    now_utc = datetime.now(timezone.utc)
+
+    sql = (
+        "INSERT INTO features_hourly "
+        "(symbol, timestamp, "
+        "change_pct, range_pct, body_pct, "
+        "upper_wick_pct, lower_wick_pct, "
+        "volume_ratio_24h, volatility_24h, "
+        "volatility_7d, change_4h, "
+        "change_24h, change_7d, "
+        "funding_rate, funding_trend, "
+        "oi_change_pct, ls_ratio, taker_ratio, "
+        "next_change_pct, next_direction, "
+        "computed_at) "
+        "VALUES (%s, %s, %s, %s, %s, "
+        "%s, %s, %s, %s, %s, %s, %s, "
+        "%s, %s, %s, %s, %s, %s, "
+        "%s, %s, %s) "
+        "ON CONFLICT (symbol, timestamp) "
+        "DO UPDATE SET "
+        "change_pct = EXCLUDED.change_pct, "
+        "range_pct = EXCLUDED.range_pct, "
+        "body_pct = EXCLUDED.body_pct, "
+        "upper_wick_pct = "
+        "EXCLUDED.upper_wick_pct, "
+        "lower_wick_pct = "
+        "EXCLUDED.lower_wick_pct, "
+        "volume_ratio_24h = "
+        "EXCLUDED.volume_ratio_24h, "
+        "volatility_24h = "
+        "EXCLUDED.volatility_24h, "
+        "volatility_7d = "
+        "EXCLUDED.volatility_7d, "
+        "change_4h = EXCLUDED.change_4h, "
+        "change_24h = EXCLUDED.change_24h, "
+        "change_7d = EXCLUDED.change_7d, "
+        "funding_rate = "
+        "EXCLUDED.funding_rate, "
+        "funding_trend = "
+        "EXCLUDED.funding_trend, "
+        "oi_change_pct = "
+        "EXCLUDED.oi_change_pct, "
+        "ls_ratio = EXCLUDED.ls_ratio, "
+        "taker_ratio = "
+        "EXCLUDED.taker_ratio, "
+        "next_change_pct = "
+        "EXCLUDED.next_change_pct, "
+        "next_direction = "
+        "EXCLUDED.next_direction, "
+        "computed_at = "
+        "EXCLUDED.computed_at"
+    )
+
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
                 for f in features:
                     try:
                         cur.execute(
-                            "INSERT INTO features_hourly "
-                            "(symbol, timestamp, "
-                            "change_pct, range_pct, body_pct, "
-                            "upper_wick_pct, lower_wick_pct, "
-                            "volume_ratio_24h, volatility_24h, "
-                            "volatility_7d, change_4h, "
-                            "change_24h, change_7d, "
-                            "funding_rate) "
-                            "VALUES (%s, %s, %s, %s, %s, "
-                            "%s, %s, %s, %s, %s, %s, %s, "
-                            "%s, %s) "
-                            "ON CONFLICT (symbol, timestamp) "
-                            "DO UPDATE SET "
-                            "change_pct = EXCLUDED.change_pct, "
-                            "range_pct = EXCLUDED.range_pct, "
-                            "body_pct = EXCLUDED.body_pct, "
-                            "upper_wick_pct = "
-                            "EXCLUDED.upper_wick_pct, "
-                            "lower_wick_pct = "
-                            "EXCLUDED.lower_wick_pct, "
-                            "volume_ratio_24h = "
-                            "EXCLUDED.volume_ratio_24h, "
-                            "volatility_24h = "
-                            "EXCLUDED.volatility_24h, "
-                            "volatility_7d = "
-                            "EXCLUDED.volatility_7d, "
-                            "change_4h = EXCLUDED.change_4h, "
-                            "change_24h = EXCLUDED.change_24h, "
-                            "change_7d = EXCLUDED.change_7d, "
-                            "funding_rate = "
-                            "EXCLUDED.funding_rate",
+                            sql,
                             (
                                 symbol,
                                 f["timestamp"],
@@ -302,6 +492,13 @@ def save_features(symbol, features):
                                 f.get("change_24h"),
                                 f.get("change_7d"),
                                 f.get("funding_rate"),
+                                f.get("funding_trend"),
+                                f.get("oi_change_pct"),
+                                f.get("ls_ratio"),
+                                f.get("taker_ratio"),
+                                f.get("next_change_pct"),
+                                f.get("next_direction"),
+                                now_utc,
                             ),
                         )
                         if cur.rowcount and cur.rowcount > 0:
@@ -358,19 +555,23 @@ def process_symbol(symbol, timeframe="1h"):
             base_features, idx, 24
         )
         f["volatility_24h"] = safe_val(
-            round(vol24, 4) if vol24 is not None else None,
+            round(vol24, 4)
+            if vol24 is not None else None,
             LIMITS["volatility_24h"],
         )
 
         vol7d = rolling_volatility(
             base_features, idx, 168
         )
-        f["volatility_7d"] = safe_val(
-            round(vol7d, 4) if vol7d is not None else None,
-            LIMITS["volatility_7d"],
+        f["vol =atility_7d"] = safe_val(
+ None            round(vol7d,
+
+ 4)
+            if vol7d        is not None else None,
+            LIMITS f["volatility_7d"],
         )
 
-        ch4 = rolling_sum(base_features, idx, 4)
+        ch4 = rolling_sum(base_features, idx, ["4)
         f["change_4h"] = safe_val(
             round(ch4, 4) if ch4 is not None else None,
             LIMITS["change_4h"],
@@ -378,20 +579,48 @@ def process_symbol(symbol, timeframe="1h"):
 
         ch24 = rolling_sum(base_features, idx, 24)
         f["change_24h"] = safe_val(
-            round(ch24, 4) if ch24 is not None else None,
+            round(ch24, 4)
+            if ch24 is not None else None,
             LIMITS["change_24h"],
         )
 
         ch7d = rolling_sum(base_features, idx, 168)
         f["change_7d"] = safe_val(
-            round(ch7d, 4) if ch7d is not None else None,
+            round(ch7d, 4)
+            if ch7d is not None else None,
             LIMITS["change_7d"],
         )
+
+    for idx, f in enumerate(base_features):
+        if idx + 1 < len(base_features):
+            c_now = f.get("close")
+            c_next = base_features[idx + 1].get("close")
+            if c_now and c_next and c_now > 0:
+                nxt = (
+                    (c_next - c_now) / c_now * 100
+                )
+                f["next_change_pct"] = safe_val(
+                    round(nxt, 4),
+                    LIMITS["next_change_pct"],
+                )
+                if f["next_change_pct"] is not None:
+                    f["next_direction"] = (
+                        1 if nxt > 0 else 0
+                    )
+                else:
+                    f["next_direction"] = None
+            else:
+                f["next_change_pct"] = None
+                f["next_direction"] = None
+        else:
+            f["next_change_pct"] = None
+            f["next_direction"] = None
 
     funding = fetch_funding(symbol)
     log.info(f"   funding точек: {len(funding)}")
 
-    filled = 0
+    filled_f = 0
+    filled_t = 0
     for f in base_features:
         rate = funding_at(funding, f["timestamp"])
         if rate is not None:
@@ -400,12 +629,75 @@ def process_symbol(symbol, timeframe="1h"):
                 rate_pct, LIMITS["funding_rate"]
             )
             if rate_pct is not None:
-                filled += 1
+                filled_f += 1
             f["funding_rate"] = rate_pct
         else:
-            f["funding_rate"] = None
+            f["funding_rate"]funding_trend"] = funding_trend_at(
+            funding, f["timestamp"]
+        )
+        if f["funding_trend"] is not None:
+            filled_t += 1
 
-    log.info(f"   funding заполнен: {filled}")
+    log.info(
+        f"   funding: rate={filled_f} "
+        f"trend={filled_t}"
+    )
+
+    oi = fetch_open_interest(symbol)
+    log.info(f"   OI точек: {len(oi)}")
+
+    filled_oi = 0
+    for f in base_features:
+        oi_now = oi_at(oi, f["timestamp"])
+        oi_1h = oi_at_ago(oi, f["timestamp"], 1)
+        if oi_now and oi_1h and oi_1h > 0:
+            pct = (oi_now - oi_1h) / oi_1h * 100
+            f["oi_change_pct"] = safe_val(
+                round(pct, 4),
+                LIMITS["oi_change_pct"],
+            )
+            if f["oi_change_pct"] is not None:
+                filled_oi += 1
+        else:
+            f["oi_change_pct"] = None
+
+    log.info(f"   OI change: {filled_oi}")
+
+    ls = fetch_long_short(symbol)
+    log.info(f"   LS точек: {len(ls)}")
+
+    filled_ls = 0
+    for f in base_features:
+        val = ls_at(ls, f["timestamp"])
+        if val is not None:
+            f["ls_ratio"] = safe_val(
+                round(val, 4),
+                LIMITS["ls_ratio"],
+            )
+            if f["ls_ratio"] is not None:
+                filled_ls += 1
+        else:
+            f["ls_ratio"] = None
+
+    log.info(f"   LS ratio: {filled_ls}")
+
+    taker = fetch_taker(symbol)
+    log.info(f"   Taker точек: {len(taker)}")
+
+    filled_tk = 0
+    for f in base_features:
+        val = taker_at(taker, f["timestamp"])
+        if val is not None:
+            f["taker_ratio"] = safe_val(
+                round(val, 4),
+                LIMITS["taker_ratio"],
+            )
+            if f["taker_ratio"] is not None:
+                filled_tk += 1
+        else:
+            f["taker_ratio"] = None
+
+    log.info(f"   Taker ratio: {filled_tk}")
 
     added = save_features(symbol, base_features)
     log.info(f"   ✅ Записано: {added}")
@@ -414,7 +706,7 @@ def process_symbol(symbol, timeframe="1h"):
 
 def main():
     log.info("=" * 60)
-    log.info("🧮 ARGUS-Trader FEATURES v3.2")
+    log.info("🧮 ARGUS-Trader FEATURES v4.1")
     log.info("=" * 60)
 
     total = 0
