@@ -8,6 +8,7 @@
 import sys
 import csv
 import json
+import shutil
 import logging
 from pathlib import Path
 from datetime import datetime, timezone
@@ -31,10 +32,28 @@ EXPORT_DIR = SCRIPT_DIR / "export"
 EXPORT_DIR.mkdir(parents=True, exist_ok=True)
 
 
+def export_model():
+    """Копирует модель в export/."""
+    src = SCRIPT_DIR / "models" / "lgb_model.txt"
+    if not src.exists():
+        log.warning("no model file")
+        return
+    dst = EXPORT_DIR / "lgb_model.txt"
+    shutil.copy2(src, dst)
+    log.info("model -> %s", dst.name)
+
+
 def export_dataset_csv():
     """Экспорт features_hourly в CSV."""
-    cols = ["symbol", "timestamp"] + FEATURE_COLS + [TARGET_COL]
-    sql = "SELECT " + ", ".join(cols) + " FROM features_hourly ORDER BY timestamp"
+    cols = (
+        ["symbol", "timestamp"]
+        + FEATURE_COLS
+        + [TARGET_COL]
+    )
+    sql = (
+        "SELECT " + ", ".join(cols)
+        + " FROM features_hourly ORDER BY timestamp"
+    )
 
     out = EXPORT_DIR / "features_hourly.csv"
     try:
@@ -47,7 +66,10 @@ def export_dataset_csv():
             w.writerow(cols)
             for r in rows:
                 w.writerow(r)
-        log.info("exported %d rows -> %s", len(rows), out.name)
+        log.info(
+            "exported %d rows -> %s",
+            len(rows), out.name,
+        )
         return len(rows)
     except Exception as e:
         log.error("export: %s", e)
@@ -63,7 +85,9 @@ def export_meta():
     dst = EXPORT_DIR / "model_meta.json"
     with open(src, "r", encoding="utf-8") as f:
         meta = json.load(f)
-    meta["exported_at"] = datetime.now(timezone.utc).isoformat()
+    meta["exported_at"] = datetime.now(
+        timezone.utc
+    ).isoformat()
     with open(dst, "w", encoding="utf-8") as f:
         json.dump(meta, f, ensure_ascii=False, indent=2)
     log.info("meta -> %s", dst.name)
@@ -76,7 +100,7 @@ def export_readme():
         "# ARGUS ML - Export",
         "",
         "## Что внутри",
-        "- `lgb_model.txt` - LightGBM модель (текстовый формат)",
+        "- `lgb_model.txt` - LightGBM модель",
         "- `model_meta.json` - метрики + список features",
         "- `features_hourly.csv` - данные для переобучения",
         "- `README.md` - этот файл",
@@ -107,7 +131,9 @@ def export_readme():
         "```",
         "",
         "## Формат CSV",
-        "Колонки: symbol, timestamp, " + ", ".join(FEATURE_COLS) + ", " + TARGET_COL,
+        "Колонки: symbol, timestamp, "
+        + ", ".join(FEATURE_COLS)
+        + ", " + TARGET_COL,
         "",
         "## Заметка",
         "Модель переносима. Никаких привязок к БД нет.",
@@ -123,6 +149,7 @@ def main():
     log.info("ARGUS-Trader EXPORT")
     log.info("=" * 60)
 
+    export_model()
     export_dataset_csv()
     export_meta()
     export_readme()
