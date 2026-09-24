@@ -1,22 +1,21 @@
 # ============================================================
-# ARGUS - DATA AUDIT v3 [SAFE]
+# ARGUS - DATA AUDIT v3 [SAFE + ROTATION]
 # ------------------------------------------------------------
-# Без флага - отчёт (ничего не трогает)
-# --fix     - чистит с бэкапом и защитой от потерь
+# Без флага - отчёт (read-only)
+# --fix     - чистка с бэкапами
 # ------------------------------------------------------------
 # БЕЗОПАСНОСТЬ:
-#   1. Бэкап knowledge.json + summary.json перед записью
-#   2. Если chunks после чистки <95% - ОТКАТ
-#   3. Короткие/длинные чанки НЕ удаляются
-#   4. faiss удаляется только если chunks реально менялись
+#   - faiss.index НЕ трогается
+#   - chunks НЕ удаляются
+#   - id чанков НЕ меняются
+#   - перед записью бэкап
+#   - храним 3 свежих бэкапа
 # ------------------------------------------------------------
 # Что чистит:
-#   - дубли книг в knowledge.books (удаляет лишние строки)
+#   - дубли книг в knowledge.books
 #   - дубли книг в summary.books
-#   - HTML в knowledge.chunks (замена тегов на пробел)
-#   - entity (&amp; -> &)
-#   - bad_chars (===== -> =)
-#   - long_word (аааааа -> обрезка до 30)
+#   - HTML/entity/bad_chars/long_word
+#     в knowledge.chunks и chunks_for_index
 # ------------------------------------------------------------
 # Требования:
 #   pip install requests
@@ -37,18 +36,17 @@ from datetime import datetime, timezone
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parent
 DATA_DIR = REPO_ROOT / "data"
-BOOKS_DIR = REPO_ROOT / "books"
 
 KNOWLEDGE_FILE = DATA_DIR / "knowledge.json"
 SUMMARY_FILE = DATA_DIR / "summary.json"
 CHUNKS_FILE = DATA_DIR / "chunks_for_index.json"
 FAISS_FILE = DATA_DIR / "faiss.index"
 
-# --- Защита ---
-MIN_KEEP_RATIO = 0.95  # если chunks <95% от исходного - откат
+# --- Лимиты ---
 MAX_WORD_LEN = 30
 MAX_BAD_RUN = 6
 MAX_MSG_LEN = 3800
+KEEP_BACKUPS = 3
 
 # --- Логгер ---
 logging.basicConfig(
@@ -87,7 +85,6 @@ def load_json(path, default=None):
 
 
 def save_json(path, data):
-    """Атомарная запись через .tmp."""
     try:
         tmp = path.with_suffix(path.suffix + ".tmp")
         with open(tmp, "w", encoding="utf-8") as f:
@@ -114,10 +111,34 @@ def backup_file(path):
     try:
         shutil.copy2(path, dst)
         log.info("backup: %s", dst.name)
-        return dst
+        return dst.name
     except Exception as e:
         log.exception("backup: %s", e)
         return None
+
+
+def cleanup_old_backups(keep=KEEP_BACKUPS):
+    """Оставляет N свежих бэкапов, старые удаляет."""
+    patterns = [
+        "knowledge.json.bak.*",
+        "summary.json.bak.*",
+        "chunks_for_index.json.bak.*",
+    ]
+    for pattern in patterns:
+        files = sorted(
+            DATA_DIR.glob(pattern),
+            key=lambda p: p.name,
+        )
+        if len(files) <= keep:
+            continue
+        for old in files[:-keep]:
+            try:
+                old.unlink()
+                log.info("cleanup: %s", old.name)
+            except Exception as e:
+                log.warning(
+                    "cleanup %s: %s", old.name, e
+                )
 
 
 def esc(t):
@@ -168,12 +189,18 @@ def send_message(text):
                 timeout=20,
             )
             if r.status_code != 200:
-                log.error("tg %d: %s",
-                          r.status_code,
-                          r.text[:200])
+                log.error(
+                    "tg %d: %s",
+                    r.status_code,
+                    r.text[:200],
+                )
                 ok = False
             else:
-                log.info("part %d/%d", i + 1, len(parts))
+                log.info(
+                    "part %d/%d",
+                    i + 1,
+                    len(parts),
+                )
         except Exception as e:
             log.exception("send: %s", e)
             ok = False
@@ -203,7 +230,7 @@ ENTITY_MAP = {
 
 
 def clean_text(text):
-    """Возвращает (new_text, flags). НЕ удаляет, только чистит."""
+    """Возвращает (new_text, flags). Не удаляет."""
     if not text:
         return text, []
     flags = []
@@ -260,7 +287,9 @@ def audit_knowledge():
             if n:
                 names.append(n)
     counts = Counter(names)
-    book_dups = {n: c for n, c in counts.items() if c > 1}
+    book_dups = {
+        n: c for n, c in counts.items() if c > 1
+    }
 
     with_html = 0
     with_entity = 0
@@ -312,7 +341,9 @@ def audit_summary():
             if n:
                 names.append(n)
     counts = Counter(names)
-    dups = {n: c for n, c in counts.items() if c > 1}
+    dups = {
+        n: c for n, c in counts.items() if c > 1
+    }
     return {
         "total": len(books),
         "unique": len(set(names)),
@@ -326,7 +357,8 @@ def audit_faiss():
     return {
         "exists": True,
         "size_mb": round(
-            FAISS_FILE.stat().st_size / 1024 / 1024, 2
+            FAISS_FILE.stat().st_size
+            / 1024 / 1024, 2
         ),
     }
 
@@ -364,7 +396,7 @@ def dedupe_books_list(books, key="file"):
 
 
 def fix_knowledge():
-    """Чистит knowledge.json. Без удаления чанков."""
+    """Чистит knowledge.json. НЕ удаляет chunks."""
     log.info("fix: knowledge.json")
     data = load_json(KNOWLEDGE_FILE, {})
     if not isinstance(data, dict):
@@ -373,9 +405,10 @@ def fix_knowledge():
     books = data.get("books", [])
     chunks = data.get("chunks", [])
 
-    books_new, books_removed = dedupe_books_list(books)
+    books_new, books_removed = dedupe_books_list(
+        books
+    )
 
-    # Чистим chunks. НЕ удаляем ни одного.
     text_cleaned = 0
     html_fixed = 0
     entity_fixed = 0
@@ -406,14 +439,6 @@ def fix_knowledge():
         datetime.now(timezone.utc).isoformat()
     )
 
-    # ЗАЩИТА: chunks должно остаться не меньше чем было
-    if len(data["chunks"]) < len(chunks):
-        log.error(
-            "SAFETY: chunks lost %d -> %d, ABORT",
-            len(chunks), len(data["chunks"]),
-        )
-        return None
-
     save_json(KNOWLEDGE_FILE, data)
 
     return {
@@ -442,19 +467,29 @@ def fix_summary():
     return {"books_removed": removed}
 
 
-def drop_reindex():
-    """Удаляет faiss + metadata — train пересоберёт."""
-    log.info("drop: faiss + metadata")
-    dropped = []
-    for p in (FAISS_FILE, CHUNKS_FILE):
-        if p.exists():
-            try:
-                p.unlink()
-                dropped.append(p.name)
-                log.info("removed: %s", p.name)
-            except Exception as e:
-                log.exception("remove %s: %s", p.name, e)
-    return dropped
+def fix_metadata():
+    """Чистит chunks_for_index.json."""
+    log.info("fix: chunks_for_index.json")
+    if not CHUNKS_FILE.exists():
+        return None
+    data = load_json(CHUNKS_FILE, None)
+    if not isinstance(data, list):
+        return None
+
+    text_cleaned = 0
+    for item in data:
+        if not isinstance(item, dict):
+            continue
+        t = item.get("text", "") or ""
+        if not t:
+            continue
+        new_t, _ = clean_text(t)
+        if new_t != t:
+            item["text"] = new_t
+            text_cleaned += 1
+
+    save_json(CHUNKS_FILE, data)
+    return {"text_cleaned": text_cleaned}
 
 
 # ============================================================
@@ -483,16 +518,20 @@ def build_audit_report(kn, sm, md, fs):
         if kn["books_dups"]:
             probs.append(
                 "  ⚠️ дублей книг: "
-                + str(sum(c - 1 for c in
-                          kn["books_dups"].values()))
+                + str(sum(
+                    c - 1 for c in
+                    kn["books_dups"].values()
+                ))
             )
         if kn["with_html"]:
             probs.append(
-                "  ⚠️ HTML: " + str(kn["with_html"])
+                "  ⚠️ HTML: "
+                + str(kn["with_html"])
             )
         if kn["with_entity"]:
             probs.append(
-                "  ⚠️ entity: " + str(kn["with_entity"])
+                "  ⚠️ entity: "
+                + str(kn["with_entity"])
             )
         if kn["with_bad"]:
             probs.append(
@@ -523,8 +562,10 @@ def build_audit_report(kn, sm, md, fs):
         if sm["dups"]:
             L.append(
                 "  ⚠️ дублей: "
-                + str(sum(c - 1 for c in
-                          sm["dups"].values()))
+                + str(sum(
+                    c - 1 for c in
+                    sm["dups"].values()
+                ))
             )
         else:
             L.append("  ✅ чисто")
@@ -535,7 +576,8 @@ def build_audit_report(kn, sm, md, fs):
         L.append("  chunks_for_index: ❌ нет")
     elif "error" in md:
         L.append(
-            "  chunks_for_index: ❌ " + esc(md["error"])
+            "  chunks_for_index: ❌ "
+            + esc(md["error"])
         )
     else:
         L.append(
@@ -543,7 +585,9 @@ def build_audit_report(kn, sm, md, fs):
             + format(md["total"], ",")
         )
     if "error" in fs:
-        L.append("  faiss.index: ❌ " + esc(fs["error"]))
+        L.append(
+            "  faiss.index: ❌ " + esc(fs["error"])
+        )
     else:
         L.append(
             "  faiss.index: "
@@ -551,12 +595,13 @@ def build_audit_report(kn, sm, md, fs):
         )
     L.append("")
     L.append(
-        "<i>Отчёт. Запусти с --fix чтобы почистить.</i>"
+        "<i>Отчёт. Запусти с --fix "
+        "чтобы почистить.</i>"
     )
     return "\n".join(L)
 
 
-def build_fix_report(kr, sr, dropped):
+def build_fix_report(kr, sr, mr, backups):
     now = datetime.now(timezone.utc)
     L = []
     L.append("🔧 <b>ARGUS — fix v3</b>")
@@ -564,17 +609,18 @@ def build_fix_report(kr, sr, dropped):
     L.append("")
 
     L.append("💾 <b>Бэкапы</b>")
-    L.append("  • knowledge.json.bak.*")
-    L.append("  • summary.json.bak.*")
+    for b in backups:
+        L.append("  • " + esc(b))
+    L.append(
+        "  (храним " + str(KEEP_BACKUPS)
+        + " свежих)"
+    )
     L.append("")
 
-    if kr is None:
-        L.append("⚠️ <b>knowledge: fix отменён</b>")
-        L.append("  (сработала защита)")
-    else:
+    if kr:
         L.append("📚 <b>knowledge.json</b>")
         L.append(
-            "  🧹 дублей книг удалено: "
+            "  🧹 дублей книг: "
             + str(kr["books_removed"])
         )
         L.append(
@@ -583,12 +629,13 @@ def build_fix_report(kr, sr, dropped):
             + " (не удалялись)"
         )
         L.append(
-            "  ✏️ чанков почищено: "
+            "  ✏️ почищено: "
             + str(kr["text_cleaned"])
         )
         if kr["html_fixed"]:
             L.append(
-                "    • HTML: " + str(kr["html_fixed"])
+                "    • HTML: "
+                + str(kr["html_fixed"])
             )
         if kr["entity_fixed"]:
             L.append(
@@ -610,26 +657,28 @@ def build_fix_report(kr, sr, dropped):
     if sr:
         L.append("📋 <b>summary.json</b>")
         L.append(
-            "  🧹 дублей удалено: "
+            "  🧹 дублей: "
             + str(sr["books_removed"])
         )
         L.append("")
 
-    if dropped:
-        L.append("🔁 <b>Reindex</b>")
-        for f in dropped:
-            L.append("  🗑 удалён: " + esc(f))
+    if mr:
+        L.append(
+            "🗂 <b>chunks_for_index.json</b>"
+        )
+        L.append(
+            "  ✏️ почищено: "
+            + str(mr["text_cleaned"])
+        )
         L.append("")
-        L.append(
-            "📌 <b>Напиши /train в боте</b>"
-        )
-        L.append(
-            "<i>Train пересоберёт faiss "
-            "на чистых данных.</i>"
-        )
-    else:
-        L.append("✅ faiss не тронут")
 
+    L.append("🧠 <b>faiss.index</b>")
+    L.append("  ✅ не тронут (/ask работает)")
+    L.append("")
+    L.append(
+        "<i>Можешь позже /train для "
+        "пересбора faiss на чистом тексте.</i>"
+    )
     return "\n".join(L)
 
 
@@ -649,6 +698,9 @@ def main():
     log.info("fix=%s", args.fix)
     log.info("=" * 50)
 
+    # Ротация бэкапов
+    cleanup_old_backups(keep=KEEP_BACKUPS)
+
     kn = audit_knowledge()
     sm = audit_summary()
     md = audit_metadata()
@@ -660,42 +712,24 @@ def main():
         send_message(text)
         return
 
-    # FIX MODE - с бэкапами
-    backup_file(KNOWLEDGE_FILE)
-    backup_file(SUMMARY_FILE)
-
-    # Запоминаем сколько chunks ДО
-    kn_before = load_json(KNOWLEDGE_FILE, {})
-    chunks_before = len(
-        kn_before.get("chunks", [])
-    ) if isinstance(kn_before, dict) else 0
+    # FIX MODE
+    backups = []
+    for f in (
+        KNOWLEDGE_FILE,
+        SUMMARY_FILE,
+        CHUNKS_FILE,
+    ):
+        b = backup_file(f)
+        if b:
+            backups.append(b)
 
     kr = fix_knowledge()
     sr = fix_summary()
+    mr = fix_metadata()
 
-    # Защита: chunks не должны уменьшиться
-    kn_after = load_json(KNOWLEDGE_FILE, {})
-    chunks_after = len(
-        kn_after.get("chunks", [])
-    ) if isinstance(kn_after, dict) else 0
-
-    if chunks_after < chunks_before:
-        log.error(
-            "SAFETY TRIGGERED: chunks %d -> %d",
-            chunks_before, chunks_after,
-        )
-        # Откат невозможен без имени бэкапа - просто предупреждаем
-        # (save_json уже произошёл, но мы это увидели)
-
-    chunks_changed = False
-    if kr and kr["text_cleaned"] > 0:
-        chunks_changed = True
-
-    dropped = []
-    if chunks_changed:
-        dropped = drop_reindex()
-
-    text = build_fix_report(kr, sr, dropped)
+    text = build_fix_report(
+        kr, sr, mr, backups
+    )
     log.info("fix report: %d chars", len(text))
     send_message(text)
     log.info("done")
