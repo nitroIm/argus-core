@@ -1,20 +1,19 @@
 # ============================================================
-# ARGUS - SIMULATOR 01 v3 [PRODUCTION]
+# ARGUS - SIMULATOR 01 v6 [PRODUCTION]
 # ------------------------------------------------------------
-# v3: улучшенная логика стоп/цель.
-#     - стоп прямо под support (не ниже)
-#     - цель ищет resistance с R:R >= MIN_RR
-#     - если нет — цель 2x risk
-# v2.1: детальное логирование
+# v6: если позиция открыта — внутренний цикл
+#     проверки каждые 10 минут (55 мин максимум).
+#     Cron остаётся раз в час.
+# v5: проверка по 1-минутным свечам
 # ============================================================
 
 import os
 import sys
 import json
+import time
 import logging
 import requests
 from datetime import datetime, timezone
-from datetime import timedelta
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -52,6 +51,10 @@ MIN_RR = 1.5
 STOP_BELOW_SUP_PCT = 0.5
 ATR_MULT = 1.5
 TARGET_RR = 2.0
+
+# Внутренний цикл мониторинга
+WATCH_INTERVAL_SEC = 600
+WATCH_MAX_MIN = 55
 
 SYMBOLS = ["BTCUSDT", "ETHUSDT"]
 
@@ -150,6 +153,32 @@ def get_price(client, symbol):
     return None
 
 
+def get_klines_1m(client, symbol, limit=180):
+    data = client.public_get(
+        "/api/v3/klines",
+        {
+            "symbol": symbol,
+            "interval": "1m",
+            "limit": limit,
+        },
+    )
+    if not data or not isinstance(data, list):
+        return []
+    out = []
+    for k in data:
+        try:
+            out.append({
+                "ts": int(k[0]),
+                "open": float(k[1]),
+                "high": float(k[2]),
+                "low": float(k[3]),
+                "close": float(k[4]),
+            })
+        except Exception:
+            continue
+    return out
+
+
 def load_analysis(name):
     return load_json(DATA_DIR / name, {})
 
@@ -240,7 +269,6 @@ def get_support(symbol, price):
 
 
 def get_resistances(symbol, price):
-    """Все сопротивления выше цены, отсортированные."""
     lv = load_analysis("levels_analysis.json")
     sym = lv.get("symbols", {}).get(symbol, {})
     resistances = sym.get("resistances", [])
@@ -265,13 +293,10 @@ def get_rules(symbol):
 
 
 def build_levels(price, sup, resistances, atr):
-    """Строит стоп и цель."""
-    # Стоп: под support, если есть
     if sup:
         stop = sup["price"] * (
             1 - STOP_BELOW_SUP_PCT / 100
         )
-        # Но не дальше ATR * 2.5
         max_stop_dist = atr * 2.5
         if price - stop > max_stop_dist:
             stop = price - max_stop_dist
@@ -283,7 +308,6 @@ def build_levels(price, sup, resistances, atr):
 
     risk = price - stop
 
-    # Ищем resistance с подходящим R:R
     target = None
     for res in resistances:
         reward = res["price"] - price
@@ -291,7 +315,6 @@ def build_levels(price, sup, resistances, atr):
             target = res["price"]
             break
 
-    # Если нет — цель по 2× risk
     if not target:
         target = price + risk * TARGET_RR
 
@@ -322,7 +345,7 @@ def check_signal(client, symbol):
     atr = compute_atr(candles, 14)
 
     if not rsi or not atr:
-        log.info("  %s: RSI/ATR не считались", symbol)
+        log.info("  %s: RSI/ATR нет", symbol)
         return None
 
     votes = []
@@ -551,35 +574,151 @@ def close_position(pos, exit_price, reason):
         "CLOSE %s PnL=%.4f (%s)",
         pos["symbol"], pnl, reason,
     )
+    return True
 
 
-def check_positions(client):
-    positions = get_positions()
-    if not positions:
-        return
+def check_one_position(client, pos):
+    """Проверка одной позиции по 1m свечам.
+    Возвращает True если закрыта."""
+    try:
+        entry_dt = datetime.fromisoformat(
+            pos["entry_time"]
+        )
+    except Exception:
+        return False
 
-    for pos in list(positions):
-        price = get_price(client, pos["symbol"])
-        if not price:
+    entry_ms = int(entry_dt.timestamp() * 1000)
+
+    klines = get_klines_1m(
+        client, pos["symbol"], limit=180,
+    )
+    if not klines:
+        log.warning(
+            "  %s: 1m свечи недоступны",
+            pos["symbol"],
+        )
+        return False
+
+    stop = pos["stop"]
+    target = pos["target"]
+
+    for k in klines:
+        if k["ts"] < entry_ms:
             continue
 
-        if price <= pos["stop"]:
-            close_position(pos, pos["stop"], "stop")
-        elif price >= pos["target"]:
-            close_position(
-                pos, pos["target"], "target",
+        # Приоритет стопу (худший случай)
+        if k["low"] <= stop:
+            ts_utc = datetime.fromtimestamp(
+                k["ts"] / 1000, tz=timezone.utc,
             )
+            log.info(
+                "  %s: STOP по свече %s",
+                pos["symbol"],
+                ts_utc.strftime("%H:%M"),
+            )
+            return close_position(pos, stop, "stop")
+
+        if k["high"] >= target:
+            ts_utc = datetime.fromtimestamp(
+                k["ts"] / 1000, tz=timezone.utc,
+            )
+            log.info(
+                "  %s: TARGET по свече %s",
+                pos["symbol"],
+                ts_utc.strftime("%H:%M"),
+            )
+            return close_position(
+                pos, target, "target",
+            )
+
+    return False
+
+
+def watch_position(client):
+    """
+    Внутренний цикл мониторинга.
+    Проверяет позицию каждые 10 мин,
+    максимум 55 минут.
+    """
+    log.info("")
+    log.info("=" * 50)
+    log.info(
+        "WATCH LOOP start (interval=%ds, max=%dmin)",
+        WATCH_INTERVAL_SEC,
+        WATCH_MAX_MIN,
+    )
+    log.info("=" * 50)
+
+    started = time.time()
+    max_seconds = WATCH_MAX_MIN * 60
+    iteration = 0
+
+    while True:
+        elapsed = time.time() - started
+        if elapsed > max_seconds:
+            log.info(
+                "  watch: время вышло (%.0fс)",
+                elapsed,
+            )
+            break
+
+        positions = get_positions()
+        if not positions:
+            log.info("  watch: позиций нет, выход")
+            break
+
+        iteration += 1
+        log.info(
+            "  watch #%d (elapsed %.0fс)",
+            iteration, elapsed,
+        )
+
+        for pos in list(positions):
+            closed = check_one_position(
+                client, pos,
+            )
+            if closed:
+                log.info(
+                    "  watch: позиция закрыта"
+                )
+                break
+        else:
+            # Ни одна не закрыта — ждём
+            remaining = max_seconds - (
+                time.time() - started
+            )
+            if remaining < WATCH_INTERVAL_SEC:
+                log.info(
+                    "  watch: осталось %.0fс — выход",
+                    откры remaining,
+                )
+                break
+            log.info(
+                "  watch: sleep %ds",
+                WATCH_INTERVAL_SEC,
+            )
+            time.sleep(WATCH_INTERVAL_SEC)
+            continue
+        # Если закрыли — выходим
+        break
+
+    log.info("WATCH LOOP done")
 
 
 def main():
     log.info("=" * 50)
-    log.info("SIMULATOR 01 v3")
+    log.info("SIMULATOR 01 v6")
     log.info("=" * 50)
 
     client = MexcClient()
 
-    check_positions(client)
+    # 1. Проверяем существующие позиции (могли быть с прошлого часа)
+    positions = get_positions()
+    if positions:
+        for pos in list(positions):
+            check_one_position(client, pos)
 
+    # 2. Ищем сигнал (если позиций нет)
     positions = get_positions()
     if len(positions) < MAX_POSITIONS:
         for symbol in SYMBOLS:
@@ -588,6 +727,12 @@ def main():
                 open_position(signal)
                 break
 
+    # 3. Если естьтая — мониторим каждые 10 мин
+    positions = get_positions()
+    if positions:
+        watch_position(client)
+
+    # 4. Итоги
     portfolio = get_portfolio()
     positions = get_positions()
     trades = get_trades()
