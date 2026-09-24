@@ -1,10 +1,8 @@
 # ============================================================
-# ARGUS - SIMULATOR 01 v6 [PRODUCTION]
+# ARGUS - SIMULATOR 01 v6.1 [PRODUCTION]
 # ------------------------------------------------------------
-# v6: если позиция открыта — внутренний цикл
-#     проверки каждые 10 минут (55 мин максимум).
-#     Cron остаётся раз в час.
-# v5: проверка по 1-минутным свечам
+# v6.1: все логи на английском (не рвутся при копипасте)
+# v6: watch loop внутри скрипта
 # ============================================================
 
 import os
@@ -52,7 +50,6 @@ STOP_BELOW_SUP_PCT = 0.5
 ATR_MULT = 1.5
 TARGET_RR = 2.0
 
-# Внутренний цикл мониторинга
 WATCH_INTERVAL_SEC = 600
 WATCH_MAX_MIN = 55
 
@@ -329,13 +326,13 @@ def build_levels(price, sup, resistances, atr):
 def check_signal(client, symbol):
     price = get_price(client, symbol)
     if not price:
-        log.info("  %s: нет цены", symbol)
+        log.info("  %s: no price", symbol)
         return None
 
     candles = get_candles(symbol, 100)
     if len(candles) < 20:
         log.info(
-            "  %s: мало свечей (%d)",
+            "  %s: few candles (%d)",
             symbol, len(candles),
         )
         return None
@@ -345,7 +342,7 @@ def check_signal(client, symbol):
     atr = compute_atr(candles, 14)
 
     if not rsi or not atr:
-        log.info("  %s: RSI/ATR нет", symbol)
+        log.info("  %s: no RSI/ATR", symbol)
         return None
 
     votes = []
@@ -377,8 +374,9 @@ def check_signal(client, symbol):
         if gap <= 1.5:
             votes.append("Level")
             reasons.append(
-                "у поддержки "
-                + format(sup["price"], ".0f")
+                "near " + format(
+                    sup["price"], ".0f"
+                )
             )
             details.append("Level+")
 
@@ -393,7 +391,7 @@ def check_signal(client, symbol):
     if bull_rules:
         votes.append("Rules")
         reasons.append(
-            str(len(bull_rules)) + " правил"
+            str(len(bull_rules)) + " rules"
         )
         details.append("Rules+")
 
@@ -402,7 +400,7 @@ def check_signal(client, symbol):
         symbol,
         price,
         len(votes),
-        ", ".join(votes) if votes else "нет",
+        ", ".join(votes) if votes else "none",
         " ".join(details),
     )
 
@@ -414,12 +412,12 @@ def check_signal(client, symbol):
     )
 
     if not stop:
-        log.info("  %s: стоп не построен", symbol)
+        log.info("  %s: no stop", symbol)
         return None
 
     if rr < MIN_RR:
         log.info(
-            "  %s: R:R=%.2f < %.1f, пропуск",
+            "  %s: R:R=%.2f < %.1f, skip",
             symbol, rr, MIN_RR,
         )
         return None
@@ -445,7 +443,7 @@ def open_position(signal):
     positions = get_positions()
 
     if portfolio["balance"] < POSITION_SIZE:
-        log.warning("мало баланса")
+        log.warning("low balance")
         return None
 
     for p in positions:
@@ -488,22 +486,24 @@ def open_position(signal):
     save_json(PORTFOLIO_FILE, portfolio)
 
     lines = []
-    lines.append("🟢 ОТКРЫТА LONG")
+    lines.append("LONG OPENED")
     lines.append(
         signal["symbol"].replace("USDT", "")
     )
     lines.append(
-        "Вход: $" + format(entry, ".4f")
+        "Entry: $" + format(entry, ".4f")
     )
     lines.append(
-        "Стоп: $" + format(signal["stop"], ".4f")
+        "Stop: $" + format(signal["stop"], ".4f")
     )
     lines.append(
-        "Цель: $" + format(signal["target"], ".4f")
+        "Target: $" + format(
+            signal["target"], ".4f"
+        )
     )
     lines.append("R:R 1:" + str(signal["rr"]))
     lines.append(
-        "Причины: " + ", ".join(signal["reasons"])
+        "Reasons: " + ", ".join(signal["reasons"])
     )
     notify("\n".join(lines))
     log.info("OPEN " + signal["symbol"])
@@ -553,19 +553,23 @@ def close_position(pos, exit_price, reason):
     save_trades(trades)
     save_json(PORTFOLIO_FILE, portfolio)
 
-    emoji = "✅" if pnl > 0 else "❌"
+    if pnl > 0:
+        emoji = "[WIN]"
+    else:
+        emoji = "[LOSS]"
+
     lines = []
-    lines.append(emoji + " ЗАКРЫТА")
+    lines.append(emoji + " CLOSED")
     lines.append(
         pos["symbol"].replace("USDT", "")
     )
-    lines.append("Причина: " + reason)
+    lines.append("Reason: " + reason)
     lines.append(
         "PnL: $" + format(pnl, "+.4f")
         + " (" + format(pnl_pct, "+.2f") + "%)"
     )
     lines.append(
-        "Баланс: $" + format(
+        "Balance: $" + format(
             portfolio["balance"], ".2f"
         )
     )
@@ -578,8 +582,6 @@ def close_position(pos, exit_price, reason):
 
 
 def check_one_position(client, pos):
-    """Проверка одной позиции по 1m свечам.
-    Возвращает True если закрыта."""
     try:
         entry_dt = datetime.fromisoformat(
             pos["entry_time"]
@@ -594,7 +596,7 @@ def check_one_position(client, pos):
     )
     if not klines:
         log.warning(
-            "  %s: 1m свечи недоступны",
+            "  %s: no 1m klines",
             pos["symbol"],
         )
         return False
@@ -606,24 +608,25 @@ def check_one_position(client, pos):
         if k["ts"] < entry_ms:
             continue
 
-        # Приоритет стопу (худший случай)
         if k["low"] <= stop:
             ts_utc = datetime.fromtimestamp(
                 k["ts"] / 1000, tz=timezone.utc,
             )
             log.info(
-                "  %s: STOP по свече %s",
+                "  %s: STOP at %s",
                 pos["symbol"],
                 ts_utc.strftime("%H:%M"),
             )
-            return close_position(pos, stop, "stop")
+            return close_position(
+                pos, stop, "stop",
+            )
 
         if k["high"] >= target:
             ts_utc = datetime.fromtimestamp(
                 k["ts"] / 1000, tz=timezone.utc,
             )
             log.info(
-                "  %s: TARGET по свече %s",
+                "  %s: TARGET at %s",
                 pos["symbol"],
                 ts_utc.strftime("%H:%M"),
             )
@@ -635,15 +638,10 @@ def check_one_position(client, pos):
 
 
 def watch_position(client):
-    """
-    Внутренний цикл мониторинга.
-    Проверяет позицию каждые 10 мин,
-    максимум 55 минут.
-    """
     log.info("")
     log.info("=" * 50)
     log.info(
-        "WATCH LOOP start (interval=%ds, max=%dmin)",
+        "WATCH LOOP start interval=%ds max=%dmin",
         WATCH_INTERVAL_SEC,
         WATCH_MAX_MIN,
     )
@@ -657,68 +655,63 @@ def watch_position(client):
         elapsed = time.time() - started
         if elapsed > max_seconds:
             log.info(
-                "  watch: время вышло (%.0fс)",
+                "  watch: time limit (%.0fs)",
                 elapsed,
             )
             break
 
         positions = get_positions()
         if not positions:
-            log.info("  watch: позиций нет, выход")
+            log.info("  watch: no positions, exit")
             break
 
         iteration += 1
         log.info(
-            "  watch #%d (elapsed %.0fс)",
+            "  watch #%d (elapsed %.0fs)",
             iteration, elapsed,
         )
 
+        closed = False
         for pos in list(positions):
-            closed = check_one_position(
-                client, pos,
-            )
-            if closed:
-                log.info(
-                    "  watch: позиция закрыта"
-                )
+            if check_one_position(client, pos):
+                log.info("  watch: position closed")
+                closed = True
                 break
-        else:
-            # Ни одна не закрыта — ждём
-            remaining = max_seconds - (
-                time.time() - started
-            )
-            if remaining < WATCH_INTERVAL_SEC:
-                log.info(
-                    "  watch: осталось %.0fс — выход",
-                    откры remaining,
-                )
-                break
+
+        if closed:
+            break
+
+        remaining = max_seconds - (
+            time.time() - started
+        )
+        if remaining < WATCH_INTERVAL_SEC:
             log.info(
-                "  watch: sleep %ds",
-                WATCH_INTERVAL_SEC,
+                "  watch: %.0fs left, exit",
+                remaining,
             )
-            time.sleep(WATCH_INTERVAL_SEC)
-            continue
-        # Если закрыли — выходим
-        break
+            break
+
+        log.info(
+            "  watch: sleep %ds",
+            WATCH_INTERVAL_SEC,
+        )
+        time.sleep(WATCH_INTERVAL_SEC)
 
     log.info("WATCH LOOP done")
 
 
 def main():
     log.info("=" * 50)
-    log.info("SIMULATOR 01 v6")
+    log.info("SIMULATOR 01 v6.1")
     log.info("=" * 50)
 
     client = MexcClient()
 
-    # 1. Проверяем существующие позиции (могли быть с прошлого часа)
     positions = get_positions()
     if positions:
         for pos in list(positions):
             check_one_position(client, pos)
 
-    # 2. Ищем сигнал (если позиций нет)
     positions = get_positions()
     if len(positions) < MAX_POSITIONS:
         for symbol in SYMBOLS:
@@ -727,31 +720,29 @@ def main():
                 open_position(signal)
                 break
 
-    # 3. Если естьтая — мониторим каждые 10 мин
     positions = get_positions()
     if positions:
         watch_position(client)
 
-    # 4. Итоги
     portfolio = get_portfolio()
     positions = get_positions()
     trades = get_trades()
 
     log.info("")
-    log.info("=== ИТОГИ ===")
+    log.info("=== SUMMARY ===")
     log.info(
-        "Баланс: $%.2f", portfolio["balance"]
+        "Balance: $%.2f", portfolio["balance"]
     )
     log.info(
         "PnL: $%+.4f", portfolio["realized_pnl"]
     )
     log.info(
-        "Сделок: %d (%d W / %d L)",
+        "Trades: %d (%d W / %d L)",
         portfolio["total_trades"],
         portfolio["wins"],
         portfolio["losses"],
     )
-    log.info("Открыто: %d", len(positions))
+    log.info("Open: %d", len(positions))
     if trades:
         wins = [
             t for t in trades if t["pnl_usd"] > 0
