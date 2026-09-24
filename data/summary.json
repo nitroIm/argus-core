@@ -1,14 +1,13 @@
 {
-  "generated_at": "2026-09-24T17:07:49.447426+00:00",
-  "total_books": 29,
-  "total_chunks": 5692,
-  "new_chunks": 37,
+  "generated_at": "2026-09-24T17:10:58.892475+00:00",
+  "total_books": 31,
+  "total_chunks": 5783,
+  "new_chunks": 91,
   "new_files": [
-    "10792788_119-130.pdf",
-    "10939382_P05_1-10_Aditya-Dadhich.pdf",
-    "2608.17342v1.pdf"
+    "18065045_CryptocurrencyPDchapter.pdf",
+    "7260968_v01-i01-a06-Madulid-May-2022.pdf"
   ],
-  "skipped_already_in_db": 2,
+  "skipped_already_in_db": 0,
   "books": [
     {
       "file": "Френсис Бэкон .pdf",
@@ -154,6 +153,16 @@
       "file": "10792788_119-130.pdf",
       "pages": 12,
       "chunks": 37
+    },
+    {
+      "file": "18065045_CryptocurrencyPDchapter.pdf",
+      "pages": 19,
+      "chunks": 41
+    },
+    {
+      "file": "7260968_v01-i01-a06-Madulid-May-2022.pdf",
+      "pages": 13,
+      "chunks": 50
     }
   ]
 }
