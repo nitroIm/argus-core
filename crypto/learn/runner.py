@@ -51,7 +51,7 @@ def main():
 
     # 3. predict
     log.info("STEP 3: predict")
-    pred = predict.predict_all()
+    predict.main()
 
     # 4. signals
     log.info("STEP 4: signals")
