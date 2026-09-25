@@ -1,13 +1,16 @@
 # ============================================================
-# ARGUS-Trader - DATASET
+# ARGUS-Trader - DATASET v2 [PRODUCTION]
 # ------------------------------------------------------------
-# Загрузка X, y из features_hourly для ML.
-# Train/test split по времени (не случайно!).
+# v2: + external market (DXY, SPX, GOLD) через nearest
+#     + eth_btc_ratio из своих свечей
+#     + symbols в результате
+# v1: базовое чтение features_hourly
 # ============================================================
 
 import sys
 import logging
 from pathlib import Path
+from datetime import datetime, timezone, timedelta
 
 import numpy as np
 
@@ -24,8 +27,6 @@ logging.basicConfig(
 )
 log = logging.getLogger("crypto.learn.dataset")
 
-# Признаки (без symbol, timestamp, target,
-# computed_at, next_change_pct)
 FEATURE_COLS = [
     "change_pct",
     "range_pct",
@@ -48,66 +49,187 @@ FEATURE_COLS = [
     "oi_change_pct",
     "ls_ratio",
     "taker_ratio",
+    "dxy_change_pct",
+    "spx_change_pct",
+    "gold_change_pct",
+    "eth_btc_ratio",
 ]
 
 TARGET_COL = "next_direction"
 
+EXT_MAX_AGE_H = 3
 
-def fetch_rows(symbol=None, limit=100000):
-    """Возвращает список строк из features_hourly."""
+EXTERNAL_COLS = (
+    "dxy_change_pct",
+    "spx_change_pct",
+    "gold_change_pct",
+    "eth_btc_ratio",
+)
+
+
+def fetch_features(symbol=None, limit=100000):
+    """Читает features_hourly (без external колонок)."""
+    internal = [
+        c for c in FEATURE_COLS
+        if c not in EXTERNAL_COLS
+    ]
+    base_cols = (
+        ["symbol", "timestamp"]
+        + internal
+        + [TARGET_COL]
+    )
+
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
                 if symbol:
-                    cur.execute(
-                        "SELECT symbol, timestamp, "
-                        + ", ".join(FEATURE_COLS)
-                        + ", " + TARGET_COL
+                    sql = (
+                        "SELECT " + ", ".join(base_cols)
                         + " FROM features_hourly "
                         + "WHERE symbol = %s "
                         + "AND " + TARGET_COL
                         + " IS NOT NULL "
                         + "ORDER BY timestamp "
-                        + "LIMIT %s",
-                        (symbol, limit),
+                        + "LIMIT %s"
                     )
+                    cur.execute(sql, (symbol, limit))
                 else:
-                    cur.execute(
-                        "SELECT symbol, timestamp, "
-                        + ", ".join(FEATURE_COLS)
-                        + ", " + TARGET_COL
+                    sql = (
+                        "SELECT " + ", ".join(base_cols)
                         + " FROM features_hourly "
                         + "WHERE " + TARGET_COL
                         + " IS NOT NULL "
                         + "ORDER BY timestamp "
-                        + "LIMIT %s",
-                        (limit,),
+                        + "LIMIT %s"
                     )
-                return cur.fetchall()
+                    cur.execute(sql, (limit,))
+                return cur.fetchall(), base_cols
     except Exception as e:
-        log.error("fetch_rows: %s", e)
+        log.error("fetch_features: %s", e)
+        return [], []
+
+
+def fetch_external(symbol):
+    """Читает external_market для DXY/SPX/GOLD."""
+    try:
+        with get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT timestamp, change_pct "
+                    "FROM external_market "
+                    "WHERE symbol = %s "
+                    "AND change_pct IS NOT NULL "
+                    "ORDER BY timestamp",
+                    (symbol,),
+                )
+                out = []
+                for r in cur.fetchall():
+                    ts = r[0]
+                    v = float(r[1]) if r[1] else None
+                    if ts and v is not None:
+                        if ts.tzinfo is None:
+                            ts = ts.replace(
+                                tzinfo=timezone.utc
+                            )
+                        out.append((ts, v))
+                return out
+    except Exception as e:
+        log.error("fetch_external %s: %s", symbol, e)
         return []
 
 
-def rows_to_xy(rows):
-    """Преобразует строки в numpy arrays."""
+def fetch_eth_btc():
+    """ts -> ratio ETH_close / BTC_close."""
+    try:
+        btc = {}
+        eth = {}
+        with get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT timestamp, close FROM candles "
+                    "WHERE symbol = 'BTCUSDT' "
+                    "AND timeframe = '1h' "
+                    "ORDER BY timestamp"
+                )
+                for r in cur.fetchall():
+                    ts = r[0]
+                    c = float(r[1]) if r[1] else None
+                    if ts and c and c > 0:
+                        if ts.tzinfo is None:
+                            ts = ts.replace(
+                                tzinfo=timezone.utc
+                            )
+                        btc[ts] = c
+
+                cur.execute(
+                    "SELECT timestamp, close FROM candles "
+                    "WHERE symbol = 'ETHUSDT' "
+                    "AND timeframe = '1h' "
+                    "ORDER BY timestamp"
+                )
+                for r in cur.fetchall():
+                    ts = r[0]
+                    c = float(r[1]) if r[1] else None
+                    if ts and c and c > 0:
+                        if ts.tzinfo is None:
+                            ts = ts.replace(
+                                tzinfo=timezone.utc
+                            )
+                        eth[ts] = c
+
+        ratio = {}
+        for ts, ec in eth.items():
+            bc = btc.get(ts)
+            if bc and bc > 0:
+                ratio[ts] = ec / bc * 1000
+        return ratio
+    except Exception as e:
+        log.error("fetch_eth_btc: %s", e)
+        return {}
+
+
+def ext_lookup(ext_list, ts, max_age_h=EXT_MAX_AGE_H):
+    if not ext_list:
+        return None
+    if ts.tzinfo is None:
+        ts = ts.replace(tzinfo=timezone.utc)
+    result = None
+    for e_ts, e_val in ext_list:
+        if e_ts <= ts:
+            result = (e_ts, e_val)
+        else:
+            break
+    if result is None:
+        return None
+    if ts - result[0] > timedelta(hours=max_age_h):
+        return None
+    return result[1]
+
+
+def rows_to_xy(rows, base_cols, ext_dxy,
+               ext_spx, ext_gold, eth_btc):
     if not rows:
         return None, None, [], []
 
-    timestamps = []
-    symbols = []
+    n_base = len(base_cols)
+    target_idx = n_base - 1
+    feat_start = 2
+
     X = []
     y = []
-
-    n_features = len(FEATURE_COLS)
+    timestamps = []
+    symbols = []
 
     for r in rows:
-        # r = (symbol, timestamp, f1..fn, target)
+        ts = r[1]
+        if ts.tzinfo is None:
+            ts = ts.replace(tzinfo=timezone.utc)
+
+        timestamps.append(ts)
         symbols.append(r[0])
-        timestamps.append(r[1])
 
         row_feats = []
-        for i in range(2, 2 + n_features):
+        for i in range(feat_start, target_idx):
             v = r[i]
             if v is None:
                 row_feats.append(np.nan)
@@ -116,9 +238,32 @@ def rows_to_xy(rows):
                     row_feats.append(float(v))
                 except Exception:
                     row_feats.append(np.nan)
+
+        dxy = ext_lookup(ext_dxy, ts)
+        spx = ext_lookup(ext_spx, ts)
+        gold = ext_lookup(ext_gold, ts)
+
+        row_feats.append(
+            dxy if dxy is not None else np.nan
+        )
+        row_feats.append(
+            spx if spx is not None else np.nan
+        )
+        row_feats.append(
+            gold if gold is not None else np.nan
+        )
+
+        if r[0] == "ETHUSDT":
+            ratio = eth_btc.get(ts)
+            row_feats.append(
+                ratio if ratio is not None else np.nan
+            )
+        else:
+            row_feats.append(np.nan)
+
         X.append(row_feats)
 
-        target = r[2 + n_features]
+        target = r[target_idx]
         try:
             y.append(int(target))
         except Exception:
@@ -130,35 +275,48 @@ def rows_to_xy(rows):
 
 
 def time_split(X, y, test_frac=0.2):
-    """Split по времени: train=старые, test=новые."""
     n = len(X)
     if n < 20:
         return X, y, X, y
 
     split = int(n * (1 - test_frac))
-    X_train = X[:split]
-    y_train = y[:split]
-    X_test = X[split:]
-    y_test = y[split:]
-    return X_train, y_train, X_test, y_test
+    return (
+        X[:split], y[:split],
+        X[split:], y[split:],
+    )
+
+
+def symbols_unique(sym_list):
+    return sorted(set(sym_list))
 
 
 def prepare(symbol=None, test_frac=0.2):
-    """
-    Возвращает dict:
-      X_train, y_train, X_test, y_test,
-      n_total, n_train, n_test, balance
-    """
-    rows = fetch_rows(symbol=symbol)
+    rows, base_cols = fetch_features(symbol)
     log.info("rows loaded: %d", len(rows))
 
     if len(rows) < 20:
-        log.warning("not enough rows: %d < 20", len(rows))
+        log.warning(
+            "not enough rows: %d < 20", len(rows)
+        )
         return None
 
-    X, y, ts, sym = rows_to_xy(rows)
+    ext_dxy = fetch_external("DXY")
+    ext_spx = fetch_external("SPX")
+    ext_gold = fetch_external("GOLD")
+    log.info(
+        "external: DXY=%d SPX=%d GOLD=%d",
+        len(ext_dxy), len(ext_spx), len(ext_gold),
+    )
+
+    eth_btc = fetch_eth_btc()
+    log.info("eth_btc pairs: %d", len(eth_btc))
+
+    X, y, ts, sym = rows_to_xy(
+        rows, base_cols, ext_dxy, ext_spx,
+        ext_gold, eth_btc,
+    )
     if X is None or len(X) < 20:
-        log.warning("not enough samples after parse")
+        log.warning("not enough samples")
         return None
 
     X_train, y_train, X_test, y_test = time_split(
@@ -169,7 +327,9 @@ def prepare(symbol=None, test_frac=0.2):
         "up_total": int(y.sum()),
         "down_total": int(len(y) - y.sum()),
         "up_train": int(y_train.sum()),
-        "down_train": int(len(y_train) - y_train.sum()),
+        "down_train": int(
+            len(y_train) - y_train.sum()
+        ),
     }
 
     log.info(
@@ -196,13 +356,9 @@ def prepare(symbol=None, test_frac=0.2):
     }
 
 
-def symbols_unique(sym_list):
-    return sorted(set(sym_list))
-
-
 def main():
     log.info("=" * 60)
-    log.info("ARGUS-Trader DATASET test")
+    log.info("ARGUS-Trader DATASET v2 test")
     log.info("=" * 60)
 
     data = prepare()
@@ -225,7 +381,9 @@ def main():
         data["X_test"].shape,
     )
     log.info("symbols: %s", data["symbols"])
-    log.info("features: %d", len(data["feature_cols"]))
+    log.info(
+        "features: %d", len(data["feature_cols"])
+    )
 
 
 if __name__ == "__main__":
