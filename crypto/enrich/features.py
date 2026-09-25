@@ -1,11 +1,10 @@
 # ============================================================
 # ARGUS-Trader - FEATURES
 # ------------------------------------------------------------
+# v4.4: + change_1d, change_3d, trend_up
+#       + hour_of_day, day_of_week (daily + calendar)
 # v4.3: fix OI - fallback на oi если oi_value NULL
 # v4.2: all logs ASCII-safe
-# v4.1: + ls_ratio, taker_ratio
-# v4:   + oi_change_pct, funding_trend,
-#         + next_change_pct, next_direction
 # ============================================================
 
 import sys
@@ -39,6 +38,8 @@ LIMITS = {
     "change_4h": 100.0,
     "change_24h": 200.0,
     "change_7d": 500.0,
+    "change_1d": 50.0,
+    "change_3d": 100.0,
     "funding_rate": 5.0,
     "oi_change_pct": 100.0,
     "ls_ratio": 20.0,
@@ -181,6 +182,9 @@ def rolling_sum(features_list, idx, window):
     return sum(values)
 
 
+# ============================================================
+# FETCHERS
+# ============================================================
 def fetch_candles(symbol, timeframe="1h", limit=500):
     try:
         with get_connection() as conn:
@@ -208,6 +212,36 @@ def fetch_candles(symbol, timeframe="1h", limit=500):
                 ]
     except Exception as e:
         log.error("fetch_candles: %s", e)
+        return []
+
+
+def fetch_daily_candles(symbol, limit=200):
+    """Daily candles для расчета старших признаков."""
+    try:
+        with get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT timestamp, close FROM candles "
+                    "WHERE symbol = %s "
+                    "AND timeframe = '1d' "
+                    "ORDER BY timestamp DESC LIMIT %s",
+                    (symbol, limit),
+                )
+                rows = cur.fetchall()
+                rows = list(reversed(rows))
+                out = []
+                for r in rows:
+                    ts = r[0]
+                    c = float(r[1]) if r[1] else None
+                    if ts and c is not None:
+                        if ts.tzinfo is None:
+                            ts = ts.replace(
+                                tzinfo=timezone.utc
+                            )
+                        out.append((ts, c))
+                return out
+    except Exception as e:
+        log.error("fetch_daily_candles: %s", e)
         return []
 
 
@@ -330,6 +364,9 @@ def fetch_taker(symbol):
         return []
 
 
+# ============================================================
+# LOOKUP HELPERS
+# ============================================================
 def funding_at(funding_list, ts):
     if ts.tzinfo is None:
         ts = ts.replace(tzinfo=timezone.utc)
@@ -434,6 +471,81 @@ def taker_at(taker_list, ts):
     return result[1] / total
 
 
+# ============================================================
+# DAILY LOOKUP
+# ============================================================
+def daily_index_before(daily_list, target_dt):
+    """
+    Индекс последней daily свечи с timestamp <= target_dt.
+    Возвращает индекс или None.
+    """
+    if target_dt.tzinfo is None:
+        target_dt = target_dt.replace(tzinfo=timezone.utc)
+    idx = None
+    for i, (d_ts, _) in enumerate(daily_list):
+        if d_ts <= target_dt:
+            idx = i
+        else:
+            break
+    return idx
+
+
+def compute_daily_features(daily_list, ts):
+    """
+    change_1d, change_3d, trend_up.
+    Использует последнюю ЗАКРЫТУЮ daily на момент ts.
+    """
+    out = {
+        "change_1d": None,
+        "change_3d": None,
+        "trend_up": None,
+    }
+    if not daily_list:
+        return out
+
+    if ts.tzinfo is None:
+        ts = ts.replace(tzinfo=timezone.utc)
+
+    # Сдвиг на 1 день - чтобы взять закрытую daily
+    target = ts - timedelta(days=1)
+    idx = daily_index_before(daily_list, target)
+    if idx is None:
+        return out
+
+    c_now = daily_list[idx][1]
+
+    # change_1d
+    if idx >= 1:
+        c_prev = daily_list[idx - 1][1]
+        if c_prev and c_prev > 0:
+            val = (c_now - c_prev) / c_prev * 100
+            out["change_1d"] = safe_val(
+                round(val, 4),
+                LIMITS["change_1d"],
+            )
+
+    # change_3d
+    if idx >= 3:
+        c_3d = daily_list[idx - 3][1]
+        if c_3d and c_3d > 0:
+            val = (c_now - c_3d) / c_3d * 100
+            out["change_3d"] = safe_val(
+                round(val, 4),
+                LIMITS["change_3d"],
+            )
+
+    # trend_up
+    if idx >= 7:
+        c_7d = daily_list[idx - 7][1]
+        if c_7d and c_7d > 0:
+            out["trend_up"] = 1 if c_now > c_7d else 0
+
+    return out
+
+
+# ============================================================
+# SAVE
+# ============================================================
 def save_features(symbol, features):
     if not features:
         return 0
@@ -449,6 +561,8 @@ def save_features(symbol, features):
         "volume_ratio_24h, volatility_24h, "
         "volatility_7d, change_4h, "
         "change_24h, change_7d, "
+        "change_1d, change_3d, trend_up, "
+        "hour_of_day, day_of_week, "
         "funding_rate, funding_trend, "
         "oi_change_pct, ls_ratio, taker_ratio, "
         "next_change_pct, next_direction, "
@@ -456,6 +570,7 @@ def save_features(symbol, features):
         "VALUES (%s, %s, %s, %s, %s, "
         "%s, %s, %s, %s, %s, %s, %s, "
         "%s, %s, %s, %s, %s, %s, "
+        "%s, %s, %s, %s, %s, "
         "%s, %s, %s) "
         "ON CONFLICT (symbol, timestamp) "
         "DO UPDATE SET "
@@ -475,6 +590,11 @@ def save_features(symbol, features):
         "change_4h = EXCLUDED.change_4h, "
         "change_24h = EXCLUDED.change_24h, "
         "change_7d = EXCLUDED.change_7d, "
+        "change_1d = EXCLUDED.change_1d, "
+        "change_3d = EXCLUDED.change_3d, "
+        "trend_up = EXCLUDED.trend_up, "
+        "hour_of_day = EXCLUDED.hour_of_day, "
+        "day_of_week = EXCLUDED.day_of_week, "
         "funding_rate = "
         "EXCLUDED.funding_rate, "
         "funding_trend = "
@@ -513,6 +633,11 @@ def save_features(symbol, features):
                                 f.get("change_4h"),
                                 f.get("change_24h"),
                                 f.get("change_7d"),
+                                f.get("change_1d"),
+                                f.get("change_3d"),
+                                f.get("trend_up"),
+                                f.get("hour_of_day"),
+                                f.get("day_of_week"),
                                 f.get("funding_rate"),
                                 f.get("funding_trend"),
                                 f.get("oi_change_pct"),
@@ -532,6 +657,9 @@ def save_features(symbol, features):
     return added
 
 
+# ============================================================
+# PROCESS
+# ============================================================
 def process_symbol(symbol, timeframe="1h"):
     log.info("%s - loading candles", symbol)
     candles = fetch_candles(symbol, timeframe, limit=500)
@@ -558,6 +686,7 @@ def process_symbol(symbol, timeframe="1h"):
     if not base_features:
         return 0
 
+    # Rolling features
     for idx, f in enumerate(base_features):
         avg_vol = rolling_avg(
             base_features, idx, 24, "volume"
@@ -609,6 +738,7 @@ def process_symbol(symbol, timeframe="1h"):
             LIMITS["change_7d"],
         )
 
+    # Next target
     for idx, f in enumerate(base_features):
         if idx + 1 < len(base_features):
             c_now = f.get("close")
@@ -634,6 +764,48 @@ def process_symbol(symbol, timeframe="1h"):
             f["next_change_pct"] = None
             f["next_direction"] = None
 
+    # Daily + calendar
+    daily = fetch_daily_candles(symbol)
+    log.info("   daily points: %d", len(daily))
+
+    filled_d1 = 0
+    filled_d3 = 0
+    filled_tu = 0
+    for f in base_features:
+        ts = f["timestamp"]
+
+        # daily features
+        d_feat = compute_daily_features(daily, ts)
+        f["change_1d"] = d_feat["change_1d"]
+        f["change_3d"] = d_feat["change_3d"]
+        f["trend_up"] = d_feat["trend_up"]
+        if f["change_1d"] is not None:
+            filled_d1 += 1
+        if f["change_3d"] is not None:
+            filled_d3 += 1
+        if f["trend_up"] is not None:
+            filled_tu += 1
+
+        # calendar
+        if isinstance(ts, datetime):
+            if ts.tzinfo is None:
+                ts_utc = ts.replace(
+                    tzinfo=timezone.utc
+                )
+            else:
+                ts_utc = ts
+            f["hour_of_day"] = ts_utc.hour
+            f["day_of_week"] = ts_utc.weekday()
+        else:
+            f["hour_of_day"] = None
+            f["day_of_week"] = None
+
+    log.info(
+        "   daily: 1d=%d 3d=%d trend=%d",
+        filled_d1, filled_d3, filled_tu,
+    )
+
+    # Funding
     funding = fetch_funding(symbol)
     log.info("   funding points: %d", len(funding))
 
@@ -663,6 +835,7 @@ def process_symbol(symbol, timeframe="1h"):
         filled_f, filled_t,
     )
 
+    # OI
     oi = fetch_open_interest(symbol)
     log.info("   OI points: %d", len(oi))
 
@@ -683,6 +856,7 @@ def process_symbol(symbol, timeframe="1h"):
 
     log.info("   OI change: %d", filled_oi)
 
+    # LS
     ls = fetch_long_short(symbol)
     log.info("   LS points: %d", len(ls))
 
@@ -701,6 +875,7 @@ def process_symbol(symbol, timeframe="1h"):
 
     log.info("   LS ratio: %d", filled_ls)
 
+    # Taker
     taker = fetch_taker(symbol)
     log.info("   Taker points: %d", len(taker))
 
@@ -726,7 +901,7 @@ def process_symbol(symbol, timeframe="1h"):
 
 def main():
     log.info("=" * 60)
-    log.info("ARGUS-Trader FEATURES v4.3")
+    log.info("ARGUS-Trader FEATURES v4.4")
     log.info("=" * 60)
 
     total = 0
