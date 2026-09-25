@@ -1,11 +1,11 @@
 {
-  "trained_at": "2026-09-25T13:51:36.985900+00:00",
+  "trained_at": "2026-09-25T15:44:21.637043+00:00",
   "version": "v3",
-  "n_total": 372,
-  "n_train": 297,
-  "n_test": 75,
-  "accuracy": 0.56,
-  "num_trees": 3,
+  "n_total": 376,
+  "n_train": 300,
+  "n_test": 76,
+  "accuracy": 0.6184,
+  "num_trees": 50,
   "features": [
     "change_pct",
     "range_pct",
@@ -27,61 +27,65 @@
     "funding_trend",
     "oi_change_pct",
     "ls_ratio",
-    "taker_ratio"
+    "taker_ratio",
+    "dxy_change_pct",
+    "spx_change_pct",
+    "gold_change_pct",
+    "eth_btc_ratio"
   ],
   "top_features": [
     {
       "name": "change_4h",
-      "gain": 41.16
+      "gain": 203.13
     },
     {
       "name": "lower_wick_pct",
-      "gain": 29.92
+      "gain": 188.6
     },
     {
-      "name": "body_pct",
-      "gain": 16.07
+      "name": "change_24h",
+      "gain": 112.22
     },
     {
-      "name": "change_1d",
-      "gain": 14.22
-    },
-    {
-      "name": "ls_ratio",
-      "gain": 7.19
-    },
-    {
-      "name": "funding_rate",
-      "gain": 6.09
-    },
-    {
-      "name": "change_pct",
-      "gain": 5.65
-    },
-    {
-      "name": "change_7d",
-      "gain": 5.34
+      "name": "hour_of_day",
+      "gain": 108.59
     },
     {
       "name": "oi_change_pct",
-      "gain": 5.21
+      "gain": 103.91
+    },
+    {
+      "name": "upper_wick_pct",
+      "gain": 103.64
+    },
+    {
+      "name": "volatility_24h",
+      "gain": 103.01
+    },
+    {
+      "name": "change_pct",
+      "gain": 102.38
     },
     {
       "name": "volume_ratio_24h",
-      "gain": 4.88
+      "gain": 97.3
+    },
+    {
+      "name": "body_pct",
+      "gain": 81.03
     }
   ],
   "balance": {
-    "up_total": 208,
-    "down_total": 164,
-    "up_train": 166,
-    "down_train": 131
+    "up_total": 210,
+    "down_total": 166,
+    "up_train": 167,
+    "down_train": 133
   },
   "symbol": null,
   "confusion": {
-    "tp": 42,
-    "tn": 0,
-    "fp": 33,
-    "fn": 0
+    "tp": 30,
+    "tn": 17,
+    "fp": 16,
+    "fn": 13
   }
 }
