@@ -1,16 +1,11 @@
 # ============================================================
-# ARGUS - SIMULATOR 01 v7 [PRODUCTION]
+# ARGUS - SIMULATOR 01 v8.1 [PRODUCTION]
 # ------------------------------------------------------------
-# v7: защита от кривых данных
-#   - проверка свежести candles и analysis
-#   - cooldown после стопа
-#   - sanity-check цены
-#   - fallback get_price
-#   - UUID для id позиции
-#   - rules только если свежие
-# ------------------------------------------------------------
-# v6.1: все логи на английском
-# v6: watch loop внутри скрипта
+# v8.1: после закрытия сразу ищем новый сигнал
+# v8:   - check через 1h свечи Supabase
+#       - time exit только в плюсе
+#       - комиссии учтены
+# v7:   - защита от кривых данных
 # ============================================================
 
 import os
@@ -20,7 +15,7 @@ import time
 import uuid
 import logging
 import requests
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -65,6 +60,8 @@ COOLDOWN_HOURS = 2
 ANALYSIS_MAX_AGE_H = 3
 CANDLES_MAX_AGE_H = 2
 RULES_MAX_AGE_H = 24
+
+TIME_EXIT_HOURS = 24
 
 WATCH_INTERVAL_SEC = 600
 WATCH_MAX_MIN = 55
@@ -113,13 +110,14 @@ def load_json(path, default):
 
 def save_json(path, data):
     try:
-        with open(path, "w", encoding="utf-8") as f:
-            json.dump(
+        with open,
+(path, "w", encoding="utf-8           ") as f:
+            json.d "ump(
                 data, f,
-                ensure_ascii=False, indent=2,
+               total ensure_ascii=False, indent=2,
             )
-    except Exception as e:
-        log.error("save %s: %s", path.name, e)
+_t    except Exception as e:
+        logrades.error("save %s: %":s", path.name, e)
 
 
 # ============================================================
@@ -157,8 +155,7 @@ def get_portfolio():
         p = {
             "start_balance": START_BALANCE,
             "balance": START_BALANCE,
-            "realized_pnl": 0.0,
-            "total_trades": 0,
+            "realized_pnl": 0.0 0,
             "wins": 0,
             "losses": 0,
             "created_at": datetime.now(
@@ -228,14 +225,17 @@ def get_price(client, symbol):
     return None
 
 
-def get_klines_1m(client, symbol, limit=180):
+def get_klines_1m(client, symbol, limit=180,
+                  start_ms=None):
+    params = {
+        "symbol": symbol,
+        "interval": "1m",
+        "limit": limit,
+    }
+    if start_ms is not None:
+        params["startTime"] = start_ms
     data = client.public_get(
-        "/api/v3/klines",
-        {
-            "symbol": symbol,
-            "interval": "1m",
-            "limit": limit,
-        },
+        "/api/v3/klines", params,
     )
     if not data or not isinstance(data, list):
         return []
@@ -257,28 +257,58 @@ def get_klines_1m(client, symbol, limit=180):
 # ============================================================
 # DB CANDLES
 # ============================================================
-def get_candles(symbol, limit=200):
+def get_candles_range(symbol, start_dt):
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
-                sql = (
+                cur.execute(
                     "SELECT timestamp, open, high, "
                     "low, close, volume FROM candles "
                     "WHERE symbol = %s "
                     "AND timeframe = '1h' "
-                    "ORDER BY timestamp DESC LIMIT %s"
+                    "AND timestamp >= %s "
+                    "ORDER BY timestamp",
+                    (symbol, start_dt),
                 )
-                cur.execute(sql, (symbol, limit))
+                rows = cur.fetchall()
+                out = []
+                for r in rows:
+                    out.append({
+                        "timestamp": r[0],
+                        "open": float(r[1]) if r[1] else 0,
+                        "high": float(r[2]) if r[2] else 0,
+                        "low": float(r[3]) if r[3] else 0,
+                        "close": float(r[4]) if r[4] else 0,
+                        "volume": float(r[5]) if r[5] else 0,
+                    })
+                return out
+    except Exception as e:
+        log.warning("candles range %s: %s", symbol, e)
+        return []
+
+
+def get_candles(symbol, limit=200):
+    try:
+        with get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT timestamp, open, high, "
+                    "low, close, volume FROM candles "
+                    "WHERE symbol = %s "
+                    "AND timeframe = '1h' "
+                    "ORDER BY timestamp DESC LIMIT %s",
+                    (symbol, limit),
+                )
                 rows = list(reversed(cur.fetchall()))
                 out = []
                 for r in rows:
                     out.append({
                         "timestamp": r[0],
-                        "open": float(r[1]),
-                        "high": float(r[2]),
-                        "low": float(r[3]),
-                        "close": float(r[4]),
-                        "volume": float(r[5]),
+                        "open": float(r[1]) if r[1] else 0,
+                        "high": float(r[2]) if r[2] else 0,
+                        "low": float(r[3]) if r[3] else 0,
+                        "close": float(r[4]) if r[4] else 0,
+                        "volume": float(r[5]) if r[5] else 0,
                     })
                 return out
     except Exception as e:
@@ -402,7 +432,6 @@ def get_rules(symbol):
 
 
 def filter_bull_rules(rules):
-    """Только up + проверка свежести/качества."""
     out = []
     for r in rules:
         if r.get("direction") != "up":
@@ -419,11 +448,6 @@ def filter_bull_rules(rules):
 # LEVELS
 # ============================================================
 def build_levels(price, sup, resistances, atr):
-    """
-    Возвращает (stop, target, rr) или (None,...).
-    Если support слишком далеко (> MAX_STOP_ATR)
-    - отказ (не входим), а не обрезаем стоп.
-    """
     if sup:
         stop = sup["price"] * (
             1 - STOP_BELOW_SUP_PCT / 100
@@ -566,7 +590,6 @@ def check_signal(client, symbol):
         log.info("  %s: no stop", symbol)
         return None
 
-    # sanity check
     if not (stop < price < target):
         log.warning(
             "  %s: sanity fail stop=%.4f "
@@ -596,6 +619,22 @@ def check_signal(client, symbol):
         "support": sup["price"] if sup else None,
         "resistance": target,
     }
+
+
+# ============================================================
+# TRY OPEN HELPER
+# ============================================================
+def try_open_new(client):
+    """Пробует открыть новую позицию. Возвращает True если открыл."""
+    if len(get_positions()) >= MAX_POSITIONS:
+        return False
+    for symbol in SYMBOLS:
+        signal = check_signal(client, symbol)
+        if signal:
+            pos = open_position(signal)
+            if pos:
+                return True
+    return False
 
 
 # ============================================================
@@ -706,7 +745,6 @@ def close_position(pos, exit_price, reason):
     save_trades(trades)
     save_json(PORTFOLIO_FILE, portfolio)
 
-    # cooldown после стопа
     if reason == "stop":
         set_cooldown(pos["symbol"])
 
@@ -730,9 +768,95 @@ def close_position(pos, exit_price, reason):
 
 
 # ============================================================
-# CHECK POSITION
+# POSITION CHECK
 # ============================================================
-def check_one_position(client, pos):
+def check_stop_target_1h(pos):
+    try:
+        entry_dt = datetime.fromisoformat(
+            pos["entry_time"]
+        )
+    except Exception:
+        return False, None, None
+
+    candles = get_candles_range(
+        pos["symbol"], entry_dt,
+    )
+    if not candles:
+        log.warning(
+            "  %s: no 1h candles from entry",
+            pos["symbol"],
+        )
+        return False, None, None
+
+    stop = pos["stop"]
+    target = pos["target"]
+
+    for c in candles:
+        hit_stop = c["low"] <= stop
+        hit_target = c["high"] >= target
+
+        if hit_stop and hit_target:
+            log.info(
+                "  %s: both hit %s",
+                pos["symbol"],
+                c["timestamp"],
+            )
+            return check_stop_target_1m(
+                pos, c["timestamp"],
+            )
+
+        if hit_stop:
+            log.info(
+                "  %s: STOP at 1h %s",
+                pos["symbol"],
+                c["timestamp"],
+            )
+            return True, stop, "stop"
+
+        if hit_target:
+            log.info(
+                "  %s: TARGET at 1h %s",
+                pos["symbol"],
+                c["timestamp"],
+            )
+            return True, target, "target"
+
+    return False, None, None
+
+
+def check_stop_target_1m(pos, hour_ts):
+    if isinstance(hour_ts, str):
+        try:
+            hour_ts = datetime.fromisoformat(hour_ts)
+        except Exception:
+            return False, None, None
+
+    if hour_ts.tzinfo is None:
+        hour_ts = hour_ts.replace(tzinfo=timezone.utc)
+
+    start_ms = int(hour_ts.timestamp() * 1000)
+
+    client = MexcClient()
+    klines = get_klines_1m(
+        client, pos["symbol"],
+        limit=60, start_ms=start_ms,
+    )
+    if not klines:
+        return False, None, None
+
+    stop = pos["stop"]
+    target = pos["target"]
+
+    for k in klines:
+        if k["low"] <= stop:
+            return True, stop, "stop"
+        if k["high"] >= target:
+            return True, target, "target"
+
+    return False, None, None
+
+
+def check_time_exit(pos, current_price):
     try:
         entry_dt = datetime.fromisoformat(
             pos["entry_time"]
@@ -740,50 +864,45 @@ def check_one_position(client, pos):
     except Exception:
         return False
 
-    entry_ms = int(entry_dt.timestamp() * 1000)
+    age_h = (
+        datetime.now(timezone.utc) - entry_dt
+    ).total_seconds() / 3600
 
-    klines = get_klines_1m(
-        client, pos["symbol"], limit=180,
-    )
-    if not klines:
-        log.warning(
-            "  %s: no 1m klines",
-            pos["symbol"],
-        )
+    if age_h < TIME_EXIT_HOURS:
         return False
 
-    stop = pos["stop"]
-    target = pos["target"]
+    exit_real = current_price * (1 - SLIPPAGE)
+    proceeds = pos["size_coins"] * exit_real
+    exit_fee = proceeds * TAKER_FEE
 
-    for k in klines:
-        if k["ts"] < entry_ms:
-            continue
+    pnl = proceeds - pos["size_usd"]
+    pnl -= pos["entry_fee"]
+    pnl -= exit_fee
 
-        if k["low"] <= stop:
-            ts_utc = datetime.fromtimestamp(
-                k["ts"] / 1000, tz=timezone.utc,
-            )
-            log.info(
-                "  %s: STOP at %s",
-                pos["symbol"],
-                ts_utc.strftime("%H:%M"),
-            )
-            return close_position(
-                pos, stop, "stop",
-            )
+    if pnl > 0:
+        log.info(
+            "  %s: TIME EXIT (age=%.1fh, pnl=%.4f)",
+            pos["symbol"], age_h, pnl,
+        )
+        return True
 
-        if k["high"] >= target:
-            ts_utc = datetime.fromtimestamp(
-                k["ts"] / 1000, tz=timezone.utc,
-            )
-            log.info(
-                "  %s: TARGET at %s",
-                pos["symbol"],
-                ts_utc.strftime("%H:%M"),
-            )
-            return close_position(
-                pos, target, "target",
-            )
+    return False
+
+
+def check_one_position(client, pos):
+    closed, exit_price, reason = check_stop_target_1h(
+        pos,
+    )
+    if closed:
+        return close_position(
+            pos, exit_price, reason,
+        )
+
+    price = get_price(client, pos["symbol"])
+    if price and check_time_exit(pos, price):
+        return close_position(
+            pos, price, "time_exit",
+        )
 
     return False
 
@@ -815,9 +934,17 @@ def watch_position(client):
             break
 
         positions = get_positions()
+
+        # Нет позиции - пробуем открыть
         if not positions:
-            log.info("  watch: no positions")
-            break
+            log.info("  watch: no positions, try open")
+            opened = try_open_new(client)
+            if not opened:
+                log.info(
+                    "  watch: no signal, exit"
+                )
+                break
+            positions = get_positions()
 
         iteration += 1
         log.info(
@@ -833,7 +960,19 @@ def watch_position(client):
                 break
 
         if closed:
-            break
+            # Сразу пробуем открыть новую
+            log.info(
+                "  watch: position closed, "
+                "search new signal"
+            )
+            opened = try_open_new(client)
+            if not opened:
+                log.info(
+                    "  watch: no new signal, exit"
+                )
+                break
+            # Продолжаем watch новой позиции
+            continue
 
         remaining = max_seconds - (
             time.time() - started
@@ -859,24 +998,23 @@ def watch_position(client):
 # ============================================================
 def main():
     log.info("=" * 50)
-    log.info("SIMULATOR 01 v7")
+    log.info("SIMULATOR 01 v8.1")
     log.info("=" * 50)
 
     client = MexcClient()
 
+    # Проверяем существующие позиции
     positions = get_positions()
     if positions:
         for pos in list(positions):
             check_one_position(client, pos)
 
+    # Ищем новую если нет
     positions = get_positions()
     if len(positions) < MAX_POSITIONS:
-        for symbol in SYMBOLS:
-            signal = check_signal(client, symbol)
-            if signal:
-                open_position(signal)
-                break
+        try_open_new(client)
 
+    # Watch
     positions = get_positions()
     if positions:
         watch_position(client)
