@@ -16,7 +16,7 @@ import lightgbm as lgb
 model = lgb.Booster(model_file='lgb_model.txt')
 
 3. Признаки (порядок важен):
-change_pct, range_pct, body_pct, upper_wick_pct, lower_wick_pct, volume_ratio_24h, volatility_24h, volatility_7d, change_4h, change_24h, change_7d, change_1d, change_3d, trend_up, hour_of_day, day_of_week, funding_rate, funding_trend, oi_change_pct, ls_ratio, taker_ratio
+change_pct, range_pct, body_pct, upper_wick_pct, lower_wick_pct, volume_ratio_24h, volatility_24h, volatility_7d, change_4h, change_24h, change_7d, change_1d, change_3d, trend_up, hour_of_day, day_of_week, funding_rate, funding_trend, oi_change_pct, ls_ratio, taker_ratio, dxy_change_pct, spx_change_pct, gold_change_pct, eth_btc_ratio
 
 4. Целевая: next_direction (0/1)
 
@@ -24,7 +24,7 @@ change_pct, range_pct, body_pct, upper_wick_pct, lower_wick_pct, volume_ratio_24
 python train.py
 
 ## Формат CSV
-symbol, timestamp, change_pct, range_pct, body_pct, upper_wick_pct, lower_wick_pct, volume_ratio_24h, volatility_24h, volatility_7d, change_4h, change_24h, change_7d, change_1d, change_3d, trend_up, hour_of_day, day_of_week, funding_rate, funding_trend, oi_change_pct, ls_ratio, taker_ratio, next_direction
+symbol, timestamp, change_pct, range_pct, body_pct, upper_wick_pct, lower_wick_pct, volume_ratio_24h, volatility_24h, volatility_7d, change_4h, change_24h, change_7d, change_1d, change_3d, trend_up, hour_of_day, day_of_week, funding_rate, funding_trend, oi_change_pct, ls_ratio, taker_ratio, dxy_change_pct, spx_change_pct, gold_change_pct, eth_btc_ratio, next_direction
 
 ## Заметка
 Модель переносима. Привязок к БД нет.
