@@ -1,12 +1,8 @@
 # ============================================================
-# ARGUS-Trader - EXPORT
+# ARGUS-Trader - EXPORT v2 [PRODUCTION]
 # ------------------------------------------------------------
-# Экспорт модели + данных для миграции.
-# Кладет в crypto/learn/export/:
-#   - lgb_model.txt
-#   - model_meta.json
-#   - features_hourly.csv
-#   - README.md
+# v2: экспорт только внутренних колонок features
+# v1: базовый экспорт
 # ============================================================
 
 import sys
@@ -23,7 +19,9 @@ sys.path.insert(0, str(CRYPTO_ROOT))
 sys.path.insert(0, str(SCRIPT_DIR))
 
 from db import get_connection
-from dataset import FEATURE_COLS, TARGET_COL
+from dataset import (
+    FEATURE_COLS, EXTERNAL_COLS, TARGET_COL,
+)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -38,7 +36,6 @@ EXPORT_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def export_model():
-    """Копирует модель в export/."""
     src = MODELS_DIR / "lgb_model.txt"
     if not src.exists():
         log.warning("no model file")
@@ -49,7 +46,6 @@ def export_model():
 
 
 def export_meta():
-    """Копирует meta модели в export/."""
     src = MODELS_DIR / "model_meta.json"
     if not src.exists():
         log.warning("no meta file")
@@ -66,74 +62,93 @@ def export_meta():
 
 
 def export_dataset_csv():
-    """Экспорт features_hourly в CSV."""
-    cols = (
+    """Экспорт features_hourly + external CSV."""
+    # 1. Внутренние колонки из features_hourly
+    internal = [
+        c for c in FEATURE_COLS
+        if c not in EXTERNAL_COLS
+    ]
+    cols1 = (
         ["symbol", "timestamp"]
-        + FEATURE_COLS
+        + internal
         + [TARGET_COL]
     )
-    sql = (
-        "SELECT " + ", ".join(cols)
-        + " FROM features_hourly ORDER BY timestamp"
-    )
+    out1 = EXPORT_DIR / "features_hourly.csv"
 
-    out = EXPORT_DIR / "features_hourly.csv"
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
-                cur.execute(sql)
+                cur.execute(
+                    "SELECT " + ", ".join(cols1)
+                    + " FROM features_hourly "
+                    + "ORDER BY timestamp"
+                )
                 rows = cur.fetchall()
-        with open(out, "w", encoding="utf-8", newline="") as f:
+        with open(out1, "w", encoding="utf-8",
+                  newline="") as f:
             w = csv.writer(f)
-            w.writerow(cols)
+            w.writerow(cols1)
             for r in rows:
                 w.writerow(r)
         log.info(
-            "exported %d rows -> %s",
-            len(rows), out.name,
+            "features -> %s (%d rows)",
+            out1.name, len(rows),
         )
-        return len(rows)
     except Exception as e:
-        log.error("export csv: %s", e)
-        return 0
+        log.error("export features: %s", e)
+
+    # 2. External отдельно
+    out2 = EXPORT_DIR / "external_market.csv"
+    try:
+        with get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT symbol, timestamp, "
+                    "close, change_pct "
+                    "FROM external_market "
+                    "ORDER BY symbol, timestamp"
+                )
+                rows = cur.fetchall()
+        with open(out2, "w", encoding="utf-8",
+                  newline="") as f:
+            w = csv.writer(f)
+            w.writerow([
+                "symbol", "timestamp",
+                "close", "change_pct",
+            ])
+            for r in rows:
+                w.writerow(r)
+        log.info(
+            "external -> %s (%d rows)",
+            out2.name, len(rows),
+        )
+    except Exception as e:
+        log.error("export external: %s", e)
 
 
 def export_readme():
-    """Инструкция для миграции."""
     readme = EXPORT_DIR / "README.md"
     lines = [
-        "# ARGUS ML - Export",
+        "# ARGUS ML - Export v2",
         "",
-        "## Что внутри",
-        "- lgb_model.txt - LightGBM модель",
-        "- model_meta.json - метрики + список features",
-        "- features_hourly.csv - данные для переобучения",
-        "- README.md - этот файл",
+        "## Файлы",
+        "- `lgb_model.txt` - LightGBM модель",
+        "- `model_meta.json` - метрики + features",
+        "- `features_hourly.csv` - основные данные",
+        "- `external_market.csv` - DXY/SPX/GOLD",
+        "- `README.md`",
         "",
-        "## Как использовать на новой машине",
-        "",
-        "1. Установить зависимости:",
-        "pip install lightgbm==4.5.0 scikit-learn==1.5.2 pandas",
-        "",
-        "2. Загрузить модель:",
-        "import lightgbm as lgb",
-        "model = lgb.Booster(model_file='lgb_model.txt')",
-        "",
-        "3. Признаки (порядок важен):",
+        "## Как использовать",
+        "1. pip install lightgbm==4.5.0",
+        "2. model = lgb.Booster(model_file='lgb_model.txt')",
+        "3. Объединить features + external по timestamp",
+        "4. Признаки (25, порядок важен):",
         ", ".join(FEATURE_COLS),
         "",
-        "4. Целевая: " + TARGET_COL + " (0/1)",
-        "",
-        "5. Переобучение:",
-        "python train.py",
-        "",
-        "## Формат CSV",
-        "symbol, timestamp, "
-        + ", ".join(FEATURE_COLS)
-        + ", " + TARGET_COL,
+        "5. Target: " + TARGET_COL + " (0/1)",
         "",
         "## Заметка",
-        "Модель переносима. Привязок к БД нет.",
+        "Модель переносима. Обе таблицы обязательны.",
     ]
     with open(readme, "w", encoding="utf-8") as f:
         f.write("\n".join(lines))
@@ -142,7 +157,7 @@ def export_readme():
 
 def main():
     log.info("=" * 60)
-    log.info("ARGUS-Trader EXPORT")
+    log.info("ARGUS-Trader EXPORT v2")
     log.info("=" * 60)
 
     export_model()
