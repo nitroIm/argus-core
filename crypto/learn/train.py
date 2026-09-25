@@ -1,8 +1,8 @@
 # ============================================================
 # ARGUS-Trader - TRAIN [PRODUCTION]
 # ------------------------------------------------------------
-# v2: перед перезаписью текущая модель копируется в prev/
-#     prev = страховка на 1 шаг (откат если новая хуже)
+# v3: + is_unbalance=True - убирает bias в majority класс
+# v2: prev/ страховка перед перезаписью
 # v1: базовое обучение LightGBM на features_hourly
 # ------------------------------------------------------------
 # Модель сохраняется в learn/models/lgb_model.txt
@@ -47,6 +47,7 @@ MIN_SAMPLES = 200
 
 PARAMS = {
     "objective": "binary",
+    "is_unbalance": True,
     "metric": "binary_logloss",
     "boosting_type": "gbdt",
     "num_leaves": 31,
@@ -64,10 +65,7 @@ EARLY_STOP = 30
 
 
 def save_prev():
-    """
-    Копирует текущую модель в prev/ перед перезаписью.
-    Если текущей модели нет - prev не создаётся.
-    """
+    """Копирует текущую модель в prev/ перед перезаписью."""
     if not MODEL_FILE.exists():
         log.info("prev: no current model, skip")
         return
@@ -78,14 +76,14 @@ def save_prev():
         shutil.copy2(MODEL_FILE, PREV_MODEL)
         if META_FILE.exists():
             shutil.copy2(META_FILE, PREV_META)
-        log.info("prev: current moved to prev/ (rollback point)")
+        log.info("prev: current moved to prev/ (rollback)")
     except Exception as e:
         log.warning("prev save failed: %s", e)
 
 
 def train(symbol=None):
     log.info("=" * 60)
-    log.info("ARGUS-Trader TRAIN v2")
+    log.info("ARGUS-Trader TRAIN v3")
     log.info("=" * 60)
 
     data = prepare(symbol=symbol)
@@ -136,6 +134,16 @@ def train(symbol=None):
 
     log.info("test accuracy: %.4f", acc)
 
+    # Confusion
+    tp = int(((y_test == 1) & (y_pred == 1)).sum())
+    tn = int(((y_test == 0) & (y_pred == 0)).sum())
+    fp = int(((y_test == 0) & (y_pred == 1)).sum())
+    fn = int(((y_test == 1) & (y_pred == 0)).sum())
+    log.info(
+        "confusion: TP=%d TN=%d FP=%d FN=%d",
+        tp, tn, fp, fn,
+    )
+
     # Feature importance
     importance = model.feature_importance(
         importance_type="gain"
@@ -149,7 +157,7 @@ def train(symbol=None):
     for name, score in pairs[:10]:
         log.info("  %s: %.2f", name, score)
 
-    # Prev - страховка перед перезаписью
+    # Prev страховка
     save_prev()
 
     # Save new model
@@ -160,7 +168,7 @@ def train(symbol=None):
         "trained_at": datetime.now(
             timezone.utc
         ).isoformat(),
-        "version": "v2",
+        "version": "v3",
         "n_total": data["n_total"],
         "n_train": data["n_train"],
         "n_test": data["n_test"],
@@ -173,6 +181,10 @@ def train(symbol=None):
         ],
         "balance": data["balance"],
         "symbol": symbol,
+        "confusion": {
+            "tp": tp, "tn": tn,
+            "fp": fp, "fn": fn,
+        },
     }
     with open(META_FILE, "w", encoding="utf-8") as f:
         json.dump(meta, f, ensure_ascii=False, indent=2)
