@@ -1,15 +1,15 @@
 # ============================================================
-# ARGUS-Trader - PREDICT
+# ARGUS-Trader - PREDICT v2 [PRODUCTION]
 # ------------------------------------------------------------
-# Предсказание для последней свечи по каждой монете.
-# Возвращает probability + direction.
+# v2: читает features_hourly + external_market
+# v1: базовое предсказание
 # ============================================================
 
 import sys
 import json
 import logging
 from pathlib import Path
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 import numpy as np
 import lightgbm as lgb
@@ -19,6 +19,10 @@ CRYPTO_ROOT = SCRIPT_DIR.parent
 sys.path.insert(0, str(CRYPTO_ROOT))
 
 from db import get_connection
+from dataset import (
+    FEATURE_COLS, EXTERNAL_COLS, EXT_MAX_AGE_H,
+    fetch_external, fetch_eth_btc, ext_lookup,
+)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -41,54 +45,67 @@ def load_meta():
         return None
 
 
-def fetch_last_row(symbol, feature_cols):
+def fetch_last_internal(symbol):
+    """Читает последнюю строку features_hourly (без external)."""
+    internal = [
+        c for c in FEATURE_COLS
+        if c not in EXTERNAL_COLS
+    ]
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
-                cols = ", ".join(feature_cols)
-                cur.execute(
-                    "SELECT " + cols
+                sql = (
+                    "SELECT timestamp, "
+                    + ", ".join(internal)
                     + " FROM features_hourly "
                     + "WHERE symbol = %s "
                     + "ORDER BY timestamp DESC "
-                    + "LIMIT 1",
-                    (symbol,),
+                    + "LIMIT 1"
                 )
-                row = cur.fetchone()
-                if not row:
-                    return None
-                out = []
-                for v in row:
-                    if v is None:
-                        out.append(np.nan)
-                    else:
-                        try:
-                            out.append(float(v))
-                        except Exception:
-                            out.append(np.nan)
-                return np.array([out], dtype=np.float32)
+                cur.execute(sql, (symbol,))
+                return cur.fetchone()
     except Exception as e:
-        log.error("fetch_last_row %s: %s", symbol, e)
+        log.error("fetch_last %s: %s", symbol, e)
         return None
 
 
-def predict_symbol(model, symbol, feature_cols):
-    X = fetch_last_row(symbol, feature_cols)
-    if X is None:
-        log.warning("%s: no data", symbol)
+def build_row(symbol, row, ext_dxy, ext_spx,
+              ext_gold, eth_btc):
+    if row is None:
         return None
 
-    prob_up = float(model.predict(X)[0])
-    direction = 1 if prob_up > 0.5 else 0
+    ts = row[0]
+    if ts.tzinfo is None:
+        ts = ts.replace(tzinfo=timezone.utc)
 
-    return {
-        "symbol": symbol,
-        "prob_up": round(prob_up, 4),
-        "direction": direction,
-        "confidence": round(
-            abs(prob_up - 0.5) * 2, 4
-        ),
-    }
+    n = len(FEATURE_COLS) - len(EXTERNAL_COLS)
+    feats = []
+    for v in row[1:1 + n]:
+        if v is None:
+            feats.append(np.nan)
+        else:
+            try:
+                feats.append(float(v))
+            except Exception:
+                feats.append(np.nan)
+
+    dxy = ext_lookup(ext_dxy, ts)
+    spx = ext_lookup(ext_spx, ts)
+    gold = ext_lookup(ext_gold, ts)
+
+    feats.append(dxy if dxy is not None else np.nan)
+    feats.append(spx if spx is not None else np.nan)
+    feats.append(gold if gold is not None else np.nan)
+
+    if symbol == "ETHUSDT":
+        ratio = eth_btc.get(ts)
+        feats.append(
+            ratio if ratio is not None else np.nan
+        )
+    else:
+        feats.append(np.nan)
+
+    return np.array([feats], dtype=np.float32)
 
 
 def predict_all(symbols=None):
@@ -96,27 +113,53 @@ def predict_all(symbols=None):
         symbols = ["BTCUSDT", "ETHUSDT"]
 
     if not MODEL_FILE.exists():
-        log.error("model not found: %s", MODEL_FILE)
+        log.error("model not found")
         return None
 
     meta = load_meta()
-    if not meta or "features" not in meta:
-        log.error("meta missing or corrupt")
+    if not meta:
+        log.error("meta missing")
         return None
 
-    feature_cols = meta["features"]
     model = lgb.Booster(model_file=str(MODEL_FILE))
+
+    # Один раз подгружаем external
+    ext_dxy = fetch_external("DXY")
+    ext_spx = fetch_external("SPX")
+    ext_gold = fetch_external("GOLD")
+    eth_btc = fetch_eth_btc()
 
     results = []
     for symbol in symbols:
-        r = predict_symbol(model, symbol, feature_cols)
-        if r:
-            results.append(r)
-            log.info(
-                "%s: prob_up=%.4f dir=%d conf=%.4f",
-                r["symbol"], r["prob_up"],
-                r["direction"], r["confidence"],
-            )
+        row = fetch_last_internal(symbol)
+        if row is None:
+            log.warning("%s: no data", symbol)
+            continue
+
+        X = build_row(
+            symbol, row,
+            ext_dxy, ext_spx, ext_gold, eth_btc,
+        )
+        if X is None:
+            continue
+
+        prob_up = float(model.predict(X)[0])
+        direction = 1 if prob_up > 0.5 else 0
+
+        r = {
+            "symbol": symbol,
+            "prob_up": round(prob_up, 4),
+            "direction": direction,
+            "confidence": round(
+                abs(prob_up - 0.5) * 2, 4
+            ),
+        }
+        results.append(r)
+        log.info(
+            "%s: prob_up=%.4f dir=%d conf=%.4f",
+            r["symbol"], r["prob_up"],
+            r["direction"], r["confidence"],
+        )
 
     return {
         "predicted_at": datetime.now(
@@ -129,7 +172,7 @@ def predict_all(symbols=None):
 
 def main():
     log.info("=" * 60)
-    log.info("ARGUS-Trader PREDICT")
+    log.info("ARGUS-Trader PREDICT v2")
     log.info("=" * 60)
 
     result = predict_all()
