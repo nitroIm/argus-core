@@ -1,12 +1,17 @@
 # ============================================================
-# ARGUS-Trader - TRAIN
+# ARGUS-Trader - TRAIN [PRODUCTION]
 # ------------------------------------------------------------
-# Обучение LightGBM на features_hourly.
-# Модель сохраняется в learn/models/.
+# v2: перед перезаписью текущая модель копируется в prev/
+#     prev = страховка на 1 шаг (откат если новая хуже)
+# v1: базовое обучение LightGBM на features_hourly
+# ------------------------------------------------------------
+# Модель сохраняется в learn/models/lgb_model.txt
+# Prev  сохраняется в learn/models/prev/lgb_model.txt
 # ============================================================
 
 import sys
 import json
+import shutil
 import logging
 from pathlib import Path
 from datetime import datetime, timezone
@@ -34,6 +39,10 @@ MODELS_DIR.mkdir(parents=True, exist_ok=True)
 MODEL_FILE = MODELS_DIR / "lgb_model.txt"
 META_FILE = MODELS_DIR / "model_meta.json"
 
+PREV_DIR = MODELS_DIR / "prev"
+PREV_MODEL = PREV_DIR / "lgb_model.txt"
+PREV_META = PREV_DIR / "model_meta.json"
+
 MIN_SAMPLES = 200
 
 PARAMS = {
@@ -54,9 +63,29 @@ NUM_ROUNDS = 200
 EARLY_STOP = 30
 
 
+def save_prev():
+    """
+    Копирует текущую модель в prev/ перед перезаписью.
+    Если текущей модели нет - prev не создаётся.
+    """
+    if not MODEL_FILE.exists():
+        log.info("prev: no current model, skip")
+        return
+
+    PREV_DIR.mkdir(parents=True, exist_ok=True)
+
+    try:
+        shutil.copy2(MODEL_FILE, PREV_MODEL)
+        if META_FILE.exists():
+            shutil.copy2(META_FILE, PREV_META)
+        log.info("prev: current moved to prev/ (rollback point)")
+    except Exception as e:
+        log.warning("prev save failed: %s", e)
+
+
 def train(symbol=None):
     log.info("=" * 60)
-    log.info("ARGUS-Trader TRAIN")
+    log.info("ARGUS-Trader TRAIN v2")
     log.info("=" * 60)
 
     data = prepare(symbol=symbol)
@@ -120,7 +149,10 @@ def train(symbol=None):
     for name, score in pairs[:10]:
         log.info("  %s: %.2f", name, score)
 
-    # Save model
+    # Prev - страховка перед перезаписью
+    save_prev()
+
+    # Save new model
     model.save_model(str(MODEL_FILE))
     log.info("saved model: %s", MODEL_FILE.name)
 
@@ -128,6 +160,7 @@ def train(symbol=None):
         "trained_at": datetime.now(
             timezone.utc
         ).isoformat(),
+        "version": "v2",
         "n_total": data["n_total"],
         "n_train": data["n_train"],
         "n_test": data["n_test"],
