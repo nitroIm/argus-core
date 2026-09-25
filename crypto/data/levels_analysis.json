@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-09-25T21:17:53.450138+00:00",
+  "generated_at": "2026-09-25T22:17:50.019326+00:00",
   "symbols": {
     "BTCUSDT": {
       "symbol": "BTCUSDT",
-      "current_price": 83879.9,
+      "current_price": 83733.9,
       "steps": {
         "major": 10000,
         "mid": 5000.0,
@@ -14,336 +14,336 @@
           "price": 84000.0,
           "tier": 3,
           "step": 1000.0,
-          "distance_pct": 0.14,
-          "distance_abs": 120.1,
+          "distance_pct": 0.32,
+          "distance_abs": 266.1,
           "position": "above"
         },
         {
           "price": 83000.0,
           "tier": 3,
           "step": 1000.0,
-          "distance_pct": -1.05,
-          "distance_abs": -879.9,
+          "distance_pct": -0.88,
+          "distance_abs": -733.9,
           "position": "below"
         },
         {
           "price": 85000.0,
           "tier": 2,
           "step": 5000.0,
-          "distance_pct": 1.34,
-          "distance_abs": 1120.1,
+          "distance_pct": 1.51,
+          "distance_abs": 1266.1,
           "position": "above"
         },
         {
           "price": 82000.0,
           "tier": 3,
           "step": 1000.0,
-          "distance_pct": -2.24,
-          "distance_abs": -1879.9,
+          "distance_pct": -2.07,
+          "distance_abs": -1733.9,
           "position": "below"
         },
         {
           "price": 86000.0,
           "tier": 3,
           "step": 1000.0,
-          "distance_pct": 2.53,
-          "distance_abs": 2120.1,
+          "distance_pct": 2.71,
+          "distance_abs": 2266.1,
           "position": "above"
         },
         {
           "price": 81000.0,
           "tier": 3,
           "step": 1000.0,
-          "distance_pct": -3.43,
-          "distance_abs": -2879.9,
+          "distance_pct": -3.26,
+          "distance_abs": -2733.9,
           "position": "below"
         },
         {
           "price": 87000.0,
           "tier": 3,
           "step": 1000.0,
-          "distance_pct": 3.72,
-          "distance_abs": 3120.1,
+          "distance_pct": 3.9,
+          "distance_abs": 3266.1,
           "position": "above"
         },
         {
           "price": 80000.0,
           "tier": 1,
           "step": 10000,
-          "distance_pct": -4.63,
-          "distance_abs": -3879.9,
+          "distance_pct": -4.46,
+          "distance_abs": -3733.9,
           "position": "below"
         },
         {
           "price": 88000.0,
           "tier": 3,
           "step": 1000.0,
-          "distance_pct": 4.91,
-          "distance_abs": 4120.1,
+          "distance_pct": 5.09,
+          "distance_abs": 4266.1,
           "position": "above"
         },
         {
           "price": 79000.0,
           "tier": 3,
           "step": 1000.0,
-          "distance_pct": -5.82,
-          "distance_abs": -4879.9,
+          "distance_pct": -5.65,
+          "distance_abs": -4733.9,
           "position": "below"
         },
         {
           "price": 89000.0,
           "tier": 3,
           "step": 1000.0,
-          "distance_pct": 6.1,
-          "distance_abs": 5120.1,
+          "distance_pct": 6.29,
+          "distance_abs": 5266.1,
           "position": "above"
         },
         {
           "price": 78000.0,
           "tier": 3,
           "step": 1000.0,
-          "distance_pct": -7.01,
-          "distance_abs": -5879.9,
+          "distance_pct": -6.85,
+          "distance_abs": -5733.9,
           "position": "below"
         },
         {
           "price": 90000.0,
           "tier": 1,
           "step": 10000,
-          "distance_pct": 7.3,
-          "distance_abs": 6120.1,
+          "distance_pct": 7.48,
+          "distance_abs": 6266.1,
           "position": "above"
         },
         {
           "price": 77000.0,
           "tier": 3,
           "step": 1000.0,
-          "distance_pct": -8.2,
-          "distance_abs": -6879.9,
+          "distance_pct": -8.04,
+          "distance_abs": -6733.9,
           "position": "below"
         },
         {
           "price": 91000.0,
           "tier": 3,
           "step": 1000.0,
-          "distance_pct": 8.49,
-          "distance_abs": 7120.1,
+          "distance_pct": 8.68,
+          "distance_abs": 7266.1,
           "position": "above"
         },
         {
           "price": 76000.0,
           "tier": 3,
           "step": 1000.0,
-          "distance_pct": -9.39,
-          "distance_abs": -7879.9,
+          "distance_pct": -9.24,
+          "distance_abs": -7733.9,
           "position": "below"
         },
         {
           "price": 92000.0,
           "tier": 3,
           "step": 1000.0,
-          "distance_pct": 9.68,
-          "distance_abs": 8120.1,
+          "distance_pct": 9.87,
+          "distance_abs": 8266.1,
           "position": "above"
         },
         {
           "price": 75000.0,
           "tier": 2,
           "step": 5000.0,
-          "distance_pct": -10.59,
-          "distance_abs": -8879.9,
+          "distance_pct": -10.43,
+          "distance_abs": -8733.9,
           "position": "below"
         },
         {
           "price": 93000.0,
           "tier": 3,
           "step": 1000.0,
-          "distance_pct": 10.87,
-          "distance_abs": 9120.1,
+          "distance_pct": 11.07,
+          "distance_abs": 9266.1,
           "position": "above"
         },
         {
           "price": 95000.0,
           "tier": 2,
           "step": 5000.0,
-          "distance_pct": 13.26,
-          "distance_abs": 11120.1,
+          "distance_pct": 13.45,
+          "distance_abs": 11266.1,
           "position": "above"
         },
         {
           "price": 70000.0,
           "tier": 1,
           "step": 10000,
-          "distance_pct": -16.55,
-          "distance_abs": -13879.9,
+          "distance_pct": -16.4,
+          "distance_abs": -13733.9,
           "position": "below"
         },
         {
           "price": 100000.0,
           "tier": 1,
           "step": 10000,
-          "distance_pct": 19.22,
-          "distance_abs": 16120.1,
+          "distance_pct": 19.43,
+          "distance_abs": 16266.1,
           "position": "above"
         },
         {
           "price": 65000.0,
           "tier": 2,
           "step": 5000.0,
-          "distance_pct": -22.51,
-          "distance_abs": -18879.9,
+          "distance_pct": -22.37,
+          "distance_abs": -18733.9,
           "position": "below"
         },
         {
           "price": 105000.0,
           "tier": 2,
           "step": 5000.0,
-          "distance_pct": 25.18,
-          "distance_abs": 21120.1,
+          "distance_pct": 25.4,
+          "distance_abs": 21266.1,
           "position": "above"
         },
         {
           "price": 60000.0,
           "tier": 1,
           "step": 10000,
-          "distance_pct": -28.47,
-          "distance_abs": -23879.9,
+          "distance_pct": -28.34,
+          "distance_abs": -23733.9,
           "position": "below"
         },
         {
           "price": 110000.0,
           "tier": 1,
           "step": 10000,
-          "distance_pct": 31.14,
-          "distance_abs": 26120.1,
+          "distance_pct": 31.37,
+          "distance_abs": 26266.1,
           "position": "above"
         },
         {
           "price": 55000.0,
           "tier": 2,
           "step": 5000.0,
-          "distance_pct": -34.43,
-          "distance_abs": -28879.9,
+          "distance_pct": -34.32,
+          "distance_abs": -28733.9,
           "position": "below"
         },
         {
           "price": 115000.0,
           "tier": 2,
           "step": 5000.0,
-          "distance_pct": 37.1,
-          "distance_abs": 31120.1,
+          "distance_pct": 37.34,
+          "distance_abs": 31266.1,
           "position": "above"
         },
         {
           "price": 50000.0,
           "tier": 1,
           "step": 10000,
-          "distance_pct": -40.39,
-          "distance_abs": -33879.9,
+          "distance_pct": -40.29,
+          "distance_abs": -33733.9,
           "position": "below"
         },
         {
           "price": 120000.0,
           "tier": 1,
           "step": 10000,
-          "distance_pct": 43.06,
-          "distance_abs": 36120.1,
+          "distance_pct": 43.31,
+          "distance_abs": 36266.1,
           "position": "above"
         },
         {
           "price": 45000.0,
           "tier": 2,
           "step": 5000.0,
-          "distance_pct": -46.35,
-          "distance_abs": -38879.9,
+          "distance_pct": -46.26,
+          "distance_abs": -38733.9,
           "position": "below"
         },
         {
           "price": 125000.0,
           "tier": 2,
           "step": 5000.0,
-          "distance_pct": 49.02,
-          "distance_abs": 41120.1,
+          "distance_pct": 49.28,
+          "distance_abs": 41266.1,
           "position": "above"
         },
         {
           "price": 40000.0,
           "tier": 1,
           "step": 10000,
-          "distance_pct": -52.31,
-          "distance_abs": -43879.9,
+          "distance_pct": -52.23,
+          "distance_abs": -43733.9,
           "position": "below"
         },
         {
           "price": 130000.0,
           "tier": 1,
           "step": 10000,
-          "distance_pct": 54.98,
-          "distance_abs": 46120.1,
+          "distance_pct": 55.25,
+          "distance_abs": 46266.1,
           "position": "above"
         },
         {
           "price": 35000.0,
           "tier": 2,
           "step": 5000.0,
-          "distance_pct": -58.27,
-          "distance_abs": -48879.9,
+          "distance_pct": -58.2,
+          "distance_abs": -48733.9,
           "position": "below"
         },
         {
           "price": 135000.0,
           "tier": 2,
           "step": 5000.0,
-          "distance_pct": 60.94,
-          "distance_abs": 51120.1,
+          "distance_pct": 61.23,
+          "distance_abs": 51266.1,
           "position": "above"
         },
         {
           "price": 30000.0,
           "tier": 1,
           "step": 10000,
-          "distance_pct": -64.23,
-          "distance_abs": -53879.9,
+          "distance_pct": -64.17,
+          "distance_abs": -53733.9,
           "position": "below"
         },
         {
           "price": 140000.0,
           "tier": 1,
           "step": 10000,
-          "distance_pct": 66.91,
-          "distance_abs": 56120.1,
+          "distance_pct": 67.2,
+          "distance_abs": 56266.1,
           "position": "above"
         },
         {
           "price": 25000.0,
           "tier": 2,
           "step": 5000.0,
-          "distance_pct": -70.2,
-          "distance_abs": -58879.9,
+          "distance_pct": -70.14,
+          "distance_abs": -58733.9,
           "position": "below"
         },
         {
           "price": 145000.0,
           "tier": 2,
           "step": 5000.0,
-          "distance_pct": 72.87,
-          "distance_abs": 61120.1,
+          "distance_pct": 73.17,
+          "distance_abs": 61266.1,
           "position": "above"
         },
         {
           "price": 20000.0,
           "tier": 1,
           "step": 10000,
-          "distance_pct": -76.16,
-          "distance_abs": -63879.9,
+          "distance_pct": -76.11,
+          "distance_abs": -63733.9,
           "position": "below"
         },
         {
           "price": 150000.0,
           "tier": 1,
           "step": 10000,
-          "distance_pct": 78.83,
-          "distance_abs": 66120.1,
+          "distance_pct": 79.14,
+          "distance_abs": 66266.1,
           "position": "above"
         }
       ],
@@ -363,65 +363,65 @@
       },
       "supports": [
         {
-          "price": 83854.1,
-          "touches": 16,
+          "price": 83705.4,
+          "touches": 10,
           "distance_pct": 0.03,
           "strength": 5
         },
         {
           "price": 83712.5,
-          "touches": 10,
-          "distance_pct": 0.2,
-          "strength": 5
-        },
-        {
-          "price": 83705.4,
-          "touches": 9,
-          "distance_pct": 0.21,
+          "touches": 11,
+          "distance_pct": 0.03,
           "strength": 5
         },
         {
           "price": 83469.2,
           "touches": 5,
-          "distance_pct": 0.49,
+          "distance_pct": 0.32,
           "strength": 5
         },
         {
           "price": 83180.1,
           "touches": 2,
-          "distance_pct": 0.83,
+          "distance_pct": 0.66,
           "strength": 2
+        },
+        {
+          "price": 81151.1,
+          "touches": 43,
+          "distance_pct": 3.08,
+          "strength": 5
         }
       ],
       "resistances": [
         {
+          "price": 84001.5,
+          "touches": 19,
+          "distance_pct": 0.32,
+          "strength": 5
+        },
+        {
           "price": 84470.1,
           "touches": 23,
-          "distance_pct": 0.7,
+          "distance_pct": 0.88,
           "strength": 5
         },
         {
           "price": 84521.4,
           "touches": 18,
-          "distance_pct": 0.76,
+          "distance_pct": 0.94,
           "strength": 5
         },
         {
           "price": 84524.7,
           "touches": 16,
-          "distance_pct": 0.77,
+          "distance_pct": 0.94,
           "strength": 5
         },
         {
           "price": 84524.8,
           "touches": 16,
-          "distance_pct": 0.77,
-          "strength": 5
-        },
-        {
-          "price": 84604.8,
-          "touches": 12,
-          "distance_pct": 0.86,
+          "distance_pct": 0.94,
           "strength": 5
         }
       ],
@@ -450,7 +450,7 @@
     },
     "ETHUSDT": {
       "symbol": "ETHUSDT",
-      "current_price": 2684.25,
+      "current_price": 2678.66,
       "steps": {
         "major": 100,
         "mid": 50.0,
@@ -461,976 +461,968 @@
           "price": 2680.0,
           "tier": 3,
           "step": 10.0,
-          "distance_pct": -0.16,
-          "distance_abs": -4.25,
-          "position": "below"
-        },
-        {
-          "price": 2690.0,
-          "tier": 3,
-          "step": 10.0,
-          "distance_pct": 0.21,
-          "distance_abs": 5.75,
+          "distance_pct": 0.05,
+          "distance_abs": 1.34,
           "position": "above"
         },
         {
           "price": 2670.0,
           "tier": 3,
           "step": 10.0,
-          "distance_pct": -0.53,
-          "distance_abs": -14.25,
+          "distance_pct": -0.32,
+          "distance_abs": -8.66,
           "position": "below"
         },
         {
-          "price": 2700.0,
-          "tier": 1,
-          "step": 100,
-          "distance_pct": 0.59,
-          "distance_abs": 15.75,
+          "price": 2690.0,
+          "tier": 3,
+          "step": 10.0,
+          "distance_pct": 0.42,
+          "distance_abs": 11.34,
           "position": "above"
         },
         {
           "price": 2660.0,
           "tier": 3,
           "step": 10.0,
-          "distance_pct": -0.9,
-          "distance_abs": -24.25,
+          "distance_pct": -0.7,
+          "distance_abs": -18.66,
           "position": "below"
         },
         {
-          "price": 2710.0,
-          "tier": 3,
-          "step": 10.0,
-          "distance_pct": 0.96,
-          "distance_abs": 25.75,
+          "price": 2700.0,
+          "tier": 1,
+          "step": 100,
+          "distance_pct": 0.8,
+          "distance_abs": 21.34,
           "position": "above"
         },
         {
           "price": 2650.0,
           "tier": 2,
           "step": 50.0,
-          "distance_pct": -1.28,
-          "distance_abs": -34.25,
+          "distance_pct": -1.07,
+          "distance_abs": -28.66,
           "position": "below"
         },
         {
-          "price": 2720.0,
+          "price": 2710.0,
           "tier": 3,
           "step": 10.0,
-          "distance_pct": 1.33,
-          "distance_abs": 35.75,
+          "distance_pct": 1.17,
+          "distance_abs": 31.34,
           "position": "above"
         },
         {
           "price": 2640.0,
           "tier": 3,
           "step": 10.0,
-          "distance_pct": -1.65,
-          "distance_abs": -44.25,
+          "distance_pct": -1.44,
+          "distance_abs": -38.66,
           "position": "below"
         },
         {
-          "price": 2730.0,
+          "price": 2720.0,
           "tier": 3,
           "step": 10.0,
-          "distance_pct": 1.7,
-          "distance_abs": 45.75,
+          "distance_pct": 1.54,
+          "distance_abs": 41.34,
           "position": "above"
         },
         {
           "price": 2630.0,
           "tier": 3,
           "step": 10.0,
-          "distance_pct": -2.02,
-          "distance_abs": -54.25,
+          "distance_pct": -1.82,
+          "distance_abs": -48.66,
           "position": "below"
         },
         {
-          "price": 2740.0,
+          "price": 2730.0,
           "tier": 3,
           "step": 10.0,
-          "distance_pct": 2.08,
-          "distance_abs": 55.75,
+          "distance_pct": 1.92,
+          "distance_abs": 51.34,
           "position": "above"
         },
         {
           "price": 2620.0,
           "tier": 3,
           "step": 10.0,
-          "distance_pct": -2.39,
-          "distance_abs": -64.25,
+          "distance_pct": -2.19,
+          "distance_abs": -58.66,
           "position": "below"
         },
         {
-          "price": 2750.0,
-          "tier": 2,
-          "step": 50.0,
-          "distance_pct": 2.45,
-          "distance_abs": 65.75,
+          "price": 2740.0,
+          "tier": 3,
+          "step": 10.0,
+          "distance_pct": 2.29,
+          "distance_abs": 61.34,
           "position": "above"
         },
         {
           "price": 2610.0,
           "tier": 3,
           "step": 10.0,
-          "distance_pct": -2.77,
-          "distance_abs": -74.25,
+          "distance_pct": -2.56,
+          "distance_abs": -68.66,
           "position": "below"
         },
         {
-          "price": 2760.0,
-          "tier": 3,
-          "step": 10.0,
-          "distance_pct": 2.82,
-          "distance_abs": 75.75,
+          "price": 2750.0,
+          "tier": 2,
+          "step": 50.0,
+          "distance_pct": 2.66,
+          "distance_abs": 71.34,
           "position": "above"
         },
         {
           "price": 2600.0,
           "tier": 1,
           "step": 100,
-          "distance_pct": -3.14,
-          "distance_abs": -84.25,
+          "distance_pct": -2.94,
+          "distance_abs": -78.66,
           "position": "below"
         },
         {
-          "price": 2770.0,
+          "price": 2760.0,
           "tier": 3,
           "step": 10.0,
-          "distance_pct": 3.19,
-          "distance_abs": 85.75,
+          "distance_pct": 3.04,
+          "distance_abs": 81.34,
           "position": "above"
         },
         {
           "price": 2590.0,
           "tier": 3,
           "step": 10.0,
-          "distance_pct": -3.51,
-          "distance_abs": -94.25,
+          "distance_pct": -3.31,
+          "distance_abs": -88.66,
           "position": "below"
         },
         {
-          "price": 2780.0,
+          "price": 2770.0,
           "tier": 3,
           "step": 10.0,
-          "distance_pct": 3.57,
-          "distance_abs": 95.75,
+          "distance_pct": 3.41,
+          "distance_abs": 91.34,
           "position": "above"
         },
         {
           "price": 2580.0,
           "tier": 3,
           "step": 10.0,
-          "distance_pct": -3.88,
-          "distance_abs": -104.25,
+          "distance_pct": -3.68,
+          "distance_abs": -98.66,
           "position": "below"
         },
         {
-          "price": 2790.0,
+          "price": 2780.0,
           "tier": 3,
           "step": 10.0,
-          "distance_pct": 3.94,
-          "distance_abs": 105.75,
+          "distance_pct": 3.78,
+          "distance_abs": 101.34,
           "position": "above"
         },
         {
           "price": 2570.0,
           "tier": 3,
           "step": 10.0,
-          "distance_pct": -4.26,
-          "distance_abs": -114.25,
+          "distance_pct": -4.06,
+          "distance_abs": -108.66,
           "position": "below"
         },
         {
-          "price": 2800.0,
-          "tier": 1,
-          "step": 100,
-          "distance_pct": 4.31,
-          "distance_abs": 115.75,
+          "price": 2790.0,
+          "tier": 3,
+          "step": 10.0,
+          "distance_pct": 4.16,
+          "distance_abs": 111.34,
           "position": "above"
         },
         {
           "price": 2560.0,
           "tier": 3,
           "step": 10.0,
-          "distance_pct": -4.63,
-          "distance_abs": -124.25,
+          "distance_pct": -4.43,
+          "distance_abs": -118.66,
           "position": "below"
         },
         {
-          "price": 2810.0,
-          "tier": 3,
-          "step": 10.0,
-          "distance_pct": 4.68,
-          "distance_abs": 125.75,
+          "price": 2800.0,
+          "tier": 1,
+          "step": 100,
+          "distance_pct": 4.53,
+          "distance_abs": 121.34,
           "position": "above"
         },
         {
           "price": 2550.0,
           "tier": 2,
           "step": 50.0,
-          "distance_pct": -5.0,
-          "distance_abs": -134.25,
+          "distance_pct": -4.8,
+          "distance_abs": -128.66,
           "position": "below"
         },
         {
-          "price": 2820.0,
+          "price": 2810.0,
           "tier": 3,
           "step": 10.0,
-          "distance_pct": 5.06,
-          "distance_abs": 135.75,
+          "distance_pct": 4.9,
+          "distance_abs": 131.34,
           "position": "above"
         },
         {
           "price": 2540.0,
           "tier": 3,
           "step": 10.0,
-          "distance_pct": -5.37,
-          "distance_abs": -144.25,
+          "distance_pct": -5.18,
+          "distance_abs": -138.66,
           "position": "below"
         },
         {
-          "price": 2830.0,
+          "price": 2820.0,
           "tier": 3,
           "step": 10.0,
-          "distance_pct": 5.43,
-          "distance_abs": 145.75,
+          "distance_pct": 5.28,
+          "distance_abs": 141.34,
           "position": "above"
         },
         {
           "price": 2530.0,
           "tier": 3,
           "step": 10.0,
-          "distance_pct": -5.75,
-          "distance_abs": -154.25,
+          "distance_pct": -5.55,
+          "distance_abs": -148.66,
           "position": "below"
         },
         {
-          "price": 2840.0,
+          "price": 2830.0,
           "tier": 3,
           "step": 10.0,
-          "distance_pct": 5.8,
-          "distance_abs": 155.75,
+          "distance_pct": 5.65,
+          "distance_abs": 151.34,
           "position": "above"
         },
         {
           "price": 2520.0,
           "tier": 3,
           "step": 10.0,
-          "distance_pct": -6.12,
-          "distance_abs": -164.25,
+          "distance_pct": -5.92,
+          "distance_abs": -158.66,
           "position": "below"
         },
         {
-          "price": 2850.0,
-          "tier": 2,
-          "step": 50.0,
-          "distance_pct": 6.17,
-          "distance_abs": 165.75,
+          "price": 2840.0,
+          "tier": 3,
+          "step": 10.0,
+          "distance_pct": 6.02,
+          "distance_abs": 161.34,
           "position": "above"
         },
         {
           "price": 2510.0,
           "tier": 3,
           "step": 10.0,
-          "distance_pct": -6.49,
-          "distance_abs": -174.25,
+          "distance_pct": -6.3,
+          "distance_abs": -168.66,
           "position": "below"
         },
         {
-          "price": 2860.0,
-          "tier": 3,
-          "step": 10.0,
-          "distance_pct": 6.55,
-          "distance_abs": 175.75,
+          "price": 2850.0,
+          "tier": 2,
+          "step": 50.0,
+          "distance_pct": 6.4,
+          "distance_abs": 171.34,
           "position": "above"
         },
         {
           "price": 2500.0,
           "tier": 1,
           "step": 100,
-          "distance_pct": -6.86,
-          "distance_abs": -184.25,
+          "distance_pct": -6.67,
+          "distance_abs": -178.66,
           "position": "below"
         },
         {
-          "price": 2870.0,
+          "price": 2860.0,
           "tier": 3,
           "step": 10.0,
-          "distance_pct": 6.92,
-          "distance_abs": 185.75,
+          "distance_pct": 6.77,
+          "distance_abs": 181.34,
           "position": "above"
         },
         {
           "price": 2490.0,
           "tier": 3,
           "step": 10.0,
-          "distance_pct": -7.24,
-          "distance_abs": -194.25,
+          "distance_pct": -7.04,
+          "distance_abs": -188.66,
           "position": "below"
         },
         {
-          "price": 2880.0,
+          "price": 2870.0,
           "tier": 3,
           "step": 10.0,
-          "distance_pct": 7.29,
-          "distance_abs": 195.75,
+          "distance_pct": 7.14,
+          "distance_abs": 191.34,
           "position": "above"
         },
         {
           "price": 2480.0,
           "tier": 3,
           "step": 10.0,
-          "distance_pct": -7.61,
-          "distance_abs": -204.25,
+          "distance_pct": -7.42,
+          "distance_abs": -198.66,
           "position": "below"
         },
         {
-          "price": 2890.0,
+          "price": 2880.0,
           "tier": 3,
           "step": 10.0,
-          "distance_pct": 7.67,
-          "distance_abs": 205.75,
+          "distance_pct": 7.52,
+          "distance_abs": 201.34,
           "position": "above"
         },
         {
           "price": 2470.0,
           "tier": 3,
           "step": 10.0,
-          "distance_pct": -7.98,
-          "distance_abs": -214.25,
+          "distance_pct": -7.79,
+          "distance_abs": -208.66,
           "position": "below"
         },
         {
-          "price": 2900.0,
-          "tier": 1,
-          "step": 100,
-          "distance_pct": 8.04,
-          "distance_abs": 215.75,
+          "price": 2890.0,
+          "tier": 3,
+          "step": 10.0,
+          "distance_pct": 7.89,
+          "distance_abs": 211.34,
           "position": "above"
         },
         {
           "price": 2460.0,
           "tier": 3,
           "step": 10.0,
-          "distance_pct": -8.35,
-          "distance_abs": -224.25,
+          "distance_pct": -8.16,
+          "distance_abs": -218.66,
           "position": "below"
         },
         {
-          "price": 2910.0,
-          "tier": 3,
-          "step": 10.0,
-          "distance_pct": 8.41,
-          "distance_abs": 225.75,
+          "price": 2900.0,
+          "tier": 1,
+          "step": 100,
+          "distance_pct": 8.26,
+          "distance_abs": 221.34,
           "position": "above"
         },
         {
           "price": 2450.0,
           "tier": 2,
           "step": 50.0,
-          "distance_pct": -8.73,
-          "distance_abs": -234.25,
+          "distance_pct": -8.54,
+          "distance_abs": -228.66,
           "position": "below"
         },
         {
-          "price": 2920.0,
+          "price": 2910.0,
           "tier": 3,
           "step": 10.0,
-          "distance_pct": 8.78,
-          "distance_abs": 235.75,
+          "distance_pct": 8.64,
+          "distance_abs": 231.34,
           "position": "above"
         },
         {
           "price": 2440.0,
           "tier": 3,
           "step": 10.0,
-          "distance_pct": -9.1,
-          "distance_abs": -244.25,
+          "distance_pct": -8.91,
+          "distance_abs": -238.66,
           "position": "below"
         },
         {
-          "price": 2930.0,
+          "price": 2920.0,
           "tier": 3,
           "step": 10.0,
-          "distance_pct": 9.16,
-          "distance_abs": 245.75,
+          "distance_pct": 9.01,
+          "distance_abs": 241.34,
           "position": "above"
         },
         {
           "price": 2430.0,
           "tier": 3,
           "step": 10.0,
-          "distance_pct": -9.47,
-          "distance_abs": -254.25,
+          "distance_pct": -9.28,
+          "distance_abs": -248.66,
           "position": "below"
         },
         {
-          "price": 2940.0,
+          "price": 2930.0,
           "tier": 3,
           "step": 10.0,
-          "distance_pct": 9.53,
-          "distance_abs": 255.75,
+          "distance_pct": 9.38,
+          "distance_abs": 251.34,
           "position": "above"
         },
         {
           "price": 2420.0,
           "tier": 3,
           "step": 10.0,
-          "distance_pct": -9.84,
-          "distance_abs": -264.25,
+          "distance_pct": -9.66,
+          "distance_abs": -258.66,
           "position": "below"
         },
         {
-          "price": 2950.0,
-          "tier": 2,
-          "step": 50.0,
-          "distance_pct": 9.9,
-          "distance_abs": 265.75,
+          "price": 2940.0,
+          "tier": 3,
+          "step": 10.0,
+          "distance_pct": 9.76,
+          "distance_abs": 261.34,
           "position": "above"
         },
         {
           "price": 2410.0,
           "tier": 3,
           "step": 10.0,
-          "distance_pct": -10.22,
-          "distance_abs": -274.25,
+          "distance_pct": -10.03,
+          "distance_abs": -268.66,
           "position": "below"
         },
         {
-          "price": 2960.0,
-          "tier": 3,
-          "step": 10.0,
-          "distance_pct": 10.27,
-          "distance_abs": 275.75,
+          "price": 2950.0,
+          "tier": 2,
+          "step": 50.0,
+          "distance_pct": 10.13,
+          "distance_abs": 271.34,
           "position": "above"
         },
         {
           "price": 2400.0,
           "tier": 1,
           "step": 100,
-          "distance_pct": -10.59,
-          "distance_abs": -284.25,
+          "distance_pct": -10.4,
+          "distance_abs": -278.66,
           "position": "below"
         },
         {
           "price": 3000.0,
           "tier": 1,
           "step": 100,
-          "distance_pct": 11.76,
-          "distance_abs": 315.75,
+          "distance_pct": 12.0,
+          "distance_abs": 321.34,
           "position": "above"
         },
         {
           "price": 2350.0,
           "tier": 2,
           "step": 50.0,
-          "distance_pct": -12.45,
-          "distance_abs": -334.25,
+          "distance_pct": -12.27,
+          "distance_abs": -328.66,
           "position": "below"
         },
         {
           "price": 3050.0,
           "tier": 2,
           "step": 50.0,
-          "distance_pct": 13.63,
-          "distance_abs": 365.75,
+          "distance_pct": 13.86,
+          "distance_abs": 371.34,
           "position": "above"
         },
         {
           "price": 2300.0,
           "tier": 1,
           "step": 100,
-          "distance_pct": -14.31,
-          "distance_abs": -384.25,
+          "distance_pct": -14.14,
+          "distance_abs": -378.66,
           "position": "below"
         },
         {
           "price": 3100.0,
           "tier": 1,
           "step": 100,
-          "distance_pct": 15.49,
-          "distance_abs": 415.75,
+          "distance_pct": 15.73,
+          "distance_abs": 421.34,
           "position": "above"
         },
         {
           "price": 2250.0,
           "tier": 2,
           "step": 50.0,
-          "distance_pct": -16.18,
-          "distance_abs": -434.25,
+          "distance_pct": -16.0,
+          "distance_abs": -428.66,
           "position": "below"
         },
         {
           "price": 3150.0,
           "tier": 2,
           "step": 50.0,
-          "distance_pct": 17.35,
-          "distance_abs": 465.75,
+          "distance_pct": 17.6,
+          "distance_abs": 471.34,
           "position": "above"
         },
         {
           "price": 2200.0,
           "tier": 1,
           "step": 100,
-          "distance_pct": -18.04,
-          "distance_abs": -484.25,
+          "distance_pct": -17.87,
+          "distance_abs": -478.66,
           "position": "below"
         },
         {
           "price": 3200.0,
           "tier": 1,
           "step": 100,
-          "distance_pct": 19.21,
-          "distance_abs": 515.75,
+          "distance_pct": 19.46,
+          "distance_abs": 521.34,
           "position": "above"
         },
         {
           "price": 2150.0,
           "tier": 2,
           "step": 50.0,
-          "distance_pct": -19.9,
-          "distance_abs": -534.25,
+          "distance_pct": -19.74,
+          "distance_abs": -528.66,
           "position": "below"
         },
         {
           "price": 3250.0,
           "tier": 2,
           "step": 50.0,
-          "distance_pct": 21.08,
-          "distance_abs": 565.75,
+          "distance_pct": 21.33,
+          "distance_abs": 571.34,
           "position": "above"
         },
         {
           "price": 2100.0,
           "tier": 1,
           "step": 100,
-          "distance_pct": -21.77,
-          "distance_abs": -584.25,
+          "distance_pct": -21.6,
+          "distance_abs": -578.66,
           "position": "below"
         },
         {
           "price": 3300.0,
           "tier": 1,
           "step": 100,
-          "distance_pct": 22.94,
-          "distance_abs": 615.75,
+          "distance_pct": 23.2,
+          "distance_abs": 621.34,
           "position": "above"
         },
         {
           "price": 2050.0,
           "tier": 2,
           "step": 50.0,
-          "distance_pct": -23.63,
-          "distance_abs": -634.25,
+          "distance_pct": -23.47,
+          "distance_abs": -628.66,
           "position": "below"
         },
         {
           "price": 3350.0,
           "tier": 2,
           "step": 50.0,
-          "distance_pct": 24.8,
-          "distance_abs": 665.75,
+          "distance_pct": 25.06,
+          "distance_abs": 671.34,
           "position": "above"
         },
         {
           "price": 2000.0,
           "tier": 1,
           "step": 100,
-          "distance_pct": -25.49,
-          "distance_abs": -684.25,
+          "distance_pct": -25.34,
+          "distance_abs": -678.66,
           "position": "below"
         },
         {
           "price": 3400.0,
           "tier": 1,
           "step": 100,
-          "distance_pct": 26.66,
-          "distance_abs": 715.75,
+          "distance_pct": 26.93,
+          "distance_abs": 721.34,
           "position": "above"
         },
         {
           "price": 1950.0,
           "tier": 2,
           "step": 50.0,
-          "distance_pct": -27.35,
-          "distance_abs": -734.25,
+          "distance_pct": -27.2,
+          "distance_abs": -728.66,
           "position": "below"
         },
         {
           "price": 3450.0,
           "tier": 2,
           "step": 50.0,
-          "distance_pct": 28.53,
-          "distance_abs": 765.75,
+          "distance_pct": 28.8,
+          "distance_abs": 771.34,
           "position": "above"
         },
         {
           "price": 1900.0,
           "tier": 1,
           "step": 100,
-          "distance_pct": -29.22,
-          "distance_abs": -784.25,
+          "distance_pct": -29.07,
+          "distance_abs": -778.66,
           "position": "below"
         },
         {
           "price": 3500.0,
           "tier": 1,
           "step": 100,
-          "distance_pct": 30.39,
-          "distance_abs": 815.75,
+          "distance_pct": 30.66,
+          "distance_abs": 821.34,
           "position": "above"
         },
         {
           "price": 1850.0,
           "tier": 2,
           "step": 50.0,
-          "distance_pct": -31.08,
-          "distance_abs": -834.25,
+          "distance_pct": -30.94,
+          "distance_abs": -828.66,
           "position": "below"
         },
         {
           "price": 3550.0,
           "tier": 2,
           "step": 50.0,
-          "distance_pct": 32.25,
-          "distance_abs": 865.75,
+          "distance_pct": 32.53,
+          "distance_abs": 871.34,
           "position": "above"
         },
         {
           "price": 1800.0,
           "tier": 1,
           "step": 100,
-          "distance_pct": -32.94,
-          "distance_abs": -884.25,
+          "distance_pct": -32.8,
+          "distance_abs": -878.66,
           "position": "below"
         },
         {
           "price": 3600.0,
           "tier": 1,
           "step": 100,
-          "distance_pct": 34.12,
-          "distance_abs": 915.75,
+          "distance_pct": 34.4,
+          "distance_abs": 921.34,
           "position": "above"
         },
         {
           "price": 1750.0,
           "tier": 2,
           "step": 50.0,
-          "distance_pct": -34.8,
-          "distance_abs": -934.25,
+          "distance_pct": -34.67,
+          "distance_abs": -928.66,
           "position": "below"
         },
         {
           "price": 3650.0,
           "tier": 2,
           "step": 50.0,
-          "distance_pct": 35.98,
-          "distance_abs": 965.75,
+          "distance_pct": 36.26,
+          "distance_abs": 971.34,
           "position": "above"
         },
         {
           "price": 1700.0,
           "tier": 1,
           "step": 100,
-          "distance_pct": -36.67,
-          "distance_abs": -984.25,
+          "distance_pct": -36.54,
+          "distance_abs": -978.66,
           "position": "below"
         },
         {
           "price": 3700.0,
           "tier": 1,
           "step": 100,
-          "distance_pct": 37.84,
-          "distance_abs": 1015.75,
+          "distance_pct": 38.13,
+          "distance_abs": 1021.34,
           "position": "above"
         },
         {
           "price": 1650.0,
           "tier": 2,
           "step": 50.0,
-          "distance_pct": -38.53,
-          "distance_abs": -1034.25,
+          "distance_pct": -38.4,
+          "distance_abs": -1028.66,
           "position": "below"
         },
         {
           "price": 3750.0,
           "tier": 2,
           "step": 50.0,
-          "distance_pct": 39.7,
-          "distance_abs": 1065.75,
+          "distance_pct": 40.0,
+          "distance_abs": 1071.34,
           "position": "above"
         },
         {
           "price": 1600.0,
           "tier": 1,
           "step": 100,
-          "distance_pct": -40.39,
-          "distance_abs": -1084.25,
+          "distance_pct": -40.27,
+          "distance_abs": -1078.66,
           "position": "below"
         },
         {
           "price": 3800.0,
           "tier": 1,
           "step": 100,
-          "distance_pct": 41.57,
-          "distance_abs": 1115.75,
+          "distance_pct": 41.86,
+          "distance_abs": 1121.34,
           "position": "above"
         },
         {
           "price": 1550.0,
           "tier": 2,
           "step": 50.0,
-          "distance_pct": -42.26,
-          "distance_abs": -1134.25,
+          "distance_pct": -42.14,
+          "distance_abs": -1128.66,
           "position": "below"
         },
         {
           "price": 3850.0,
           "tier": 2,
           "step": 50.0,
-          "distance_pct": 43.43,
-          "distance_abs": 1165.75,
+          "distance_pct": 43.73,
+          "distance_abs": 1171.34,
           "position": "above"
         },
         {
           "price": 1500.0,
           "tier": 1,
           "step": 100,
-          "distance_pct": -44.12,
-          "distance_abs": -1184.25,
+          "distance_pct": -44.0,
+          "distance_abs": -1178.66,
           "position": "below"
         },
         {
           "price": 3900.0,
           "tier": 1,
           "step": 100,
-          "distance_pct": 45.29,
-          "distance_abs": 1215.75,
+          "distance_pct": 45.6,
+          "distance_abs": 1221.34,
           "position": "above"
         },
         {
           "price": 1450.0,
           "tier": 2,
           "step": 50.0,
-          "distance_pct": -45.98,
-          "distance_abs": -1234.25,
+          "distance_pct": -45.87,
+          "distance_abs": -1228.66,
           "position": "below"
         },
         {
           "price": 3950.0,
           "tier": 2,
           "step": 50.0,
-          "distance_pct": 47.15,
-          "distance_abs": 1265.75,
+          "distance_pct": 47.46,
+          "distance_abs": 1271.34,
           "position": "above"
         },
         {
           "price": 1400.0,
           "tier": 1,
           "step": 100,
-          "distance_pct": -47.84,
-          "distance_abs": -1284.25,
+          "distance_pct": -47.74,
+          "distance_abs": -1278.66,
           "position": "below"
         },
         {
           "price": 4000.0,
           "tier": 1,
           "step": 100,
-          "distance_pct": 49.02,
-          "distance_abs": 1315.75,
+          "distance_pct": 49.33,
+          "distance_abs": 1321.34,
           "position": "above"
         },
         {
           "price": 1350.0,
           "tier": 2,
           "step": 50.0,
-          "distance_pct": -49.71,
-          "distance_abs": -1334.25,
+          "distance_pct": -49.6,
+          "distance_abs": -1328.66,
           "position": "below"
         },
         {
           "price": 4050.0,
           "tier": 2,
           "step": 50.0,
-          "distance_pct": 50.88,
-          "distance_abs": 1365.75,
+          "distance_pct": 51.2,
+          "distance_abs": 1371.34,
           "position": "above"
         },
         {
           "price": 1300.0,
           "tier": 1,
           "step": 100,
-          "distance_pct": -51.57,
-          "distance_abs": -1384.25,
+          "distance_pct": -51.47,
+          "distance_abs": -1378.66,
           "position": "below"
         },
         {
           "price": 4100.0,
           "tier": 1,
           "step": 100,
-          "distance_pct": 52.74,
-          "distance_abs": 1415.75,
+          "distance_pct": 53.06,
+          "distance_abs": 1421.34,
           "position": "above"
         },
         {
           "price": 1250.0,
           "tier": 2,
           "step": 50.0,
-          "distance_pct": -53.43,
-          "distance_abs": -1434.25,
+          "distance_pct": -53.33,
+          "distance_abs": -1428.66,
           "position": "below"
         },
         {
           "price": 4150.0,
           "tier": 2,
           "step": 50.0,
-          "distance_pct": 54.61,
-          "distance_abs": 1465.75,
+          "distance_pct": 54.93,
+          "distance_abs": 1471.34,
           "position": "above"
         },
         {
           "price": 1200.0,
           "tier": 1,
           "step": 100,
-          "distance_pct": -55.29,
-          "distance_abs": -1484.25,
+          "distance_pct": -55.2,
+          "distance_abs": -1478.66,
           "position": "below"
         },
         {
           "price": 4200.0,
           "tier": 1,
           "step": 100,
-          "distance_pct": 56.47,
-          "distance_abs": 1515.75,
+          "distance_pct": 56.79,
+          "distance_abs": 1521.34,
           "position": "above"
         },
         {
           "price": 1150.0,
           "tier": 2,
           "step": 50.0,
-          "distance_pct": -57.16,
-          "distance_abs": -1534.25,
+          "distance_pct": -57.07,
+          "distance_abs": -1528.66,
           "position": "below"
         },
         {
           "price": 4250.0,
           "tier": 2,
           "step": 50.0,
-          "distance_pct": 58.33,
-          "distance_abs": 1565.75,
+          "distance_pct": 58.66,
+          "distance_abs": 1571.34,
           "position": "above"
         },
         {
           "price": 1100.0,
           "tier": 1,
           "step": 100,
-          "distance_pct": -59.02,
-          "distance_abs": -1584.25,
+          "distance_pct": -58.93,
+          "distance_abs": -1578.66,
           "position": "below"
         },
         {
           "price": 4300.0,
           "tier": 1,
           "step": 100,
-          "distance_pct": 60.19,
-          "distance_abs": 1615.75,
+          "distance_pct": 60.53,
+          "distance_abs": 1621.34,
           "position": "above"
         },
         {
           "price": 1050.0,
           "tier": 2,
           "step": 50.0,
-          "distance_pct": -60.88,
-          "distance_abs": -1634.25,
+          "distance_pct": -60.8,
+          "distance_abs": -1628.66,
           "position": "below"
         },
         {
           "price": 4350.0,
           "tier": 2,
           "step": 50.0,
-          "distance_pct": 62.06,
-          "distance_abs": 1665.75,
+          "distance_pct": 62.39,
+          "distance_abs": 1671.34,
           "position": "above"
         },
         {
           "price": 1000.0,
           "tier": 1,
           "step": 100,
-          "distance_pct": -62.75,
-          "distance_abs": -1684.25,
+          "distance_pct": -62.67,
+          "distance_abs": -1678.66,
           "position": "below"
         },
         {
           "price": 4400.0,
           "tier": 1,
           "step": 100,
-          "distance_pct": 63.92,
-          "distance_abs": 1715.75,
+          "distance_pct": 64.26,
+          "distance_abs": 1721.34,
           "position": "above"
         },
         {
           "price": 950.0,
           "tier": 2,
           "step": 50.0,
-          "distance_pct": -64.61,
-          "distance_abs": -1734.25,
+          "distance_pct": -64.53,
+          "distance_abs": -1728.66,
           "position": "below"
         },
         {
           "price": 4450.0,
           "tier": 2,
           "step": 50.0,
-          "distance_pct": 65.78,
-          "distance_abs": 1765.75,
+          "distance_pct": 66.13,
+          "distance_abs": 1771.34,
           "position": "above"
         },
         {
           "price": 900.0,
           "tier": 1,
           "step": 100,
-          "distance_pct": -66.47,
-          "distance_abs": -1784.25,
+          "distance_pct": -66.4,
+          "distance_abs": -1778.66,
           "position": "below"
         },
         {
           "price": 4500.0,
           "tier": 1,
           "step": 100,
-          "distance_pct": 67.64,
-          "distance_abs": 1815.75,
+          "distance_pct": 67.99,
+          "distance_abs": 1821.34,
           "position": "above"
         },
         {
           "price": 850.0,
           "tier": 2,
           "step": 50.0,
-          "distance_pct": -68.33,
-          "distance_abs": -1834.25,
+          "distance_pct": -68.27,
+          "distance_abs": -1828.66,
           "position": "below"
         },
         {
           "price": 4550.0,
           "tier": 2,
           "step": 50.0,
-          "distance_pct": 69.51,
-          "distance_abs": 1865.75,
+          "distance_pct": 69.86,
+          "distance_abs": 1871.34,
           "position": "above"
         },
         {
           "price": 800.0,
           "tier": 1,
           "step": 100,
-          "distance_pct": -70.2,
-          "distance_abs": -1884.25,
+          "distance_pct": -70.13,
+          "distance_abs": -1878.66,
           "position": "below"
         },
         {
           "price": 4600.0,
           "tier": 1,
           "step": 100,
-          "distance_pct": 71.37,
-          "distance_abs": 1915.75,
+          "distance_pct": 71.73,
+          "distance_abs": 1921.34,
           "position": "above"
         }
       ],
@@ -1450,65 +1442,65 @@
       },
       "supports": [
         {
-          "price": 2682.38,
-          "touches": 23,
-          "distance_pct": 0.07,
-          "strength": 5
-        },
-        {
-          "price": 2682.06,
-          "touches": 22,
-          "distance_pct": 0.08,
-          "strength": 5
-        },
-        {
           "price": 2672.34,
           "touches": 24,
-          "distance_pct": 0.44,
+          "distance_pct": 0.24,
           "strength": 5
         },
         {
           "price": 2671.16,
           "touches": 24,
-          "distance_pct": 0.49,
+          "distance_pct": 0.28,
           "strength": 5
         },
         {
           "price": 2668.15,
           "touches": 19,
-          "distance_pct": 0.6,
+          "distance_pct": 0.39,
+          "strength": 5
+        },
+        {
+          "price": 2665.26,
+          "touches": 19,
+          "distance_pct": 0.5,
+          "strength": 5
+        },
+        {
+          "price": 2645.07,
+          "touches": 26,
+          "distance_pct": 1.25,
           "strength": 5
         }
       ],
       "resistances": [
         {
-          "price": 2686.6,
+          "price": 2681.08,
           "touches": 25,
           "distance_pct": 0.09,
           "strength": 5
         },
         {
+          "price": 2686.6,
+          "touches": 25,
+          "distance_pct": 0.3,
+          "strength": 5
+        },
+        {
           "price": 2689.21,
           "touches": 24,
-          "distance_pct": 0.18,
+          "distance_pct": 0.39,
           "strength": 5
         },
         {
           "price": 2690.92,
           "touches": 20,
-          "distance_pct": 0.25,
+          "distance_pct": 0.46,
           "strength": 5
         },
         {
           "price": 2693.18,
           "touches": 15,
-          "distance_pct": 0.33,
-          "strength": 5
-        },
-        {
-          "price": 2695.71,
-          "touches": 11,
-          "distance_pct": 0.43,
+          "distance_pct": 0.54,
           "strength": 5
         }
       ],
