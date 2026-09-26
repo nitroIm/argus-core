@@ -24,7 +24,7 @@ logging.basicConfig(
 )
 log = logging.getLogger("crypto.orderbook")
 
-TOP_N = 10
+TOP_N = 50
 
 SYMBOLS = ["BTCUSDT", "ETHUSDT"]
 
