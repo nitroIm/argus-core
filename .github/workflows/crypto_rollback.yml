@@ -1,10 +1,3 @@
-# ============================================================
-# ARGUS - Rollback model
-# ------------------------------------------------------------
-# Кнопка отката: восстанавливает модель из prev/.
-# Запускай вручную из Actions.
-# ============================================================
-
 name: Crypto Rollback
 
 on:
@@ -51,19 +44,5 @@ jobs:
               echo "Push OK"
               break
             fi
-            echo "Retry $i"
             sleep 5
           done
-
-      - name: Notify
-        env:
-          TELEGRAM_BOT_TOKEN: >-
-            ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: >-
-            ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: |
-          curl -s -X POST \
-            "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
-            -H "Content-Type: application/json" \
-            -d "{\"chat_id\": \"${TELEGRAM_CHAT_ID}\", \
-                 \"text\": \"⚠️ ARGUS: модель откачена к prev\"}" || true
