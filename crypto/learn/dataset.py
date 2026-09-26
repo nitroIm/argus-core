@@ -1,9 +1,7 @@
 # ============================================================
-# ARGUS-Trader - DATASET v3.1 [PRODUCTION]
+# ARGUS-Trader - DATASET v2 [PRODUCTION]
 # ------------------------------------------------------------
-# v3.1: threshold 0.15 (было 0.30 - слишком жёстко)
-# v3: + threshold MIN_MOVE_PCT
-# v2: + external market + eth_btc_ratio
+# v2: + external market через nearest + eth_btc_ratio
 # v1: базовое чтение features_hourly
 # ============================================================
 
@@ -57,9 +55,6 @@ FEATURE_COLS = [
 
 TARGET_COL = "next_direction"
 
-# Threshold: учимся только на значимых движениях
-MIN_MOVE_PCT = 0.15
-
 EXT_MAX_AGE_H = 3
 
 EXTERNAL_COLS = (
@@ -71,7 +66,7 @@ EXTERNAL_COLS = (
 
 
 def fetch_features(symbol=None, limit=100000):
-    """Читает features_hourly с фильтром threshold."""
+    """Читает features_hourly."""
     internal = [
         c for c in FEATURE_COLS
         if c not in EXTERNAL_COLS
@@ -92,24 +87,20 @@ def fetch_features(symbol=None, limit=100000):
                         + "WHERE symbol = %s "
                         + "AND " + TARGET_COL
                         + " IS NOT NULL "
-                        + "AND ABS(next_change_pct) >= %s "
                         + "ORDER BY timestamp "
                         + "LIMIT %s"
                     )
-                    cur.execute(
-                        sql, (symbol, MIN_MOVE_PCT, limit)
-                    )
+                    cur.execute(sql, (symbol, limit))
                 else:
                     sql = (
                         "SELECT " + ", ".join(base_cols)
                         + " FROM features_hourly "
                         + "WHERE " + TARGET_COL
                         + " IS NOT NULL "
-                        + "AND ABS(next_change_pct) >= %s "
                         + "ORDER BY timestamp "
                         + "LIMIT %s"
                     )
-                    cur.execute(sql, (MIN_MOVE_PCT, limit))
+                    cur.execute(sql, (limit,))
                 return cur.fetchall(), base_cols
     except Exception as e:
         log.error("fetch_features: %s", e)
@@ -299,10 +290,7 @@ def symbols_unique(sym_list):
 
 def prepare(symbol=None, test_frac=0.2):
     rows, base_cols = fetch_features(symbol)
-    log.info(
-        "rows loaded: %d (threshold %.2f%%)",
-        len(rows), MIN_MOVE_PCT,
-    )
+    log.info("rows loaded: %d", len(rows))
 
     if len(rows) < 20:
         log.warning(
@@ -368,7 +356,7 @@ def prepare(symbol=None, test_frac=0.2):
 
 def main():
     log.info("=" * 60)
-    log.info("ARGUS-Trader DATASET v3.1 test")
+    log.info("ARGUS-Trader DATASET v2 test")
     log.info("=" * 60)
 
     data = prepare()
