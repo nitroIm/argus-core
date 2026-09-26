@@ -1,8 +1,9 @@
 # ============================================================
-# ARGUS-Trader - DATASET v3 [PRODUCTION]
+# ARGUS-Trader - DATASET v3.1 [PRODUCTION]
 # ------------------------------------------------------------
-# v3: + threshold MIN_MOVE_PCT=0.3 - только значимые движения
-# v2: + external market через nearest + eth_btc_ratio
+# v3.1: threshold 0.15 (было 0.30 - слишком жёстко)
+# v3: + threshold MIN_MOVE_PCT
+# v2: + external market + eth_btc_ratio
 # v1: базовое чтение features_hourly
 # ============================================================
 
@@ -57,7 +58,7 @@ FEATURE_COLS = [
 TARGET_COL = "next_direction"
 
 # Threshold: учимся только на значимых движениях
-MIN_MOVE_PCT = 0.3
+MIN_MOVE_PCT = 0.15
 
 EXT_MAX_AGE_H = 3
 
@@ -367,7 +368,7 @@ def prepare(symbol=None, test_frac=0.2):
 
 def main():
     log.info("=" * 60)
-    log.info("ARGUS-Trader DATASET v3 test")
+    log.info("ARGUS-Trader DATASET v3.1 test")
     log.info("=" * 60)
 
     data = prepare()
