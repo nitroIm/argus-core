@@ -16,12 +16,12 @@ PREV_DIR = MODELS_DIR / "prev"
 MODEL_FILE = MODELS_DIR / "lgb_model.txt"
 META_FILE = MODELS_DIR / "model_meta.json"
 PREV_MODEL = PREV_DIR / "lgb_model.txt"
-PRE datefmtV_META = PREV_DIR / "model_meta.json"
+PREV_META = PREV_DIR / "model_meta.json"
 
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
-   ="%H:%M:%S",
+    datefmt="%H:%M:%S",
 )
 log = logging.getLogger("crypto.rollback")
 
