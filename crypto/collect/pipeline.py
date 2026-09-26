@@ -1,8 +1,10 @@
 # ============================================================
-# ARGUS-Trader — PIPELINE (главный сборщик) v8
+# ARGUS-Trader — PIPELINE (главный сборщик) v9
 # ------------------------------------------------------------
-# v8: + fear & greed (alternative.me)
-# v7: + liquidations (OKX)
+# v9: + onchain (hashrate) + macro (10Y Treasury)
+#     - liquidations убраны (OKX закрыл публичный API)
+# v8: + fear & greed
+# v7: + liquidations (не работает)
 # v6: + orderbook (MEXC)
 # v5: одна запись в collect_log на весь прогон
 # ============================================================
@@ -32,8 +34,9 @@ from collect.exchanges import CLIENTS
 from collect.priority import get_priority
 from collect.validator import validate
 from collect.orderbook import collect_orderbook
-from collect.liquidations import collect_liquidations
 from collect.feargreed import collect_feargreed
+from collect.onchain import collect_onchain
+from collect.macro import collect_macro
 
 logging.basicConfig(
     level=logging.INFO,
@@ -423,12 +426,19 @@ def run_cycle(mode: str = "incremental"):
     except Exception as e:
         log.error(f"Orderbook: {e}")
 
-    # --- Liquidations (OKX) ---
+    # --- On-chain (Mempool.space) ---
     try:
-        liq_added = collect_liquidations()
-        summary["total_added"] += liq_added
+        oc_added = collect_onchain()
+        summary["total_added"] += oc_added
     except Exception as e:
-        log.error(f"Liquidations: {e}")
+        log.error(f"Onchain: {e}")
+
+    # --- Macro (Yahoo) ---
+    try:
+        mc_added = collect_macro()
+        summary["total_added"] += mc_added
+    except Exception as e:
+        log.error(f"Macro: {e}")
 
     # --- Cross-check ---
     for symbol in SYMBOLS:
