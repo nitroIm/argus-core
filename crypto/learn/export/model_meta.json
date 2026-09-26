@@ -1,11 +1,11 @@
 {
-  "trained_at": "2026-09-25T23:46:17.949506+00:00",
+  "trained_at": "2026-09-26T12:13:07.597621+00:00",
   "version": "v3",
-  "n_total": 392,
-  "n_train": 313,
-  "n_test": 79,
-  "accuracy": 0.557,
-  "num_trees": 1,
+  "n_total": 127,
+  "n_train": 101,
+  "n_test": 26,
+  "accuracy": 0.5,
+  "num_trees": 4,
   "features": [
     "change_pct",
     "range_pct",
@@ -36,23 +36,15 @@
   "top_features": [
     {
       "name": "change_24h",
-      "gain": 25.8
+      "gain": 85.61
     },
     {
-      "name": "lower_wick_pct",
-      "gain": 18.66
+      "name": "taker_ratio",
+      "gain": 23.46
     },
     {
-      "name": "ls_ratio",
-      "gain": 9.26
-    },
-    {
-      "name": "volatility_24h",
-      "gain": 6.26
-    },
-    {
-      "name": "hour_of_day",
-      "gain": 5.72
+      "name": "volatility_7d",
+      "gain": 5.96
     },
     {
       "name": "change_pct",
@@ -71,22 +63,30 @@
       "gain": 0.0
     },
     {
+      "name": "lower_wick_pct",
+      "gain": 0.0
+    },
+    {
       "name": "volume_ratio_24h",
+      "gain": 0.0
+    },
+    {
+      "name": "volatility_24h",
       "gain": 0.0
     }
   ],
   "balance": {
-    "up_total": 218,
-    "down_total": 174,
-    "up_train": 174,
-    "down_train": 139
+    "up_total": 76,
+    "down_total": 51,
+    "up_train": 63,
+    "down_train": 38
   },
   "symbol": null,
   "confusion": {
-    "tp": 44,
+    "tp": 13,
     "tn": 0,
-    "fp": 35,
+    "fp": 13,
     "fn": 0
   },
-  "exported_at": "2026-09-25T23:46:21.199045+00:00"
+  "exported_at": "2026-09-26T12:13:12.696369+00:00"
 }
