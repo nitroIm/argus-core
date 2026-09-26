@@ -1,12 +1,9 @@
 # ============================================================
 # ARGUS-Trader - TRAIN [PRODUCTION]
 # ------------------------------------------------------------
-# v3: + is_unbalance=True - убирает bias в majority класс
-# v2: prev/ страховка перед перезаписью
-# v1: базовое обучение LightGBM на features_hourly
-# ------------------------------------------------------------
-# Модель сохраняется в learn/models/lgb_model.txt
-# Prev  сохраняется в learn/models/prev/lgb_model.txt
+# v4: регуляризация для малых данных (max_depth, leaves)
+# v3: is_unbalance + prev
+# v2: prev/ rollback
 # ============================================================
 
 import sys
@@ -45,27 +42,33 @@ PREV_META = PREV_DIR / "model_meta.json"
 
 MIN_SAMPLES = 200
 
+# Параметры для малых датасетов:
+# - меньше листьев
+# - больше min_data
+# - сильнее регуляризация
 PARAMS = {
     "objective": "binary",
     "is_unbalance": True,
     "metric": "binary_logloss",
     "boosting_type": "gbdt",
-    "num_leaves": 31,
+    "num_leaves": 15,
+    "max_depth": 4,
     "learning_rate": 0.05,
-    "feature_fraction": 0.8,
-    "bagging_fraction": 0.8,
+    "feature_fraction": 0.6,
+    "bagging_fraction": 0.7,
     "bagging_freq": 5,
-    "min_data_in_leaf": 20,
+    "min_data_in_leaf": 40,
+    "lambda_l1": 0.5,
+    "lambda_l2": 0.5,
     "verbose": -1,
     "seed": 42,
 }
 
-NUM_ROUNDS = 200
-EARLY_STOP = 30
+NUM_ROUNDS = 300
+EARLY_STOP = 40
 
 
 def save_prev():
-    """Копирует текущую модель в prev/ перед перезаписью."""
     if not MODEL_FILE.exists():
         log.info("prev: no current model, skip")
         return
@@ -83,7 +86,7 @@ def save_prev():
 
 def train(symbol=None):
     log.info("=" * 60)
-    log.info("ARGUS-Trader TRAIN v3")
+    log.info("ARGUS-Trader TRAIN v4")
     log.info("=" * 60)
 
     data = prepare(symbol=symbol)
@@ -96,7 +99,6 @@ def train(symbol=None):
             "not enough train samples: %d < %d",
             data["n_train"], MIN_SAMPLES,
         )
-        log.warning("train anyway (will be less accurate)")
 
     X_train = data["X_train"]
     y_train = data["y_train"]
@@ -127,14 +129,12 @@ def train(symbol=None):
         ],
     )
 
-    # Метрики
     y_pred_prob = model.predict(X_test)
     y_pred = (y_pred_prob > 0.5).astype(int)
     acc = float((y_pred == y_test).mean())
 
     log.info("test accuracy: %.4f", acc)
 
-    # Confusion
     tp = int(((y_test == 1) & (y_pred == 1)).sum())
     tn = int(((y_test == 0) & (y_pred == 0)).sum())
     fp = int(((y_test == 0) & (y_pred == 1)).sum())
@@ -144,7 +144,6 @@ def train(symbol=None):
         tp, tn, fp, fn,
     )
 
-    # Feature importance
     importance = model.feature_importance(
         importance_type="gain"
     )
@@ -157,10 +156,8 @@ def train(symbol=None):
     for name, score in pairs[:10]:
         log.info("  %s: %.2f", name, score)
 
-    # Prev страховка
     save_prev()
 
-    # Save new model
     model.save_model(str(MODEL_FILE))
     log.info("saved model: %s", MODEL_FILE.name)
 
@@ -168,7 +165,7 @@ def train(symbol=None):
         "trained_at": datetime.now(
             timezone.utc
         ).isoformat(),
-        "version": "v3",
+        "version": "v4",
         "n_total": data["n_total"],
         "n_train": data["n_train"],
         "n_test": data["n_test"],
