@@ -2,7 +2,7 @@
 # ARGUS-Trader - ORDERBOOK COLLECTOR [PRODUCTION]
 # ------------------------------------------------------------
 # Сбор стакана MEXC раз в час.
-# Пишет в orderbook_snapshots: bid/ask imbalance, spread.
+# Пишет в orderbook_snapshots (вторая база).
 # ============================================================
 
 import sys
@@ -15,7 +15,7 @@ CRYPTO_ROOT = SCRIPT_DIR.parent
 sys.path.insert(0, str(CRYPTO_ROOT))
 sys.path.insert(0, str(CRYPTO_ROOT / "mexc"))
 
-from db import get_connection
+from db2 import get_connection_2
 
 logging.basicConfig(
     level=logging.INFO,
@@ -111,7 +111,7 @@ def save_snapshot(symbol, ts, stats):
         "ON CONFLICT (symbol, timestamp) DO NOTHING"
     )
     try:
-        with get_connection() as conn:
+        with get_connection_2() as conn:
             with conn.cursor() as cur:
                 cur.execute(sql, (
                     symbol, ts,
@@ -119,6 +119,7 @@ def save_snapshot(symbol, ts, stats):
                     stats["bid_pct"], stats["ask_pct"],
                     stats["spread_pct"], "mexc",
                 ))
+                conn.commit()
                 return cur.rowcount if cur.rowcount else 0
     except Exception as e:
         log.error("save %s: %s", symbol, e)
@@ -146,7 +147,8 @@ def collect_orderbook():
         added = save_snapshot(symbol, ts, stats)
         total_added += added
         log.info(
-            "[orderbook/%s] bid=%.1f%% ask=%.1f%% spread=%.4f%% added=%d",
+            "[orderbook/%s] bid=%.1f%% ask=%.1f%% "
+            "spread=%.4f%% added=%d",
             symbol, stats["bid_pct"],
             stats["ask_pct"], stats["spread_pct"],
             added,
