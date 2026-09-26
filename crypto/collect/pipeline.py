@@ -1,10 +1,10 @@
 # ============================================================
-# ARGUS-Trader — PIPELINE (главный сборщик) v7
+# ARGUS-Trader — PIPELINE (главный сборщик) v8
 # ------------------------------------------------------------
-# v7: + liquidations (OKX) раз в час
-# v6: + orderbook (MEXC) раз в час
+# v8: + fear & greed (alternative.me)
+# v7: + liquidations (OKX)
+# v6: + orderbook (MEXC)
 # v5: одна запись в collect_log на весь прогон
-# v4: fix datetime в кэше, закрытие соединения
 # ============================================================
 
 import sys
@@ -33,6 +33,7 @@ from collect.priority import get_priority
 from collect.validator import validate
 from collect.orderbook import collect_orderbook
 from collect.liquidations import collect_liquidations
+from collect.feargreed import collect_feargreed
 
 logging.basicConfig(
     level=logging.INFO,
@@ -407,6 +408,13 @@ def run_cycle(mode: str = "incremental"):
             summary["total_added"] += added
     except Exception as e:
         log.error(f"Context: {e}")
+
+    # --- Fear & Greed ---
+    try:
+        fng_added = collect_feargreed()
+        summary["total_added"] += fng_added
+    except Exception as e:
+        log.error(f"FearGreed: {e}")
 
     # --- Orderbook (MEXC) ---
     try:
