@@ -1,0 +1,69 @@
+# ============================================================
+# ARGUS - Rollback model
+# ------------------------------------------------------------
+# Кнопка отката: восстанавливает модель из prev/.
+# Запускай вручную из Actions.
+# ============================================================
+
+name: Crypto Rollback
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: argus-crypto-rollback
+  cancel-in-progress: false
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Rollback
+        run: python crypto/learn/rollback.py
+
+      - name: Commit
+        run: |
+          git config user.name "ARGUS"
+          git config user.email "argus@github.com"
+          git add crypto/learn/models/ || true
+          if git diff --staged --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          git commit -m "learn: rollback to prev [skip ci]"
+          for i in 1 2 3; do
+            git pull --rebase -X theirs \
+              --autostash origin main || true
+            if git push origin main; then
+              echo "Push OK"
+              break
+            fi
+            echo "Retry $i"
+            sleep 5
+          done
+
+      - name: Notify
+        env:
+          TELEGRAM_BOT_TOKEN: >-
+            ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: >-
+            ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          curl -s -X POST \
+            "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            -H "Content-Type: application/json" \
+            -d "{\"chat_id\": \"${TELEGRAM_CHAT_ID}\", \
+                 \"text\": \"⚠️ ARGUS: модель откачена к prev\"}" || true
