@@ -1,6 +1,6 @@
 {
-  "trained_at": "2026-09-26T12:28:20.210331+00:00",
-  "version": "v4",
+  "trained_at": "2026-09-26T12:25:02.602545+00:00",
+  "version": "v3",
   "n_total": 418,
   "n_train": 334,
   "n_test": 84,
@@ -35,16 +35,32 @@
   ],
   "top_features": [
     {
-      "name": "lower_wick_pct",
-      "gain": 17.84
-    },
-    {
       "name": "change_24h",
-      "gain": 6.28
+      "gain": 18.84
     },
     {
-      "name": "change_1d",
-      "gain": 5.5
+      "name": "lower_wick_pct",
+      "gain": 16.07
+    },
+    {
+      "name": "hour_of_day",
+      "gain": 9.5
+    },
+    {
+      "name": "ls_ratio",
+      "gain": 8.95
+    },
+    {
+      "name": "funding_rate",
+      "gain": 7.8
+    },
+    {
+      "name": "upper_wick_pct",
+      "gain": 6.73
+    },
+    {
+      "name": "change_3d",
+      "gain": 3.58
     },
     {
       "name": "change_pct",
@@ -56,22 +72,6 @@
     },
     {
       "name": "body_pct",
-      "gain": 0.0
-    },
-    {
-      "name": "upper_wick_pct",
-      "gain": 0.0
-    },
-    {
-      "name": "volume_ratio_24h",
-      "gain": 0.0
-    },
-    {
-      "name": "volatility_24h",
-      "gain": 0.0
-    },
-    {
-      "name": "volatility_7d",
       "gain": 0.0
     }
   ],
