@@ -1,6 +1,7 @@
 # ============================================================
-# ARGUS-Trader — PIPELINE (главный сборщик) v6
+# ARGUS-Trader — PIPELINE (главный сборщик) v7
 # ------------------------------------------------------------
+# v7: + liquidations (OKX) раз в час
 # v6: + orderbook (MEXC) раз в час
 # v5: одна запись в collect_log на весь прогон
 # v4: fix datetime в кэше, закрытие соединения
@@ -31,6 +32,7 @@ from collect.exchanges import CLIENTS
 from collect.priority import get_priority
 from collect.validator import validate
 from collect.orderbook import collect_orderbook
+from collect.liquidations import collect_liquidations
 
 logging.basicConfig(
     level=logging.INFO,
@@ -412,6 +414,13 @@ def run_cycle(mode: str = "incremental"):
         summary["total_added"] += ob_added
     except Exception as e:
         log.error(f"Orderbook: {e}")
+
+    # --- Liquidations (OKX) ---
+    try:
+        liq_added = collect_liquidations()
+        summary["total_added"] += liq_added
+    except Exception as e:
+        log.error(f"Liquidations: {e}")
 
     # --- Cross-check ---
     for symbol in SYMBOLS:
