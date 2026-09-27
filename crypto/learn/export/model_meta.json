@@ -1,11 +1,11 @@
 {
-  "trained_at": "2026-09-26T23:45:44.774358+00:00",
+  "trained_at": "2026-09-27T23:45:47.418837+00:00",
   "version": "v4",
-  "n_total": 440,
-  "n_train": 352,
-  "n_test": 88,
-  "accuracy": 0.5341,
-  "num_trees": 2,
+  "n_total": 488,
+  "n_train": 390,
+  "n_test": 98,
+  "accuracy": 0.5612,
+  "num_trees": 36,
   "features": [
     "change_pct",
     "range_pct",
@@ -36,57 +36,57 @@
   "top_features": [
     {
       "name": "lower_wick_pct",
-      "gain": 24.56
+      "gain": 74.14
     },
     {
       "name": "change_24h",
-      "gain": 9.24
-    },
-    {
-      "name": "change_1d",
-      "gain": 6.34
+      "gain": 69.65
     },
     {
       "name": "change_pct",
-      "gain": 0.0
+      "gain": 55.38
     },
     {
-      "name": "range_pct",
-      "gain": 0.0
-    },
-    {
-      "name": "body_pct",
-      "gain": 0.0
-    },
-    {
-      "name": "upper_wick_pct",
-      "gain": 0.0
+      "name": "eth_btc_ratio",
+      "gain": 51.56
     },
     {
       "name": "volume_ratio_24h",
-      "gain": 0.0
+      "gain": 40.37
+    },
+    {
+      "name": "body_pct",
+      "gain": 40.37
+    },
+    {
+      "name": "upper_wick_pct",
+      "gain": 37.07
+    },
+    {
+      "name": "funding_rate",
+      "gain": 35.03
+    },
+    {
+      "name": "taker_ratio",
+      "gain": 34.05
     },
     {
       "name": "volatility_24h",
-      "gain": 0.0
-    },
-    {
-      "name": "volatility_7d",
-      "gain": 0.0
+      "gain": 23.76
     }
   ],
   "balance": {
-    "up_total": 242,
-    "down_total": 198,
-    "up_train": 195,
-    "down_train": 157
+    "up_total": 265,
+    "down_total": 223,
+    "up_train": 216,
+    "down_train": 174
   },
   "symbol": null,
   "confusion": {
-    "tp": 47,
-    "tn": 0,
-    "fp": 41,
-    "fn": 0
+    "tp": 36,
+    "tn": 19,
+    "fp": 30,
+    "fn": 13
   },
-  "exported_at": "2026-09-26T23:45:48.711271+00:00"
+  "exported_at": "2026-09-27T23:45:52.545276+00:00"
 }
