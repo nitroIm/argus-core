@@ -1,8 +1,9 @@
 # ============================================================
-# ARGUS-Trader - DATASET v2 [PRODUCTION]
+# ARGUS-Trader - DATASET v4 [PRODUCTION]
 # ------------------------------------------------------------
-# v2: + external market через nearest + eth_btc_ratio
-# v1: базовое чтение features_hourly
+# v4: + USE_EXTERNAL флаг (для теста)
+# v3.1: threshold 0.15
+# v2: external market + eth_btc_ratio
 # ============================================================
 
 import sys
@@ -25,7 +26,11 @@ logging.basicConfig(
 )
 log = logging.getLogger("crypto.learn.dataset")
 
-FEATURE_COLS = [
+# Флаг: включать ли external (DXY/SPX/GOLD/eth_btc)
+USE_EXTERNAL = False
+
+# Базовые (внутренние) признаки
+INTERNAL_COLS = [
     "change_pct",
     "range_pct",
     "body_pct",
@@ -47,36 +52,31 @@ FEATURE_COLS = [
     "oi_change_pct",
     "ls_ratio",
     "taker_ratio",
+]
+
+# Внешние признаки
+EXTERNAL_COLS = [
     "dxy_change_pct",
     "spx_change_pct",
     "gold_change_pct",
     "eth_btc_ratio",
 ]
 
-TARGET_COL = "next_direction"
-
-EXT_MAX_AGE_H = 3
-
-EXTERNAL_COLS = (
-    "dxy_change_pct",
-    "spx_change_pct",
-    "gold_change_pct",
-    "eth_btc_ratio",
+FEATURE_COLS = (
+    INTERNAL_COLS
+    + (EXTERNAL_COLS if USE_EXTERNAL else [])
 )
+
+TARGET_COL = "next_direction"
+EXT_MAX_AGE_H = 3
 
 
 def fetch_features(symbol=None, limit=100000):
-    """Читает features_hourly."""
-    internal = [
-        c for c in FEATURE_COLS
-        if c not in EXTERNAL_COLS
-    ]
     base_cols = (
         ["symbol", "timestamp"]
-        + internal
+        + INTERNAL_COLS
         + [TARGET_COL]
     )
-
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
@@ -108,7 +108,6 @@ def fetch_features(symbol=None, limit=100000):
 
 
 def fetch_external(symbol):
-    """Читает external_market для DXY/SPX/GOLD."""
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
@@ -137,7 +136,6 @@ def fetch_external(symbol):
 
 
 def fetch_eth_btc():
-    """ts -> ratio ETH_close / BTC_close."""
     try:
         btc = {}
         eth = {}
@@ -237,27 +235,26 @@ def rows_to_xy(rows, base_cols, ext_dxy,
                 except Exception:
                     row_feats.append(np.nan)
 
-        dxy = ext_lookup(ext_dxy, ts)
-        spx = ext_lookup(ext_spx, ts)
-        gold = ext_lookup(ext_gold, ts)
-
-        row_feats.append(
-            dxy if dxy is not None else np.nan
-        )
-        row_feats.append(
-            spx if spx is not None else np.nan
-        )
-        row_feats.append(
-            gold if gold is not None else np.nan
-        )
-
-        if r[0] == "ETHUSDT":
-            ratio = eth_btc.get(ts)
+        if USE_EXTERNAL:
+            dxy = ext_lookup(ext_dxy, ts)
+            spx = ext_lookup(ext_spx, ts)
+            gold = ext_lookup(ext_gold, ts)
             row_feats.append(
-                ratio if ratio is not None else np.nan
+                dxy if dxy is not None else np.nan
             )
-        else:
-            row_feats.append(np.nan)
+            row_feats.append(
+                spx if spx is not None else np.nan
+            )
+            row_feats.append(
+                gold if gold is not None else np.nan
+            )
+            if r[0] == "ETHUSDT":
+                ratio = eth_btc.get(ts)
+                row_feats.append(
+                    ratio if ratio is not None else np.nan
+                )
+            else:
+                row_feats.append(np.nan)
 
         X.append(row_feats)
 
@@ -276,7 +273,6 @@ def time_split(X, y, test_frac=0.2):
     n = len(X)
     if n < 20:
         return X, y, X, y
-
     split = int(n * (1 - test_frac))
     return (
         X[:split], y[:split],
@@ -290,24 +286,30 @@ def symbols_unique(sym_list):
 
 def prepare(symbol=None, test_frac=0.2):
     rows, base_cols = fetch_features(symbol)
-    log.info("rows loaded: %d", len(rows))
-
-    if len(rows) < 20:
-        log.warning(
-            "not enough rows: %d < 20", len(rows)
-        )
-        return None
-
-    ext_dxy = fetch_external("DXY")
-    ext_spx = fetch_external("SPX")
-    ext_gold = fetch_external("GOLD")
     log.info(
-        "external: DXY=%d SPX=%d GOLD=%d",
-        len(ext_dxy), len(ext_spx), len(ext_gold),
+        "rows loaded: %d (USE_EXTERNAL=%s)",
+        len(rows), USE_EXTERNAL,
     )
 
-    eth_btc = fetch_eth_btc()
-    log.info("eth_btc pairs: %d", len(eth_btc))
+    if len(rows) < 20:
+        log.warning("not enough rows: %d < 20", len(rows))
+        return None
+
+    if USE_EXTERNAL:
+        ext_dxy = fetch_external("DXY")
+        ext_spx = fetch_external("SPX")
+        ext_gold = fetch_external("GOLD")
+        eth_btc = fetch_eth_btc()
+        log.info(
+            "external: DXY=%d SPX=%d GOLD=%d eth_btc=%d",
+            len(ext_dxy), len(ext_spx),
+            len(ext_gold), len(eth_btc),
+        )
+    else:
+        ext_dxy = []
+        ext_spx = []
+        ext_gold = []
+        eth_btc = {}
 
     X, y, ts, sym = rows_to_xy(
         rows, base_cols, ext_dxy, ext_spx,
@@ -331,8 +333,9 @@ def prepare(symbol=None, test_frac=0.2):
     }
 
     log.info(
-        "split: train=%d test=%d",
+        "split: train=%d test=%d features=%d",
         len(X_train), len(X_test),
+        len(FEATURE_COLS),
     )
     log.info(
         "balance train: up=%d down=%d",
@@ -356,32 +359,17 @@ def prepare(symbol=None, test_frac=0.2):
 
 def main():
     log.info("=" * 60)
-    log.info("ARGUS-Trader DATASET v2 test")
+    log.info("ARGUS-Trader DATASET v4 test")
     log.info("=" * 60)
-
     data = prepare()
     if data is None:
-        log.warning("no data")
         return
-
     log.info(
         "total=%d train=%d test=%d",
         data["n_total"],
-        data["n_train"],
-        data["n_test"],
+        data["n_train"], data["n_test"],
     )
-    log.info(
-        "X_train shape: %s",
-        data["X_train"].shape,
-    )
-    log.info(
-        "X_test shape: %s",
-        data["X_test"].shape,
-    )
-    log.info("symbols: %s", data["symbols"])
-    log.info(
-        "features: %d", len(data["feature_cols"])
-    )
+    log.info("features: %d", len(data["feature_cols"]))
 
 
 if __name__ == "__main__":
