@@ -1,1 +1,26 @@
-[]
+[
+  {
+    "id": "1e6dec70-35f4-4267-9227-fc39398dfde9",
+    "symbol": "ETHUSDT",
+    "direction": "LONG",
+    "entry_price": 2652.20544,
+    "entry_time": "2026-09-28T06:05:30.162590+00:00",
+    "size_usd": 10.0,
+    "size_coins": 0.00377045,
+    "stop": 2631.84465,
+    "target": 2681.08,
+    "entry_fee": 0.005,
+    "rr_planned": 1.59,
+    "rsi_entry": 34.3,
+    "atr_entry": 9.07,
+    "markov_p10": 0.5763,
+    "votes": [
+      "Markov",
+      "Level"
+    ],
+    "reasons": [
+      "P(1|0)=0.58",
+      "near 2645"
+    ]
+  }
+]
