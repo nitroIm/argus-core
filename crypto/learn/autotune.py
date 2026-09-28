@@ -1,10 +1,8 @@
 # ============================================================
-# ARGUS-Trader - AUTOTUNE [PRODUCTION]
+# ARGUS-Trader - AUTOTUNE v3 [PRODUCTION]
 # ------------------------------------------------------------
-# Перебирает комбинации параметров LightGBM.
-# Выбирает лучшую по edge на test.
-# Сохраняет в models/best_params.json.
-# v2: fix make_params - принимает learning_rate
+# v3: сохраняет best_params ТОЛЬКО если edge > MIN_EDGE
+# v2: fix make_params
 # ============================================================
 
 import sys
@@ -34,6 +32,9 @@ log = logging.getLogger("crypto.autotune")
 MODELS_DIR = SCRIPT_DIR / "models"
 MODELS_DIR.mkdir(parents=True, exist_ok=True)
 BEST_PARAMS_FILE = MODELS_DIR / "best_params.json"
+
+# Не сохраняем параметры если edge хуже порога
+MIN_EDGE = 0.02
 
 GRID = {
     "num_leaves": [15, 31],
@@ -102,7 +103,7 @@ def evaluate_params(params, X_train, y_train,
 
 def autotune():
     log.info("=" * 60)
-    log.info("ARGUS AUTOTUNE v2")
+    log.info("ARGUS AUTOTUNE v3")
     log.info("=" * 60)
 
     data = prepare()
@@ -160,6 +161,25 @@ def autotune():
     )
     log.info("=" * 60)
 
+    if best["edge"] < MIN_EDGE:
+        log.warning(
+            "edge %+.4f < MIN_EDGE %.2f — "
+            "NOT saving best_params",
+            best["edge"], MIN_EDGE,
+        )
+        # Удаляем старый best_params если есть
+        if BEST_PARAMS_FILE.exists():
+            try:
+                BEST_PARAMS_FILE.unlink()
+                log.info("removed stale best_params.json")
+            except Exception as e:
+                log.warning("unlink: %s", e)
+        return best
+
+    log.info(
+        "edge %+.4f >= %.2f — saving best_params",
+        best["edge"], MIN_EDGE,
+    )
     out = {
         "tuned_at": datetime.now(
             timezone.utc
