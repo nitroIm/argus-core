@@ -1,9 +1,9 @@
 # ============================================================
-# ARGUS-Trader - DATASET v4 [PRODUCTION]
+# ARGUS-Trader - DATASET v5 [PRODUCTION]
 # ------------------------------------------------------------
-# v4: + USE_EXTERNAL флаг (для теста)
+# v5: + 12 новых признаков (EMA, MACD, BB, session)
+# v4: USE_EXTERNAL флаг
 # v3.1: threshold 0.15
-# v2: external market + eth_btc_ratio
 # ============================================================
 
 import sys
@@ -26,10 +26,8 @@ logging.basicConfig(
 )
 log = logging.getLogger("crypto.learn.dataset")
 
-# Флаг: включать ли external (DXY/SPX/GOLD/eth_btc)
 USE_EXTERNAL = False
 
-# Базовые (внутренние) признаки
 INTERNAL_COLS = [
     "change_pct",
     "range_pct",
@@ -52,9 +50,20 @@ INTERNAL_COLS = [
     "oi_change_pct",
     "ls_ratio",
     "taker_ratio",
+    "ema9_dist_pct",
+    "ema21_dist_pct",
+    "ema50_dist_pct",
+    "macd",
+    "macd_signal",
+    "bb_upper_dist",
+    "bb_lower_dist",
+    "bb_width_pct",
+    "dist_high_24h_pct",
+    "dist_low_24h_pct",
+    "consecutive_up",
+    "session",
 ]
 
-# Внешние признаки
 EXTERNAL_COLS = [
     "dxy_change_pct",
     "spx_change_pct",
@@ -359,7 +368,7 @@ def prepare(symbol=None, test_frac=0.2):
 
 def main():
     log.info("=" * 60)
-    log.info("ARGUS-Trader DATASET v4 test")
+    log.info("ARGUS-Trader DATASET v5 test")
     log.info("=" * 60)
     data = prepare()
     if data is None:
