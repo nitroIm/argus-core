@@ -1,10 +1,8 @@
 # ============================================================
-# ARGUS-Trader - FEATURES
+# ARGUS-Trader - FEATURES v5 [PRODUCTION]
 # ------------------------------------------------------------
-# v4.4: + change_1d, change_3d, trend_up
-#       + hour_of_day, day_of_week (daily + calendar)
-# v4.3: fix OI - fallback на oi если oi_value NULL
-# v4.2: all logs ASCII-safe
+# v5: + EMA9/21/50 dist, MACD, Bollinger,
+#     + dist high/low 24h, consecutive, session
 # ============================================================
 
 import sys
@@ -45,6 +43,16 @@ LIMITS = {
     "ls_ratio": 20.0,
     "taker_ratio": 5.0,
     "next_change_pct": 50.0,
+    "ema9_dist_pct": 20.0,
+    "ema21_dist_pct": 30.0,
+    "ema50_dist_pct": 50.0,
+    "macd": 5000.0,
+    "macd_signal": 5000.0,
+    "bb_upper_dist": 20.0,
+    "bb_lower_dist": 20.0,
+    "bb_width_pct": 30.0,
+    "dist_high_24h_pct": 20.0,
+    "dist_low_24h_pct": 20.0,
 }
 
 MAX_FUTURE_MIN = 5
@@ -112,8 +120,6 @@ def compute_features_from_row(row):
         (min(o, c) - l) / rng * 100, 4
     ) if rng > 0 else 0
 
-    pattern_bit = 1 if c > o else 0
-
     return {
         "change_pct": safe_val(
             change_pct, LIMITS["change_pct"]
@@ -130,9 +136,11 @@ def compute_features_from_row(row):
         "lower_wick_pct": safe_val(
             lower_wick_pct, LIMITS["lower_wick_pct"]
         ),
-        "pattern_bit": pattern_bit,
         "volume": v,
         "close": c,
+        "high": h,
+        "low": l,
+        "open": o,
     }
 
 
@@ -182,9 +190,70 @@ def rolling_sum(features_list, idx, window):
     return sum(values)
 
 
-# ============================================================
-# FETCHERS
-# ============================================================
+def compute_ema(closes, period):
+    if not closes:
+        return []
+    k = 2.0 / (period + 1)
+    ema = [closes[0]]
+    for i in range(1, len(closes)):
+        ema.append(
+            closes[i] * k + ema[-1] * (1 - k)
+        )
+    return ema
+
+
+def compute_macd(closes):
+    ema12 = compute_ema(closes, 12)
+    ema26 = compute_ema(closes, 26)
+    n = min(len(ema12), len(ema26))
+    macd = [
+        ema12[i] - ema26[i]
+        for i in range(n)
+    ]
+    signal = compute_ema(macd, 9)
+    return macd, signal
+
+
+def compute_bbands(closes, period=20):
+    up = [None] * len(closes)
+    lo = [None] * len(closes)
+    wd = [None] * len(closes)
+    for i in range(len(closes)):
+        if i < period - 1:
+            continue
+        window = closes[i - period + 1:i + 1]
+        mean = sum(window) / period
+        var = sum(
+            (x - mean) ** 2 for x in window
+        ) / period
+        std = var ** 0.5
+        up[i] = mean + 2 * std
+        lo[i] = mean - 2 * std
+        wd[i] = (up[i] - lo[i]) / mean * 100
+    return up, lo, wd
+
+
+def compute_consecutive(closes):
+    out = [0] * len(closes)
+    for i in range(1, len(closes)):
+        if closes[i] > closes[i - 1]:
+            out[i] = max(0, out[i - 1]) + 1
+        else:
+            out[i] = min(0, out[i - 1]) - 1
+    return out
+
+
+def get_session(ts):
+    if ts.tzinfo is None:
+        ts = ts.replace(tzinfo=timezone.utc)
+    h = ts.hour
+    if 0 <= h < 8:
+        return 0
+    if 8 <= h < 16:
+        return 1
+    return 2
+
+
 def fetch_candles(symbol, timeframe="1h", limit=500):
     try:
         with get_connection() as conn:
@@ -216,7 +285,6 @@ def fetch_candles(symbol, timeframe="1h", limit=500):
 
 
 def fetch_daily_candles(symbol, limit=200):
-    """Daily candles для расчета старших признаков."""
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
@@ -364,9 +432,6 @@ def fetch_taker(symbol):
         return []
 
 
-# ============================================================
-# LOOKUP HELPERS
-# ============================================================
 def funding_at(funding_list, ts):
     if ts.tzinfo is None:
         ts = ts.replace(tzinfo=timezone.utc)
@@ -378,8 +443,9 @@ def funding_at(funding_list, ts):
             break
     if result is None:
         return None
-    age = ts - result[0]
-    if age > timedelta(hours=MAX_FUNDING_AGE_H):
+    if ts - result[0] > timedelta(
+        hours=MAX_FUNDING_AGE_H
+    ):
         return None
     return result[1]
 
@@ -471,14 +537,7 @@ def taker_at(taker_list, ts):
     return result[1] / total
 
 
-# ============================================================
-# DAILY LOOKUP
-# ============================================================
 def daily_index_before(daily_list, target_dt):
-    """
-    Индекс последней daily свечи с timestamp <= target_dt.
-    Возвращает индекс или None.
-    """
     if target_dt.tzinfo is None:
         target_dt = target_dt.replace(tzinfo=timezone.utc)
     idx = None
@@ -491,10 +550,6 @@ def daily_index_before(daily_list, target_dt):
 
 
 def compute_daily_features(daily_list, ts):
-    """
-    change_1d, change_3d, trend_up.
-    Использует последнюю ЗАКРЫТУЮ daily на момент ts.
-    """
     out = {
         "change_1d": None,
         "change_3d": None,
@@ -502,19 +557,13 @@ def compute_daily_features(daily_list, ts):
     }
     if not daily_list:
         return out
-
     if ts.tzinfo is None:
         ts = ts.replace(tzinfo=timezone.utc)
-
-    # Сдвиг на 1 день - чтобы взять закрытую daily
     target = ts - timedelta(days=1)
     idx = daily_index_before(daily_list, target)
     if idx is None:
         return out
-
     c_now = daily_list[idx][1]
-
-    # change_1d
     if idx >= 1:
         c_prev = daily_list[idx - 1][1]
         if c_prev and c_prev > 0:
@@ -523,8 +572,6 @@ def compute_daily_features(daily_list, ts):
                 round(val, 4),
                 LIMITS["change_1d"],
             )
-
-    # change_3d
     if idx >= 3:
         c_3d = daily_list[idx - 3][1]
         if c_3d and c_3d > 0:
@@ -533,19 +580,13 @@ def compute_daily_features(daily_list, ts):
                 round(val, 4),
                 LIMITS["change_3d"],
             )
-
-    # trend_up
     if idx >= 7:
         c_7d = daily_list[idx - 7][1]
         if c_7d and c_7d > 0:
             out["trend_up"] = 1 if c_now > c_7d else 0
-
     return out
 
 
-# ============================================================
-# SAVE
-# ============================================================
 def save_features(symbol, features):
     if not features:
         return 0
@@ -565,28 +606,31 @@ def save_features(symbol, features):
         "hour_of_day, day_of_week, "
         "funding_rate, funding_trend, "
         "oi_change_pct, ls_ratio, taker_ratio, "
+        "ema9_dist_pct, ema21_dist_pct, "
+        "ema50_dist_pct, macd, macd_signal, "
+        "bb_upper_dist, bb_lower_dist, "
+        "bb_width_pct, dist_high_24h_pct, "
+        "dist_low_24h_pct, consecutive_up, "
+        "session, "
         "next_change_pct, next_direction, "
         "computed_at) "
         "VALUES (%s, %s, %s, %s, %s, "
         "%s, %s, %s, %s, %s, %s, %s, "
         "%s, %s, %s, %s, %s, %s, "
         "%s, %s, %s, %s, %s, "
+        "%s, %s, %s, %s, %s, "
+        "%s, %s, %s, %s, %s, %s, %s, "
         "%s, %s, %s) "
         "ON CONFLICT (symbol, timestamp) "
         "DO UPDATE SET "
         "change_pct = EXCLUDED.change_pct, "
         "range_pct = EXCLUDED.range_pct, "
         "body_pct = EXCLUDED.body_pct, "
-        "upper_wick_pct = "
-        "EXCLUDED.upper_wick_pct, "
-        "lower_wick_pct = "
-        "EXCLUDED.lower_wick_pct, "
-        "volume_ratio_24h = "
-        "EXCLUDED.volume_ratio_24h, "
-        "volatility_24h = "
-        "EXCLUDED.volatility_24h, "
-        "volatility_7d = "
-        "EXCLUDED.volatility_7d, "
+        "upper_wick_pct = EXCLUDED.upper_wick_pct, "
+        "lower_wick_pct = EXCLUDED.lower_wick_pct, "
+        "volume_ratio_24h = EXCLUDED.volume_ratio_24h, "
+        "volatility_24h = EXCLUDED.volatility_24h, "
+        "volatility_7d = EXCLUDED.volatility_7d, "
         "change_4h = EXCLUDED.change_4h, "
         "change_24h = EXCLUDED.change_24h, "
         "change_7d = EXCLUDED.change_7d, "
@@ -595,21 +639,26 @@ def save_features(symbol, features):
         "trend_up = EXCLUDED.trend_up, "
         "hour_of_day = EXCLUDED.hour_of_day, "
         "day_of_week = EXCLUDED.day_of_week, "
-        "funding_rate = "
-        "EXCLUDED.funding_rate, "
-        "funding_trend = "
-        "EXCLUDED.funding_trend, "
-        "oi_change_pct = "
-        "EXCLUDED.oi_change_pct, "
+        "funding_rate = EXCLUDED.funding_rate, "
+        "funding_trend = EXCLUDED.funding_trend, "
+        "oi_change_pct = EXCLUDED.oi_change_pct, "
         "ls_ratio = EXCLUDED.ls_ratio, "
-        "taker_ratio = "
-        "EXCLUDED.taker_ratio, "
-        "next_change_pct = "
-        "EXCLUDED.next_change_pct, "
-        "next_direction = "
-        "EXCLUDED.next_direction, "
-        "computed_at = "
-        "EXCLUDED.computed_at"
+        "taker_ratio = EXCLUDED.taker_ratio, "
+        "ema9_dist_pct = EXCLUDED.ema9_dist_pct, "
+        "ema21_dist_pct = EXCLUDED.ema21_dist_pct, "
+        "ema50_dist_pct = EXCLUDED.ema50_dist_pct, "
+        "macd = EXCLUDED.macd, "
+        "macd_signal = EXCLUDED.macd_signal, "
+        "bb_upper_dist = EXCLUDED.bb_upper_dist, "
+        "bb_lower_dist = EXCLUDED.bb_lower_dist, "
+        "bb_width_pct = EXCLUDED.bb_width_pct, "
+        "dist_high_24h_pct = EXCLUDED.dist_high_24h_pct, "
+        "dist_low_24h_pct = EXCLUDED.dist_low_24h_pct, "
+        "consecutive_up = EXCLUDED.consecutive_up, "
+        "session = EXCLUDED.session, "
+        "next_change_pct = EXCLUDED.next_change_pct, "
+        "next_direction = EXCLUDED.next_direction, "
+        "computed_at = EXCLUDED.computed_at"
     )
 
     try:
@@ -643,6 +692,18 @@ def save_features(symbol, features):
                                 f.get("oi_change_pct"),
                                 f.get("ls_ratio"),
                                 f.get("taker_ratio"),
+                                f.get("ema9_dist_pct"),
+                                f.get("ema21_dist_pct"),
+                                f.get("ema50_dist_pct"),
+                                f.get("macd"),
+                                f.get("macd_signal"),
+                                f.get("bb_upper_dist"),
+                                f.get("bb_lower_dist"),
+                                f.get("bb_width_pct"),
+                                f.get("dist_high_24h_pct"),
+                                f.get("dist_low_24h_pct"),
+                                f.get("consecutive_up"),
+                                f.get("session"),
                                 f.get("next_change_pct"),
                                 f.get("next_direction"),
                                 now_utc,
@@ -657,9 +718,6 @@ def save_features(symbol, features):
     return added
 
 
-# ============================================================
-# PROCESS
-# ============================================================
 def process_symbol(symbol, timeframe="1h"):
     log.info("%s - loading candles", symbol)
     candles = fetch_candles(symbol, timeframe, limit=500)
@@ -682,11 +740,9 @@ def process_symbol(symbol, timeframe="1h"):
 
     if skipped_ts:
         log.warning("   skipped by ts: %d", skipped_ts)
-
     if not base_features:
         return 0
 
-    # Rolling features
     for idx, f in enumerate(base_features):
         avg_vol = rolling_avg(
             base_features, idx, 24, "volume"
@@ -723,14 +779,12 @@ def process_symbol(symbol, timeframe="1h"):
             round(ch4, 4) if ch4 is not None else None,
             LIMITS["change_4h"],
         )
-
         ch24 = rolling_sum(base_features, idx, 24)
         f["change_24h"] = safe_val(
             round(ch24, 4)
             if ch24 is not None else None,
             LIMITS["change_24h"],
         )
-
         ch7d = rolling_sum(base_features, idx, 168)
         f["change_7d"] = safe_val(
             round(ch7d, 4)
@@ -738,15 +792,96 @@ def process_symbol(symbol, timeframe="1h"):
             LIMITS["change_7d"],
         )
 
-    # Next target
+    closes = [f["close"] for f in base_features]
+    ema9 = compute_ema(closes, 9)
+    ema21 = compute_ema(closes, 21)
+    ema50 = compute_ema(closes, 50)
+    macd, macd_sig = compute_macd(closes)
+    bb_up, bb_lo, bb_wd = compute_bbands(closes, 20)
+    consec = compute_consecutive(closes)
+
+    for idx, f in enumerate(base_features):
+        c = f["close"]
+
+        f["ema9_dist_pct"] = safe_val(
+            round((c - ema9[idx]) / c * 100, 4),
+            LIMITS["ema9_dist_pct"],
+        )
+        f["ema21_dist_pct"] = safe_val(
+            round((c - ema21[idx]) / c * 100, 4),
+            LIMITS["ema21_dist_pct"],
+        )
+        f["ema50_dist_pct"] = safe_val(
+            round((c - ema50[idx]) / c * 100, 4),
+            LIMITS["ema50_dist_pct"],
+        )
+
+        m = macd[idx] if idx < len(macd) else None
+        ms = macd_sig[idx] if idx < len(macd_sig) else None
+        f["macd"] = safe_val(
+            round(m, 4) if m is not None else None,
+            LIMITS["macd"],
+        )
+        f["macd_signal"] = safe_val(
+            round(ms, 4) if ms is not None else None,
+            LIMITS["macd_signal"],
+        )
+
+        if bb_up[idx] is not None:
+            f["bb_upper_dist"] = safe_val(
+                round((c - bb_up[idx]) / c * 100, 4),
+                LIMITS["bb_upper_dist"],
+            )
+            f["bb_lower_dist"] = safe_val(
+                round((c - bb_lo[idx]) / c * 100, 4),
+                LIMITS["bb_lower_dist"],
+            )
+            f["bb_width_pct"] = safe_val(
+                round(bb_wd[idx], 4),
+                LIMITS["bb_width_pct"],
+            )
+        else:
+            f["bb_upper_dist"] = None
+            f["bb_lower_dist"] = None
+            f["bb_width_pct"] = None
+
+        start = max(0, idx - 24)
+        window = base_features[start:idx + 1]
+        h24 = max(
+            (x["high"] for x in window), default=None
+        )
+        l24 = min(
+            (x["low"] for x in window), default=None
+        )
+        if h24 and h24 > 0:
+            f["dist_high_24h_pct"] = safe_val(
+                round((c - h24) / c * 100, 4),
+                LIMITS["dist_high_24h_pct"],
+            )
+        else:
+            f["dist_high_24h_pct"] = None
+        if l24 and l24 > 0:
+            f["dist_low_24h_pct"] = safe_val(
+                round((c - l24) / c * 100, 4),
+                LIMITS["dist_low_24h_pct"],
+            )
+        else:
+            f["dist_low_24h_pct"] = None
+
+        f["consecutive_up"] = consec[idx]
+
+        ts = f["timestamp"]
+        if isinstance(ts, datetime):
+            f["session"] = get_session(ts)
+        else:
+            f["session"] = None
+
     for idx, f in enumerate(base_features):
         if idx + 1 < len(base_features):
             c_now = f.get("close")
             c_next = base_features[idx + 1].get("close")
             if c_now and c_next and c_now > 0:
-                nxt = (
-                    (c_next - c_now) / c_now * 100
-                )
+                nxt = (c_next - c_now) / c_now * 100
                 f["next_change_pct"] = safe_val(
                     round(nxt, 4),
                     LIMITS["next_change_pct"],
@@ -764,34 +899,25 @@ def process_symbol(symbol, timeframe="1h"):
             f["next_change_pct"] = None
             f["next_direction"] = None
 
-    # Daily + calendar
     daily = fetch_daily_candles(symbol)
     log.info("   daily points: %d", len(daily))
-
     filled_d1 = 0
-    filled_d3 = 0
-    filled_tu = 0
     for f in base_features:
-        ts = f["timestamp"]
-
-        # daily features
-        d_feat = compute_daily_features(daily, ts)
+        d_feat = compute_daily_features(
+            daily, f["timestamp"]
+        )
         f["change_1d"] = d_feat["change_1d"]
         f["change_3d"] = d_feat["change_3d"]
         f["trend_up"] = d_feat["trend_up"]
         if f["change_1d"] is not None:
             filled_d1 += 1
-        if f["change_3d"] is not None:
-            filled_d3 += 1
-        if f["trend_up"] is not None:
-            filled_tu += 1
+    log.info("   daily change_1d: %d", filled_d1)
 
-        # calendar
+    for f in base_features:
+        ts = f["timestamp"]
         if isinstance(ts, datetime):
             if ts.tzinfo is None:
-                ts_utc = ts.replace(
-                    tzinfo=timezone.utc
-                )
+                ts_utc = ts.replace(tzinfo=timezone.utc)
             else:
                 ts_utc = ts
             f["hour_of_day"] = ts_utc.hour
@@ -800,15 +926,8 @@ def process_symbol(symbol, timeframe="1h"):
             f["hour_of_day"] = None
             f["day_of_week"] = None
 
-    log.info(
-        "   daily: 1d=%d 3d=%d trend=%d",
-        filled_d1, filled_d3, filled_tu,
-    )
-
-    # Funding
     funding = fetch_funding(symbol)
     log.info("   funding points: %d", len(funding))
-
     filled_f = 0
     filled_t = 0
     for f in base_features:
@@ -823,22 +942,18 @@ def process_symbol(symbol, timeframe="1h"):
             f["funding_rate"] = rate_pct
         else:
             f["funding_rate"] = None
-
         f["funding_trend"] = funding_trend_at(
             funding, f["timestamp"]
         )
         if f["funding_trend"] is not None:
             filled_t += 1
-
     log.info(
         "   funding: rate=%d trend=%d",
         filled_f, filled_t,
     )
 
-    # OI
     oi = fetch_open_interest(symbol)
     log.info("   OI points: %d", len(oi))
-
     filled_oi = 0
     for f in base_features:
         oi_now = oi_at(oi, f["timestamp"])
@@ -853,13 +968,10 @@ def process_symbol(symbol, timeframe="1h"):
                 filled_oi += 1
         else:
             f["oi_change_pct"] = None
-
     log.info("   OI change: %d", filled_oi)
 
-    # LS
     ls = fetch_long_short(symbol)
     log.info("   LS points: %d", len(ls))
-
     filled_ls = 0
     for f in base_features:
         val = ls_at(ls, f["timestamp"])
@@ -872,13 +984,10 @@ def process_symbol(symbol, timeframe="1h"):
                 filled_ls += 1
         else:
             f["ls_ratio"] = None
-
     log.info("   LS ratio: %d", filled_ls)
 
-    # Taker
     taker = fetch_taker(symbol)
     log.info("   Taker points: %d", len(taker))
-
     filled_tk = 0
     for f in base_features:
         val = taker_at(taker, f["timestamp"])
@@ -891,7 +1000,6 @@ def process_symbol(symbol, timeframe="1h"):
                 filled_tk += 1
         else:
             f["taker_ratio"] = None
-
     log.info("   Taker ratio: %d", filled_tk)
 
     added = save_features(symbol, base_features)
@@ -901,7 +1009,7 @@ def process_symbol(symbol, timeframe="1h"):
 
 def main():
     log.info("=" * 60)
-    log.info("ARGUS-Trader FEATURES v4.4")
+    log.info("ARGUS-Trader FEATURES v5")
     log.info("=" * 60)
 
     total = 0
