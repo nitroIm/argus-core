@@ -1,17 +1,23 @@
 {
-  "generated_at": "2026-09-28T00:18:01.180454+00:00",
+  "generated_at": "2026-09-28T01:17:40.034223+00:00",
   "symbols": {
     "BTCUSDT": {
       "symbol": "BTCUSDT",
-      "total_events": 19,
-      "new_events": 0,
-      "saved": 0,
+      "total_events": 20,
+      "new_events": 1,
+      "saved": 1,
       "by_type": {
-        "volume_spike": 11,
+        "volume_spike": 12,
         "rise_1h": 2,
         "rise_4h": 6
       },
       "recent_events": [
+        {
+          "timestamp": "2026-09-28 01:00:00+00:00",
+          "type": "volume_spike",
+          "change_pct": -0.0979,
+          "magnitude": 5.748
+        },
         {
           "timestamp": "2026-09-27 13:00:00+00:00",
           "type": "volume_spike",
