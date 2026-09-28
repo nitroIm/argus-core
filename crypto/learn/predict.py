@@ -1,8 +1,9 @@
 # ============================================================
-# ARGUS-Trader - PREDICT v2 [PRODUCTION]
+# ARGUS-Trader - PREDICT v3 [PRODUCTION]
 # ------------------------------------------------------------
-# v2: читает features_hourly + external_market
-# v1: базовое предсказание
+# v3: читает FEATURE_COLS из model_meta.json
+#     (всегда согласован с обученной моделью)
+# v2: reads external через fetch
 # ============================================================
 
 import sys
@@ -17,12 +18,9 @@ import lightgbm as lgb
 SCRIPT_DIR = Path(__file__).resolve().parent
 CRYPTO_ROOT = SCRIPT_DIR.parent
 sys.path.insert(0, str(CRYPTO_ROOT))
+sys.path.insert(0, str(SCRIPT_DIR))
 
 from db import get_connection
-from dataset import (
-    FEATURE_COLS, EXTERNAL_COLS, EXT_MAX_AGE_H,
-    fetch_external, fetch_eth_btc, ext_lookup,
-)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -45,67 +43,38 @@ def load_meta():
         return None
 
 
-def fetch_last_internal(symbol):
-    """Читает последнюю строку features_hourly (без external)."""
-    internal = [
-        c for c in FEATURE_COLS
-        if c not in EXTERNAL_COLS
-    ]
+def fetch_last_row(symbol, feature_cols):
+    """Читает последнюю строку features_hourly."""
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
+                cols = ", ".join(feature_cols)
                 sql = (
-                    "SELECT timestamp, "
-                    + ", ".join(internal)
+                    "SELECT " + cols
                     + " FROM features_hourly "
                     + "WHERE symbol = %s "
                     + "ORDER BY timestamp DESC "
                     + "LIMIT 1"
                 )
                 cur.execute(sql, (symbol,))
-                return cur.fetchone()
+                row = cur.fetchone()
+                if not row:
+                    return None
+                out = []
+                for v in row:
+                    if v is None:
+                        out.append(np.nan)
+                    else:
+                        try:
+                            out.append(float(v))
+                        except Exception:
+                            out.append(np.nan)
+                return np.array([out], dtype=np.float32)
     except Exception as e:
-        log.error("fetch_last %s: %s", symbol, e)
-        return None
-
-
-def build_row(symbol, row, ext_dxy, ext_spx,
-              ext_gold, eth_btc):
-    if row is None:
-        return None
-
-    ts = row[0]
-    if ts.tzinfo is None:
-        ts = ts.replace(tzinfo=timezone.utc)
-
-    n = len(FEATURE_COLS) - len(EXTERNAL_COLS)
-    feats = []
-    for v in row[1:1 + n]:
-        if v is None:
-            feats.append(np.nan)
-        else:
-            try:
-                feats.append(float(v))
-            except Exception:
-                feats.append(np.nan)
-
-    dxy = ext_lookup(ext_dxy, ts)
-    spx = ext_lookup(ext_spx, ts)
-    gold = ext_lookup(ext_gold, ts)
-
-    feats.append(dxy if dxy is not None else np.nan)
-    feats.append(spx if spx is not None else np.nan)
-    feats.append(gold if gold is not None else np.nan)
-
-    if symbol == "ETHUSDT":
-        ratio = eth_btc.get(ts)
-        feats.append(
-            ratio if ratio is not None else np.nan
+        log.error(
+            "fetch_last_row %s: %s", symbol, e,
         )
-    else:
-        feats.append(np.nan)
-
-    return np.array([feats], dtype=np.float32)
+        return None
 
 
 def predict_all(symbols=None):
@@ -121,26 +90,24 @@ def predict_all(symbols=None):
         log.error("meta missing")
         return None
 
-    model = lgb.Booster(model_file=str(MODEL_FILE))
+    feature_cols = meta.get("features", [])
+    if not feature_cols:
+        log.error("meta has no features list")
+        return None
 
-    # Один раз подгружаем external
-    ext_dxy = fetch_external("DXY")
-    ext_spx = fetch_external("SPX")
-    ext_gold = fetch_external("GOLD")
-    eth_btc = fetch_eth_btc()
+    log.info(
+        "model features: %d (accuracy=%.4f)",
+        len(feature_cols),
+        meta.get("accuracy", 0),
+    )
+
+    model = lgb.Booster(model_file=str(MODEL_FILE))
 
     results = []
     for symbol in symbols:
-        row = fetch_last_internal(symbol)
-        if row is None:
-            log.warning("%s: no data", symbol)
-            continue
-
-        X = build_row(
-            symbol, row,
-            ext_dxy, ext_spx, ext_gold, eth_btc,
-        )
+        X = fetch_last_row(symbol, feature_cols)
         if X is None:
+            log.warning("%s: no data", symbol)
             continue
 
         prob_up = float(model.predict(X)[0])
@@ -166,13 +133,14 @@ def predict_all(symbols=None):
             timezone.utc
         ).isoformat(),
         "model_accuracy": meta.get("accuracy"),
+        "model_features": len(feature_cols),
         "predictions": results,
     }
 
 
 def main():
     log.info("=" * 60)
-    log.info("ARGUS-Trader PREDICT v2")
+    log.info("ARGUS-Trader PREDICT v3")
     log.info("=" * 60)
 
     result = predict_all()
