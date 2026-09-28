@@ -1,9 +1,9 @@
 # ============================================================
 # ARGUS-Trader - TRAIN [PRODUCTION]
 # ------------------------------------------------------------
-# v4: регуляризация для малых данных (max_depth, leaves)
+# v5: читает best_params.json если есть (от autotune)
+# v4: регуляризация для малых данных
 # v3: is_unbalance + prev
-# v2: prev/ rollback
 # ============================================================
 
 import sys
@@ -40,12 +40,10 @@ PREV_DIR = MODELS_DIR / "prev"
 PREV_MODEL = PREV_DIR / "lgb_model.txt"
 PREV_META = PREV_DIR / "model_meta.json"
 
+BEST_PARAMS_FILE = MODELS_DIR / "best_params.json"
+
 MIN_SAMPLES = 200
 
-# Параметры для малых датасетов:
-# - меньше листьев
-# - больше min_data
-# - сильнее регуляризация
 PARAMS = {
     "objective": "binary",
     "is_unbalance": True,
@@ -68,35 +66,61 @@ NUM_ROUNDS = 300
 EARLY_STOP = 40
 
 
+def load_best_params():
+    """Читает best_params.json если есть."""
+    if not BEST_PARAMS_FILE.exists():
+        log.info("no best_params, using defaults")
+        return False
+    try:
+        with open(BEST_PARAMS_FILE, "r",
+                  encoding="utf-8") as f:
+            bp = json.load(f)
+        best = bp.get("best", {})
+        cfg = best.get("params", {})
+        if not cfg:
+            log.warning("empty best_params")
+            return False
+        PARAMS.update(cfg)
+        log.info(
+            "loaded best_params: %s "
+            "(edge=%+.4f from autotune)",
+            cfg, best.get("edge", 0),
+        )
+        return True
+    except Exception as e:
+        log.warning("best_params load: %s", e)
+        return False
+
+
 def save_prev():
     if not MODEL_FILE.exists():
-        log.info("prev: no current model, skip")
+        log.info("prev: no current model")
         return
-
     PREV_DIR.mkdir(parents=True, exist_ok=True)
-
     try:
         shutil.copy2(MODEL_FILE, PREV_MODEL)
         if META_FILE.exists():
             shutil.copy2(META_FILE, PREV_META)
-        log.info("prev: current moved to prev/ (rollback)")
+        log.info("prev: current moved to prev/")
     except Exception as e:
-        log.warning("prev save failed: %s", e)
+        log.warning("prev save: %s", e)
 
 
 def train(symbol=None):
     log.info("=" * 60)
-    log.info("ARGUS-Trader TRAIN v4")
+    log.info("ARGUS-Trader TRAIN v5")
     log.info("=" * 60)
+
+    load_best_params()
 
     data = prepare(symbol=symbol)
     if data is None:
-        log.error("no data to train")
+        log.error("no data")
         return None
 
     if data["n_train"] < MIN_SAMPLES:
         log.warning(
-            "not enough train samples: %d < %d",
+            "not enough samples: %d < %d",
             data["n_train"], MIN_SAMPLES,
         )
 
@@ -106,21 +130,18 @@ def train(symbol=None):
     y_test = data["y_test"]
 
     log.info(
-        "train: %d samples, test: %d samples",
+        "train=%d test=%d",
         len(X_train), len(X_test),
     )
 
-    train_set = lgb.Dataset(
-        X_train, label=y_train,
-    )
+    train_set = lgb.Dataset(X_train, label=y_train)
     valid_set = lgb.Dataset(
         X_test, label=y_test, reference=train_set,
     )
 
     log.info("training...")
     model = lgb.train(
-        PARAMS,
-        train_set,
+        PARAMS, train_set,
         num_boost_round=NUM_ROUNDS,
         valid_sets=[valid_set],
         callbacks=[
@@ -157,7 +178,6 @@ def train(symbol=None):
         log.info("  %s: %.2f", name, score)
 
     save_prev()
-
     model.save_model(str(MODEL_FILE))
     log.info("saved model: %s", MODEL_FILE.name)
 
@@ -165,7 +185,7 @@ def train(symbol=None):
         "trained_at": datetime.now(
             timezone.utc
         ).isoformat(),
-        "version": "v4",
+        "version": "v5",
         "n_total": data["n_total"],
         "n_train": data["n_train"],
         "n_test": data["n_test"],
