@@ -4,6 +4,7 @@
 # Перебирает комбинации параметров LightGBM.
 # Выбирает лучшую по edge на test.
 # Сохраняет в models/best_params.json.
+# v2: fix make_params - принимает learning_rate
 # ============================================================
 
 import sys
@@ -34,7 +35,6 @@ MODELS_DIR = SCRIPT_DIR / "models"
 MODELS_DIR.mkdir(parents=True, exist_ok=True)
 BEST_PARAMS_FILE = MODELS_DIR / "best_params.json"
 
-# Сетка (12 комбинаций — быстро)
 GRID = {
     "num_leaves": [15, 31],
     "learning_rate": [0.03, 0.05, 0.08],
@@ -45,7 +45,7 @@ NUM_ROUNDS = 200
 EARLY_STOP = 30
 
 
-def make_params(num_leaves, lr, max_depth):
+def make_params(num_leaves, learning_rate, max_depth):
     return {
         "objective": "binary",
         "is_unbalance": True,
@@ -53,7 +53,7 @@ def make_params(num_leaves, lr, max_depth):
         "boosting_type": "gbdt",
         "num_leaves": num_leaves,
         "max_depth": max_depth,
-        "learning_rate": lr,
+        "learning_rate": learning_rate,
         "feature_fraction": 0.7,
         "bagging_fraction": 0.7,
         "bagging_freq": 5,
@@ -102,7 +102,7 @@ def evaluate_params(params, X_train, y_train,
 
 def autotune():
     log.info("=" * 60)
-    log.info("ARGUS AUTOTUNE")
+    log.info("ARGUS AUTOTUNE v2")
     log.info("=" * 60)
 
     data = prepare()
