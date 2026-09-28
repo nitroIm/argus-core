@@ -1,11 +1,11 @@
 {
-  "trained_at": "2026-09-27T23:45:47.418837+00:00",
-  "version": "v4",
-  "n_total": 488,
-  "n_train": 390,
-  "n_test": 98,
-  "accuracy": 0.5612,
-  "num_trees": 36,
+  "trained_at": "2026-09-28T12:10:38.620266+00:00",
+  "version": "v5",
+  "n_total": 512,
+  "n_train": 409,
+  "n_test": 103,
+  "accuracy": 0.5243,
+  "num_trees": 40,
   "features": [
     "change_pct",
     "range_pct",
@@ -28,64 +28,72 @@
     "oi_change_pct",
     "ls_ratio",
     "taker_ratio",
-    "dxy_change_pct",
-    "spx_change_pct",
-    "gold_change_pct",
-    "eth_btc_ratio"
+    "ema9_dist_pct",
+    "ema21_dist_pct",
+    "ema50_dist_pct",
+    "macd",
+    "macd_signal",
+    "bb_upper_dist",
+    "bb_lower_dist",
+    "bb_width_pct",
+    "dist_high_24h_pct",
+    "dist_low_24h_pct",
+    "consecutive_up",
+    "session"
   ],
   "top_features": [
     {
+      "name": "consecutive_up",
+      "gain": 135.84
+    },
+    {
       "name": "lower_wick_pct",
-      "gain": 74.14
+      "gain": 84.71
     },
     {
-      "name": "change_24h",
-      "gain": 69.65
+      "name": "bb_width_pct",
+      "gain": 75.57
     },
     {
-      "name": "change_pct",
-      "gain": 55.38
-    },
-    {
-      "name": "eth_btc_ratio",
-      "gain": 51.56
+      "name": "hour_of_day",
+      "gain": 68.42
     },
     {
       "name": "volume_ratio_24h",
-      "gain": 40.37
+      "gain": 55.85
     },
     {
       "name": "body_pct",
-      "gain": 40.37
+      "gain": 40.94
     },
     {
-      "name": "upper_wick_pct",
-      "gain": 37.07
+      "name": "bb_upper_dist",
+      "gain": 37.51
     },
     {
       "name": "funding_rate",
-      "gain": 35.03
+      "gain": 36.59
     },
     {
-      "name": "taker_ratio",
-      "gain": 34.05
+      "name": "change_24h",
+      "gain": 33.32
     },
     {
-      "name": "volatility_24h",
-      "gain": 23.76
+      "name": "change_pct",
+      "gain": 28.3
     }
   ],
   "balance": {
-    "up_total": 265,
-    "down_total": 223,
-    "up_train": 216,
-    "down_train": 174
+    "up_total": 274,
+    "down_total": 238,
+    "up_train": 224,
+    "down_train": 185
   },
   "symbol": null,
   "confusion": {
-    "tp": 36,
-    "tn": 19,
-    "fp": 30,
-    "fn": 13
+    "tp": 23,
+    "tn": 31,
+    "fp": 22,
+    "fn": 27
   }
 }
