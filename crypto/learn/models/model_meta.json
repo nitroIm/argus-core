@@ -1,11 +1,11 @@
 {
-  "trained_at": "2026-09-29T23:45:51.405018+00:00",
+  "trained_at": "2026-09-30T18:24:13.893685+00:00",
   "version": "v5",
-  "n_total": 584,
-  "n_train": 467,
-  "n_test": 117,
-  "accuracy": 0.5897,
-  "num_trees": 47,
+  "n_total": 622,
+  "n_train": 497,
+  "n_test": 125,
+  "accuracy": 0.608,
+  "num_trees": 102,
   "features": [
     "change_pct",
     "range_pct",
@@ -43,57 +43,57 @@
   ],
   "top_features": [
     {
-      "name": "consecutive_up",
-      "gain": 103.46
+      "name": "volume_ratio_24h",
+      "gain": 150.77
     },
     {
       "name": "hour_of_day",
-      "gain": 88.18
+      "gain": 141.92
     },
     {
-      "name": "volume_ratio_24h",
-      "gain": 78.91
+      "name": "change_24h",
+      "gain": 121.42
     },
     {
-      "name": "change_4h",
-      "gain": 58.26
-    },
-    {
-      "name": "bb_upper_dist",
-      "gain": 53.54
-    },
-    {
-      "name": "change_7d",
-      "gain": 44.76
+      "name": "upper_wick_pct",
+      "gain": 113.59
     },
     {
       "name": "lower_wick_pct",
-      "gain": 42.91
+      "gain": 101.08
     },
     {
-      "name": "ema50_dist_pct",
-      "gain": 36.19
+      "name": "consecutive_up",
+      "gain": 97.63
     },
     {
-      "name": "change_3d",
-      "gain": 36.01
+      "name": "volatility_24h",
+      "gain": 86.15
     },
     {
-      "name": "body_pct",
-      "gain": 35.65
+      "name": "bb_width_pct",
+      "gain": 79.33
+    },
+    {
+      "name": "change_pct",
+      "gain": 78.38
+    },
+    {
+      "name": "ema9_dist_pct",
+      "gain": 77.19
     }
   ],
   "balance": {
-    "up_total": 314,
-    "down_total": 270,
-    "up_train": 257,
-    "down_train": 210
+    "up_total": 335,
+    "down_total": 287,
+    "up_train": 267,
+    "down_train": 230
   },
   "symbol": null,
   "confusion": {
-    "tp": 44,
-    "tn": 25,
-    "fp": 35,
-    "fn": 13
+    "tp": 41,
+    "tn": 35,
+    "fp": 22,
+    "fn": 27
   }
 }
