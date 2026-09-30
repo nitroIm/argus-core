@@ -1,24 +1,24 @@
 {
-  "tuned_at": "2026-09-28T12:06:15.810337+00:00",
-  "n_train": 409,
-  "n_test": 103,
+  "tuned_at": "2026-09-30T18:21:04.638435+00:00",
+  "n_train": 497,
+  "n_test": 125,
   "best": {
-    "accuracy": 0.5534,
-    "baseline": 0.5146,
-    "edge": 0.0388,
-    "num_trees": 27,
+    "accuracy": 0.68,
+    "baseline": 0.544,
+    "edge": 0.136,
+    "num_trees": 100,
     "params": {
       "num_leaves": 15,
-      "learning_rate": 0.03,
-      "max_depth": 3
+      "learning_rate": 0.08,
+      "max_depth": 5
     }
   },
   "all_results": [
     {
-      "accuracy": 0.5534,
-      "baseline": 0.5146,
-      "edge": 0.0388,
-      "num_trees": 27,
+      "accuracy": 0.656,
+      "baseline": 0.544,
+      "edge": 0.112,
+      "num_trees": 87,
       "params": {
         "num_leaves": 15,
         "learning_rate": 0.03,
@@ -26,10 +26,10 @@
       }
     },
     {
-      "accuracy": 0.5437,
-      "baseline": 0.5146,
-      "edge": 0.0291,
-      "num_trees": 30,
+      "accuracy": 0.656,
+      "baseline": 0.544,
+      "edge": 0.112,
+      "num_trees": 190,
       "params": {
         "num_leaves": 15,
         "learning_rate": 0.03,
@@ -37,10 +37,10 @@
       }
     },
     {
-      "accuracy": 0.534,
-      "baseline": 0.5146,
-      "edge": 0.0194,
-      "num_trees": 6,
+      "accuracy": 0.664,
+      "baseline": 0.544,
+      "edge": 0.12,
+      "num_trees": 87,
       "params": {
         "num_leaves": 15,
         "learning_rate": 0.05,
@@ -48,10 +48,10 @@
       }
     },
     {
-      "accuracy": 0.5146,
-      "baseline": 0.5146,
-      "edge": 0.0,
-      "num_trees": 6,
+      "accuracy": 0.616,
+      "baseline": 0.544,
+      "edge": 0.072,
+      "num_trees": 80,
       "params": {
         "num_leaves": 15,
         "learning_rate": 0.05,
@@ -59,10 +59,10 @@
       }
     },
     {
-      "accuracy": 0.5534,
-      "baseline": 0.5146,
-      "edge": 0.0388,
-      "num_trees": 3,
+      "accuracy": 0.664,
+      "baseline": 0.544,
+      "edge": 0.12,
+      "num_trees": 100,
       "params": {
         "num_leaves": 15,
         "learning_rate": 0.08,
@@ -70,10 +70,10 @@
       }
     },
     {
-      "accuracy": 0.5437,
-      "baseline": 0.5146,
-      "edge": 0.0291,
-      "num_trees": 3,
+      "accuracy": 0.68,
+      "baseline": 0.544,
+      "edge": 0.136,
+      "num_trees": 100,
       "params": {
         "num_leaves": 15,
         "learning_rate": 0.08,
@@ -81,10 +81,10 @@
       }
     },
     {
-      "accuracy": 0.5534,
-      "baseline": 0.5146,
-      "edge": 0.0388,
-      "num_trees": 27,
+      "accuracy": 0.656,
+      "baseline": 0.544,
+      "edge": 0.112,
+      "num_trees": 87,
       "params": {
         "num_leaves": 31,
         "learning_rate": 0.03,
@@ -92,10 +92,10 @@
       }
     },
     {
-      "accuracy": 0.5437,
-      "baseline": 0.5146,
-      "edge": 0.0291,
-      "num_trees": 30,
+      "accuracy": 0.656,
+      "baseline": 0.544,
+      "edge": 0.112,
+      "num_trees": 190,
       "params": {
         "num_leaves": 31,
         "learning_rate": 0.03,
@@ -103,10 +103,10 @@
       }
     },
     {
-      "accuracy": 0.534,
-      "baseline": 0.5146,
-      "edge": 0.0194,
-      "num_trees": 6,
+      "accuracy": 0.664,
+      "baseline": 0.544,
+      "edge": 0.12,
+      "num_trees": 87,
       "params": {
         "num_leaves": 31,
         "learning_rate": 0.05,
@@ -114,10 +114,10 @@
       }
     },
     {
-      "accuracy": 0.5146,
-      "baseline": 0.5146,
-      "edge": 0.0,
-      "num_trees": 6,
+      "accuracy": 0.616,
+      "baseline": 0.544,
+      "edge": 0.072,
+      "num_trees": 80,
       "params": {
         "num_leaves": 31,
         "learning_rate": 0.05,
@@ -125,10 +125,10 @@
       }
     },
     {
-      "accuracy": 0.5534,
-      "baseline": 0.5146,
-      "edge": 0.0388,
-      "num_trees": 3,
+      "accuracy": 0.664,
+      "baseline": 0.544,
+      "edge": 0.12,
+      "num_trees": 100,
       "params": {
         "num_leaves": 31,
         "learning_rate": 0.08,
@@ -136,10 +136,10 @@
       }
     },
     {
-      "accuracy": 0.5437,
-      "baseline": 0.5146,
-      "edge": 0.0291,
-      "num_trees": 3,
+      "accuracy": 0.68,
+      "baseline": 0.544,
+      "edge": 0.136,
+      "num_trees": 100,
       "params": {
         "num_leaves": 31,
         "learning_rate": 0.08,
