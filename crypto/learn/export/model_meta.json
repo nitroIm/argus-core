@@ -1,11 +1,11 @@
 {
-  "trained_at": "2026-09-30T18:24:13.893685+00:00",
+  "trained_at": "2026-09-30T23:45:43.548267+00:00",
   "version": "v5",
-  "n_total": 622,
-  "n_train": 497,
-  "n_test": 125,
-  "accuracy": 0.608,
-  "num_trees": 102,
+  "n_total": 632,
+  "n_train": 505,
+  "n_test": 127,
+  "accuracy": 0.5827,
+  "num_trees": 35,
   "features": [
     "change_pct",
     "range_pct",
@@ -44,57 +44,57 @@
   "top_features": [
     {
       "name": "volume_ratio_24h",
-      "gain": 150.77
-    },
-    {
-      "name": "hour_of_day",
-      "gain": 141.92
+      "gain": 99.96
     },
     {
       "name": "change_24h",
-      "gain": 121.42
-    },
-    {
-      "name": "upper_wick_pct",
-      "gain": 113.59
-    },
-    {
-      "name": "lower_wick_pct",
-      "gain": 101.08
-    },
-    {
-      "name": "consecutive_up",
-      "gain": 97.63
-    },
-    {
-      "name": "volatility_24h",
-      "gain": 86.15
+      "gain": 82.03
     },
     {
       "name": "bb_width_pct",
-      "gain": 79.33
-    },
-    {
-      "name": "change_pct",
-      "gain": 78.38
+      "gain": 66.24
     },
     {
       "name": "ema9_dist_pct",
-      "gain": 77.19
+      "gain": 57.37
+    },
+    {
+      "name": "hour_of_day",
+      "gain": 51.32
+    },
+    {
+      "name": "consecutive_up",
+      "gain": 46.26
+    },
+    {
+      "name": "lower_wick_pct",
+      "gain": 40.62
+    },
+    {
+      "name": "bb_upper_dist",
+      "gain": 36.13
+    },
+    {
+      "name": "macd_signal",
+      "gain": 32.9
+    },
+    {
+      "name": "dist_low_24h_pct",
+      "gain": 32.78
     }
   ],
   "balance": {
-    "up_total": 335,
-    "down_total": 287,
-    "up_train": 267,
-    "down_train": 230
+    "up_total": 340,
+    "down_total": 292,
+    "up_train": 271,
+    "down_train": 234
   },
   "symbol": null,
   "confusion": {
-    "tp": 41,
-    "tn": 35,
-    "fp": 22,
-    "fn": 27
+    "tp": 47,
+    "tn": 27,
+    "fp": 31,
+    "fn": 22
   },
-  "exported_at": "2026-09-30T18:24:15.473402+00:00"
+  "exported_at": "2026-09-30T23:45:44.592043+00:00"
 }
