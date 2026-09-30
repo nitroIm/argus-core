@@ -1,17 +1,23 @@
 {
-  "generated_at": "2026-09-30T12:19:03.457964+00:00",
+  "generated_at": "2026-09-30T13:19:08.937607+00:00",
   "symbols": {
     "BTCUSDT": {
       "symbol": "BTCUSDT",
-      "total_events": 22,
-      "new_events": 0,
-      "saved": 0,
+      "total_events": 23,
+      "new_events": 1,
+      "saved": 1,
       "by_type": {
-        "volume_spike": 14,
+        "volume_spike": 15,
         "rise_1h": 2,
         "rise_4h": 6
       },
       "recent_events": [
+        {
+          "timestamp": "2026-09-30 13:00:00+00:00",
+          "type": "volume_spike",
+          "change_pct": -0.097,
+          "magnitude": 3.861
+        },
         {
           "timestamp": "2026-09-29 18:00:00+00:00",
           "type": "volume_spike",
@@ -125,27 +131,27 @@
           "type": "volume_spike",
           "change_pct": 1.0753,
           "magnitude": 4.213
-        },
-        {
-          "timestamp": "2026-09-18 13:00:00+00:00",
-          "type": "rise_1h",
-          "change_pct": 2.6127,
-          "magnitude": 2.6127
         }
       ]
     },
     "ETHUSDT": {
       "symbol": "ETHUSDT",
-      "total_events": 20,
-      "new_events": 0,
-      "saved": 0,
+      "total_events": 21,
+      "new_events": 1,
+      "saved": 1,
       "by_type": {
-        "volume_spike": 15,
+        "volume_spike": 16,
         "rise_1h": 2,
         "rise_4h": 2,
         "fall_1h": 1
       },
       "recent_events": [
+        {
+          "timestamp": "2026-09-30 13:00:00+00:00",
+          "type": "volume_spike",
+          "change_pct": -0.0586,
+          "magnitude": 3.928
+        },
         {
           "timestamp": "2026-09-29 18:00:00+00:00",
           "type": "volume_spike",
@@ -259,12 +265,6 @@
           "type": "volume_spike",
           "change_pct": 2.0964,
           "magnitude": 5.147
-        },
-        {
-          "timestamp": "2026-09-17 12:00:00+00:00",
-          "type": "volume_spike",
-          "change_pct": 0.7168,
-          "magnitude": 4.495
         }
       ]
     }
