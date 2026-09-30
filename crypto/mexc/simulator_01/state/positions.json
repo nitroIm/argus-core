@@ -1,1 +1,28 @@
-[]
+[
+  {
+    "id": "bfc43014-b381-457d-a6dc-f8859a293810",
+    "symbol": "BTCUSDT",
+    "direction": "LONG",
+    "entry_price": 84588.843285,
+    "entry_time": "2026-09-30T14:05:30.473738+00:00",
+    "size_usd": 10.0,
+    "size_coins": 0.00011822,
+    "stop": 83963.9705,
+    "target": 85905.1,
+    "entry_fee": 0.005,
+    "rr_planned": 2.33,
+    "rsi_entry": 60.35,
+    "atr_entry": 346.4929,
+    "markov_p10": 0.5903,
+    "votes": [
+      "Markov",
+      "Level",
+      "Rules"
+    ],
+    "reasons": [
+      "P(1|0)=0.59",
+      "near 84386",
+      "1 rules"
+    ]
+  }
+]
