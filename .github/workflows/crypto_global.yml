@@ -6,9 +6,7 @@ on:
       task:
         description: 'collect_sol_bnb | collect_asia | all'
         required: true
-        default: 'collect_sol_bnb'
-  schedule:
-    - cron: '10 * * * *'
+        default: 'all'
 
 jobs:
   global:
@@ -32,11 +30,11 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           TASK="${{ github.event.inputs.task }}"
-          if [ -z "$TASK" ]; then TASK="collect_sol_bnb"; fi
+          if [ -z "$TASK" ]; then TASK="all"; fi
           echo "TASK=$TASK"
           if [ "$TASK" = "collect_sol_bnb" ] || [ "$TASK" = "all" ]; then
             python crypto/global/collect_sol_bnb.py
           fi
           if [ "$TASK" = "collect_asia" ] || [ "$TASK" = "all" ]; then
-            echo "asia collector not ready yet"
+            python crypto/global/collect_asia.py
           fi
