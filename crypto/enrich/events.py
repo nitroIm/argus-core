@@ -1,12 +1,10 @@
 # ============================================================
-# ARGUS-Trader — EVENTS
+# ARGUS-Trader — EVENTS v2
 # ------------------------------------------------------------
-# Находит значимые события в истории:
-#   rise_1h, fall_1h, rise_4h, fall_4h,
-#   new_high_7d, new_low_7d, volume_spike
+# v2: + funding_spike, oi_spike, ls_extreme, rsi_extreme
+# v1: rise_1h, fall_1h, rise_4h, fall_4h,
+#     new_high_7d, new_low_7d, volume_spike
 # Записывает в events (Supabase) + JSON для causal.py.
-# ------------------------------------------------------------
-# v1: начальная версия
 # ============================================================
 
 import sys
@@ -42,6 +40,13 @@ FALL_1H_PCT = -1.5
 RISE_4H_PCT = 3.0
 FALL_4H_PCT = -3.0
 VOLUME_SPIKE_RATIO = 3.0
+FUNDING_SPIKE_PCT = 0.05
+OI_SPIKE_PCT = 5.0
+LS_HIGH = 1.5
+LS_LOW = 0.7
+RSI_OVERBOUGHT = 70
+RSI_OVERSOLD = 30
+RSI_PERIOD = 14
 
 
 def fetch_data(symbol, limit=2000):
@@ -58,19 +63,22 @@ def fetch_data(symbol, limit=2000):
                 candles_rows = list(reversed(cur.fetchall()))
 
                 cur.execute(
-                    "SELECT timestamp, change_pct, volume_ratio_24h "
+                    "SELECT timestamp, change_pct, volume_ratio_24h, "
+                    "funding_rate, oi_change_pct, ls_ratio "
                     "FROM features_hourly WHERE symbol = %s "
                     "ORDER BY timestamp DESC LIMIT %s",
                     (symbol, limit),
                 )
                 features_rows = list(reversed(cur.fetchall()))
 
-        # Мапим features по timestamp
         fmap = {}
         for r in features_rows:
             fmap[r[0]] = {
                 "change_pct": float(r[1]) if r[1] is not None else 0,
                 "volume_ratio": float(r[2]) if r[2] is not None else 0,
+                "funding_rate": float(r[3]) if r[3] is not None else None,
+                "oi_change_pct": float(r[4]) if r[4] is not None else None,
+                "ls_ratio": float(r[5]) if r[5] is not None else None,
             }
 
         result = []
@@ -86,6 +94,9 @@ def fetch_data(symbol, limit=2000):
                 "volume": float(r[5]),
                 "change_pct": f.get("change_pct", 0),
                 "volume_ratio": f.get("volume_ratio", 0),
+                "funding_rate": f.get("funding_rate"),
+                "oi_change_pct": f.get("oi_change_pct"),
+                "ls_ratio": f.get("ls_ratio"),
             })
         return result
     except Exception as e:
@@ -94,7 +105,6 @@ def fetch_data(symbol, limit=2000):
 
 
 def fetch_existing_events(symbol):
-    """Возвращает set (timestamp, event_type) уже существующих событий."""
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
@@ -108,13 +118,50 @@ def fetch_existing_events(symbol):
         return set()
 
 
+def compute_rsi_series(closes, period=RSI_PERIOD):
+    """Возвращает список RSI для каждой точки."""
+    n = len(closes)
+    out = [None] * n
+    if n < period + 1:
+        return out
+
+    gains = []
+    losses = []
+    for i in range(1, n):
+        diff = closes[i] - closes[i - 1]
+        gains.append(max(0, diff))
+        losses.append(max(0, -diff))
+
+    avg_gain = sum(gains[:period]) / period
+    avg_loss = sum(losses[:period]) / period
+
+    if avg_loss == 0:
+        out[period] = 100.0
+    else:
+        rs = avg_gain / avg_loss
+        out[period] = 100 - 100 / (1 + rs)
+
+    for i in range(period + 1, n):
+        idx = i - 1
+        avg_gain = (avg_gain * (period - 1) + gains[idx]) / period
+        avg_loss = (avg_loss * (period - 1) + losses[idx]) / period
+        if avg_loss == 0:
+            out[i] = 100.0
+        else:
+            rs = avg_gain / avg_loss
+            out[i] = 100 - 100 / (1 + rs)
+
+    return out
+
+
 def detect_events(symbol, data):
-    """Проходит по свечам, возвращает список событий."""
     events = []
     if len(data) < 2:
         return events
 
-    # Для rolling-окон
+    closes = [d["close"] for d in data]
+    rsi_series = compute_rsi_series(closes, RSI_PERIOD)
+
     for i in range(len(data)):
         row = data[i]
         ts = row["timestamp"]
@@ -157,7 +204,7 @@ def detect_events(symbol, data):
                     "duration_hours": 4,
                 })
 
-        # --- new_high_7d ---
+        # --- new_high_7d / new_low_7d ---
         if i >= 167:
             prev_high = max(data[j]["high"] for j in range(i - 167, i))
             if row["high"] > prev_high:
@@ -169,8 +216,6 @@ def detect_events(symbol, data):
                     "duration_hours": 168,
                 })
 
-        # --- new_low_7d ---
-        if i >= 167:
             prev_low = min(data[j]["low"] for j in range(i - 167, i))
             if row["low"] < prev_low:
                 events.append({
@@ -191,11 +236,81 @@ def detect_events(symbol, data):
                 "duration_hours": 1,
             })
 
+        # --- funding_spike ---
+        fr = row.get("funding_rate")
+        if fr is not None:
+            if fr >= FUNDING_SPIKE_PCT:
+                events.append({
+                    "timestamp": ts,
+                    "event_type": "funding_spike_pos",
+                    "change_pct": round(row["change_pct"], 4),
+                    "magnitude": round(fr, 6),
+                    "duration_hours": 1,
+                })
+            elif fr <= -FUNDING_SPIKE_PCT:
+                events.append({
+                    "timestamp": ts,
+                    "event_type": "funding_spike_neg",
+                    "change_pct": round(row["change_pct"], 4),
+                    "magnitude": round(abs(fr), 6),
+                    "duration_hours": 1,
+                })
+
+        # --- oi_spike ---
+        oic = row.get("oi_change_pct")
+        if oic is not None and abs(oic) >= OI_SPIKE_PCT:
+            events.append({
+                "timestamp": ts,
+                "event_type": "oi_spike",
+                "change_pct": round(row["change_pct"], 4),
+                "magnitude": round(abs(oic), 4),
+                "duration_hours": 1,
+            })
+
+        # --- ls_extreme ---
+        lsr = row.get("ls_ratio")
+        if lsr is not None:
+            if lsr >= LS_HIGH:
+                events.append({
+                    "timestamp": ts,
+                    "event_type": "ls_long_extreme",
+                    "change_pct": round(row["change_pct"], 4),
+                    "magnitude": round(lsr, 4),
+                    "duration_hours": 1,
+                })
+            elif lsr <= LS_LOW:
+                events.append({
+                    "timestamp": ts,
+                    "event_type": "ls_short_extreme",
+                    "change_pct": round(row["change_pct"], 4),
+                    "magnitude": round(lsr, 4),
+                    "duration_hours": 1,
+                })
+
+        # --- rsi_extreme ---
+        rsi_val = rsi_series[i] if i < len(rsi_series) else None
+        if rsi_val is not None:
+            if rsi_val >= RSI_OVERBOUGHT:
+                events.append({
+                    "timestamp": ts,
+                    "event_type": "rsi_overbought",
+                    "change_pct": round(row["change_pct"], 4),
+                    "magnitude": round(rsi_val, 2),
+                    "duration_hours": 1,
+                })
+            elif rsi_val <= RSI_OVERSOLD:
+                events.append({
+                    "timestamp": ts,
+                    "event_type": "rsi_oversold",
+                    "change_pct": round(row["change_pct"], 4),
+                    "magnitude": round(rsi_val, 2),
+                    "duration_hours": 1,
+                })
+
     return events
 
 
 def save_events(symbol, events):
-    """Сохраняет события в БД. Возвращает число добавленных."""
     if not events:
         return 0
 
@@ -230,14 +345,11 @@ def analyze_symbol(symbol):
 
     log.info(f"   Свечей: {len(data)}")
 
-    # Уже существующие — не дублируем
     existing = fetch_existing_events(symbol)
     log.info(f"   Уже в БД: {len(existing)}")
 
-    # Все возможные события
     all_events = detect_events(symbol, data)
 
-    # Оставляем только новые
     new_events = [
         e for e in all_events
         if (e["timestamp"], e["event_type"]) not in existing
@@ -246,7 +358,6 @@ def analyze_symbol(symbol):
     log.info(f"   Найдено всего: {len(all_events)}")
     log.info(f"   Новых для записи: {len(new_events)}")
 
-    # Группируем по типам для лога
     by_type = {}
     for e in all_events:
         by_type[e["event_type"]] = by_type.get(e["event_type"], 0) + 1
@@ -254,7 +365,6 @@ def analyze_symbol(symbol):
     for t, c in sorted(by_type.items(), key=lambda x: -x[1]):
         log.info(f"     {t}: {c}")
 
-    # Сохраняем
     saved = save_events(symbol, new_events)
     log.info(f"   ✅ Добавлено в БД: {saved}")
 
@@ -278,7 +388,7 @@ def analyze_symbol(symbol):
 
 def main():
     log.info("=" * 60)
-    log.info("⚡ ARGUS-Trader EVENTS")
+    log.info("⚡ ARGUS-Trader EVENTS v2")
     log.info("=" * 60)
 
     all_analysis = {}
