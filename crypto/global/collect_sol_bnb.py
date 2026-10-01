@@ -1,9 +1,10 @@
 # ============================================================
 # ARGUS-Trader — COLLECT SOL/BNB (узел global)
 # ------------------------------------------------------------
+# v2: fix OI — OKX rubik отдаёт всю историю (720),
+#     игнорируя limit. Обрезаем до LIMIT после
+#     получения, отсортировав по timestamp.
 # v1: OHLCV + funding + OI для SOLUSDT и BNBUSDT.
-#     Пишет в DB2 (ARGUS_DB_URL_2).
-#     Основную базу НЕ трогает.
 # ============================================================
 
 import sys
@@ -100,6 +101,22 @@ def try_sources(symbol, fn):
     return None, []
 
 
+def fresh_only(rows, limit):
+    """Сортирует по timestamp DESC, берёт limit."""
+    if not rows:
+        return []
+    try:
+        rows = sorted(
+            rows,
+            key=lambda x: x["timestamp"],
+            reverse=True,
+        )
+    except Exception as e:
+        log.warning("sort: %s", e)
+        return rows[:limit]
+    return rows[:limit]
+
+
 def log_run(job, status, n=0, err=None):
     try:
         with get_connection() as conn:
@@ -130,6 +147,7 @@ def collect_symbol(symbol):
         lambda c: c.fetch_ohlcv(symbol, TF, LIMIT),
     )
     if rows:
+        rows = fresh_only(rows, LIMIT)
         n = save(SQL_CANDLES, rows, [
             "symbol", "timeframe", "timestamp",
             "open", "high", "low", "close",
@@ -146,6 +164,7 @@ def collect_symbol(symbol):
         lambda c: c.fetch_funding(symbol, LIMIT),
     )
     if rows:
+        rows = fresh_only(rows, LIMIT)
         n = save(SQL_FUNDING, rows, [
             "symbol", "timestamp", "rate", "source",
         ])
@@ -154,17 +173,22 @@ def collect_symbol(symbol):
     else:
         log.warning("  funding: no data")
 
-    # OI
+    # OI (fix v2 — обрезка до LIMIT)
     name, rows = try_sources(
         symbol,
         lambda c: c.fetch_oi(symbol, LIMIT),
     )
     if rows:
+        before = len(rows)
+        rows = fresh_only(rows, LIMIT)
         n = save(SQL_OI, rows, [
             "symbol", "timestamp", "oi",
             "oi_value", "source",
         ])
-        log.info("  oi[%s]: %d", name, n)
+        log.info(
+            "  oi[%s]: %d (from %d)",
+            name, n, before,
+        )
         total += n
     else:
         log.warning("  oi: no data")
@@ -174,7 +198,7 @@ def collect_symbol(symbol):
 
 def main():
     log.info("=" * 60)
-    log.info("ARGUS COLLECT SOL/BNB — DB2")
+    log.info("ARGUS COLLECT SOL/BNB — DB2 v2")
     log.info("=" * 60)
 
     total = 0
