@@ -1,16 +1,18 @@
 # ============================================================
 # ARGUS-Trader — ASIA PATTERNS (узел global)
 # ------------------------------------------------------------
-# v2.1: fix — DB1 запрос через параметры (без %-format).
-#       Было: два %s, один аргумент → ValueError.
-# v2: + BTC/ETH читаются из DB1 (features_hourly),
-#     SOL/BNB + Asia — из DB2.
-#     Пишем только в DB2. Никаких дублей.
+# v2.2: fix — ближайший timestamp ±30 мин (asof-join).
+#       Было: точное совпадение, SHANGHAI (:30) не совпадал
+#       с BTC (:00). Плюс MIN_CORR_SAMPLES=20 для защиты
+#       от фиктивных корреляций на N=6.
+# v2.1: fix DB1 query.
+# v2:   + BTC/ETH из DB1.
 # ============================================================
 
 import os
 import sys
 import logging
+import bisect
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -34,6 +36,8 @@ WINDOW_DAYS = 30
 LAGS = [1, 2, 3, 6, 12]
 THRESHOLDS = [1.0, 2.0]
 MIN_SAMPLES = 3
+MIN_CORR_SAMPLES = 20
+TOL_SEC = 1800  # ±30 минут
 
 ASIA_SYMBOLS = ["NIKKEI", "SHANGHAI",
                 "HANGSENG", "USDCNY"]
@@ -45,7 +49,6 @@ _DB1_CONN = None
 
 
 def _db1_conn():
-    """Отдельное соединение к DB1 (только чтение)."""
     global _DB1_CONN
     if _DB1_CONN is None or _DB1_CONN.closed:
         import psycopg
@@ -102,7 +105,6 @@ def load_candles_db2():
 
 
 def load_candles_db1():
-    """BTC/ETH из DB1 (features_hourly)."""
     if not DB1_URL:
         log.warning("DB1 URL не задан, пропуск")
         return {}
@@ -191,27 +193,56 @@ def save_pattern(src, tgt, cond, direction,
             ))
 
 
-def find_at_lag(ts, crypto_seq, lag):
-    for t2 in crypto_seq:
-        diff = (t2 - ts).total_seconds() / 3600
-        if abs(diff - lag) < 0.5:
-            return t2
-    return None
+def nearest(target_dt, sorted_list, tol_sec=TOL_SEC):
+    """Ближайший timestamp в пределах ±tol_sec."""
+    if not sorted_list:
+        return None
+    i = bisect.bisect_left(sorted_list, target_dt)
+    candidates = []
+    if i < len(sorted_list):
+        candidates.append(sorted_list[i])
+    if i > 0:
+        candidates.append(sorted_list[i - 1])
+    best = None
+    best_d = None
+    for c in candidates:
+        d = abs((c - target_dt).total_seconds())
+        if d <= tol_sec:
+            if best_d is None or d < best_d:
+                best = c
+                best_d = d
+    return best
+
+
+def build_sorted(seq_dict):
+    """Возвращает (sorted_ts_list, dict_ts_val)."""
+    ts_list = sorted(seq_dict.keys())
+    return ts_list, seq_dict
 
 
 def calc_corr_and_impact(asia_seq, crypto_seq):
-    ts = sorted(set(asia_seq) & set(crypto_seq))
+    asia_ts, asia_d = build_sorted(asia_seq)
+    crypto_ts, crypto_d = build_sorted(crypto_seq)
+
+    if not asia_ts or not crypto_ts:
+        return {}, {}
+
+    from datetime import timedelta
     corr_by_lag = {}
     impact_by_lag = {}
+
     for lag in LAGS:
         xs, ys = [], []
-        for t in ts:
-            ts2 = find_at_lag(t, crypto_seq, lag)
+        for t in asia_ts:
+            target = t + timedelta(hours=lag)
+            ts2 = nearest(target, crypto_ts)
             if ts2 is None:
                 continue
-            xs.append(asia_seq[t])
-            ys.append(crypto_seq[ts2])
+            xs.append(asia_d[t])
+            ys.append(crypto_d[ts2])
         if not xs:
+            continue
+        if len(xs) < MIN_CORR_SAMPLES:
             continue
         c = pearson(xs, ys)
         corr_by_lag[lag] = c
@@ -222,22 +253,26 @@ def calc_corr_and_impact(asia_seq, crypto_seq):
 
 
 def calc_conditional(asia_seq, crypto_seq):
-    ts = sorted(set(asia_seq) & set(crypto_seq))
+    asia_ts, asia_d = build_sorted(asia_seq)
+    crypto_ts, crypto_d = build_sorted(crypto_seq)
+
+    from datetime import timedelta
     out = []
     for thr in THRESHOLDS:
         for direction in ("up", "down"):
             for lag in LAGS:
                 impacts = []
-                for t in ts:
-                    a = asia_seq[t]
+                for t in asia_ts:
+                    a = asia_d[t]
                     if direction == "up" and a <= thr:
                         continue
                     if direction == "down" and a >= -thr:
                         continue
-                    ts2 = find_at_lag(t, crypto_seq, lag)
+                    target = t + timedelta(hours=lag)
+                    ts2 = nearest(target, crypto_ts)
                     if ts2 is None:
                         continue
-                    impacts.append(crypto_seq[ts2])
+                    impacts.append(crypto_d[ts2])
                 n = len(impacts)
                 if n < MIN_SAMPLES:
                     continue
@@ -299,8 +334,10 @@ def process_pair(a_sym, c_sym, asia, crypto):
 
 def main():
     log.info("=" * 60)
-    log.info("ARGUS ASIA PATTERNS v2.1")
+    log.info("ARGUS ASIA PATTERNS v2.2")
     log.info("window=%d, lags=%s", WINDOW_DAYS, LAGS)
+    log.info("min_corr_n=%d, tol=%ds",
+             MIN_CORR_SAMPLES, TOL_SEC)
     log.info("=" * 60)
 
     try:
