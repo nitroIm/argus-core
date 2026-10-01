@@ -1,33 +1,16 @@
 {
-  "generated_at": "2026-10-01T13:18:00.581742+00:00",
+  "generated_at": "2026-10-01T14:05:42.757791+00:00",
   "min_samples": 3,
   "symbols": {
     "BTCUSDT": {
       "symbol": "BTCUSDT",
-      "total_events": 23,
-      "rules_found": 2,
-      "rules": [
-        {
-          "rule": "OI change > +2%",
-          "samples": 5,
-          "rises": 4,
-          "falls": 0,
-          "direction": "up",
-          "confidence": 0.8
-        },
-        {
-          "rule": "LS ratio < 1.0 (толпа в шортах)",
-          "samples": 3,
-          "rises": 2,
-          "falls": 0,
-          "direction": "up",
-          "confidence": 0.6667
-        }
-      ]
+      "total_events": 97,
+      "rules_found": 0,
+      "rules": []
     },
     "ETHUSDT": {
       "symbol": "ETHUSDT",
-      "total_events": 21,
+      "total_events": 128,
       "rules_found": 0,
       "rules": []
     }

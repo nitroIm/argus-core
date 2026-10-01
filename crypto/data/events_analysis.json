@@ -1,17 +1,26 @@
 {
-  "generated_at": "2026-10-01T13:17:49.071236+00:00",
+  "generated_at": "2026-10-01T13:56:25.056264+00:00",
   "symbols": {
     "BTCUSDT": {
       "symbol": "BTCUSDT",
-      "total_events": 23,
-      "new_events": 0,
-      "saved": 0,
+      "total_events": 97,
+      "new_events": 74,
+      "saved": 74,
       "by_type": {
+        "ls_long_extreme": 25,
         "volume_spike": 15,
+        "rsi_overbought": 46,
         "rise_1h": 2,
-        "rise_4h": 6
+        "rise_4h": 6,
+        "rsi_oversold": 3
       },
       "recent_events": [
+        {
+          "timestamp": "2026-10-01 08:00:00+00:00",
+          "type": "ls_long_extreme",
+          "change_pct": 0.058,
+          "magnitude": 1.52
+        },
         {
           "timestamp": "2026-09-30 13:00:00+00:00",
           "type": "volume_spike",
@@ -19,10 +28,28 @@
           "magnitude": 3.861
         },
         {
+          "timestamp": "2026-09-30 13:00:00+00:00",
+          "type": "rsi_overbought",
+          "change_pct": -0.097,
+          "magnitude": 72.26
+        },
+        {
           "timestamp": "2026-09-29 18:00:00+00:00",
           "type": "volume_spike",
           "change_pct": 0.2328,
           "magnitude": 7.097
+        },
+        {
+          "timestamp": "2026-09-28 10:00:00+00:00",
+          "type": "rsi_oversold",
+          "change_pct": 0.0906,
+          "magnitude": 27.96
+        },
+        {
+          "timestamp": "2026-09-28 04:00:00+00:00",
+          "type": "rsi_oversold",
+          "change_pct": -0.1015,
+          "magnitude": 29.67
         },
         {
           "timestamp": "2026-09-28 02:00:00+00:00",
@@ -43,6 +70,18 @@
           "magnitude": 8.589
         },
         {
+          "timestamp": "2026-09-27 12:00:00+00:00",
+          "type": "rsi_overbought",
+          "change_pct": 0.0504,
+          "magnitude": 70.6
+        },
+        {
+          "timestamp": "2026-09-27 10:00:00+00:00",
+          "type": "rsi_overbought",
+          "change_pct": -0.042,
+          "magnitude": 72.04
+        },
+        {
           "timestamp": "2026-09-27 08:00:00+00:00",
           "type": "volume_spike",
           "change_pct": -0.0937,
@@ -61,91 +100,124 @@
           "magnitude": 3.777
         },
         {
-          "timestamp": "2026-09-21 11:00:00+00:00",
-          "type": "rise_4h",
-          "change_pct": 3.8191,
-          "magnitude": 3.8191
+          "timestamp": "2026-09-23 16:00:00+00:00",
+          "type": "rsi_oversold",
+          "change_pct": -0.2681,
+          "magnitude": 29.51
         },
         {
-          "timestamp": "2026-09-21 10:00:00+00:00",
-          "type": "rise_4h",
-          "change_pct": 3.4007,
-          "magnitude": 3.4007
+          "timestamp": "2026-09-23 04:00:00+00:00",
+          "type": "rsi_overbought",
+          "change_pct": 0.534,
+          "magnitude": 70.36
         },
         {
-          "timestamp": "2026-09-21 09:00:00+00:00",
-          "type": "rise_4h",
-          "change_pct": 3.7633,
-          "magnitude": 3.7633
+          "timestamp": "2026-09-21 23:00:00+00:00",
+          "type": "rsi_overbought",
+          "change_pct": 0.0494,
+          "magnitude": 79.52
         },
         {
-          "timestamp": "2026-09-21 09:00:00+00:00",
-          "type": "volume_spike",
-          "change_pct": 1.0845,
-          "magnitude": 5.324
+          "timestamp": "2026-09-21 22:00:00+00:00",
+          "type": "rsi_overbought",
+          "change_pct": -0.1487,
+          "magnitude": 79.33
         },
         {
-          "timestamp": "2026-09-21 08:00:00+00:00",
-          "type": "rise_1h",
-          "change_pct": 2.47,
-          "magnitude": 2.47
+          "timestamp": "2026-09-21 21:00:00+00:00",
+          "type": "rsi_overbought",
+          "change_pct": -0.4762,
+          "magnitude": 81.51
         },
         {
-          "timestamp": "2026-09-21 08:00:00+00:00",
-          "type": "volume_spike",
-          "change_pct": 2.47,
-          "magnitude": 10.198
-        },
-        {
-          "timestamp": "2026-09-21 01:00:00+00:00",
-          "type": "volume_spike",
-          "change_pct": -0.7384,
-          "magnitude": 3.332
-        },
-        {
-          "timestamp": "2026-09-20 02:00:00+00:00",
-          "type": "volume_spike",
-          "change_pct": -0.9494,
-          "magnitude": 4.902
-        },
-        {
-          "timestamp": "2026-09-18 16:00:00+00:00",
-          "type": "rise_4h",
-          "change_pct": 3.5795,
-          "magnitude": 3.5795
-        },
-        {
-          "timestamp": "2026-09-18 15:00:00+00:00",
-          "type": "rise_4h",
-          "change_pct": 3.4071,
-          "magnitude": 3.4071
-        },
-        {
-          "timestamp": "2026-09-18 14:00:00+00:00",
-          "type": "rise_4h",
-          "change_pct": 3.3783,
-          "magnitude": 3.3783
-        },
-        {
-          "timestamp": "2026-09-18 14:00:00+00:00",
-          "type": "volume_spike",
-          "change_pct": 1.0753,
-          "magnitude": 4.213
+          "timestamp": "2026-09-21 20:00:00+00:00",
+          "type": "rsi_overbought",
+          "change_pct": 0.3452,
+          "magnitude": 84.87
         }
       ]
     },
     "ETHUSDT": {
       "symbol": "ETHUSDT",
-      "total_events": 21,
-      "new_events": 0,
-      "saved": 0,
+      "total_events": 128,
+      "new_events": 107,
+      "saved": 107,
       "by_type": {
+        "ls_long_extreme": 55,
         "volume_spike": 16,
+        "rsi_overbought": 49,
         "rise_1h": 2,
         "rise_4h": 2,
-        "fall_1h": 1
+        "fall_1h": 1,
+        "rsi_oversold": 3
       },
       "recent_events": [
+        {
+          "timestamp": "2026-10-01 08:00:00+00:00",
+          "type": "ls_long_extreme",
+          "change_pct": 0.0579,
+          "magnitude": 1.54
+        },
+        {
+          "timestamp": "2026-10-01 01:00:00+00:00",
+          "type": "ls_long_extreme",
+          "change_pct": 0.0101,
+          "magnitude": 1.51
+        },
+        {
+          "timestamp": "2026-10-01 00:00:00+00:00",
+          "type": "ls_long_extreme",
+          "change_pct": -0.0615,
+          "magnitude": 1.51
+        },
+        {
+          "timestamp": "2026-09-30 23:00:00+00:00",
+          "type": "ls_long_extreme",
+          "change_pct": 0.0849,
+          "magnitude": 1.51
+        },
+        {
+          "timestamp": "2026-09-30 22:00:00+00:00",
+          "type": "ls_long_extreme",
+          "change_pct": -0.0302,
+          "magnitude": 1.54
+        },
+        {
+          "timestamp": "2026-09-30 21:00:00+00:00",
+          "type": "ls_long_extreme",
+          "change_pct": 0.0332,
+          "magnitude": 1.54
+        },
+        {
+          "timestamp": "2026-09-30 20:00:00+00:00",
+          "type": "ls_long_extreme",
+          "change_pct": -0.0352,
+          "magnitude": 1.55
+        },
+        {
+          "timestamp": "2026-09-30 19:00:00+00:00",
+          "type": "ls_long_extreme",
+          "change_pct": 0.0176,
+          "magnitude": 1.54
+        },
+        {
+          "timestamp": "2026-09-30 18:00:00+00:00",
+          "type": "ls_long_extreme",
+          "change_pct": -0.019,
+          "magnitude": 1.5
+        },
+        {
+          "timestamp": "2026-09-30 16:00:00+00:00",
+          "type": "ls_long_extreme",
+          "change_pct": -0.0239,
+          "magnitude": 1.51
+        },
+        {
+          "timestamp": "2026-09-30 15:00:00+00:00",
+          "type": "ls_long_extreme",
+          "change_pct": 0.0078,
+          "magnitude": 1.51
+        },
         {
           "timestamp": "2026-09-30 13:00:00+00:00",
           "type": "volume_spike",
@@ -153,118 +225,52 @@
           "magnitude": 3.928
         },
         {
-          "timestamp": "2026-09-29 18:00:00+00:00",
-          "type": "volume_spike",
-          "change_pct": 0.2698,
-          "magnitude": 3.254
+          "timestamp": "2026-09-30 10:00:00+00:00",
+          "type": "ls_long_extreme",
+          "change_pct": 0.1105,
+          "magnitude": 1.51
         },
         {
-          "timestamp": "2026-09-29 15:00:00+00:00",
-          "type": "volume_spike",
-          "change_pct": -0.1081,
-          "magnitude": 4.108
+          "timestamp": "2026-09-30 09:00:00+00:00",
+          "type": "ls_long_extreme",
+          "change_pct": 0.033,
+          "magnitude": 1.6
         },
         {
-          "timestamp": "2026-09-28 02:00:00+00:00",
-          "type": "volume_spike",
-          "change_pct": -0.0181,
-          "magnitude": 4.293
+          "timestamp": "2026-09-30 08:00:00+00:00",
+          "type": "ls_long_extreme",
+          "change_pct": -0.0352,
+          "magnitude": 1.6
         },
         {
-          "timestamp": "2026-09-27 13:00:00+00:00",
-          "type": "volume_spike",
-          "change_pct": -0.2683,
-          "magnitude": 13.428
+          "timestamp": "2026-09-30 07:00:00+00:00",
+          "type": "ls_long_extreme",
+          "change_pct": 0.0376,
+          "magnitude": 1.59
         },
         {
-          "timestamp": "2026-09-27 08:00:00+00:00",
-          "type": "volume_spike",
-          "change_pct": -0.0994,
-          "magnitude": 3.416
+          "timestamp": "2026-09-30 06:00:00+00:00",
+          "type": "ls_long_extreme",
+          "change_pct": 0.0123,
+          "magnitude": 1.6
         },
         {
-          "timestamp": "2026-09-26 13:00:00+00:00",
-          "type": "volume_spike",
-          "change_pct": 0.0112,
-          "magnitude": 5.276
+          "timestamp": "2026-09-30 05:00:00+00:00",
+          "type": "ls_long_extreme",
+          "change_pct": 0.1349,
+          "magnitude": 1.56
         },
         {
-          "timestamp": "2026-09-25 16:00:00+00:00",
-          "type": "volume_spike",
-          "change_pct": 0.1828,
-          "magnitude": 4.16
+          "timestamp": "2026-09-30 04:00:00+00:00",
+          "type": "ls_long_extreme",
+          "change_pct": 0.0127,
+          "magnitude": 1.54
         },
         {
-          "timestamp": "2026-09-21 09:00:00+00:00",
-          "type": "volume_spike",
-          "change_pct": 0.9128,
-          "magnitude": 3.525
-        },
-        {
-          "timestamp": "2026-09-21 08:00:00+00:00",
-          "type": "volume_spike",
-          "change_pct": 1.288,
-          "magnitude": 3.395
-        },
-        {
-          "timestamp": "2026-09-21 00:00:00+00:00",
-          "type": "rise_1h",
-          "change_pct": 1.6891,
-          "magnitude": 1.6891
-        },
-        {
-          "timestamp": "2026-09-21 00:00:00+00:00",
-          "type": "volume_spike",
-          "change_pct": 1.6891,
-          "magnitude": 4.386
-        },
-        {
-          "timestamp": "2026-09-20 16:00:00+00:00",
-          "type": "volume_spike",
-          "change_pct": 1.0354,
-          "magnitude": 3.289
-        },
-        {
-          "timestamp": "2026-09-20 02:00:00+00:00",
-          "type": "fall_1h",
-          "change_pct": -1.7368,
-          "magnitude": 1.7368
-        },
-        {
-          "timestamp": "2026-09-20 02:00:00+00:00",
-          "type": "volume_spike",
-          "change_pct": -1.7368,
-          "magnitude": 4.545
-        },
-        {
-          "timestamp": "2026-09-18 16:00:00+00:00",
-          "type": "rise_4h",
-          "change_pct": 3.7554,
-          "magnitude": 3.7554
-        },
-        {
-          "timestamp": "2026-09-18 15:00:00+00:00",
-          "type": "rise_4h",
-          "change_pct": 3.0234,
-          "magnitude": 3.0234
-        },
-        {
-          "timestamp": "2026-09-18 14:00:00+00:00",
-          "type": "volume_spike",
-          "change_pct": 1.0799,
-          "magnitude": 3.333
-        },
-        {
-          "timestamp": "2026-09-18 13:00:00+00:00",
-          "type": "rise_1h",
-          "change_pct": 2.0964,
-          "magnitude": 2.0964
-        },
-        {
-          "timestamp": "2026-09-18 13:00:00+00:00",
-          "type": "volume_spike",
-          "change_pct": 2.0964,
-          "magnitude": 5.147
+          "timestamp": "2026-09-30 03:00:00+00:00",
+          "type": "ls_long_extreme",
+          "change_pct": -0.0363,
+          "magnitude": 1.53
         }
       ]
     }
