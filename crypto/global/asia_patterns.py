@@ -1,10 +1,11 @@
 # ============================================================
 # ARGUS-Trader — ASIA PATTERNS (узел global)
 # ------------------------------------------------------------
+# v2.1: fix — DB1 запрос через параметры (без %-format).
+#       Было: два %s, один аргумент → ValueError.
 # v2: + BTC/ETH читаются из DB1 (features_hourly),
 #     SOL/BNB + Asia — из DB2.
 #     Пишем только в DB2. Никаких дублей.
-# v1: lead-lag корреляции Asia → крипта.
 # ============================================================
 
 import os
@@ -110,16 +111,14 @@ def load_candles_db1():
         "change_pct FROM features_hourly "
         "WHERE symbol = ANY(%s) "
         "AND timestamp > NOW() - "
-        "INTERVAL '%s days' "
+        "INTERVAL '1 day' * %s "
         "ORDER BY timestamp"
-    ) % (WINDOW_DAYS,)
+    )
     out = {}
     try:
         conn = _db1_conn()
         with conn.cursor() as cur:
-            cur.execute(
-                sql, (CRYPTO_DB1,),
-            )
+            cur.execute(sql, (CRYPTO_DB1, WINDOW_DAYS))
             for sym, ts, ch in cur.fetchall():
                 if ch is None:
                     continue
@@ -193,7 +192,6 @@ def save_pattern(src, tgt, cond, direction,
 
 
 def find_at_lag(ts, crypto_seq, lag):
-    """Ищет timestamp через lag часов."""
     for t2 in crypto_seq:
         diff = (t2 - ts).total_seconds() / 3600
         if abs(diff - lag) < 0.5:
@@ -205,7 +203,6 @@ def calc_corr_and_impact(asia_seq, crypto_seq):
     ts = sorted(set(asia_seq) & set(crypto_seq))
     corr_by_lag = {}
     impact_by_lag = {}
-
     for lag in LAGS:
         xs, ys = [], []
         for t in ts:
@@ -302,7 +299,7 @@ def process_pair(a_sym, c_sym, asia, crypto):
 
 def main():
     log.info("=" * 60)
-    log.info("ARGUS ASIA PATTERNS v2")
+    log.info("ARGUS ASIA PATTERNS v2.1")
     log.info("window=%d, lags=%s", WINDOW_DAYS, LAGS)
     log.info("=" * 60)
 
