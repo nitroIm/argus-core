@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       task:
-        description: 'all | collect_sol_bnb | collect_asia | notify_asia'
+        description: 'all | collect_sol_bnb | collect_asia | notify_asia | asia_patterns'
         required: true
         default: 'all'
 
@@ -25,6 +25,7 @@ jobs:
 
       - name: Run task
         env:
+          ARGUS_DB_URL: ${{ secrets.ARGUS_DB_URL }}
           ARGUS_DB_URL_2: ${{ secrets.ARGUS_DB_URL_2 }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
@@ -40,4 +41,7 @@ jobs:
           fi
           if [ "$TASK" = "notify_asia" ] || [ "$TASK" = "all" ]; then
             python crypto/global/notify_asia.py
+          fi
+          if [ "$TASK" = "asia_patterns" ] || [ "$TASK" = "all" ]; then
+            python crypto/global/asia_patterns.py
           fi
