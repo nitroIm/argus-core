@@ -1,20 +1,26 @@
 {
-  "generated_at": "2026-10-01T13:56:25.056264+00:00",
+  "generated_at": "2026-10-01T14:14:42.457532+00:00",
   "symbols": {
     "BTCUSDT": {
       "symbol": "BTCUSDT",
-      "total_events": 97,
-      "new_events": 74,
-      "saved": 74,
+      "total_events": 98,
+      "new_events": 1,
+      "saved": 1,
       "by_type": {
         "ls_long_extreme": 25,
-        "volume_spike": 15,
+        "volume_spike": 16,
         "rsi_overbought": 46,
         "rise_1h": 2,
         "rise_4h": 6,
         "rsi_oversold": 3
       },
       "recent_events": [
+        {
+          "timestamp": "2026-10-01 14:00:00+00:00",
+          "type": "volume_spike",
+          "change_pct": -0.3064,
+          "magnitude": 8.012
+        },
         {
           "timestamp": "2026-10-01 08:00:00+00:00",
           "type": "ls_long_extreme",
@@ -128,23 +134,17 @@
           "type": "rsi_overbought",
           "change_pct": -0.4762,
           "magnitude": 81.51
-        },
-        {
-          "timestamp": "2026-09-21 20:00:00+00:00",
-          "type": "rsi_overbought",
-          "change_pct": 0.3452,
-          "magnitude": 84.87
         }
       ]
     },
     "ETHUSDT": {
       "symbol": "ETHUSDT",
-      "total_events": 128,
-      "new_events": 107,
-      "saved": 107,
+      "total_events": 129,
+      "new_events": 1,
+      "saved": 1,
       "by_type": {
         "ls_long_extreme": 55,
-        "volume_spike": 16,
+        "volume_spike": 17,
         "rsi_overbought": 49,
         "rise_1h": 2,
         "rise_4h": 2,
@@ -152,6 +152,12 @@
         "rsi_oversold": 3
       },
       "recent_events": [
+        {
+          "timestamp": "2026-10-01 14:00:00+00:00",
+          "type": "volume_spike",
+          "change_pct": -0.3876,
+          "magnitude": 8.845
+        },
         {
           "timestamp": "2026-10-01 08:00:00+00:00",
           "type": "ls_long_extreme",
@@ -265,12 +271,6 @@
           "type": "ls_long_extreme",
           "change_pct": 0.0127,
           "magnitude": 1.54
-        },
-        {
-          "timestamp": "2026-09-30 03:00:00+00:00",
-          "type": "ls_long_extreme",
-          "change_pct": -0.0363,
-          "magnitude": 1.53
         }
       ]
     }

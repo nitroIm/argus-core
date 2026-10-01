@@ -1,18 +1,44 @@
 {
-  "generated_at": "2026-10-01T14:05:42.757791+00:00",
+  "generated_at": "2026-10-01T14:15:37.162988+00:00",
   "min_samples": 3,
   "symbols": {
     "BTCUSDT": {
       "symbol": "BTCUSDT",
-      "total_events": 97,
-      "rules_found": 0,
-      "rules": []
+      "total_events": 98,
+      "rules_found": 2,
+      "rules": [
+        {
+          "rule": "funding > +0.005%",
+          "samples": 8,
+          "rises": 8,
+          "falls": 0,
+          "direction": "up",
+          "confidence": 1.0
+        },
+        {
+          "rule": "OI change > +2%",
+          "samples": 4,
+          "rises": 4,
+          "falls": 0,
+          "direction": "up",
+          "confidence": 1.0
+        }
+      ]
     },
     "ETHUSDT": {
       "symbol": "ETHUSDT",
-      "total_events": 128,
-      "rules_found": 0,
-      "rules": []
+      "total_events": 129,
+      "rules_found": 1,
+      "rules": [
+        {
+          "rule": "funding > +0.005%",
+          "samples": 4,
+          "rises": 3,
+          "falls": 1,
+          "direction": "up",
+          "confidence": 0.75
+        }
+      ]
     }
   }
 }
