@@ -1,0 +1,42 @@
+name: Crypto Global (DB2)
+
+on:
+  workflow_dispatch:
+    inputs:
+      task:
+        description: 'collect_sol_bnb | collect_asia | all'
+        required: true
+        default: 'collect_sol_bnb'
+  schedule:
+    - cron: '10 * * * *'
+
+jobs:
+  global:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r crypto/requirements.txt
+
+      - name: Run task
+        env:
+          ARGUS_DB_URL_2: ${{ secrets.ARGUS_DB_URL_2 }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          TASK="${{ github.event.inputs.task }}"
+          if [ -z "$TASK" ]; then TASK="collect_sol_bnb"; fi
+          echo "TASK=$TASK"
+          if [ "$TASK" = "collect_sol_bnb" ] || [ "$TASK" = "all" ]; then
+            python crypto/global/collect_sol_bnb.py
+          fi
+          if [ "$TASK" = "collect_asia" ] || [ "$TASK" = "all" ]; then
+            echo "asia collector not ready yet"
+          fi
