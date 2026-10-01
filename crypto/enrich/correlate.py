@@ -1,11 +1,8 @@
 # ============================================================
-# ARGUS-Trader — CORRELATE
+# ARGUS-Trader — CORRELATE v2
 # ------------------------------------------------------------
-# Ищет закономерности: какие условия ПРЕДШЕСТВУЮТ движению.
-# Читает causal_links + events из БД.
-# Находит простые и двойные комбинации признаков.
-# Сохраняет в crypto/data/correlations.json.
-# ------------------------------------------------------------
+# v2: fix compute_rule_stats — считает directional только
+#     (rise/fall), а не все события (rsi_overbought и т.д.)
 # v1: начальная версия
 # ============================================================
 
@@ -34,16 +31,11 @@ logging.basicConfig(
 )
 log = logging.getLogger("crypto.correlate")
 
-
-# Минимум сэмплов для уверенности в правиле
 MIN_SAMPLES = 3
 
 
 def fetch_causal_data(symbol):
-    """
-    Собирает все пары (событие + lead-сигналы).
-    JOIN causal_links с events.
-    """
+    """Собирает пары (событие + lead-сигналы)."""
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
@@ -84,21 +76,33 @@ def fetch_causal_data(symbol):
 def compute_rule_stats(rows, condition_fn, label):
     """
     Применяет условие к строкам, считает статистику.
-    condition_fn(row) → bool
+    Считает только события с направлением (rise/fall).
     """
     matched = [r for r in rows if condition_fn(r)]
-    if len(matched) < MIN_SAMPLES:
+
+    # Только трендовые события — rise_*, fall_*
+    directional = [
+        r for r in matched
+        if r["event_type"].startswith("rise")
+        or r["event_type"].startswith("fall")
+    ]
+
+    if len(directional) < MIN_SAMPLES:
         return None
 
-    # Смотрим на событие: rise или fall
-    rises = sum(1 for r in matched if r["event_type"].startswith("rise"))
-    falls = sum(1 for r in matched if r["event_type"].startswith("fall"))
-    total = len(matched)
+    rises = sum(
+        1 for r in directional
+        if r["event_type"].startswith("rise")
+    )
+    falls = sum(
+        1 for r in directional
+        if r["event_type"].startswith("fall")
+    )
+    total = len(directional)
 
     if total == 0:
         return None
 
-    # Итоговое направление: рост или падение чаще?
     if rises > falls:
         direction = "up"
         p_correct = round(rises / total, 4)
@@ -120,13 +124,13 @@ def compute_rule_stats(rows, condition_fn, label):
 
 
 def find_rules(rows):
-    """Ищет простые и двойные комбинации."""
+    """Ищет простые, двойные и тройные комбинации."""
     rules = []
 
     if not rows:
         return rules
 
-    # --- Простые правила: funding ---
+    # --- funding ---
     r = compute_rule_stats(
         rows,
         lambda x: x["funding"] is not None and x["funding"] < -0.00005,
@@ -141,7 +145,7 @@ def find_rules(rows):
     )
     if r: rules.append(r)
 
-    # --- Простые правила: oi_change ---
+    # --- oi_change ---
     r = compute_rule_stats(
         rows,
         lambda x: x["oi_change"] is not None and x["oi_change"] < -2,
@@ -156,7 +160,7 @@ def find_rules(rows):
     )
     if r: rules.append(r)
 
-    # --- Простые правила: ls_ratio ---
+    # --- ls_ratio ---
     r = compute_rule_stats(
         rows,
         lambda x: x["ls_ratio"] is not None and x["ls_ratio"] < 1.0,
@@ -171,7 +175,7 @@ def find_rules(rows):
     )
     if r: rules.append(r)
 
-    # --- Простые правила: volatility ---
+    # --- volatility ---
     r = compute_rule_stats(
         rows,
         lambda x: x["volatility"] is not None and x["volatility"] > 1.0,
@@ -179,7 +183,7 @@ def find_rules(rows):
     )
     if r: rules.append(r)
 
-    # --- Двойные правила ---
+    # --- двойные ---
     r = compute_rule_stats(
         rows,
         lambda x: (x["funding"] is not None and x["funding"] < -0.00005
@@ -212,7 +216,7 @@ def find_rules(rows):
     )
     if r: rules.append(r)
 
-    # --- Тройные правила ---
+    # --- тройные ---
     r = compute_rule_stats(
         rows,
         lambda x: (x["funding"] is not None and x["funding"] < -0.00005
@@ -222,7 +226,6 @@ def find_rules(rows):
     )
     if r: rules.append(r)
 
-    # Сортируем по confidence, отсеиваем слабые
     rules = [r for r in rules if r["confidence"] >= 0.55]
     rules.sort(key=lambda x: (x["confidence"], x["samples"]), reverse=True)
     return rules
@@ -253,7 +256,7 @@ def analyze_symbol(symbol):
 
 def main():
     log.info("=" * 60)
-    log.info("🧠 ARGUS-Trader CORRELATE")
+    log.info("🧠 ARGUS-Trader CORRELATE v2")
     log.info("=" * 60)
     log.info(f"   Мин. сэмплов для правила: {MIN_SAMPLES}")
     log.info("")
