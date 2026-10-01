@@ -274,5 +274,35 @@
     "pnl_usd": -0.0887,
     "pnl_pct": -0.887,
     "exit_fee": 0.004961
+  },
+  {
+    "id": "5f48e691-b3ec-45d3-9bfb-7dc0595925aa",
+    "symbol": "ETHUSDT",
+    "direction": "LONG",
+    "entry_price": 2688.013335,
+    "entry_time": "2026-09-30T16:05:30.232644+00:00",
+    "size_usd": 10.0,
+    "size_coins": 0.00372022,
+    "stop": 2661.2867,
+    "target": 2737.4366,
+    "entry_fee": 0.005,
+    "rr_planned": 2.0,
+    "rsi_entry": 48.28,
+    "atr_entry": 12.5136,
+    "markov_p10": 0.5874,
+    "votes": [
+      "Markov",
+      "Level"
+    ],
+    "reasons": [
+      "P(1|0)=0.59",
+      "near 2675"
+    ],
+    "exit_price": 2691.903375,
+    "exit_time": "2026-10-01T17:16:07.170283+00:00",
+    "exit_reason": "time_exit",
+    "pnl_usd": 0.0045,
+    "pnl_pct": 0.045,
+    "exit_fee": 0.005007
   }
 ]
