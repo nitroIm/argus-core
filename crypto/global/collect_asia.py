@@ -1,8 +1,8 @@
 # ============================================================
-# ARGUS-Trader — COLLECT ASIA (узел global)
+# ARGUS-Trader — COLLECT ASIA + EUROPE (узел global)
 # ------------------------------------------------------------
-# v1: Nikkei, Shanghai, HangSeng, USD/CNY через Yahoo.
-#     Пишет в asia_market (DB2).
+# v2: + DAX, Euro Stoxx 50, FTSE, EUR/USD (Европа).
+# v1: Nikkei, Shanghai, HangSeng, USD/CNY (Азия).
 # ============================================================
 
 import sys
@@ -40,6 +40,13 @@ ASIA = [
     ("000001.SS", "SHANGHAI"),
     ("^HSI",      "HANGSENG"),
     ("CNY=X",     "USDCNY"),
+]
+
+EUROPE = [
+    ("^GDAXI",    "DAX"),
+    ("^STOXX50E", "SX5E"),
+    ("^FTSE",     "FTSE"),
+    ("EURUSD=X",  "EURUSD"),
 ]
 
 INTERVAL = "1h"
@@ -150,13 +157,10 @@ def log_run(job, status, n=0, err=None):
         log.warning("log_run: %s", e)
 
 
-def main():
-    log.info("=" * 60)
-    log.info("ARGUS COLLECT ASIA — DB2")
-    log.info("=" * 60)
-
+def fetch_group(name, lst):
+    log.info("--- %s ---", name)
     total = 0
-    for code, db_symbol in ASIA:
+    for code, db_symbol in lst:
         log.info("%s (%s)", db_symbol, code)
         rows = fetch_yahoo(code)
         if not rows:
@@ -166,12 +170,23 @@ def main():
         n = save_rows(db_symbol, rows)
         total += n
         log.info("  fetched=%d saved=%d", len(rows), n)
+    return total
+
+
+def main():
+    log.info("=" * 60)
+    log.info("ARGUS COLLECT ASIA + EUROPE — DB2 v2")
+    log.info("=" * 60)
+
+    total = 0
+    total += fetch_group("ASIA", ASIA)
+    total += fetch_group("EUROPE", EUROPE)
 
     log.info("=" * 60)
     log.info("DONE. Total saved: %d", total)
     log.info("=" * 60)
 
-    log_run("collect_asia", "ok", total)
+    log_run("collect_asia_europe", "ok", total)
     close_connection()
 
 
