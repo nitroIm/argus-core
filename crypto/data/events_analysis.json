@@ -1,21 +1,33 @@
 {
-  "generated_at": "2026-10-02T12:19:23.594548+00:00",
+  "generated_at": "2026-10-02T13:19:30.190176+00:00",
   "symbols": {
     "BTCUSDT": {
       "symbol": "BTCUSDT",
-      "total_events": 103,
-      "new_events": 0,
-      "saved": 0,
+      "total_events": 105,
+      "new_events": 2,
+      "saved": 2,
       "by_type": {
         "ls_long_extreme": 25,
         "volume_spike": 16,
-        "rsi_overbought": 49,
+        "rsi_overbought": 50,
         "rise_1h": 2,
         "rise_4h": 6,
         "rsi_oversold": 3,
-        "new_high_7d": 2
+        "new_high_7d": 3
       },
       "recent_events": [
+        {
+          "timestamp": "2026-10-02 13:00:00+00:00",
+          "type": "new_high_7d",
+          "change_pct": 0.0543,
+          "magnitude": 182.6
+        },
+        {
+          "timestamp": "2026-10-02 13:00:00+00:00",
+          "type": "rsi_overbought",
+          "change_pct": 0.0543,
+          "magnitude": 73.68
+        },
         {
           "timestamp": "2026-10-02 10:00:00+00:00",
           "type": "rsi_overbought",
@@ -123,26 +135,14 @@
           "type": "volume_spike",
           "change_pct": -0.0937,
           "magnitude": 3.439
-        },
-        {
-          "timestamp": "2026-09-27 00:00:00+00:00",
-          "type": "volume_spike",
-          "change_pct": -0.0416,
-          "magnitude": 4.687
-        },
-        {
-          "timestamp": "2026-09-25 16:00:00+00:00",
-          "type": "volume_spike",
-          "change_pct": 0.1134,
-          "magnitude": 3.777
         }
       ]
     },
     "ETHUSDT": {
       "symbol": "ETHUSDT",
-      "total_events": 134,
-      "new_events": 0,
-      "saved": 0,
+      "total_events": 135,
+      "new_events": 1,
+      "saved": 1,
       "by_type": {
         "ls_long_extreme": 57,
         "volume_spike": 17,
@@ -151,9 +151,15 @@
         "rise_4h": 2,
         "fall_1h": 1,
         "rsi_oversold": 3,
-        "new_high_7d": 2
+        "new_high_7d": 3
       },
       "recent_events": [
+        {
+          "timestamp": "2026-10-02 13:00:00+00:00",
+          "type": "new_high_7d",
+          "change_pct": 0.0258,
+          "magnitude": 1.2
+        },
         {
           "timestamp": "2026-10-02 09:00:00+00:00",
           "type": "new_high_7d",
@@ -267,12 +273,6 @@
           "type": "ls_long_extreme",
           "change_pct": 0.1105,
           "magnitude": 1.51
-        },
-        {
-          "timestamp": "2026-09-30 09:00:00+00:00",
-          "type": "ls_long_extreme",
-          "change_pct": 0.033,
-          "magnitude": 1.6
         }
       ]
     }
