@@ -1,12 +1,27 @@
 {
-  "generated_at": "2026-10-02T03:20:46.068202+00:00",
+  "generated_at": "2026-10-02T04:19:41.498361+00:00",
   "symbols": {
     "BTCUSDT": {
       "symbol": "BTCUSDT",
-      "total_events": 98,
-      "processed": 0,
-      "saved": 0,
-      "summary_by_type": {}
+      "total_events": 100,
+      "processed": 2,
+      "saved": 2,
+      "summary_by_type": {
+        "new_high_7d": {
+          "count": 1,
+          "avg_funding": 0.0,
+          "avg_oi_change": 4.9066,
+          "avg_ls_ratio": 1.11,
+          "avg_change_24h": 1.7588
+        },
+        "rsi_overbought": {
+          "count": 1,
+          "avg_funding": 0.0,
+          "avg_oi_change": 4.9066,
+          "avg_ls_ratio": 1.11,
+          "avg_change_24h": 1.7588
+        }
+      }
     },
     "ETHUSDT": {
       "symbol": "ETHUSDT",
