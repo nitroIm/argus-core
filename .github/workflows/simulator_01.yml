@@ -2,7 +2,7 @@
 # ARGUS - Simulator 01
 # ------------------------------------------------------------
 # Виртуальная торговля. Каждый час.
-# v2: + psycopg для чтения candles
+# v3: + explorer перед runner
 # ============================================================
 
 name: ARGUS Simulator 01
@@ -38,10 +38,20 @@ jobs:
           pip install requests==2.32.3
           pip install "psycopg[binary]==3.2.3"
 
+      - name: Run explorer
+        env:
+          ARGUS_DB_URL: >-
+            ${{ secrets.ARGUS_DB_URL }}
+          ARGUS_DB_URL_2: >-
+            ${{ secrets.ARGUS_DB_URL_2 }}
+        run: python crypto/mexc/simulator_01/explorer.py
+
       - name: Run simulator
         env:
           ARGUS_DB_URL: >-
             ${{ secrets.ARGUS_DB_URL }}
+          ARGUS_DB_URL_2: >-
+            ${{ secrets.ARGUS_DB_URL_2 }}
           MEXC_API_KEY: >-
             ${{ secrets.MEXC_API_KEY }}
           MEXC_API_SECRET: >-
