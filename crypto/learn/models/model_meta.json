@@ -1,11 +1,11 @@
 {
-  "trained_at": "2026-10-01T23:45:46.824629+00:00",
+  "trained_at": "2026-10-02T23:45:39.763864+00:00",
   "version": "v5",
-  "n_total": 680,
-  "n_train": 544,
-  "n_test": 136,
-  "accuracy": 0.5882,
-  "num_trees": 7,
+  "n_total": 728,
+  "n_train": 582,
+  "n_test": 146,
+  "accuracy": 0.5137,
+  "num_trees": 11,
   "features": [
     "change_pct",
     "range_pct",
@@ -44,56 +44,56 @@
   "top_features": [
     {
       "name": "dist_high_24h_pct",
-      "gain": 27.86
-    },
-    {
-      "name": "lower_wick_pct",
-      "gain": 26.41
-    },
-    {
-      "name": "consecutive_up",
-      "gain": 23.34
+      "gain": 61.65
     },
     {
       "name": "volume_ratio_24h",
-      "gain": 21.87
+      "gain": 50.66
+    },
+    {
+      "name": "ema50_dist_pct",
+      "gain": 36.21
+    },
+    {
+      "name": "lower_wick_pct",
+      "gain": 35.36
     },
     {
       "name": "upper_wick_pct",
-      "gain": 20.23
+      "gain": 31.46
     },
     {
       "name": "change_24h",
-      "gain": 17.41
-    },
-    {
-      "name": "bb_width_pct",
-      "gain": 16.14
+      "gain": 29.25
     },
     {
       "name": "bb_upper_dist",
-      "gain": 15.8
+      "gain": 26.94
     },
     {
-      "name": "change_4h",
-      "gain": 12.77
+      "name": "change_pct",
+      "gain": 23.97
     },
     {
-      "name": "bb_lower_dist",
-      "gain": 11.28
+      "name": "consecutive_up",
+      "gain": 23.83
+    },
+    {
+      "name": "macd_signal",
+      "gain": 20.93
     }
   ],
   "balance": {
-    "up_total": 368,
-    "down_total": 312,
-    "up_train": 292,
-    "down_train": 252
+    "up_total": 394,
+    "down_total": 334,
+    "up_train": 312,
+    "down_train": 270
   },
   "symbol": null,
   "confusion": {
-    "tp": 56,
-    "tn": 24,
-    "fp": 36,
-    "fn": 20
+    "tp": 48,
+    "tn": 27,
+    "fp": 37,
+    "fn": 34
   }
 }
