@@ -1,10 +1,8 @@
 # ============================================================
-# ARGUS-Trader — ASIA PATTERNS (узел global)
+# ARGUS-Trader — ASIA + EUROPE PATTERNS (узел global)
 # ------------------------------------------------------------
-# v2.2: fix — ближайший timestamp ±30 мин (asof-join).
-#       Было: точное совпадение, SHANGHAI (:30) не совпадал
-#       с BTC (:00). Плюс MIN_CORR_SAMPLES=20 для защиты
-#       от фиктивных корреляций на N=6.
+# v2.3: + DAX, SX5E, FTSE, EURUSD.
+# v2.2: fix — ближайший timestamp ±30 мин.
 # v2.1: fix DB1 query.
 # v2:   + BTC/ETH из DB1.
 # ============================================================
@@ -13,7 +11,7 @@ import os
 import sys
 import logging
 import bisect
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
 import numpy as np
@@ -30,17 +28,19 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(message)s",
     datefmt="%H:%M:%S",
 )
-log = logging.getLogger("global.asia_patterns")
+log = logging.getLogger("global.patterns")
 
 WINDOW_DAYS = 30
 LAGS = [1, 2, 3, 6, 12]
 THRESHOLDS = [1.0, 2.0]
 MIN_SAMPLES = 3
 MIN_CORR_SAMPLES = 20
-TOL_SEC = 1800  # ±30 минут
+TOL_SEC = 1800
 
-ASIA_SYMBOLS = ["NIKKEI", "SHANGHAI",
-                "HANGSENG", "USDCNY"]
+ASIA_SYMBOLS = [
+    "NIKKEI", "SHANGHAI", "HANGSENG", "USDCNY",
+    "DAX", "SX5E", "FTSE", "EURUSD",
+]
 CRYPTO_DB1 = ["BTCUSDT", "ETHUSDT"]
 CRYPTO_DB2 = ["SOLUSDT", "BNBUSDT"]
 
@@ -106,7 +106,7 @@ def load_candles_db2():
 
 def load_candles_db1():
     if not DB1_URL:
-        log.warning("DB1 URL не задан, пропуск")
+        log.warning("DB1 URL не задан")
         return {}
     sql = (
         "SELECT symbol, timestamp, "
@@ -194,7 +194,6 @@ def save_pattern(src, tgt, cond, direction,
 
 
 def nearest(target_dt, sorted_list, tol_sec=TOL_SEC):
-    """Ближайший timestamp в пределах ±tol_sec."""
     if not sorted_list:
         return None
     i = bisect.bisect_left(sorted_list, target_dt)
@@ -215,19 +214,15 @@ def nearest(target_dt, sorted_list, tol_sec=TOL_SEC):
 
 
 def build_sorted(seq_dict):
-    """Возвращает (sorted_ts_list, dict_ts_val)."""
-    ts_list = sorted(seq_dict.keys())
-    return ts_list, seq_dict
+    return sorted(seq_dict.keys()), seq_dict
 
 
 def calc_corr_and_impact(asia_seq, crypto_seq):
     asia_ts, asia_d = build_sorted(asia_seq)
     crypto_ts, crypto_d = build_sorted(crypto_seq)
-
     if not asia_ts or not crypto_ts:
         return {}, {}
 
-    from datetime import timedelta
     corr_by_lag = {}
     impact_by_lag = {}
 
@@ -255,8 +250,6 @@ def calc_corr_and_impact(asia_seq, crypto_seq):
 def calc_conditional(asia_seq, crypto_seq):
     asia_ts, asia_d = build_sorted(asia_seq)
     crypto_ts, crypto_d = build_sorted(crypto_seq)
-
-    from datetime import timedelta
     out = []
     for thr in THRESHOLDS:
         for direction in ("up", "down"):
@@ -334,7 +327,7 @@ def process_pair(a_sym, c_sym, asia, crypto):
 
 def main():
     log.info("=" * 60)
-    log.info("ARGUS ASIA PATTERNS v2.2")
+    log.info("ARGUS PATTERNS v2.3")
     log.info("window=%d, lags=%s", WINDOW_DAYS, LAGS)
     log.info("min_corr_n=%d, tol=%ds",
              MIN_CORR_SAMPLES, TOL_SEC)
@@ -353,7 +346,7 @@ def main():
     crypto.update(crypto_db1)
     crypto.update(crypto_db2)
 
-    log.info("asia: %s",
+    log.info("markets: %s",
              {k: len(v) for k, v in asia.items()})
     log.info("crypto(DB1): %s",
              {k: len(v) for k, v in crypto_db1.items()})
