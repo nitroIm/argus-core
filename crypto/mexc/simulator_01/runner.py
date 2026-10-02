@@ -1,11 +1,7 @@
 # ============================================================
-# ARGUS - SIMULATOR 01 v8.1 [PRODUCTION]
+# ARGUS - SIMULATOR 01 v9 [PRODUCTION]
 # ------------------------------------------------------------
-# v8.1: после закрытия сразу ищем новый сигнал
-# v8:   - check через 1h свечи Supabase
-#       - time exit только в плюсе
-#       - комиссии учтены
-# v7:   - защита от кривых данных
+# v9: + explorer (SHORT + мульти-источники)
 # ============================================================
 
 import os
@@ -27,10 +23,18 @@ STATE_DIR.mkdir(parents=True, exist_ok=True)
 
 sys.path.insert(0, str(MEXC_DIR))
 sys.path.insert(0, str(CRYPTO_ROOT))
+sys.path.insert(0, str(SCRIPT_DIR))
 
 from client import MexcClient
 from db import get_connection
 from db import close_connection
+
+try:
+    import explorer as explorer_mod
+    EXPLORER_OK = True
+except Exception:
+    explorer_mod = None
+    EXPLORER_OK = False
 
 logging.basicConfig(
     level=logging.INFO,
@@ -52,6 +56,7 @@ SLIPPAGE = 0.0005
 
 MIN_RR = 1.5
 STOP_BELOW_SUP_PCT = 0.5
+STOP_ABOVE_RES_PCT = 0.5
 ATR_MULT = 1.5
 TARGET_RR = 2.0
 MAX_STOP_ATR = 2.5
@@ -66,17 +71,14 @@ TIME_EXIT_HOURS = 24
 WATCH_INTERVAL_SEC = 600
 WATCH_MAX_MIN = 55
 
-SYMBOLS = ["BTCUSDT", "ETHUSDT"]
+SYMBOLS = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT"]
 
 BOT_TOKEN = (
     os.getenv("TELEGRAM_BOT_TOKEN")
     or os.getenv("BOT_TOKEN")
     or ""
 ).strip()
-CHAT_ID = (
-    os.getenv("TELEGRAM_CHAT_ID")
-    or ""
-).strip()
+CHAT_ID = (os.getenv("TELEGRAM_CHAT_ID") or "").strip()
 
 
 def notify(text):
@@ -111,10 +113,7 @@ def load_json(path, default):
 def save_json(path, data):
     try:
         with open(path, "w", encoding="utf-8") as f:
-            json.dump(
-                data, f,
-                ensure_ascii=False, indent=2,
-            )
+            json.dump(data, f, ensure_ascii=False, indent=2)
     except Exception as e:
         log.error("save %s: %s", path.name, e)
 
@@ -122,9 +121,7 @@ def save_json(path, data):
 def file_age_hours(path):
     if not path.exists():
         return None
-    return (
-        time.time() - path.stat().st_mtime
-    ) / 3600
+    return (time.time() - path.stat().st_mtime) / 3600
 
 
 def load_analysis(name, max_age_h=ANALYSIS_MAX_AGE_H):
@@ -134,10 +131,7 @@ def load_analysis(name, max_age_h=ANALYSIS_MAX_AGE_H):
         log.warning("%s: missing", name)
         return {}
     if age > max_age_h:
-        log.warning(
-            "%s: stale (%.1fh > %dh)",
-            name, age, max_age_h,
-        )
+        log.warning("%s: stale (%.1fh > %dh)", name, age, max_age_h)
         return {}
     return load_json(path, {})
 
@@ -152,9 +146,7 @@ def get_portfolio():
             "total_trades": 0,
             "wins": 0,
             "losses": 0,
-            "created_at": datetime.now(
-                timezone.utc
-            ).isoformat(),
+            "created_at": datetime.now(timezone.utc).isoformat(),
         }
         save_json(PORTFOLIO_FILE, p)
     return p
@@ -182,9 +174,7 @@ def get_cooldowns():
 
 def set_cooldown(symbol):
     cd = get_cooldowns()
-    cd[symbol] = datetime.now(
-        timezone.utc
-    ).isoformat()
+    cd[symbol] = datetime.now(timezone.utc).isoformat()
     save_json(COOLDOWN_FILE, cd)
 
 
@@ -197,17 +187,14 @@ def in_cooldown(symbol):
         dt = datetime.fromisoformat(ts)
     except Exception:
         return False
-    delta = (
-        datetime.now(timezone.utc) - dt
-    ).total_seconds() / 3600
+    delta = (datetime.now(timezone.utc) - dt).total_seconds() / 3600
     return delta < COOLDOWN_HOURS
 
 
 def get_price(client, symbol):
     try:
         data = client.public_get(
-            "/api/v3/ticker/price",
-            {"symbol": symbol},
+            "/api/v3/ticker/price", {"symbol": symbol},
         )
         if data and "price" in data:
             return float(data["price"])
@@ -216,18 +203,11 @@ def get_price(client, symbol):
     return None
 
 
-def get_klines_1m(client, symbol, limit=180,
-                  start_ms=None):
-    params = {
-        "symbol": symbol,
-        "interval": "1m",
-        "limit": limit,
-    }
+def get_klines_1m(client, symbol, limit=180, start_ms=None):
+    params = {"symbol": symbol, "interval": "1m", "limit": limit}
     if start_ms is not None:
         params["startTime"] = start_ms
-    data = client.public_get(
-        "/api/v3/klines", params,
-    )
+    data = client.public_get("/api/v3/klines", params)
     if not data or not isinstance(data, list):
         return []
     out = []
@@ -250,12 +230,9 @@ def get_candles_range(symbol, start_dt):
         with get_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute(
-                    "SELECT timestamp, open, high, "
-                    "low, close, volume FROM candles "
-                    "WHERE symbol = %s "
-                    "AND timeframe = '1h' "
-                    "AND timestamp >= %s "
-                    "ORDER BY timestamp",
+                    "SELECT timestamp, open, high, low, close, volume "
+                    "FROM candles WHERE symbol = %s AND timeframe = '1h' "
+                    "AND timestamp >= %s ORDER BY timestamp",
                     (symbol, start_dt),
                 )
                 rows = cur.fetchall()
@@ -280,10 +257,8 @@ def get_candles(symbol, limit=200):
         with get_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute(
-                    "SELECT timestamp, open, high, "
-                    "low, close, volume FROM candles "
-                    "WHERE symbol = %s "
-                    "AND timeframe = '1h' "
+                    "SELECT timestamp, open, high, low, close, volume "
+                    "FROM candles WHERE symbol = %s AND timeframe = '1h' "
                     "ORDER BY timestamp DESC LIMIT %s",
                     (symbol, limit),
                 )
@@ -312,9 +287,7 @@ def candles_are_fresh(candles):
         return False
     try:
         if isinstance(last, datetime):
-            age = (
-                datetime.now(timezone.utc) - last
-            ).total_seconds() / 3600
+            age = (datetime.now(timezone.utc) - last).total_seconds() / 3600
         else:
             return True
         if age > CANDLES_MAX_AGE_H:
@@ -334,18 +307,11 @@ def compute_rsi(closes, period=14):
         diff = closes[i] - closes[i - 1]
         gains.append(max(0, diff))
         losses.append(max(0, -diff))
-
     avg_gain = sum(gains[:period]) / period
     avg_loss = sum(losses[:period]) / period
-
     for i in range(period, len(gains)):
-        avg_gain = (
-            avg_gain * (period - 1) + gains[i]
-        ) / period
-        avg_loss = (
-            avg_loss * (period - 1) + losses[i]
-        ) / period
-
+        avg_gain = (avg_gain * (period - 1) + gains[i]) / period
+        avg_loss = (avg_loss * (period - 1) + losses[i]) / period
     if avg_loss == 0:
         return 100.0
     rs = avg_gain / avg_loss
@@ -371,25 +337,17 @@ def get_support(symbol, price):
     lv = load_analysis("levels_analysis.json")
     sym = lv.get("symbols", {}).get(symbol, {})
     supports = sym.get("supports", [])
-    below = [
-        s for s in supports
-        if s.get("price", 0) < price
-    ]
+    below = [s for s in supports if s.get("price", 0) < price]
     if not below:
         return None
-    return min(
-        below, key=lambda x: price - x["price"],
-    )
+    return min(below, key=lambda x: price - x["price"])
 
 
 def get_resistances(symbol, price):
     lv = load_analysis("levels_analysis.json")
     sym = lv.get("symbols", {}).get(symbol, {})
     resistances = sym.get("resistances", [])
-    above = [
-        r for r in resistances
-        if r.get("price", 0) > price
-    ]
+    above = [r for r in resistances if r.get("price", 0) > price]
     above.sort(key=lambda x: x["price"])
     return above
 
@@ -402,18 +360,15 @@ def get_markov_p10(symbol):
 
 
 def get_rules(symbol):
-    c = load_analysis(
-        "correlations.json",
-        max_age_h=RULES_MAX_AGE_H,
-    )
+    c = load_analysis("correlations.json", max_age_h=RULES_MAX_AGE_H)
     sym = c.get("symbols", {}).get(symbol, {})
     return sym.get("rules", [])
 
 
-def filter_bull_rules(rules):
+def filter_rules(rules, direction):
     out = []
     for r in rules:
-        if r.get("direction") != "up":
+        if r.get("direction") != direction:
             continue
         if r.get("samples", 0) < 5:
             continue
@@ -423,46 +378,71 @@ def filter_bull_rules(rules):
     return out
 
 
-def build_levels(price, sup, resistances, atr):
-    if sup:
-        stop = sup["price"] * (
-            1 - STOP_BELOW_SUP_PCT / 100
-        )
-        stop_dist = price - stop
-        if stop_dist > atr * MAX_STOP_ATR:
-            log.info(
-                "  sup too far: %.2f > %.2f",
-                stop_dist, atr * MAX_STOP_ATR,
-            )
+def build_levels(price, sup, resistances, atr, direction):
+    if direction == "LONG":
+        if sup:
+            stop = sup["price"] * (1 - STOP_BELOW_SUP_PCT / 100)
+            stop_dist = price - stop
+            if stop_dist > atr * MAX_STOP_ATR:
+                log.info("  sup too far: %.2f > %.2f", stop_dist, atr * MAX_STOP_ATR)
+                return None, None, None
+            if stop_dist <= 0:
+                return None, None, None
+        else:
+            stop = price - atr * ATR_MULT
+        if stop >= price:
             return None, None, None
-        if stop_dist <= 0:
+        risk = price - stop
+        if risk <= 0:
             return None, None, None
-    else:
-        stop = price - atr * ATR_MULT
+        target = None
+        for res in resistances:
+            reward = res["price"] - price
+            if reward / risk >= MIN_RR:
+                target = res["price"]
+                break
+        if not target:
+            target = price + risk * TARGET_RR
+        reward = target - price
+        if reward <= 0:
+            return None, None, None
+        return stop, target, reward / risk
 
-    if stop >= price:
-        return None, None, None
+    elif direction == "SHORT":
+        res_up = None
+        for res in resistances:
+            if res["price"] > price:
+                res_up = res
+                break
+        if res_up:
+            stop = res_up["price"] * (1 + STOP_ABOVE_RES_PCT / 100)
+            stop_dist = stop - price
+            if stop_dist > atr * MAX_STOP_ATR:
+                log.info("  res too far: %.2f > %.2f", stop_dist, atr * MAX_STOP_ATR)
+                return None, None, None
+            if stop_dist <= 0:
+                return None, None, None
+        else:
+            stop = price + atr * ATR_MULT
+        if stop <= price:
+            return None, None, None
+        risk = stop - price
+        if risk <= 0:
+            return None, None, None
+        target = None
+        for sup_it in sorted(sup, key=lambda x: x["price"], reverse=True) if isinstance(sup, list) else []:
+            reward = price - sup_it["price"]
+            if reward / risk >= MIN_RR:
+                target = sup_it["price"]
+                break
+        if not target:
+            target = price - risk * TARGET_RR
+        reward = price - target
+        if reward <= 0:
+            return None, None, None
+        return stop, target, reward / risk
 
-    risk = price - stop
-    if risk <= 0:
-        return None, None, None
-
-    target = None
-    for res in resistances:
-        reward = res["price"] - price
-        if reward / risk >= MIN_RR:
-            target = res["price"]
-            break
-
-    if not target:
-        target = price + risk * TARGET_RR
-
-    reward = target - price
-    if reward <= 0:
-        return None, None, None
-
-    rr = reward / risk
-    return stop, target, rr
+    return None, None, None
 
 
 def check_signal(client, symbol):
@@ -477,12 +457,8 @@ def check_signal(client, symbol):
 
     candles = get_candles(symbol, 100)
     if len(candles) < 20:
-        log.info(
-            "  %s: few candles (%d)",
-            symbol, len(candles),
-        )
+        log.info("  %s: few candles (%d)", symbol, len(candles))
         return None
-
     if not candles_are_fresh(candles):
         log.info("  %s: candles stale", symbol)
         return None
@@ -490,91 +466,100 @@ def check_signal(client, symbol):
     closes = [c["close"] for c in candles]
     rsi = compute_rsi(closes, 14)
     atr = compute_atr(candles, 14)
-
     if not rsi or not atr:
         log.info("  %s: no RSI/ATR", symbol)
         return None
 
+    direction = "NONE"
+    score = 0.0
+    breakdown = {}
+    active = []
+
+    if EXPLORER_OK:
+        try:
+            r = explorer_mod.analyze(symbol)
+            score = float(r.get("score", 0))
+            direction = r.get("direction", "NONE")
+            breakdown = r.get("breakdown", {})
+            active = r.get("active", [])
+            log.info("  %s: explorer score=%.4f dir=%s", symbol, score, direction)
+        except Exception as e:
+            log.warning("  %s: explorer fail: %s", symbol, e)
+            direction = "NONE"
+
     votes = []
     reasons = []
     details = []
-
     details.append("RSI=" + format(rsi, ".1f"))
+    details.append("score=" + format(score, ".3f"))
 
     if rsi < 30:
         votes.append("RSI")
         reasons.append("RSI " + format(rsi, ".1f"))
         details.append("RSI+")
+    elif rsi > 70:
+        votes.append("RSI_over")
+        reasons.append("RSI_over " + format(rsi, ".1f"))
+        details.append("RSI_over+")
 
-    p10 = get_markov_p10(symbol)
-    details.append("P10=" + format(p10, ".2f"))
-    if p10 > 0.55:
-        votes.append("Markov")
-        reasons.append(
-            "P(1|0)=" + format(p10, ".2f")
-        )
-        details.append("Markov+")
-
-    sup = get_support(symbol, price)
-    resistances = get_resistances(symbol, price)
-
-    if sup:
-        gap = (price - sup["price"]) / price * 100
-        details.append(
-            "gap=" + format(gap, ".2f") + "%"
-        )
-        if gap <= 1.5:
-            votes.append("Level")
-            reasons.append(
-                "near " + format(sup["price"], ".0f")
-            )
-            details.append("Level+")
-
-    rules = get_rules(symbol)
-    bull_rules = filter_bull_rules(rules)
-    details.append("rules=" + str(len(bull_rules)))
-    if bull_rules:
-        votes.append("Rules")
-        reasons.append(
-            str(len(bull_rules)) + " rules"
-        )
-        details.append("Rules+")
-
-    log.info(
-        "  %s: price=%.2f votes=%d [%s] | %s",
-        symbol, price, len(votes),
-        ", ".join(votes) if votes else "none",
-        " ".join(details),
-    )
-
-    if len(votes) < 2:
+    if direction == "NONE":
+        log.info("  %s: explorer NONE, skip", symbol)
         return None
+    if direction == "LONG":
+        votes.append("Explorer_L")
+        reasons.append("explorer LONG " + format(score, ".3f"))
+    else:
+        votes.append("Explorer_S")
+        reasons.append("explorer SHORT " + format(score, ".3f"))
 
-    stop, target, rr = build_levels(
-        price, sup, resistances, atr,
-    )
+    details.append("dir=" + direction)
+
+    log.info("  %s: price=%.2f votes=%d [%s] | %s",
+             symbol, price, len(votes),
+             ", ".join(votes) if votes else "none",
+             " ".join(details))
+
+    if direction == "LONG":
+        sup = get_support(symbol, price)
+        resistances = get_resistances(symbol, price)
+    else:
+        sup = get_support(symbol, price)
+        resistances = get_resistances(symbol, price)
+
+    if direction == "LONG":
+        stop, target, rr = build_levels(price, sup, resistances, atr, "LONG")
+    else:
+        res_list = resistances if resistances else []
+        sup_list = []
+        lv = load_analysis("levels_analysis.json")
+        sym_lv = lv.get("symbols", {}).get(symbol, {})
+        all_sup = sym_lv.get("supports", [])
+        sup_list = [s for s in all_sup if s.get("price", 0) < price]
+        sup_list.sort(key=lambda x: x["price"], reverse=True)
+        stop, target, rr = build_levels(price, sup_list, res_list, atr, "SHORT")
 
     if not stop:
         log.info("  %s: no stop", symbol)
         return None
 
-    if not (stop < price < target):
-        log.warning(
-            "  %s: sanity fail stop=%.4f "
-            "price=%.4f target=%.4f",
-            symbol, stop, price, target,
-        )
-        return None
+    if direction == "LONG":
+        if not (stop < price < target):
+            log.warning("  %s: sanity fail LONG stop=%.4f price=%.4f target=%.4f",
+                        symbol, stop, price, target)
+            return None
+    else:
+        if not (target < price < stop):
+            log.warning("  %s: sanity fail SHORT stop=%.4f price=%.4f target=%.4f",
+                        symbol, stop, price, target)
+            return None
 
     if rr < MIN_RR:
-        log.info(
-            "  %s: R:R=%.2f < %.1f, skip",
-            symbol, rr, MIN_RR,
-        )
+        log.info("  %s: R:R=%.2f < %.1f, skip", symbol, rr, MIN_RR)
         return None
 
     return {
         "symbol": symbol,
+        "direction": direction,
         "price": price,
         "stop": stop,
         "target": target,
@@ -583,7 +568,9 @@ def check_signal(client, symbol):
         "rsi": rsi,
         "votes": votes,
         "reasons": reasons,
-        "p10": p10,
+        "score": round(score, 4),
+        "breakdown": breakdown,
+        "active": active[:5],
         "support": sup["price"] if sup else None,
         "resistance": target,
     }
@@ -604,15 +591,12 @@ def try_open_new(client):
 def open_position(signal):
     portfolio = get_portfolio()
     positions = get_positions()
-
     if portfolio["balance"] < POSITION_SIZE:
         log.warning("low balance")
         return None
-
     for p in positions:
         if p["symbol"] == signal["symbol"]:
             return None
-
     if len(positions) >= MAX_POSITIONS:
         return None
 
@@ -624,11 +608,9 @@ def open_position(signal):
     pos = {
         "id": str(uuid.uuid4()),
         "symbol": signal["symbol"],
-        "direction": "LONG",
+        "direction": signal["direction"],
         "entry_price": round(entry, 6),
-        "entry_time": datetime.now(
-            timezone.utc
-        ).isoformat(),
+        "entry_time": datetime.now(timezone.utc).isoformat(),
         "size_usd": POSITION_SIZE,
         "size_coins": round(size_coins, 8),
         "stop": round(signal["stop"], 6),
@@ -637,43 +619,46 @@ def open_position(signal):
         "rr_planned": signal["rr"],
         "rsi_entry": signal["rsi"],
         "atr_entry": signal["atr"],
-        "markov_p10": signal["p10"],
+        "explorer_score": signal.get("score"),
+        "explorer_breakdown": signal.get("breakdown", {}),
+        "explorer_active": signal.get("active", []),
         "votes": signal["votes"],
         "reasons": signal["reasons"],
     }
-
     positions.append(pos)
     save_positions(positions)
     save_json(PORTFOLIO_FILE, portfolio)
 
     lines = [
-        "LONG OPENED",
+        signal["direction"] + " OPENED",
         signal["symbol"].replace("USDT", ""),
         "Entry: $" + format(entry, ".4f"),
         "Stop: $" + format(signal["stop"], ".4f"),
-        "Target: $" + format(
-            signal["target"], ".4f"
-        ),
+        "Target: $" + format(signal["target"], ".4f"),
         "R:R 1:" + str(signal["rr"]),
-        "Reasons: " + ", ".join(
-            signal["reasons"]
-        ),
+        "Score: " + format(signal.get("score", 0), ".3f"),
+        "Reasons: " + ", ".join(signal["reasons"]),
     ]
     notify("\n".join(lines))
-    log.info("OPEN " + signal["symbol"])
+    log.info("OPEN %s %s", signal["direction"], signal["symbol"])
     return pos
 
 
 def close_position(pos, exit_price, reason):
     portfolio = get_portfolio()
     positions = get_positions()
-
     exit_real = exit_price * (1 - SLIPPAGE)
     proceeds = pos["size_coins"] * exit_real
     exit_fee = proceeds * TAKER_FEE
-
     entry_cost = pos["size_usd"]
-    pnl = proceeds - entry_cost
+
+    direction = pos.get("direction", "LONG")
+    if direction == "LONG":
+        pnl = proceeds - entry_cost
+    else:
+        entry_value = pos["size_coins"] * pos["entry_price"]
+        pnl = entry_value - proceeds
+
     pnl -= pos["entry_fee"]
     pnl -= exit_fee
     pnl_pct = pnl / entry_cost * 100
@@ -686,18 +671,13 @@ def close_position(pos, exit_price, reason):
     else:
         portfolio["losses"] += 1
 
-    positions = [
-        p for p in positions
-        if p["id"] != pos["id"]
-    ]
+    positions = [p for p in positions if p["id"] != pos["id"]]
     save_positions(positions)
 
     trades = get_trades()
     trade = dict(pos)
     trade["exit_price"] = round(exit_real, 6)
-    trade["exit_time"] = datetime.now(
-        timezone.utc
-    ).isoformat()
+    trade["exit_time"] = datetime.now(timezone.utc).isoformat()
     trade["exit_reason"] = reason
     trade["pnl_usd"] = round(pnl, 4)
     trade["pnl_pct"] = round(pnl_pct, 3)
@@ -711,71 +691,45 @@ def close_position(pos, exit_price, reason):
 
     emoji = "[WIN]" if pnl > 0 else "[LOSS]"
     lines = [
-        emoji + " CLOSED",
+        emoji + " CLOSED " + direction,
         pos["symbol"].replace("USDT", ""),
         "Reason: " + reason,
-        "PnL: $" + format(pnl, "+.4f")
-        + " (" + format(pnl_pct, "+.2f") + "%)",
-        "Balance: $" + format(
-            portfolio["balance"], ".2f"
-        ),
+        "PnL: $" + format(pnl, "+.4f") + " (" + format(pnl_pct, "+.2f") + "%)",
+        "Balance: $" + format(portfolio["balance"], ".2f"),
     ]
     notify("\n".join(lines))
-    log.info(
-        "CLOSE %s PnL=%.4f (%s)",
-        pos["symbol"], pnl, reason,
-    )
+    log.info("CLOSE %s %s PnL=%.4f (%s)", direction, pos["symbol"], pnl, reason)
     return True
 
 
 def check_stop_target_1h(pos):
     try:
-        entry_dt = datetime.fromisoformat(
-            pos["entry_time"]
-        )
+        entry_dt = datetime.fromisoformat(pos["entry_time"])
     except Exception:
         return False, None, None
-
-    candles = get_candles_range(
-        pos["symbol"], entry_dt,
-    )
+    candles = get_candles_range(pos["symbol"], entry_dt)
     if not candles:
-        log.warning(
-            "  %s: no 1h candles from entry",
-            pos["symbol"],
-        )
+        log.warning("  %s: no 1h candles from entry", pos["symbol"])
         return False, None, None
 
     stop = pos["stop"]
     target = pos["target"]
+    direction = pos.get("direction", "LONG")
 
     for c in candles:
-        hit_stop = c["low"] <= stop
-        hit_target = c["high"] >= target
+        if direction == "LONG":
+            hit_stop = c["low"] <= stop
+            hit_target = c["high"] >= target
+        else:
+            hit_stop = c["high"] >= stop
+            hit_target = c["low"] <= target
 
         if hit_stop and hit_target:
-            log.info(
-                "  %s: both hit %s",
-                pos["symbol"], c["timestamp"],
-            )
-            return check_stop_target_1m(
-                pos, c["timestamp"],
-            )
-
+            return check_stop_target_1m(pos, c["timestamp"])
         if hit_stop:
-            log.info(
-                "  %s: STOP at 1h %s",
-                pos["symbol"], c["timestamp"],
-            )
             return True, stop, "stop"
-
         if hit_target:
-            log.info(
-                "  %s: TARGET at 1h %s",
-                pos["symbol"], c["timestamp"],
-            )
             return True, target, "target"
-
     return False, None, None
 
 
@@ -785,92 +739,74 @@ def check_stop_target_1m(pos, hour_ts):
             hour_ts = datetime.fromisoformat(hour_ts)
         except Exception:
             return False, None, None
-
     if hour_ts.tzinfo is None:
         hour_ts = hour_ts.replace(tzinfo=timezone.utc)
-
     start_ms = int(hour_ts.timestamp() * 1000)
-
     client = MexcClient()
-    klines = get_klines_1m(
-        client, pos["symbol"],
-        limit=60, start_ms=start_ms,
-    )
+    klines = get_klines_1m(client, pos["symbol"], limit=60, start_ms=start_ms)
     if not klines:
         return False, None, None
-
     stop = pos["stop"]
     target = pos["target"]
+    direction = pos.get("direction", "LONG")
 
     for k in klines:
-        if k["low"] <= stop:
-            return True, stop, "stop"
-        if k["high"] >= target:
-            return True, target, "target"
-
+        if direction == "LONG":
+            if k["low"] <= stop:
+                return True, stop, "stop"
+            if k["high"] >= target:
+                return True, target, "target"
+        else:
+            if k["high"] >= stop:
+                return True, stop, "stop"
+            if k["low"] <= target:
+                return True, target, "target"
     return False, None, None
 
 
 def check_time_exit(pos, current_price):
     try:
-        entry_dt = datetime.fromisoformat(
-            pos["entry_time"]
-        )
+        entry_dt = datetime.fromisoformat(pos["entry_time"])
     except Exception:
         return False
-
-    age_h = (
-        datetime.now(timezone.utc) - entry_dt
-    ).total_seconds() / 3600
-
+    age_h = (datetime.now(timezone.utc) - entry_dt).total_seconds() / 3600
     if age_h < TIME_EXIT_HOURS:
         return False
 
     exit_real = current_price * (1 - SLIPPAGE)
     proceeds = pos["size_coins"] * exit_real
     exit_fee = proceeds * TAKER_FEE
+    direction = pos.get("direction", "LONG")
 
-    pnl = proceeds - pos["size_usd"]
+    if direction == "LONG":
+        pnl = proceeds - pos["size_usd"]
+    else:
+        entry_value = pos["size_coins"] * pos["entry_price"]
+        pnl = entry_value - proceeds
+
     pnl -= pos["entry_fee"]
     pnl -= exit_fee
-
     if pnl > 0:
-        log.info(
-            "  %s: TIME EXIT (age=%.1fh, pnl=%.4f)",
-            pos["symbol"], age_h, pnl,
-        )
+        log.info("  %s: TIME EXIT (age=%.1fh, pnl=%.4f)", pos["symbol"], age_h, pnl)
         return True
-
     return False
 
 
 def check_one_position(client, pos):
-    closed, exit_price, reason = check_stop_target_1h(
-        pos,
-    )
+    closed, exit_price, reason = check_stop_target_1h(pos)
     if closed:
-        return close_position(
-            pos, exit_price, reason,
-        )
-
+        return close_position(pos, exit_price, reason)
     price = get_price(client, pos["symbol"])
     if price and check_time_exit(pos, price):
-        return close_position(
-            pos, price, "time_exit",
-        )
-
+        return close_position(pos, price, "time_exit")
     return False
 
 
 def watch_position(client):
     log.info("")
     log.info("=" * 50)
-    log.info(
-        "WATCH start interval=%ds max=%dmin",
-        WATCH_INTERVAL_SEC, WATCH_MAX_MIN,
-    )
+    log.info("WATCH start interval=%ds max=%dmin", WATCH_INTERVAL_SEC, WATCH_MAX_MIN)
     log.info("=" * 50)
-
     started = time.time()
     max_seconds = WATCH_MAX_MIN * 60
     iteration = 0
@@ -878,69 +814,35 @@ def watch_position(client):
     while True:
         elapsed = time.time() - started
         if elapsed > max_seconds:
-            log.info(
-                "  watch: time limit (%.0fs)",
-                elapsed,
-            )
             break
-
         positions = get_positions()
-
         if not positions:
-            log.info("  watch: no positions, try open")
             opened = try_open_new(client)
             if not opened:
-                log.info("  watch: no signal, exit")
                 break
             positions = get_positions()
-
         iteration += 1
-        log.info(
-            "  watch #%d (%.0fs)",
-            iteration, elapsed,
-        )
-
         closed = False
         for pos in list(positions):
             if check_one_position(client, pos):
-                log.info("  position closed")
                 closed = True
                 break
-
         if closed:
-            log.info(
-                "  watch: closed, search new"
-            )
             opened = try_open_new(client)
             if not opened:
-                log.info("  watch: no new, exit")
                 break
             continue
-
-        remaining = max_seconds - (
-            time.time() - started
-        )
+        remaining = max_seconds - (time.time() - started)
         if remaining < WATCH_INTERVAL_SEC:
-            log.info(
-                "  watch: %.0fs left, exit",
-                remaining,
-            )
             break
-
-        log.info(
-            "  watch: sleep %ds",
-            WATCH_INTERVAL_SEC,
-        )
         time.sleep(WATCH_INTERVAL_SEC)
-
     log.info("WATCH done")
 
 
 def main():
     log.info("=" * 50)
-    log.info("SIMULATOR 01 v8.1")
+    log.info("SIMULATOR 01 v9")
     log.info("=" * 50)
-
     client = MexcClient()
 
     positions = get_positions()
@@ -962,29 +864,24 @@ def main():
 
     log.info("")
     log.info("=== SUMMARY ===")
-    log.info(
-        "Balance: $%.2f", portfolio["balance"]
-    )
-    log.info(
-        "PnL: $%+.4f", portfolio["realized_pnl"]
-    )
-    log.info(
-        "Trades: %d (%d W / %d L)",
-        portfolio["total_trades"],
-        portfolio["wins"], portfolio["losses"],
-    )
+    log.info("Balance: $%.2f", portfolio["balance"])
+    log.info("PnL: $%+.4f", portfolio["realized_pnl"])
+    log.info("Trades: %d (%d W / %d L)",
+             portfolio["total_trades"],
+             portfolio["wins"], portfolio["losses"])
     log.info("Open: %d", len(positions))
     if trades:
-        wins = [
-            t for t in trades if t["pnl_usd"] > 0
-        ]
+        wins = [t for t in trades if t["pnl_usd"] > 0]
         wr = len(wins) / len(trades) * 100
-        avg = sum(
-            t["pnl_usd"] for t in trades
-        ) / len(trades)
+        avg = sum(t["pnl_usd"] for t in trades) / len(trades)
         log.info("Win rate: %.1f%%", wr)
         log.info("Avg PnL: $%+.4f", avg)
 
+    if EXPLORER_OK and explorer_mod is not None:
+        try:
+            explorer_mod.close_all()
+        except Exception:
+            pass
     close_connection()
 
 
