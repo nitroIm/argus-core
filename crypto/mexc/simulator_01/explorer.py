@@ -1,7 +1,8 @@
 # ============================================================
 # ARGUS - EXPLORER (simulator)
 # ------------------------------------------------------------
-# v2: fix news/events, causal читает DB1.
+# v3: + signal_anomaly (stop_hunting, pump_dump и др)
+#     fix causal: N>=2 вместо N>=3
 # ============================================================
 
 import os
@@ -47,6 +48,7 @@ DEFAULT_WEIGHTS = {
     "correlations": 1.0,
     "db2_patterns": 1.2,
     "db2_vectors": 0.8,
+    "anomaly": 1.0,
     "threshold": 0.30,
 }
 
@@ -205,7 +207,6 @@ def signal_events(symbol):
 
 
 def signal_causal(symbol):
-    """Читает causal_links + events + features_hourly из DB1."""
     conn = _get_db1()
     if conn is None:
         return {"raw": 0.0, "found": False, "src": "no_db1"}
@@ -252,7 +253,7 @@ def signal_causal(symbol):
     count = 0
     matched = []
     for et, g in groups.items():
-        if g["n"] < 3:
+        if g["n"] < 2:
             continue
         sign = 1.0 if et.startswith("rise") else -1.0
 
@@ -274,7 +275,7 @@ def signal_causal(symbol):
         if checks == 0:
             continue
         sim = score / checks
-        if sim < 0.3:
+        if sim < 0.25:
             continue
 
         w = sign * sim * min(1.0, g["n"] / 20.0)
@@ -483,6 +484,78 @@ def signal_db2_vectors(symbol):
         return {"raw": 0.0, "found": False}
 
 
+ANOMALY_SIGN = {
+    "stop_hunting_upper": -0.7,
+    "stop_hunting_lower": 0.7,
+    "pump_dump": -0.6,
+    "wash_trading": 0.0,
+    "cross_exchange": 0.0,
+}
+
+
+def signal_anomaly(symbol):
+    conn = _get_db1()
+    if conn is None:
+        return {"raw": 0.0, "found": False, "src": "no_db1"}
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT anomaly_type, severity, details, created_at "
+                "FROM anomaly_log WHERE symbol = %s "
+                "ORDER BY created_at DESC LIMIT 10",
+                (symbol,),
+            )
+            rows = cur.fetchall()
+    except Exception as e:
+        log.warning("anomaly db1: %s", e)
+        return {"raw": 0.0, "found": False, "src": "err"}
+
+    now = datetime.now(timezone.utc)
+    total = 0.0
+    count = 0
+    active = []
+    for atype, sev, details, cts in rows:
+        if cts is None:
+            continue
+        if cts.tzinfo is None:
+            cts = cts.replace(tzinfo=timezone.utc)
+        age_h = (now - cts).total_seconds() / 3600
+        if age_h > 6:
+            continue
+
+        key = atype
+        if atype == "stop_hunting" and isinstance(details, dict):
+            wt = details.get("wick_type", "")
+            if wt == "upper":
+                key = "stop_hunting_upper"
+            elif wt == "lower":
+                key = "stop_hunting_lower"
+
+        if key not in ANOMALY_SIGN:
+            continue
+
+        base = ANOMALY_SIGN[key]
+        if base == 0.0:
+            continue
+
+        freshness = max(0.2, 1.0 - age_h / 6.0)
+        w = base * freshness
+        total += w
+        count += 1
+        active.append({
+            "type": atype,
+            "key": key,
+            "age_h": round(age_h, 1),
+            "sev": sev,
+            "w": round(w, 3),
+        })
+
+    if count == 0:
+        return {"raw": 0.0, "found": False, "src": "empty"}
+    raw = max(-1.0, min(1.0, total / count))
+    return {"raw": round(raw, 4), "src": "db1", "active": active[:5]}
+
+
 def signal_db2_market():
     conn = _get_db2()
     if conn is None:
@@ -512,6 +585,7 @@ SOURCES = [
     ("correlations", signal_correlations),
     ("db2_patterns", signal_db2_patterns),
     ("db2_vectors", signal_db2_vectors),
+    ("anomaly", signal_anomaly),
 ]
 
 
