@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-02T20:19:25.961660+00:00",
+  "generated_at": "2026-10-02T21:17:55.479642+00:00",
   "symbols": {
     "BTCUSDT": {
       "symbol": "BTCUSDT",
@@ -140,11 +140,11 @@
     },
     "ETHUSDT": {
       "symbol": "ETHUSDT",
-      "total_events": 140,
+      "total_events": 141,
       "new_events": 1,
       "saved": 1,
       "by_type": {
-        "ls_long_extreme": 61,
+        "ls_long_extreme": 62,
         "volume_spike": 18,
         "rsi_overbought": 50,
         "rise_1h": 2,
@@ -155,10 +155,16 @@
       },
       "recent_events": [
         {
+          "timestamp": "2026-10-02 21:00:00+00:00",
+          "type": "ls_long_extreme",
+          "change_pct": 0.1616,
+          "magnitude": 1.67
+        },
+        {
           "timestamp": "2026-10-02 20:00:00+00:00",
           "type": "ls_long_extreme",
           "change_pct": 0.0026,
-          "magnitude": 1.64
+          "magnitude": 1.67
         },
         {
           "timestamp": "2026-10-02 19:00:00+00:00",
@@ -267,12 +273,6 @@
           "type": "ls_long_extreme",
           "change_pct": -0.0352,
           "magnitude": 1.55
-        },
-        {
-          "timestamp": "2026-09-30 19:00:00+00:00",
-          "type": "ls_long_extreme",
-          "change_pct": 0.0176,
-          "magnitude": 1.54
         }
       ]
     }
