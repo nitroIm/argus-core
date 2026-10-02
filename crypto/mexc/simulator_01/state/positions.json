@@ -1,26 +1,28 @@
 [
   {
-    "id": "82b940d4-a5a7-4f62-ac92-812405426f5c",
-    "symbol": "ETHUSDT",
+    "id": "a731e155-c9d2-444e-adb7-59ffbf2afc9e",
+    "symbol": "BTCUSDT",
     "direction": "LONG",
-    "entry_price": 2752.05534,
-    "entry_time": "2026-10-02T14:05:29.579272+00:00",
+    "entry_price": 85538.66796,
+    "entry_time": "2026-10-02T15:05:33.866100+00:00",
     "size_usd": 10.0,
-    "size_coins": 0.00363365,
-    "stop": 2726.7776,
-    "target": 2787.83,
+    "size_coins": 0.00011691,
+    "stop": 84716.7875,
+    "target": 86965.2,
     "entry_fee": 0.005,
-    "rr_planned": 1.55,
-    "rsi_entry": 61.2,
-    "atr_entry": 10.1871,
-    "markov_p10": 0.574,
+    "rr_planned": 1.89,
+    "rsi_entry": 52.58,
+    "atr_entry": 387.9714,
+    "markov_p10": 0.5698,
     "votes": [
       "Markov",
-      "Level"
+      "Level",
+      "Rules"
     ],
     "reasons": [
       "P(1|0)=0.57",
-      "near 2740"
+      "near 85142",
+      "1 rules"
     ]
   }
 ]
