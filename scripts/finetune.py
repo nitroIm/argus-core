@@ -1,5 +1,8 @@
 # ============================================================
-# ARGUS — FINETUNE v1 [EXPERIMENTAL]
+# ARGUS — FINETUNE v1.1 [EXPERIMENTAL]
+# ------------------------------------------------------------
+# v1.1: расширенные паттерны определений, поиск по всем
+#       предложениям чанка, снижен MIN_QUESTION_LEN.
 # ------------------------------------------------------------
 # Отдельный модуль: обучает e5-small на данных из knowledge.json.
 # НЕ трогает существующие скрипты и модели.
@@ -41,21 +44,38 @@ OUTPUT_DIR = MODELS_DIR / "argus-embeddings-v2"
 EPOCHS = 3
 BATCH_SIZE = 16
 WARMUP_RATIO = 0.1
-MAX_PAIRS = 2000
-MIN_QUESTION_LEN = 8
-MAX_QUESTION_LEN = 80
+MAX_PAIRS = 3000
+MIN_QUESTION_LEN = 5
+MAX_QUESTION_LEN = 100
 MIN_CHUNK_LEN = 200
+MAX_SENTENCES_TO_CHECK = 5
 RANDOM_SEED = 42
 
 random.seed(RANDOM_SEED)
 
 
-# --- Паттерны определений (RU) ---
+# --- Расширенные паттерны определений (RU) ---
 DEFINITION_PATTERNS = [
-    (r"^([А-ЯЁA-Z][^.!?\n]{2,60}?)\s*[—–-]\s*это\s", "Что такое {X}?"),
-    (r"Под\s+([а-яёА-ЯЁ][^.!?\n]{2,60}?)\s+понимается\s", "Что такое {X}?"),
-    (r"^([А-ЯЁA-Z][^.!?\n]{2,60}?)\s+называется\s", "Что такое {X}?"),
-    (r"Определение\s+([а-яёА-ЯЁ][^.!?\n]{2,60}?)[:.]\s", "Что такое {X}?"),
+    # "X — это ..." (тире)
+    (r"([А-ЯЁ][^.!?\n]{2,60}?)\s*[—–]\s*это\s", "Что такое {X}?"),
+    # "X - это ..." (простое тире)
+    (r"([А-ЯЁ][^.!?\n]{2,60}?)\s+-\s+это\s", "Что такое {X}?"),
+    # "X это ..." (без тире, но перед "это" должен быть пробел и слово)
+    (r"([А-ЯЁ][^.!?\n]{2,60}?)\s+это\s+[а-яё]", "Что такое {X}?"),
+    # "Под X понимается ..."
+    (r"[Пп]од\s+([а-яёА-ЯЁ][^.!?\n]{2,60}?)\s+понимается\s", "Что такое {X}?"),
+    # "X называется ..."
+    (r"([А-ЯЁ][^.!?\n]{2,60}?)\s+называется\s", "Что такое {X}?"),
+    # "X определяется как ..."
+    (r"([А-ЯЁ][^.!?\n]{2,60}?)\s+определяется\s+как\s", "Что такое {X}?"),
+    # "X означает ..."
+    (r"([А-ЯЁ][^.!?\n]{2,60}?)\s+означает\s", "Что такое {X}?"),
+    # "X представляет собой ..."
+    (r"([А-ЯЁ][^.!?\n]{2,60}?)\s+представляет\s+собой\s", "Что такое {X}?"),
+    # "Термин X ..."
+    (r"[Тт]ермин\s+[«\"']?([А-ЯЁ][^.!?\n«»\"']{2,60}?)[»\"']?\s+(?:означает|—|это)", "Что такое {X}?"),
+    # "X — это не ..." (с отрицанием — тоже определение)
+    (r"([А-ЯЁ][^.!?\n]{2,60}?)\s*[—–]\s*это\s+не\s", "Что такое {X}?"),
 ]
 
 
@@ -64,17 +84,35 @@ def md5_text(text: str) -> str:
 
 
 def extract_question(chunk_text: str):
-    """Пытается извлечь вопрос из чанка по паттернам определений."""
-    first = re.split(r"[.!?]", chunk_text.strip())[0]
-    if len(first) > 200:
-        first = first[:200]
+    """
+    Ищет определение в первых MAX_SENTENCES_TO_CHECK предложениях.
+    Возвращает сгенерированный вопрос или None.
+    """
+    sentences = re.split(r"(?<=[.!?])\s+", chunk_text.strip())
 
-    for pattern, template in DEFINITION_PATTERNS:
-        m = re.match(pattern, first, re.IGNORECASE)
-        if m:
+    for sent in sentences[:MAX_SENTENCES_TO_CHECK]:
+        sent = sent.strip()
+        if len(sent) < 20:
+            continue
+        if len(sent) > 400:
+            sent = sent[:400]
+
+        for pattern, template in DEFINITION_PATTERNS:
+            m = re.search(pattern, sent, re.IGNORECASE)
+            if not m:
+                continue
+
             subject = re.sub(r"\s+", " ", m.group(1)).strip(".,;: ")
+            # Убираем мусорные кавычки/скобки по краям
+            subject = subject.strip("«»\"'()[]")
+
             if MIN_QUESTION_LEN <= len(subject) <= MAX_QUESTION_LEN:
+                # Отбрасываем "определения" с явными служебными словами
+                first_word = subject.split()[0].lower()
+                if first_word in ("это", "под", "термин", "если", "когда", "там", "так"):
+                    continue
                 return template.format(X=subject)
+
     return None
 
 
@@ -86,10 +124,9 @@ def load_knowledge():
 
 
 def build_pairs(chunks):
-    """Создаёт пары (question, positive_chunk)."""
+    """Создаёт пары (question, positive, negative)."""
     print(f"📚 Чанков: {len(chunks)}")
 
-    # Группируем по книгам
     by_book = {}
     for c in chunks:
         book = c.get("book", "unknown")
@@ -99,6 +136,7 @@ def build_pairs(chunks):
     print(f"📖 Книг: {len(books)}")
 
     pairs, seen = [], set()
+    no_match = 0
     for c in chunks:
         text = c.get("text", "")
         if len(text) < MIN_CHUNK_LEN:
@@ -106,6 +144,7 @@ def build_pairs(chunks):
 
         question = extract_question(text)
         if not question:
+            no_match += 1
             continue
 
         qh = md5_text(question)
@@ -113,7 +152,7 @@ def build_pairs(chunks):
             continue
         seen.add(qh)
 
-        # Hard negative — другой чанк из другой книги
+        # Hard negative — чанк из другой книги
         other_books = [b for b in books if b != c.get("book")]
         if not other_books:
             continue
@@ -128,7 +167,8 @@ def build_pairs(chunks):
         if len(pairs) >= MAX_PAIRS:
             break
 
-    print(f"✨ Собрано пар: {len(pairs)}")
+    print(f"🔎 Чанков без определения: {no_match}")
+    print(f"✨ Собрано уникальных пар: {len(pairs)}")
     return pairs
 
 
@@ -199,14 +239,18 @@ def save_info(n_pairs):
 
 def main():
     print("=" * 60)
-    print("🧠 ARGUS — FINETUNE v1 [EXPERIMENTAL]")
+    print("🧠 ARGUS — FINETUNE v1.1 [EXPERIMENTAL]")
     print("=" * 60)
 
     chunks = load_knowledge()
     pairs = build_pairs(chunks)
 
     if len(pairs) < 20:
-        raise SystemExit(f"❌ Слишком мало пар: {len(pairs)}. Нужно ≥ 20.")
+        raise SystemExit(
+            f"❌ Слишком мало пар: {len(pairs)}. Нужно ≥ 20.\n"
+            f"   Попробуй ещё ослабить паттерны или проверить "
+            f"качество knowledge.json."
+        )
 
     with open(TRAIN_DATASET_FILE, "w", encoding="utf-8") as f:
         json.dump(pairs, f, ensure_ascii=False, indent=2)
@@ -222,9 +266,6 @@ def main():
     print(f"📊 Пар: {len(pairs)}")
     print()
     print("⚠️ Старая модель НЕ тронута.")
-    print("   Для проверки: временно поменяй MODEL_DIR в")
-    print("   train_embeddings.py на argus-embeddings-v2")
-    print("   и запусти benchmark.")
 
 
 if __name__ == "__main__":
