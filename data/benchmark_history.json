@@ -12,5 +12,23 @@
     "avg_latency_ms": 14.9963,
     "p95_latency_ms": 16.9,
     "degraded": false
+  },
+  {
+    "timestamp": "2026-10-02T15:20:37.145516+00:00",
+    "model_label": "argus-finetuned",
+    "total_chunks": 5783,
+    "threshold": 0.65,
+    "positives": 15,
+    "negatives": 5,
+    "avg_top1": 0.6015,
+    "avg_top5": 0.5786,
+    "recall_at_1": 0.2,
+    "recall_at_5": 0.08,
+    "mrr": 0.2,
+    "neg_avg_top1": 0.542,
+    "neg_fp_rate": 0.6,
+    "avg_latency_ms": 13.3733,
+    "p95_latency_ms": 15.0,
+    "degraded": true
   }
 ]
