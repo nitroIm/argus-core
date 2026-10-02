@@ -1,8 +1,10 @@
 # ============================================================
-# ARGUS-Trader — COLLECT ASIA + EUROPE (узел global)
+# ARGUS-Trader — COLLECT GLOBAL MARKETS (узел global)
 # ------------------------------------------------------------
-# v2: + DAX, Euro Stoxx 50, FTSE, EUR/USD (Европа).
-# v1: Nikkei, Shanghai, HangSeng, USD/CNY (Азия).
+# v3: + USA (VIX, NASDAQ, US10Y) + Asia extra (USDJPY,
+#     KOSPI, TAIEX). Итого 14 рынков.
+# v2: + Европа (DAX, SX5E, FTSE, EURUSD).
+# v1: Азия (NIKKEI, SHANGHAI, HANGSENG, USDCNY).
 # ============================================================
 
 import sys
@@ -23,7 +25,7 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(message)s",
     datefmt="%H:%M:%S",
 )
-log = logging.getLogger("global.asia")
+log = logging.getLogger("global.collect")
 
 YAHOO_URL = (
     "https://query1.finance.yahoo.com"
@@ -34,7 +36,6 @@ HEADERS = {
     "User-Agent": "Mozilla/5.0 (X11; Linux x86_64)",
 }
 
-# yahoo_code -> db_symbol
 ASIA = [
     ("^N225",     "NIKKEI"),
     ("000001.SS", "SHANGHAI"),
@@ -47,6 +48,18 @@ EUROPE = [
     ("^STOXX50E", "SX5E"),
     ("^FTSE",     "FTSE"),
     ("EURUSD=X",  "EURUSD"),
+]
+
+USA = [
+    ("^VIX",      "VIX"),
+    ("^IXIC",     "NASDAQ"),
+    ("^TNX",      "US10Y"),
+]
+
+ASIA_EXTRA = [
+    ("JPY=X",     "USDJPY"),
+    ("^KS11",     "KOSPI"),
+    ("^TWII",     "TAIEX"),
 ]
 
 INTERVAL = "1h"
@@ -62,7 +75,6 @@ SQL = (
     "close=EXCLUDED.close, "
     "change_pct=EXCLUDED.change_pct"
 )
-
 
 def fetch_yahoo(code):
     url = YAHOO_URL.format(symbol=code)
@@ -102,7 +114,6 @@ def fetch_yahoo(code):
 
     return out[-MAX_ROWS:]
 
-
 def compute_changes(rows):
     out = []
     prev = None
@@ -113,7 +124,6 @@ def compute_changes(rows):
         out.append((ts, close, change))
         prev = close
     return out
-
 
 def save_rows(db_symbol, rows):
     if not rows:
@@ -136,7 +146,6 @@ def save_rows(db_symbol, rows):
         log.error("save %s: %s", db_symbol, e)
     return added
 
-
 def log_run(job, status, n=0, err=None):
     try:
         with get_connection() as conn:
@@ -156,7 +165,6 @@ def log_run(job, status, n=0, err=None):
     except Exception as e:
         log.warning("log_run: %s", e)
 
-
 def fetch_group(name, lst):
     log.info("--- %s ---", name)
     total = 0
@@ -172,23 +180,23 @@ def fetch_group(name, lst):
         log.info("  fetched=%d saved=%d", len(rows), n)
     return total
 
-
 def main():
     log.info("=" * 60)
-    log.info("ARGUS COLLECT ASIA + EUROPE — DB2 v2")
+    log.info("ARGUS COLLECT GLOBAL — DB2 v3")
     log.info("=" * 60)
 
     total = 0
     total += fetch_group("ASIA", ASIA)
     total += fetch_group("EUROPE", EUROPE)
+    total += fetch_group("USA", USA)
+    total += fetch_group("ASIA_EXTRA", ASIA_EXTRA)
 
     log.info("=" * 60)
     log.info("DONE. Total saved: %d", total)
     log.info("=" * 60)
 
-    log_run("collect_asia_europe", "ok", total)
+    log_run("collect_global", "ok", total)
     close_connection()
-
 
 if __name__ == "__main__":
     main()
