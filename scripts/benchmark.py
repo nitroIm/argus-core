@@ -1,5 +1,8 @@
 # ============================================================
-# ARGUS — BENCHMARK v5 [PRODUCTION]
+# ARGUS — BENCHMARK v5.1 [PRODUCTION]
+# ------------------------------------------------------------
+# v5.1: Исправлены синтаксические ошибки в load_model() и 
+#       compute_metrics(), которые ломали сборку GitHub Actions.
 # ------------------------------------------------------------
 # v5: разделение positive/negative вопросов, threshold 0.65,
 #     отдельные метрики для positive и negative.
@@ -175,9 +178,9 @@ def load_model():
             log(f"Модель из model_info.json: {info.get('model_label', '?')}, prefix='{prefix}'")
             return SentenceTransformer(model_path), prefix, info.get("model_label", "?")
 
-    if (MODEL TH_DIR / "config.json").exists():
-       RES log("Fine-tuned модель (безH префиксаOLD)")
-        return SentenceTransformer(str(M)ODEL_DIR)), "", "argus-finetuned"
+    if (MODEL_DIR / "config.json").exists():
+        log("Fine-tuned модель (без префикса)")
+        return SentenceTransformer(str(MODEL_DIR)), "", "argus-finetuned"
 
     log("Базовая e5-small (с префиксом 'query: ')")
     return SentenceTransformer("intfloat/multilingual-e5-small"), "query: ", "e5-small-base"
@@ -188,7 +191,7 @@ def load_model():
 # ============================================================
 def compute_metrics(scores_1d):
     """Recall@1, Recall@5, MRR по threshold."""
-    recall_at_1 = 1.0 if (len(scores_1d) > 0 and scores_1d[0] >= else 0.0
+    recall_at_1 = 1.0 if (len(scores_1d) > 0 and scores_1d[0] >= THRESHOLD) else 0.0
     hits_in_5 = sum(1 for s in scores_1d[:TOP_K] if s >= THRESHOLD)
     recall_at_5 = min(1.0, hits_in_5 / max(1, TOP_K))
 
@@ -205,7 +208,7 @@ def compute_metrics(scores_1d):
 # ============================================================
 def main():
     t_start = time.time()
-    log(f"=== ARGUS BENCHMARK v5 ===")
+    log(f"=== ARGUS BENCHMARK v5.1 ===")
     log(f"Threshold: {THRESHOLD}")
 
     ok, err = validate_inputs()
@@ -368,7 +371,7 @@ def main():
 
     elapsed = round(time.time() - t_start, 1)
     msg = (
-        f"🎯 <b>Бенчмарк v5 завершён</b>\n\n"
+        f"🎯 <b>Бенчмарк v5.1 завершён</b>\n\n"
         f"🤖 Модель: <code>{model_label}</code>\n"
         f"📚 Чанков: {len(meta)}\n"
         f"⚙️ Threshold: {THRESHOLD}\n\n"
