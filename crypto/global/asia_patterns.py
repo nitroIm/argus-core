@@ -1,6 +1,8 @@
 # ============================================================
 # ARGUS-Trader — ASIA + EUROPE PATTERNS (узел global)
 # ------------------------------------------------------------
+# v2.4: + USA (VIX, NASDAQ, US10Y) +
+#       ASIA_EXTRA (USDJPY, KOSPI, TAIEX).
 # v2.3: + DAX, SX5E, FTSE, EURUSD.
 # v2.2: fix — ближайший timestamp ±30 мин.
 # v2.1: fix DB1 query.
@@ -40,13 +42,14 @@ TOL_SEC = 1800
 ASIA_SYMBOLS = [
     "NIKKEI", "SHANGHAI", "HANGSENG", "USDCNY",
     "DAX", "SX5E", "FTSE", "EURUSD",
+    "VIX", "NASDAQ", "US10Y",
+    "USDJPY", "KOSPI", "TAIEX",
 ]
 CRYPTO_DB1 = ["BTCUSDT", "ETHUSDT"]
 CRYPTO_DB2 = ["SOLUSDT", "BNBUSDT"]
 
 DB1_URL = (os.getenv("ARGUS_DB_URL") or "").strip()
 _DB1_CONN = None
-
 
 def _db1_conn():
     global _DB1_CONN
@@ -57,7 +60,6 @@ def _db1_conn():
         )
         log.info("🔌 DB1: соединение открыто (read)")
     return _DB1_CONN
-
 
 def load_asia():
     sql = (
@@ -76,7 +78,6 @@ def load_asia():
                     continue
                 out.setdefault(sym, {})[ts] = float(ch)
     return out
-
 
 def load_candles_db2():
     sql = (
@@ -103,7 +104,6 @@ def load_candles_db2():
                 out.setdefault(sym, {})[ts] = ch
     return out
 
-
 def load_candles_db1():
     if not DB1_URL:
         log.warning("DB1 URL не задан")
@@ -129,7 +129,6 @@ def load_candles_db1():
         log.error("DB1 load: %s", e)
     return out
 
-
 def pearson(xs, ys):
     if len(xs) < 2:
         return None
@@ -144,7 +143,6 @@ def pearson(xs, ys):
         return round(float(c), 4)
     except Exception:
         return None
-
 
 def save_vector(src, tgt, lag, corr, impact, n):
     sql = (
@@ -166,7 +164,6 @@ def save_vector(src, tgt, lag, corr, impact, n):
                 src, tgt, lag, corr,
                 impact, n, WINDOW_DAYS,
             ))
-
 
 def save_pattern(src, tgt, cond, direction,
                  lag, n, hit, avg):
@@ -192,7 +189,6 @@ def save_pattern(src, tgt, cond, direction,
                 n, hit, avg, WINDOW_DAYS,
             ))
 
-
 def nearest(target_dt, sorted_list, tol_sec=TOL_SEC):
     if not sorted_list:
         return None
@@ -212,10 +208,8 @@ def nearest(target_dt, sorted_list, tol_sec=TOL_SEC):
                 best_d = d
     return best
 
-
 def build_sorted(seq_dict):
     return sorted(seq_dict.keys()), seq_dict
-
 
 def calc_corr_and_impact(asia_seq, crypto_seq):
     asia_ts, asia_d = build_sorted(asia_seq)
@@ -245,7 +239,6 @@ def calc_corr_and_impact(asia_seq, crypto_seq):
             float(np.mean(ys)), 4,
         )
     return corr_by_lag, impact_by_lag
-
 
 def calc_conditional(asia_seq, crypto_seq):
     asia_ts, asia_d = build_sorted(asia_seq)
@@ -283,7 +276,6 @@ def calc_conditional(asia_seq, crypto_seq):
                     round(hit, 4), round(avg, 4),
                 ))
     return out
-
 
 def process_pair(a_sym, c_sym, asia, crypto):
     log.info("%s -> %s", a_sym, c_sym)
@@ -324,10 +316,9 @@ def process_pair(a_sym, c_sym, asia, crypto):
         )
     return total_v, total_p
 
-
 def main():
     log.info("=" * 60)
-    log.info("ARGUS PATTERNS v2.3")
+    log.info("ARGUS PATTERNS v2.4")
     log.info("window=%d, lags=%s", WINDOW_DAYS, LAGS)
     log.info("min_corr_n=%d, tol=%ds",
              MIN_CORR_SAMPLES, TOL_SEC)
@@ -378,7 +369,6 @@ def main():
         _DB1_CONN.close()
         log.info("🔌 DB1: соединение закрыто")
     close_connection()
-
 
 if __name__ == "__main__":
     main()
