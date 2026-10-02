@@ -1,9 +1,9 @@
 # ============================================================
-# ARGUS-Trader — NOTIFY ASIA (узел global)
+# ARGUS-Trader — NOTIFY ASIA + EUROPE (узел global)
 # ------------------------------------------------------------
+# v2: + DAX, SX5E, FTSE, EURUSD.
 # v1: при |change_pct| > 2% за час → алерт в TG.
 #     Anti-spam: один timestamp = один алерт.
-#     Лог в asia_alerts.
 # ============================================================
 
 import os
@@ -24,24 +24,26 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(message)s",
     datefmt="%H:%M:%S",
 )
-log = logging.getLogger("global.notify_asia")
+log = logging.getLogger("global.notify")
 
 THRESHOLD = 2.0
 BOT_TOKEN = (os.getenv("TELEGRAM_BOT_TOKEN") or "").strip()
 CHAT_ID = (os.getenv("TELEGRAM_CHAT_ID") or "").strip()
 TG_URL = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
 
-# отображаемое имя
 LABELS = {
     "NIKKEI":   "🇯🇵 Nikkei 225",
     "SHANGHAI": "🇨🇳 Shanghai",
     "HANGSENG": "🇭🇰 Hang Seng",
     "USDCNY":   "💱 USD/CNY",
+    "DAX":      "🇩🇪 DAX",
+    "SX5E":     "🇪🇺 Euro Stoxx 50",
+    "FTSE":     "🇬🇧 FTSE 100",
+    "EURUSD":   "💶 EUR/USD",
 }
 
 
 def fetch_candidates():
-    """Свежие строки с |change| > порога."""
     sql = (
         "SELECT symbol, timestamp, close, "
         "change_pct FROM asia_market "
@@ -109,7 +111,7 @@ def fmt_alert(symbol, ts, change):
 
 def main():
     log.info("=" * 60)
-    log.info("ARGUS NOTIFY ASIA — порог %.1f%%", THRESHOLD)
+    log.info("ARGUS NOTIFY — порог %.1f%%", THRESHOLD)
     log.info("=" * 60)
 
     try:
