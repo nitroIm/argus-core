@@ -1,8 +1,7 @@
 # ============================================================
 # ARGUS - EXPLORER (simulator)
 # ------------------------------------------------------------
-# Читает все источники сигналов. Считает общий score.
-# Веса - в state/weights.json (обучаются из сделок).
+# v2: fix news/events, causal читает DB1.
 # ============================================================
 
 import os
@@ -40,9 +39,9 @@ SIGNALS_FILE = LEARN_DIR / "last_signals.json"
 
 DEFAULT_WEIGHTS = {
     "ml": 1.0,
-    "news": 0.4,
-    "events": 0.6,
-    "causal": 0.5,
+    "news": 0.6,
+    "events": 0.8,
+    "causal": 0.7,
     "levels": 1.0,
     "patterns": 1.0,
     "correlations": 1.0,
@@ -52,6 +51,7 @@ DEFAULT_WEIGHTS = {
 }
 
 _db2_conn = None
+_db1_conn = None
 
 
 def load_json(path, default=None):
@@ -81,6 +81,21 @@ def save_weights(w):
             json.dump(w, f, ensure_ascii=False, indent=2)
     except Exception as e:
         log.warning("save weights: %s", e)
+
+
+def _get_db1():
+    global _db1_conn
+    if _db1_conn is None or _db1_conn.closed:
+        try:
+            import psycopg
+            from config import DB_URL
+            if not DB_URL:
+                return None
+            _db1_conn = psycopg.connect(DB_URL, connect_timeout=15)
+        except Exception as e:
+            log.warning("DB1 connect: %s", e)
+            return None
+    return _db1_conn
 
 
 def _get_db2():
@@ -113,20 +128,23 @@ def signal_ml(symbol):
 
 def signal_news(symbol):
     data = load_json(NEWS_FILE, {})
-    sc = None
-    if isinstance(data, dict):
-        if "score" in data:
-            sc = data.get("score")
-        elif "symbols" in data:
-            sym_data = data["symbols"].get(symbol, {})
-            sc = sym_data.get("score")
+    if not isinstance(data, dict):
+        return {"raw": 0.0, "found": False}
+    sc = data.get("avg_sentiment")
     if sc is None:
         return {"raw": 0.0, "found": False}
     try:
         sc = float(sc)
     except Exception:
         return {"raw": 0.0, "found": False}
-    return {"raw": round(sc, 4), "found": True}
+    raw = max(-1.0, min(1.0, sc * 2.0))
+    return {
+        "raw": round(raw, 4),
+        "avg_sent": sc,
+        "mood": data.get("mood", ""),
+        "bull": data.get("bullish_count", 0),
+        "bear": data.get("bearish_count", 0),
+    }
 
 
 EVENT_SIGN = {
@@ -135,71 +153,148 @@ EVENT_SIGN = {
     "funding_spike_pos": -1.0,
     "funding_spike_neg": 1.0,
     "oi_spike": 0.0,
-    "ls_long_extreme": -1.0,
-    "ls_short_extreme": 1.0,
+    "ls_long_extreme": -0.6,
+    "ls_short_extreme": 0.6,
     "volume_spike": 0.0,
-    "rise_1h": 0.5,
-    "rise_4h": 0.5,
-    "fall_1h": -0.5,
-    "fall_4h": -0.5,
+    "rise_1h": 0.7,
+    "rise_4h": 0.7,
+    "fall_1h": -0.7,
+    "fall_4h": -0.7,
+    "new_high_7d": 0.4,
 }
 
 
 def signal_events(symbol):
     data = load_json(EVENTS_FILE, {})
     sym = data.get("symbols", {}).get(symbol, {})
-    events = sym.get("events", [])
+    events = sym.get("recent_events", [])
     if not events:
         return {"raw": 0.0, "active": []}
     now = datetime.now(timezone.utc)
     total = 0.0
+    weight_sum = 0.0
     active = []
-    for e in events[-50:]:
+    for e in events:
         ts = e.get("timestamp")
-        etype = e.get("event_type", "")
+        etype = e.get("type", "")
         if not ts or etype not in EVENT_SIGN:
             continue
         try:
-            if isinstance(ts, str):
-                edt = datetime.fromisoformat(ts)
-                if edt.tzinfo is None:
-                    edt = edt.replace(tzinfo=timezone.utc)
-            else:
-                continue
+            s = ts.replace(" ", "T") if isinstance(ts, str) else ts
+            edt = datetime.fromisoformat(s)
+            if edt.tzinfo is None:
+                edt = edt.replace(tzinfo=timezone.utc)
         except Exception:
             continue
         age_h = (now - edt).total_seconds() / 3600
-        if age_h > 4:
+        if age_h > 8:
             continue
-        w = EVENT_SIGN[etype]
+        freshness = max(0.2, 1.0 - age_h / 8.0)
+        w = EVENT_SIGN[etype] * freshness
         total += w
-        active.append({"type": etype, "age_h": round(age_h, 1), "w": w})
-    if not active:
+        weight_sum += freshness
+        active.append({
+            "type": etype,
+            "age_h": round(age_h, 1),
+            "w": round(w, 3),
+        })
+    if weight_sum == 0:
         return {"raw": 0.0, "active": []}
-    raw = max(-1.0, min(1.0, total / max(1, len(active))))
+    raw = max(-1.0, min(1.0, total / weight_sum))
     return {"raw": round(raw, 4), "active": active[:5]}
 
 
 def signal_causal(symbol):
-    data = load_json(CAUSAL_FILE, {})
-    sym = data.get("symbols", {}).get(symbol, {})
-    summary = sym.get("summary_by_type", {})
-    if not summary:
-        return {"raw": 0.0, "found": False}
+    """Читает causal_links + events + features_hourly из DB1."""
+    conn = _get_db1()
+    if conn is None:
+        return {"raw": 0.0, "found": False, "src": "no_db1"}
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT e.event_type, "
+                "AVG(c.funding_rate), "
+                "AVG(c.oi_change_pct), "
+                "AVG(c.ls_ratio), "
+                "COUNT(*) "
+                "FROM events e "
+                "JOIN causal_links c ON c.event_id = e.id "
+                "WHERE e.symbol = %s "
+                "AND e.event_type IN "
+                "('rise_1h','rise_4h','fall_1h','fall_4h') "
+                "GROUP BY e.event_type",
+                (symbol,),
+            )
+            groups = {}
+            for et, fnd, oi, ls, n in cur.fetchall():
+                groups[et] = {
+                    "funding": float(fnd) if fnd is not None else None,
+                    "oi": float(oi) if oi is not None else None,
+                    "ls": float(ls) if ls is not None else None,
+                    "n": int(n or 0),
+                }
+
+            cur.execute(
+                "SELECT funding_rate, oi_change_pct, ls_ratio "
+                "FROM features_hourly WHERE symbol = %s "
+                "ORDER BY timestamp DESC LIMIT 1",
+                (symbol,),
+            )
+            row = cur.fetchone()
+            if not row:
+                return {"raw": 0.0, "found": False, "src": "no_features"}
+            f_now, oi_now, ls_now = row
+    except Exception as e:
+        log.warning("db1 causal: %s", e)
+        return {"raw": 0.0, "found": False, "src": "err"}
+
     total = 0.0
     count = 0
-    for etype, s in summary.items():
-        ch = s.get("avg_change_24h")
-        if ch is None:
+    matched = []
+    for et, g in groups.items():
+        if g["n"] < 3:
             continue
-        n = s.get("count", 0)
-        total += float(ch) * min(n, 10)
-        count += min(n, 10)
+        sign = 1.0 if et.startswith("rise") else -1.0
+
+        score = 0.0
+        checks = 0
+
+        if g["ls"] is not None and ls_now is not None:
+            ls_now_f = float(ls_now)
+            diff = abs(ls_now_f - g["ls"])
+            score += max(0, 1.0 - diff / 0.3)
+            checks += 1
+
+        if g["funding"] is not None and f_now is not None:
+            f_now_f = float(f_now)
+            diff = abs(f_now_f - g["funding"])
+            score += max(0, 1.0 - diff / 0.0005)
+            checks += 1
+
+        if checks == 0:
+            continue
+        sim = score / checks
+        if sim < 0.3:
+            continue
+
+        w = sign * sim * min(1.0, g["n"] / 20.0)
+        total += w
+        count += 1
+        matched.append({
+            "type": et,
+            "sim": round(sim, 2),
+            "n": g["n"],
+            "w": round(w, 3),
+        })
+
     if count == 0:
-        return {"raw": 0.0, "found": False}
-    avg = total / count
-    raw = max(-1.0, min(1.0, avg / 2.0))
-    return {"raw": round(raw, 4), "avg_change": round(avg, 4)}
+        return {"raw": 0.0, "found": False, "src": "db1_empty"}
+    raw = max(-1.0, min(1.0, total / count))
+    return {
+        "raw": round(raw, 4),
+        "src": "db1",
+        "active": matched,
+    }
 
 
 def signal_levels(symbol):
@@ -466,10 +561,13 @@ def analyze(symbol):
     }
 
 
-def close_db2():
-    global _db2_conn
+def close_all():
+    global _db1_conn, _db2_conn
+    if _db1_conn is not None and not _db1_conn.closed:
+        _db1_conn.close()
     if _db2_conn is not None and not _db2_conn.closed:
         _db2_conn.close()
+    _db1_conn = None
     _db2_conn = None
 
 
@@ -489,4 +587,4 @@ if __name__ == "__main__":
             print("  active:")
             for a in r["active"][:5]:
                 print("    ", a)
-    close_db2()
+    close_all()
