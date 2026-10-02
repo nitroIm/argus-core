@@ -1,13 +1,16 @@
 {
-  "generated_at": "2026-10-02T17:11:46.415872+00:00",
-  "total_books": 32,
-  "total_chunks": 5832,
-  "new_chunks": 49,
+  "generated_at": "2026-10-02T18:35:57.769437+00:00",
+  "total_books": 37,
+  "total_chunks": 6468,
+  "new_chunks": 636,
   "new_files": [
-    "15312174_A.I.-20.pdf",
-    "7000398_jucs_article_29137.pdf"
+    "0508180v2.pdf",
+    "1112.0222v2.pdf",
+    "19140525_Predicting the Market Microstructure Price Efficiency Nexus Using Time Series Analysis.pdf",
+    "2401.16506v2.pdf",
+    "7085516_Crypto_Assets_Study_2022.pdf"
   ],
-  "skipped_already_in_db": 1,
+  "skipped_already_in_db": 0,
   "books": [
     {
       "file": "Френсис Бэкон .pdf",
@@ -168,6 +171,31 @@
       "file": "7000398_jucs_article_29137.pdf",
       "pages": 21,
       "chunks": 49
+    },
+    {
+      "file": "0508180v2.pdf",
+      "pages": 57,
+      "chunks": 180
+    },
+    {
+      "file": "1112.0222v2.pdf",
+      "pages": 8,
+      "chunks": 20
+    },
+    {
+      "file": "19140525_Predicting the Market Microstructure Price Efficiency Nexus Using Time Series Analysis.pdf",
+      "pages": 39,
+      "chunks": 134
+    },
+    {
+      "file": "2401.16506v2.pdf",
+      "pages": 61,
+      "chunks": 179
+    },
+    {
+      "file": "7085516_Crypto_Assets_Study_2022.pdf",
+      "pages": 42,
+      "chunks": 123
     }
   ]
 }
