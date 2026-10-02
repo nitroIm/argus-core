@@ -1,5 +1,9 @@
 # ============================================================
-# ARGUS — FINETUNE v1.1 [EXPERIMENTAL]
+# ARGUS — FINETUNE v1.2 [EXPERIMENTAL]
+# ------------------------------------------------------------
+# v1.2: CosineSimilarityLoss вместо MultipleNegativesRankingLoss.
+#       Формат датасета: sentence1/sentence2/label.
+#       Learning rate снижен до 2e-5, эпохи = 2.
 # ------------------------------------------------------------
 # v1.1: расширенные паттерны определений, поиск по всем
 #       предложениям чанка, снижен MIN_QUESTION_LEN.
@@ -41,8 +45,9 @@ BASE_MODEL = "intfloat/multilingual-e5-small"
 OUTPUT_DIR = MODELS_DIR / "argus-embeddings-v2"
 
 # --- Настройки ---
-EPOCHS = 3
+EPOCHS = 2
 BATCH_SIZE = 16
+LEARNING_RATE = 2e-5
 WARMUP_RATIO = 0.1
 MAX_PAIRS = 3000
 MIN_QUESTION_LEN = 5
@@ -56,25 +61,15 @@ random.seed(RANDOM_SEED)
 
 # --- Расширенные паттерны определений (RU) ---
 DEFINITION_PATTERNS = [
-    # "X — это ..." (тире)
     (r"([А-ЯЁ][^.!?\n]{2,60}?)\s*[—–]\s*это\s", "Что такое {X}?"),
-    # "X - это ..." (простое тире)
     (r"([А-ЯЁ][^.!?\n]{2,60}?)\s+-\s+это\s", "Что такое {X}?"),
-    # "X это ..." (без тире, но перед "это" должен быть пробел и слово)
     (r"([А-ЯЁ][^.!?\n]{2,60}?)\s+это\s+[а-яё]", "Что такое {X}?"),
-    # "Под X понимается ..."
     (r"[Пп]од\s+([а-яёА-ЯЁ][^.!?\n]{2,60}?)\s+понимается\s", "Что такое {X}?"),
-    # "X называется ..."
     (r"([А-ЯЁ][^.!?\n]{2,60}?)\s+называется\s", "Что такое {X}?"),
-    # "X определяется как ..."
     (r"([А-ЯЁ][^.!?\n]{2,60}?)\s+определяется\s+как\s", "Что такое {X}?"),
-    # "X означает ..."
     (r"([А-ЯЁ][^.!?\n]{2,60}?)\s+означает\s", "Что такое {X}?"),
-    # "X представляет собой ..."
     (r"([А-ЯЁ][^.!?\n]{2,60}?)\s+представляет\s+собой\s", "Что такое {X}?"),
-    # "Термин X ..."
     (r"[Тт]ермин\s+[«\"']?([А-ЯЁ][^.!?\n«»\"']{2,60}?)[»\"']?\s+(?:означает|—|это)", "Что такое {X}?"),
-    # "X — это не ..." (с отрицанием — тоже определение)
     (r"([А-ЯЁ][^.!?\n]{2,60}?)\s*[—–]\s*это\s+не\s", "Что такое {X}?"),
 ]
 
@@ -103,11 +98,9 @@ def extract_question(chunk_text: str):
                 continue
 
             subject = re.sub(r"\s+", " ", m.group(1)).strip(".,;: ")
-            # Убираем мусорные кавычки/скобки по краям
             subject = subject.strip("«»\"'()[]")
 
             if MIN_QUESTION_LEN <= len(subject) <= MAX_QUESTION_LEN:
-                # Отбрасываем "определения" с явными служебными словами
                 first_word = subject.split()[0].lower()
                 if first_word in ("это", "под", "термин", "если", "когда", "там", "так"):
                     continue
@@ -152,7 +145,6 @@ def build_pairs(chunks):
             continue
         seen.add(qh)
 
-        # Hard negative — чанк из другой книги
         other_books = [b for b in books if b != c.get("book")]
         if not other_books:
             continue
@@ -173,10 +165,25 @@ def build_pairs(chunks):
 
 
 def build_dataset(pairs):
-    """Формат для SentenceTransformerTrainer."""
+    """
+    Формат для CosineSimilarityLoss:
+    sentence1, sentence2, label (1.0 = похожи, 0.0 = не похожи).
+    Каждая пара даёт ДВА примера: (q, pos, 1.0) и (q, neg, 0.0).
+    """
+    s1, s2, labels = [], [], []
+    for p in pairs:
+        # positive
+        s1.append(p["question"])
+        s2.append(p["positive"])
+        labels.append(1.0)
+        # negative
+        s1.append(p["question"])
+        s2.append(p["negative"])
+        labels.append(0.0)
     return Dataset.from_dict({
-        "anchor": [p["question"] for p in pairs],
-        "positive": [p["positive"] for p in pairs],
+        "sentence1": s1,
+        "sentence2": s2,
+        "label": labels,
     })
 
 
@@ -185,18 +192,21 @@ def train(pairs):
     model = SentenceTransformer(BASE_MODEL)
 
     dataset = build_dataset(pairs)
-    print(f"🧮 Обучающих примеров: {len(dataset)}")
+    print(f"🧮 Обучающих примеров: {len(dataset)} "
+          f"({len(pairs)} пар × 2)")
 
-    train_loss = losses.MultipleNegativesRankingLoss(model)
+    train_loss = losses.CosineSimilarityLoss(model)
 
     total_steps = (len(dataset) // BATCH_SIZE + 1) * EPOCHS
     warmup_steps = max(1, int(total_steps * WARMUP_RATIO))
     print(f"📊 Шагов: ~{total_steps}, warmup: {warmup_steps}")
+    print(f"📉 Learning rate: {LEARNING_RATE}, эпох: {EPOCHS}")
 
     args = SentenceTransformerTrainingArguments(
         output_dir=str(OUTPUT_DIR),
         num_train_epochs=EPOCHS,
         per_device_train_batch_size=BATCH_SIZE,
+        learning_rate=LEARNING_RATE,
         warmup_steps=warmup_steps,
         fp16=False,
         bf16=False,
@@ -230,6 +240,8 @@ def save_info(n_pairs):
         "train_pairs": n_pairs,
         "epochs": EPOCHS,
         "batch_size": BATCH_SIZE,
+        "learning_rate": LEARNING_RATE,
+        "loss": "CosineSimilarityLoss",
         "updated_at": datetime.now(timezone.utc).isoformat(),
     }
     with open(MODEL_INFO_V2_FILE, "w", encoding="utf-8") as f:
@@ -239,7 +251,7 @@ def save_info(n_pairs):
 
 def main():
     print("=" * 60)
-    print("🧠 ARGUS — FINETUNE v1.1 [EXPERIMENTAL]")
+    print("🧠 ARGUS — FINETUNE v1.2 [EXPERIMENTAL]")
     print("=" * 60)
 
     chunks = load_knowledge()
