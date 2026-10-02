@@ -364,5 +364,37 @@
     "pnl_usd": -0.1068,
     "pnl_pct": -1.068,
     "exit_fee": 0.004952
+  },
+  {
+    "id": "a731e155-c9d2-444e-adb7-59ffbf2afc9e",
+    "symbol": "BTCUSDT",
+    "direction": "LONG",
+    "entry_price": 85538.66796,
+    "entry_time": "2026-10-02T15:05:33.866100+00:00",
+    "size_usd": 10.0,
+    "size_coins": 0.00011691,
+    "stop": 84716.7875,
+    "target": 86965.2,
+    "entry_fee": 0.005,
+    "rr_planned": 1.89,
+    "rsi_entry": 52.58,
+    "atr_entry": 387.9714,
+    "markov_p10": 0.5698,
+    "votes": [
+      "Markov",
+      "Level",
+      "Rules"
+    ],
+    "reasons": [
+      "P(1|0)=0.57",
+      "near 85142",
+      "1 rules"
+    ],
+    "exit_price": 84674.429106,
+    "exit_time": "2026-10-02T19:05:37.857846+00:00",
+    "exit_reason": "stop",
+    "pnl_usd": -0.1107,
+    "pnl_pct": -1.107,
+    "exit_fee": 0.00495
   }
 ]
