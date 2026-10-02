@@ -1,7 +1,7 @@
 # ============================================================
-# ARGUS — ОБРАБОТКА ОДОБРЕНИЙ (v7)
-# v7: FIX — больше не верим тексту в stdout.
-#     Успех = реально появился новый файл в books/.
+# ARGUS — ОБРАБОТКА ОДОБРЕНИЙ (v8)
+# v8: fix — «уже есть» = успех (не ложная ошибка)
+# v7: успех = только реальный файл в books/
 # ============================================================
 
 import os
@@ -166,10 +166,10 @@ new_files = books_after - books_before
 print(f"📂 Файлов в books/ после: {len(books_after)}")
 print(f"🆕 Новых: {new_files}")
 
-# v7 FIX: успех = только реальное появление файла
-success = len(new_files) > 0
+# v8: считаем «уже есть» = тоже успех
+already = "уже есть" in stdout.lower()
+success = len(new_files) > 0 or already
 
-# Обновляем pending
 try:
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     with open(PENDING_FILE, "w", encoding="utf-8") as f:
@@ -179,13 +179,17 @@ except Exception as e:
 
 short_title = title[:150]
 
-if success:
+if success and new_files:
     files_info = ", ".join(list(new_files)[:3])
     notify(
         f"✅ <b>Скачано</b>\n\n{short_title}\n\n"
         f"Файлы: <code>{files_info}</code>"
     )
-    print(f"✅ Готово: {title}")
+    print(f"✅ Скачано: {title}")
+    sys.exit(0)
+elif success and already:
+    notify(f"✅ <b>Уже в базе</b>\n\n{short_title}")
+    print(f"✅ Уже было: {title}")
     sys.exit(0)
 else:
     err_line = ""
