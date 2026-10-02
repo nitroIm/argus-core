@@ -181,6 +181,7 @@ def train(pairs):
 def save_info(n_pairs):
     info = {
         "model_label": "argus-finetuned-v2",
+        "model_path": "models/argus-embeddings-v2",
         "base_model": BASE_MODEL,
         "dim": 384,
         "passage_prefix": "",
