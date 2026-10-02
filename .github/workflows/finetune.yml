@@ -1,0 +1,75 @@
+name: ARGUS Finetune Model
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  finetune:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-finetune-${{ hashFiles('scripts/requirements.txt') }}
+          restore-keys: pip-finetune-
+
+      - name: Cache HF models
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface
+          key: hf-argus-models-v1
+          restore-keys: hf-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install --extra-index-url https://download.pytorch.org/whl/cpu \
+                      -r scripts/requirements.txt
+
+      - name: Run finetune
+        run: python scripts/finetune.py
+
+      - name: Backup current model_info
+        run: cp data/model_info.json data/model_info.json.bak
+
+      - name: Switch to v2 for benchmark
+        run: cp data/model_info_v2.json data/model_info.json
+
+      - name: Run benchmark with v2
+        run: |
+          set +e
+          python scripts/benchmark.py
+          echo "bench_exit=$?"
+        continue-on-error: true
+
+      - name: Restore model_info
+        run: mv data/model_info.json.bak data/model_info.json
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: argus-finetune-v2
+          path: |
+            data/finetune_dataset.json
+            data/model_info_v2.json
+            data/benchmark_results.json
+            data/benchmark_history.json
+            models/argus-embeddings-v2/
+          retention-days: 30
