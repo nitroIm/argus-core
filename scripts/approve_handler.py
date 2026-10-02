@@ -1,6 +1,7 @@
 # ============================================================
-# ARGUS — ОБРАБОТКА ОДОБРЕНИЙ (v6)
-# v6: чистая версия, явные логи, поддержка short_id от bot_host
+# ARGUS — ОБРАБОТКА ОДОБРЕНИЙ (v7)
+# v7: FIX — больше не верим тексту в stdout.
+#     Успех = реально появился новый файл в books/.
 # ============================================================
 
 import os
@@ -11,7 +12,6 @@ import hashlib
 import requests
 from pathlib import Path
 
-# --- Пути ---
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parent
 DATA_DIR = REPO_ROOT / "data"
@@ -44,9 +44,12 @@ def notify(text: str):
         print(f"[notify] ошибка: {e}")
 
 
-# --- Входные данные ---
 URL_INPUT = (os.environ.get("APPROVE_URL") or "").strip() or None
-ID_INPUT = (os.environ.get("APPROVE_ID") or os.environ.get("SHORT_ID") or "").strip() or None
+ID_INPUT = (
+    os.environ.get("APPROVE_ID")
+    or os.environ.get("SHORT_ID")
+    or ""
+).strip() or None
 TITLE_INPUT = (os.environ.get("APPROVE_TITLE") or "").strip() or None
 
 if len(sys.argv) > 1 and not URL_INPUT and not ID_INPUT:
@@ -65,7 +68,6 @@ if not URL_INPUT and not ID_INPUT:
 print(f"🎯 ID_INPUT: {ID_INPUT}")
 print(f"🎯 URL_INPUT: {URL_INPUT}")
 
-# --- Загружаем pending ---
 pending = {}
 if PENDING_FILE.exists():
     try:
@@ -78,7 +80,6 @@ url = None
 title = TITLE_INPUT or "manual download"
 removed_id = None
 
-# --- Ищем URL ---
 if URL_INPUT:
     url = URL_INPUT
     for sid, item in list(pending.items()):
@@ -97,7 +98,6 @@ else:
         removed_id = ID_INPUT
         print(f"✅ Найден в pending: {title[:60]}")
     else:
-        # Fallback: ищем в scout_candidates.json
         print(f"⚠️ Не найден в pending по {ID_INPUT}, ищу в candidates...")
         if CANDIDATES_FILE.exists():
             try:
@@ -106,7 +106,9 @@ else:
                 candidates = data.get("candidates", [])
                 for i, c in enumerate(candidates):
                     c_url = c.get("url", "")
-                    c_id = hashlib.md5(c_url.encode("utf-8")).hexdigest()[:16]
+                    c_id = hashlib.md5(
+                        c_url.encode("utf-8")
+                    ).hexdigest()[:16]
                     if c_id == ID_INPUT or str(i) == ID_INPUT:
                         url = c_url
                         title = c.get("title", title)
@@ -124,20 +126,17 @@ if not url:
 print(f"📥 Скачиваю: {title}")
 print(f"🔗 URL: {url}")
 
-# --- Проверка collector ---
 if not COLLECTOR.exists():
     msg = f"❌ Не найден collector: {COLLECTOR}"
     print(msg)
     notify(msg)
     sys.exit(1)
 
-# --- Файлы до ---
 books_before = set()
 if BOOKS_DIR.exists():
     books_before = {p.name for p in BOOKS_DIR.iterdir() if p.is_file()}
 print(f"📂 Файлов в books/ до: {len(books_before)}")
 
-# --- Скачивание ---
 try:
     result = subprocess.run(
         [sys.executable, str(COLLECTOR), url],
@@ -160,7 +159,6 @@ if stderr:
     print("=== collector stderr ===")
     print(stderr)
 
-# --- Файлы после ---
 books_after = set()
 if BOOKS_DIR.exists():
     books_after = {p.name for p in BOOKS_DIR.iterdir() if p.is_file()}
@@ -168,15 +166,10 @@ new_files = books_after - books_before
 print(f"📂 Файлов в books/ после: {len(books_after)}")
 print(f"🆕 Новых: {new_files}")
 
-# --- Проверка успеха ---
-is_downloaded = "скачано" in stdout.lower() or "✅" in stdout
-is_already_exists = "уже есть" in stdout.lower()
-has_new_file = len(new_files) > 0
+# v7 FIX: успех = только реальное появление файла
+success = len(new_files) > 0
 
-success = (result.returncode == 0) and (is_downloaded or has_new_file)
-already_exists = (result.returncode == 0) and is_already_exists
-
-# --- Обновляем pending ---
+# Обновляем pending
 try:
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     with open(PENDING_FILE, "w", encoding="utf-8") as f:
@@ -184,23 +177,33 @@ try:
 except Exception as e:
     print(f"⚠️ Ошибка записи {PENDING_FILE}: {e}")
 
-# --- Уведомление ---
 short_title = title[:150]
 
 if success:
-    files_info = ", ".join(list(new_files)[:3]) if new_files else "уже был"
-    notify(f"✅ <b>Скачано</b>\n\n{short_title}\n\nФайлы: <code>{files_info}</code>")
-elif already_exists:
-    notify(f"⏭ <b>Уже в базе</b>\n\n{short_title}")
+    files_info = ", ".join(list(new_files)[:3])
+    notify(
+        f"✅ <b>Скачано</b>\n\n{short_title}\n\n"
+        f"Файлы: <code>{files_info}</code>"
+    )
+    print(f"✅ Готово: {title}")
+    sys.exit(0)
 else:
     err_line = ""
     for line in (stdout + "\n" + stderr).splitlines():
-        if "ошибка" in line.lower() or "error" in line.lower() or "failed" in line.lower():
+        low = line.lower()
+        if (
+            "ошибка" in low
+            or "error" in low
+            or "forbidden" in low
+            or "403" in low
+            or "404" in low
+            or "failed" in low
+        ):
             err_line = line.strip()
             break
-    notify(f"❌ <b>Не скачалось</b>\n\n{short_title}\n\n<code>{err_line[:200]}</code>")
-
-if result.returncode != 0:
+    notify(
+        f"❌ <b>Не скачалось</b>\n\n{short_title}\n\n"
+        f"<code>{err_line[:200]}</code>"
+    )
+    print(f"❌ Не скачано: {title}")
     sys.exit(1)
-
-print(f"✅ Готово: {title}")
