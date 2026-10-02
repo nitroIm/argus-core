@@ -1,20 +1,12 @@
 {
-  "generated_at": "2026-10-02T16:19:51.380784+00:00",
+  "generated_at": "2026-10-02T17:18:49.566165+00:00",
   "symbols": {
     "BTCUSDT": {
       "symbol": "BTCUSDT",
       "total_events": 106,
-      "processed": 1,
-      "saved": 1,
-      "summary_by_type": {
-        "volume_spike": {
-          "count": 1,
-          "avg_funding": 0.0001,
-          "avg_oi_change": 3.8402,
-          "avg_ls_ratio": 1.0,
-          "avg_change_24h": 1.7796
-        }
-      }
+      "processed": 0,
+      "saved": 0,
+      "summary_by_type": {}
     },
     "ETHUSDT": {
       "symbol": "ETHUSDT",
