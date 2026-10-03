@@ -1,1 +1,108 @@
-[]
+[
+  {
+    "id": "e8c64b8a-124e-4e43-8523-60d3d9d81c84",
+    "symbol": "ETHUSDT",
+    "direction": "SHORT",
+    "entry_price": 2686.43611,
+    "entry_time": "2026-10-03T20:33:37.258498+00:00",
+    "size_usd": 8.0,
+    "size_coins": 0.00297792,
+    "stop": 2691.4121,
+    "target": 2682.06,
+    "entry_fee": 0.004,
+    "rr_planned": 1.57,
+    "rsi_entry": 49.83,
+    "atr_entry": 2.4214,
+    "explorer_score": -0.7787,
+    "explorer_breakdown": {
+      "ml": {
+        "raw": -0.0457,
+        "weight": 1.0,
+        "contrib": -0.0457
+      },
+      "news": {
+        "raw": -0.134,
+        "weight": 0.6,
+        "contrib": -0.0804
+      },
+      "events": {
+        "raw": -0.6,
+        "weight": 0.8,
+        "contrib": -0.48
+      },
+      "causal": {
+        "raw": 0.0,
+        "weight": 0.7,
+        "contrib": 0.0
+      },
+      "levels": {
+        "raw": -0.1516,
+        "weight": 1.0,
+        "contrib": -0.1516
+      },
+      "patterns": {
+        "raw": -0.01,
+        "weight": 1.0,
+        "contrib": -0.01
+      },
+      "correlations": {
+        "raw": 0.0,
+        "weight": 1.0,
+        "contrib": 0.0
+      },
+      "db2_patterns": {
+        "raw": 0.0,
+        "weight": 1.2,
+        "contrib": 0.0
+      },
+      "db2_vectors": {
+        "raw": -0.0138,
+        "weight": 0.8,
+        "contrib": -0.011
+      },
+      "anomaly": {
+        "raw": 0.0,
+        "weight": 1.0,
+        "contrib": 0.0
+      }
+    },
+    "explorer_active": [
+      {
+        "src": "events",
+        "type": "ls_long_extreme",
+        "age_h": 0.6,
+        "w": -0.558
+      },
+      {
+        "src": "events",
+        "type": "ls_long_extreme",
+        "age_h": 1.6,
+        "w": -0.483
+      },
+      {
+        "src": "events",
+        "type": "ls_long_extreme",
+        "age_h": 2.6,
+        "w": -0.408
+      },
+      {
+        "src": "events",
+        "type": "ls_long_extreme",
+        "age_h": 3.6,
+        "w": -0.333
+      },
+      {
+        "src": "events",
+        "type": "ls_long_extreme",
+        "age_h": 4.6,
+        "w": -0.258
+      }
+    ],
+    "votes": [
+      "Explorer"
+    ],
+    "reasons": [
+      "explorer SHORT -0.779"
+    ]
+  }
+]
