@@ -1,7 +1,6 @@
 # ============================================================
-# ARGUS — SEMANTIC SEARCH (v7)
-# v7: JSON пишется в файл (SEARCH_RESULT_FILE) — обход багов stdout
-#     + перевод + word-boundary + dedup
+# ARGUS — SEMANTIC SEARCH (v8)
+# v8: + KEYWORDS для trend, sr, orderflow, crypto, exchange
 # ============================================================
 
 import os
@@ -48,17 +47,35 @@ except ImportError:
         return candidates[:top_k]
 
 
+# ---------- КЛЮЧЕВЫЕ СЛОВА ----------
 KEYWORDS = {
     "macd": ["macd", "макд"],
     "rsi": ["rsi"],
-    "bollinger": ["bollinger", "боллинджер"],
-    "atr": ["atr"],
+    "bollinger": ["bollinger", "боллинджер", "полосы бол"],
+    "atr": ["atr", "average true range"],
     "volume": ["volume", "объём", "объем"],
-    "candle": ["candle", "свеч", "доджи", "молот", "поглощен"],
+    "candle": ["candle", "свеч", "доджи", "молот",
+               "поглощен", "утренняя звезда", "вечерняя звезда"],
     "risk": ["риск-менедж", "правило 1%", "risk management",
-             "соотношение риск", "стоп-лосс", "просадк"],
+             "соотношение риск", "стоп-лосс", "просадк",
+             "управление риск"],
     "psychology": ["психолог", "fomo", "revenge trading",
-                   "эмоци", "дисциплин"],
+                   "эмоци", "дисциплин", "тильт"],
+    "trend": ["тренд", "trend", "трендов", "восходящ",
+              "нисходящ", "разворот тренд", "смена тренд"],
+    "sr": ["уровен", "поддержк", "сопротивл", "support",
+           "resistance", "ретест", "пробой уровн"],
+    "orderflow": ["имбаланс", "order flow", "дельта",
+                  "стакан", "ликвидн", "stop hunting",
+                  "ликвидац", "поглощен", "taker",
+                  "orderflow"],
+    "crypto": ["funding", "фандинг", "плеч", "leverage",
+               "крипт", "crypto", "биткоин", "bitcoin",
+               "btc", "ethereum", "eth "],
+    "exchange": ["биржа", "exchange", "ордер", "order ",
+                 "mexc", "как открыть", "как торговать",
+                 "комисс", "ликвидац", "плечо", "плеча",
+                 "cross margin", "isolated"],
 }
 
 
@@ -79,6 +96,7 @@ def detect_keyword(query):
 def make_word_regex(variants):
     parts = []
     for v in variants:
+        # если слово содержит пробел или дефис — просто literal
         if re.match(r"^[a-zа-яё0-9]+$", v):
             parts.append(
                 r"(?<![a-zа-яё0-9])"
@@ -138,6 +156,7 @@ def search(query, top_k=5, use_prefix=False,
         hits = []
         seen_books = set()
 
+        # 1. Совпадение в имени файла
         for m in meta:
             book = m.get("book", "")
             if regex.search(book.lower()):
@@ -153,6 +172,7 @@ def search(query, top_k=5, use_prefix=False,
                     "text": m.get("text", ""),
                 })
 
+        # 2. Совпадение в тексте
         for m in meta:
             if len(hits) >= top_k:
                 break
@@ -178,6 +198,7 @@ def search(query, top_k=5, use_prefix=False,
         return {"query": query, "top_k": len(results),
                 "results": results}
 
+    # ---- FAISS fallback ----
     text = f"query: {query}" if use_prefix else query
     emb = model.encode(
         [text], normalize_embeddings=True,
