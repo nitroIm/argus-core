@@ -55,7 +55,7 @@ jobs:
                       -r scripts/requirements.txt
 
       # ============================================================
-      # ШАГ 1: ПРОВЕРКА НОВЫХ КНИГ
+      # STEP 1: CHECK NEW BOOKS
       # ============================================================
       - name: Check for new books
         id: check
@@ -63,7 +63,7 @@ jobs:
           mkdir -p data
           if [ ! -d books ] || [ -z "$(ls -A books 2>/dev/null)" ]; then
             echo "skip=true" >> $GITHUB_OUTPUT
-            echo "📭 books/ пуст — пропуск"
+            echo "books/ empty — skip"
             exit 0
           fi
 
@@ -73,36 +73,36 @@ jobs:
 
           if [ "$CURRENT" = "$LAST" ]; then
             echo "skip=true" >> $GITHUB_OUTPUT
-            echo "✅ Новых книг нет"
+            echo "No new books"
           else
             echo "skip=false" >> $GITHUB_OUTPUT
-            echo "📚 Есть новые книги"
+            echo "New books found"
             echo "$CURRENT" > /tmp/new_fingerprint.txt
           fi
 
       # ============================================================
-      # ШАГ 2: INGEST
+      # STEP 2: INGEST
       # ============================================================
       - name: Ingest books
         if: steps.check.outputs.skip == 'false'
         run: python scripts/ingest.py
 
       # ============================================================
-      # ШАГ 3: TRAIN
+      # STEP 3: TRAIN
       # ============================================================
       - name: Train embeddings (incremental)
         if: steps.check.outputs.skip == 'false'
         run: python scripts/train_embeddings.py
 
       # ============================================================
-      # ШАГ 4: BUILD INDEX
+      # STEP 4: BUILD INDEX
       # ============================================================
       - name: Build index (append)
         if: steps.check.outputs.skip == 'false'
         run: python scripts/build_index.py
 
       # ============================================================
-      # ШАГ 5: SUMMARY
+      # STEP 5: SUMMARY
       # ============================================================
       - name: Compute summary
         id: summary
@@ -122,53 +122,65 @@ jobs:
           fi
 
       # ============================================================
-      # ШАГ 6: FINGERPRINT
+      # STEP 6: FINGERPRINT
       # ============================================================
       - name: Save fingerprint
         if: steps.check.outputs.skip == 'false'
         run: cp /tmp/new_fingerprint.txt data/last_train_fingerprint.txt
 
       # ============================================================
-      # ШАГ 7: CLEANUP PDF
+      # STEP 7: CLEANUP RAW FILES
       # ============================================================
-      - name: Cleanup ingested PDFs
+      # Runs only if all previous steps succeeded.
+      # If Ingest/Train/Build fails, this step is skipped.
+      - name: Cleanup ingested raw files
         if: steps.check.outputs.skip == 'false'
         run: |
           python3 << 'PYEOF'
-          import json, os, sys
+          import json
+          import sys
+          from pathlib import Path
 
-          if not os.path.exists("data/faiss.index") or os.path.getsize("data/faiss.index") == 0:
-              print("⚠️ faiss.index пуст — cleanup отменён")
+          idx = Path("data/faiss.index")
+          if not idx.exists() or idx.stat().st_size == 0:
+              print("faiss.index invalid — cleanup cancelled")
               sys.exit(0)
 
-          if not os.path.exists("data/last_ingest.json"):
-              print("⚠️ last_ingest.json нет — cleanup отменён")
+          last_file = Path("data/last_ingest.json")
+          if not last_file.exists():
+              print("last_ingest.json missing")
               sys.exit(0)
 
-          with open("data/last_ingest.json", encoding="utf-8") as f:
+          with open(last_file, encoding="utf-8") as f:
               last = json.load(f)
 
           files = last.get("files", [])
           if not files:
-              print("ℹ️ Нечего удалять")
+              print("Nothing to delete")
               sys.exit(0)
 
+          books_dir = Path("books")
           deleted = 0
-          for fname in files:
-              path = os.path.join("books", fname)
-              if os.path.isfile(path):
-                  try:
-                      os.remove(path)
-                      deleted += 1
-                      print(f"🗑️ Удалено: {fname}")
-                  except Exception as e:
-                      print(f"⚠️ Не удалось удалить {fname}: {e}")
 
-          print(f"CLEANUP DONE: удалено {deleted} из {len(files)}")
+          for fname in files:
+              if fname == ".gitkeep":
+                  continue
+
+              matches = list(books_dir.rglob(fname))
+              for match in matches:
+                  if match.is_file() and match.name != ".gitkeep":
+                      try:
+                          match.unlink()
+                          deleted += 1
+                          print(f"Deleted: {match}")
+                      except Exception as e:
+                          print(f"Error deleting {match}: {e}")
+
+          print(f"CLEANUP DONE: {deleted} files removed")
           PYEOF
 
       # ============================================================
-      # ШАГ 8: COMMIT & PUSH
+      # STEP 8: COMMIT & PUSH
       # ============================================================
       - name: Commit and Push
         if: steps.check.outputs.skip == 'false'
@@ -188,7 +200,7 @@ jobs:
                   books/ || true
 
           if git diff --staged --quiet; then
-            echo "ℹ️ Нет изменений"
+            echo "No changes to commit"
             exit 0
           fi
 
@@ -196,9 +208,9 @@ jobs:
 
           for i in 1 2 3; do
             git pull --rebase --autostash origin main && git push origin main && {
-              echo "✅ Push успешен"; break;
+              echo "Push successful"; break;
             } || {
-              echo "⚠️ Попытка $i неудачна, жду 5с"; sleep 5;
+              echo "Attempt $i failed, waiting 5s"; sleep 5;
             }
           done
 
