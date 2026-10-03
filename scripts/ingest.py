@@ -1,10 +1,11 @@
 # ============================================================
-# ARGUS — INGEST v7.6
+# ARGUS — INGEST v7.7
 # ------------------------------------------------------------
-# v7.6: + рекурсия по подпапкам (books/trading/, books/crypto/)
-#       + категория из пути (books/crypto/ → "crypto")
-#       + автообновление book_categories.json
-#       + логика удаления не меняется (в workflow)
+# v7.7: + refresh категории для уже обработанных книг.
+#       Если книга была ingested с "misc", а теперь лежит в
+#       books/trading/ — при следующем /train её категория
+#       обновится автоматически и в knowledge.json,
+#       и в book_categories.json.
 # ============================================================
 
 import re
@@ -41,13 +42,15 @@ ENTITY_MAP = {
     "&#39;": "'",
     "&apos;": "'",
 }
-BAD_CHARS_RE = re.compile(r"([^\w\s])\1{%d,}" % (MAX_BAD_RUN - 1))
+BAD_CHARS_RE = re.compile(
+    r"([^\w\s])\1{%d,}" % (MAX_BAD_RUN - 1)
+)
 LONG_WORD_RE = re.compile(
     r"([A-Za-zА-Яа-яЁё]{%d,})" % MAX_WORD_LEN
 )
 
 
-def md5_file(path: Path, chunk_size: int = 1 << 20) -> str:
+def md5_file(path, chunk_size=1 << 20):
     h = hashlib.md5()
     with open(path, "rb") as f:
         for chunk in iter(
@@ -57,11 +60,13 @@ def md5_file(path: Path, chunk_size: int = 1 << 20) -> str:
     return h.hexdigest()
 
 
-def md5_text(text: str) -> str:
-    return hashlib.md5(text.encode("utf-8")).hexdigest()
+def md5_text(text):
+    return hashlib.md5(
+        text.encode("utf-8")
+    ).hexdigest()
 
 
-def clean_text(text: str) -> str:
+def clean_text(text):
     if HTML_TAG_RE.search(text):
         text = HTML_TAG_RE.sub(" ", text)
     if ENTITY_RE.search(text):
@@ -79,9 +84,7 @@ def clean_text(text: str) -> str:
     return text.strip()
 
 
-def split_into_chunks(
-    text, target=900, min_size=600,
-):
+def split_into_chunks(text, target=900, min_size=600):
     text = re.sub(r"\n+", " ", text)
     text = re.sub(r"\s+", " ", text).strip()
     sentences = re.split(r"(?<=[.!?])\s+", text)
@@ -93,8 +96,7 @@ def split_into_chunks(
         if not sentence:
             continue
 
-        if (len(current) + len(sentence) + 1
-                <= target):
+        if len(current) + len(sentence) + 1 <= target:
             if current:
                 current += " " + sentence
             else:
@@ -117,7 +119,7 @@ def split_into_chunks(
     return chunks
 
 
-def is_good_chunk(chunk: str) -> bool:
+def is_good_chunk(chunk):
     if len(chunk) < MIN_CHUNK_LEN:
         return False
     letters = sum(1 for c in chunk if c.isalpha())
@@ -137,18 +139,14 @@ def parse_pdf(filepath):
 
 
 def parse_txt(filepath):
-    with open(
-        filepath, "r", encoding="utf-8",
-        errors="ignore",
-    ) as f:
+    with open(filepath, "r", encoding="utf-8",
+              errors="ignore") as f:
         return f.read(), 1
 
 
 def parse_md(filepath):
-    with open(
-        filepath, "r", encoding="utf-8",
-        errors="ignore",
-    ) as f:
+    with open(filepath, "r", encoding="utf-8",
+              errors="ignore") as f:
         text = f.read()
     text = re.sub(r"#{1,6}\s+", "", text)
     text = re.sub(
@@ -169,16 +167,13 @@ PARSERS = {
 }
 
 
-# ============================================================
-# CATEGORY FROM PATH
-# ============================================================
 KNOWN_CATEGORIES = {
     "trading", "crypto", "quant", "psychology",
     "philosophy", "physics", "misc", "offtopic",
 }
 
 
-def get_category(filepath: Path) -> str:
+def get_category(filepath):
     try:
         rel = filepath.relative_to(BOOKS_DIR)
     except ValueError:
@@ -198,9 +193,8 @@ def get_category(filepath: Path) -> str:
 knowledge = {"books": [], "chunks": []}
 if KNOWLEDGE_FILE.exists():
     try:
-        with open(
-            KNOWLEDGE_FILE, "r", encoding="utf-8"
-        ) as f:
+        with open(KNOWLEDGE_FILE, "r",
+                  encoding="utf-8") as f:
             data = json.load(f)
         if isinstance(data, dict) and "chunks" in data:
             knowledge = data
@@ -235,15 +229,12 @@ existing_chunk_hashes = {
 categories = {}
 if CATEGORIES_FILE.exists():
     try:
-        with open(
-            CATEGORIES_FILE, "r", encoding="utf-8"
-        ) as f:
+        with open(CATEGORIES_FILE, "r",
+                  encoding="utf-8") as f:
             categories = json.load(f)
-        print(
-            f"Categories loaded: {len(categories)}"
-        )
+        print(f"Categories loaded: {len(categories)}")
     except Exception as e:
-        print(f"Warning: book_categories.json: {e}")
+        print(f"Warning: categories: {e}")
 
 
 # ============================================================
@@ -252,6 +243,7 @@ if CATEGORIES_FILE.exists():
 new_files_ingested = []
 total_new_chunks = 0
 skipped_already_in_db = 0
+refreshed_categories = 0
 
 if not BOOKS_DIR.is_dir():
     print("Warning: no books/ directory")
@@ -260,9 +252,7 @@ else:
         p for p in BOOKS_DIR.rglob("*")
         if p.is_file() and not p.name.startswith(".")
     )
-    print(
-        f"Found files (recursive): {len(all_files)}"
-    )
+    print(f"Found files: {len(all_files)}")
 
     for filepath in all_files:
         ext = filepath.suffix.lower()
@@ -280,8 +270,26 @@ else:
 
         if (fhash in processed_hashes
                 or filename in processed_names):
-            print(f"Skipped: {filename}")
-            categories[filename] = category
+            # --- Refresh category for already-processed book ---
+            old_cat = categories.get(filename)
+            if old_cat != category:
+                categories[filename] = category
+                refreshed_categories += 1
+                print(
+                    f"Refresh category: {filename} "
+                    f"{old_cat} -> {category}"
+                )
+            # Update knowledge.json books entry
+            for b in knowledge.get("books", []):
+                if b.get("file") == filename:
+                    if b.get("category") != category:
+                        b["category"] = category
+            # Update chunks category
+            for c in knowledge.get("chunks", []):
+                if c.get("book") == filename:
+                    if c.get("category") != category:
+                        c["category"] = category
+
             new_files_ingested.append(filename)
             skipped_already_in_db += 1
             continue
@@ -347,26 +355,19 @@ else:
 # ============================================================
 # SAVE
 # ============================================================
-with open(
-    KNOWLEDGE_FILE, "w", encoding="utf-8"
-) as f:
-    json.dump(
-        knowledge, f, ensure_ascii=False,
-        indent=2,
-    )
+with open(KNOWLEDGE_FILE, "w",
+          encoding="utf-8") as f:
+    json.dump(knowledge, f, ensure_ascii=False,
+              indent=2)
 
-with open(
-    CATEGORIES_FILE, "w", encoding="utf-8"
-) as f:
-    json.dump(
-        categories, f, ensure_ascii=False,
-        indent=2,
-    )
-print(f"Saved book_categories.json: {len(categories)}")
+with open(CATEGORIES_FILE, "w",
+          encoding="utf-8") as f:
+    json.dump(categories, f, ensure_ascii=False,
+              indent=2)
+print(f"Saved categories: {len(categories)}")
 
-with open(
-    LAST_INGEST_FILE, "w", encoding="utf-8"
-) as f:
+with open(LAST_INGEST_FILE, "w",
+          encoding="utf-8") as f:
     json.dump({
         "ingested_at": datetime.now(
             timezone.utc
@@ -374,6 +375,7 @@ with open(
         "files": new_files_ingested,
         "new_chunks": total_new_chunks,
         "skipped_already_in_db": skipped_already_in_db,
+        "refreshed_categories": refreshed_categories,
     }, f, ensure_ascii=False, indent=2)
 
 books_list = [{
@@ -394,17 +396,18 @@ summary = {
     "new_chunks": total_new_chunks,
     "new_files": new_files_ingested,
     "skipped_already_in_db": skipped_already_in_db,
+    "refreshed_categories": refreshed_categories,
     "books": books_list,
 }
-with open(
-    SUMMARY_FILE, "w", encoding="utf-8"
-) as f:
-    json.dump(summary, f, ensure_ascii=False, indent=2)
+with open(SUMMARY_FILE, "w",
+          encoding="utf-8") as f:
+    json.dump(summary, f, ensure_ascii=False,
+              indent=2)
 
 print()
 print("INGEST completed.")
-print(f"   Total books:   {len(knowledge['books'])}")
-print(f"   Total chunks:  {len(knowledge['chunks'])}")
-print(f"   New chunks:    {total_new_chunks}")
-print(f"   Cleanup files: {len(new_files_ingested)}")
-print(f"   Already had:   {skipped_already_in_db}")
+print(f"   Total books:    {len(knowledge['books'])}")
+print(f"   Total chunks:   {len(knowledge.get('chunks', []))}")
+print(f"   New chunks:     {total_new_chunks}")
+print(f"   Already had:    {skipped_already_in_db}")
+print(f"   Cat refreshed:  {refreshed_categories}")
