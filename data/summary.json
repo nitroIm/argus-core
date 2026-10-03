@@ -1,13 +1,14 @@
 {
-  "generated_at": "2026-10-03T11:25:43.152253+00:00",
-  "total_books": 47,
-  "total_chunks": 8848,
-  "new_chunks": 5,
+  "generated_at": "2026-10-03T11:44:12.751160+00:00",
+  "total_books": 48,
+  "total_chunks": 8850,
+  "new_chunks": 2,
   "new_files": [
     "01_rsi.md",
-    "02_macd.md"
+    "02_macd.md",
+    "03_bollinger.md"
   ],
-  "skipped_already_in_db": 0,
+  "skipped_already_in_db": 2,
   "books": [
     {
       "file": "Френсис Бэкон .pdf",
@@ -289,6 +290,12 @@
       "file": "02_macd.md",
       "pages": 1,
       "chunks": 3,
+      "category": "misc"
+    },
+    {
+      "file": "03_bollinger.md",
+      "pages": 1,
+      "chunks": 2,
       "category": "misc"
     }
   ]

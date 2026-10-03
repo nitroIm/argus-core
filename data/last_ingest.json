@@ -1,9 +1,10 @@
 {
-  "ingested_at": "2026-10-03T11:25:43.152152+00:00",
+  "ingested_at": "2026-10-03T11:44:12.751067+00:00",
   "files": [
     "01_rsi.md",
-    "02_macd.md"
+    "02_macd.md",
+    "03_bollinger.md"
   ],
-  "new_chunks": 5,
-  "skipped_already_in_db": 0
+  "new_chunks": 2,
+  "skipped_already_in_db": 2
 }
