@@ -8,7 +8,7 @@ on:
         required: true
         default: 'Что такое Новая Атлантида?'
   repository_dispatch:
-    types: [run_search]
+    types: [run_ask]
 
 permissions:
   contents: write
