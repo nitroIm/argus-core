@@ -1,9 +1,8 @@
 # ============================================================
-# ARGUS — ASK v10.2
+# ARGUS — ASK v10.3-DEBUG
 # ------------------------------------------------------------
-# v10.2: + book_allowed принимает "trading" (для гайдов).
-#        + book_allowed принимает "psychology".
-#        + RERANK_MIN = 0.3.
+# Диагностика. Отключает RERANK_MIN и реранкер.
+# Показывает топ-5 FAISS без фильтров.
 # ============================================================
 
 import os
@@ -11,7 +10,6 @@ import re
 import sys
 import json
 import time
-import math
 import hashlib
 import faiss
 import requests
@@ -24,15 +22,6 @@ except ImportError:
     def log_action(*args, **kwargs):
         pass
 
-try:
-    from translate import is_english, translate_to_ru
-except ImportError:
-    def is_english(text):
-        return False
-
-    def translate_to_ru(text):
-        return text
-
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parent
 DATA_DIR = REPO_ROOT / "data"
@@ -41,14 +30,10 @@ MODELS_DIR = REPO_ROOT / "models"
 INDEX_FILE = DATA_DIR / "faiss.index"
 META_FILE = DATA_DIR / "chunks_for_index.json"
 MODEL_INFO_FILE = DATA_DIR / "model_info.json"
-KNOWLEDGE_FILE = DATA_DIR / "knowledge.json"
 CATEGORIES_FILE = DATA_DIR / "book_categories.json"
 
 FAISS_TOP_K = 100
 FINAL_TOP_K = 5
-RERANK_MIN = 0.3
-
-start_time = time.time()
 
 
 def log(msg, level="INFO"):
@@ -56,137 +41,34 @@ def log(msg, level="INFO"):
     print(f"[{ts}] [{level}] {msg}", flush=True)
 
 
-def normalize_for_dedup(text):
-    if not text:
-        return ""
-    text = re.sub(r"\s+", " ", text)
-    text = re.sub(r",{2,}", ",", text)
-    text = re.sub(r"\.{2,}", ".", text)
-    text = text.strip(' "\'«»""„“”*—-,.;')
-    return text.strip().lower()
-
-
-def dedup_key(text):
-    norm = normalize_for_dedup(text)
-    raw = norm[:300].encode("utf-8")
-    return hashlib.md5(raw).hexdigest()
-
-
-# ============================================================
-# CATEGORY FILTER
-# ============================================================
 CATEGORIES = {}
 if CATEGORIES_FILE.exists():
-    try:
-        with open(
-            CATEGORIES_FILE, "r", encoding="utf-8"
-        ) as f:
-            CATEGORIES = json.load(f)
-        log(f"Loaded categories: {len(CATEGORIES)}")
-    except Exception as e:
-        log(f"categories error: {e}", "WARN")
-
-CATEGORY_KEYWORDS = {
-    "quant": [
-        "rsi", "macd", "trend", "стратег", "trading",
-        "trade", "signal", "сигнал", "индикатор",
-        "indicator", "moving average", "ма",
-        "bollinger", "atr", "volume", "объем",
-        "volatility", "волатильн", "backtest",
-        "momentum", "mean reversion", "sharpe",
-        "drawdown", "risk", "риск", "stop loss",
-        "стоп", "take profit", "тейк", "position",
-        "позиция", "long", "short", "лонг", "шорт",
-        "entry", "вход", "exit", "выход", "support",
-        "resistance", "поддержк", "сопротивл",
-        "candle", "свеч", "price action", "паттерн",
-        "pattern", "breakout", "пробой", "timeframe",
-        "таргет", "target", "profit", "прибыл",
-    ],
-    "crypto": [
-        "bitcoin", "btc", "ethereum", "eth",
-        "crypto", "крипт", "blockchain", "блокчейн",
-        "altcoin", "defi", "web3", "stablecoin",
-        "стейбл", "btcusdt", "ethusdt", "binance",
-        "mexc", "exchange", "биржа",
-    ],
-    "philosophy": [
-        "философ", "philosophy", "этик", "морал",
-        "бэкон", "стоик", "seneca", "эпиктет",
-        "психология", "психолог",
-    ],
-}
+    with open(CATEGORIES_FILE, encoding="utf-8") as f:
+        CATEGORIES = json.load(f)
+    log(f"Loaded categories: {len(CATEGORIES)}")
 
 
-def detect_category(query):
-    q = query.lower()
-    scores = {}
-    for cat, kws in CATEGORY_KEYWORDS.items():
-        s = sum(1 for kw in kws if kw in q)
-        if s > 0:
-            scores[cat] = s
-    if not scores:
-        return None
-    return max(scores, key=scores.get)
-
-
-def book_allowed(book_name, target_category):
-    if not CATEGORIES or not target_category:
-        return True
-    cat = CATEGORIES.get(book_name)
-    if cat is None:
-        return True
-    if target_category == "quant":
-        return cat in (
-            "quant", "crypto", "trading"
-        )
-    if target_category == "crypto":
-        return cat in (
-            "quant", "crypto", "trading"
-        )
-    if target_category == "philosophy":
-        return cat in (
-            "philosophy", "quant", "psychology"
-        )
-    return True
-
-
-# ============================================================
-# CHECKS
-# ============================================================
 if not INDEX_FILE.exists():
-    log_action("ask", error="faiss.index missing")
     print("FAISS index not found.")
-    sys.exit(1)
-
-meta_missing = not META_FILE.exists()
-meta_empty = META_FILE.stat().st_size == 0
-if meta_missing or meta_empty:
-    print("Metadata file not found.")
     sys.exit(1)
 
 
 TRAINED_MODEL = MODELS_DIR / "argus-embeddings"
 BASE_MODEL = "intfloat/multilingual-e5-small"
-
 use_prefix = False
 model_path = BASE_MODEL
 
 if MODEL_INFO_FILE.exists():
     try:
-        with open(
-            MODEL_INFO_FILE, encoding="utf-8"
-        ) as f:
+        with open(MODEL_INFO_FILE, encoding="utf-8") as f:
             info = json.load(f)
         model_path = info.get("model_path", BASE_MODEL)
         prefix = info.get("query_prefix", "")
         use_prefix = bool(prefix)
-        log(f"model_info: {info.get('model_label', '?')}")
-    except Exception as e:
-        log(f"model_info broken: {e}", "WARN")
+    except Exception:
+        pass
 elif TRAINED_MODEL.exists():
-    has_config = (TRAINED_MODEL / "config.json").exists()
-    if has_config:
+    if (TRAINED_MODEL / "config.json").exists():
         model_path = str(TRAINED_MODEL)
         use_prefix = False
     else:
@@ -201,263 +83,51 @@ model = SentenceTransformer(model_path)
 log("Loading index...")
 index = faiss.read_index(str(INDEX_FILE))
 
-with open(META_FILE, "r", encoding="utf-8") as f:
-    raw_meta = json.load(f)
-
-if not isinstance(raw_meta, list) or not raw_meta:
-    print("chunks_for_index is empty.")
-    sys.exit(1)
-
-
-meta_chunks = []
-if isinstance(raw_meta[0], str):
-    log("LEGACY format", "WARN")
-    kn_chunks = []
-    if KNOWLEDGE_FILE.exists():
-        try:
-            with open(
-                KNOWLEDGE_FILE, encoding="utf-8"
-            ) as f:
-                kn = json.load(f)
-            kn_chunks = kn.get("chunks", [])
-        except Exception:
-            pass
-    for i, text in enumerate(raw_meta):
-        if i < len(kn_chunks):
-            c = kn_chunks[i]
-            raw_hash = hashlib.md5(
-                text.encode()
-            ).hexdigest()[:12]
-            cid = c.get("id") or f"legacy#{raw_hash}"
-            meta_chunks.append({
-                "id": cid,
-                "source": c.get("source", ""),
-                "book": c.get("book", ""),
-                "text": text,
-            })
-        else:
-            raw_hash = hashlib.md5(
-                text.encode()
-            ).hexdigest()[:12]
-            cid = f"legacy#{raw_hash}"
-            meta_chunks.append({
-                "id": cid,
-                "source": "",
-                "book": "",
-                "text": text,
-            })
-else:
-    meta_chunks = raw_meta
-    log("New format")
-
+with open(META_FILE, encoding="utf-8") as f:
+    meta_chunks = json.load(f)
 
 log(f"Index: {index.ntotal} vectors, meta: {len(meta_chunks)}")
 
 
-rerank_fn = None
-try:
-    from reranker import rerank as rerank_fn
-    log("Reranker connected")
-except Exception as e:
-    log(f"Reranker unavailable: {e}", "WARN")
-
-
-default_q = "Что такое имбаланс?"
-query = os.getenv("QUERY") or " ".join(sys.argv[1:]) or default_q
+query = os.getenv("QUERY") or " ".join(sys.argv[1:]) or "MACD"
 log(f"Query: {query}")
 
-target_cat = detect_category(query)
-log(f"Query category: {target_cat}")
-
-
-if use_prefix:
-    search_query = f"query: {query}"
-else:
-    search_query = query
-
+search_query = f"query: {query}" if use_prefix else query
 query_vec = model.encode(
     [search_query], normalize_embeddings=True
 ).astype("float32")
 distances, indices = index.search(query_vec, k=FAISS_TOP_K)
 
-candidates = []
-skipped_cat = 0
-for i, idx in enumerate(indices[0]):
-    if not (0 <= idx < len(meta_chunks)):
-        continue
-    meta = meta_chunks[idx]
-    book = meta.get("book", "") or meta.get("source", "")
-    if not book_allowed(book, target_cat):
-        skipped_cat += 1
-        continue
-    candidates.append({
-        "score": float(distances[0][i]),
-        "meta": meta,
-        "index": int(idx),
-    })
+# DEBUG: показываем ТОП-10 без фильтров
+log("=== TOP-10 FAISS (raw, no filter) ===")
+top10_info = []
+for i in range(min(10, len(indices[0]))):
+    idx = int(indices[0][i])
+    score = float(distances[0][i])
+    if 0 <= idx < len(meta_chunks):
+        b = meta_chunks[idx].get("book", "?")
+        cat = CATEGORIES.get(b, "N/A")
+        log(f"  {i+1}. {score:.3f} | {b} | cat={cat}")
+        top10_info.append((score, b, cat))
 
-msg = f"FAISS: {len(indices[0])} -> "
-msg += f"after filter: {len(candidates)} "
-msg += f"(skipped: {skipped_cat})"
-log(msg)
+# Показываем топ-5 в чат
+answer = "🔎 <b>DEBUG MACD</b>\n"
+answer += f"Запрос: <i>{query}</i>\n"
+answer += f"Индекс: {index.ntotal} векторов\n\n"
+answer += "<b>Топ-5 FAISS без фильтров:</b>\n"
+for i, (s, b, c) in enumerate(top10_info[:5], 1):
+    answer += f"{i}. <b>{b}</b>\n"
+    answer += f"   score={s:.3f} · cat={c}\n\n"
 
+if len(answer) > 3900:
+    answer = answer[:3890] + "\n\n<i>обрезано</i>"
 
-if not candidates:
-    answer = "🔎 По запросу ничего релевантного не найдено."
-    log_action("ask", query=query, found_chunks=0)
-    print(answer)
-else:
-    if rerank_fn:
-        try:
-            rerank_input = []
-            for c in candidates:
-                item = dict(c["meta"])
-                item["_orig_index"] = c["index"]
-                item["_faiss_score"] = c["score"]
-                rerank_input.append(item)
-
-            top_k_val = FINAL_TOP_K * 3
-            reranked = rerank_fn(
-                query, rerank_input, top_k=top_k_val
-            )
-
-            ranked_all = []
-            for r in reranked:
-                orig_idx = r.get("_orig_index")
-                if orig_idx is None:
-                    continue
-                if orig_idx >= len(meta_chunks):
-                    continue
-                raw_rr = r.get("rerank_score")
-                if raw_rr is None:
-                    rr_norm = None
-                else:
-                    try:
-                        rr_norm = 1 / (
-                            1 + math.exp(-float(raw_rr))
-                        )
-                    except Exception:
-                        rr_norm = None
-                ranked_all.append({
-                    "score": r.get("_faiss_score", 0.0),
-                    "rerank_score": raw_rr,
-                    "rerank_norm": rr_norm,
-                    "meta": meta_chunks[orig_idx],
-                })
-            log(f"Reranker: {len(candidates)} -> {len(ranked_all)}")
-        except Exception as e:
-            log(f"Reranker failed: {e}, fallback", "WARN")
-            ranked_all = [
-                {
-                    "score": c["score"],
-                    "rerank_score": None,
-                    "rerank_norm": None,
-                    "meta": c["meta"],
-                }
-                for c in candidates
-            ]
-    else:
-        ranked_all = [
-            {
-                "score": c["score"],
-                "rerank_score": None,
-                "rerank_norm": None,
-                "meta": c["meta"],
-            }
-            for c in candidates
-        ]
-
-    # Apply RERANK_MIN threshold
-    filtered_ranked = []
-    for r in ranked_all:
-        if r.get("rerank_norm") is not None:
-            if r["rerank_norm"] >= RERANK_MIN:
-                filtered_ranked.append(r)
-        else:
-            if r["score"] >= RERANK_MIN:
-                filtered_ranked.append(r)
-
-    if not filtered_ranked:
-        answer = "🔎 По запросу ничего релевантного не найдено."
-        log_action("ask", query=query, found_chunks=0)
-        print(answer)
-    else:
-        top_raw = filtered_ranked[:FINAL_TOP_K * 2]
-
-        seen_keys = set()
-        deduped_top = []
-        for r in top_raw:
-            text = r["meta"].get("text", "").strip()
-            key = dedup_key(text)
-            if key in seen_keys:
-                continue
-            seen_keys.add(key)
-            deduped_top.append(r)
-            if len(deduped_top) >= FINAL_TOP_K:
-                break
-
-        top = deduped_top
-
-        translated_count = 0
-        final_top = []
-        for r in top:
-            text = r["meta"].get("text", "")
-            book = r["meta"].get("book", "") or ""
-            if not book:
-                book = r["meta"].get("source", "Unknown")
-            if is_english(text):
-                try:
-                    text = translate_to_ru(text)
-                    translated_count += 1
-                except Exception:
-                    pass
-            if len(text) > 500:
-                text = text[:497] + "..."
-            book_clean = book.replace(".pdf", "")
-            book_clean = book_clean.replace(".txt", "")
-            book_clean = book_clean.replace(".md", "")
-            book_clean = book_clean.strip()
-            final_top.append({
-                "score": r["score"],
-                "rerank_norm": r.get("rerank_norm"),
-                "book": book_clean,
-                "text": text,
-            })
-
-        answer = "🔎 <b>Результаты для:</b>\n"
-        answer += f"<i>{query}</i>\n\n"
-        for i, r in enumerate(final_top, 1):
-            base_pct = r["score"] * 100
-            if r["rerank_norm"] is not None:
-                rerank_pct = r["rerank_norm"] * 100
-                metrics = f"base {base_pct:.0f}%"
-                metrics += f" · релевантность {rerank_pct:.0f}%"
-            else:
-                metrics = f"base {base_pct:.0f}%"
-            answer += f"{i}. 📖 <b>{r['book']}</b>\n"
-            answer += f"   <i>{metrics}</i>\n"
-            answer += f"<code>{r['text']}</code>\n\n"
-        if len(answer) > 3900:
-            answer = answer[:3890] + "\n\n<i>... (обрезано)</i>"
-
-        elapsed_ms = int((time.time() - start_time) * 1000)
-        log_action(
-            "ask",
-            query=query,
-            found_chunks=len(top),
-            response_time_ms=elapsed_ms,
-            extra={
-                "category": target_cat,
-                "skipped_by_cat": skipped_cat,
-            },
-        )
-        log(f"Found: {len(top)}, category: {target_cat}")
+log_action("ask", query=query, found_chunks=len(top10_info))
 
 
 bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
 if not bot_token:
     bot_token = os.getenv("BOT_TOKEN")
-
 chat_id = os.getenv("CHAT_ID")
 if not chat_id:
     chat_id = os.getenv("TELEGRAM_CHAT_ID")
@@ -481,4 +151,4 @@ if bot_token and chat_id:
     except Exception as e:
         log(f"TG error: {e}", "WARN")
 else:
-    print("Telegram not configured:\n" + answer)
+    print(answer)
