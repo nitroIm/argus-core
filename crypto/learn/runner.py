@@ -1,7 +1,9 @@
 # ============================================================
 # ARGUS-Trader - LEARN RUNNER
 # ------------------------------------------------------------
-# Оркестратор: train -> evaluate -> predict -> signals.
+# Оркестратор: train -> evaluate -> predict -> signals
+#              -> learn_weights.
+# v3: + STEP 5 learn_weights (updates explorer weights).
 # v2: skip train/evaluate if model fresh (<24h).
 #     Predict + signals always run.
 # ============================================================
@@ -97,6 +99,13 @@ def main():
 
     log.info("STEP 4: signals")
     signals.main()
+
+    log.info("STEP 5: learn weights")
+    try:
+        import learn_weights
+        learn_weights.main()
+    except Exception as e:
+        log.warning("weights update skipped: %s", e)
 
     log.info("=" * 60)
     log.info("LEARN DONE")
