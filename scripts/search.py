@@ -1,7 +1,8 @@
 # ============================================================
-# ARGUS — SEARCH v1.1 [PRODUCTION]
+# ARGUS — SEARCH v2.0 [AUTO]
 # ------------------------------------------------------------
-# v1.1: fix broken string in KEYWORDS (position sizing)
+# Сам определяет тему по токенам из имени файла и заголовка.
+# НЕ требует правок при добавлении новых гайдов.
 # ============================================================
 
 import os
@@ -52,58 +53,20 @@ except ImportError:
         return candidates[:top_k]
 
 
-# ============================================================
-# KEYWORDS
-# ============================================================
-KEYWORDS = {
-    "macd": ["macd", "макд"],
-    "rsi": ["rsi"],
-    "bollinger": ["bollinger", "боллинджер", "полосы бол"],
-    "atr": ["atr", "average true range"],
-    "volume": ["volume", "объём", "объем"],
-
-    "candle": ["candle", "свеч", "доджи", "молот",
-               "поглощен", "утренняя звезда",
-               "вечерняя звезда", "пинцет"],
-    "patterns": ["паттерн", "pattern", "голова и плечи",
-                 "треугольник", "флаг", "клин",
-                 "двойн", "тройн", "чашк"],
-
-    "trend": ["тренд", "trend", "восходящ", "нисходящ",
-              "разворот тренд", "смена тренд"],
-    "sr": ["уровн", "поддержк", "сопротивл", "support",
-           "resistance", "ретест", "пробой уровн"],
-    "fibonacci": ["фибоначчи", "фибо", "fibonacci",
-                  "золотое сечение", "retracement",
-                  "extension"],
-
-    "divergence": ["дивергенц", "divergence", "расхожден"],
-    "orderflow": ["имбаланс", "order flow", "дельта",
-                  "стакан", "ликвидн", "stop hunting",
-                  "ликвидац", "taker", "orderflow",
-                  "iceberg", "spoofing", "абсорбц"],
-
-    "risk": ["риск-менедж", "правило 1%", "risk management",
-             "соотношение риск", "стоп-лосс",
-             "просадк", "управление риск"],
-    "psychology": ["психолог", "fomo", "revenge trading",
-                   "эмоци", "дисциплин", "тильт"],
-    "money_management": ["управление капитал",
-                         "money management",
-                         "размер позиц",
-                         "position sizing",
-                         "мартингейл", "пирамид"],
-
-    "crypto": ["funding", "фандинг", "плеч", "leverage",
-               "крипт", "crypto", "биткоин", "bitcoin",
-               "btc", "ethereum", "eth ", "стейбл",
-               "stablecoin"],
-    "exchange": ["биржа", "exchange", "ордер", "order ",
-                 "mexc", "binance", "bybit", "okx",
-                 "kucoin", "bitget", "gate", "htx",
-                 "как открыть", "как торговать",
-                 "комисс", "ликвидац", "cross margin",
-                 "isolated", "maker", "taker"],
+STOP = {
+    "что", "такое", "как", "это", "для", "без",
+    "при", "над", "под", "или", "все", "чем",
+    "кто", "где", "когда", "зачем", "почему",
+    "который", "которая", "которые", "они",
+    "она", "он", "она", "они", "мы", "вы",
+    "the", "a", "an", "of", "for", "to", "in",
+    "on", "at", "is", "are", "was", "were",
+    "be", "been", "being", "and", "or", "not",
+    "что", "такие", "такой", "мне", "мы",
+    "есть", "был", "была", "были", "будет",
+    "работает", "работают", "работать",
+    "это", "вот", "тут", "там", "них", "нее",
+    "меня", "тебе", "тебя", "свой", "своя",
 }
 
 
@@ -112,34 +75,42 @@ def log(msg):
     sys.stderr.flush()
 
 
-def detect_keyword(query):
-    q = (query or "").lower()
-    for key, variants in KEYWORDS.items():
-        for v in variants:
-            if v in q:
-                return key, variants
-    return None, []
+def tokenize(text):
+    """Извлекает слова длиной >=3, без стоп-слов."""
+    words = re.findall(r"[a-zа-яё]{3,}", (text or "").lower())
+    return {w for w in words if w not in STOP}
 
 
-def make_word_regex(variants):
-    parts = []
-    for v in variants:
-        if not v:
+def build_index(meta):
+    """Строит карту: книга -> множество токенов."""
+    by_book = {}
+    for i, m in enumerate(meta):
+        b = m.get("book", "")
+        if not b:
             continue
-        is_latin_short = (
-            re.match(r"^[a-z0-9]{1,5}$", v) is not None
-        )
-        if is_latin_short:
-            parts.append(
-                r"(?<![a-z0-9])"
-                + re.escape(v)
-                + r"(?![a-z0-9])"
-            )
-        else:
-            parts.append(re.escape(v))
-    if not parts:
-        return None
-    return re.compile("|".join(parts), re.IGNORECASE)
+        by_book.setdefault(b, []).append((i, m))
+
+    book_tokens = {}
+    book_chunk_ids = {}
+
+    for book, chunks in by_book.items():
+        # Токены из имени файла
+        name = book.rsplit(".", 1)[0]
+        name_parts = re.split(r"[\d_\-\.]+", name.lower())
+        tokens = set()
+        for p in name_parts:
+            if len(p) >= 3 and p not in STOP:
+                tokens.add(p)
+
+        # Токены из первых 3 чанков (заголовок + введение)
+        for _, m in chunks[:3]:
+            text = m.get("text", "")[:800]
+            tokens |= tokenize(text)
+
+        book_tokens[book] = tokens
+        book_chunk_ids[book] = chunks
+
+    return book_tokens, book_chunk_ids
 
 
 def load_model():
@@ -154,14 +125,14 @@ def load_model():
 
 def load_index():
     if not INDEX_FILE.exists() or not META_FILE.exists():
-        log("Missing index or metadata")
+        log("Missing files")
         return None, None
     try:
         index = faiss.read_index(str(INDEX_FILE))
         with open(META_FILE, "r", encoding="utf-8") as f:
             meta = json.load(f)
         if not isinstance(meta, list) or not meta:
-            log("Meta is empty or wrong format")
+            log("Meta empty")
             return None, None
         return index, meta
     except Exception as e:
@@ -184,191 +155,121 @@ def make_hit(m, score):
     return {
         "score": score,
         "id": m.get("id", ""),
-        "source": m.get("source", ""),
         "book": m.get("book", ""),
-        "chunk_index": m.get("chunk_index", 0),
         "text": m.get("text", ""),
     }
 
 
-def keyword_search(variants, top_k, meta):
-    regex = make_word_regex(variants)
-    if regex is None:
+def topic_search(query, top_k, book_tokens, book_chunks):
+    """Ищет книги, у которых максимальное пересечение токенов."""
+    q_tokens = tokenize(query)
+    if not q_tokens:
         return []
 
+    scores = {}
+    for book, tokens in book_tokens.items():
+        overlap = len(q_tokens & tokens)
+        if overlap > 0:
+            scores[book] = overlap
+
+    if not scores:
+        return []
+
+    ranked = sorted(scores.items(), key=lambda x: -x[1])
+    top_books = [b for b, _ in ranked[:3]]
+
     hits = []
-    seen = set()
-
-    for m in meta:
-        book = (m.get("book") or "").lower()
-        if not book:
+    for book in top_books:
+        chunks = book_chunks.get(book, [])
+        if not chunks:
             continue
-        if regex.search(book):
-            if book in seen:
-                continue
-            seen.add(book)
-            hits.append(make_hit(m, 1.0))
-
-    for m in meta:
-        if len(hits) >= top_k:
-            break
-        book = (m.get("book") or "").lower()
-        if book in seen:
-            continue
-        text = (m.get("text") or "")
-        if regex.search(text):
-            seen.add(book)
-            hits.append(make_hit(m, 0.9))
+        # Первый чанк книги = заголовок + начало
+        idx, m = chunks[0]
+        score = scores[book] / max(len(q_tokens), 1)
+        hits.append(make_hit(m, round(score, 3)))
 
     return hits[:top_k]
 
 
 def faiss_search(query, top_k, use_prefix, model, index, meta):
     text = f"query: {query}" if use_prefix else query
-    try:
-        emb = model.encode(
-            [text], normalize_embeddings=True,
-            show_progress_bar=False,
-            convert_to_numpy=True,
-        ).astype("float32")
-    except Exception as e:
-        log(f"Encode error: {e}")
-        return []
-
-    search_k = top_k * 3 if RERANKER_OK else top_k
-    search_k = min(search_k, index.ntotal)
-    try:
-        scores, ids = index.search(emb, search_k)
-    except Exception as e:
-        log(f"FAISS error: {e}")
-        return []
-
+    emb = model.encode(
+        [text], normalize_embeddings=True,
+        show_progress_bar=False, convert_to_numpy=True,
+    ).astype("float32")
+    k = min(top_k * 3, index.ntotal)
+    scores, ids = index.search(emb, k)
     candidates = []
     for score, idx in zip(scores[0], ids[0]):
-        if idx < 0 or idx >= len(meta):
-            continue
-        candidates.append(
-            make_hit(meta[idx], round(float(score), 4))
-        )
-
+        if 0 <= idx < len(meta):
+            candidates.append(
+                make_hit(meta[idx], round(float(score), 4))
+            )
     if RERANKER_OK and len(candidates) > top_k:
         try:
-            candidates = rerank(
-                query, candidates, top_k=top_k
-            )
-        except Exception as e:
-            log(f"Reranker failed: {e}")
+            candidates = rerank(query, candidates, top_k=top_k)
+        except Exception:
             candidates = candidates[:top_k]
     else:
         candidates = candidates[:top_k]
-
     return candidates
-
-
-def search(query, top_k=5, use_prefix=False,
-           model=None, index=None, meta=None):
-    if not meta:
-        return {"error": "No metadata available."}
-
-    keyword_key, keyword_variants = detect_keyword(query)
-    log(f"Keyword: {keyword_key}")
-
-    if keyword_key and keyword_variants:
-        results = keyword_search(
-            keyword_variants, top_k, meta
-        )
-        if results:
-            for r in results:
-                r["text"] = translate_text(r["text"])
-            log(f"Keyword hits: {len(results)}")
-            return {
-                "query": query,
-                "keyword": keyword_key,
-                "top_k": len(results),
-                "results": results,
-            }
-        log("Keyword found but no hits, fallback to FAISS")
-
-    if model is None or index is None:
-        return {"error": "Model or index not loaded."}
-
-    results = faiss_search(
-        query, top_k, use_prefix, model, index, meta
-    )
-    for r in results:
-        r["text"] = translate_text(r["text"])
-    log(f"FAISS hits: {len(results)}")
-    return {
-        "query": query,
-        "keyword": keyword_key,
-        "top_k": len(results),
-        "results": results,
-    }
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "query", nargs="?", default="Что такое трейдинг?"
-    )
+    parser.add_argument("query", nargs="?",
+                        default="Что такое трейдинг?")
     parser.add_argument("--top", type=int, default=5)
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 
     result_file = os.environ.get("SEARCH_RESULT_FILE")
-    model = None
-    use_prefix = False
 
     index, meta = load_index()
-
     if index is None or meta is None:
-        result = {
-            "error": "FAISS index or metadata not found."
-        }
+        result = {"error": "Index or metadata not found."}
     else:
-        keyword_key, _ = detect_keyword(args.query)
+        log(f"Books in meta: {len(meta)}")
+        book_tokens, book_chunks = build_index(meta)
+        log(f"Unique books: {len(book_tokens)}")
 
-        if not keyword_key:
+        # 1. Topic search
+        results = topic_search(
+            args.query, args.top, book_tokens, book_chunks
+        )
+        log(f"Topic hits: {len(results)}")
+
+        # 2. FAISS fallback
+        if not results:
+            log("Fallback to FAISS")
+            model = None
+            use_prefix = False
             try:
                 model, use_prefix = load_model()
             except Exception as e:
                 log(f"Model load error: {e}")
-                model = None
+            if model is not None:
+                results = faiss_search(
+                    args.query, args.top,
+                    use_prefix, model, index, meta,
+                )
+            log(f"FAISS hits: {len(results)}")
 
-        try:
-            result = search(
-                args.query, args.top, use_prefix,
-                model, index, meta,
-            )
+        # 3. Translate
+        for r in results:
+            r["text"] = translate_text(r["text"])
 
-            if (keyword_key
-                    and not result.get("results")
-                    and model is None):
-                try:
-                    model, use_prefix = load_model()
-                    result = search(
-                        args.query, args.top, use_prefix,
-                        model, index, meta,
-                    )
-                except Exception as e:
-                    log(f"Retry error: {e}")
+        result = {
+            "query": args.query,
+            "results": results,
+        }
 
-        except Exception as e:
-            result = {"error": f"Search failed: {e}"}
-
-    payload = json.dumps(
-        result, ensure_ascii=False, indent=2
-    )
+    payload = json.dumps(result, ensure_ascii=False, indent=2)
 
     if result_file:
-        try:
-            with open(
-                result_file, "w", encoding="utf-8"
-            ) as f:
-                f.write(payload)
-            log(f"Written: {result_file}")
-        except Exception as e:
-            log(f"Write error: {e}")
+        with open(result_file, "w", encoding="utf-8") as f:
+            f.write(payload)
+        log(f"Written: {result_file}")
     else:
         sys.__stdout__.write(payload + "\n")
         sys.__stdout__.flush()
