@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-03T00:11:34.849266+00:00",
-  "total": 78,
+  "generated_at": "2026-10-03T00:20:22.863932+00:00",
+  "total": 95,
   "candidates": [
     {
       "title": "151 Estrategias de Trading (151 Trading Strategies)",
@@ -644,6 +644,161 @@
       "topic": "psychology",
       "type": "paper",
       "found_at": "2026-10-03T00:11:34.613181+00:00",
+      "reason": "тренд"
+    },
+    {
+      "title": "Foundations of Technical Analysis: Computational Algorithms, Statistical Inference, and Empirical Implementation",
+      "url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1111/0022-1082.00265",
+      "source": "openalex",
+      "topic": "technical analysis",
+      "type": "paper",
+      "found_at": "2026-10-03T00:20:07.376700+00:00",
+      "reason": "случайная"
+    },
+    {
+      "title": "A socio-technical analysis of low-carbon transitions: introducing the multi-level perspective into transport studies",
+      "url": "https://www.sciencedirect.com/science/article/pii/S0966692312000269",
+      "source": "openalex",
+      "topic": "technical analysis",
+      "type": "paper",
+      "found_at": "2026-10-03T00:20:07.376721+00:00",
+      "reason": "случайная"
+    },
+    {
+      "title": "Technical Analysis in Financial Markets",
+      "url": "https://pure.uva.nl/ws/files/3628641/29184_UBA002001171_01.pdf",
+      "source": "openalex",
+      "topic": "technical analysis",
+      "type": "paper",
+      "found_at": "2026-10-03T00:20:07.376725+00:00",
+      "reason": "случайная"
+    },
+    {
+      "title": "edgeR : a Bioconductor package for differential expression analysis of digital gene expression data",
+      "url": "https://academic.oup.com/bioinformatics/article-pdf/26/1/139/48851299/bioinformatics_26_1_139.pdf",
+      "source": "openalex",
+      "topic": "technical analysis",
+      "type": "paper",
+      "found_at": "2026-10-03T00:20:07.376727+00:00",
+      "reason": "случайная"
+    },
+    {
+      "title": "The Investigation of Impact of Complement Policy for Energy Price Policy Reform on Transport Sector in Iran by Computable General Equilibrium",
+      "url": "https://jiee.atu.ac.ir/article_603_bc2819a8bcb818b6ea91329dfea72865.pdf",
+      "source": "doaj",
+      "topic": "technical analysis",
+      "type": "paper",
+      "found_at": "2026-10-03T00:20:07.722233+00:00",
+      "reason": "случайная"
+    },
+    {
+      "title": "Machine Learning for Quantitative Finance Applications: A Survey",
+      "url": "https://www.mdpi.com/2076-3417/9/24/5574/pdf?version=1576659585",
+      "source": "openalex",
+      "topic": "quantitative finance",
+      "type": "paper",
+      "found_at": "2026-10-03T00:20:11.255367+00:00",
+      "reason": "тренд"
+    },
+    {
+      "title": "An Overview of Machine Learning, Deep Learning, and Reinforcement Learning-Based Techniques in Quantitative Finance: Recent Progress and Challenges",
+      "url": "https://www.mdpi.com/2076-3417/13/3/1956/pdf?version=1675334107",
+      "source": "openalex",
+      "topic": "quantitative finance",
+      "type": "paper",
+      "found_at": "2026-10-03T00:20:11.255381+00:00",
+      "reason": "тренд"
+    },
+    {
+      "title": "Machine learning for quantitative finance: fast derivative pricing, hedging and fitting",
+      "url": "https://lirias.kuleuven.be/retrieve/9de149a4-0bfb-4d58-bb34-b6efc479ce7c",
+      "source": "openalex",
+      "topic": "quantitative finance",
+      "type": "paper",
+      "found_at": "2026-10-03T00:20:11.255384+00:00",
+      "reason": "тренд"
+    },
+    {
+      "title": "FinRL: A Deep Reinforcement Learning Library for Automated Stock Trading in Quantitative Finance",
+      "url": "http://arxiv.org/pdf/2011.09607",
+      "source": "openalex",
+      "topic": "quantitative finance",
+      "type": "paper",
+      "found_at": "2026-10-03T00:20:11.255386+00:00",
+      "reason": "тренд"
+    },
+    {
+      "title": "DisMo: Disentangled Motion Representations for Open-World Motion Transfer",
+      "url": "https://zenodo.org/api/records/19112885/files/2511.23428v1.pdf/content",
+      "source": "zenodo",
+      "topic": "machine learning",
+      "size_mb": 26.3,
+      "page_url": "https://zenodo.org/records/19112885",
+      "type": "book",
+      "found_at": "2026-10-03T00:20:12.530143+00:00",
+      "reason": "тренд"
+    },
+    {
+      "title": "Machine Learning and Concept Formation",
+      "url": "https://link.springer.com/content/pdf/10.1023/A:1022896407371.pdf",
+      "source": "crossref",
+      "topic": "machine learning",
+      "type": "paper",
+      "found_at": "2026-10-03T00:20:12.924021+00:00",
+      "reason": "тренд"
+    },
+    {
+      "title": "Machine Learning and Qualitative Reasoning",
+      "url": "https://link.springer.com/content/pdf/10.1023/A:1022661713654.pdf",
+      "source": "crossref",
+      "topic": "machine learning",
+      "type": "paper",
+      "found_at": "2026-10-03T00:20:12.924035+00:00",
+      "reason": "тренд"
+    },
+    {
+      "title": "Machine Learning: A Maturing Field",
+      "url": "https://link.springer.com/content/pdf/10.1023/A:1022665512030.pdf",
+      "source": "crossref",
+      "topic": "machine learning",
+      "type": "paper",
+      "found_at": "2026-10-03T00:20:12.924038+00:00",
+      "reason": "тренд"
+    },
+    {
+      "title": "Research Papers in Machine Learning",
+      "url": "https://link.springer.com/content/pdf/10.1023/A:1022603230145.pdf",
+      "source": "crossref",
+      "topic": "machine learning",
+      "type": "paper",
+      "found_at": "2026-10-03T00:20:12.924040+00:00",
+      "reason": "тренд"
+    },
+    {
+      "title": "Scikit-learn: Machine Learning in Python",
+      "url": "https://arxiv.org/pdf/1201.0490",
+      "source": "openalex",
+      "topic": "machine learning",
+      "type": "paper",
+      "found_at": "2026-10-03T00:20:15.526549+00:00",
+      "reason": "тренд"
+    },
+    {
+      "title": "Data Mining: Practical Machine Learning Tools and Techniques",
+      "url": "http://www.gbv.de/dms/bowker/toc/9780123748560.pdf",
+      "source": "openalex",
+      "topic": "machine learning",
+      "type": "paper",
+      "found_at": "2026-10-03T00:20:15.526563+00:00",
+      "reason": "тренд"
+    },
+    {
+      "title": "Physics-informed machine learning",
+      "url": "https://www.osti.gov/servlets/purl/2282016",
+      "source": "openalex",
+      "topic": "machine learning",
+      "type": "paper",
+      "found_at": "2026-10-03T00:20:15.526566+00:00",
       "reason": "тренд"
     }
   ]
