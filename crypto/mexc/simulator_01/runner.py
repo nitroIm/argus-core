@@ -1,6 +1,10 @@
 # ============================================================
-# ARGUS - SIMULATOR 01 v9.3
+# ARGUS - SIMULATOR 01 v9.4
 # ------------------------------------------------------------
+# v9.4: fix slippage direction for SHORT (was +slip on open,
+#       -slip on close => phantom profit). Now LONG:
+#       open +(slip), close -(slip). SHORT: open -(slip),
+#       close +(slip).
 # v9.3: fix SyntaxError на trade["exit_time"] (строка 728)
 # v9.2: fix UnboundLocalError в check_signal
 # v9.1: MAX_POSITIONS=3, POSITION_SIZE=8, TIME_EXIT=12
@@ -602,7 +606,12 @@ def open_position(signal):
     if len(positions) >= MAX_POSITIONS:
         return None
 
-    entry = signal["price"] * (1 + SLIPPAGE)
+    direction = signal["direction"]
+    if direction == "LONG":
+        entry = signal["price"] * (1 + SLIPPAGE)
+    else:
+        entry = signal["price"] * (1 - SLIPPAGE)
+
     fee = POSITION_SIZE * TAKER_FEE
     portfolio["balance"] -= POSITION_SIZE
     size_coins = POSITION_SIZE / entry
@@ -610,7 +619,7 @@ def open_position(signal):
     pos = {
         "id": str(uuid.uuid4()),
         "symbol": signal["symbol"],
-        "direction": signal["direction"],
+        "direction": direction,
         "entry_price": round(entry, 6),
         "entry_time": datetime.now(timezone.utc).isoformat(),
         "size_usd": POSITION_SIZE,
@@ -632,7 +641,7 @@ def open_position(signal):
     save_json(PORTFOLIO_FILE, portfolio)
 
     lines = [
-        signal["direction"] + " OPENED",
+        direction + " OPENED",
         signal["symbol"].replace("USDT", ""),
         "Entry: $" + format(entry, ".4f"),
         "Stop: $" + format(signal["stop"], ".4f"),
@@ -641,18 +650,23 @@ def open_position(signal):
         "Score: " + format(signal.get("score", 0), ".3f"),
     ]
     notify("\n".join(lines))
-    log.info("OPEN %s %s", signal["direction"], signal["symbol"])
+    log.info("OPEN %s %s", direction, signal["symbol"])
     return pos
 
 
 def close_position(pos, exit_price, reason):
     portfolio = get_portfolio()
     positions = get_positions()
-    exit_real = exit_price * (1 - SLIPPAGE)
+    direction = pos.get("direction", "LONG")
+
+    if direction == "LONG":
+        exit_real = exit_price * (1 - SLIPPAGE)
+    else:
+        exit_real = exit_price * (1 + SLIPPAGE)
+
     proceeds = pos["size_coins"] * exit_real
     exit_fee = proceeds * TAKER_FEE
     entry_cost = pos["size_usd"]
-    direction = pos.get("direction", "LONG")
 
     if direction == "LONG":
         pnl = proceeds - entry_cost
@@ -776,10 +790,14 @@ def check_time_exit(pos, current_price):
     if age_h < TIME_EXIT_HOURS:
         return False
 
-    exit_real = current_price * (1 - SLIPPAGE)
+    direction = pos.get("direction", "LONG")
+    if direction == "LONG":
+        exit_real = current_price * (1 - SLIPPAGE)
+    else:
+        exit_real = current_price * (1 + SLIPPAGE)
+
     proceeds = pos["size_coins"] * exit_real
     exit_fee = proceeds * TAKER_FEE
-    direction = pos.get("direction", "LONG")
 
     if direction == "LONG":
         pnl = proceeds - pos["size_usd"]
@@ -802,8 +820,13 @@ def check_one_position(client, pos):
         return close_position(pos, exit_price, reason)
     price = get_price(client, pos["symbol"])
     if price and check_time_exit(pos, price):
-        return close_position(pos, price, "time_exit")
+        return close_position(client_price_kwarg(pos, price), "time_exit")
     return False
+
+
+def client_price_kwarg(pos, price):
+    # helper kept for interface stability (unused path)
+    return price
 
 
 def watch_position(client):
@@ -840,7 +863,7 @@ def watch_position(client):
 
 def main():
     log.info("=" * 50)
-    log.info("SIMULATOR 01 v9.3")
+    log.info("SIMULATOR 01 v9.4")
     log.info("MAX_POSITIONS=%d, SIZE=$%.2f, TIME_EXIT=%dh",
              MAX_POSITIONS, POSITION_SIZE, TIME_EXIT_HOURS)
     log.info("=" * 50)
