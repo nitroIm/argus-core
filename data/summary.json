@@ -1,13 +1,14 @@
 {
-  "generated_at": "2026-10-03T14:11:15.641660+00:00",
-  "total_books": 55,
-  "total_chunks": 8869,
-  "new_chunks": 7,
+  "generated_at": "2026-10-03T16:54:45.152373+00:00",
+  "total_books": 56,
+  "total_chunks": 8873,
+  "new_chunks": 4,
   "new_files": [
     "09_trend.md",
-    "10_st.md"
+    "10_st.md",
+    "11_orderflow.md"
   ],
-  "skipped_already_in_db": 0,
+  "skipped_already_in_db": 2,
   "refreshed_categories": 0,
   "books": [
     {
@@ -338,6 +339,12 @@
       "file": "10_st.md",
       "pages": 1,
       "chunks": 3,
+      "category": "misc"
+    },
+    {
+      "file": "11_orderflow.md",
+      "pages": 1,
+      "chunks": 4,
       "category": "misc"
     }
   ]

@@ -1,10 +1,11 @@
 {
-  "ingested_at": "2026-10-03T14:11:15.641569+00:00",
+  "ingested_at": "2026-10-03T16:54:45.152272+00:00",
   "files": [
     "09_trend.md",
-    "10_st.md"
+    "10_st.md",
+    "11_orderflow.md"
   ],
-  "new_chunks": 7,
-  "skipped_already_in_db": 0,
+  "new_chunks": 4,
+  "skipped_already_in_db": 2,
   "refreshed_categories": 0
 }
