@@ -59,20 +59,20 @@ jobs:
           fi
 
       - name: Run semantic search
-        id: search
+        env:
+          QUERY: ${{ steps.vars.outputs.query }}
+          SEARCH_RESULT_FILE: /tmp/search_result.json
         run: |
-          echo "Searching for: ${{ steps.vars.outputs.query }}"
-          # Запускаем поиск и сохраняем JSON-вывод в переменную GITHUB_OUTPUT
-          OUTPUT=$(python scripts/search.py "${{ steps.vars.outputs.query }}" --top 3)
-          echo "result<<EOF" >> $GITHUB_OUTPUT
-          echo "$OUTPUT" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          echo "Searching for: $QUERY"
+          python scripts/search.py "$QUERY" --top 5
+          echo "--- result file ---"
+          cat /tmp/search_result.json
 
       - name: Send result to Telegram
         env:
           BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           CHAT_ID: ${{ steps.vars.outputs.chat_id }}
-          SEARCH_RESULT: ${{ steps.search.outputs.result }}
+          SEARCH_RESULT_FILE: /tmp/search_result.json
         run: |
           python3 << 'PYTHON_SCRIPT'
           import os
@@ -81,52 +81,47 @@ jobs:
 
           bot_token = os.environ['BOT_TOKEN']
           chat_id = os.environ['CHAT_ID']
-          
+          result_path = os.environ['SEARCH_RESULT_FILE']
+
           try:
-              result = json.loads(os.environ['SEARCH_RESULT'])
-              
-              if 'error' in result:
-                  text = f"❌ <b>Ошибка поиска:</b>\n<code>{result['error']}</code>"
-              elif not result.get('results'):
-                  text = f"🔎 <b>Запрос:</b> <i>{result.get('query')}</i>\n\nНичего не найдено в базе знаний."
-              else:
-                  text = f"🔎 <b>Результаты для:</b> <i>{result.get('query')}</i>\n\n"
-                  for i, r in enumerate(result['results'], 1):
-                      score = r.get('score', 0)
-                      book = r.get('book', r.get('source', 'Неизвестно'))
-                      
-                      # Безопасная обрезка и экранирование HTML
-                      chunk_text = r.get('text', '')
-                      if len(chunk_text) > 400:
-                          chunk_text = chunk_text[:397] + "..."
-                      
-                      safe_text = chunk_text.replace("<", "&lt;").replace(">", "&gt;")
-                      
-                      text += f"{i}. <b>Совпадение:</b> {score:.2f} | <b>Книга:</b> <code>{book}</code>\n"
-                      text += f"<blockquote>{safe_text}</blockquote>\n\n"
-              
-              url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
-              payload = {
-                  'chat_id': chat_id,
-                  'text': text,
-                  'parse_mode': 'HTML',
-                  'disable_web_page_preview': True
-              }
-              
-              response = requests.post(url, json=payload, timeout=15)
-              if response.status_code == 200:
-                  print("✅ Message sent successfully")
-              else:
-                  print(f"⚠️ Telegram API error: {response.status_code} - {response.text}")
-                  
+              with open(result_path, encoding='utf-8') as f:
+                  result = json.load(f)
           except Exception as e:
-              print(f"Failed to process/send message: {e}")
-              # Fallback: отправляем сырую ошибку, если парсинг сломался
-              url = f"https://api.telegram.org/bot{os.environ['BOT_TOKEN']}/sendMessage"
-              payload = {
-                  'chat_id': os.environ['CHAT_ID'],
-                  'text': f"❌ <b>Критическая ошибка обработки:</b>\n<code>{str(e)}</code>",
-                  'parse_mode': 'HTML'
-              }
-              requests.post(url, json=payload, timeout=15)
+              requests.post(
+                  f"https://api.telegram.org/bot{bot_token}/sendMessage",
+                  json={
+                      'chat_id': chat_id,
+                      'text': f"❌ Ошибка чтения результата: {e}",
+                      'parse_mode': 'HTML',
+                  },
+                  timeout=15,
+              )
+              raise SystemExit(0)
+
+          if 'error' in result:
+              text = f"❌ <b>Ошибка поиска:</b>\n<code>{result['error']}</code>"
+          elif not result.get('results'):
+              text = f"🔎 <b>Запрос:</b> <i>{result.get('query')}</i>\n\nНичего не найдено."
+          else:
+              text = f"🔎 <b>Результаты для:</b> <i>{result.get('query')}</i>\n\n"
+              for i, r in enumerate(result['results'], 1):
+                  score = r.get('score', 0)
+                  book = r.get('book', r.get('source', 'Неизвестно'))
+                  chunk_text = r.get('text', '')
+                  if len(chunk_text) > 400:
+                      chunk_text = chunk_text[:397] + "..."
+                  safe_text = chunk_text.replace("<", "&lt;").replace(">", "&gt;")
+                  text += f"{i}. <b>Книга:</b> <code>{book}</code> (score {score:.2f})\n"
+                  text += f"<blockquote>{safe_text}</blockquote>\n\n"
+
+          url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+          payload = {
+              'chat_id': chat_id,
+              'text': text,
+              'parse_mode': 'HTML',
+              'disable_web_page_preview': True,
+          }
+
+          response = requests.post(url, json=payload, timeout=15)
+          print(f"TG status: {response.status_code}")
           PYTHON_SCRIPT
