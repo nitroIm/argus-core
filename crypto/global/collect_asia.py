@@ -1,6 +1,8 @@
 # ============================================================
 # ARGUS-Trader — COLLECT ASIA + EUROPE + USA (узел global)
 # ------------------------------------------------------------
+# v5: batch insert per symbol, fallback to SAVEPOINT per row
+#     if batch fails. Fast path ~2min vs ~20min.
 # v4: RANGE=30d, MAX_ROWS=300 (align with patterns window).
 #     SAVEPOINT per row. log_run partial on failure.
 # v3: + USA (VIX, NASDAQ, US10Y) + Asia extra (USDJPY,
@@ -68,11 +70,14 @@ INTERVAL = "1h"
 RANGE = "30d"
 MAX_ROWS = 300
 
-SQL = (
+SQL_HEAD = (
     "INSERT INTO asia_market "
     "(symbol, timestamp, close, change_pct, source) "
-    "VALUES (%s,%s,%s,%s,%s) "
-    "ON CONFLICT (symbol, timestamp) "
+    "VALUES "
+)
+
+SQL_TAIL = (
+    " ON CONFLICT (symbol, timestamp) "
     "DO UPDATE SET "
     "close=EXCLUDED.close, "
     "change_pct=EXCLUDED.change_pct"
@@ -130,10 +135,31 @@ def compute_changes(rows):
     return out
 
 
-def save_rows(db_symbol, rows):
-    """SAVEPOINT per row: one bad row does not abort the batch."""
+def save_rows_batch(db_symbol, rows):
+    """One INSERT per batch. Returns (added, ok)."""
+    if not rows:
+        return 0, True
+    placeholders = ",".join(["(%s,%s,%s,%s,%s)"] * len(rows))
+    sql = SQL_HEAD + placeholders + SQL_TAIL
+    params = []
+    for ts, close, change in rows:
+        params.extend([db_symbol, ts, close, change, "yahoo"])
+    try:
+        with get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(sql, tuple(params))
+                n = cur.rowcount or 0
+                return n, True
+    except Exception as e:
+        log.warning("batch failed %s: %s", db_symbol, e)
+        return 0, False
+
+
+def save_rows_savepoint(db_symbol, rows):
+    """Slow path: SAVEPOINT per row."""
     if not rows:
         return 0
+    sql = SQL_HEAD + "(%s,%s,%s,%s,%s)" + SQL_TAIL
     added = 0
     try:
         with get_connection() as conn:
@@ -142,7 +168,7 @@ def save_rows(db_symbol, rows):
                     sp = "sp_row_" + str(i)
                     try:
                         cur.execute("SAVEPOINT " + sp)
-                        cur.execute(SQL, (
+                        cur.execute(sql, (
                             db_symbol, ts, close,
                             change, "yahoo",
                         ))
@@ -163,6 +189,17 @@ def save_rows(db_symbol, rows):
     except Exception as e:
         log.error("save %s: %s", db_symbol, e)
     return added
+
+
+def save_rows(db_symbol, rows):
+    """Try batch first, fallback to SAVEPOINT."""
+    if not rows:
+        return 0
+    n, ok = save_rows_batch(db_symbol, rows)
+    if ok:
+        return n
+    log.info("  fallback to SAVEPOINT for %s", db_symbol)
+    return save_rows_savepoint(db_symbol, rows)
 
 
 def log_run(job, status, n=0, err=None):
@@ -205,7 +242,7 @@ def fetch_group(name, lst):
 
 def main():
     log.info("=" * 60)
-    log.info("ARGUS COLLECT ASIA+EU+USA — DB2 v4")
+    log.info("ARGUS COLLECT ASIA+EU+USA — DB2 v5")
     log.info("=" * 60)
 
     total = 0
