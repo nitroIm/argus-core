@@ -1,14 +1,12 @@
 {
-  "generated_at": "2026-10-02T18:35:57.769437+00:00",
-  "total_books": 37,
-  "total_chunks": 6468,
-  "new_chunks": 636,
+  "generated_at": "2026-10-03T00:01:20.054558+00:00",
+  "total_books": 40,
+  "total_chunks": 6705,
+  "new_chunks": 237,
   "new_files": [
-    "0508180v2.pdf",
-    "1112.0222v2.pdf",
-    "19140525_Predicting the Market Microstructure Price Efficiency Nexus Using Time Series Analysis.pdf",
-    "2401.16506v2.pdf",
-    "7085516_Crypto_Assets_Study_2022.pdf"
+    "1904.05866.pdf",
+    "2110.11808.pdf",
+    "2112.08534.pdf"
   ],
   "skipped_already_in_db": 0,
   "books": [
@@ -196,6 +194,21 @@
       "file": "7085516_Crypto_Assets_Study_2022.pdf",
       "pages": 42,
       "chunks": 123
+    },
+    {
+      "file": "1904.05866.pdf",
+      "pages": 22,
+      "chunks": 91
+    },
+    {
+      "file": "2110.11808.pdf",
+      "pages": 15,
+      "chunks": 67
+    },
+    {
+      "file": "2112.08534.pdf",
+      "pages": 20,
+      "chunks": 79
     }
   ]
 }
