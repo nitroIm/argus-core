@@ -1,11 +1,13 @@
 # ============================================================
-# ARGUS — АВТОНОМНЫЙ ИССЛЕДОВАТЕЛЬ (v4)
+# ARGUS — АВТОНОМНЫЙ ИССЛЕДОВАТЕЛЬ (v5)
+# v5: fix arXiv timeout 60s, Semantic Scholar пауза 2s
 # v4: + OpenAlex, CORE, DOAJ
 # ============================================================
 
 import os
 import sys
 import json
+import time
 import random
 import requests
 from datetime import datetime, timezone
@@ -36,6 +38,10 @@ CANDIDATES_FILE = DATA_DIR / "scout_candidates.json"
 
 CORE_API_KEY = (os.getenv("CORE_API_KEY") or "").strip()
 
+TIMEOUT_ARXIV = 60
+TIMEOUT_DEFAULT = 20
+SEMANTIC_PAUSE = 2.0
+
 
 def load_json(path, default=None):
     if not path.exists():
@@ -64,8 +70,6 @@ if not REQUESTED_TOPIC:
 
 def decide_topics():
     obs = load_json(OBS_FILE, {})
-    seen = load_json(SEEN_FILE, {"urls": [], "topics": {}})
-
     if REQUESTED_TOPIC:
         print(f"🎯 Запрошена тема: {REQUESTED_TOPIC}")
         return [{"topic": REQUESTED_TOPIC,
@@ -117,7 +121,7 @@ def search_arxiv(topic, limit=3):
                     "start": 0,
                     "max_results": limit,
                     "sortBy": "relevance"},
-            timeout=20,
+            timeout=TIMEOUT_ARXIV,
         )
         r.raise_for_status()
         for entry in r.text.split("<entry>")[1:]:
@@ -149,7 +153,7 @@ def search_zenodo(topic, limit=3):
             params={"q": topic, "size": limit,
                     "type": "publication",
                     "file_type": "pdf"},
-            timeout=20,
+            timeout=TIMEOUT_DEFAULT,
         )
         r.raise_for_status()
         for hit in r.json().get("hits", {}).get("hits", []):
@@ -167,7 +171,10 @@ def search_zenodo(topic, limit=3):
                         "title": title, "url": pdf_url,
                         "source": "zenodo", "topic": topic,
                         "size_mb": round(size / 1024 / 1024, 1),
-                        "page_url": f"https://zenodo.org/records/{record_id}",
+                        "page_url": (
+                            f"https://zenodo.org/records/"
+                            f"{record_id}"
+                        ),
                         "type": "book",
                     })
             except Exception:
@@ -183,8 +190,11 @@ def search_crossref(topic, limit=3):
         r = requests.get(
             "https://api.crossref.org/works",
             params={"query": topic, "rows": limit,
-                    "filter": "type:journal-article,has-full-text:true"},
-            timeout=20,
+                    "filter": (
+                        "type:journal-article,"
+                        "has-full-text:true"
+                    )},
+            timeout=TIMEOUT_DEFAULT,
         )
         r.raise_for_status()
         for item in r.json().get("message", {}).get("items", []):
@@ -209,14 +219,19 @@ def search_crossref(topic, limit=3):
 
 
 def search_semantic_scholar(topic, limit=3):
+    """v5: пауза 2с перед запросом — обход 429."""
     results = []
+    time.sleep(SEMANTIC_PAUSE)
     try:
         r = requests.get(
             "https://api.semanticscholar.org/graph/v1/paper/search",
             params={"query": topic, "limit": limit,
                     "fields": "title,openAccessPdf"},
-            timeout=20,
+            timeout=TIMEOUT_DEFAULT,
         )
+        if r.status_code == 429:
+            print("   ⏸ Semantic Scholar: 429, пропуск")
+            return []
         r.raise_for_status()
         for item in r.json().get("data", []):
             pdf = item.get("openAccessPdf")
@@ -233,7 +248,6 @@ def search_semantic_scholar(topic, limit=3):
 
 
 def search_openalex(topic, limit=3):
-    """OpenAlex — 250M+ работ, без ключа."""
     results = []
     try:
         r = requests.get(
@@ -244,7 +258,7 @@ def search_openalex(topic, limit=3):
                 "filter": "is_oa:true",
                 "mailto": "argus@example.com",
             },
-            timeout=20,
+            timeout=TIMEOUT_DEFAULT,
         )
         r.raise_for_status()
         for item in r.json().get("results", []):
@@ -273,7 +287,6 @@ def search_openalex(topic, limit=3):
 
 
 def search_core(topic, limit=3):
-    """CORE — 200M+ OA. Требует CORE_API_KEY."""
     if not CORE_API_KEY:
         return []
     results = []
@@ -281,8 +294,10 @@ def search_core(topic, limit=3):
         r = requests.get(
             "https://api.core.ac.uk/v3/search/works",
             params={"q": topic, "limit": limit},
-            headers={"Authorization": f"Bearer {CORE_API_KEY}"},
-            timeout=20,
+            headers={
+                "Authorization": f"Bearer {CORE_API_KEY}"
+            },
+            timeout=TIMEOUT_DEFAULT,
         )
         r.raise_for_status()
         for item in r.json().get("results", []):
@@ -304,14 +319,13 @@ def search_core(topic, limit=3):
 
 
 def search_doaj(topic, limit=3):
-    """DOAJ — Directory of Open Access Journals."""
     results = []
     try:
         r = requests.get(
             "https://doaj.org/api/search/articles/"
             + requests.utils.quote(topic),
             params={"pageSize": limit},
-            timeout=20,
+            timeout=TIMEOUT_DEFAULT,
         )
         r.raise_for_status()
         for item in r.json().get("results", []):
@@ -350,7 +364,7 @@ SOURCES = [
 
 
 def main():
-    print("🧭 ARGUS EXPLORER v4")
+    print("🧭 ARGUS EXPLORER v5")
     print("=" * 50)
 
     topics = decide_topics()
