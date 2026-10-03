@@ -1,8 +1,10 @@
 # ============================================================
 # ARGUS-Trader — COLLECT SOL/BNB (узел global)
 # ------------------------------------------------------------
+# v3: SAVEPOINT per row (isolate bad rows).
+#     Row-level errors no longer abort the whole batch.
 # v2: fix OI — OKX rubik отдаёт всю историю (720),
-#     игнорируя limit. Обрезаем до LIMIT после
+#     игнорируем limit. Обрезаем до LIMIT после
 #     получения, отсортировав по timestamp.
 # v1: OHLCV + funding + OI для SOLUSDT и BNBUSDT.
 # ============================================================
@@ -65,22 +67,37 @@ SQL_OI = (
 
 
 def save(sql, rows, fields):
+    """Insert rows. One bad row does not abort the batch."""
     if not rows:
         return 0
     added = 0
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
-                for r in rows:
+                for i, r in enumerate(rows):
+                    sp = "sp_row_" + str(i)
                     try:
+                        cur.execute("SAVEPOINT " + sp)
                         vals = tuple(
                             r.get(f) for f in fields
                         )
                         cur.execute(sql, vals)
-                        if cur.rowcount and cur.rowcount > 0:
-                            added += cur.rowcount
+                        n = cur.rowcount or 0
+                        cur.execute(
+                            "RELEASE SAVEPOINT " + sp
+                        )
+                        added += n
                     except Exception as e:
-                        log.warning("skip: %s", e)
+                        try:
+                            cur.execute(
+                                "ROLLBACK TO SAVEPOINT "
+                                + sp
+                            )
+                        except Exception:
+                            pass
+                        log.warning(
+                            "row %d skip: %s", i, e,
+                        )
     except Exception as e:
         log.error("save: %s", e)
     return added
@@ -140,8 +157,8 @@ def log_run(job, status, n=0, err=None):
 def collect_symbol(symbol):
     log.info("%s — start", symbol)
     total = 0
+    failed = False
 
-    # OHLCV
     name, rows = try_sources(
         symbol,
         lambda c: c.fetch_ohlcv(symbol, TF, LIMIT),
@@ -157,8 +174,8 @@ def collect_symbol(symbol):
         total += n
     else:
         log.warning("  candles: no data")
+        failed = True
 
-    # Funding
     name, rows = try_sources(
         symbol,
         lambda c: c.fetch_funding(symbol, LIMIT),
@@ -172,8 +189,8 @@ def collect_symbol(symbol):
         total += n
     else:
         log.warning("  funding: no data")
+        failed = True
 
-    # OI (fix v2 — обрезка до LIMIT)
     name, rows = try_sources(
         symbol,
         lambda c: c.fetch_oi(symbol, LIMIT),
@@ -192,28 +209,35 @@ def collect_symbol(symbol):
         total += n
     else:
         log.warning("  oi: no data")
+        failed = True
 
-    return total
+    return total, failed
 
 
 def main():
     log.info("=" * 60)
-    log.info("ARGUS COLLECT SOL/BNB — DB2 v2")
+    log.info("ARGUS COLLECT SOL/BNB — DB2 v3")
     log.info("=" * 60)
 
     total = 0
+    any_failed = False
     for sym in SYMBOLS:
         try:
-            total += collect_symbol(sym)
+            n, failed = collect_symbol(sym)
+            total += n
+            if failed:
+                any_failed = True
         except Exception as e:
             log.error("%s: %s", sym, e)
+            any_failed = True
         log.info("")
 
     log.info("=" * 60)
     log.info("DONE. Total saved: %d", total)
     log.info("=" * 60)
 
-    log_run("collect_sol_bnb", "ok", total)
+    status = "partial" if any_failed else "ok"
+    log_run("collect_sol_bnb", status, total)
     close_connection()
 
 
