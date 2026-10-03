@@ -1,241 +1,295 @@
 {
-  "generated_at": "2026-10-03T09:57:34.772697+00:00",
-  "total_books": 45,
-  "total_chunks": 8843,
-  "new_chunks": 2138,
+  "generated_at": "2026-10-03T11:25:43.152253+00:00",
+  "total_books": 47,
+  "total_chunks": 8848,
+  "new_chunks": 5,
   "new_files": [
-    "Reminiscences_20of_20a_20Stock_20Operator.pdf",
-    "abcofstockspecul00nelsiala.pdf",
-    "makingofstockbro00lefe_0.pdf",
-    "psychologyofstoc00seldrich.pdf",
-    "studiesintaperea00wyckrich.pdf"
+    "01_rsi.md",
+    "02_macd.md"
   ],
   "skipped_already_in_db": 0,
   "books": [
     {
       "file": "Френсис Бэкон .pdf",
       "pages": 244,
-      "chunks": 720
+      "chunks": 720,
+      "category": "misc"
     },
     {
       "file": "b63adf7bd2f6d0d203f2206dc556b38d.pdf",
       "pages": 232,
-      "chunks": 384
+      "chunks": 384,
+      "category": "misc"
     },
     {
       "file": "Algorithmic Trading From Beginner to Advanced.pdf",
       "pages": 210,
-      "chunks": 157
+      "chunks": 157,
+      "category": "misc"
     },
     {
       "file": "aat-ebook-20170711.pdf",
       "pages": 509,
-      "chunks": 875
+      "chunks": 875,
+      "category": "misc"
     },
     {
       "file": "content.pdf",
       "pages": 103,
-      "chunks": 142
+      "chunks": 142,
+      "category": "misc"
     },
     {
       "file": "2608.17342v1.pdf",
       "pages": 9,
-      "chunks": 51
+      "chunks": 51,
+      "category": "misc"
     },
     {
       "file": "1405.6427v1.pdf",
       "pages": 24,
-      "chunks": 67
+      "chunks": 67,
+      "category": "misc"
     },
     {
       "file": "1711.01767v1.pdf",
       "pages": 10,
-      "chunks": 41
+      "chunks": 41,
+      "category": "misc"
     },
     {
       "file": "2306.04338v1.pdf",
       "pages": 8,
-      "chunks": 45
+      "chunks": 45,
+      "category": "misc"
     },
     {
       "file": "2005.14440v1.pdf",
       "pages": 8,
-      "chunks": 59
+      "chunks": 59,
+      "category": "misc"
     },
     {
       "file": "10939382_P05_1-10_Aditya-Dadhich.pdf",
       "pages": 10,
-      "chunks": 32
+      "chunks": 32,
+      "category": "misc"
     },
     {
       "file": "2606.22017v1.pdf",
       "pages": 11,
-      "chunks": 42
+      "chunks": 42,
+      "category": "misc"
     },
     {
       "file": "1806.06632v1.pdf",
       "pages": 29,
-      "chunks": 55
+      "chunks": 55,
+      "category": "misc"
     },
     {
       "file": "3376377_201900-1-1-5-PB.pdf",
       "pages": 7,
-      "chunks": 13
+      "chunks": 13,
+      "category": "misc"
     },
     {
       "file": "2010.09711v2.pdf",
       "pages": 10,
-      "chunks": 64
+      "chunks": 64,
+      "category": "misc"
     },
     {
       "file": "5211949_ACA2021-PUB_Cable.pdf",
       "pages": 3,
-      "chunks": 9
+      "chunks": 9,
+      "category": "misc"
     },
     {
       "file": "1302.1228v1.pdf",
       "pages": 20,
-      "chunks": 31
+      "chunks": 31,
+      "category": "misc"
     },
     {
       "file": "4449640_ATLANTIS-Report3-TechRequirements.pdf",
       "pages": 6,
-      "chunks": 18
+      "chunks": 18,
+      "category": "misc"
     },
     {
       "file": "2111.09854v1.pdf",
       "pages": 15,
-      "chunks": 52
+      "chunks": 52,
+      "category": "misc"
     },
     {
       "file": "15312174_A.I.-20.pdf",
       "pages": 6,
-      "chunks": 18
+      "chunks": 18,
+      "category": "misc"
     },
     {
       "file": "21105515_8198-12.2.1.pdf",
       "pages": 8,
-      "chunks": 42
+      "chunks": 42,
+      "category": "misc"
     },
     {
       "file": "1202.2447v2.pdf",
       "pages": 21,
-      "chunks": 72
+      "chunks": 72,
+      "category": "misc"
     },
     {
       "file": "1912.04492v1.pdf",
       "pages": 398,
-      "chunks": 1041
+      "chunks": 1041,
+      "category": "misc"
     },
     {
       "file": "2208.07168v1.pdf",
       "pages": 41,
-      "chunks": 102
+      "chunks": 102,
+      "category": "misc"
     },
     {
       "file": "7589760_RODOFEBISU_Trading_Support_System.pdf",
       "pages": 14,
-      "chunks": 35
+      "chunks": 35,
+      "category": "misc"
     },
     {
       "file": "20410730_7. Asst. Prof. Manohar Vinod  Pathre,.pdf",
       "pages": 9,
-      "chunks": 30
+      "chunks": 30,
+      "category": "misc"
     },
     {
       "file": "13325217_EJAET-8-6-94-100.pdf",
       "pages": 7,
-      "chunks": 32
+      "chunks": 32,
+      "category": "misc"
     },
     {
       "file": "13758622_SSRN.pdf",
       "pages": 167,
-      "chunks": 312
+      "chunks": 312,
+      "category": "misc"
     },
     {
       "file": "10792788_119-130.pdf",
       "pages": 12,
-      "chunks": 37
+      "chunks": 37,
+      "category": "misc"
     },
     {
       "file": "18065045_CryptocurrencyPDchapter.pdf",
       "pages": 19,
-      "chunks": 41
+      "chunks": 41,
+      "category": "misc"
     },
     {
       "file": "7260968_v01-i01-a06-Madulid-May-2022.pdf",
       "pages": 13,
-      "chunks": 50
+      "chunks": 50,
+      "category": "misc"
     },
     {
       "file": "7000398_jucs_article_29137.pdf",
       "pages": 21,
-      "chunks": 49
+      "chunks": 49,
+      "category": "misc"
     },
     {
       "file": "0508180v2.pdf",
       "pages": 57,
-      "chunks": 180
+      "chunks": 180,
+      "category": "misc"
     },
     {
       "file": "1112.0222v2.pdf",
       "pages": 8,
-      "chunks": 20
+      "chunks": 20,
+      "category": "misc"
     },
     {
       "file": "19140525_Predicting the Market Microstructure Price Efficiency Nexus Using Time Series Analysis.pdf",
       "pages": 39,
-      "chunks": 134
+      "chunks": 134,
+      "category": "misc"
     },
     {
       "file": "2401.16506v2.pdf",
       "pages": 61,
-      "chunks": 179
+      "chunks": 179,
+      "category": "misc"
     },
     {
       "file": "7085516_Crypto_Assets_Study_2022.pdf",
       "pages": 42,
-      "chunks": 123
+      "chunks": 123,
+      "category": "misc"
     },
     {
       "file": "1904.05866.pdf",
       "pages": 22,
-      "chunks": 91
+      "chunks": 91,
+      "category": "misc"
     },
     {
       "file": "2110.11808.pdf",
       "pages": 15,
-      "chunks": 67
+      "chunks": 67,
+      "category": "misc"
     },
     {
       "file": "2112.08534.pdf",
       "pages": 20,
-      "chunks": 79
+      "chunks": 79,
+      "category": "misc"
     },
     {
       "file": "Reminiscences_20of_20a_20Stock_20Operator.pdf",
       "pages": 263,
-      "chunks": 703
+      "chunks": 703,
+      "category": "misc"
     },
     {
       "file": "abcofstockspecul00nelsiala.pdf",
       "pages": 240,
-      "chunks": 416
+      "chunks": 416,
+      "category": "misc"
     },
     {
       "file": "makingofstockbro00lefe_0.pdf",
       "pages": 352,
-      "chunks": 626
+      "chunks": 626,
+      "category": "misc"
     },
     {
       "file": "psychologyofstoc00seldrich.pdf",
       "pages": 140,
-      "chunks": 135
+      "chunks": 135,
+      "category": "misc"
     },
     {
       "file": "studiesintaperea00wyckrich.pdf",
       "pages": 204,
-      "chunks": 258
+      "chunks": 258,
+      "category": "misc"
+    },
+    {
+      "file": "01_rsi.md",
+      "pages": 1,
+      "chunks": 2,
+      "category": "misc"
+    },
+    {
+      "file": "02_macd.md",
+      "pages": 1,
+      "chunks": 3,
+      "category": "misc"
     }
   ]
 }
