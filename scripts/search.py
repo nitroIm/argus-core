@@ -1,8 +1,7 @@
 # ============================================================
-# ARGUS — SEMANTIC SEARCH (v6)
-# v6: + перевод английских чанков на русский
-#     + word-boundary keyword match
-#     + dedup по книге
+# ARGUS — SEMANTIC SEARCH (v7)
+# v7: JSON пишется в файл (SEARCH_RESULT_FILE) — обход багов stdout
+#     + перевод + word-boundary + dedup
 # ============================================================
 
 import os
@@ -10,6 +9,12 @@ import re
 import sys
 import json
 import argparse
+import warnings
+
+warnings.filterwarnings("ignore")
+os.environ.setdefault("TRANSFORMERS_VERBOSITY", "error")
+os.environ.setdefault("HF_HUB_DISABLE_PROGRESS_BARS", "1")
+
 from pathlib import Path
 import numpy as np
 import faiss
@@ -49,13 +54,17 @@ KEYWORDS = {
     "bollinger": ["bollinger", "боллинджер"],
     "atr": ["atr"],
     "volume": ["volume", "объём", "объем"],
-    "candle": ["candle", "свеч", "доджи", "молот",
-               "поглощен"],
+    "candle": ["candle", "свеч", "доджи", "молот", "поглощен"],
     "risk": ["риск-менедж", "правило 1%", "risk management",
              "соотношение риск", "стоп-лосс", "просадк"],
     "psychology": ["психолог", "fomo", "revenge trading",
                    "эмоци", "дисциплин"],
 }
+
+
+def log(msg):
+    sys.stderr.write(str(msg) + "\n")
+    sys.stderr.flush()
 
 
 def detect_keyword(query):
@@ -85,15 +94,15 @@ def load_model():
     if TRAINED_MODEL.exists():
         cfg = TRAINED_MODEL / "config.json"
         if cfg.exists():
-            print(f"Model: {TRAINED_MODEL}", file=sys.stderr)
+            log(f"Model: {TRAINED_MODEL}")
             return SentenceTransformer(str(TRAINED_MODEL)), False
-    print(f"Model: {BASE_MODEL}", file=sys.stderr)
+    log(f"Model: {BASE_MODEL}")
     return SentenceTransformer(BASE_MODEL), True
 
 
 def load_index():
     if not INDEX_FILE.exists() or not META_FILE.exists():
-        print("Missing index files", file=sys.stderr)
+        log("Missing index files")
         return None, None
     try:
         index = faiss.read_index(str(INDEX_FILE))
@@ -101,19 +110,18 @@ def load_index():
             meta = json.load(f)
         return index, meta
     except Exception as e:
-        print(f"Load error: {e}", file=sys.stderr)
+        log(f"Load error: {e}")
         return None, None
 
 
 def translate_text(text):
-    """Переводит английский чанк на русский."""
     if not text:
         return text
     try:
         if is_english(text):
             return translate_to_ru(text)
     except Exception as e:
-        print(f"Translate error: {e}", file=sys.stderr)
+        log(f"Translate error: {e}")
     return text
 
 
@@ -123,19 +131,16 @@ def search(query, top_k=5, use_prefix=False,
         return {"error": "Index or metadata not found."}
 
     keyword_key, keyword_variants = detect_keyword(query)
-    print(f"Keyword: {keyword_key}", file=sys.stderr)
+    log(f"Keyword: {keyword_key}")
 
-    # ---- KEYWORD SEARCH ----
     if keyword_key and keyword_variants:
         regex = make_word_regex(keyword_variants)
         hits = []
         seen_books = set()
 
-        # 1. Совпадение в имени файла
         for m in meta:
             book = m.get("book", "")
-            bl = book.lower()
-            if regex.search(bl):
+            if regex.search(book.lower()):
                 if book in seen_books:
                     continue
                 seen_books.add(book)
@@ -148,7 +153,6 @@ def search(query, top_k=5, use_prefix=False,
                     "text": m.get("text", ""),
                 })
 
-        # 2. Совпадение в тексте
         for m in meta:
             if len(hits) >= top_k:
                 break
@@ -168,27 +172,20 @@ def search(query, top_k=5, use_prefix=False,
                 })
 
         results = hits[:top_k]
-        # Перевод
         for r in results:
             r["text"] = translate_text(r["text"])
-
-        print(f"Keyword hits: {len(hits)}", file=sys.stderr)
+        log(f"Keyword hits: {len(hits)}")
         return {"query": query, "top_k": len(results),
                 "results": results}
 
-    # ---- FAISS ----
     text = f"query: {query}" if use_prefix else query
     emb = model.encode(
-        [text],
-        normalize_embeddings=True,
-        show_progress_bar=False,
-        convert_to_numpy=True,
+        [text], normalize_embeddings=True,
+        show_progress_bar=False, convert_to_numpy=True,
     ).astype("float32")
 
     search_k = top_k * 3 if RERANKER_AVAILABLE else top_k
-    scores, ids = index.search(
-        emb, min(search_k, index.ntotal)
-    )
+    scores, ids = index.search(emb, min(search_k, index.ntotal))
 
     candidates = []
     for score, idx in zip(scores[0], ids[0]):
@@ -206,15 +203,13 @@ def search(query, top_k=5, use_prefix=False,
 
     if RERANKER_AVAILABLE and len(candidates) > top_k:
         try:
-            candidates = rerank(query, candidates,
-                                top_k=top_k)
+            candidates = rerank(query, candidates, top_k=top_k)
         except Exception as e:
-            print(f"Reranker failed: {e}", file=sys.stderr)
+            log(f"Reranker failed: {e}")
             candidates = candidates[:top_k]
     else:
         candidates = candidates[:top_k]
 
-    # Перевод
     for c in candidates:
         c["text"] = translate_text(c["text"])
 
@@ -230,17 +225,28 @@ def main():
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 
-    model, use_prefix = load_model()
-    index, meta = load_index()
+    result_file = os.environ.get("SEARCH_RESULT_FILE")
 
-    if index is None:
-        err = {"error": "FAISS index or metadata not found."}
-        print(json.dumps(err, ensure_ascii=False, indent=2))
-        sys.exit(1)
+    try:
+        model, use_prefix = load_model()
+        index, meta = load_index()
 
-    result = search(args.query, args.top, use_prefix,
-                    model, index, meta)
-    print(json.dumps(result, ensure_ascii=False, indent=2))
+        if index is None:
+            result = {"error": "FAISS index not found."}
+        else:
+            result = search(args.query, args.top, use_prefix,
+                            model, index, meta)
+    except Exception as e:
+        result = {"error": f"Search failed: {e}"}
+
+    payload = json.dumps(result, ensure_ascii=False, indent=2)
+
+    if result_file:
+        with open(result_file, "w", encoding="utf-8") as f:
+            f.write(payload)
+        log(f"Result written to {result_file}")
+    else:
+        sys.__stdout__.write(payload + "\n")
 
 
 if __name__ == "__main__":
