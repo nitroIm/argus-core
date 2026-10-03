@@ -1,6 +1,6 @@
 # ============================================================
-# ARGUS — АВТОНОМНЫЙ ИССЛЕДОВАТЕЛЬ (v3)
-# v3: pathlib, фикс datetime, защита от раздувания seen-файла
+# ARGUS — АВТОНОМНЫЙ ИССЛЕДОВАТЕЛЬ (v4)
+# v4: + OpenAlex, CORE, DOAJ
 # ============================================================
 
 import os
@@ -14,16 +14,17 @@ from pathlib import Path
 CONFIG = {
     "max_topics_per_run": 5,
     "max_candidates_per_topic": 4,
-    "max_size_mb": 25,
+    "max_size_mb": 90,
     "weights": {"gaps": 0.6, "random": 0.3, "trends": 0.1},
     "base_topics": [
-        "algorithmic trading", "quantitative finance", "machine learning",
-        "cryptocurrency", "technical analysis", "market microstructure",
-        "philosophy", "quantum mechanics", "psychology", "economics",
+        "algorithmic trading", "quantitative finance",
+        "machine learning", "cryptocurrency",
+        "technical analysis", "market microstructure",
+        "philosophy", "quantum mechanics",
+        "psychology", "economics",
     ],
 }
 
-# --- Пути от корня репо ---
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parent
 DATA_DIR = REPO_ROOT / "data"
@@ -32,6 +33,8 @@ OBS_FILE = DATA_DIR / "observation.json"
 EXPLORE_LOG = DATA_DIR / "explore_log.json"
 SEEN_FILE = DATA_DIR / "explore_seen.json"
 CANDIDATES_FILE = DATA_DIR / "scout_candidates.json"
+
+CORE_API_KEY = (os.getenv("CORE_API_KEY") or "").strip()
 
 
 def load_json(path, default=None):
@@ -50,14 +53,13 @@ def save_json(path, data):
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 
-# ============================================================
-# ВХОДНАЯ ТЕМА (от Actor)
-# ============================================================
 REQUESTED_TOPIC = None
 if len(sys.argv) > 1:
     REQUESTED_TOPIC = sys.argv[1].strip()
 if not REQUESTED_TOPIC:
-    REQUESTED_TOPIC = (os.environ.get("EXPLORE_TOPIC") or "").strip() or None
+    REQUESTED_TOPIC = (
+        os.environ.get("EXPLORE_TOPIC") or ""
+    ).strip() or None
 
 
 def decide_topics():
@@ -65,35 +67,36 @@ def decide_topics():
     seen = load_json(SEEN_FILE, {"urls": [], "topics": {}})
 
     if REQUESTED_TOPIC:
-        print(f"🎯 Запрошена тема от Actor: {REQUESTED_TOPIC}")
-        return [{"topic": REQUESTED_TOPIC, "reason": "запрос Actor"}]
+        print(f"🎯 Запрошена тема: {REQUESTED_TOPIC}")
+        return [{"topic": REQUESTED_TOPIC,
+                 "reason": "запрос Actor"}]
 
     topics = []
-
-    # 1. ПРОБЕЛЫ
     failed_words = obs.get("top_failed_words", [])
-    gaps_count = int(CONFIG["max_topics_per_run"] * CONFIG["weights"]["gaps"])
+    gaps_count = int(
+        CONFIG["max_topics_per_run"] * CONFIG["weights"]["gaps"]
+    )
     for item in failed_words[:gaps_count]:
-        # Поддержка формата [word, count] или {"word": count}
         if isinstance(item, (list, tuple)) and len(item) >= 2:
             word, count = item[0], item[1]
         elif isinstance(item, dict):
-            continue # Пропускаем словари, если вдруг формат другой
+            continue
         else:
             continue
-            
         if count >= 2:
-            topics.append({"topic": word, "reason": f"пробел: {count} запросов"})
+            topics.append({"topic": word,
+                           "reason": f"пробел: {count}"})
 
-    # 2. СЛУЧАЙНЫЕ
-    random_count = int(CONFIG["max_topics_per_run"] * CONFIG["weights"]["random"])
-    for t in random.sample(CONFIG["base_topics"], min(random_count, len(CONFIG["base_topics"]))):
-        topics.append({"topic": t, "reason": "случайная тема"})
+    random_count = int(
+        CONFIG["max_topics_per_run"] * CONFIG["weights"]["random"]
+    )
+    pool = CONFIG["base_topics"]
+    for t in random.sample(pool, min(random_count, len(pool))):
+        topics.append({"topic": t, "reason": "случайная"})
 
-    # 3. ТРЕНДЫ
     trend_count = CONFIG["max_topics_per_run"] - len(topics)
     if trend_count > 0:
-        for t in random.sample(CONFIG["base_topics"], min(trend_count, len(CONFIG["base_topics"]))):
+        for t in random.sample(pool, min(trend_count, len(pool))):
             topics.append({"topic": t, "reason": "тренд"})
 
     unique = []
@@ -102,32 +105,34 @@ def decide_topics():
         if t["topic"] not in names:
             unique.append(t)
             names.add(t["topic"])
-            
     return unique[:CONFIG["max_topics_per_run"]]
 
 
-# ============================================================
-# ИСТОЧНИКИ
-# ============================================================
 def search_arxiv(topic, limit=3):
     results = []
     try:
         r = requests.get(
             "http://export.arxiv.org/api/query",
-            params={"search_query": f"all:{topic}", "start": 0,
-                    "max_results": limit, "sortBy": "relevance"},
+            params={"search_query": f"all:{topic}",
+                    "start": 0,
+                    "max_results": limit,
+                    "sortBy": "relevance"},
             timeout=20,
         )
         r.raise_for_status()
         for entry in r.text.split("<entry>")[1:]:
             try:
-                title = entry.split("<title>")[1].split("</title>")[0].strip()
+                title = entry.split("<title>")[1]
+                title = title.split("</title>")[0].strip()
                 title = " ".join(title.split())
-                link = entry.split("<id>")[1].split("</id>")[0].strip()
+                link = entry.split("<id>")[1]
+                link = link.split("</id>")[0].strip()
                 arxiv_id = link.split("/abs/")[-1]
                 results.append({
-                    "title": title, "url": f"https://arxiv.org/pdf/{arxiv_id}.pdf",
-                    "source": "arxiv", "topic": topic, "type": "paper",
+                    "title": title,
+                    "url": f"https://arxiv.org/pdf/{arxiv_id}.pdf",
+                    "source": "arxiv", "topic": topic,
+                    "type": "paper",
                 })
             except Exception:
                 continue
@@ -141,7 +146,9 @@ def search_zenodo(topic, limit=3):
     try:
         r = requests.get(
             "https://zenodo.org/api/records",
-            params={"q": topic, "size": limit, "type": "publication", "file_type": "pdf"},
+            params={"q": topic, "size": limit,
+                    "type": "publication",
+                    "file_type": "pdf"},
             timeout=20,
         )
         r.raise_for_status()
@@ -191,7 +198,8 @@ def search_crossref(topic, limit=3):
                 if pdf_url:
                     results.append({
                         "title": title, "url": pdf_url,
-                        "source": "crossref", "topic": topic, "type": "paper",
+                        "source": "crossref", "topic": topic,
+                        "type": "paper",
                     })
             except Exception:
                 continue
@@ -205,7 +213,8 @@ def search_semantic_scholar(topic, limit=3):
     try:
         r = requests.get(
             "https://api.semanticscholar.org/graph/v1/paper/search",
-            params={"query": topic, "limit": limit, "fields": "title,openAccessPdf"},
+            params={"query": topic, "limit": limit,
+                    "fields": "title,openAccessPdf"},
             timeout=20,
         )
         r.raise_for_status()
@@ -213,11 +222,119 @@ def search_semantic_scholar(topic, limit=3):
             pdf = item.get("openAccessPdf")
             if pdf and pdf.get("url"):
                 results.append({
-                    "title": item.get("title", "?"), "url": pdf["url"],
-                    "source": "semantic_scholar", "topic": topic, "type": "paper",
+                    "title": item.get("title", "?"),
+                    "url": pdf["url"],
+                    "source": "semantic_scholar",
+                    "topic": topic, "type": "paper",
                 })
     except Exception as e:
         print(f"   ⚠️ Semantic Scholar: {e}")
+    return results
+
+
+def search_openalex(topic, limit=3):
+    """OpenAlex — 250M+ работ, без ключа."""
+    results = []
+    try:
+        r = requests.get(
+            "https://api.openalex.org/works",
+            params={
+                "search": topic,
+                "per-page": limit,
+                "filter": "is_oa:true",
+                "mailto": "argus@example.com",
+            },
+            timeout=20,
+        )
+        r.raise_for_status()
+        for item in r.json().get("results", []):
+            try:
+                title = item.get("title") or "?"
+                best = item.get("best_oa_location") or {}
+                pdf_url = best.get("pdf_url")
+                if not pdf_url:
+                    locs = item.get("locations", [])
+                    for loc in locs:
+                        if loc.get("pdf_url"):
+                            pdf_url = loc["pdf_url"]
+                            break
+                if pdf_url:
+                    results.append({
+                        "title": title,
+                        "url": pdf_url,
+                        "source": "openalex",
+                        "topic": topic, "type": "paper",
+                    })
+            except Exception:
+                continue
+    except Exception as e:
+        print(f"   ⚠️ OpenAlex: {e}")
+    return results
+
+
+def search_core(topic, limit=3):
+    """CORE — 200M+ OA. Требует CORE_API_KEY."""
+    if not CORE_API_KEY:
+        return []
+    results = []
+    try:
+        r = requests.get(
+            "https://api.core.ac.uk/v3/search/works",
+            params={"q": topic, "limit": limit},
+            headers={"Authorization": f"Bearer {CORE_API_KEY}"},
+            timeout=20,
+        )
+        r.raise_for_status()
+        for item in r.json().get("results", []):
+            try:
+                title = item.get("title", "?")
+                pdf_url = item.get("downloadUrl")
+                if pdf_url:
+                    results.append({
+                        "title": title,
+                        "url": pdf_url,
+                        "source": "core",
+                        "topic": topic, "type": "paper",
+                    })
+            except Exception:
+                continue
+    except Exception as e:
+        print(f"   ⚠️ CORE: {e}")
+    return results
+
+
+def search_doaj(topic, limit=3):
+    """DOAJ — Directory of Open Access Journals."""
+    results = []
+    try:
+        r = requests.get(
+            "https://doaj.org/api/search/articles/"
+            + requests.utils.quote(topic),
+            params={"pageSize": limit},
+            timeout=20,
+        )
+        r.raise_for_status()
+        for item in r.json().get("results", []):
+            try:
+                bib = item.get("bibjson", {})
+                title = bib.get("title", "?")
+                links = bib.get("link", [])
+                pdf_url = None
+                for l in links:
+                    if l.get("type") == "fulltext":
+                        pdf_url = l.get("url")
+                        break
+                if pdf_url and pdf_url.lower().endswith(".pdf"):
+                    results.append({
+                        "title": title,
+                        "url": pdf_url,
+                        "source": "doaj",
+                        "topic": topic, "type": "paper",
+                    })
+            except Exception:
+                continue
+    except Exception as e:
+        print(f"   ⚠️ DOAJ: {e}")
     return results
 
 
@@ -226,14 +343,14 @@ SOURCES = [
     ("Zenodo", search_zenodo),
     ("Crossref", search_crossref),
     ("SemanticScholar", search_semantic_scholar),
+    ("OpenAlex", search_openalex),
+    ("CORE", search_core),
+    ("DOAJ", search_doaj),
 ]
 
 
-# ============================================================
-# ГЛАВНОЕ
-# ============================================================
 def main():
-    print("🧭 ARGUS EXPLORER")
+    print("🧭 ARGUS EXPLORER v4")
     print("=" * 50)
 
     topics = decide_topics()
@@ -245,45 +362,51 @@ def main():
     seen_urls = set(seen.get("urls", []))
 
     candidates = []
-    run_seen_urls = set() # Защита от дублей внутри одного запуска
+    run_seen = set()
 
     for topic_data in topics:
         topic = topic_data["topic"]
         print(f"\n🔍 Тема: {topic}")
         for source_name, search_fn in SOURCES:
-            results = search_fn(topic, limit=CONFIG["max_candidates_per_topic"])
+            results = search_fn(
+                topic,
+                limit=CONFIG["max_candidates_per_topic"],
+            )
             if results:
                 print(f"   📡 {source_name}: {len(results)}")
             for r in results:
                 url = r["url"]
-                if url in seen_urls or url in run_seen_urls:
+                if url in seen_urls or url in run_seen:
                     continue
                 if r.get("size_mb", 0) > CONFIG["max_size_mb"]:
                     continue
-                
-                r["found_at"] = datetime.now(timezone.utc).isoformat()
+                r["found_at"] = datetime.now(
+                    timezone.utc
+                ).isoformat()
                 r["reason"] = topic_data["reason"]
                 candidates.append(r)
                 seen_urls.add(url)
-                run_seen_urls.add(url)
+                run_seen.add(url)
 
-    # Сохраняем seen (topics храним как список последних 10 дат, чтобы не раздувать файл)
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     seen["urls"] = list(seen_urls)
     seen.setdefault("topics", {})
     for t in topics:
-        topic_name = t["topic"]
-        dates = set(seen["topics"].get(topic_name, []))
+        name = t["topic"]
+        dates = set(seen["topics"].get(name, []))
         dates.add(today)
-        # Храним только последние 10 дат для каждой темы
-        seen["topics"][topic_name] = sorted(list(dates))[-10:]
-        
+        seen["topics"][name] = sorted(list(dates))[-10:]
     save_json(SEEN_FILE, seen)
 
-    # Добавляем новых кандидатов
-    existing = load_json(CANDIDATES_FILE, {"candidates": [], "pending": {}})
-    existing["candidates"] = existing.get("candidates", []) + candidates
-    existing["generated_at"] = datetime.now(timezone.utc).isoformat()
+    existing = load_json(
+        CANDIDATES_FILE, {"candidates": [], "pending": {}}
+    )
+    existing["candidates"] = (
+        existing.get("candidates", []) + candidates
+    )
+    existing["generated_at"] = datetime.now(
+        timezone.utc
+    ).isoformat()
     existing["total"] = len(existing["candidates"])
     save_json(CANDIDATES_FILE, existing)
 
