@@ -1,8 +1,8 @@
 # ============================================================
-# ARGUS — SEARCH v2.0 [AUTO]
+# ARGUS — SEARCH v2.1 [FINAL]
 # ------------------------------------------------------------
-# Сам определяет тему по токенам из имени файла и заголовка.
-# НЕ требует правок при добавлении новых гайдов.
+# Автоопределение темы по имени файла и заголовку.
+# Новые гайды подхватываются автоматически.
 # ============================================================
 
 import os
@@ -58,15 +58,14 @@ STOP = {
     "при", "над", "под", "или", "все", "чем",
     "кто", "где", "когда", "зачем", "почему",
     "который", "которая", "которые", "они",
-    "она", "он", "она", "они", "мы", "вы",
-    "the", "a", "an", "of", "for", "to", "in",
-    "on", "at", "is", "are", "was", "were",
-    "be", "been", "being", "and", "or", "not",
-    "что", "такие", "такой", "мне", "мы",
-    "есть", "был", "была", "были", "будет",
-    "работает", "работают", "работать",
-    "это", "вот", "тут", "там", "них", "нее",
-    "меня", "тебе", "тебя", "свой", "своя",
+    "она", "он", "мы", "вы", "the", "a", "an",
+    "of", "for", "to", "in", "on", "at", "is",
+    "are", "was", "were", "be", "been", "and",
+    "or", "not", "мне", "мы", "есть", "был",
+    "была", "были", "будет", "работает",
+    "работают", "работать", "вот", "тут",
+    "там", "них", "нее", "меня", "тебе",
+    "тебя", "свой", "своя", "такие", "такой",
 }
 
 
@@ -76,13 +75,11 @@ def log(msg):
 
 
 def tokenize(text):
-    """Извлекает слова длиной >=3, без стоп-слов."""
     words = re.findall(r"[a-zа-яё]{3,}", (text or "").lower())
     return {w for w in words if w not in STOP}
 
 
 def build_index(meta):
-    """Строит карту: книга -> множество токенов."""
     by_book = {}
     for i, m in enumerate(meta):
         b = m.get("book", "")
@@ -91,26 +88,22 @@ def build_index(meta):
         by_book.setdefault(b, []).append((i, m))
 
     book_tokens = {}
-    book_chunk_ids = {}
+    book_chunks = {}
 
     for book, chunks in by_book.items():
-        # Токены из имени файла
         name = book.rsplit(".", 1)[0]
-        name_parts = re.split(r"[\d_\-\.]+", name.lower())
+        parts = re.split(r"[\d_\-\.\s]+", name.lower())
         tokens = set()
-        for p in name_parts:
+        for p in parts:
             if len(p) >= 3 and p not in STOP:
                 tokens.add(p)
-
-        # Токены из первых 3 чанков (заголовок + введение)
         for _, m in chunks[:3]:
-            text = m.get("text", "")[:800]
-            tokens |= tokenize(text)
-
+            t = m.get("text", "")[:800]
+            tokens |= tokenize(t)
         book_tokens[book] = tokens
-        book_chunk_ids[book] = chunks
+        book_chunks[book] = chunks
 
-    return book_tokens, book_chunk_ids
+    return book_tokens, book_chunks
 
 
 def load_model():
@@ -161,37 +154,33 @@ def make_hit(m, score):
 
 
 def topic_search(query, top_k, book_tokens, book_chunks):
-    """Ищет книги, у которых максимальное пересечение токенов."""
     q_tokens = tokenize(query)
     if not q_tokens:
         return []
 
-    scores = {}
+    scored = {}
     for book, tokens in book_tokens.items():
         overlap = len(q_tokens & tokens)
         if overlap > 0:
-            scores[book] = overlap
+            scored[book] = overlap
 
-    if not scores:
+    if not scored:
         return []
 
-    ranked = sorted(scores.items(), key=lambda x: -x[1])
-    top_books = [b for b, _ in ranked[:3]]
-
+    ranked = sorted(scored.items(), key=lambda x: -x[1])
     hits = []
-    for book in top_books:
+    for book, _ in ranked[:top_k]:
         chunks = book_chunks.get(book, [])
         if not chunks:
             continue
-        # Первый чанк книги = заголовок + начало
-        idx, m = chunks[0]
-        score = scores[book] / max(len(q_tokens), 1)
-        hits.append(make_hit(m, round(score, 3)))
+        _, m = chunks[0]
+        hits.append(make_hit(m, 1.0))
 
-    return hits[:top_k]
+    return hits
 
 
-def faiss_search(query, top_k, use_prefix, model, index, meta):
+def faiss_search(query, top_k, use_prefix,
+                 model, index, meta):
     text = f"query: {query}" if use_prefix else query
     emb = model.encode(
         [text], normalize_embeddings=True,
@@ -202,12 +191,12 @@ def faiss_search(query, top_k, use_prefix, model, index, meta):
     candidates = []
     for score, idx in zip(scores[0], ids[0]):
         if 0 <= idx < len(meta):
-            candidates.append(
-                make_hit(meta[idx], round(float(score), 4))
-            )
+            s = round(float(score), 4)
+            candidates.append(make_hit(meta[idx], s))
     if RERANKER_OK and len(candidates) > top_k:
         try:
-            candidates = rerank(query, candidates, top_k=top_k)
+            candidates = rerank(query, candidates,
+                                top_k=top_k)
         except Exception:
             candidates = candidates[:top_k]
     else:
@@ -229,25 +218,24 @@ def main():
     if index is None or meta is None:
         result = {"error": "Index or metadata not found."}
     else:
-        log(f"Books in meta: {len(meta)}")
+        log(f"Chunks: {len(meta)}")
         book_tokens, book_chunks = build_index(meta)
-        log(f"Unique books: {len(book_tokens)}")
+        log(f"Books: {len(book_tokens)}")
 
-        # 1. Topic search
         results = topic_search(
-            args.query, args.top, book_tokens, book_chunks
+            args.query, args.top,
+            book_tokens, book_chunks,
         )
         log(f"Topic hits: {len(results)}")
 
-        # 2. FAISS fallback
         if not results:
-            log("Fallback to FAISS")
+            log("Fallback FAISS")
             model = None
             use_prefix = False
             try:
                 model, use_prefix = load_model()
             except Exception as e:
-                log(f"Model load error: {e}")
+                log(f"Model error: {e}")
             if model is not None:
                 results = faiss_search(
                     args.query, args.top,
@@ -255,7 +243,6 @@ def main():
                 )
             log(f"FAISS hits: {len(results)}")
 
-        # 3. Translate
         for r in results:
             r["text"] = translate_text(r["text"])
 
@@ -264,7 +251,8 @@ def main():
             "results": results,
         }
 
-    payload = json.dumps(result, ensure_ascii=False, indent=2)
+    payload = json.dumps(result, ensure_ascii=False,
+                         indent=2)
 
     if result_file:
         with open(result_file, "w", encoding="utf-8") as f:
