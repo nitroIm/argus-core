@@ -1,14 +1,15 @@
 {
-  "generated_at": "2026-10-03T11:44:12.751160+00:00",
-  "total_books": 48,
-  "total_chunks": 8850,
-  "new_chunks": 2,
+  "generated_at": "2026-10-03T11:51:45.772057+00:00",
+  "total_books": 52,
+  "total_chunks": 8861,
+  "new_chunks": 11,
   "new_files": [
-    "01_rsi.md",
-    "02_macd.md",
-    "03_bollinger.md"
+    "04_atr.md",
+    "05_volume.md",
+    "06_candles.md",
+    "07_risk.md"
   ],
-  "skipped_already_in_db": 2,
+  "skipped_already_in_db": 0,
   "books": [
     {
       "file": "Френсис Бэкон .pdf",
@@ -296,6 +297,30 @@
       "file": "03_bollinger.md",
       "pages": 1,
       "chunks": 2,
+      "category": "misc"
+    },
+    {
+      "file": "04_atr.md",
+      "pages": 1,
+      "chunks": 2,
+      "category": "misc"
+    },
+    {
+      "file": "05_volume.md",
+      "pages": 1,
+      "chunks": 3,
+      "category": "misc"
+    },
+    {
+      "file": "06_candles.md",
+      "pages": 1,
+      "chunks": 3,
+      "category": "misc"
+    },
+    {
+      "file": "07_risk.md",
+      "pages": 1,
+      "chunks": 3,
       "category": "misc"
     }
   ]
