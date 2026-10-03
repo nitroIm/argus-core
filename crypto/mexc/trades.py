@@ -1,9 +1,11 @@
 # ============================================================
-# ARGUS - MEXC TRADES v2 [PRODUCTION]
+# ARGUS - MEXC TRADES v3 [PRODUCTION]
 # ------------------------------------------------------------
+# v3: days=7 (MEXC myTrades limit, as with allOrders).
+#     count moved inside try (only valid rows).
 # v2: группировка комиссий по asset,
 #     ясный комментарий isBuyer.
-# ------------------------------------------------------------
+# ============================================================
 
 import sys
 import logging
@@ -25,8 +27,10 @@ logging.basicConfig(
 )
 log = logging.getLogger("mexc.trades")
 
+MAX_DAYS = 7
 
-def get_my_trades(client, symbol, days=30, limit=100):
+
+def get_my_trades(client, symbol, days=MAX_DAYS, limit=100):
     since = (
         datetime.now(timezone.utc)
         - timedelta(days=days)
@@ -54,7 +58,8 @@ def analyze_trades(trades):
     buy_usdt = 0.0
     sell_usdt = 0.0
     fees_by_asset = {}
-    count = len(trades)
+    count = 0
+    skipped = 0
 
     for t in trades:
         try:
@@ -64,6 +69,7 @@ def analyze_trades(trades):
                 t.get("commission", 0)
             )
         except Exception:
+            skipped += 1
             continue
 
         is_buyer = t.get("isBuyer", False)
@@ -79,6 +85,7 @@ def analyze_trades(trades):
         if comm_asset not in fees_by_asset:
             fees_by_asset[comm_asset] = 0.0
         fees_by_asset[comm_asset] += commission
+        count += 1
 
     fees_clean = {
         k: round(v, 8)
@@ -87,6 +94,7 @@ def analyze_trades(trades):
 
     return {
         "count": count,
+        "skipped": skipped,
         "buy_usdt": round(buy_usdt, 4),
         "sell_usdt": round(sell_usdt, 4),
         "fees_by_asset": fees_clean,
@@ -94,7 +102,7 @@ def analyze_trades(trades):
 
 
 def main():
-    log.info("MEXC trades v2")
+    log.info("MEXC trades v3")
 
     if not is_configured():
         log.error("Keys not set")
@@ -106,7 +114,8 @@ def main():
         log.info("--- " + symbol)
 
         trades = get_my_trades(
-            client, symbol, days=30, limit=100,
+            client, symbol,
+            days=MAX_DAYS, limit=100,
         )
 
         if trades is None:
@@ -114,13 +123,14 @@ def main():
             continue
 
         if not trades:
-            log.info("  no trades 30d")
+            log.info("  no trades %dd", MAX_DAYS)
             continue
 
         stats = analyze_trades(trades)
         if stats:
             log.info(
-                "  trades: %d", stats["count"]
+                "  trades: %d (skip %d)",
+                stats["count"], stats["skipped"],
             )
             log.info(
                 "  buy: $%.2f | sell: $%.2f",
