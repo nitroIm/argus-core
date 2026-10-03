@@ -1,9 +1,9 @@
 # ============================================================
-# ARGUS — ASK v10.1
+# ARGUS — ASK v10.2
 # ------------------------------------------------------------
-# v10.1: + RERANK_MIN = 0.3 (фильтр релевантности).
-#        + Логи переведены на английский.
-#        + Строки приведены к <=55 символов.
+# v10.2: + book_allowed принимает "trading" (для гайдов).
+#        + book_allowed принимает "psychology".
+#        + RERANK_MIN = 0.3.
 # ============================================================
 
 import os
@@ -84,7 +84,7 @@ if CATEGORIES_FILE.exists():
             CATEGORIES = json.load(f)
         log(f"Loaded categories: {len(CATEGORIES)}")
     except Exception as e:
-        log(f"book_categories.json error: {e}", "WARN")
+        log(f"categories error: {e}", "WARN")
 
 CATEGORY_KEYWORDS = {
     "quant": [
@@ -137,11 +137,17 @@ def book_allowed(book_name, target_category):
     if cat is None:
         return True
     if target_category == "quant":
-        return cat in ("quant", "crypto")
+        return cat in (
+            "quant", "crypto", "trading"
+        )
     if target_category == "crypto":
-        return cat in ("quant", "crypto")
+        return cat in (
+            "quant", "crypto", "trading"
+        )
     if target_category == "philosophy":
-        return cat in ("philosophy", "quant")
+        return cat in (
+            "philosophy", "quant", "psychology"
+        )
     return True
 
 
@@ -149,15 +155,14 @@ def book_allowed(book_name, target_category):
 # CHECKS
 # ============================================================
 if not INDEX_FILE.exists():
-    err_msg = "faiss.index not found"
-    log_action("ask", error=err_msg)
+    log_action("ask", error="faiss.index missing")
     print("FAISS index not found.")
     sys.exit(1)
 
 meta_missing = not META_FILE.exists()
 meta_empty = META_FILE.stat().st_size == 0
 if meta_missing or meta_empty:
-    print("Chunks metadata file not found.")
+    print("Metadata file not found.")
     sys.exit(1)
 
 
@@ -178,7 +183,7 @@ if MODEL_INFO_FILE.exists():
         use_prefix = bool(prefix)
         log(f"model_info: {info.get('model_label', '?')}")
     except Exception as e:
-        log(f"model_info.json broken: {e}", "WARN")
+        log(f"model_info broken: {e}", "WARN")
 elif TRAINED_MODEL.exists():
     has_config = (TRAINED_MODEL / "config.json").exists()
     if has_config:
@@ -200,7 +205,7 @@ with open(META_FILE, "r", encoding="utf-8") as f:
     raw_meta = json.load(f)
 
 if not isinstance(raw_meta, list) or not raw_meta:
-    print("chunks_for_index.json is empty.")
+    print("chunks_for_index is empty.")
     sys.exit(1)
 
 
