@@ -1,12 +1,14 @@
 {
-  "generated_at": "2026-10-03T17:50:51.182265+00:00",
-  "total_books": 59,
-  "total_chunks": 8884,
-  "new_chunks": 3,
+  "generated_at": "2026-10-03T17:54:33.106824+00:00",
+  "total_books": 61,
+  "total_chunks": 8888,
+  "new_chunks": 4,
   "new_files": [
-    "14_fibonacci.md"
+    "14_fibonacci.md",
+    "15_patterns.md",
+    "16_divergence.md"
   ],
-  "skipped_already_in_db": 0,
+  "skipped_already_in_db": 1,
   "refreshed_categories": 0,
   "books": [
     {
@@ -361,6 +363,18 @@
       "file": "14_fibonacci.md",
       "pages": 1,
       "chunks": 3,
+      "category": "misc"
+    },
+    {
+      "file": "15_patterns.md",
+      "pages": 1,
+      "chunks": 2,
+      "category": "misc"
+    },
+    {
+      "file": "16_divergence.md",
+      "pages": 1,
+      "chunks": 2,
       "category": "misc"
     }
   ]

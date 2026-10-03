@@ -1,9 +1,11 @@
 {
-  "ingested_at": "2026-10-03T17:50:51.182161+00:00",
+  "ingested_at": "2026-10-03T17:54:33.106751+00:00",
   "files": [
-    "14_fibonacci.md"
+    "14_fibonacci.md",
+    "15_patterns.md",
+    "16_divergence.md"
   ],
-  "new_chunks": 3,
-  "skipped_already_in_db": 0,
+  "new_chunks": 4,
+  "skipped_already_in_db": 1,
   "refreshed_categories": 0
 }
