@@ -1,14 +1,17 @@
 {
-  "generated_at": "2026-10-03T17:54:33.106824+00:00",
-  "total_books": 61,
-  "total_chunks": 8888,
-  "new_chunks": 4,
+  "generated_at": "2026-10-03T17:58:00.387704+00:00",
+  "total_books": 64,
+  "total_chunks": 8894,
+  "new_chunks": 6,
   "new_files": [
     "14_fibonacci.md",
     "15_patterns.md",
-    "16_divergence.md"
+    "16_divergence.md",
+    "17_money_management.md",
+    "18_mexc.md",
+    "19_binance.md"
   ],
-  "skipped_already_in_db": 1,
+  "skipped_already_in_db": 3,
   "refreshed_categories": 0,
   "books": [
     {
@@ -373,6 +376,24 @@
     },
     {
       "file": "16_divergence.md",
+      "pages": 1,
+      "chunks": 2,
+      "category": "misc"
+    },
+    {
+      "file": "17_money_management.md",
+      "pages": 1,
+      "chunks": 2,
+      "category": "misc"
+    },
+    {
+      "file": "18_mexc.md",
+      "pages": 1,
+      "chunks": 2,
+      "category": "misc"
+    },
+    {
+      "file": "19_binance.md",
       "pages": 1,
       "chunks": 2,
       "category": "misc"
