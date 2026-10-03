@@ -1,10 +1,10 @@
 # ============================================================
-# ARGUS — SEMANTIC SEARCH (v4)
-# v4: META_FILE = chunks_for_index.json (было неправильно)
-#     + keyword boost по всему индексу
+# ARGUS — SEMANTIC SEARCH (v5)
+# v5: word-boundary keyword match + dedup
 # ============================================================
 
 import os
+import re
 import sys
 import json
 import argparse
@@ -32,15 +32,13 @@ except ImportError:
         return candidates[:top_k]
 
 
-# ---------- КЛЮЧЕВЫЕ СЛОВА ----------
 KEYWORDS = {
-    "macd": ["macd", "макд", "macd-линия"],
-    "rsi": ["rsi", "индекс относительной силы"],
-    "bollinger": ["bollinger", "боллинджер", "полосы бол"],
-    "atr": ["atr", "average true range"],
+    "macd": ["macd", "макд"],
+    "rsi": ["rsi"],
+    "bollinger": ["bollinger", "боллинджер"],
+    "atr": ["atr"],
     "volume": ["volume", "объём", "объем"],
-    "candle": ["candle", "свеч", "доджи", "молот", "поглощен",
-               "утренняя звезда", "вечерняя звезда"],
+    "candle": ["candle", "свеч", "доджи", "молот", "поглощен"],
     "risk": ["риск-менедж", "правило 1%", "risk management",
              "соотношение риск", "стоп-лосс", "просадк"],
     "psychology": ["психолог", "fomo", "revenge trading",
@@ -57,6 +55,20 @@ def detect_keyword(query):
     return None, []
 
 
+def make_word_regex(variants):
+    """Ищет слово целиком, с учётом кириллицы/латиницы.
+    Для многословных/с дефисом — просто literal substring."""
+    parts = []
+    for v in variants:
+        if re.match(r"^[a-zа-яё0-9]+$", v):
+            # single word — word boundary
+            parts.append(r"(?<![a-zа-яё0-9])" + re.escape(v)
+                         + r"(?![a-zа-яё0-9])")
+        else:
+            parts.append(re.escape(v))
+    return re.compile("|".join(parts), re.IGNORECASE)
+
+
 def load_model():
     if TRAINED_MODEL.exists() and (TRAINED_MODEL / "config.json").exists():
         print(f"🧠 Model: {TRAINED_MODEL}", file=sys.stderr)
@@ -67,7 +79,7 @@ def load_model():
 
 def load_index():
     if not INDEX_FILE.exists() or not META_FILE.exists():
-        print(f"⚠️ Missing: {INDEX_FILE} or {META_FILE}", file=sys.stderr)
+        print(f"⚠️ Missing files", file=sys.stderr)
         return None, None
     try:
         index = faiss.read_index(str(INDEX_FILE))
@@ -86,13 +98,19 @@ def search(query, top_k=5, use_prefix=False, model=None, index=None, meta=None):
     keyword_key, keyword_variants = detect_keyword(query)
     print(f"Keyword: {keyword_key}", file=sys.stderr)
 
-    # ---- KEYWORD SEARCH (по всему индексу) ----
+    # ---- KEYWORD SEARCH ----
     if keyword_key and keyword_variants:
+        regex = make_word_regex(keyword_variants)
         hits = []
+        seen_books = set()  # одна книга — один результат
+
         for m in meta:
             book = m.get("book", "")
             bl = book.lower()
-            if any(v in bl for v in keyword_variants):
+            if regex.search(bl):
+                if book in seen_books:
+                    continue
+                seen_books.add(book)
                 hits.append({
                     "score": 1.0,
                     "id": m.get("id", ""),
@@ -101,26 +119,30 @@ def search(query, top_k=5, use_prefix=False, model=None, index=None, meta=None):
                     "chunk_index": m.get("chunk_index", 0),
                     "text": m.get("text", ""),
                 })
+
         for m in meta:
+            if len(hits) >= top_k:
+                break
             book = m.get("book", "")
-            bl = book.lower()
-            if any(v in bl for v in keyword_variants):
+            if book in seen_books:
                 continue
-            text = m.get("text", "").lower()
-            if any(v in text for v in keyword_variants):
+            text = m.get("text", "")
+            if regex.search(text):
+                seen_books.add(book)
                 hits.append({
                     "score": 0.9,
                     "id": m.get("id", ""),
                     "source": m.get("source", ""),
                     "book": book,
                     "chunk_index": m.get("chunk_index", 0),
-                    "text": m.get("text", ""),
+                    "text": text,
                 })
+
         results = hits[:top_k]
         print(f"Keyword hits: {len(hits)}", file=sys.stderr)
         return {"query": query, "top_k": len(results), "results": results}
 
-    # ---- FAISS SEARCH (без ключа) ----
+    # ---- FAISS ----
     text = f"query: {query}" if use_prefix else query
     emb = model.encode(
         [text], normalize_embeddings=True,
