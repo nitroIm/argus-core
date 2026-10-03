@@ -1,6 +1,8 @@
 # ============================================================
-# ARGUS — SEMANTIC SEARCH (v5)
-# v5: word-boundary keyword match + dedup
+# ARGUS — SEMANTIC SEARCH (v6)
+# v6: + перевод английских чанков на русский
+#     + word-boundary keyword match
+#     + dedup по книге
 # ============================================================
 
 import os
@@ -12,6 +14,15 @@ from pathlib import Path
 import numpy as np
 import faiss
 from sentence_transformers import SentenceTransformer
+
+try:
+    from translate import is_english, translate_to_ru
+except ImportError:
+    def is_english(text):
+        return False
+
+    def translate_to_ru(text):
+        return text
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parent
@@ -38,7 +49,8 @@ KEYWORDS = {
     "bollinger": ["bollinger", "боллинджер"],
     "atr": ["atr"],
     "volume": ["volume", "объём", "объем"],
-    "candle": ["candle", "свеч", "доджи", "молот", "поглощен"],
+    "candle": ["candle", "свеч", "доджи", "молот",
+               "поглощен"],
     "risk": ["риск-менедж", "правило 1%", "risk management",
              "соотношение риск", "стоп-лосс", "просадк"],
     "psychology": ["психолог", "fomo", "revenge trading",
@@ -56,30 +68,32 @@ def detect_keyword(query):
 
 
 def make_word_regex(variants):
-    """Ищет слово целиком, с учётом кириллицы/латиницы.
-    Для многословных/с дефисом — просто literal substring."""
     parts = []
     for v in variants:
         if re.match(r"^[a-zа-яё0-9]+$", v):
-            # single word — word boundary
-            parts.append(r"(?<![a-zа-яё0-9])" + re.escape(v)
-                         + r"(?![a-zа-яё0-9])")
+            parts.append(
+                r"(?<![a-zа-яё0-9])"
+                + re.escape(v)
+                + r"(?![a-zа-яё0-9])"
+            )
         else:
             parts.append(re.escape(v))
     return re.compile("|".join(parts), re.IGNORECASE)
 
 
 def load_model():
-    if TRAINED_MODEL.exists() and (TRAINED_MODEL / "config.json").exists():
-        print(f"🧠 Model: {TRAINED_MODEL}", file=sys.stderr)
-        return SentenceTransformer(str(TRAINED_MODEL)), False
-    print(f"📦 Model: {BASE_MODEL}", file=sys.stderr)
+    if TRAINED_MODEL.exists():
+        cfg = TRAINED_MODEL / "config.json"
+        if cfg.exists():
+            print(f"Model: {TRAINED_MODEL}", file=sys.stderr)
+            return SentenceTransformer(str(TRAINED_MODEL)), False
+    print(f"Model: {BASE_MODEL}", file=sys.stderr)
     return SentenceTransformer(BASE_MODEL), True
 
 
 def load_index():
     if not INDEX_FILE.exists() or not META_FILE.exists():
-        print(f"⚠️ Missing files", file=sys.stderr)
+        print("Missing index files", file=sys.stderr)
         return None, None
     try:
         index = faiss.read_index(str(INDEX_FILE))
@@ -87,11 +101,24 @@ def load_index():
             meta = json.load(f)
         return index, meta
     except Exception as e:
-        print(f"⚠️ Load error: {e}", file=sys.stderr)
+        print(f"Load error: {e}", file=sys.stderr)
         return None, None
 
 
-def search(query, top_k=5, use_prefix=False, model=None, index=None, meta=None):
+def translate_text(text):
+    """Переводит английский чанк на русский."""
+    if not text:
+        return text
+    try:
+        if is_english(text):
+            return translate_to_ru(text)
+    except Exception as e:
+        print(f"Translate error: {e}", file=sys.stderr)
+    return text
+
+
+def search(query, top_k=5, use_prefix=False,
+           model=None, index=None, meta=None):
     if index is None or meta is None:
         return {"error": "Index or metadata not found."}
 
@@ -102,8 +129,9 @@ def search(query, top_k=5, use_prefix=False, model=None, index=None, meta=None):
     if keyword_key and keyword_variants:
         regex = make_word_regex(keyword_variants)
         hits = []
-        seen_books = set()  # одна книга — один результат
+        seen_books = set()
 
+        # 1. Совпадение в имени файла
         for m in meta:
             book = m.get("book", "")
             bl = book.lower()
@@ -120,6 +148,7 @@ def search(query, top_k=5, use_prefix=False, model=None, index=None, meta=None):
                     "text": m.get("text", ""),
                 })
 
+        # 2. Совпадение в тексте
         for m in meta:
             if len(hits) >= top_k:
                 break
@@ -139,18 +168,27 @@ def search(query, top_k=5, use_prefix=False, model=None, index=None, meta=None):
                 })
 
         results = hits[:top_k]
+        # Перевод
+        for r in results:
+            r["text"] = translate_text(r["text"])
+
         print(f"Keyword hits: {len(hits)}", file=sys.stderr)
-        return {"query": query, "top_k": len(results), "results": results}
+        return {"query": query, "top_k": len(results),
+                "results": results}
 
     # ---- FAISS ----
     text = f"query: {query}" if use_prefix else query
     emb = model.encode(
-        [text], normalize_embeddings=True,
-        show_progress_bar=False, convert_to_numpy=True,
+        [text],
+        normalize_embeddings=True,
+        show_progress_bar=False,
+        convert_to_numpy=True,
     ).astype("float32")
 
     search_k = top_k * 3 if RERANKER_AVAILABLE else top_k
-    scores, ids = index.search(emb, min(search_k, index.ntotal))
+    scores, ids = index.search(
+        emb, min(search_k, index.ntotal)
+    )
 
     candidates = []
     for score, idx in zip(scores[0], ids[0]):
@@ -168,19 +206,26 @@ def search(query, top_k=5, use_prefix=False, model=None, index=None, meta=None):
 
     if RERANKER_AVAILABLE and len(candidates) > top_k:
         try:
-            candidates = rerank(query, candidates, top_k=top_k)
+            candidates = rerank(query, candidates,
+                                top_k=top_k)
         except Exception as e:
-            print(f"⚠️ Reranker failed: {e}", file=sys.stderr)
+            print(f"Reranker failed: {e}", file=sys.stderr)
             candidates = candidates[:top_k]
     else:
         candidates = candidates[:top_k]
 
-    return {"query": query, "top_k": len(candidates), "results": candidates}
+    # Перевод
+    for c in candidates:
+        c["text"] = translate_text(c["text"])
+
+    return {"query": query, "top_k": len(candidates),
+            "results": candidates}
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("query", nargs="?", default="Что такое трейдинг?")
+    parser.add_argument("query", nargs="?",
+                        default="Что такое трейдинг?")
     parser.add_argument("--top", type=int, default=5)
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
@@ -193,7 +238,8 @@ def main():
         print(json.dumps(err, ensure_ascii=False, indent=2))
         sys.exit(1)
 
-    result = search(args.query, args.top, use_prefix, model, index, meta)
+    result = search(args.query, args.top, use_prefix,
+                    model, index, meta)
     print(json.dumps(result, ensure_ascii=False, indent=2))
 
 
