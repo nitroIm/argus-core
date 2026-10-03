@@ -1,0 +1,49 @@
+name: ARGUS Fix Categories
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Run fix script
+        run: python scripts/fix_categories.py
+
+      - name: Commit and Push
+        run: |
+          git config user.name "ARGUS"
+          git config user.email "argus@github.com"
+
+          git add data/knowledge.json \
+                  data/book_categories.json
+
+          if git diff --staged --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+
+          git commit -m "ARGUS: fix categories for guides [skip ci]"
+
+          for i in 1 2 3; do
+            git pull --rebase --autostash origin main && git push origin main && {
+              echo "Push OK"; break;
+            } || {
+              echo "Attempt $i failed, wait 5s"; sleep 5;
+            }
+          done
