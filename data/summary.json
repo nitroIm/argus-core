@@ -1,12 +1,14 @@
 {
-  "generated_at": "2026-10-03T00:01:20.054558+00:00",
-  "total_books": 40,
-  "total_chunks": 6705,
-  "new_chunks": 237,
+  "generated_at": "2026-10-03T09:57:34.772697+00:00",
+  "total_books": 45,
+  "total_chunks": 8843,
+  "new_chunks": 2138,
   "new_files": [
-    "1904.05866.pdf",
-    "2110.11808.pdf",
-    "2112.08534.pdf"
+    "Reminiscences_20of_20a_20Stock_20Operator.pdf",
+    "abcofstockspecul00nelsiala.pdf",
+    "makingofstockbro00lefe_0.pdf",
+    "psychologyofstoc00seldrich.pdf",
+    "studiesintaperea00wyckrich.pdf"
   ],
   "skipped_already_in_db": 0,
   "books": [
@@ -209,6 +211,31 @@
       "file": "2112.08534.pdf",
       "pages": 20,
       "chunks": 79
+    },
+    {
+      "file": "Reminiscences_20of_20a_20Stock_20Operator.pdf",
+      "pages": 263,
+      "chunks": 703
+    },
+    {
+      "file": "abcofstockspecul00nelsiala.pdf",
+      "pages": 240,
+      "chunks": 416
+    },
+    {
+      "file": "makingofstockbro00lefe_0.pdf",
+      "pages": 352,
+      "chunks": 626
+    },
+    {
+      "file": "psychologyofstoc00seldrich.pdf",
+      "pages": 140,
+      "chunks": 135
+    },
+    {
+      "file": "studiesintaperea00wyckrich.pdf",
+      "pages": 204,
+      "chunks": 258
     }
   ]
 }
