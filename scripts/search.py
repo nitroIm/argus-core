@@ -1,6 +1,7 @@
 # ============================================================
-# ARGUS — SEMANTIC SEARCH (v3)
-# v3: фикс имени файла метаданных, защита от сбоев, опциональный reranker
+# ARGUS — SEMANTIC SEARCH (v4)
+# v4: META_FILE = chunks_for_index.json (было неправильно)
+#     + keyword boost по всему индексу
 # ============================================================
 
 import os
@@ -12,41 +13,61 @@ import numpy as np
 import faiss
 from sentence_transformers import SentenceTransformer
 
-# --- Пути от корня репо ---
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parent
 DATA_DIR = REPO_ROOT / "data"
 MODELS_DIR = REPO_ROOT / "models"
 
 INDEX_FILE = DATA_DIR / "faiss.index"
-# ИСПРАВЛЕНО: имя файла должно совпадать с тем, что создает build_index.py
-META_FILE = DATA_DIR / "chunks_metadata.json"  
+META_FILE = DATA_DIR / "chunks_for_index.json"
 TRAINED_MODEL = MODELS_DIR / "argus-embeddings"
 BASE_MODEL = "intfloat/multilingual-e5-small"
 
-# --- Опциональная загрузка Reranker ---
 try:
     from reranker import rerank
     RERANKER_AVAILABLE = True
 except ImportError:
     RERANKER_AVAILABLE = False
     def rerank(query, candidates, top_k=5):
-        return candidates[:top_k]  # Fallback на обычный FAISS
+        return candidates[:top_k]
+
+
+# ---------- КЛЮЧЕВЫЕ СЛОВА ----------
+KEYWORDS = {
+    "macd": ["macd", "макд", "macd-линия"],
+    "rsi": ["rsi", "индекс относительной силы"],
+    "bollinger": ["bollinger", "боллинджер", "полосы бол"],
+    "atr": ["atr", "average true range"],
+    "volume": ["volume", "объём", "объем"],
+    "candle": ["candle", "свеч", "доджи", "молот", "поглощен",
+               "утренняя звезда", "вечерняя звезда"],
+    "risk": ["риск-менедж", "правило 1%", "risk management",
+             "соотношение риск", "стоп-лосс", "просадк"],
+    "psychology": ["психолог", "fomo", "revenge trading",
+                   "эмоци", "дисциплин"],
+}
+
+
+def detect_keyword(query):
+    q = query.lower()
+    for key, variants in KEYWORDS.items():
+        for v in variants:
+            if v in q:
+                return key, variants
+    return None, []
 
 
 def load_model():
-    """Загружает обученную модель или fallback на базовую E5."""
     if TRAINED_MODEL.exists() and (TRAINED_MODEL / "config.json").exists():
-        print(f"🧠 Используем обученную модель: {TRAINED_MODEL}")
+        print(f"🧠 Model: {TRAINED_MODEL}", file=sys.stderr)
         return SentenceTransformer(str(TRAINED_MODEL)), False
-    
-    print(f"📦 Используем базовую модель: {BASE_MODEL}")
+    print(f"📦 Model: {BASE_MODEL}", file=sys.stderr)
     return SentenceTransformer(BASE_MODEL), True
 
 
 def load_index():
-    """Безопасная загрузка индекса и метаданных."""
     if not INDEX_FILE.exists() or not META_FILE.exists():
+        print(f"⚠️ Missing: {INDEX_FILE} or {META_FILE}", file=sys.stderr)
         return None, None
     try:
         index = faiss.read_index(str(INDEX_FILE))
@@ -54,26 +75,58 @@ def load_index():
             meta = json.load(f)
         return index, meta
     except Exception as e:
-        print(f"⚠️ Ошибка загрузки индекса или метаданных: {e}")
+        print(f"⚠️ Load error: {e}", file=sys.stderr)
         return None, None
 
 
-def search(query: str, top_k: int = 5, use_prefix: bool = False, model=None, index=None, meta=None):
-    """Выполняет семантический поиск с опциональным reranking."""
+def search(query, top_k=5, use_prefix=False, model=None, index=None, meta=None):
     if index is None or meta is None:
-        return {"error": "Index or metadata not found. Run build_index first."}
+        return {"error": "Index or metadata not found."}
 
-    # Добавляем префикс только для базовой модели E5
+    keyword_key, keyword_variants = detect_keyword(query)
+    print(f"Keyword: {keyword_key}", file=sys.stderr)
+
+    # ---- KEYWORD SEARCH (по всему индексу) ----
+    if keyword_key and keyword_variants:
+        hits = []
+        for m in meta:
+            book = m.get("book", "")
+            bl = book.lower()
+            if any(v in bl for v in keyword_variants):
+                hits.append({
+                    "score": 1.0,
+                    "id": m.get("id", ""),
+                    "source": m.get("source", ""),
+                    "book": book,
+                    "chunk_index": m.get("chunk_index", 0),
+                    "text": m.get("text", ""),
+                })
+        for m in meta:
+            book = m.get("book", "")
+            bl = book.lower()
+            if any(v in bl for v in keyword_variants):
+                continue
+            text = m.get("text", "").lower()
+            if any(v in text for v in keyword_variants):
+                hits.append({
+                    "score": 0.9,
+                    "id": m.get("id", ""),
+                    "source": m.get("source", ""),
+                    "book": book,
+                    "chunk_index": m.get("chunk_index", 0),
+                    "text": m.get("text", ""),
+                })
+        results = hits[:top_k]
+        print(f"Keyword hits: {len(hits)}", file=sys.stderr)
+        return {"query": query, "top_k": len(results), "results": results}
+
+    # ---- FAISS SEARCH (без ключа) ----
     text = f"query: {query}" if use_prefix else query
-
     emb = model.encode(
-        [text],
-        normalize_embeddings=True,
-        show_progress_bar=False,
-        convert_to_numpy=True
+        [text], normalize_embeddings=True,
+        show_progress_bar=False, convert_to_numpy=True,
     ).astype("float32")
 
-    # Ищем чуть больше кандидатов для reranker'а (если он доступен)
     search_k = top_k * 3 if RERANKER_AVAILABLE else top_k
     scores, ids = index.search(emb, min(search_k, index.ntotal))
 
@@ -88,15 +141,14 @@ def search(query: str, top_k: int = 5, use_prefix: bool = False, model=None, ind
             "source": m.get("source", ""),
             "book": m.get("book", ""),
             "chunk_index": m.get("chunk_index", 0),
-            "text": m.get("text", "")
+            "text": m.get("text", ""),
         })
 
-    # Применяем reranker, если он доступен и кандидатов больше, чем нужно
     if RERANKER_AVAILABLE and len(candidates) > top_k:
         try:
             candidates = rerank(query, candidates, top_k=top_k)
         except Exception as e:
-            print(f"⚠️ Reranker failed, falling back to FAISS order: {e}")
+            print(f"⚠️ Reranker failed: {e}", file=sys.stderr)
             candidates = candidates[:top_k]
     else:
         candidates = candidates[:top_k]
@@ -105,23 +157,21 @@ def search(query: str, top_k: int = 5, use_prefix: bool = False, model=None, ind
 
 
 def main():
-    parser = argparse.ArgumentParser(description="ARGUS semantic search")
-    parser.add_argument("query", nargs="?", default="Что такое трейдинг?", help="Search query")
-    parser.add_argument("--top", type=int, default=5, help="Number of results")
-    parser.add_argument("--json", action="store_true", help="Force JSON output (default)")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("query", nargs="?", default="Что такое трейдинг?")
+    parser.add_argument("--top", type=int, default=5)
+    parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 
     model, use_prefix = load_model()
     index, meta = load_index()
 
     if index is None:
-        error_result = {"error": "FAISS index or metadata not found. Please run build_index.py first."}
-        print(json.dumps(error_result, ensure_ascii=False, indent=2))
+        err = {"error": "FAISS index or metadata not found."}
+        print(json.dumps(err, ensure_ascii=False, indent=2))
         sys.exit(1)
 
     result = search(args.query, args.top, use_prefix, model, index, meta)
-    
-    # Всегда выводим JSON для удобного парсинга в GitHub Actions или боте
     print(json.dumps(result, ensure_ascii=False, indent=2))
 
 
