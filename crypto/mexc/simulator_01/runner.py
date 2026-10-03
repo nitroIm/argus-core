@@ -1,12 +1,12 @@
 # ============================================================
-# ARGUS - SIMULATOR 01 v9.5
+# ARGUS - SIMULATOR 01 v9.6
 # ------------------------------------------------------------
-# v9.5: SOL/BNB candles read from DB2 (ARGUS_DB_URL_2),
-#       BTC/ETH from DB1 (ARGUS_DB_URL). Read-only routing.
-# v9.4: fix slippage direction for SHORT
-# v9.3: fix SyntaxError на trade["exit_time"]
-# v9.2: fix UnboundLocalError в check_signal
-# v9.1: MAX_POSITIONS=3, POSITION_SIZE=8, TIME_EXIT=12
+# v9.6: auto-locate db2.py anywhere in repo (fix ImportError).
+# v9.5: SOL/BNB candles read from DB2, BTC/ETH from DB1.
+# v9.4: fix slippage direction for SHORT.
+# v9.3: fix SyntaxError на trade["exit_time"].
+# v9.2: fix UnboundLocalError в check_signal.
+# v9.1: MAX_POSITIONS=3, POSITION_SIZE=8, TIME_EXIT=12.
 # ============================================================
 
 import os
@@ -29,6 +29,15 @@ STATE_DIR.mkdir(parents=True, exist_ok=True)
 sys.path.insert(0, str(MEXC_DIR))
 sys.path.insert(0, str(CRYPTO_ROOT))
 sys.path.insert(0, str(SCRIPT_DIR))
+
+# --- locate db2.py anywhere under CRYPTO_ROOT ---
+for _p in CRYPTO_ROOT.rglob("db2.py"):
+    _d = str(_p.parent)
+    if "__pycache__" in _d:
+        continue
+    if _d not in sys.path:
+        sys.path.insert(0, _d)
+    break
 
 from client import MexcClient
 from db import get_connection, close_connection
@@ -841,7 +850,7 @@ def watch_position(client):
 
 def main():
     log.info("=" * 50)
-    log.info("SIMULATOR 01 v9.5")
+    log.info("SIMULATOR 01 v9.6")
     log.info("MAX_POSITIONS=%d, SIZE=$%.2f, TIME_EXIT=%dh",
              MAX_POSITIONS, POSITION_SIZE, TIME_EXIT_HOURS)
     log.info("DB2 symbols: %s", ", ".join(sorted(DB2_SYMBOLS)))
