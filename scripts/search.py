@@ -1,6 +1,9 @@
 # ============================================================
-# ARGUS — SEMANTIC SEARCH (v8)
-# v8: + KEYWORDS для trend, sr, orderflow, crypto, exchange
+# ARGUS — SEMANTIC SEARCH (v9)
+# v9: word boundary только для латинских аббревиатур (rsi, macd, atr).
+#     Для русских корней — обычный substring.
+#     + KEYWORDS для trend, sr, orderflow, crypto, exchange
+#     + перевод EN→RU, dedup по книге, файл-вывод.
 # ============================================================
 
 import os
@@ -61,7 +64,7 @@ KEYWORDS = {
              "управление риск"],
     "psychology": ["психолог", "fomo", "revenge trading",
                    "эмоци", "дисциплин", "тильт"],
-    "trend": ["тренд", "trend", "трендов", "восходящ",
+    "trend": ["тренд", "trend", "восходящ",
               "нисходящ", "разворот тренд", "смена тренд"],
     "sr": ["уровен", "поддержк", "сопротивл", "support",
            "resistance", "ретест", "пробой уровн"],
@@ -94,14 +97,21 @@ def detect_keyword(query):
 
 
 def make_word_regex(variants):
+    """
+    Word boundary только для коротких латинских аббревиатур
+    (rsi, macd, atr). Для русских корней и длинных слов —
+    обычный substring, чтобы находить словоформы.
+    """
     parts = []
     for v in variants:
-        # если слово содержит пробел или дефис — просто literal
-        if re.match(r"^[a-zа-яё0-9]+$", v):
+        is_latin_short = (
+            re.match(r"^[a-z0-9]{1,5}$", v) is not None
+        )
+        if is_latin_short:
             parts.append(
-                r"(?<![a-zа-яё0-9])"
+                r"(?<![a-z0-9])"
                 + re.escape(v)
-                + r"(?![a-zа-яё0-9])"
+                + r"(?![a-z0-9])"
             )
         else:
             parts.append(re.escape(v))
