@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       task:
-        description: 'all | collect_sol_bnb | collect_asia | notify_asia | asia_patterns'
+        description: 'all | collect_sol_bnb | collect_asia | asia_patterns | notify_asia'
         required: true
         default: 'all'
 
@@ -39,9 +39,9 @@ jobs:
           if [ "$TASK" = "collect_asia" ] || [ "$TASK" = "all" ]; then
             python crypto/global/collect_asia.py
           fi
-          if [ "$TASK" = "notify_asia" ] || [ "$TASK" = "all" ]; then
-            python crypto/global/notify_asia.py
-          fi
           if [ "$TASK" = "asia_patterns" ] || [ "$TASK" = "all" ]; then
             python crypto/global/asia_patterns.py
+          fi
+          if [ "$TASK" = "notify_asia" ] || [ "$TASK" = "all" ]; then
+            python crypto/global/notify_asia.py
           fi
