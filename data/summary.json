@@ -1,16 +1,14 @@
 {
-  "generated_at": "2026-10-03T11:54:30.426984+00:00",
-  "total_books": 53,
-  "total_chunks": 8862,
-  "new_chunks": 1,
+  "generated_at": "2026-10-03T14:11:15.641660+00:00",
+  "total_books": 55,
+  "total_chunks": 8869,
+  "new_chunks": 7,
   "new_files": [
-    "08_psychology.md",
-    "04_atr.md",
-    "05_volume.md",
-    "06_candles.md",
-    "07_risk.md"
+    "09_trend.md",
+    "10_st.md"
   ],
-  "skipped_already_in_db": 4,
+  "skipped_already_in_db": 0,
+  "refreshed_categories": 0,
   "books": [
     {
       "file": "Френсис Бэкон .pdf",
@@ -286,49 +284,61 @@
       "file": "01_rsi.md",
       "pages": 1,
       "chunks": 2,
-      "category": "misc"
+      "category": "trading"
     },
     {
       "file": "02_macd.md",
       "pages": 1,
       "chunks": 3,
-      "category": "misc"
+      "category": "trading"
     },
     {
       "file": "03_bollinger.md",
       "pages": 1,
       "chunks": 2,
-      "category": "misc"
+      "category": "trading"
     },
     {
       "file": "04_atr.md",
       "pages": 1,
       "chunks": 2,
-      "category": "misc"
+      "category": "trading"
     },
     {
       "file": "05_volume.md",
       "pages": 1,
       "chunks": 3,
-      "category": "misc"
+      "category": "trading"
     },
     {
       "file": "06_candles.md",
       "pages": 1,
       "chunks": 3,
-      "category": "misc"
+      "category": "trading"
     },
     {
       "file": "07_risk.md",
       "pages": 1,
       "chunks": 3,
-      "category": "misc"
+      "category": "trading"
     },
     {
       "file": "08_psychology.md",
       "pages": 1,
       "chunks": 1,
       "category": "psychology"
+    },
+    {
+      "file": "09_trend.md",
+      "pages": 1,
+      "chunks": 4,
+      "category": "misc"
+    },
+    {
+      "file": "10_st.md",
+      "pages": 1,
+      "chunks": 3,
+      "category": "misc"
     }
   ]
 }
