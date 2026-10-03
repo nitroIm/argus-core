@@ -1,8 +1,9 @@
 # ============================================================
-# ARGUS - MEXC ACCOUNT READER v2 [PRODUCTION]
+# ARGUS - MEXC ACCOUNT READER v3 [PRODUCTION]
 # ------------------------------------------------------------
-# v2: USDC по курсу, обработка ошибок.
-# Spot баланс.
+# v3: warning when ticker missing for non-zero asset.
+#     USDC = USDT comment fixed (peg, not live rate).
+# v2: USDC по курсу, обработка ошибок. Spot баланс.
 # ------------------------------------------------------------
 # Требования:
 #   pip install requests
@@ -27,6 +28,8 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 log = logging.getLogger("mexc.account")
+
+STABLES = {"USDT", "USDC"}
 
 
 def fmt_usd(p):
@@ -89,17 +92,21 @@ def get_account_summary(client):
         asset = b["asset"]
         total = b["total"]
 
-        if asset in ("USDT", "USDC"):
+        if asset in STABLES:
             usd_value = total
         else:
             symbol = asset + "USDT"
             price = get_ticker_price(
                 client, symbol,
             )
-            usd_value = (
-                total * price
-                if price else 0
-            )
+            if price is None:
+                log.warning(
+                    "no ticker %s, value = 0",
+                    symbol,
+                )
+                usd_value = 0
+            else:
+                usd_value = total * price
 
         b["usd_value"] = round(usd_value, 4)
         summary["spot"].append(b)
@@ -125,7 +132,7 @@ def fmt_summary(summary):
             continue
         line = "  " + b["asset"] + ": "
         line += str(round(b["total"], 6))
-        if b["asset"] not in ("USDT", "USDC"):
+        if b["asset"] not in STABLES:
             line += " (" + fmt_usd(
                 b["usd_value"]
             ) + ")"
@@ -139,7 +146,7 @@ def fmt_summary(summary):
 
 def main():
     log.info("=" * 50)
-    log.info("MEXC account reader v2")
+    log.info("MEXC account reader v3")
     log.info("=" * 50)
 
     if not is_configured():
