@@ -20,7 +20,7 @@ concurrency:
 jobs:
   search:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 15
 
     steps:
       - name: Checkout
@@ -38,14 +38,15 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/huggingface
-          key: hf-models-v3
-          restore-keys: hf-
+          key: hf-models-v3-search
+          restore-keys: hf-models-v3-
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install "numpy<2.0"
-          pip install sentence-transformers==3.0.1 faiss-cpu==1.8.0 requests==2.32.3
+          pip install torch==2.2.0 --index-url https://download.pytorch.org/whl/cpu
+          pip install transformers==4.41.2 sentence-transformers==3.0.1 faiss-cpu==1.8.0 requests==2.32.3 sentencepiece sacremoses
 
       - name: Extract query and chat_id
         id: vars
