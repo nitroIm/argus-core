@@ -1,10 +1,7 @@
 # ============================================================
 # ARGUS - SIMULATOR 01 v9.4
 # ------------------------------------------------------------
-# v9.4: fix slippage direction for SHORT (was +slip on open,
-#       -slip on close => phantom profit). Now LONG:
-#       open +(slip), close -(slip). SHORT: open -(slip),
-#       close +(slip).
+# v9.4: fix slippage direction for SHORT
 # v9.3: fix SyntaxError на trade["exit_time"] (строка 728)
 # v9.2: fix UnboundLocalError в check_signal
 # v9.1: MAX_POSITIONS=3, POSITION_SIZE=8, TIME_EXIT=12
@@ -820,13 +817,8 @@ def check_one_position(client, pos):
         return close_position(pos, exit_price, reason)
     price = get_price(client, pos["symbol"])
     if price and check_time_exit(pos, price):
-        return close_position(client_price_kwarg(pos, price), "time_exit")
+        return close_position(pos, price, "time_exit")
     return False
-
-
-def client_price_kwarg(pos, price):
-    # helper kept for interface stability (unused path)
-    return price
 
 
 def watch_position(client):
