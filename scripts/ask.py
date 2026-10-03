@@ -1,15 +1,12 @@
 # ============================================================
-# ARGUS — ASK v12 FINAL
+# ARGUS — ASK v13
 # ------------------------------------------------------------
-# Ключевой поиск: если в запросе есть точное слово (macd, rsi,
-# bollinger, atr, volume, candle, risk, psychology) — сначала
-# ищем чанки, где ЭТО СЛОВО встречается в тексте. Ранжируем по
-# FAISS score. Только если совпадений нет — fallback на чистую
-# семантику.
+# Если в запросе есть ключевое слово (macd, rsi, ...) —
+# сканируем ВЕСЬ индекс на наличие этого слова в тексте.
+# FAISS не нужен. Без fallback, только точное совпадение.
 # ============================================================
 
 import os
-import re
 import sys
 import json
 import faiss
@@ -28,22 +25,21 @@ MODEL_INFO_FILE = DATA_DIR / "model_info.json"
 CATEGORIES_FILE = DATA_DIR / "book_categories.json"
 
 TOP_K = 5
-SCAN_TOP = 500
 
 
 # ---------- КЛЮЧЕВЫЕ СЛОВА ----------
-# Если в запросе есть любое из этих слов — ищем по нему.
-# Формат: {ключ_в_запросе: [варианты_в_тексте]}
 KEYWORDS = {
-    "macd": ["macd", "макд"],
-    "rsi": ["rsi", "рси", "уайлдер"],
-    "bollinger": ["bollinger", "боллинджер", "боллинджер", "полос"],
-    "atr": ["atr", "average true range", "атr"],
+    "macd": ["macd", "макд", "macd-линия"],
+    "rsi": ["rsi", "индекс относительной силы"],
+    "bollinger": ["bollinger", "боллинджер", "полосы бол"],
+    "atr": ["atr", "average true range"],
     "volume": ["volume", "объём", "объем"],
-    "candle": ["candle", "свеч", "поглощен", "доджи", "молот"],
-    "risk": ["risk management", "риск-менедж", "1%", "стоп-лосс",
-             "risk/reward", "просадк"],
-    "psychology": ["психолог", "fomo", "revenge", "эмоци"],
+    "candle": ["candle", "свеч", "доджи", "молот", "поглощен",
+               "утренняя звезда", "вечерняя звезда"],
+    "risk": ["риск-менедж", "rule of 1", "правило 1%",
+             "risk management", "соотношение риск"],
+    "psychology": ["психолог", "fomo", "revenge trading",
+                   "эмоци", "дисциплин"],
 }
 
 
@@ -54,31 +50,6 @@ def detect_keyword(query):
             if v in q:
                 return key, variants
     return None, []
-
-
-# ---------- КАТЕГОРИЯ ----------
-TRADING_WORDS = [
-    "rsi", "macd", "bollinger", "atr", "volume", "свеч",
-    "candle", "risk", "риск", "трейд", "trading", "trade",
-    "индикатор", "indicator", "сигнал", "signal",
-    "тренд", "trend", "стоп", "stop", "тейк",
-    "лонг", "шорт", "long", "short", "позиция", "position",
-    "вход", "entry", "выход", "exit", "просадк",
-    "плеч", "имбаланс", "пробой", "паттерн", "психолог",
-]
-
-PHILO_WORDS = ["бэкон", "философ", "стоик", "морал", "этик"]
-
-
-def detect_category(q):
-    q = q.lower()
-    for w in TRADING_WORDS:
-        if w in q:
-            return "quant"
-    for w in PHILO_WORDS:
-        if w in q:
-            return "philosophy"
-    return None
 
 
 # ---------- ЗАГРУЗКА ----------
@@ -93,81 +64,82 @@ if MODEL_INFO_FILE.exists():
     with open(MODEL_INFO_FILE, encoding="utf-8") as f:
         info = json.load(f)
 
-model_path = info.get("model_path", "intfloat/multilingual-e5-small")
 use_prefix = bool(info.get("query_prefix", ""))
-
-print("Loading model...", flush=True)
-model = SentenceTransformer(model_path)
-index = faiss.read_index(str(INDEX_FILE))
-print(f"Index: {index.ntotal}", flush=True)
-
-
-def is_trading(book):
-    cat = CATEGORIES.get(book, "")
-    return cat in ("trading", "quant", "crypto")
-
 
 # ---------- ЗАПРОС ----------
 query = os.getenv("QUERY") or " ".join(sys.argv[1:]) or "MACD"
-target_cat = detect_category(query)
 keyword_key, keyword_variants = detect_keyword(query)
 
 print(f"Query: {query}")
-print(f"Category: {target_cat}")
-print(f"Keyword: {keyword_key} / {keyword_variants}")
+print(f"Keyword: {keyword_key}")
+print(f"Total chunks: {len(META)}")
 
 
-# ---------- FAISS ----------
-search_q = f"query: {query}" if use_prefix else query
-vec = model.encode([search_q], normalize_embeddings=True).astype("float32")
-distances, indices = index.search(vec, k=min(SCAN_TOP, index.ntotal))
-
-# Собираем всех кандидатов с их score
-all_candidates = []
-for i, idx in enumerate(indices[0]):
-    if not (0 <= idx < len(META)):
-        continue
-    book = META[idx].get("book", "")
-    if target_cat == "quant" and not is_trading(book):
-        continue
-    all_candidates.append({
-        "score": float(distances[0][i]),
-        "book": book,
-        "text": META[idx].get("text", ""),
-    })
-
-print(f"After category filter: {len(all_candidates)}")
-
-
-# ---------- KEYWORD BOOST ----------
-if keyword_key and keyword_variants:
+# ============================================================
+# КЛЮЧЕВОЙ ПОИСК — по ВСЕМУ индексу
+# ============================================================
+if keyword_key:
     hits = []
-    for c in all_candidates:
-        t = c["text"].lower()
-        b = c["book"].lower()
-        if any(v in t for v in keyword_variants):
-            hits.append(c)
-        elif any(v in b for v in keyword_variants):
-            hits.append(c)
 
+    # 1. Сначала чанки, где ключ есть в ИМЕНИ файла
+    for m in META:
+        book = m.get("book", "")
+        bl = book.lower()
+        if any(v in bl for v in keyword_variants):
+            hits.append({
+                "score": 1.0,
+                "book": book,
+                "text": m.get("text", ""),
+            })
+
+    # 2. Потом чанки, где ключ есть в тексте
+    for m in META:
+        book = m.get("book", "")
+        bl = book.lower()
+        if any(v in bl for v in keyword_variants):
+            continue  # уже добавили
+        text = m.get("text", "").lower()
+        if any(v in text for v in keyword_variants):
+            hits.append({
+                "score": 0.9,
+                "book": book,
+                "text": m.get("text", ""),
+            })
+
+    results = hits[:TOP_K]
     print(f"Keyword hits: {len(hits)}")
-
-    if hits:
-        # сортируем совпадения по FAISS score
-        hits.sort(key=lambda x: -x["score"])
-        results = hits[:TOP_K]
-    else:
-        results = all_candidates[:TOP_K]
 else:
-    results = all_candidates[:TOP_K]
+    # Без ключа — обычный FAISS
+    model_path = info.get(
+        "model_path", "intfloat/multilingual-e5-small"
+    )
+    model = SentenceTransformer(model_path)
+    index = faiss.read_index(str(INDEX_FILE))
+    search_q = f"query: {query}" if use_prefix else query
+    vec = model.encode(
+        [search_q], normalize_embeddings=True
+    ).astype("float32")
+    distances, indices = index.search(vec, k=50)
+
+    results = []
+    for i, idx in enumerate(indices[0]):
+        if not (0 <= idx < len(META)):
+            continue
+        results.append({
+            "score": float(distances[0][i]),
+            "book": META[idx].get("book", ""),
+            "text": META[idx].get("text", ""),
+        })
+        if len(results) >= TOP_K:
+            break
+
+    print(f"FAISS results: {len(results)}")
 
 
-print(f"Final results: {len(results)}")
+# ---------- ВЫВОД ----------
 for i, r in enumerate(results, 1):
-    print(f"  {i}. {r['score']:.3f} | {r['book']}")
+    print(f"  {i}. {r['score']:.2f} | {r['book']}")
 
-
-# ---------- ОТВЕТ ----------
 if not results:
     answer = f"🔎 Ничего не найдено.\nЗапрос: {query}"
 else:
@@ -177,9 +149,8 @@ else:
     answer += "\n"
     for i, r in enumerate(results, 1):
         b = r["book"].replace(".pdf", "").replace(".md", "")
-        t = r["text"][:400]
-        s = r["score"] * 100
-        answer += f"{i}. 📖 <b>{b}</b> ({s:.0f}%)\n"
+        t = r["text"][:500]
+        answer += f"{i}. 📖 <b>{b}</b>\n"
         answer += f"<code>{t}</code>\n\n"
     if len(answer) > 3900:
         answer = answer[:3890] + "\n<i>обрезано</i>"
