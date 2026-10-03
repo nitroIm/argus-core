@@ -1,6 +1,8 @@
 # ============================================================
-# ARGUS-Trader — COLLECT GLOBAL MARKETS (узел global)
+# ARGUS-Trader — COLLECT ASIA + EUROPE + USA (узел global)
 # ------------------------------------------------------------
+# v4: RANGE=30d, MAX_ROWS=300 (align with patterns window).
+#     SAVEPOINT per row. log_run partial on failure.
 # v3: + USA (VIX, NASDAQ, US10Y) + Asia extra (USDJPY,
 #     KOSPI, TAIEX). Итого 14 рынков.
 # v2: + Европа (DAX, SX5E, FTSE, EURUSD).
@@ -63,8 +65,8 @@ ASIA_EXTRA = [
 ]
 
 INTERVAL = "1h"
-RANGE = "5d"
-MAX_ROWS = 48
+RANGE = "30d"
+MAX_ROWS = 300
 
 SQL = (
     "INSERT INTO asia_market "
@@ -75,6 +77,7 @@ SQL = (
     "close=EXCLUDED.close, "
     "change_pct=EXCLUDED.change_pct"
 )
+
 
 def fetch_yahoo(code):
     url = YAHOO_URL.format(symbol=code)
@@ -114,6 +117,7 @@ def fetch_yahoo(code):
 
     return out[-MAX_ROWS:]
 
+
 def compute_changes(rows):
     out = []
     prev = None
@@ -125,26 +129,41 @@ def compute_changes(rows):
         prev = close
     return out
 
+
 def save_rows(db_symbol, rows):
+    """SAVEPOINT per row: one bad row does not abort the batch."""
     if not rows:
         return 0
     added = 0
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
-                for ts, close, change in rows:
+                for i, (ts, close, change) in enumerate(rows):
+                    sp = "sp_row_" + str(i)
                     try:
+                        cur.execute("SAVEPOINT " + sp)
                         cur.execute(SQL, (
                             db_symbol, ts, close,
                             change, "yahoo",
                         ))
-                        if cur.rowcount and cur.rowcount > 0:
-                            added += cur.rowcount
+                        n = cur.rowcount or 0
+                        cur.execute(
+                            "RELEASE SAVEPOINT " + sp
+                        )
+                        added += n
                     except Exception as e:
-                        log.warning("skip: %s", e)
+                        try:
+                            cur.execute(
+                                "ROLLBACK TO SAVEPOINT "
+                                + sp
+                            )
+                        except Exception:
+                            pass
+                        log.warning("row %d skip: %s", i, e)
     except Exception as e:
         log.error("save %s: %s", db_symbol, e)
     return added
+
 
 def log_run(job, status, n=0, err=None):
     try:
@@ -165,38 +184,57 @@ def log_run(job, status, n=0, err=None):
     except Exception as e:
         log.warning("log_run: %s", e)
 
+
 def fetch_group(name, lst):
     log.info("--- %s ---", name)
     total = 0
+    failed = 0
     for code, db_symbol in lst:
         log.info("%s (%s)", db_symbol, code)
         rows = fetch_yahoo(code)
         if not rows:
             log.warning("  no data")
+            failed += 1
             continue
         rows = compute_changes(rows)
         n = save_rows(db_symbol, rows)
         total += n
         log.info("  fetched=%d saved=%d", len(rows), n)
-    return total
+    return total, failed
+
 
 def main():
     log.info("=" * 60)
-    log.info("ARGUS COLLECT GLOBAL — DB2 v3")
+    log.info("ARGUS COLLECT ASIA+EU+USA — DB2 v4")
     log.info("=" * 60)
 
     total = 0
-    total += fetch_group("ASIA", ASIA)
-    total += fetch_group("EUROPE", EUROPE)
-    total += fetch_group("USA", USA)
-    total += fetch_group("ASIA_EXTRA", ASIA_EXTRA)
+    failed = 0
+
+    n, f = fetch_group("ASIA", ASIA)
+    total += n
+    failed += f
+
+    n, f = fetch_group("EUROPE", EUROPE)
+    total += n
+    failed += f
+
+    n, f = fetch_group("USA", USA)
+    total += n
+    failed += f
+
+    n, f = fetch_group("ASIA_EXTRA", ASIA_EXTRA)
+    total += n
+    failed += f
 
     log.info("=" * 60)
     log.info("DONE. Total saved: %d", total)
     log.info("=" * 60)
 
-    log_run("collect_global", "ok", total)
+    status = "partial" if failed > 0 else "ok"
+    log_run("collect_asia", status, total)
     close_connection()
+
 
 if __name__ == "__main__":
     main()
