@@ -1,18 +1,7 @@
 # ============================================================
-# ARGUS — SEARCH v1.0 [PRODUCTION]
+# ARGUS — SEARCH v1.1 [PRODUCTION]
 # ------------------------------------------------------------
-# Финальная версия. Не требует правок при добавлении гайдов.
-#
-# Логика:
-#   1. Определяем ключевое слово в запросе.
-#   2. Если ключ есть — ищем по ВСЕМУ индексу (имя файла + текст).
-#   3. Если ключа нет — FAISS semantic search.
-#   4. Перевод EN→RU.
-#   5. Dedup по книге.
-#   6. JSON в файл или stdout.
-#
-# Word boundary только для латинских аббревиатур (rsi, macd, atr).
-# Для русских корней — substring (находит словоформы).
+# v1.1: fix broken string in KEYWORDS (position sizing)
 # ============================================================
 
 import os
@@ -65,20 +54,14 @@ except ImportError:
 
 # ============================================================
 # KEYWORDS
-# ------------------------------------------------------------
-# Формат: ключ -> список подстрок для поиска.
-# Для русских корней пиши без гласной на конце (уровн, дивергенц).
-# Для аббревиатур латиницей — слово целиком (rsi, macd).
 # ============================================================
 KEYWORDS = {
-    # --- Индикаторы ---
     "macd": ["macd", "макд"],
     "rsi": ["rsi"],
     "bollinger": ["bollinger", "боллинджер", "полосы бол"],
     "atr": ["atr", "average true range"],
     "volume": ["volume", "объём", "объем"],
 
-    # --- Свечи и паттерны ---
     "candle": ["candle", "свеч", "доджи", "молот",
                "поглощен", "утренняя звезда",
                "вечерняя звезда", "пинцет"],
@@ -86,7 +69,6 @@ KEYWORDS = {
                  "треугольник", "флаг", "клин",
                  "двойн", "тройн", "чашк"],
 
-    # --- Тренд и уровни ---
     "trend": ["тренд", "trend", "восходящ", "нисходящ",
               "разворот тренд", "смена тренд"],
     "sr": ["уровн", "поддержк", "сопротивл", "support",
@@ -95,25 +77,23 @@ KEYWORDS = {
                   "золотое сечение", "retracement",
                   "extension"],
 
-    # --- Аналитика ---
     "divergence": ["дивергенц", "divergence", "расхожден"],
     "orderflow": ["имбаланс", "order flow", "дельта",
                   "стакан", "ликвидн", "stop hunting",
                   "ликвидац", "taker", "orderflow",
                   "iceberg", "spoofing", "абсорбц"],
 
-    # --- Риск и психология ---
     "risk": ["риск-менедж", "правило 1%", "risk management",
              "соотношение риск", "стоп-лосс",
              "просадк", "управление риск"],
     "psychology": ["психолог", "fomo", "revenge trading",
                    "эмоци", "дисциплин", "тильт"],
     "money_management": ["управление капитал",
-                         " "positionmoney management",
-                         "размер sizing позиц",",
+                         "money management",
+                         "размер позиц",
+                         "position sizing",
                          "мартингейл", "пирамид"],
 
-    # --- Крипта и биржи ---
     "crypto": ["funding", "фандинг", "плеч", "leverage",
                "крипт", "crypto", "биткоин", "bitcoin",
                "btc", "ethereum", "eth ", "стейбл",
@@ -127,17 +107,11 @@ KEYWORDS = {
 }
 
 
-# ============================================================
-# ЛОГГЕР
-# ============================================================
 def log(msg):
     sys.stderr.write(str(msg) + "\n")
     sys.stderr.flush()
 
 
-# ============================================================
-# KEYWORD DETECTION
-# ============================================================
 def detect_keyword(query):
     q = (query or "").lower()
     for key, variants in KEYWORDS.items():
@@ -148,10 +122,6 @@ def detect_keyword(query):
 
 
 def make_word_regex(variants):
-    """
-    Word boundary только для коротких латинских аббревиатур.
-    Для русских корней — обычный substring.
-    """
     parts = []
     for v in variants:
         if not v:
@@ -172,9 +142,6 @@ def make_word_regex(variants):
     return re.compile("|".join(parts), re.IGNORECASE)
 
 
-# ============================================================
-# ЗАГРУЗКА
-# ============================================================
 def load_model():
     if TRAINED_MODEL.exists():
         cfg = TRAINED_MODEL / "config.json"
@@ -202,9 +169,6 @@ def load_index():
         return None, None
 
 
-# ============================================================
-# ПЕРЕВОД
-# ============================================================
 def translate_text(text):
     if not text or not TRANSLATE_OK:
         return text
@@ -216,9 +180,6 @@ def translate_text(text):
     return text
 
 
-# ============================================================
-# ХИТ
-# ============================================================
 def make_hit(m, score):
     return {
         "score": score,
@@ -230,9 +191,6 @@ def make_hit(m, score):
     }
 
 
-# ============================================================
-# ПОИСК
-# ============================================================
 def keyword_search(variants, top_k, meta):
     regex = make_word_regex(variants)
     if regex is None:
@@ -241,7 +199,6 @@ def keyword_search(variants, top_k, meta):
     hits = []
     seen = set()
 
-    # 1. Имя файла
     for m in meta:
         book = (m.get("book") or "").lower()
         if not book:
@@ -252,7 +209,6 @@ def keyword_search(variants, top_k, meta):
             seen.add(book)
             hits.append(make_hit(m, 1.0))
 
-    # 2. Текст
     for m in meta:
         if len(hits) >= top_k:
             break
@@ -291,11 +247,15 @@ def faiss_search(query, top_k, use_prefix, model, index, meta):
     for score, idx in zip(scores[0], ids[0]):
         if idx < 0 or idx >= len(meta):
             continue
-        candidates.append(make_hit(meta[idx], round(float(score), 4)))
+        candidates.append(
+            make_hit(meta[idx], round(float(score), 4))
+        )
 
     if RERANKER_OK and len(candidates) > top_k:
         try:
-            candidates = rerank(query, candidates, top_k=top_k)
+            candidates = rerank(
+                query, candidates, top_k=top_k
+            )
         except Exception as e:
             log(f"Reranker failed: {e}")
             candidates = candidates[:top_k]
@@ -313,9 +273,10 @@ def search(query, top_k=5, use_prefix=False,
     keyword_key, keyword_variants = detect_keyword(query)
     log(f"Keyword: {keyword_key}")
 
-    # --- Keyword search ---
     if keyword_key and keyword_variants:
-        results = keyword_search(keyword_variants, top_k, meta)
+        results = keyword_search(
+            keyword_variants, top_k, meta
+        )
         if results:
             for r in results:
                 r["text"] = translate_text(r["text"])
@@ -328,7 +289,6 @@ def search(query, top_k=5, use_prefix=False,
             }
         log("Keyword found but no hits, fallback to FAISS")
 
-    # --- FAISS fallback ---
     if model is None or index is None:
         return {"error": "Model or index not loaded."}
 
@@ -346,13 +306,11 @@ def search(query, top_k=5, use_prefix=False,
     }
 
 
-# ============================================================
-# MAIN
-# ============================================================
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("query", nargs="?",
-                        default="Что такое трейдинг?")
+    parser.add_argument(
+        "query", nargs="?", default="Что такое трейдинг?"
+    )
     parser.add_argument("--top", type=int, default=5)
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
@@ -361,19 +319,15 @@ def main():
     model = None
     use_prefix = False
 
-    # Пробуем подгрузить индекс и модель
-    # (для keyword-поиска модель не нужна)
     index, meta = load_index()
 
     if index is None or meta is None:
-        result = {"error": "FAISS index or metadata not found."}
+        result = {
+            "error": "FAISS index or metadata not found."
+        }
     else:
-        # Определяем, нужна ли модель
         keyword_key, _ = detect_keyword(args.query)
 
-        # Загружаем модель только если keyword не найден
-        # или если keyword-поиск не даст результатов.
-        # Для простоты — грузим всегда, но в try.
         if not keyword_key:
             try:
                 model, use_prefix = load_model()
@@ -387,9 +341,8 @@ def main():
                 model, index, meta,
             )
 
-            # Если keyword-поиск дал пустой результат
-            # и модель не загружена — грузим и ищем через FAISS
-            if (keyword_key and not result.get("results")
+            if (keyword_key
+                    and not result.get("results")
                     and model is None):
                 try:
                     model, use_prefix = load_model()
@@ -403,11 +356,15 @@ def main():
         except Exception as e:
             result = {"error": f"Search failed: {e}"}
 
-    payload = json.dumps(result, ensure_ascii=False, indent=2)
+    payload = json.dumps(
+        result, ensure_ascii=False, indent=2
+    )
 
     if result_file:
         try:
-            with open(result_file, "w", encoding="utf-8") as f:
+            with open(
+                result_file, "w", encoding="utf-8"
+            ) as f:
                 f.write(payload)
             log(f"Written: {result_file}")
         except Exception as e:
