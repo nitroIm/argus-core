@@ -6,6 +6,13 @@ on:
       - 'books/**'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
+concurrency:
+  group: argus-ingest
+  cancel-in-progress: false
+
 jobs:
   ingest:
     runs-on: ubuntu-latest
@@ -13,6 +20,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -30,5 +39,19 @@ jobs:
           git config user.name "ARGUS"
           git config user.email "argus@github.com"
           git add data/
-          git commit -m "ARGUS: обработал новые книги" || echo "Нет изменений"
-          git push
+          if git diff --staged --quiet; then
+            echo "Нет изменений"
+            exit 0
+          fi
+          git commit -m "ARGUS: обработал новые книги [skip ci]"
+
+          for i in 1 2 3; do
+            git pull --rebase --autostash origin main
+            if git push origin main; then
+              echo "✅ Push OK"
+              break
+            else
+              echo "⚠️ Попытка $i не удалась, жду 5с"
+              sleep 5
+            fi
+          done
