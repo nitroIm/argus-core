@@ -1,6 +1,7 @@
 # ============================================================
-# ARGUS - MEXC ORDERS v3 [PRODUCTION]
+# ARGUS - MEXC ORDERS v4 [PRODUCTION]
 # ------------------------------------------------------------
+# v4: history distinguishes None (error) from [] (empty).
 # v3: фильтр по статусу, orderId в выводе.
 # v2: убран startTime (MEXC ограничение 7 дней).
 # ============================================================
@@ -72,7 +73,7 @@ def fmt_order(o):
 
 
 def main():
-    log.info("MEXC orders v3")
+    log.info("MEXC orders v4")
 
     if not is_configured():
         log.error("Keys not set")
@@ -85,33 +86,32 @@ def main():
 
         opens = get_open_orders(client, symbol)
         if opens is None:
-            log.warning("  read error")
-            continue
-
-        if not opens:
+            log.warning("  open read error")
+        elif not opens:
             log.info("  no open orders")
         else:
-            log.info(
-                "  open: %d", len(opens),
-            )
+            log.info("  open: %d", len(opens))
             for o in opens[:10]:
                 log.info(fmt_order(o))
 
         history = get_all_orders(
             client, symbol, limit=100,
         )
-        if history:
-            filled = filter_by_status(
-                history, "FILLED",
-            )
-            log.info(
-                "  history: %d (filled: %d)",
-                len(history), len(filled),
-            )
-            for o in filled[:5]:
-                log.info(fmt_order(o))
-        else:
+        if history is None:
+            log.warning("  history read error")
+            continue
+
+        if not history:
             log.info("  history empty")
+            continue
+
+        filled = filter_by_status(history, "FILLED")
+        log.info(
+            "  history: %d (filled: %d)",
+            len(history), len(filled),
+        )
+        for o in filled[:5]:
+            log.info(fmt_order(o))
 
     log.info("done")
 
