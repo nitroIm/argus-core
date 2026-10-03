@@ -1,6 +1,7 @@
 # ============================================================
 # ARGUS - EXPLORER (simulator)
 # ------------------------------------------------------------
+# v4: signal_ml respects action=WAIT (returns raw=0).
 # v3: + signal_anomaly (stop_hunting, pump_dump и др)
 #     fix causal: N>=2 вместо N>=3
 # ============================================================
@@ -122,6 +123,12 @@ def signal_ml(symbol):
         action = s.get("action", "WAIT")
         conf = float(s.get("confidence", 0) or 0)
         prob_up = float(s.get("prob_up", 0.5) or 0.5)
+
+        # v4: respect action=WAIT - model unsure, no vote
+        if action == "WAIT":
+            return {"raw": 0.0, "action": action,
+                    "conf": conf, "prob_up": prob_up}
+
         raw = (prob_up - 0.5) * 2.0 * conf
         return {"raw": round(raw, 4), "action": action,
                 "conf": conf, "prob_up": prob_up}
