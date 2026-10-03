@@ -1,24 +1,24 @@
 [
   {
-    "id": "e8c64b8a-124e-4e43-8523-60d3d9d81c84",
+    "id": "eb932c5e-58f3-4921-9bc2-175f25cf3132",
     "symbol": "ETHUSDT",
     "direction": "SHORT",
-    "entry_price": 2686.43611,
-    "entry_time": "2026-10-03T20:33:37.258498+00:00",
+    "entry_price": 2686.326165,
+    "entry_time": "2026-10-03T21:25:05.109538+00:00",
     "size_usd": 8.0,
-    "size_coins": 0.00297792,
-    "stop": 2691.4121,
+    "size_coins": 0.00297804,
+    "stop": 2691.2571,
     "target": 2682.06,
     "entry_fee": 0.004,
-    "rr_planned": 1.57,
-    "rsi_entry": 49.83,
-    "atr_entry": 2.4214,
-    "explorer_score": -0.7787,
+    "rr_planned": 1.56,
+    "rsi_entry": 51.57,
+    "atr_entry": 2.3914,
+    "explorer_score": -0.733,
     "explorer_breakdown": {
       "ml": {
-        "raw": -0.0457,
+        "raw": 0.0,
         "weight": 1.0,
-        "contrib": -0.0457
+        "contrib": 0.0
       },
       "news": {
         "raw": -0.134,
@@ -70,39 +70,39 @@
       {
         "src": "events",
         "type": "ls_long_extreme",
-        "age_h": 0.6,
-        "w": -0.558
+        "age_h": 1.4,
+        "w": -0.494
       },
       {
         "src": "events",
         "type": "ls_long_extreme",
-        "age_h": 1.6,
-        "w": -0.483
+        "age_h": 2.4,
+        "w": -0.419
       },
       {
         "src": "events",
         "type": "ls_long_extreme",
-        "age_h": 2.6,
-        "w": -0.408
+        "age_h": 3.4,
+        "w": -0.344
       },
       {
         "src": "events",
         "type": "ls_long_extreme",
-        "age_h": 3.6,
-        "w": -0.333
+        "age_h": 4.4,
+        "w": -0.269
       },
       {
         "src": "events",
         "type": "ls_long_extreme",
-        "age_h": 4.6,
-        "w": -0.258
+        "age_h": 5.4,
+        "w": -0.194
       }
     ],
     "votes": [
       "Explorer"
     ],
     "reasons": [
-      "explorer SHORT -0.779"
+      "explorer SHORT -0.733"
     ]
   }
 ]
