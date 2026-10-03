@@ -1,0 +1,3479 @@
+{
+  "generated_at": "2026-10-03T18:48:44.754949+00:00",
+  "stats_by_folder": {
+    "scripts": 39,
+    "crypto": 96,
+    "books": 5,
+    "data": 35
+  },
+  "python_files": {
+    "scripts/collector.py": {
+      "lines": 125,
+      "imports": [
+        "os",
+        "pathlib",
+        "sys"
+      ],
+      "env_vars": [],
+      "functions": [
+        "clean_url",
+        "collect_from_url",
+        "is_valid_url"
+      ],
+      "classes": [],
+      "size": "3.8KB",
+      "mtime": "2026-10-03T18:48:44.363911+00:00",
+      "hash": "5d7b90eeb0c857a0e5a23f87d7c5cf13"
+    },
+    "scripts/proposer.py": {
+      "lines": 250,
+      "imports": [
+        "datetime",
+        "hashlib",
+        "json",
+        "os",
+        "pathlib",
+        "requests",
+        "sys",
+        "translate"
+      ],
+      "env_vars": [
+        "BOT_TOKEN",
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID"
+      ],
+      "functions": [
+        "is_english",
+        "load_json",
+        "log",
+        "main",
+        "save_cache",
+        "save_json",
+        "send_candidate",
+        "short_id",
+        "translate_batch",
+        "translate_to_ru"
+      ],
+      "classes": [],
+      "size": "9.1KB",
+      "mtime": "2026-10-03T18:48:44.364616+00:00",
+      "hash": "ee765f1940ec386a8a5d8f35e6be6e44"
+    },
+    "scripts/reranker.py": {
+      "lines": 75,
+      "imports": [
+        "os",
+        "sentence_transformers",
+        "typing"
+      ],
+      "env_vars": [],
+      "functions": [
+        "_load",
+        "rerank"
+      ],
+      "classes": [],
+      "size": "3.5KB",
+      "mtime": "2026-10-03T18:48:44.364616+00:00",
+      "hash": "aa03d9affd04c2682b02344381444b87"
+    },
+    "scripts/logger.py": {
+      "lines": 56,
+      "imports": [
+        "datetime",
+        "json",
+        "pathlib"
+      ],
+      "env_vars": [],
+      "functions": [
+        "log_action"
+      ],
+      "classes": [],
+      "size": "2.5KB",
+      "mtime": "2026-10-03T18:48:44.364616+00:00",
+      "hash": "701e98e3bd4ac7ce9d52271b909363f5"
+    },
+    "scripts/ingest.py": {
+      "lines": 413,
+      "imports": [
+        "datetime",
+        "fitz",
+        "hashlib",
+        "json",
+        "pathlib",
+        "re"
+      ],
+      "env_vars": [],
+      "functions": [
+        "clean_text",
+        "get_category",
+        "is_good_chunk",
+        "md5_file",
+        "md5_text",
+        "parse_md",
+        "parse_pdf",
+        "parse_txt",
+        "split_into_chunks"
+      ],
+      "classes": [],
+      "size": "11.8KB",
+      "mtime": "2026-10-03T18:48:44.364616+00:00",
+      "hash": "8b976c7f5c6db3d5163a751b22324a95"
+    },
+    "scripts/ask.py": {
+      "lines": 175,
+      "imports": [
+        "faiss",
+        "json",
+        "os",
+        "pathlib",
+        "requests",
+        "sentence_transformers",
+        "sys"
+      ],
+      "env_vars": [
+        "BOT_TOKEN",
+        "CHAT_ID",
+        "QUERY",
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID"
+      ],
+      "functions": [
+        "detect_keyword"
+      ],
+      "classes": [],
+      "size": "5.6KB",
+      "mtime": "2026-10-03T18:48:44.363911+00:00",
+      "hash": "233868b3d42a26ef35b2c54cd66b38d6"
+    },
+    "scripts/actor.py": {
+      "lines": 207,
+      "imports": [
+        "datetime",
+        "json",
+        "os",
+        "pathlib",
+        "requests",
+        "subprocess",
+        "sys"
+      ],
+      "env_vars": [
+        "BOT_TOKEN",
+        "GITHUB_PAT",
+        "GITHUB_REPO",
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID"
+      ],
+      "functions": [
+        "rebuild_index",
+        "run_collect",
+        "run_explorer_for_topic",
+        "run_observer"
+      ],
+      "classes": [],
+      "size": "7.0KB",
+      "mtime": "2026-10-03T18:48:44.363911+00:00",
+      "hash": "14c72794ebaa10e153a3ab0f32f2cb9b"
+    },
+    "scripts/content_generator.py": {
+      "lines": 374,
+      "imports": [
+        "datetime",
+        "json",
+        "os",
+        "pathlib",
+        "random",
+        "re",
+        "requests",
+        "sys"
+      ],
+      "env_vars": [
+        "BOT_TOKEN",
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID"
+      ],
+      "functions": [
+        "build_bridge",
+        "extract_quotes_from_books",
+        "gen_insight",
+        "gen_morning",
+        "gen_philosophy",
+        "generate_post",
+        "get_market_data",
+        "load_json",
+        "main",
+        "save_json",
+        "send_draft"
+      ],
+      "classes": [],
+      "size": "12.8KB",
+      "mtime": "2026-10-03T18:48:44.363911+00:00",
+      "hash": "b073712733339ee90f467ce046df0397"
+    },
+    "scripts/guardian.py": {
+      "lines": 223,
+      "imports": [
+        "datetime",
+        "faiss",
+        "json",
+        "numpy",
+        "os",
+        "pathlib",
+        "requests",
+        "sentence_transformers",
+        "sys",
+        "time"
+      ],
+      "env_vars": [
+        "BOT_TOKEN",
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID"
+      ],
+      "functions": [
+        "ensure_golden",
+        "notify",
+        "rollback",
+        "snapshot",
+        "test_quality"
+      ],
+      "classes": [],
+      "size": "7.9KB",
+      "mtime": "2026-10-03T18:48:44.364616+00:00",
+      "hash": "f323e308fa17682407a969c55ddc939d"
+    },
+    "scripts/approve_handler.py": {
+      "lines": 213,
+      "imports": [
+        "hashlib",
+        "json",
+        "os",
+        "pathlib",
+        "requests",
+        "subprocess",
+        "sys"
+      ],
+      "env_vars": [
+        "APPROVE_ID",
+        "APPROVE_TITLE",
+        "APPROVE_URL",
+        "SHORT_ID",
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID"
+      ],
+      "functions": [
+        "notify"
+      ],
+      "classes": [],
+      "size": "6.3KB",
+      "mtime": "2026-10-03T18:48:44.363911+00:00",
+      "hash": "e35c3953dde02c04ce8a52a4621a4146"
+    },
+    "scripts/benchmark.py": {
+      "lines": 415,
+      "imports": [
+        "datetime",
+        "faiss",
+        "json",
+        "numpy",
+        "os",
+        "pathlib",
+        "requests",
+        "sentence_transformers",
+        "shutil",
+        "sys",
+        "time",
+        "traceback"
+      ],
+      "env_vars": [
+        "BOT_TOKEN",
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID"
+      ],
+      "functions": [
+        "atomic_write_json",
+        "compute_metrics",
+        "load_metadata",
+        "load_model",
+        "load_questions",
+        "log",
+        "main",
+        "mean",
+        "notify",
+        "run_query",
+        "safe_load_json",
+        "validate_inputs"
+      ],
+      "classes": [],
+      "size": "15.0KB",
+      "mtime": "2026-10-03T18:48:44.363911+00:00",
+      "hash": "aab272d468ad117a272bc9aae25e5a39"
+    },
+    "scripts/reporter.py": {
+      "lines": 117,
+      "imports": [
+        "datetime",
+        "json",
+        "os",
+        "pathlib",
+        "requests",
+        "sys"
+      ],
+      "env_vars": [
+        "BOT_TOKEN",
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID"
+      ],
+      "functions": [
+        "load_json"
+      ],
+      "classes": [],
+      "size": "4.4KB",
+      "mtime": "2026-10-03T18:48:44.364616+00:00",
+      "hash": "862eb511a4abab8c7afa22452b390da3"
+    },
+    "scripts/train_embeddings.py": {
+      "lines": 176,
+      "imports": [
+        "datetime",
+        "hashlib",
+        "json",
+        "numpy",
+        "pathlib",
+        "sentence_transformers",
+        "tempfile"
+      ],
+      "env_vars": [],
+      "functions": [
+        "ensure_chunk_id"
+      ],
+      "classes": [],
+      "size": "6.5KB",
+      "mtime": "2026-10-03T18:48:44.366260+00:00",
+      "hash": "d304b7258c061ac54e5fd7a27a9375f2"
+    },
+    "scripts/scout.py": {
+      "lines": 471,
+      "imports": [
+        "datetime",
+        "json",
+        "os",
+        "pathlib",
+        "requests",
+        "sys",
+        "time",
+        "urllib3"
+      ],
+      "env_vars": [
+        "CORE_API_KEY"
+      ],
+      "functions": [
+        "clean",
+        "get_session",
+        "is_pdf_size_ok",
+        "load",
+        "log",
+        "main",
+        "save",
+        "search_arxiv",
+        "search_core",
+        "search_crossref",
+        "search_doaj",
+        "search_openalex",
+        "search_semantic",
+        "search_zenodo",
+        "utc_now"
+      ],
+      "classes": [],
+      "size": "14.2KB",
+      "mtime": "2026-10-03T18:48:44.364616+00:00",
+      "hash": "94432a9a781dbdf7f3bcf85e5665f7e9"
+    },
+    "scripts/semantic_search.py": {
+      "lines": 249,
+      "imports": [
+        "faiss",
+        "json",
+        "logger",
+        "os",
+        "pathlib",
+        "requests",
+        "reranker",
+        "sentence_transformers",
+        "sys",
+        "time",
+        "translate"
+      ],
+      "env_vars": [
+        "BOT_TOKEN",
+        "CHAT_ID",
+        "QUERY",
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID"
+      ],
+      "functions": [
+        "is_english",
+        "log_action",
+        "translate_to_ru"
+      ],
+      "classes": [],
+      "size": "8.5KB",
+      "mtime": "2026-10-03T18:48:44.364616+00:00",
+      "hash": "421a92e1150e73482e5e5d05a5ee4dee"
+    },
+    "scripts/publish_post.py": {
+      "lines": 186,
+      "imports": [
+        "datetime",
+        "html",
+        "json",
+        "os",
+        "pathlib",
+        "re",
+        "requests",
+        "sys"
+      ],
+      "env_vars": [
+        "BOT_TOKEN",
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID",
+        "TG_CHANNEL_ID",
+        "VK_GROUP_ID",
+        "VK_TOKEN"
+      ],
+      "functions": [
+        "load_json",
+        "main",
+        "notify_owner",
+        "publish_tg",
+        "publish_vk",
+        "safe_truncate_html",
+        "save_json",
+        "strip_html_for_vk"
+      ],
+      "classes": [],
+      "size": "6.4KB",
+      "mtime": "2026-10-03T18:48:44.364616+00:00",
+      "hash": "1c551d18b7dd3b4059fa4e3ec168e025"
+    },
+    "scripts/analyzer.py": {
+      "lines": 138,
+      "imports": [
+        "datetime",
+        "json",
+        "pathlib",
+        "sys"
+      ],
+      "env_vars": [],
+      "functions": [],
+      "classes": [],
+      "size": "5.1KB",
+      "mtime": "2026-10-03T18:48:44.363911+00:00",
+      "hash": "ac45a31ca218accef86b451a9b2680c6"
+    },
+    "scripts/approval.py": {
+      "lines": 167,
+      "imports": [
+        "datetime",
+        "hashlib",
+        "json",
+        "pathlib",
+        "requests",
+        "sys"
+      ],
+      "env_vars": [
+        "BOT_TOKEN",
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID"
+      ],
+      "functions": [
+        "in_blacklist",
+        "is_new",
+        "url_id"
+      ],
+      "classes": [],
+      "size": "5.3KB",
+      "mtime": "2026-10-03T18:48:44.363911+00:00",
+      "hash": "d7e89266374016d1b7b0b32ba73b5531"
+    },
+    "scripts/data_audit.py": {
+      "lines": 739,
+      "imports": [
+        "argparse",
+        "collections",
+        "datetime",
+        "json",
+        "logging",
+        "os",
+        "pathlib",
+        "re",
+        "requests",
+        "shutil"
+      ],
+      "env_vars": [
+        "BOT_TOKEN",
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID"
+      ],
+      "functions": [
+        "audit_faiss",
+        "audit_knowledge",
+        "audit_metadata",
+        "audit_summary",
+        "backup_file",
+        "build_audit_report",
+        "build_fix_report",
+        "clean_text",
+        "cleanup_old_backups",
+        "dedupe_books_list",
+        "esc",
+        "fix_knowledge",
+        "fix_metadata",
+        "fix_summary",
+        "load_json",
+        "main",
+        "save_json",
+        "send_message",
+        "split_msg"
+      ],
+      "classes": [],
+      "size": "18.8KB",
+      "mtime": "2026-10-03T18:48:44.363911+00:00",
+      "hash": "edd4f2b9533129c782b3e461c578c57d"
+    },
+    "scripts/predict.py": {
+      "lines": 4,
+      "imports": [],
+      "env_vars": [],
+      "functions": [],
+      "classes": [],
+      "size": "116.0B",
+      "mtime": "2026-10-03T18:48:44.364616+00:00",
+      "hash": "7fc97f1fa1d4152bfa74a4b76b376b3e"
+    },
+    "scripts/brain.py": {
+      "lines": 143,
+      "imports": [
+        "datetime",
+        "json",
+        "os",
+        "pathlib",
+        "requests",
+        "sys"
+      ],
+      "env_vars": [
+        "GITHUB_PAT",
+        "GITHUB_REPO",
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID"
+      ],
+      "functions": [
+        "load_schedule",
+        "load_state",
+        "main",
+        "notify",
+        "save_state",
+        "should_run_task",
+        "trigger_workflow"
+      ],
+      "classes": [],
+      "size": "4.6KB",
+      "mtime": "2026-10-03T18:48:44.363911+00:00",
+      "hash": "16421f33bf458644401cd320a62f9745"
+    },
+    "scripts/translate.py": {
+      "lines": 233,
+      "imports": [
+        "hashlib",
+        "json",
+        "os",
+        "pathlib",
+        "threading",
+        "torch",
+        "transformers"
+      ],
+      "env_vars": [],
+      "functions": [
+        "_cache_key",
+        "_load_cache",
+        "_load_model",
+        "_save_cache",
+        "is_english",
+        "save_cache",
+        "translate_batch",
+        "translate_to_ru"
+      ],
+      "classes": [],
+      "size": "7.8KB",
+      "mtime": "2026-10-03T18:48:44.366260+00:00",
+      "hash": "52dfb452a650e69739177151d07af9ca"
+    },
+    "scripts/train.py": {
+      "lines": 64,
+      "imports": [
+        "pathlib",
+        "subprocess",
+        "sys"
+      ],
+      "env_vars": [],
+      "functions": [
+        "main",
+        "run_script"
+      ],
+      "classes": [],
+      "size": "2.0KB",
+      "mtime": "2026-10-03T18:48:44.366260+00:00",
+      "hash": "96c2b4a5f5657dd63a21da1a09e804ff"
+    },
+    "scripts/audit.py": {
+      "lines": 355,
+      "imports": [
+        "argparse",
+        "datetime",
+        "hashlib",
+        "json",
+        "pathlib",
+        "re"
+      ],
+      "env_vars": [],
+      "functions": [
+        "file_hash",
+        "get_python_info",
+        "get_workflow_info",
+        "human_size",
+        "log",
+        "main",
+        "scan_tree"
+      ],
+      "classes": [],
+      "size": "9.7KB",
+      "mtime": "2026-10-03T18:48:44.363911+00:00",
+      "hash": "d34d60aba4ffec897e4d78ccdb63cb3b"
+    },
+    "scripts/build_index.py": {
+      "lines": 182,
+      "imports": [
+        "datetime",
+        "faiss",
+        "hashlib",
+        "json",
+        "numpy",
+        "pathlib",
+        "tempfile"
+      ],
+      "env_vars": [],
+      "functions": [
+        "ensure_chunk_id"
+      ],
+      "classes": [],
+      "size": "6.5KB",
+      "mtime": "2026-10-03T18:48:44.363911+00:00",
+      "hash": "22f99cbd9da74e3cc3019ad8e37a86bc"
+    },
+    "scripts/__init__.py": {
+      "lines": 1,
+      "imports": [],
+      "env_vars": [],
+      "functions": [],
+      "classes": [],
+      "size": "15.0B",
+      "mtime": "2026-10-03T18:48:44.362616+00:00",
+      "hash": "4d6248124ae8572bf245c736c2bb1eb5"
+    },
+    "scripts/finetune.py": {
+      "lines": 284,
+      "imports": [
+        "datasets",
+        "datetime",
+        "hashlib",
+        "json",
+        "numpy",
+        "pathlib",
+        "random",
+        "re",
+        "sentence_transformers"
+      ],
+      "env_vars": [],
+      "functions": [
+        "build_dataset",
+        "build_pairs",
+        "extract_question",
+        "load_knowledge",
+        "main",
+        "md5_text",
+        "save_info",
+        "train"
+      ],
+      "classes": [],
+      "size": "9.3KB",
+      "mtime": "2026-10-03T18:48:44.363911+00:00",
+      "hash": "e3585c786e9b83d568b39bcc09df5ff8"
+    },
+    "scripts/search.py": {
+      "lines": 267,
+      "imports": [
+        "argparse",
+        "faiss",
+        "json",
+        "numpy",
+        "os",
+        "pathlib",
+        "re",
+        "reranker",
+        "sentence_transformers",
+        "sys",
+        "translate",
+        "warnings"
+      ],
+      "env_vars": [
+        "SEARCH_RESULT_FILE"
+      ],
+      "functions": [
+        "build_index",
+        "faiss_search",
+        "is_english",
+        "load_index",
+        "load_model",
+        "log",
+        "main",
+        "make_hit",
+        "rerank",
+        "tokenize",
+        "topic_search",
+        "translate_text",
+        "translate_to_ru"
+      ],
+      "classes": [],
+      "size": "7.4KB",
+      "mtime": "2026-10-03T18:48:44.364616+00:00",
+      "hash": "97b19c52888830d7e4eabac2a6c73be6"
+    },
+    "scripts/explorer.py": {
+      "lines": 444,
+      "imports": [
+        "datetime",
+        "json",
+        "os",
+        "pathlib",
+        "random",
+        "requests",
+        "sys",
+        "time"
+      ],
+      "env_vars": [
+        "CORE_API_KEY",
+        "EXPLORE_TOPIC"
+      ],
+      "functions": [
+        "decide_topics",
+        "load_json",
+        "main",
+        "save_json",
+        "search_arxiv",
+        "search_core",
+        "search_crossref",
+        "search_doaj",
+        "search_openalex",
+        "search_semantic_scholar",
+        "search_zenodo"
+      ],
+      "classes": [],
+      "size": "14.0KB",
+      "mtime": "2026-10-03T18:48:44.363911+00:00",
+      "hash": "6adb545f5b7f23698036c4b3c6c12640"
+    },
+    "scripts/observer.py": {
+      "lines": 154,
+      "imports": [
+        "collections",
+        "datetime",
+        "json",
+        "os",
+        "pathlib",
+        "sys"
+      ],
+      "env_vars": [],
+      "functions": [
+        "save_empty"
+      ],
+      "classes": [],
+      "size": "5.9KB",
+      "mtime": "2026-10-03T18:48:44.364616+00:00",
+      "hash": "9ff479561f6d7ca86aecd69e887ecfe5"
+    },
+    "scripts/diagnose.py": {
+      "lines": 121,
+      "imports": [
+        "json",
+        "pathlib"
+      ],
+      "env_vars": [],
+      "functions": [
+        "count_by_book",
+        "main",
+        "safe_load"
+      ],
+      "classes": [],
+      "size": "3.4KB",
+      "mtime": "2026-10-03T18:48:44.363911+00:00",
+      "hash": "f570d6b5d957075708a2bd7315b6a184"
+    },
+    "scripts/sources/rss.py": {
+      "lines": 39,
+      "imports": [
+        "re",
+        "requests"
+      ],
+      "env_vars": [],
+      "functions": [
+        "can_handle",
+        "extract"
+      ],
+      "classes": [
+        "RSSSource"
+      ],
+      "size": "1.1KB",
+      "mtime": "2026-10-03T18:48:44.366260+00:00",
+      "hash": "2d4bc7ff179af2131181a12458e5190c"
+    },
+    "scripts/sources/arxiv.py": {
+      "lines": 41,
+      "imports": [
+        "re",
+        "requests"
+      ],
+      "env_vars": [],
+      "functions": [
+        "can_handle",
+        "extract"
+      ],
+      "classes": [
+        "ArxivSource"
+      ],
+      "size": "1.2KB",
+      "mtime": "2026-10-03T18:48:44.366260+00:00",
+      "hash": "a1ec006a519ce57b4f359307e98d88ed"
+    },
+    "scripts/sources/zenodo.py": {
+      "lines": 125,
+      "imports": [
+        "os",
+        "re",
+        "requests",
+        "urllib"
+      ],
+      "env_vars": [],
+      "functions": [
+        "_filename_from_url",
+        "can_handle",
+        "download",
+        "extract"
+      ],
+      "classes": [
+        "ZenodoSource"
+      ],
+      "size": "4.1KB",
+      "mtime": "2026-10-03T18:48:44.366260+00:00",
+      "hash": "df97e44707fbd5c7123aca42820a4c8b"
+    },
+    "scripts/sources/direct_pdf.py": {
+      "lines": 16,
+      "imports": [],
+      "env_vars": [],
+      "functions": [
+        "can_handle",
+        "extract"
+      ],
+      "classes": [
+        "DirectPDFSource"
+      ],
+      "size": "464.0B",
+      "mtime": "2026-10-03T18:48:44.366260+00:00",
+      "hash": "f4cadb459587e0afdceebffba430ffe0"
+    },
+    "scripts/sources/__init__.py": {
+      "lines": 1,
+      "imports": [],
+      "env_vars": [],
+      "functions": [],
+      "classes": [],
+      "size": "23.0B",
+      "mtime": "2026-10-03T18:48:44.364616+00:00",
+      "hash": "c3fa83e7a5ec09d02dc2e60de675a425"
+    },
+    "scripts/sources/base.py": {
+      "lines": 112,
+      "imports": [
+        "pathlib",
+        "re",
+        "requests"
+      ],
+      "env_vars": [],
+      "functions": [
+        "can_handle",
+        "download",
+        "extract",
+        "safe_name"
+      ],
+      "classes": [
+        "Source"
+      ],
+      "size": "3.1KB",
+      "mtime": "2026-10-03T18:48:44.366260+00:00",
+      "hash": "f8bda63719a56c6e8f31e75ec2c70a1e"
+    },
+    "crypto/db.py": {
+      "lines": 193,
+      "imports": [
+        "config",
+        "contextlib",
+        "datetime",
+        "json",
+        "logging",
+        "psycopg",
+        "typing"
+      ],
+      "env_vars": [],
+      "functions": [
+        "_get_conn",
+        "close_connection",
+        "execute",
+        "get_connection",
+        "is_configured",
+        "log_anomaly",
+        "log_collect",
+        "log_rejected",
+        "ping"
+      ],
+      "classes": [],
+      "size": "6.1KB",
+      "mtime": "2026-10-03T18:48:43.789750+00:00",
+      "hash": "5da0e3350465d31db423e3734703b4dd"
+    },
+    "crypto/config.py": {
+      "lines": 107,
+      "imports": [
+        "os",
+        "pathlib"
+      ],
+      "env_vars": [
+        "ARGUS_DB_URL",
+        "BOT_TOKEN",
+        "COINGECKO_API_KEY",
+        "LOG_LEVEL",
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID"
+      ],
+      "functions": [],
+      "classes": [],
+      "size": "3.2KB",
+      "mtime": "2026-10-03T18:48:43.788765+00:00",
+      "hash": "87b14f7029047a78b292b29dc6062f45"
+    },
+    "crypto/proba_exchanges.py": {
+      "lines": 425,
+      "imports": [
+        "datetime",
+        "json",
+        "os",
+        "requests",
+        "time"
+      ],
+      "env_vars": [],
+      "functions": [
+        "estimate_monthly",
+        "main",
+        "probe_binance",
+        "probe_bitget",
+        "probe_bybit",
+        "probe_coinbase",
+        "probe_gate",
+        "probe_kraken",
+        "probe_kucoin",
+        "probe_okx",
+        "try_get"
+      ],
+      "classes": [],
+      "size": "16.3KB",
+      "mtime": "2026-10-03T18:48:43.795379+00:00",
+      "hash": "17b22142e9fb037cfe93bae759034879"
+    },
+    "crypto/detect/anomaly.py": {
+      "lines": 355,
+      "imports": [
+        "config",
+        "datetime",
+        "db",
+        "logging",
+        "pathlib",
+        "requests",
+        "sys"
+      ],
+      "env_vars": [],
+      "functions": [
+        "detect_cross",
+        "detect_pump_dump",
+        "detect_stop_hunt",
+        "detect_wash",
+        "exists",
+        "fetch_avg_volume",
+        "fetch_candles",
+        "fetch_cross",
+        "main",
+        "notify",
+        "process_symbol"
+      ],
+      "classes": [],
+      "size": "10.4KB",
+      "mtime": "2026-10-03T18:48:43.790853+00:00",
+      "hash": "39871606850e033ab18a2b5d223d693e"
+    },
+    "crypto/detect/__init__.py": {
+      "lines": 1,
+      "imports": [],
+      "env_vars": [],
+      "functions": [],
+      "classes": [],
+      "size": "29.0B",
+      "mtime": "2026-10-03T18:48:43.789750+00:00",
+      "hash": "d3a895deb90e2fdf70f0e3a8473408a4"
+    },
+    "crypto/collect/news.py": {
+      "lines": 462,
+      "imports": [
+        "datetime",
+        "email",
+        "hashlib",
+        "html",
+        "json",
+        "os",
+        "pathlib",
+        "re",
+        "requests",
+        "sys",
+        "urllib3"
+      ],
+      "env_vars": [
+        "BOT_TOKEN",
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID"
+      ],
+      "functions": [
+        "_hash",
+        "analyze_sentiment",
+        "clean_text",
+        "fake_score",
+        "fetch_feed",
+        "freshness_weight",
+        "get_robust_session",
+        "keywords",
+        "load",
+        "main",
+        "normalize_title",
+        "notify",
+        "save"
+      ],
+      "classes": [],
+      "size": "15.8KB",
+      "mtime": "2026-10-03T18:48:43.788765+00:00",
+      "hash": "40d4ea996920fceb20f08a55ad886985"
+    },
+    "crypto/collect/macro.py": {
+      "lines": 135,
+      "imports": [
+        "datetime",
+        "db",
+        "logging",
+        "pathlib",
+        "requests",
+        "sys"
+      ],
+      "env_vars": [],
+      "functions": [
+        "collect_macro",
+        "compute_changes",
+        "fetch_yahoo",
+        "save_rows"
+      ],
+      "classes": [],
+      "size": "3.6KB",
+      "mtime": "2026-10-03T18:48:43.788765+00:00",
+      "hash": "5eea4d140aa8930b607a30464185e0a6"
+    },
+    "crypto/collect/onchain.py": {
+      "lines": 99,
+      "imports": [
+        "datetime",
+        "db",
+        "logging",
+        "pathlib",
+        "requests",
+        "sys"
+      ],
+      "env_vars": [],
+      "functions": [
+        "collect_onchain",
+        "fetch_hashrate",
+        "save"
+      ],
+      "classes": [],
+      "size": "2.7KB",
+      "mtime": "2026-10-03T18:48:43.788765+00:00",
+      "hash": "241c1a382fa897f5ff3bad69d405c39f"
+    },
+    "crypto/collect/priority.py": {
+      "lines": 86,
+      "imports": [
+        "logging",
+        "pathlib",
+        "sys"
+      ],
+      "env_vars": [],
+      "functions": [
+        "get_metrics_table",
+        "get_priority",
+        "supported_metrics"
+      ],
+      "classes": [],
+      "size": "2.9KB",
+      "mtime": "2026-10-03T18:48:43.788765+00:00",
+      "hash": "9373cc8443fdb9f0275a4ffaff6ea7ec"
+    },
+    "crypto/collect/validator.py": {
+      "lines": 245,
+      "imports": [
+        "config",
+        "datetime",
+        "logging",
+        "pathlib",
+        "sys",
+        "typing"
+      ],
+      "env_vars": [],
+      "functions": [
+        "_max_age_for",
+        "is_valid_change_pct",
+        "is_valid_price",
+        "is_valid_timestamp",
+        "validate",
+        "validate_candle",
+        "validate_context",
+        "validate_funding",
+        "validate_ls",
+        "validate_oi",
+        "validate_taker"
+      ],
+      "classes": [],
+      "size": "8.3KB",
+      "mtime": "2026-10-03T18:48:43.788765+00:00",
+      "hash": "ed00d1b4d2cf59883256d977f5c42857"
+    },
+    "crypto/collect/exchanges.py": {
+      "lines": 513,
+      "imports": [
+        "datetime",
+        "logging",
+        "requests",
+        "time",
+        "typing"
+      ],
+      "env_vars": [],
+      "functions": [
+        "_contract",
+        "_get",
+        "_inst_id",
+        "_safe_float",
+        "_symbol",
+        "_ts_ms",
+        "_ts_s",
+        "fetch_context",
+        "fetch_funding",
+        "fetch_ls",
+        "fetch_ohlcv",
+        "fetch_oi",
+        "fetch_taker"
+      ],
+      "classes": [
+        "BaseClient",
+        "BitgetClient",
+        "CoinGeckoClient",
+        "GateClient",
+        "KuCoinClient",
+        "OKXClient"
+      ],
+      "size": "18.1KB",
+      "mtime": "2026-10-03T18:48:43.788541+00:00",
+      "hash": "14423a1cbc7b93cc9a5d1f5c5d0a982f"
+    },
+    "crypto/collect/orderbook.py": {
+      "lines": 156,
+      "imports": [
+        "client",
+        "datetime",
+        "db",
+        "logging",
+        "pathlib",
+        "sys"
+      ],
+      "env_vars": [],
+      "functions": [
+        "analyze",
+        "collect_orderbook",
+        "fetch_book",
+        "get_mexc_client",
+        "save_snapshot"
+      ],
+      "classes": [],
+      "size": "4.0KB",
+      "mtime": "2026-10-03T18:48:43.788765+00:00",
+      "hash": "67641ecbf1800146b4c01cdc5c639f19"
+    },
+    "crypto/collect/external.py": {
+      "lines": 184,
+      "imports": [
+        "datetime",
+        "db",
+        "logging",
+        "pathlib",
+        "requests",
+        "sys"
+      ],
+      "env_vars": [],
+      "functions": [
+        "compute_changes",
+        "fetch_yahoo",
+        "main",
+        "save_rows"
+      ],
+      "classes": [],
+      "size": "4.6KB",
+      "mtime": "2026-10-03T18:48:43.788765+00:00",
+      "hash": "fcf11cdac2efad73c91947092e98b2d8"
+    },
+    "crypto/collect/pipeline.py": {
+      "lines": 524,
+      "imports": [
+        "argparse",
+        "collect",
+        "config",
+        "datetime",
+        "db",
+        "json",
+        "logging",
+        "pathlib",
+        "requests",
+        "sys",
+        "time",
+        "typing"
+      ],
+      "env_vars": [],
+      "functions": [
+        "_load_cache",
+        "_save_cache",
+        "collect_metric",
+        "cross_check_price",
+        "fetch_context_cached",
+        "insert_rows",
+        "notify",
+        "run_cycle"
+      ],
+      "classes": [],
+      "size": "15.4KB",
+      "mtime": "2026-10-03T18:48:43.788765+00:00",
+      "hash": "1a88652395d08983ed99623dfb097968"
+    },
+    "crypto/collect/historical_candles.py": {
+      "lines": 217,
+      "imports": [
+        "datetime",
+        "json",
+        "os",
+        "pathlib",
+        "requests",
+        "sys"
+      ],
+      "env_vars": [
+        "BOT_TOKEN",
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID"
+      ],
+      "functions": [
+        "fetch_binance",
+        "fetch_coingecko",
+        "fetch_mexc",
+        "main",
+        "notify",
+        "parse_candle"
+      ],
+      "classes": [],
+      "size": "7.0KB",
+      "mtime": "2026-10-03T18:48:43.788765+00:00",
+      "hash": "584a51cee2061f3858fc08692dea5922"
+    },
+    "crypto/collect/spot_prices.py": {
+      "lines": 211,
+      "imports": [
+        "datetime",
+        "json",
+        "os",
+        "pathlib",
+        "requests",
+        "sys"
+      ],
+      "env_vars": [
+        "BOT_TOKEN",
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID"
+      ],
+      "functions": [
+        "fetch_fear_greed",
+        "fetch_price_fallback",
+        "fetch_price_from_exchange",
+        "main",
+        "notify"
+      ],
+      "classes": [],
+      "size": "7.6KB",
+      "mtime": "2026-10-03T18:48:43.788765+00:00",
+      "hash": "45b8c9c0f9ef4bf100813c35f86d1e1e"
+    },
+    "crypto/collect/feargreed.py": {
+      "lines": 132,
+      "imports": [
+        "datetime",
+        "db",
+        "logging",
+        "pathlib",
+        "requests",
+        "sys"
+      ],
+      "env_vars": [],
+      "functions": [
+        "collect_feargreed",
+        "fetch_fng",
+        "save_rows"
+      ],
+      "classes": [],
+      "size": "3.5KB",
+      "mtime": "2026-10-03T18:48:43.788765+00:00",
+      "hash": "554bf67bad9132cdd103beae918f4740"
+    },
+    "crypto/collect/liquidations.py": {
+      "lines": 226,
+      "imports": [
+        "datetime",
+        "db",
+        "logging",
+        "pathlib",
+        "requests",
+        "sys"
+      ],
+      "env_vars": [],
+      "functions": [
+        "_parse_groups",
+        "_try_fetch",
+        "aggregate_last_hour",
+        "collect_liquidations",
+        "fetch_liquidations",
+        "save_aggregated"
+      ],
+      "classes": [],
+      "size": "6.2KB",
+      "mtime": "2026-10-03T18:48:43.788765+00:00",
+      "hash": "b0cbed4048b00ce029b2655d70c45964"
+    },
+    "crypto/mexc/trades.py": {
+      "lines": 141,
+      "imports": [
+        "client",
+        "datetime",
+        "logging",
+        "pathlib",
+        "sys"
+      ],
+      "env_vars": [],
+      "functions": [
+        "analyze_trades",
+        "get_my_trades",
+        "main"
+      ],
+      "classes": [],
+      "size": "3.3KB",
+      "mtime": "2026-10-03T18:48:43.795379+00:00",
+      "hash": "9fdb688790b3c637248f0790cb1374c6"
+    },
+    "crypto/mexc/account.py": {
+      "lines": 163,
+      "imports": [
+        "client",
+        "datetime",
+        "logging",
+        "pathlib",
+        "sys"
+      ],
+      "env_vars": [],
+      "functions": [
+        "fmt_summary",
+        "fmt_usd",
+        "get_account_summary",
+        "get_spot_balance",
+        "get_ticker_price",
+        "main"
+      ],
+      "classes": [],
+      "size": "3.9KB",
+      "mtime": "2026-10-03T18:48:43.794712+00:00",
+      "hash": "37243e6b6961ee7db166ed8e77953bce"
+    },
+    "crypto/mexc/market.py": {
+      "lines": 208,
+      "imports": [
+        "client",
+        "logging",
+        "pathlib",
+        "sys"
+      ],
+      "env_vars": [],
+      "functions": [
+        "analyze_order_book",
+        "analyze_trades",
+        "fetch_order_book",
+        "fetch_recent_trades",
+        "fetch_ticker_24h",
+        "main"
+      ],
+      "classes": [],
+      "size": "4.7KB",
+      "mtime": "2026-10-03T18:48:43.794712+00:00",
+      "hash": "32a5d955a56020986fde8050e3786d6f"
+    },
+    "crypto/mexc/client.py": {
+      "lines": 223,
+      "imports": [
+        "hashlib",
+        "hmac",
+        "logging",
+        "os",
+        "requests",
+        "time",
+        "urllib"
+      ],
+      "env_vars": [
+        "MEXC_API_KEY",
+        "MEXC_API_SECRET"
+      ],
+      "functions": [
+        "__init__",
+        "_check_response",
+        "_headers",
+        "_request",
+        "_sign",
+        "is_configured",
+        "public_get",
+        "signed_delete",
+        "signed_get",
+        "signed_post"
+      ],
+      "classes": [
+        "MexcClient"
+      ],
+      "size": "6.3KB",
+      "mtime": "2026-10-03T18:48:43.794712+00:00",
+      "hash": "bcbc38a9992cd8cc3f1b4b3401540c57"
+    },
+    "crypto/mexc/__init__.py": {
+      "lines": 1,
+      "imports": [],
+      "env_vars": [],
+      "functions": [],
+      "classes": [],
+      "size": "23.0B",
+      "mtime": "2026-10-03T18:48:43.794228+00:00",
+      "hash": "2c88601bfd6cdbf01b662e783586c4b7"
+    },
+    "crypto/mexc/orders.py": {
+      "lines": 120,
+      "imports": [
+        "client",
+        "logging",
+        "pathlib",
+        "sys"
+      ],
+      "env_vars": [],
+      "functions": [
+        "filter_by_status",
+        "fmt_order",
+        "get_all_orders",
+        "get_open_orders",
+        "main"
+      ],
+      "classes": [],
+      "size": "2.9KB",
+      "mtime": "2026-10-03T18:48:43.794712+00:00",
+      "hash": "cfe23b088fc4897f4ebd29a456554070"
+    },
+    "crypto/mexc/simulator_01/runner.py": {
+      "lines": 972,
+      "imports": [
+        "client",
+        "datetime",
+        "db",
+        "explorer",
+        "json",
+        "logging",
+        "os",
+        "pathlib",
+        "requests",
+        "sys",
+        "time",
+        "uuid"
+      ],
+      "env_vars": [
+        "BOT_TOKEN",
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID"
+      ],
+      "functions": [
+        "build_levels",
+        "candles_are_fresh",
+        "check_one_position",
+        "check_signal",
+        "check_stop_target_1h",
+        "check_stop_target_1m",
+        "check_time_exit",
+        "close_position",
+        "compute_atr",
+        "compute_rsi",
+        "file_age_hours",
+        "filter_rules",
+        "get_candles",
+        "get_candles_range",
+        "get_cooldowns",
+        "get_klines_1m",
+        "get_markov_p10",
+        "get_portfolio",
+        "get_positions",
+        "get_price",
+        "get_resistances",
+        "get_rules",
+        "get_support",
+        "get_trades",
+        "in_cooldown",
+        "load_analysis",
+        "load_json",
+        "main",
+        "notify",
+        "open_position",
+        "save_json",
+        "save_positions",
+        "save_trades",
+        "set_cooldown",
+        "try_open_new",
+        "watch_position"
+      ],
+      "classes": [],
+      "size": "26.2KB",
+      "mtime": "2026-10-03T18:48:43.795018+00:00",
+      "hash": "f5442c715661892a036e4adbeeedec33"
+    },
+    "crypto/mexc/simulator_01/__init__.py": {
+      "lines": 1,
+      "imports": [],
+      "env_vars": [],
+      "functions": [],
+      "classes": [],
+      "size": "5.0B",
+      "mtime": "2026-10-03T18:48:43.794712+00:00",
+      "hash": "365db621a5003028b6223d367d08ebe3"
+    },
+    "crypto/mexc/simulator_01/explorer.py": {
+      "lines": 664,
+      "imports": [
+        "config",
+        "datetime",
+        "json",
+        "logging",
+        "os",
+        "pathlib",
+        "psycopg",
+        "sys"
+      ],
+      "env_vars": [
+        "ARGUS_DB_URL_2"
+      ],
+      "functions": [
+        "_get_db1",
+        "_get_db2",
+        "analyze",
+        "close_all",
+        "load_json",
+        "load_weights",
+        "save_weights",
+        "signal_anomaly",
+        "signal_causal",
+        "signal_correlations",
+        "signal_db2_market",
+        "signal_db2_patterns",
+        "signal_db2_vectors",
+        "signal_events",
+        "signal_levels",
+        "signal_ml",
+        "signal_news",
+        "signal_patterns"
+      ],
+      "classes": [],
+      "size": "19.3KB",
+      "mtime": "2026-10-03T18:48:43.795018+00:00",
+      "hash": "8779ccfb5e254b98eb4d90278eea03b0"
+    },
+    "crypto/enrich/levels.py": {
+      "lines": 398,
+      "imports": [
+        "config",
+        "datetime",
+        "db",
+        "json",
+        "logging",
+        "math",
+        "pathlib",
+        "sys"
+      ],
+      "env_vars": [],
+      "functions": [
+        "analyze_symbol",
+        "build_round_levels",
+        "fetch_candles",
+        "find_supports_resistances",
+        "find_touches",
+        "format_price",
+        "main",
+        "pick_step_size",
+        "recent_extremes",
+        "volume_profile"
+      ],
+      "classes": [],
+      "size": "12.6KB",
+      "mtime": "2026-10-03T18:48:43.791013+00:00",
+      "hash": "54b4311d3bcdac5343082813d9177a17"
+    },
+    "crypto/enrich/patterns.py": {
+      "lines": 276,
+      "imports": [
+        "collections",
+        "config",
+        "datetime",
+        "db",
+        "json",
+        "logging",
+        "pathlib",
+        "sys"
+      ],
+      "env_vars": [],
+      "functions": [
+        "analyze_symbol",
+        "build_binary_string",
+        "build_markov_matrix",
+        "count_ngrams",
+        "fetch_features",
+        "longest_streak",
+        "main",
+        "save_patterns"
+      ],
+      "classes": [],
+      "size": "9.7KB",
+      "mtime": "2026-10-03T18:48:43.791013+00:00",
+      "hash": "6860cdcd88a220990ba171792df353d1"
+    },
+    "crypto/enrich/features.py": {
+      "lines": 1028,
+      "imports": [
+        "config",
+        "datetime",
+        "db",
+        "logging",
+        "pathlib",
+        "sys"
+      ],
+      "env_vars": [],
+      "functions": [
+        "compute_bbands",
+        "compute_consecutive",
+        "compute_daily_features",
+        "compute_ema",
+        "compute_features_from_row",
+        "compute_macd",
+        "daily_index_before",
+        "fetch_candles",
+        "fetch_daily_candles",
+        "fetch_funding",
+        "fetch_long_short",
+        "fetch_open_interest",
+        "fetch_taker",
+        "funding_at",
+        "funding_trend_at",
+        "get_session",
+        "is_valid",
+        "ls_at",
+        "main",
+        "oi_at",
+        "oi_at_ago",
+        "process_symbol",
+        "rolling_avg",
+        "rolling_sum",
+        "rolling_volatility",
+        "safe_val",
+        "save_features",
+        "taker_at",
+        "ts_is_sane"
+      ],
+      "classes": [],
+      "size": "30.4KB",
+      "mtime": "2026-10-03T18:48:43.791013+00:00",
+      "hash": "ce6cd78d76cb22e48ca3ccec81dcf9ec"
+    },
+    "crypto/enrich/correlate.py": {
+      "lines": 291,
+      "imports": [
+        "collections",
+        "config",
+        "datetime",
+        "db",
+        "json",
+        "logging",
+        "pathlib",
+        "sys"
+      ],
+      "env_vars": [],
+      "functions": [
+        "analyze_symbol",
+        "compute_rule_stats",
+        "fetch_causal_data",
+        "find_rules",
+        "main"
+      ],
+      "classes": [],
+      "size": "8.5KB",
+      "mtime": "2026-10-03T18:48:43.791013+00:00",
+      "hash": "67cffb81911df7c921f81eed67698dc3"
+    },
+    "crypto/enrich/runner.py": {
+      "lines": 105,
+      "imports": [
+        "datetime",
+        "logging",
+        "pathlib",
+        "sys",
+        "time",
+        "traceback"
+      ],
+      "env_vars": [],
+      "functions": [
+        "main",
+        "run_step"
+      ],
+      "classes": [],
+      "size": "3.1KB",
+      "mtime": "2026-10-03T18:48:43.791013+00:00",
+      "hash": "c518f19d1dc3a6b446e5c60b0136ea9b"
+    },
+    "crypto/enrich/__init__.py": {
+      "lines": 1,
+      "imports": [],
+      "env_vars": [],
+      "functions": [],
+      "classes": [],
+      "size": "29.0B",
+      "mtime": "2026-10-03T18:48:43.790853+00:00",
+      "hash": "05efd53b0991454e36081afa9bcfc9ad"
+    },
+    "crypto/enrich/causal.py": {
+      "lines": 466,
+      "imports": [
+        "config",
+        "datetime",
+        "db",
+        "json",
+        "logging",
+        "pathlib",
+        "sys"
+      ],
+      "env_vars": [],
+      "functions": [
+        "analyze_symbol",
+        "avg",
+        "build_causal_entry",
+        "compute_change_pct",
+        "compute_volatility",
+        "fetch_events",
+        "fetch_existing_causal",
+        "fetch_funding_before",
+        "fetch_ls_before",
+        "fetch_ohlcv_before",
+        "fetch_oi_before",
+        "find_nearest_level",
+        "get_pattern_before",
+        "load_json",
+        "main",
+        "save_causal_links"
+      ],
+      "classes": [],
+      "size": "16.0KB",
+      "mtime": "2026-10-03T18:48:43.791013+00:00",
+      "hash": "2244e80e466a495057e0399eab73bf4b"
+    },
+    "crypto/enrich/events.py": {
+      "lines": 420,
+      "imports": [
+        "config",
+        "datetime",
+        "db",
+        "json",
+        "logging",
+        "pathlib",
+        "sys"
+      ],
+      "env_vars": [],
+      "functions": [
+        "analyze_symbol",
+        "compute_rsi_series",
+        "detect_events",
+        "fetch_data",
+        "fetch_existing_events",
+        "main",
+        "save_events"
+      ],
+      "classes": [],
+      "size": "13.7KB",
+      "mtime": "2026-10-03T18:48:43.791013+00:00",
+      "hash": "9f0ac99a730b05942099e47655bcc1df"
+    },
+    "crypto/global/collect_sol_bnb.py": {
+      "lines": 221,
+      "imports": [
+        "collect",
+        "datetime",
+        "db2",
+        "logging",
+        "pathlib",
+        "sys"
+      ],
+      "env_vars": [],
+      "functions": [
+        "collect_symbol",
+        "fresh_only",
+        "log_run",
+        "main",
+        "save",
+        "try_sources"
+      ],
+      "classes": [],
+      "size": "5.9KB",
+      "mtime": "2026-10-03T18:48:43.791708+00:00",
+      "hash": "c0708a552a11080458cb0b4963a54bab"
+    },
+    "crypto/global/db2.py": {
+      "lines": 95,
+      "imports": [
+        "contextlib",
+        "logging",
+        "os",
+        "psycopg"
+      ],
+      "env_vars": [
+        "ARGUS_DB_URL_2"
+      ],
+      "functions": [
+        "_get_conn",
+        "close_connection",
+        "execute",
+        "get_connection",
+        "is_configured",
+        "ping"
+      ],
+      "classes": [],
+      "size": "2.4KB",
+      "mtime": "2026-10-03T18:48:43.791708+00:00",
+      "hash": "4bed1519f5718ceeca59a466e554831e"
+    },
+    "crypto/global/notify_asia.py": {
+      "lines": 150,
+      "imports": [
+        "db2",
+        "logging",
+        "os",
+        "pathlib",
+        "requests",
+        "sys"
+      ],
+      "env_vars": [
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID"
+      ],
+      "functions": [
+        "already_sent",
+        "fetch_candidates",
+        "fmt_alert",
+        "main",
+        "mark_sent",
+        "send_tg"
+      ],
+      "classes": [],
+      "size": "4.1KB",
+      "mtime": "2026-10-03T18:48:43.791708+00:00",
+      "hash": "a543776e50b6086db4aa44290c73e38d"
+    },
+    "crypto/global/asia_patterns.py": {
+      "lines": 374,
+      "imports": [
+        "bisect",
+        "datetime",
+        "db2",
+        "logging",
+        "numpy",
+        "os",
+        "pathlib",
+        "psycopg",
+        "sys"
+      ],
+      "env_vars": [
+        "ARGUS_DB_URL"
+      ],
+      "functions": [
+        "_db1_conn",
+        "build_sorted",
+        "calc_conditional",
+        "calc_corr_and_impact",
+        "load_asia",
+        "load_candles_db1",
+        "load_candles_db2",
+        "main",
+        "nearest",
+        "pearson",
+        "process_pair",
+        "save_pattern",
+        "save_vector"
+      ],
+      "classes": [],
+      "size": "10.6KB",
+      "mtime": "2026-10-03T18:48:43.791013+00:00",
+      "hash": "dc4fd6e0a72c4b4b5d2ebee9e7b7797d"
+    },
+    "crypto/global/collect_asia.py": {
+      "lines": 202,
+      "imports": [
+        "datetime",
+        "db2",
+        "logging",
+        "pathlib",
+        "requests",
+        "sys"
+      ],
+      "env_vars": [],
+      "functions": [
+        "compute_changes",
+        "fetch_group",
+        "fetch_yahoo",
+        "log_run",
+        "main",
+        "save_rows"
+      ],
+      "classes": [],
+      "size": "5.3KB",
+      "mtime": "2026-10-03T18:48:43.791708+00:00",
+      "hash": "53c9e3d478b6b3f53a079425258b09b5"
+    },
+    "crypto/global/retention.py": {
+      "lines": 158,
+      "imports": [
+        "datetime",
+        "db2",
+        "logging",
+        "pathlib",
+        "sys"
+      ],
+      "env_vars": [],
+      "functions": [
+        "aggregate_asia",
+        "aggregate_candles",
+        "delete_old",
+        "log_action",
+        "main"
+      ],
+      "classes": [],
+      "size": "4.3KB",
+      "mtime": "2026-10-03T18:48:43.791708+00:00",
+      "hash": "3b96f7150178e0ff9d84450ab0459c69"
+    },
+    "crypto/report/morning.py": {
+      "lines": 620,
+      "imports": [
+        "datetime",
+        "db",
+        "json",
+        "os",
+        "pathlib",
+        "report",
+        "requests",
+        "sys"
+      ],
+      "env_vars": [
+        "BOT_TOKEN",
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID"
+      ],
+      "functions": [
+        "build_report_text",
+        "build_scenario",
+        "build_trade_advice",
+        "escape_html",
+        "fetch_candles",
+        "fetch_funding",
+        "fetch_oi",
+        "fetch_spot",
+        "fmt_price",
+        "load_json",
+        "main",
+        "send_media_group",
+        "send_message",
+        "split_text"
+      ],
+      "classes": [],
+      "size": "17.0KB",
+      "mtime": "2026-10-03T18:48:43.795735+00:00",
+      "hash": "b18b1d9533979c07de6b363223a7ad5a"
+    },
+    "crypto/report/news_report.py": {
+      "lines": 409,
+      "imports": [
+        "datetime",
+        "hashlib",
+        "json",
+        "logging",
+        "os",
+        "pathlib",
+        "requests",
+        "sys",
+        "translate"
+      ],
+      "env_vars": [
+        "BOT_TOKEN",
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID"
+      ],
+      "functions": [
+        "_title_hash",
+        "add_sent_hash",
+        "build_report",
+        "clean_history",
+        "esc",
+        "filter_fresh",
+        "get_sent_hashes",
+        "load_json",
+        "load_sent_history",
+        "main",
+        "save_json",
+        "send_message",
+        "split_text",
+        "translate_batch",
+        "translate_top"
+      ],
+      "classes": [],
+      "size": "11.0KB",
+      "mtime": "2026-10-03T18:48:43.795735+00:00",
+      "hash": "62c868dac281962f65af07c11e2070f5"
+    },
+    "crypto/report/weekly.py": {
+      "lines": 594,
+      "imports": [
+        "datetime",
+        "db",
+        "json",
+        "os",
+        "pathlib",
+        "report",
+        "requests",
+        "sys",
+        "traceback"
+      ],
+      "env_vars": [
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID"
+      ],
+      "functions": [
+        "build_candle_caption",
+        "build_markov_caption",
+        "build_pattern_caption",
+        "build_report",
+        "fetch_candles_for_chart",
+        "fetch_stats",
+        "fmt_price",
+        "load_json",
+        "main",
+        "send_message",
+        "send_photo"
+      ],
+      "classes": [],
+      "size": "18.3KB",
+      "mtime": "2026-10-03T18:48:43.795735+00:00",
+      "hash": "dd03ad18c2680a7a25c10bc2c49fb672"
+    },
+    "crypto/report/evening.py": {
+      "lines": 623,
+      "imports": [
+        "datetime",
+        "db",
+        "logging",
+        "os",
+        "pathlib",
+        "requests",
+        "sys"
+      ],
+      "env_vars": [
+        "BOT_TOKEN",
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID"
+      ],
+      "functions": [
+        "_collect_problems",
+        "_esc",
+        "_max_ts",
+        "_section_anomalies",
+        "_section_events",
+        "_section_freshness",
+        "_section_stats",
+        "_section_workflows",
+        "_since",
+        "build_report",
+        "fetch_anomalies_24h",
+        "fetch_events_24h",
+        "fetch_freshness",
+        "fetch_runs",
+        "fetch_stats",
+        "fmt_age",
+        "fmt_time_short",
+        "group_runs",
+        "icon_age",
+        "main",
+        "send_message",
+        "split_text"
+      ],
+      "classes": [],
+      "size": "17.6KB",
+      "mtime": "2026-10-03T18:48:43.795735+00:00",
+      "hash": "1e739a4210557808bf248be300379b9d"
+    },
+    "crypto/report/translate.py": {
+      "lines": 348,
+      "imports": [
+        "hashlib",
+        "json",
+        "logging",
+        "os",
+        "pathlib",
+        "re",
+        "requests",
+        "time"
+      ],
+      "env_vars": [],
+      "functions": [
+        "_gt_translate",
+        "_key",
+        "_load_cache",
+        "_looks_untranslated",
+        "_mm_translate",
+        "_postprocess",
+        "_save_cache",
+        "_should_skip",
+        "_translate_one",
+        "is_english",
+        "is_russian",
+        "save_cache",
+        "translate_batch",
+        "translate_to_ru"
+      ],
+      "classes": [],
+      "size": "8.4KB",
+      "mtime": "2026-10-03T18:48:43.795735+00:00",
+      "hash": "bd787e1d7a82f9c89d43dcfb38e2f921"
+    },
+    "crypto/report/risk.py": {
+      "lines": 318,
+      "imports": [
+        "logging"
+      ],
+      "env_vars": [],
+      "functions": [
+        "_nearest_resistance",
+        "_nearest_support",
+        "build_setup",
+        "compute_atr",
+        "compute_rsi",
+        "fmt_price",
+        "fmt_setup",
+        "fmt_summary"
+      ],
+      "classes": [],
+      "size": "8.2KB",
+      "mtime": "2026-10-03T18:48:43.795735+00:00",
+      "hash": "915223f1ff4f0efd79c5c97a700f321c"
+    },
+    "crypto/report/__init__.py": {
+      "lines": 1,
+      "imports": [],
+      "env_vars": [],
+      "functions": [],
+      "classes": [],
+      "size": "29.0B",
+      "mtime": "2026-10-03T18:48:43.795379+00:00",
+      "hash": "839ee4859b556725d2501628e03457b5"
+    },
+    "crypto/report/charts.py": {
+      "lines": 558,
+      "imports": [
+        "logging",
+        "matplotlib",
+        "numpy",
+        "pathlib"
+      ],
+      "env_vars": [],
+      "functions": [
+        "_ema",
+        "_setup_style",
+        "compute_rsi",
+        "plot_anomaly_timeline",
+        "plot_candles",
+        "plot_funding",
+        "plot_markov",
+        "plot_oi",
+        "plot_pattern",
+        "plot_rsi"
+      ],
+      "classes": [],
+      "size": "14.9KB",
+      "mtime": "2026-10-03T18:48:43.795735+00:00",
+      "hash": "358864f90246b3d3a384f61c3c95d40a"
+    },
+    "crypto/learn/notify.py": {
+      "lines": 267,
+      "imports": [
+        "datetime",
+        "db",
+        "json",
+        "logging",
+        "os",
+        "pathlib",
+        "requests",
+        "sys"
+      ],
+      "env_vars": [
+        "BOT_TOKEN",
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID"
+      ],
+      "functions": [
+        "fmt_signal",
+        "get_last_close",
+        "get_levels",
+        "load_json",
+        "main",
+        "save_json",
+        "send_tg"
+      ],
+      "classes": [],
+      "size": "6.5KB",
+      "mtime": "2026-10-03T18:48:43.794228+00:00",
+      "hash": "f9c943341182a408cbb36ed0fbd69f3c"
+    },
+    "crypto/learn/autotune.py": {
+      "lines": 206,
+      "imports": [
+        "dataset",
+        "datetime",
+        "itertools",
+        "json",
+        "lightgbm",
+        "logging",
+        "numpy",
+        "pathlib",
+        "sys"
+      ],
+      "env_vars": [],
+      "functions": [
+        "autotune",
+        "evaluate_params",
+        "main",
+        "make_params"
+      ],
+      "classes": [],
+      "size": "5.1KB",
+      "mtime": "2026-10-03T18:48:43.792087+00:00",
+      "hash": "b4d230ae501ea85c6c0878087a1f6a08"
+    },
+    "crypto/learn/dataset.py": {
+      "lines": 385,
+      "imports": [
+        "datetime",
+        "db",
+        "logging",
+        "numpy",
+        "pathlib",
+        "sys"
+      ],
+      "env_vars": [],
+      "functions": [
+        "ext_lookup",
+        "fetch_eth_btc",
+        "fetch_external",
+        "fetch_features",
+        "main",
+        "prepare",
+        "rows_to_xy",
+        "symbols_unique",
+        "time_split"
+      ],
+      "classes": [],
+      "size": "10.0KB",
+      "mtime": "2026-10-03T18:48:43.792087+00:00",
+      "hash": "19870207402e30ef3889da78cd146281"
+    },
+    "crypto/learn/rollback.py": {
+      "lines": 63,
+      "imports": [
+        "logging",
+        "pathlib",
+        "shutil",
+        "sys"
+      ],
+      "env_vars": [],
+      "functions": [
+        "main",
+        "rollback"
+      ],
+      "classes": [],
+      "size": "1.5KB",
+      "mtime": "2026-10-03T18:48:43.794228+00:00",
+      "hash": "43f7dbbc4d17f690d02c98e63fb9791e"
+    },
+    "crypto/learn/signals.py": {
+      "lines": 94,
+      "imports": [
+        "datetime",
+        "json",
+        "logging",
+        "pathlib",
+        "sys"
+      ],
+      "env_vars": [],
+      "functions": [
+        "classify",
+        "main",
+        "strength"
+      ],
+      "classes": [],
+      "size": "2.4KB",
+      "mtime": "2026-10-03T18:48:43.794228+00:00",
+      "hash": "b802dab139fdbce724ebd4ced36ba462"
+    },
+    "crypto/learn/evaluate.py": {
+      "lines": 116,
+      "imports": [
+        "dataset",
+        "lightgbm",
+        "logging",
+        "numpy",
+        "pathlib",
+        "sys"
+      ],
+      "env_vars": [],
+      "functions": [
+        "evaluate",
+        "main",
+        "metrics"
+      ],
+      "classes": [],
+      "size": "2.7KB",
+      "mtime": "2026-10-03T18:48:43.792087+00:00",
+      "hash": "2223046c86f1f68ab44caa9b94669088"
+    },
+    "crypto/learn/predict.py": {
+      "lines": 158,
+      "imports": [
+        "datetime",
+        "db",
+        "json",
+        "lightgbm",
+        "logging",
+        "numpy",
+        "pathlib",
+        "sys"
+      ],
+      "env_vars": [],
+      "functions": [
+        "fetch_last_row",
+        "load_meta",
+        "main",
+        "predict_all"
+      ],
+      "classes": [],
+      "size": "4.2KB",
+      "mtime": "2026-10-03T18:48:43.794228+00:00",
+      "hash": "57d2679d60009bdff1cc8acf436133ee"
+    },
+    "crypto/learn/train.py": {
+      "lines": 227,
+      "imports": [
+        "dataset",
+        "datetime",
+        "json",
+        "lightgbm",
+        "logging",
+        "numpy",
+        "pathlib",
+        "shutil",
+        "sys"
+      ],
+      "env_vars": [],
+      "functions": [
+        "load_best_params",
+        "main",
+        "save_prev",
+        "train"
+      ],
+      "classes": [],
+      "size": "5.7KB",
+      "mtime": "2026-10-03T18:48:43.794228+00:00",
+      "hash": "b0aa052d63e2e50496182849d7517206"
+    },
+    "crypto/learn/export.py": {
+      "lines": 172,
+      "imports": [
+        "csv",
+        "dataset",
+        "datetime",
+        "db",
+        "json",
+        "logging",
+        "pathlib",
+        "shutil",
+        "sys"
+      ],
+      "env_vars": [],
+      "functions": [
+        "export_dataset_csv",
+        "export_meta",
+        "export_model",
+        "export_readme",
+        "main"
+      ],
+      "classes": [],
+      "size": "4.9KB",
+      "mtime": "2026-10-03T18:48:43.792087+00:00",
+      "hash": "85c3d2725e563fcb067dc4b02d942522"
+    },
+    "crypto/learn/runner.py": {
+      "lines": 66,
+      "imports": [
+        "datetime",
+        "evaluate",
+        "logging",
+        "pathlib",
+        "predict",
+        "signals",
+        "sys",
+        "train"
+      ],
+      "env_vars": [],
+      "functions": [
+        "main"
+      ],
+      "classes": [],
+      "size": "1.4KB",
+      "mtime": "2026-10-03T18:48:43.794228+00:00",
+      "hash": "ce50a350ac7130b8c09f013a0e348e22"
+    },
+    "crypto/learn/__init__.py": {
+      "lines": 1,
+      "imports": [],
+      "env_vars": [],
+      "functions": [],
+      "classes": [],
+      "size": "20.0B",
+      "mtime": "2026-10-03T18:48:43.791708+00:00",
+      "hash": "01b2253f41dbacae637647e51ee63a31"
+    },
+    "crypto/learn/similarity.py": {
+      "lines": 180,
+      "imports": [
+        "datetime",
+        "db",
+        "json",
+        "logging",
+        "numpy",
+        "pathlib",
+        "sys"
+      ],
+      "env_vars": [],
+      "functions": [
+        "fetch_all",
+        "find_similar",
+        "main",
+        "normalize",
+        "rows_to_matrix"
+      ],
+      "classes": [],
+      "size": "4.7KB",
+      "mtime": "2026-10-03T18:48:43.794228+00:00",
+      "hash": "b508bd18eb9a589674a954c8473ec8e8"
+    }
+  },
+  "workflows": {
+    "news.yml": {
+      "scripts": [
+        "crypto/collect/news.py",
+        "crypto/report/news_report.py"
+      ],
+      "secrets": [
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID"
+      ],
+      "triggers": [
+        "cron",
+        "manual",
+        "push"
+      ],
+      "size": "2.9KB",
+      "mtime": "2026-10-03T18:48:43.786441+00:00"
+    },
+    "collect.yml": {
+      "scripts": [
+        "scripts/collect_data.py"
+      ],
+      "secrets": [],
+      "triggers": [
+        "cron",
+        "manual",
+        "push"
+      ],
+      "size": "1.1KB",
+      "mtime": "2026-10-03T18:48:43.786008+00:00"
+    },
+    "sim_explorer.yml": {
+      "scripts": [
+        "crypto/mexc/simulator_01/explorer.py"
+      ],
+      "secrets": [
+        "ARGUS_DB_URL",
+        "ARGUS_DB_URL_2"
+      ],
+      "triggers": [
+        "manual"
+      ],
+      "size": "583.0B",
+      "mtime": "2026-10-03T18:48:43.786441+00:00"
+    },
+    "check_token.yml": {
+      "scripts": [],
+      "secrets": [
+        "GH_PAT"
+      ],
+      "triggers": [
+        "manual"
+      ],
+      "size": "384.0B",
+      "mtime": "2026-10-03T18:48:43.786008+00:00"
+    },
+    "actor.yml": {
+      "scripts": [
+        "scripts/actor.py"
+      ],
+      "secrets": [
+        "GH_PAT",
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID"
+      ],
+      "triggers": [
+        "cron",
+        "manual",
+        "push"
+      ],
+      "size": "2.7KB",
+      "mtime": "2026-10-03T18:48:43.786008+00:00"
+    },
+    "morning_market_report.yml": {
+      "scripts": [
+        "crypto/report/morning.py"
+      ],
+      "secrets": [
+        "ARGUS_DB_URL",
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID"
+      ],
+      "triggers": [
+        "cron",
+        "dispatch",
+        "manual"
+      ],
+      "size": "1.9KB",
+      "mtime": "2026-10-03T18:48:43.786441+00:00"
+    },
+    "crypto_global.yml": {
+      "scripts": [
+        "crypto/global/asia_patterns.py",
+        "crypto/global/collect_asia.py",
+        "crypto/global/collect_sol_bnb.py",
+        "crypto/global/notify_asia.py"
+      ],
+      "secrets": [
+        "ARGUS_DB_URL",
+        "ARGUS_DB_URL_2",
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID"
+      ],
+      "triggers": [
+        "manual"
+      ],
+      "size": "1.4KB",
+      "mtime": "2026-10-03T18:48:43.786008+00:00"
+    },
+    "crypto_learn.yml": {
+      "scripts": [
+        "crypto/learn/export.py",
+        "crypto/learn/runner.py"
+      ],
+      "secrets": [
+        "ARGUS_DB_URL",
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID"
+      ],
+      "triggers": [
+        "cron",
+        "manual",
+        "push"
+      ],
+      "size": "2.7KB",
+      "mtime": "2026-10-03T18:48:43.786008+00:00"
+    },
+    "ARGUS_audit.yml": {
+      "scripts": [
+        "scripts/audit.py"
+      ],
+      "secrets": [],
+      "triggers": [
+        "manual",
+        "push"
+      ],
+      "size": "933.0B",
+      "mtime": "2026-10-03T18:48:43.786008+00:00"
+    },
+    "analyzer.yml": {
+      "scripts": [
+        "scripts/analyzer.py",
+        "scripts/proposer.py"
+      ],
+      "secrets": [
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID"
+      ],
+      "triggers": [
+        "cron",
+        "manual",
+        "push"
+      ],
+      "size": "2.1KB",
+      "mtime": "2026-10-03T18:48:43.786008+00:00"
+    },
+    "reporter.yml": {
+      "scripts": [
+        "scripts/reporter.py"
+      ],
+      "secrets": [
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID"
+      ],
+      "triggers": [
+        "cron",
+        "manual"
+      ],
+      "size": "1.1KB",
+      "mtime": "2026-10-03T18:48:43.786441+00:00"
+    },
+    "books_info.yml": {
+      "scripts": [],
+      "secrets": [],
+      "triggers": [
+        "manual"
+      ],
+      "size": "1.3KB",
+      "mtime": "2026-10-03T18:48:43.786008+00:00"
+    },
+    "diagnose.yml": {
+      "scripts": [
+        "scripts/diagnose.py"
+      ],
+      "secrets": [],
+      "triggers": [
+        "manual"
+      ],
+      "size": "397.0B",
+      "mtime": "2026-10-03T18:48:43.786008+00:00"
+    },
+    "crypto_notify.yml": {
+      "scripts": [
+        "crypto/learn/notify.py",
+        "crypto/learn/predict.py",
+        "crypto/learn/signals.py"
+      ],
+      "secrets": [
+        "ARGUS_DB_URL",
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID"
+      ],
+      "triggers": [
+        "manual",
+        "push"
+      ],
+      "size": "2.2KB",
+      "mtime": "2026-10-03T18:48:43.786008+00:00"
+    },
+    "finetune.yml": {
+      "scripts": [
+        "scripts/benchmark.py",
+        "scripts/finetune.py"
+      ],
+      "secrets": [],
+      "triggers": [
+        "manual"
+      ],
+      "size": "1.9KB",
+      "mtime": "2026-10-03T18:48:43.786008+00:00"
+    },
+    "crypto_detect.yml": {
+      "scripts": [
+        "crypto/detect/anomaly.py"
+      ],
+      "secrets": [
+        "ARGUS_DB_URL",
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID"
+      ],
+      "triggers": [
+        "cron",
+        "manual",
+        "push"
+      ],
+      "size": "2.5KB",
+      "mtime": "2026-10-03T18:48:43.786008+00:00"
+    },
+    "external_market.yml": {
+      "scripts": [
+        "crypto/collect/external.py"
+      ],
+      "secrets": [
+        "ARGUS_DB_URL",
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID"
+      ],
+      "triggers": [
+        "manual"
+      ],
+      "size": "1.6KB",
+      "mtime": "2026-10-03T18:48:43.786008+00:00"
+    },
+    "train_model.yml": {
+      "scripts": [
+        "scripts/build_index.py",
+        "scripts/ingest.py",
+        "scripts/train_embeddings.py"
+      ],
+      "secrets": [
+        "GITHUB_TOKEN",
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID"
+      ],
+      "triggers": [
+        "dispatch",
+        "manual",
+        "push"
+      ],
+      "size": "8.4KB",
+      "mtime": "2026-10-03T18:48:43.786441+00:00"
+    },
+    "crypto_autotune.yml": {
+      "scripts": [
+        "crypto/learn/autotune.py"
+      ],
+      "secrets": [
+        "ARGUS_DB_URL",
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID"
+      ],
+      "triggers": [
+        "manual",
+        "push"
+      ],
+      "size": "1.9KB",
+      "mtime": "2026-10-03T18:48:43.786008+00:00"
+    },
+    "crypto_enrich.yml": {
+      "scripts": [
+        "crypto/enrich/runner.py"
+      ],
+      "secrets": [
+        "ARGUS_DB_URL",
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID"
+      ],
+      "triggers": [
+        "cron",
+        "manual",
+        "push"
+      ],
+      "size": "2.7KB",
+      "mtime": "2026-10-03T18:48:43.786008+00:00"
+    },
+    "evening_report.yml": {
+      "scripts": [
+        "crypto/report/evening.py"
+      ],
+      "secrets": [
+        "ARGUS_DB_URL",
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID"
+      ],
+      "triggers": [
+        "cron",
+        "manual"
+      ],
+      "size": "1.7KB",
+      "mtime": "2026-10-03T18:48:43.786008+00:00"
+    },
+    "crypto_collect.yml": {
+      "scripts": [
+        "crypto/collect/pipeline.py"
+      ],
+      "secrets": [
+        "ARGUS_DB_URL",
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID"
+      ],
+      "triggers": [
+        "cron",
+        "manual",
+        "push"
+      ],
+      "size": "2.8KB",
+      "mtime": "2026-10-03T18:48:43.786008+00:00"
+    },
+    "search.yml": {
+      "scripts": [
+        "scripts/search.py"
+      ],
+      "secrets": [
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID"
+      ],
+      "triggers": [
+        "dispatch",
+        "manual"
+      ],
+      "size": "5.7KB",
+      "mtime": "2026-10-03T18:48:43.786441+00:00"
+    },
+    "simulator_01.yml": {
+      "scripts": [
+        "crypto/mexc/simulator_01/explorer.py",
+        "crypto/mexc/simulator_01/runner.py"
+      ],
+      "secrets": [
+        "ARGUS_DB_URL",
+        "ARGUS_DB_URL_2",
+        "MEXC_API_KEY",
+        "MEXC_API_SECRET",
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID"
+      ],
+      "triggers": [
+        "cron",
+        "manual",
+        "push"
+      ],
+      "size": "2.2KB",
+      "mtime": "2026-10-03T18:48:43.786441+00:00"
+    },
+    "content_post.yml": {
+      "scripts": [
+        "scripts/content_generator.py",
+        "scripts/publish_post.py"
+      ],
+      "secrets": [
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID",
+        "TG_CHANNEL_ID",
+        "VK_GROUP_ID",
+        "VK_TOKEN"
+      ],
+      "triggers": [
+        "dispatch",
+        "manual",
+        "push"
+      ],
+      "size": "3.3KB",
+      "mtime": "2026-10-03T18:48:43.786008+00:00"
+    },
+    "explorer.yml": {
+      "scripts": [
+        "scripts/explorer.py"
+      ],
+      "secrets": [],
+      "triggers": [
+        "dispatch",
+        "manual",
+        "push"
+      ],
+      "size": "2.0KB",
+      "mtime": "2026-10-03T18:48:43.786008+00:00"
+    },
+    "observer.yml": {
+      "scripts": [
+        "scripts/observer.py"
+      ],
+      "secrets": [],
+      "triggers": [
+        "cron",
+        "manual",
+        "push"
+      ],
+      "size": "935.0B",
+      "mtime": "2026-10-03T18:48:43.786441+00:00"
+    },
+    "benchmark.yml": {
+      "scripts": [
+        "scripts/benchmark.py"
+      ],
+      "secrets": [
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID"
+      ],
+      "triggers": [
+        "cron",
+        "dispatch",
+        "manual",
+        "push"
+      ],
+      "size": "5.9KB",
+      "mtime": "2026-10-03T18:48:43.786008+00:00"
+    },
+    "proposer.yml": {
+      "scripts": [
+        "scripts/proposer.py"
+      ],
+      "secrets": [
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID"
+      ],
+      "triggers": [
+        "manual",
+        "push"
+      ],
+      "size": "2.9KB",
+      "mtime": "2026-10-03T18:48:43.786441+00:00"
+    },
+    "scout.yml": {
+      "scripts": [
+        "scripts/approval.py",
+        "scripts/scout.py"
+      ],
+      "secrets": [
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID"
+      ],
+      "triggers": [
+        "cron",
+        "manual",
+        "push"
+      ],
+      "size": "1.2KB",
+      "mtime": "2026-10-03T18:48:43.786441+00:00"
+    },
+    "brain.yml": {
+      "scripts": [],
+      "secrets": [
+        "GH_PAT",
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID"
+      ],
+      "triggers": [
+        "cron",
+        "manual",
+        "push"
+      ],
+      "size": "5.4KB",
+      "mtime": "2026-10-03T18:48:43.786008+00:00"
+    },
+    "ingest.yml": {
+      "scripts": [
+        "scripts/ingest.py"
+      ],
+      "secrets": [],
+      "triggers": [
+        "manual",
+        "push"
+      ],
+      "size": "1.3KB",
+      "mtime": "2026-10-03T18:48:43.786441+00:00"
+    },
+    "ask.yml": {
+      "scripts": [
+        "scripts/ask.py"
+      ],
+      "secrets": [
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID"
+      ],
+      "triggers": [
+        "dispatch",
+        "manual",
+        "push"
+      ],
+      "size": "2.6KB",
+      "mtime": "2026-10-03T18:48:43.786008+00:00"
+    },
+    "crypto_reporter.yml": {
+      "scripts": [
+        "crypto/report/weekly.py"
+      ],
+      "secrets": [
+        "ARGUS_DB_URL",
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID"
+      ],
+      "triggers": [
+        "cron",
+        "manual"
+      ],
+      "size": "1.9KB",
+      "mtime": "2026-10-03T18:48:43.786008+00:00"
+    },
+    "approved_download.yml": {
+      "scripts": [
+        "scripts/approve_handler.py"
+      ],
+      "secrets": [
+        "GH_PAT",
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID"
+      ],
+      "triggers": [
+        "dispatch",
+        "manual",
+        "push"
+      ],
+      "size": "4.0KB",
+      "mtime": "2026-10-03T18:48:43.786008+00:00"
+    },
+    "guardian.yml": {
+      "scripts": [
+        "scripts/guardian.py"
+      ],
+      "secrets": [],
+      "triggers": [
+        "manual",
+        "push"
+      ],
+      "size": "2.4KB",
+      "mtime": "2026-10-03T18:48:43.786441+00:00"
+    },
+    "crypto_rollback.yml": {
+      "scripts": [
+        "crypto/learn/rollback.py"
+      ],
+      "secrets": [],
+      "triggers": [
+        "manual",
+        "push"
+      ],
+      "size": "1.0KB",
+      "mtime": "2026-10-03T18:48:43.786008+00:00"
+    },
+    "collect_books.yml": {
+      "scripts": [],
+      "secrets": [],
+      "triggers": [
+        "manual",
+        "push"
+      ],
+      "size": "1.2KB",
+      "mtime": "2026-10-03T18:48:43.786008+00:00"
+    },
+    "mexc_test.yml": {
+      "scripts": [
+        "crypto/mexc/account.py",
+        "crypto/mexc/market.py",
+        "crypto/mexc/orders.py",
+        "crypto/mexc/trades.py"
+      ],
+      "secrets": [
+        "MEXC_API_KEY",
+        "MEXC_API_SECRET"
+      ],
+      "triggers": [
+        "manual"
+      ],
+      "size": "1.5KB",
+      "mtime": "2026-10-03T18:48:43.786441+00:00"
+    },
+    "data_audit.yml": {
+      "scripts": [
+        "scripts/data_audit.py"
+      ],
+      "secrets": [
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID"
+      ],
+      "triggers": [
+        "cron",
+        "manual",
+        "push"
+      ],
+      "size": "2.9KB",
+      "mtime": "2026-10-03T18:48:43.786008+00:00"
+    }
+  },
+  "entry_points": [
+    "crypto/collect/external.py",
+    "crypto/collect/news.py",
+    "crypto/collect/pipeline.py",
+    "crypto/detect/anomaly.py",
+    "crypto/enrich/runner.py",
+    "crypto/global/asia_patterns.py",
+    "crypto/global/collect_asia.py",
+    "crypto/global/collect_sol_bnb.py",
+    "crypto/global/notify_asia.py",
+    "crypto/learn/autotune.py",
+    "crypto/learn/export.py",
+    "crypto/learn/notify.py",
+    "crypto/learn/predict.py",
+    "crypto/learn/rollback.py",
+    "crypto/learn/runner.py",
+    "crypto/learn/signals.py",
+    "crypto/mexc/account.py",
+    "crypto/mexc/market.py",
+    "crypto/mexc/orders.py",
+    "crypto/mexc/simulator_01/explorer.py",
+    "crypto/mexc/simulator_01/runner.py",
+    "crypto/mexc/trades.py",
+    "crypto/report/evening.py",
+    "crypto/report/morning.py",
+    "crypto/report/news_report.py",
+    "crypto/report/weekly.py",
+    "scripts/actor.py",
+    "scripts/analyzer.py",
+    "scripts/approval.py",
+    "scripts/approve_handler.py",
+    "scripts/ask.py",
+    "scripts/audit.py",
+    "scripts/benchmark.py",
+    "scripts/build_index.py",
+    "scripts/content_generator.py",
+    "scripts/data_audit.py",
+    "scripts/diagnose.py",
+    "scripts/explorer.py",
+    "scripts/finetune.py",
+    "scripts/guardian.py",
+    "scripts/ingest.py",
+    "scripts/observer.py",
+    "scripts/proposer.py",
+    "scripts/publish_post.py",
+    "scripts/reporter.py",
+    "scripts/scout.py",
+    "scripts/search.py",
+    "scripts/train_embeddings.py"
+  ],
+  "dead_files": [
+    "crypto/collect/exchanges.py",
+    "crypto/collect/feargreed.py",
+    "crypto/collect/historical_candles.py",
+    "crypto/collect/liquidations.py",
+    "crypto/collect/macro.py",
+    "crypto/collect/onchain.py",
+    "crypto/collect/orderbook.py",
+    "crypto/collect/priority.py",
+    "crypto/collect/spot_prices.py",
+    "crypto/collect/validator.py",
+    "crypto/detect/__init__.py",
+    "crypto/enrich/__init__.py",
+    "crypto/enrich/causal.py",
+    "crypto/enrich/correlate.py",
+    "crypto/enrich/events.py",
+    "crypto/enrich/features.py",
+    "crypto/enrich/levels.py",
+    "crypto/enrich/patterns.py",
+    "crypto/global/retention.py",
+    "crypto/learn/__init__.py",
+    "crypto/learn/similarity.py",
+    "crypto/mexc/__init__.py",
+    "crypto/mexc/simulator_01/__init__.py",
+    "crypto/proba_exchanges.py",
+    "crypto/report/__init__.py",
+    "crypto/report/charts.py",
+    "crypto/report/risk.py",
+    "scripts/__init__.py",
+    "scripts/brain.py",
+    "scripts/collector.py",
+    "scripts/semantic_search.py",
+    "scripts/sources/__init__.py",
+    "scripts/sources/arxiv.py",
+    "scripts/sources/base.py",
+    "scripts/sources/direct_pdf.py",
+    "scripts/sources/rss.py",
+    "scripts/sources/zenodo.py"
+  ],
+  "duplicates": {},
+  "import_graph": {
+    "scripts/collector.py": [],
+    "scripts/proposer.py": [
+      "crypto/report/translate.py",
+      "scripts/translate.py"
+    ],
+    "scripts/reranker.py": [],
+    "scripts/logger.py": [],
+    "scripts/ingest.py": [],
+    "scripts/ask.py": [],
+    "scripts/actor.py": [],
+    "scripts/content_generator.py": [],
+    "scripts/guardian.py": [],
+    "scripts/approve_handler.py": [],
+    "scripts/benchmark.py": [],
+    "scripts/reporter.py": [],
+    "scripts/train_embeddings.py": [],
+    "scripts/scout.py": [],
+    "scripts/semantic_search.py": [
+      "crypto/report/translate.py",
+      "scripts/logger.py",
+      "scripts/reranker.py",
+      "scripts/translate.py"
+    ],
+    "scripts/publish_post.py": [],
+    "scripts/analyzer.py": [],
+    "scripts/approval.py": [],
+    "scripts/data_audit.py": [],
+    "scripts/predict.py": [],
+    "scripts/brain.py": [],
+    "scripts/translate.py": [],
+    "scripts/train.py": [],
+    "scripts/audit.py": [],
+    "scripts/build_index.py": [],
+    "scripts/__init__.py": [],
+    "scripts/finetune.py": [],
+    "scripts/search.py": [
+      "crypto/report/translate.py",
+      "scripts/reranker.py",
+      "scripts/translate.py"
+    ],
+    "scripts/explorer.py": [],
+    "scripts/observer.py": [],
+    "scripts/diagnose.py": [],
+    "scripts/sources/rss.py": [],
+    "scripts/sources/arxiv.py": [],
+    "scripts/sources/zenodo.py": [],
+    "scripts/sources/direct_pdf.py": [],
+    "scripts/sources/__init__.py": [],
+    "scripts/sources/base.py": [],
+    "crypto/db.py": [
+      "crypto/config.py"
+    ],
+    "crypto/config.py": [],
+    "crypto/proba_exchanges.py": [],
+    "crypto/detect/anomaly.py": [
+      "crypto/config.py",
+      "crypto/db.py"
+    ],
+    "crypto/detect/__init__.py": [],
+    "crypto/collect/news.py": [],
+    "crypto/collect/macro.py": [
+      "crypto/db.py"
+    ],
+    "crypto/collect/onchain.py": [
+      "crypto/db.py"
+    ],
+    "crypto/collect/priority.py": [],
+    "crypto/collect/validator.py": [
+      "crypto/config.py"
+    ],
+    "crypto/collect/exchanges.py": [],
+    "crypto/collect/orderbook.py": [
+      "crypto/db.py",
+      "crypto/mexc/client.py"
+    ],
+    "crypto/collect/external.py": [
+      "crypto/db.py"
+    ],
+    "crypto/collect/pipeline.py": [
+      "crypto/config.py",
+      "crypto/db.py"
+    ],
+    "crypto/collect/historical_candles.py": [],
+    "crypto/collect/spot_prices.py": [],
+    "crypto/collect/feargreed.py": [
+      "crypto/db.py"
+    ],
+    "crypto/collect/liquidations.py": [
+      "crypto/db.py"
+    ],
+    "crypto/mexc/trades.py": [
+      "crypto/mexc/client.py"
+    ],
+    "crypto/mexc/account.py": [
+      "crypto/mexc/client.py"
+    ],
+    "crypto/mexc/market.py": [
+      "crypto/mexc/client.py"
+    ],
+    "crypto/mexc/client.py": [],
+    "crypto/mexc/__init__.py": [],
+    "crypto/mexc/orders.py": [
+      "crypto/mexc/client.py"
+    ],
+    "crypto/mexc/simulator_01/runner.py": [
+      "crypto/db.py",
+      "crypto/mexc/client.py",
+      "crypto/mexc/simulator_01/explorer.py",
+      "scripts/explorer.py"
+    ],
+    "crypto/mexc/simulator_01/__init__.py": [],
+    "crypto/mexc/simulator_01/explorer.py": [
+      "crypto/config.py"
+    ],
+    "crypto/enrich/levels.py": [
+      "crypto/config.py",
+      "crypto/db.py"
+    ],
+    "crypto/enrich/patterns.py": [
+      "crypto/config.py",
+      "crypto/db.py"
+    ],
+    "crypto/enrich/features.py": [
+      "crypto/config.py",
+      "crypto/db.py"
+    ],
+    "crypto/enrich/correlate.py": [
+      "crypto/config.py",
+      "crypto/db.py"
+    ],
+    "crypto/enrich/runner.py": [],
+    "crypto/enrich/__init__.py": [],
+    "crypto/enrich/causal.py": [
+      "crypto/config.py",
+      "crypto/db.py"
+    ],
+    "crypto/enrich/events.py": [
+      "crypto/config.py",
+      "crypto/db.py"
+    ],
+    "crypto/global/collect_sol_bnb.py": [
+      "crypto/global/db2.py"
+    ],
+    "crypto/global/db2.py": [],
+    "crypto/global/notify_asia.py": [
+      "crypto/global/db2.py"
+    ],
+    "crypto/global/asia_patterns.py": [
+      "crypto/global/db2.py"
+    ],
+    "crypto/global/collect_asia.py": [
+      "crypto/global/db2.py"
+    ],
+    "crypto/global/retention.py": [
+      "crypto/global/db2.py"
+    ],
+    "crypto/report/morning.py": [
+      "crypto/db.py"
+    ],
+    "crypto/report/news_report.py": [
+      "crypto/report/translate.py",
+      "scripts/translate.py"
+    ],
+    "crypto/report/weekly.py": [
+      "crypto/db.py"
+    ],
+    "crypto/report/evening.py": [
+      "crypto/db.py"
+    ],
+    "crypto/report/translate.py": [],
+    "crypto/report/risk.py": [],
+    "crypto/report/__init__.py": [],
+    "crypto/report/charts.py": [],
+    "crypto/learn/notify.py": [
+      "crypto/db.py"
+    ],
+    "crypto/learn/autotune.py": [
+      "crypto/learn/dataset.py"
+    ],
+    "crypto/learn/dataset.py": [
+      "crypto/db.py"
+    ],
+    "crypto/learn/rollback.py": [],
+    "crypto/learn/signals.py": [],
+    "crypto/learn/evaluate.py": [
+      "crypto/learn/dataset.py"
+    ],
+    "crypto/learn/predict.py": [
+      "crypto/db.py"
+    ],
+    "crypto/learn/train.py": [
+      "crypto/learn/dataset.py"
+    ],
+    "crypto/learn/export.py": [
+      "crypto/db.py",
+      "crypto/learn/dataset.py"
+    ],
+    "crypto/learn/runner.py": [
+      "crypto/learn/evaluate.py",
+      "crypto/learn/predict.py",
+      "crypto/learn/signals.py",
+      "crypto/learn/train.py",
+      "scripts/predict.py",
+      "scripts/train.py"
+    ],
+    "crypto/learn/__init__.py": [],
+    "crypto/learn/similarity.py": [
+      "crypto/db.py"
+    ]
+  },
+  "env_vars": [
+    "APPROVE_ID",
+    "APPROVE_TITLE",
+    "APPROVE_URL",
+    "ARGUS_DB_URL",
+    "ARGUS_DB_URL_2",
+    "BOT_TOKEN",
+    "CHAT_ID",
+    "COINGECKO_API_KEY",
+    "CORE_API_KEY",
+    "EXPLORE_TOPIC",
+    "GITHUB_PAT",
+    "GITHUB_REPO",
+    "LOG_LEVEL",
+    "MEXC_API_KEY",
+    "MEXC_API_SECRET",
+    "QUERY",
+    "SEARCH_RESULT_FILE",
+    "SHORT_ID",
+    "TELEGRAM_BOT_TOKEN",
+    "TELEGRAM_CHAT_ID",
+    "TG_CHANNEL_ID",
+    "VK_GROUP_ID",
+    "VK_TOKEN"
+  ],
+  "secrets_in_workflows": [
+    "ARGUS_DB_URL",
+    "ARGUS_DB_URL_2",
+    "GH_PAT",
+    "GITHUB_TOKEN",
+    "MEXC_API_KEY",
+    "MEXC_API_SECRET",
+    "TELEGRAM_BOT_TOKEN",
+    "TELEGRAM_CHAT_ID",
+    "TG_CHANNEL_ID",
+    "VK_GROUP_ID",
+    "VK_TOKEN"
+  ]
+}
