@@ -1,8 +1,10 @@
 # ============================================================
-# ARGUS - SIMULATOR 01 v9.6
+# ARGUS - SIMULATOR 01 v9.7
 # ------------------------------------------------------------
-# v9.6: auto-locate db2.py anywhere in repo (fix ImportError).
-# v9.5: SOL/BNB candles read from DB2, BTC/ETH from DB1.
+# v9.7: fallback to ATR stop when level is too far.
+#       Strong signals no longer skipped by MAX_STOP_ATR.
+# v9.6: auto-locate db2.py anywhere in repo.
+# v9.5: SOL/BNB candles from DB2, BTC/ETH from DB1.
 # v9.4: fix slippage direction for SHORT.
 # v9.3: fix SyntaxError на trade["exit_time"].
 # v9.2: fix UnboundLocalError в check_signal.
@@ -30,7 +32,6 @@ sys.path.insert(0, str(MEXC_DIR))
 sys.path.insert(0, str(CRYPTO_ROOT))
 sys.path.insert(0, str(SCRIPT_DIR))
 
-# --- locate db2.py anywhere under CRYPTO_ROOT ---
 for _p in CRYPTO_ROOT.rglob("db2.py"):
     _d = str(_p.parent)
     if "__pycache__" in _d:
@@ -98,7 +99,6 @@ CHAT_ID = (os.getenv("TELEGRAM_CHAT_ID") or "").strip()
 
 
 def candles_conn(symbol):
-    """DB2 for SOL/BNB, DB1 for the rest."""
     if symbol in DB2_SYMBOLS:
         return get_conn_db2()
     return get_connection()
@@ -381,16 +381,17 @@ def get_resistances(symbol, price):
 
 def build_levels(price, sup, resistances, atr, direction):
     if direction == "LONG":
+        stop = None
         if sup:
-            stop = sup["price"] * (1 - STOP_BELOW_SUP_PCT / 100)
-            stop_dist = price - stop
-            if stop_dist > atr * MAX_STOP_ATR:
-                log.info("  sup too far: %.2f > %.2f",
-                         stop_dist, atr * MAX_STOP_ATR)
-                return None, None, None
-            if stop_dist <= 0:
-                return None, None, None
-        else:
+            cand = sup["price"] * (1 - STOP_BELOW_SUP_PCT / 100)
+            if price - cand > atr * MAX_STOP_ATR:
+                log.info(
+                    "  sup too far: %.2f > %.2f, using ATR",
+                    price - cand, atr * MAX_STOP_ATR,
+                )
+            elif price - cand > 0:
+                stop = cand
+        if stop is None:
             stop = price - atr * ATR_MULT
         if stop >= price:
             return None, None, None
@@ -411,21 +412,22 @@ def build_levels(price, sup, resistances, atr, direction):
         return stop, target, reward / risk
 
     elif direction == "SHORT":
+        stop = None
         res_up = None
         for res in resistances:
             if res["price"] > price:
                 res_up = res
                 break
         if res_up:
-            stop = res_up["price"] * (1 + STOP_ABOVE_RES_PCT / 100)
-            stop_dist = stop - price
-            if stop_dist > atr * MAX_STOP_ATR:
-                log.info("  res too far: %.2f > %.2f",
-                         stop_dist, atr * MAX_STOP_ATR)
-                return None, None, None
-            if stop_dist <= 0:
-                return None, None, None
-        else:
+            cand = res_up["price"] * (1 + STOP_ABOVE_RES_PCT / 100)
+            if cand - price > atr * MAX_STOP_ATR:
+                log.info(
+                    "  res too far: %.2f > %.2f, using ATR",
+                    cand - price, atr * MAX_STOP_ATR,
+                )
+            elif cand - price > 0:
+                stop = cand
+        if stop is None:
             stop = price + atr * ATR_MULT
         if stop <= price:
             return None, None, None
@@ -850,7 +852,7 @@ def watch_position(client):
 
 def main():
     log.info("=" * 50)
-    log.info("SIMULATOR 01 v9.6")
+    log.info("SIMULATOR 01 v9.7")
     log.info("MAX_POSITIONS=%d, SIZE=$%.2f, TIME_EXIT=%dh",
              MAX_POSITIONS, POSITION_SIZE, TIME_EXIT_HOURS)
     log.info("DB2 symbols: %s", ", ".join(sorted(DB2_SYMBOLS)))
