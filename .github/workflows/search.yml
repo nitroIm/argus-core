@@ -60,6 +60,7 @@ jobs:
           fi
 
       - name: Run semantic search
+        id: search
         env:
           QUERY: ${{ steps.vars.outputs.query }}
           SEARCH_RESULT_FILE: /tmp/search_result.json
@@ -70,6 +71,7 @@ jobs:
           cat /tmp/search_result.json
 
       - name: Send result to Telegram
+        if: success()
         env:
           BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           CHAT_ID: ${{ steps.vars.outputs.chat_id }}
@@ -125,4 +127,42 @@ jobs:
 
           response = requests.post(url, json=payload, timeout=15)
           print(f"TG status: {response.status_code}")
+          PYTHON_SCRIPT
+
+      - name: Notify on failure
+        if: failure()
+        env:
+          BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CHAT_ID: ${{ steps.vars.outputs.chat_id }}
+          QUERY: ${{ steps.vars.outputs.query }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          python3 << 'PYTHON_SCRIPT'
+          import os
+          import requests
+
+          bot_token = os.environ.get('BOT_TOKEN')
+          chat_id = os.environ.get('CHAT_ID')
+          query = os.environ.get('QUERY', '?')
+          run_url = os.environ.get('RUN_URL', '')
+
+          if not bot_token or not chat_id:
+              print("No TG creds, skip notify")
+              raise SystemExit(0)
+
+          text = f"❌ <b>Search FAILED</b>\n"
+          text += f"Запрос: <i>{query}</i>\n"
+          text += f'<a href="{run_url}">Открыть лог</a>'
+
+          requests.post(
+              f"https://api.telegram.org/bot{bot_token}/sendMessage",
+              json={
+                  'chat_id': chat_id,
+                  'text': text,
+                  'parse_mode': 'HTML',
+                  'disable_web_page_preview': True,
+              },
+              timeout=15,
+          )
+          print("Failure notification sent")
           PYTHON_SCRIPT
