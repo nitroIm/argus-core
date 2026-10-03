@@ -1,8 +1,8 @@
 # ============================================================
-# ARGUS - SIMULATOR 01 v9.7
+# ARGUS - SIMULATOR 01 v9.8
 # ------------------------------------------------------------
+# v9.8: get_cooldowns auto-cleans expired entries.
 # v9.7: fallback to ATR stop when level is too far.
-#       Strong signals no longer skipped by MAX_STOP_ATR.
 # v9.6: auto-locate db2.py anywhere in repo.
 # v9.5: SOL/BNB candles from DB2, BTC/ETH from DB1.
 # v9.4: fix slippage direction for SHORT.
@@ -193,7 +193,29 @@ def save_trades(t):
 
 
 def get_cooldowns():
-    return load_json(COOLDOWN_FILE, {})
+    """Load cooldowns, drop expired ones."""
+    cd = load_json(COOLDOWN_FILE, {})
+    if not cd:
+        return {}
+    now = datetime.now(timezone.utc)
+    clean = {}
+    changed = False
+    for sym, ts in cd.items():
+        try:
+            dt = datetime.fromisoformat(ts)
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=timezone.utc)
+        except Exception:
+            changed = True
+            continue
+        age_h = (now - dt).total_seconds() / 3600
+        if age_h < COOLDOWN_HOURS * 2:
+            clean[sym] = ts
+        else:
+            changed = True
+    if changed:
+        save_json(COOLDOWN_FILE, clean)
+    return clean
 
 
 def set_cooldown(symbol):
@@ -852,7 +874,7 @@ def watch_position(client):
 
 def main():
     log.info("=" * 50)
-    log.info("SIMULATOR 01 v9.7")
+    log.info("SIMULATOR 01 v9.8")
     log.info("MAX_POSITIONS=%d, SIZE=$%.2f, TIME_EXIT=%dh",
              MAX_POSITIONS, POSITION_SIZE, TIME_EXIT_HOURS)
     log.info("DB2 symbols: %s", ", ".join(sorted(DB2_SYMBOLS)))
