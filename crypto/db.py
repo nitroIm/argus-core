@@ -1,6 +1,8 @@
 # ============================================================
 # ARGUS-Trader — DB
 # ------------------------------------------------------------
+# v4: drop dead conn on error -> next call reconnects.
+#     is_configured() guard, application_name.
 # v3: + переиспользование одного соединения на весь прогон.
 #     Глобальное соединение через _get_conn().
 #     Ускорение в 10-15 раз (одно соединение вместо 30).
@@ -22,7 +24,6 @@ logging.basicConfig(
 )
 log = logging.getLogger("crypto.db")
 
-# --- Глобальное соединение ---
 _GLOBAL_CONN = None
 
 
@@ -31,12 +32,19 @@ def is_configured() -> bool:
 
 
 def _get_conn():
-    """Возвращает глобальное соединение (создаёт при первом вызове)."""
+    """Возвращает глобальное соединение."""
     global _GLOBAL_CONN
-    if _GLOBAL_CONN is None or _GLOBAL_CONN.closed:
-        import psycopg
-        _GLOBAL_CONN = psycopg.connect(DB_URL, connect_timeout=15)
-        log.info("🔌 Открыто соединение с Supabase")
+    if _GLOBAL_CONN is not None and not _GLOBAL_CONN.closed:
+        return _GLOBAL_CONN
+    if not is_configured():
+        raise RuntimeError("DB_URL is not set")
+    import psycopg
+    _GLOBAL_CONN = psycopg.connect(
+        DB_URL,
+        connect_timeout=15,
+        application_name="argus-db1",
+    )
+    log.info("🔌 Открыто соединение с Supabase")
     return _GLOBAL_CONN
 
 
@@ -52,6 +60,7 @@ def close_connection():
 @contextmanager
 def get_connection():
     """Контекстный менеджер. Использует глобальное соединение."""
+    global _GLOBAL_CONN
     conn = _get_conn()
     try:
         yield conn
@@ -61,6 +70,12 @@ def get_connection():
             conn.rollback()
         except Exception:
             pass
+        # Drop dead conn so next call reconnects
+        try:
+            if conn.closed:
+                _GLOBAL_CONN = None
+        except Exception:
+            _GLOBAL_CONN = None
         raise
 
 
