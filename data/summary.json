@@ -1,16 +1,12 @@
 {
-  "generated_at": "2026-10-03T17:04:54.646818+00:00",
-  "total_books": 58,
-  "total_chunks": 8881,
-  "new_chunks": 0,
+  "generated_at": "2026-10-03T17:50:51.182265+00:00",
+  "total_books": 59,
+  "total_chunks": 8884,
+  "new_chunks": 3,
   "new_files": [
-    "09_trend.md",
-    "10_st.md",
-    "11_orderflow.md",
-    "12_crypto.md",
-    "13_exchange.md"
+    "14_fibonacci.md"
   ],
-  "skipped_already_in_db": 5,
+  "skipped_already_in_db": 0,
   "refreshed_categories": 0,
   "books": [
     {
@@ -359,6 +355,12 @@
       "file": "13_exchange.md",
       "pages": 1,
       "chunks": 4,
+      "category": "misc"
+    },
+    {
+      "file": "14_fibonacci.md",
+      "pages": 1,
+      "chunks": 3,
       "category": "misc"
     }
   ]
