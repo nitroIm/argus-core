@@ -1,0 +1,48 @@
+name: ARGUS Books Info
+
+on:
+  workflow_dispatch:
+
+jobs:
+  info:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Print books info
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          f = Path("data/knowledge.json")
+          if not f.exists():
+              print("knowledge.json не найден")
+              raise SystemExit(1)
+
+          with open(f, "r", encoding="utf-8") as fp:
+              data = json.load(fp)
+
+          books = data.get("books", [])
+          chunks = data.get("chunks", [])
+
+          # Первый чанк каждой книги
+          first = {}
+          for c in chunks:
+              b = c.get("book", "")
+              if b and b not in first:
+                  first[b] = (c.get("text", "") or "")[:200]
+
+          print("=" * 60)
+          print(f"Всего книг: {len(books)}")
+          print("=" * 60)
+          for b in books:
+              name = b.get("file", "?")
+              n_chunks = b.get("chunks_total", b.get("chunks", 0))
+              preview = first.get(name, "")[:150]
+              preview = preview.replace("\n", " ")
+              print()
+              print(f"📖 {name}")
+              print(f"   chunks: {n_chunks}")
+              print(f"   preview: {preview}")
+          PY
