@@ -50,7 +50,9 @@ LONG_WORD_RE = re.compile(
 def md5_file(path: Path, chunk_size: int = 1 << 20) -> str:
     h = hashlib.md5()
     with open(path, "rb") as f:
-        for chunk in iter(lambda: f.read(chunk_size), b""):
+        for chunk in iter(
+            lambda: f.read(chunk_size), b""
+        ):
             h.update(chunk)
     return h.hexdigest()
 
@@ -77,7 +79,9 @@ def clean_text(text: str) -> str:
     return text.strip()
 
 
-def split_into_chunks(text, target=900, min_size=600):
+def split_into_chunks(
+    text, target=900, min_size=600,
+):
     text = re.sub(r"\n+", " ", text)
     text = re.sub(r"\s+", " ", text).strip()
     sentences = re.split(r"(?<=[.!?])\s+", text)
@@ -88,14 +92,18 @@ def split_into_chunks(text, target=900, min_size=600):
         sentence = sentence.strip()
         if not sentence:
             continue
-        if len(current) + len(sentence) + 1 <= target:
-            current = (current + " " + sentence) if current else sentence
+
+        if (len(current) + len(sentence) + 1
+                <= target):
+            if current:
+                current += " " + sentence
+            else:
+                current = sentence
         else:
-           ) if len(current) >= min_size:
- ->                chunks.append bool(current)
+            if len(current) >= min_size:
+                chunks.append(current)
             elif chunks:
-               :
- chunks[-1] =    chunks[-1] + " if " + current
+                chunks[-1] += " " + current
             elif current:
                 chunks.append(current)
             current = sentence
@@ -103,37 +111,52 @@ def split_into_chunks(text, target=900, min_size=600):
     if len(current) >= min_size:
         chunks.append(current)
     elif chunks and current:
-        chunks[-1] = chunks[-1] + " " + current
+        chunks[-1] += " " + current
     elif current:
         chunks.append(current)
     return chunks
 
 
-def is_good_chunk(chunk: str len(chunk) < MIN_CHUNK_LEN:
+def is_good_chunk(chunk: str) -> bool:
+    if len(chunk) < MIN_CHUNK_LEN:
         return False
     letters = sum(1 for c in chunk if c.isalpha())
+    if len(chunk) == 0:
+        return False
     return letters / len(chunk) > 0.5
 
 
 def parse_pdf(filepath):
     doc = fitz.open(str(filepath))
     pages = len(doc)
-    text = "".join(page.get_text() + "\n" for page in doc)
+    text = "".join(
+        page.get_text() + "\n" for page in doc
+    )
     doc.close()
     return text, pages
 
 
 def parse_txt(filepath):
-    with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
+    with open(
+        filepath, "r", encoding="utf-8",
+        errors="ignore",
+    ) as f:
         return f.read(), 1
 
 
 def parse_md(filepath):
-    with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
+    with open(
+        filepath, "r", encoding="utf-8",
+        errors="ignore",
+    ) as f:
         text = f.read()
     text = re.sub(r"#{1,6}\s+", "", text)
-    text = re.sub(r"\[([^\]]+)\]\([^\)]+\)", r"\1", text)
-    text = re.sub(r"[*_]{1,3}([^*_]+)[*_]{1,3}", r"\1", text)
+    text = re.sub(
+        r"\[([^\]]+)\]\([^\)]+\)", r"\1", text
+    )
+    text = re.sub(
+        r"[*_]{1,3}([^*_]+)[*_]{1,3}", r"\1", text
+    )
     text = re.sub(r"`{1,3}[^`]*`{1,3}", "", text)
     return text, 1
 
@@ -147,7 +170,7 @@ PARSERS = {
 
 
 # ============================================================
-# КАТЕГОРИЯ ИЗ ПУТИ
+# CATEGORY FROM PATH
 # ============================================================
 KNOWN_CATEGORIES = {
     "trading", "crypto", "quant", "psychology",
@@ -156,8 +179,6 @@ KNOWN_CATEGORIES = {
 
 
 def get_category(filepath: Path) -> str:
-    """Из books/crypto/rsi.md → 'crypto'.
-    Из books/rsi.md → 'misc'."""
     try:
         rel = filepath.relative_to(BOOKS_DIR)
     except ValueError:
@@ -172,58 +193,76 @@ def get_category(filepath: Path) -> str:
 
 
 # ============================================================
-# ЗАГРУЗКА СУЩЕСТВУЮЩИХ ЗНАНИЙ
+# LOAD EXISTING KNOWLEDGE
 # ============================================================
 knowledge = {"books": [], "chunks": []}
 if KNOWLEDGE_FILE.exists():
     try:
-        with open(KNOWLEDGE_FILE, "r", encoding="utf-8") as f:
+        with open(
+            KNOWLEDGE_FILE, "r", encoding="utf-8"
+        ) as f:
             data = json.load(f)
         if isinstance(data, dict) and "chunks" in data:
             knowledge = data
-            print(f"📚 Загружено: {len(knowledge['books'])} книг, "
-                  f"{len(knowledge['chunks'])} чанков")
+            print(
+                f"Loaded: {len(knowledge['books'])} books, "
+                f"{len(knowledge['chunks'])} chunks"
+            )
         else:
-            print("⚠️ knowledge.json битый — начинаю с нуля")
+            print("Warning: knowledge.json broken")
     except Exception as e:
-        print(f"⚠️ Не удалось прочитать: {e}")
+        print(f"Warning: cannot read: {e}")
 
-processed_hashes = {b.get("file_hash") for b in knowledge.get("books", [])
-                    if b.get("file_hash")}
-processed_names = {b.get("file") for b in knowledge.get("books", [])
-                   if b.get("file")}
-existing_chunk_hashes = {md5_text(c.get("text", ""))
-                         for c in knowledge.get("chunks", [])}
+processed_hashes = {
+    b.get("file_hash")
+    for b in knowledge.get("books", [])
+    if b.get("file_hash")
+}
+processed_names = {
+    b.get("file")
+    for b in knowledge.get("books", [])
+    if b.get("file")
+}
+existing_chunk_hashes = {
+    md5_text(c.get("text", ""))
+    for c in knowledge.get("chunks", [])
+}
 
 
 # ============================================================
-# КАТЕГОРИИ
+# CATEGORIES
 # ============================================================
 categories = {}
 if CATEGORIES_FILE.exists():
     try:
-        with open(CATEGORIES_FILE, "r", encoding="utf-8") as f:
+        with open(
+            CATEGORIES_FILE, "r", encoding="utf-8"
+        ) as f:
             categories = json.load(f)
-        print(f"📂 Категорий загружено: {len(categories)}")
+        print(
+            f"Categories loaded: {len(categories)}"
+        )
     except Exception as e:
-        print(f"⚠️ book_categories.json: {e}")
+        print(f"Warning: book_categories.json: {e}")
 
 
 # ============================================================
-# ОБРАБОТКА КНИГ — РЕКУРСИВНО
+# PROCESS BOOKS — RECURSIVELY
 # ============================================================
 new_files_ingested = []
 total_new_chunks = 0
 skipped_already_in_db = 0
 
 if not BOOKS_DIR.is_dir():
-    print("⚠️ Нет папки books/")
+    print("Warning: no books/ directory")
 else:
     all_files = sorted(
         p for p in BOOKS_DIR.rglob("*")
         if p.is_file() and not p.name.startswith(".")
     )
-    print(f"🔍 Найдено файлов (рекурсивно): {len(all_files)}")
+    print(
+        f"Found files (recursive): {len(all_files)}"
+    )
 
     for filepath in all_files:
         ext = filepath.suffix.lower()
@@ -236,27 +275,29 @@ else:
         try:
             fhash = md5_file(filepath)
         except Exception as e:
-            print(f"❌ Не могу прочитать {filename}: {e}")
+            print(f"Error reading {filename}: {e}")
             continue
 
-        if fhash in processed_hashes or filename in processed_names:
-            print(f"⏭ Уже обработана: {filename}")
-            # обновим категорию на случай если поменялась
+        if (fhash in processed_hashes
+                or filename in processed_names):
+            print(f"Skipped: {filename}")
             categories[filename] = category
             new_files_ingested.append(filename)
             skipped_already_in_db += 1
             continue
 
-        print(f"📖 Обработка: {filename} [{category}]")
+        print(f"Processing: {filename} [{category}]")
         try:
             text, pages = PARSERS[ext](filepath)
             if len(text.strip()) < 100:
-                print("   ⚠️ Слишком мало текста")
+                print("   Warning: too little text")
                 continue
 
             cleaned = clean_text(text)
             chunks = split_into_chunks(cleaned)
-            good_chunks = [c for c in chunks if is_good_chunk(c)]
+            good_chunks = [
+                c for c in chunks if is_good_chunk(c)
+            ]
 
             added = 0
             skipped_dup = 0
@@ -295,25 +336,41 @@ else:
                 categories[filename] = category
 
             new_files_ingested.append(filename)
-            print(f"   ✅ Добавлено: {added}, дублей: {skipped_dup}")
+            print(
+                f"   Added: {added}, dups: {skipped_dup}"
+            )
 
         except Exception as e:
-            print(f"   ❌ Ошибка парсинга: {e}")
+            print(f"   Error parsing: {e}")
 
 
 # ============================================================
-# СОХРАНЕНИЕ
+# SAVE
 # ============================================================
-with open(KNOWLEDGE_FILE, "w", encoding="utf-8") as f:
-    json.dump(knowledge, f, ensure_ascii=False, indent=2)
+with open(
+    KNOWLEDGE_FILE, "w", encoding="utf-8"
+) as f:
+    json.dump(
+        knowledge, f, ensure_ascii=False,
+        indent=2,
+    )
 
-with open(CATEGORIES_FILE, "w", encoding="utf-8") as f:
-    json.dump(categories, f, ensure_ascii=False, indent=2)
-print(f"💾 book_categories.json: {len(categories)} книг")
+with open(
+    CATEGORIES_FILE, "w", encoding="utf-8"
+) as f:
+    json.dump(
+        categories, f, ensure_ascii=False,
+        indent=2,
+    )
+print(f"Saved book_categories.json: {len(categories)}")
 
-with open(LAST_INGEST_FILE, "w", encoding="utf-8") as f:
+with open(
+    LAST_INGEST_FILE, "w", encoding="utf-8"
+) as f:
     json.dump({
-        "ingested_at": datetime.now(timezone.utc).isoformat(),
+        "ingested_at": datetime.now(
+            timezone.utc
+        ).isoformat(),
         "files": new_files_ingested,
         "new_chunks": total_new_chunks,
         "skipped_already_in_db": skipped_already_in_db,
@@ -322,12 +379,16 @@ with open(LAST_INGEST_FILE, "w", encoding="utf-8") as f:
 books_list = [{
     "file": b.get("file", "?"),
     "pages": b.get("pages", 0),
-    "chunks": b.get("chunks_total", b.get("chunks", 0)),
+    "chunks": b.get(
+        "chunks_total", b.get("chunks", 0)
+    ),
     "category": b.get("category", "misc"),
 } for b in knowledge.get("books", [])]
 
 summary = {
-    "generated_at": datetime.now(timezone.utc).isoformat(),
+    "generated_at": datetime.now(
+        timezone.utc
+    ).isoformat(),
     "total_books": len(books_list),
     "total_chunks": len(knowledge.get("chunks", [])),
     "new_chunks": total_new_chunks,
@@ -335,13 +396,15 @@ summary = {
     "skipped_already_in_db": skipped_already_in_db,
     "books": books_list,
 }
-with open(SUMMARY_FILE, "w", encoding="utf-8") as f:
+with open(
+    SUMMARY_FILE, "w", encoding="utf-8"
+) as f:
     json.dump(summary, f, ensure_ascii=False, indent=2)
 
 print()
-print("🎉 INGEST завершён.")
-print(f"   Всего книг:   {len(knowledge['books'])}")
-print(f"   Всего чанков: {len(knowledge['chunks'])}")
-print(f"   Новых чанков: {total_new_chunks}")
-print(f"   Файлов на cleanup: {len(new_files_ingested)}")
-print(f"   Уже было: {skipped_already_in_db}")
+print("INGEST completed.")
+print(f"   Total books:   {len(knowledge['books'])}")
+print(f"   Total chunks:  {len(knowledge['chunks'])}")
+print(f"   New chunks:    {total_new_chunks}")
+print(f"   Cleanup files: {len(new_files_ingested)}")
+print(f"   Already had:   {skipped_already_in_db}")
