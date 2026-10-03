@@ -1,15 +1,16 @@
 {
-  "generated_at": "2026-10-03T11:51:45.772057+00:00",
-  "total_books": 52,
-  "total_chunks": 8861,
-  "new_chunks": 11,
+  "generated_at": "2026-10-03T11:54:30.426984+00:00",
+  "total_books": 53,
+  "total_chunks": 8862,
+  "new_chunks": 1,
   "new_files": [
+    "08_psychology.md",
     "04_atr.md",
     "05_volume.md",
     "06_candles.md",
     "07_risk.md"
   ],
-  "skipped_already_in_db": 0,
+  "skipped_already_in_db": 4,
   "books": [
     {
       "file": "Френсис Бэкон .pdf",
@@ -322,6 +323,12 @@
       "pages": 1,
       "chunks": 3,
       "category": "misc"
+    },
+    {
+      "file": "08_psychology.md",
+      "pages": 1,
+      "chunks": 1,
+      "category": "psychology"
     }
   ]
 }
