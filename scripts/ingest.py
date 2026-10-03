@@ -1,12 +1,10 @@
 # ============================================================
-# ARGUS — INGEST v7.5 [PRODUCTION]
+# ARGUS — INGEST v7.6
 # ------------------------------------------------------------
-# v7.5: + защита от мусора (HTML, entity, bad_chars, long_word)
-#       + дедуп по filename (не только по file_hash)
-#       + чанки < 200 символов после чистки — не добавляются
-# ------------------------------------------------------------
-# v7.4: файлы в processed_hashes помечаются для cleanup
-# v7.3: pathlib, file_hash, stable chunk_id, last_ingest.json
+# v7.6: + рекурсия по подпапкам (books/trading/, books/crypto/)
+#       + категория из пути (books/crypto/ → "crypto")
+#       + автообновление book_categories.json
+#       + логика удаления не меняется (в workflow)
 # ============================================================
 
 import re
@@ -16,7 +14,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 import fitz
 
-# --- Пути ---
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parent
 
@@ -25,15 +22,14 @@ DATA_DIR = REPO_ROOT / "data"
 KNOWLEDGE_FILE = DATA_DIR / "knowledge.json"
 SUMMARY_FILE = DATA_DIR / "summary.json"
 LAST_INGEST_FILE = DATA_DIR / "last_ingest.json"
+CATEGORIES_FILE = DATA_DIR / "book_categories.json"
 
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
-# --- Лимиты ---
 MIN_CHUNK_LEN = 200
 MAX_WORD_LEN = 30
 MAX_BAD_RUN = 6
 
-# --- HTML/entity ---
 HTML_TAG_RE = re.compile(r"<[^>]{1,80}>")
 ENTITY_RE = re.compile(r"&[a-z]{2,8};")
 ENTITY_MAP = {
@@ -45,17 +41,12 @@ ENTITY_MAP = {
     "&#39;": "'",
     "&apos;": "'",
 }
-BAD_CHARS_RE = re.compile(
-    r"([^\w\s])\1{%d,}" % (MAX_BAD_RUN - 1)
-)
+BAD_CHARS_RE = re.compile(r"([^\w\s])\1{%d,}" % (MAX_BAD_RUN - 1))
 LONG_WORD_RE = re.compile(
     r"([A-Za-zА-Яа-яЁё]{%d,})" % MAX_WORD_LEN
 )
 
 
-# ============================================================
-# УТИЛИТЫ
-# ============================================================
 def md5_file(path: Path, chunk_size: int = 1 << 20) -> str:
     h = hashlib.md5()
     with open(path, "rb") as f:
@@ -69,31 +60,24 @@ def md5_text(text: str) -> str:
 
 
 def clean_text(text: str) -> str:
-    """Чистит мусор ДО нарезки на чанки."""
-    # HTML теги
     if HTML_TAG_RE.search(text):
         text = HTML_TAG_RE.sub(" ", text)
-    # entity
     if ENTITY_RE.search(text):
         for k, v in ENTITY_MAP.items():
             text = text.replace(k, v)
-    # long words (аааааааааа)
     if LONG_WORD_RE.search(text):
         text = LONG_WORD_RE.sub(
-            lambda m: m.group(1)[:MAX_WORD_LEN],
-            text,
+            lambda m: m.group(1)[:MAX_WORD_LEN], text,
         )
-    # bad chars (=====, .....)
     if BAD_CHARS_RE.search(text):
         text = BAD_CHARS_RE.sub(r"\1", text)
-    # старая логика
     text = re.sub(r"(\S)\1{4,}", r"\1", text)
     text = re.sub(r"[ \t]+", " ", text)
     text = re.sub(r"\n{3,}", "\n\n", text)
     return text.strip()
 
 
-def split_into_chunks(text: str, target: int = 900, min_size: int = 600):
+def split_into_chunks(text, target=900, min_size=600):
     text = re.sub(r"\n+", " ", text)
     text = re.sub(r"\s+", " ", text).strip()
     sentences = re.split(r"(?<=[.!?])\s+", text)
@@ -107,10 +91,11 @@ def split_into_chunks(text: str, target: int = 900, min_size: int = 600):
         if len(current) + len(sentence) + 1 <= target:
             current = (current + " " + sentence) if current else sentence
         else:
-            if len(current) >= min_size:
-                chunks.append(current)
+           ) if len(current) >= min_size:
+ ->                chunks.append bool(current)
             elif chunks:
-                chunks[-1] = chunks[-1] + " " + current
+               :
+ chunks[-1] =    chunks[-1] + " if " + current
             elif current:
                 chunks.append(current)
             current = sentence
@@ -124,17 +109,13 @@ def split_into_chunks(text: str, target: int = 900, min_size: int = 600):
     return chunks
 
 
-def is_good_chunk(chunk: str) -> bool:
-    if len(chunk) < MIN_CHUNK_LEN:
+def is_good_chunk(chunk: str len(chunk) < MIN_CHUNK_LEN:
         return False
     letters = sum(1 for c in chunk if c.isalpha())
     return letters / len(chunk) > 0.5
 
 
-# ============================================================
-# ПАРСЕРЫ
-# ============================================================
-def parse_pdf(filepath: Path):
+def parse_pdf(filepath):
     doc = fitz.open(str(filepath))
     pages = len(doc)
     text = "".join(page.get_text() + "\n" for page in doc)
@@ -142,12 +123,12 @@ def parse_pdf(filepath: Path):
     return text, pages
 
 
-def parse_txt(filepath: Path):
+def parse_txt(filepath):
     with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
         return f.read(), 1
 
 
-def parse_md(filepath: Path):
+def parse_md(filepath):
     with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
         text = f.read()
     text = re.sub(r"#{1,6}\s+", "", text)
@@ -166,6 +147,31 @@ PARSERS = {
 
 
 # ============================================================
+# КАТЕГОРИЯ ИЗ ПУТИ
+# ============================================================
+KNOWN_CATEGORIES = {
+    "trading", "crypto", "quant", "psychology",
+    "philosophy", "physics", "misc", "offtopic",
+}
+
+
+def get_category(filepath: Path) -> str:
+    """Из books/crypto/rsi.md → 'crypto'.
+    Из books/rsi.md → 'misc'."""
+    try:
+        rel = filepath.relative_to(BOOKS_DIR)
+    except ValueError:
+        return "misc"
+    parts = rel.parts
+    if len(parts) >= 2:
+        cat = parts[0].lower()
+        if cat in KNOWN_CATEGORIES:
+            return cat
+        return "misc"
+    return "misc"
+
+
+# ============================================================
 # ЗАГРУЗКА СУЩЕСТВУЮЩИХ ЗНАНИЙ
 # ============================================================
 knowledge = {"books": [], "chunks": []}
@@ -180,23 +186,31 @@ if KNOWLEDGE_FILE.exists():
         else:
             print("⚠️ knowledge.json битый — начинаю с нуля")
     except Exception as e:
-        print(f"⚠️ Не удалось прочитать knowledge.json: {e} — начинаю с нуля")
+        print(f"⚠️ Не удалось прочитать: {e}")
 
-# Дедуп по hash файла
 processed_hashes = {b.get("file_hash") for b in knowledge.get("books", [])
                     if b.get("file_hash")}
-
-# NEW v7.5: дедуп по filename (для старых записей без hash)
 processed_names = {b.get("file") for b in knowledge.get("books", [])
                    if b.get("file")}
-
-# Глобальный дедуп по хэшу текста чанка
 existing_chunk_hashes = {md5_text(c.get("text", ""))
                          for c in knowledge.get("chunks", [])}
 
 
 # ============================================================
-# ОБРАБОТКА КНИГ
+# КАТЕГОРИИ
+# ============================================================
+categories = {}
+if CATEGORIES_FILE.exists():
+    try:
+        with open(CATEGORIES_FILE, "r", encoding="utf-8") as f:
+            categories = json.load(f)
+        print(f"📂 Категорий загружено: {len(categories)}")
+    except Exception as e:
+        print(f"⚠️ book_categories.json: {e}")
+
+
+# ============================================================
+# ОБРАБОТКА КНИГ — РЕКУРСИВНО
 # ============================================================
 new_files_ingested = []
 total_new_chunks = 0
@@ -205,14 +219,19 @@ skipped_already_in_db = 0
 if not BOOKS_DIR.is_dir():
     print("⚠️ Нет папки books/")
 else:
-    for filepath in sorted(BOOKS_DIR.iterdir()):
-        if not filepath.is_file():
-            continue
+    all_files = sorted(
+        p for p in BOOKS_DIR.rglob("*")
+        if p.is_file() and not p.name.startswith(".")
+    )
+    print(f"🔍 Найдено файлов (рекурсивно): {len(all_files)}")
+
+    for filepath in all_files:
         ext = filepath.suffix.lower()
         if ext not in PARSERS:
             continue
 
         filename = filepath.name
+        category = get_category(filepath)
 
         try:
             fhash = md5_file(filepath)
@@ -220,18 +239,19 @@ else:
             print(f"❌ Не могу прочитать {filename}: {e}")
             continue
 
-        # NEW v7.5: дедуп по hash ИЛИ по filename
         if fhash in processed_hashes or filename in processed_names:
-            print(f"⏭ Уже обработана: {filename} — cleanup")
+            print(f"⏭ Уже обработана: {filename}")
+            # обновим категорию на случай если поменялась
+            categories[filename] = category
             new_files_ingested.append(filename)
             skipped_already_in_db += 1
             continue
 
-        print(f"📖 Обработка: {filename}")
+        print(f"📖 Обработка: {filename} [{category}]")
         try:
             text, pages = PARSERS[ext](filepath)
             if len(text.strip()) < 100:
-                print("   ⚠️ Слишком мало текста — пропуск")
+                print("   ⚠️ Слишком мало текста")
                 continue
 
             cleaned = clean_text(text)
@@ -252,6 +272,7 @@ else:
                     "id": chunk_id,
                     "book": filename,
                     "source": filepath.stem,
+                    "category": category,
                     "chunk_index": idx,
                     "text": chunk,
                 })
@@ -263,18 +284,21 @@ else:
                     "file_hash": fhash,
                     "pages": pages,
                     "chunks_total": added,
-                    "processed_at": datetime.now(timezone.utc).isoformat(),
+                    "category": category,
+                    "processed_at": datetime.now(
+                        timezone.utc
+                    ).isoformat(),
                 })
                 total_new_chunks += added
-                processed_names.add(filename)  # NEW v7.5
+                processed_names.add(filename)
                 processed_hashes.add(fhash)
+                categories[filename] = category
 
             new_files_ingested.append(filename)
-
             print(f"   ✅ Добавлено: {added}, дублей: {skipped_dup}")
 
         except Exception as e:
-            print(f"   ❌ Ошибка парсинга {filename}: {e}")
+            print(f"   ❌ Ошибка парсинга: {e}")
 
 
 # ============================================================
@@ -282,6 +306,10 @@ else:
 # ============================================================
 with open(KNOWLEDGE_FILE, "w", encoding="utf-8") as f:
     json.dump(knowledge, f, ensure_ascii=False, indent=2)
+
+with open(CATEGORIES_FILE, "w", encoding="utf-8") as f:
+    json.dump(categories, f, ensure_ascii=False, indent=2)
+print(f"💾 book_categories.json: {len(categories)} книг")
 
 with open(LAST_INGEST_FILE, "w", encoding="utf-8") as f:
     json.dump({
@@ -295,6 +323,7 @@ books_list = [{
     "file": b.get("file", "?"),
     "pages": b.get("pages", 0),
     "chunks": b.get("chunks_total", b.get("chunks", 0)),
+    "category": b.get("category", "misc"),
 } for b in knowledge.get("books", [])]
 
 summary = {
@@ -315,4 +344,4 @@ print(f"   Всего книг:   {len(knowledge['books'])}")
 print(f"   Всего чанков: {len(knowledge['chunks'])}")
 print(f"   Новых чанков: {total_new_chunks}")
 print(f"   Файлов на cleanup: {len(new_files_ingested)}")
-print(f"   Уже было в базе: {skipped_already_in_db}")
+print(f"   Уже было: {skipped_already_in_db}")
