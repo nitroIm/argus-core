@@ -1,8 +1,10 @@
 # ============================================================
-# ARGUS - SIMULATOR 01 v9.4
+# ARGUS - SIMULATOR 01 v9.5
 # ------------------------------------------------------------
+# v9.5: SOL/BNB candles read from DB2 (ARGUS_DB_URL_2),
+#       BTC/ETH from DB1 (ARGUS_DB_URL). Read-only routing.
 # v9.4: fix slippage direction for SHORT
-# v9.3: fix SyntaxError на trade["exit_time"] (строка 728)
+# v9.3: fix SyntaxError на trade["exit_time"]
 # v9.2: fix UnboundLocalError в check_signal
 # v9.1: MAX_POSITIONS=3, POSITION_SIZE=8, TIME_EXIT=12
 # ============================================================
@@ -30,6 +32,8 @@ sys.path.insert(0, str(SCRIPT_DIR))
 
 from client import MexcClient
 from db import get_connection, close_connection
+from db2 import get_connection as get_conn_db2
+from db2 import close_connection as close_conn_db2
 
 try:
     import explorer as explorer_mod
@@ -74,6 +78,7 @@ WATCH_INTERVAL_SEC = 600
 WATCH_MAX_MIN = 55
 
 SYMBOLS = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT"]
+DB2_SYMBOLS = {"SOLUSDT", "BNBUSDT"}
 
 BOT_TOKEN = (
     os.getenv("TELEGRAM_BOT_TOKEN")
@@ -81,6 +86,13 @@ BOT_TOKEN = (
     or ""
 ).strip()
 CHAT_ID = (os.getenv("TELEGRAM_CHAT_ID") or "").strip()
+
+
+def candles_conn(symbol):
+    """DB2 for SOL/BNB, DB1 for the rest."""
+    if symbol in DB2_SYMBOLS:
+        return get_conn_db2()
+    return get_connection()
 
 
 def notify(text):
@@ -230,7 +242,7 @@ def get_klines_1m(client, symbol, limit=180, start_ms=None):
 
 def get_candles_range(symbol, start_dt):
     try:
-        with get_connection() as conn:
+        with candles_conn(symbol) as conn:
             with conn.cursor() as cur:
                 cur.execute(
                     "SELECT timestamp, open, high, low, "
@@ -259,7 +271,7 @@ def get_candles_range(symbol, start_dt):
 
 def get_candles(symbol, limit=200):
     try:
-        with get_connection() as conn:
+        with candles_conn(symbol) as conn:
             with conn.cursor() as cur:
                 cur.execute(
                     "SELECT timestamp, open, high, low, "
@@ -356,32 +368,6 @@ def get_resistances(symbol, price):
     above = [r for r in resistances if r.get("price", 0) > price]
     above.sort(key=lambda x: x["price"])
     return above
-
-
-def get_markov_p10(symbol):
-    p = load_analysis("patterns_analysis.json")
-    sym = p.get("symbols", {}).get(symbol, {})
-    mk = sym.get("markov", {})
-    return mk.get("p_1_given_0", 0)
-
-
-def get_rules(symbol):
-    c = load_analysis("correlations.json", max_age_h=RULES_MAX_AGE_H)
-    sym = c.get("symbols", {}).get(symbol, {})
-    return sym.get("rules", [])
-
-
-def filter_rules(rules, direction):
-    out = []
-    for r in rules:
-        if r.get("direction") != direction:
-            continue
-        if r.get("samples", 0) < 5:
-            continue
-        if r.get("confidence", 0) < 0.6:
-            continue
-        out.append(r)
-    return out
 
 
 def build_levels(price, sup, resistances, atr, direction):
@@ -855,9 +841,10 @@ def watch_position(client):
 
 def main():
     log.info("=" * 50)
-    log.info("SIMULATOR 01 v9.4")
+    log.info("SIMULATOR 01 v9.5")
     log.info("MAX_POSITIONS=%d, SIZE=$%.2f, TIME_EXIT=%dh",
              MAX_POSITIONS, POSITION_SIZE, TIME_EXIT_HOURS)
+    log.info("DB2 symbols: %s", ", ".join(sorted(DB2_SYMBOLS)))
     log.info("=" * 50)
     client = MexcClient()
 
@@ -899,6 +886,10 @@ def main():
         except Exception:
             pass
     close_connection()
+    try:
+        close_conn_db2()
+    except Exception:
+        pass
 
 
 if __name__ == "__main__":
