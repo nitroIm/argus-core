@@ -1,20 +1,20 @@
 {
-  "generated_at": "2026-10-04T03:45:47.263304+00:00",
+  "generated_at": "2026-10-04T04:41:04.119425+00:00",
   "model_accuracy": 0.5577,
   "signals": [
     {
       "symbol": "BTCUSDT",
       "action": "WAIT",
       "strength": "weak",
-      "prob_up": 0.5242,
-      "confidence": 0.0484
+      "prob_up": 0.5526,
+      "confidence": 0.1051
     },
     {
       "symbol": "ETHUSDT",
       "action": "WAIT",
       "strength": "weak",
-      "prob_up": 0.5006,
-      "confidence": 0.0012
+      "prob_up": 0.5185,
+      "confidence": 0.0369
     }
   ]
 }
