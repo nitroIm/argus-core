@@ -9,7 +9,7 @@ name: ARGUS Evening Report
 on:
   workflow_dispatch:
   # schedule:
-    # - cron: '0 18 * * *'
+  #   - cron: '0 18 * * *'
 
 permissions:
   contents: read
@@ -40,6 +40,8 @@ jobs:
         env:
           ARGUS_DB_URL: >-
             ${{ secrets.ARGUS_DB_URL }}
+          ARGUS_DB_URL_2: >-
+            ${{ secrets.ARGUS_DB_URL_2 }}
           TELEGRAM_BOT_TOKEN: >-
             ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: >-
