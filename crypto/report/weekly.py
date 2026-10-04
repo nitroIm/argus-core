@@ -1,11 +1,10 @@
 # ============================================================
-# ARGUS-Trader — НЕДЕЛЬНЫЙ ОТЧЁТ v6
+# ARGUS-Trader — НЕДЕЛЬНЫЙ ОТЧЁТ v7
 # ------------------------------------------------------------
-# v6: + weekly portfolio (start/end balance, PnL, WR).
-#     + per-symbol breakdown, best/worst trade.
-#     + model evolution, data growth, regimes.
+# v7: fix events timestamp (was created_at -> 0 rows).
+#     + DB2 candle counts (SOL/BNB).
 #     Kaliningrad time.
-# v5: charts + base stats.
+# v6: + weekly portfolio, per-symbol, best/worst.
 # ============================================================
 
 import os
@@ -27,6 +26,7 @@ MODELS_DIR = LEARN_DIR / "models"
 
 sys.path.insert(0, str(CRYPTO_ROOT))
 
+# Auto-locate db2.py
 for _p in CRYPTO_ROOT.rglob("db2.py"):
     _d = str(_p.parent)
     if "__pycache__" in _d:
@@ -36,6 +36,23 @@ for _p in CRYPTO_ROOT.rglob("db2.py"):
     break
 
 from db import get_connection, close_connection
+
+DB2_OK = False
+get_conn_db2 = None
+close_conn_db2 = None
+if (os.getenv("ARGUS_DB_URL_2") or "").strip():
+    try:
+        from db2 import get_connection as get_conn_db2
+        from db2 import close_connection as close_conn_db2
+        _t = get_conn_db2()
+        with _t as _c:
+            with _c.cursor() as _cur:
+                _cur.execute("SELECT 1")
+                _cur.fetchone()
+        DB2_OK = True
+        print("DB2 OK")
+    except Exception as e:
+        print("DB2 fail: " + str(e))
 
 try:
     from report.charts import plot_candles
@@ -48,14 +65,7 @@ except Exception as e:
 
 TZ = ZoneInfo("Europe/Kaliningrad")
 
-WATCHED_FILES = [
-    "levels_analysis.json",
-    "patterns_analysis.json",
-    "correlations.json",
-    "events_analysis.json",
-    "causal_analysis.json",
-    "news_sentiment.json",
-]
+DB2_SYMBOLS = {"SOLUSDT", "BNBUSDT"}
 
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
@@ -90,11 +100,6 @@ def fmt_price(p):
 def _signed_usd(v):
     sign = "+" if v >= 0 else "-"
     return sign + "$" + format(abs(v), ".2f")
-
-
-def _signed_pct(v):
-    sign = "+" if v >= 0 else ""
-    return sign + format(v, ".2f") + "%"
 
 
 # ============================================================
@@ -199,8 +204,6 @@ def fmt_week_portfolio():
 
     balance = float(p.get("balance", 0))
     start = float(p.get("start_balance", 50))
-    pnl_all = float(p.get("realized_pnl", 0))
-    total_all = int(p.get("total_trades", 0))
 
     lines.append(
         "  Сейчас: $" + format(balance, ".2f")
@@ -232,16 +235,15 @@ def fmt_week_portfolio():
     line += " WR " + format(week_wr, ".1f") + "%)"
     lines.append(line)
 
-    line = "  PnL неделя: " + _signed_usd(week_pnl)
-    lines.append(line)
+    lines.append(
+        "  PnL неделя: " + _signed_usd(week_pnl)
+    )
 
-    # Average
     avg = week_pnl / len(week_t) if week_t else 0
     lines.append(
         "  Средний PnL: " + _signed_usd(avg)
     )
 
-    # Best / worst
     sorted_t = sorted(
         week_t,
         key=lambda x: float(x.get("pnl_usd", 0)),
@@ -295,7 +297,7 @@ def fmt_week_portfolio():
 
 
 # ============================================================
-# MODEL EVOLUTION
+# MODEL
 # ============================================================
 def fmt_model_block():
     lines = ["🧠 <b>Модель</b>"]
@@ -346,98 +348,181 @@ def fmt_model_block():
 
 
 # ============================================================
-# DATA STATS
+# DATA STATS (with DB2)
 # ============================================================
+def _candles_in(conn, symbol):
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT COUNT(*) FROM candles "
+                "WHERE symbol=%s AND timeframe='1h'",
+                (symbol,),
+            )
+            return cur.fetchone()[0] or 0
+    except Exception:
+        return -1
+
+
 def fetch_stats():
     stats = {
-        "candles": {"total": 0, "btc_1h": 0, "eth_1h": 0},
-        "features_hourly": {"total": 0},
-        "price_patterns": {"total": 0},
-        "events": {"total": 0, "week": 0, "by_type": {}},
-        "causal_links": {"total": 0},
-        "anomaly_log": {"total": 0, "week": 0},
+        "candles": {},
+        "features_hourly": 0,
+        "price_patterns": 0,
+        "events": 0,
+        "events_week": 0,
+        "events_by_type": {},
+        "causal_links": 0,
+        "anomaly_week": 0,
     }
+
+    # DB1: BTC/ETH
     try:
         with get_connection() as conn:
-            with conn.cursor() as cur:
-                cur.execute("SELECT COUNT(*) FROM candles")
-                stats["candles"]["total"] = cur.fetchone()[0]
+            for sym in ["BTCUSDT", "ETHUSDT"]:
+                stats["candles"][sym] = _candles_in(
+                    conn, sym
+                )
 
-                for sym_k, sym_v in [
-                    ("BTCUSDT", "btc_1h"),
-                    ("ETHUSDT", "eth_1h"),
-                ]:
+            for k, t in [
+                ("features_hourly", "features_hourly"),
+                ("price_patterns", "price_patterns"),
+                ("events", "events"),
+                ("causal_links", "causal_links"),
+            ]:
+                try:
+                    with conn.cursor() as cur:
+                        cur.execute(
+                            "SELECT COUNT(*) FROM " + t
+                        )
+                        stats[k] = cur.fetchone()[0] or 0
+                except Exception:
+                    pass
+
+            # Events week — by timestamp, not created_at
+            try:
+                with conn.cursor() as cur:
                     cur.execute(
-                        "SELECT COUNT(*) FROM candles "
-                        "WHERE symbol=%s AND "
-                        "timeframe='1h'",
-                        (sym_k,),
+                        "SELECT COUNT(*) FROM events "
+                        "WHERE timestamp > "
+                        "NOW() - INTERVAL '7 days'"
                     )
-                    stats["candles"][sym_v] = cur.fetchone()[0]
+                    stats["events_week"] = (
+                        cur.fetchone()[0] or 0
+                    )
+            except Exception:
+                pass
 
-                for t in [
-                    "features_hourly",
-                    "price_patterns",
-                    "events",
-                    "causal_links",
-                ]:
-                    cur.execute("SELECT COUNT(*) FROM " + t)
-                    stats[t]["total"] = cur.fetchone()[0]
+            try:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        "SELECT event_type, COUNT(*) "
+                        "FROM events "
+                        "WHERE timestamp > "
+                        "NOW() - INTERVAL '7 days' "
+                        "GROUP BY event_type "
+                        "ORDER BY 2 DESC LIMIT 5"
+                    )
+                    stats["events_by_type"] = {
+                        r[0]: r[1] for r in cur.fetchall()
+                    }
+            except Exception:
+                pass
 
-                cur.execute(
-                    "SELECT COUNT(*) FROM events "
-                    "WHERE created_at > "
-                    "NOW() - INTERVAL '7 days'"
-                )
-                stats["events"]["week"] = cur.fetchone()[0] or 0
-
-                cur.execute(
-                    "SELECT event_type, COUNT(*) "
-                    "FROM events "
-                    "WHERE created_at > "
-                    "NOW() - INTERVAL '7 days' "
-                    "GROUP BY event_type "
-                    "ORDER BY 2 DESC LIMIT 5"
-                )
-                stats["events"]["by_type"] = {
-                    r[0]: r[1] for r in cur.fetchall()
-                }
-
-                cur.execute(
-                    "SELECT COUNT(*) FROM anomaly_log "
-                    "WHERE created_at > "
-                    "NOW() - INTERVAL '7 days'"
-                )
-                stats["anomaly_log"]["week"] = (
-                    cur.fetchone()[0] or 0
-                )
+            try:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        "SELECT COUNT(*) FROM anomaly_log "
+                        "WHERE timestamp > "
+                        "NOW() - INTERVAL '7 days'"
+                    )
+                    stats["anomaly_week"] = (
+                        cur.fetchone()[0] or 0
+                    )
+            except Exception:
+                pass
     except Exception as e:
-        print("stats: " + str(e))
+        print("stats DB1: " + str(e))
+
+    # DB2: SOL/BNB
+    if DB2_OK:
+        try:
+            with get_conn_db2() as conn:
+                for sym in ["SOLUSDT", "BNBUSDT"]:
+                    stats["candles"][sym] = _candles_in(
+                        conn, sym
+                    )
+        except Exception as e:
+            print("stats DB2: " + str(e))
+            for sym in ["SOLUSDT", "BNBUSDT"]:
+                stats["candles"][sym] = -1
+
     return stats
 
 
 def fmt_data_block(stats):
     lines = ["📦 <b>Данные</b>"]
+
     c = stats["candles"]
-    line = "  Свечи: " + format(c["total"], ",")
-    line += " (BTC " + str(c["btc_1h"])
-    line += " | ETH " + str(c["eth_1h"]) + ")"
+    parts = []
+    for sym in ["BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT"]:
+        n = c.get(sym, -1)
+        name = sym.replace("USDT", "")
+        if n < 0:
+            parts.append(name + " ?")
+        else:
+            parts.append(name + " " + str(n))
+    lines.append("  Свечи: " + " | ".join(parts))
+
+    lines.append(
+        "  Features: " + str(stats["features_hourly"])
+    )
+
+    line = "  Events: " + str(stats["events"])
+    line += " (неделя " + str(stats["events_week"]) + ")"
     lines.append(line)
 
-    line = "  Features: "
-    line += format(stats["features_hourly"]["total"], ",")
-    lines.append(line)
-
-    line = "  Events: " + format(stats["events"]["total"], ",")
-    line += " (неделя " + str(stats["events"]["week"]) + ")"
-    lines.append(line)
-
-    if stats["events"]["by_type"]:
+    if stats["events_by_type"]:
         parts = [
             t + " " + str(n)
-            for t, n in stats["events"]["by_type"].items()
+            for t, n in stats["events_by_type"].items()
         ]
         lines.append("    " + ", ".join(parts))
+
+    return lines
+
+
+# ============================================================
+# LEVELS + CORR
+# ============================================================
+def fmt_levels_block():
+    lines = []
+    levels = load_json(DATA_DIR / "levels_analysis.json", {})
+    if not levels or not levels.get("symbols"):
+        return lines
+
+    lines.append("📍 <b>Уровни</b>")
+    for sym, data in levels["symbols"].items():
+        name = sym.replace("USDT", "")
+        price = data.get("current_price", 0)
+        sup = data.get("supports", [])
+        res = data.get("resistances", [])
+        lines.append(
+            "  " + name + ": " + fmt_price(price)
+        )
+        if sup:
+            s = sup[0]
+            lines.append(
+                "    🛡 " + fmt_price(s["price"])
+                + " (-" + format(s["distance_pct"], ".2f")
+                + "%)"
+            )
+        if res:
+            r = res[0]
+            lines.append(
+                "    ⚔️ " + fmt_price(r["price"])
+                + " (+" + format(r["distance_pct"], ".2f")
+                + "%)"
+            )
     return lines
 
 
@@ -475,37 +560,6 @@ def fmt_corr_block():
         line += " e=" + format(r.get("edge", 0), ".2f")
         line += ")"
         lines.append(line)
-    return lines
-
-
-def fmt_levels_block():
-    lines = []
-    levels = load_json(DATA_DIR / "levels_analysis.json", {})
-    if not levels or not levels.get("symbols"):
-        return lines
-
-    lines.append("📍 <b>Уровни</b>")
-    for sym, data in levels["symbols"].items():
-        name = sym.replace("USDT", "")
-        price = data.get("current_price", 0)
-        sup = data.get("supports", [])
-        res = data.get("resistances", [])
-        line = "  " + name + ": " + fmt_price(price)
-        lines.append(line)
-        if sup:
-            s = sup[0]
-            lines.append(
-                "    🛡 " + fmt_price(s["price"])
-                + " (-" + format(s["distance_pct"], ".2f")
-                + "%)"
-            )
-        if res:
-            r = res[0]
-            lines.append(
-                "    ⚔️ " + fmt_price(r["price"])
-                + " (+" + format(r["distance_pct"], ".2f")
-                + "%)"
-            )
     return lines
 
 
@@ -569,23 +623,20 @@ def build_candle_caption(symbol, candles, sup, res):
 
 def build_pattern_caption(symbol, data):
     name = symbol.replace("USDT", "")
-    lines = [f"🧩 <b>{name} — 50h pattern</b>"]
+    lines = [f"🧩 <b>{name} — 50h</b>"]
     up = data.get("up_count", 0)
     down = data.get("down_count", 0)
     ratio = data.get("up_ratio", 0) * 100
     lines.append(
         f"⬆️ {up} | ⬇️ {down} ({ratio:.0f}% up)"
     )
-    lines.append(
-        "📈 Streak up " + str(data.get("max_streak_up", 0))
-        + " | ⬇️ " + str(data.get("max_streak_down", 0))
-    )
     top = data.get("ngrams_top", [])[:1]
     if top:
         t = top[0]
         p_up = t["p_up"] * 100
         lines.append(
-            f"🔥 `{t['ngram']}` → ↑ {p_up:.0f}% (N={t['count']})"
+            f"🔥 `{t['ngram']}` → ↑ {p_up:.0f}% "
+            f"(N={t['count']})"
         )
     return "\n".join(lines)
 
@@ -598,9 +649,9 @@ def build_markov_caption(symbol, mk):
     lines.append(f"P(1|1) = {p11:.2f} (после роста)")
     lines.append(f"P(1|0) = {p10:.2f} (после падения)")
     if p10 > 0.55:
-        lines.append("📌 Mean reversion: отскок")
+        lines.append("📌 Mean reversion")
     elif p10 < 0.45:
-        lines.append("📌 Momentum: продолжение")
+        lines.append("📌 Momentum")
     else:
         lines.append("📌 Neutral")
     return "\n".join(lines)
@@ -610,11 +661,11 @@ def build_markov_caption(symbol, mk):
 # MAIN
 # ============================================================
 def main():
-    print("weekly v6")
+    print("weekly v7")
 
     now = now_local()
     lines = []
-    lines.append("📅 <b>ARGUS — неделя</b> v6")
+    lines.append("📅 <b>ARGUS — неделя</b> v7")
     line = now.strftime("%d.%m.%Y %H:%M")
     line += " КЛГ"
     lines.append(line)
@@ -643,7 +694,7 @@ def main():
     lines.extend(fmt_corr_block())
     lines.append("")
 
-    anom = stats["anomaly_log"]["week"]
+    anom = stats["anomaly_week"]
     if anom > 0:
         lines.append("🚨 Аномалии: " + str(anom))
     else:
@@ -655,6 +706,11 @@ def main():
     if not HAS_CHARTS:
         print("no charts")
         close_connection()
+        if DB2_OK and close_conn_db2:
+            try:
+                close_conn_db2()
+            except Exception:
+                pass
         return
 
     patterns = load_json(DATA_DIR / "patterns_analysis.json")
@@ -694,6 +750,11 @@ def main():
                 send_photo(path, cap)
 
     close_connection()
+    if DB2_OK and close_conn_db2:
+        try:
+            close_conn_db2()
+        except Exception:
+            pass
     print("done")
 
 
