@@ -1,25 +1,152 @@
 {
-  "generated_at": "2026-10-04T07:18:58.715885+00:00",
+  "generated_at": "2026-10-04T08:22:21.247040+00:00",
   "symbols": {
     "BTCUSDT": {
       "symbol": "BTCUSDT",
-      "total_events": 107,
-      "processed": 0,
-      "saved": 0,
-      "summary_by_type": {}
+      "total_events": 200,
+      "processed": 174,
+      "saved": 174,
+      "summary_by_type": {
+        "rsi_oversold": {
+          "count": 47,
+          "avg_funding": 0.0,
+          "avg_oi_change": -1.7058,
+          "avg_ls_ratio": 1.25,
+          "avg_change_24h": -1.5328
+        },
+        "ls_short_extreme": {
+          "count": 25,
+          "avg_funding": 0.0001,
+          "avg_oi_change": 2.8505,
+          "avg_ls_ratio": 0.9584,
+          "avg_change_24h": 0.91
+        },
+        "rsi_overbought": {
+          "count": 4,
+          "avg_funding": 0.0,
+          "avg_oi_change": 6.2864,
+          "avg_ls_ratio": 1.0525,
+          "avg_change_24h": 2.6639
+        },
+        "volume_spike": {
+          "count": 16,
+          "avg_funding": 0.0,
+          "avg_oi_change": 0.4967,
+          "avg_ls_ratio": 1.2706,
+          "avg_change_24h": 0.5612
+        },
+        "oi_spike": {
+          "count": 25,
+          "avg_funding": 0.0,
+          "avg_oi_change": -0.7264,
+          "avg_ls_ratio": 1.2532,
+          "avg_change_24h": -0.3877
+        },
+        "fall_1h": {
+          "count": 5,
+          "avg_funding": 0.0,
+          "avg_oi_change": 2.031,
+          "avg_ls_ratio": 1.08,
+          "avg_change_24h": 0.2498
+        },
+        "ls_long_extreme": {
+          "count": 34,
+          "avg_funding": 0.0,
+          "avg_oi_change": -0.4462,
+          "avg_ls_ratio": 1.4247,
+          "avg_change_24h": -0.3848
+        },
+        "funding_spike_pos": {
+          "count": 13,
+          "avg_funding": 0.0001,
+          "avg_oi_change": 1.2441,
+          "avg_ls_ratio": 1.2523,
+          "avg_change_24h": 0.5385
+        },
+        "fall_4h": {
+          "count": 2,
+          "avg_funding": 0.0001,
+          "avg_oi_change": 3.5766,
+          "avg_ls_ratio": 0.98,
+          "avg_change_24h": 1.1059
+        },
+        "rise_1h": {
+          "count": 2,
+          "avg_funding": 0.0001,
+          "avg_oi_change": 2.9851,
+          "avg_ls_ratio": 0.97,
+          "avg_change_24h": 1.1751
+        },
+        "rise_4h": {
+          "count": 1,
+          "avg_funding": 0.0,
+          "avg_oi_change": 2.5739,
+          "avg_ls_ratio": 0.94,
+          "avg_change_24h": 1.529
+        }
+      }
     },
     "ETHUSDT": {
       "symbol": "ETHUSDT",
-      "total_events": 177,
-      "processed": 1,
-      "saved": 1,
+      "total_events": 200,
+      "processed": 110,
+      "saved": 110,
       "summary_by_type": {
+        "volume_spike": {
+          "count": 15,
+          "avg_funding": 0.0,
+          "avg_oi_change": 0.5804,
+          "avg_ls_ratio": 1.392,
+          "avg_change_24h": 0.0754
+        },
         "ls_long_extreme": {
           "count": 1,
           "avg_funding": 0.0,
           "avg_oi_change": null,
           "avg_ls_ratio": 1.63,
-          "avg_change_24h": 0.5487
+          "avg_change_24h": 0.5443
+        },
+        "rsi_oversold": {
+          "count": 43,
+          "avg_funding": 0.0,
+          "avg_oi_change": 2.092,
+          "avg_ls_ratio": 1.5086,
+          "avg_change_24h": -1.6833
+        },
+        "ls_short_extreme": {
+          "count": 13,
+          "avg_funding": 0.0001,
+          "avg_oi_change": 4.1871,
+          "avg_ls_ratio": 1.0838,
+          "avg_change_24h": 1.7949
+        },
+        "rsi_overbought": {
+          "count": 3,
+          "avg_funding": 0.0001,
+          "avg_oi_change": 1.7457,
+          "avg_ls_ratio": 1.1133,
+          "avg_change_24h": 0.6777
+        },
+        "oi_spike": {
+          "count": 26,
+          "avg_funding": 0.0,
+          "avg_oi_change": 0.0801,
+          "avg_ls_ratio": 1.3285,
+          "avg_change_24h": 0.2069
+        },
+        "funding_spike_pos": {
+          "count": 8,
+          "avg_funding": 0.0001,
+          "avg_oi_change": 1.0472,
+          "avg_ls_ratio": 1.4125,
+          "avg_change_24h": 0.0269
+        },
+        "fall_1h": {
+          "count": 1,
+          "avg_funding": 0.0001,
+          "avg_oi_change": 1.5467,
+          "avg_ls_ratio": 1.3,
+          "avg_change_24h": -0.6874
         }
       }
     }
