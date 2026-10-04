@@ -1,15 +1,14 @@
 # ============================================================
 # ARGUS - NEWS
 # ------------------------------------------------------------
-# Каждые 4 часа. Сбор новостей + sentiment + отчёт в TG.
+# Каждый час: сбор новостей + отчёт (только в SEND_HOURS).
+# cron-job.org дёргает каждый час.
 # ============================================================
 
 name: ARGUS News
 
 on:
   workflow_dispatch:
-  # schedule:
-   # - cron: '0 */4 * * *'
 
 permissions:
   contents: write
@@ -21,7 +20,7 @@ concurrency:
 jobs:
   news:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 10
 
     steps:
       - uses: actions/checkout@v4
@@ -44,16 +43,17 @@ jobs:
           python -m pip install --upgrade pip
           pip install requests==2.32.3
 
-      - name: Run news analyzer
+      - name: Collect news
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python crypto/collect/news.py
 
-      - name: Run news report
+      - name: Report news
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
         run: python crypto/report/news_report.py
 
       - name: Commit
