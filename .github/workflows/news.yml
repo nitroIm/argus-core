@@ -1,7 +1,7 @@
 # ============================================================
 # ARGUS - NEWS
 # ------------------------------------------------------------
-# v3: NLLB перевод + правильные пути.
+# Каждые 4 часа. Сбор новостей + sentiment + отчёт в TG.
 # ============================================================
 
 name: ARGUS News
@@ -9,7 +9,7 @@ name: ARGUS News
 on:
   workflow_dispatch:
   # schedule:
-  #   - cron: '0 */4 * * *'
+   # - cron: '0 */4 * * *'
 
 permissions:
   contents: write
@@ -36,48 +36,34 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/pip
-          key: >-
-            pip-news-${{ hashFiles('scripts/requirements.txt') }}
+          key: pip-news-${{ hashFiles('crypto/requirements.txt') }}
           restore-keys: pip-news-
-
-      - name: Cache HuggingFace
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/huggingface
-          key: hf-nllb-200-news-v1
-          restore-keys: hf-nllb-
 
       - name: Install deps
         run: |
           python -m pip install --upgrade pip
-          pip install requests
-          pip install langdetect==1.0.9
-          pip install torch==2.2.0 \
-            --index-url https://download.pytorch.org/whl/cpu
-          pip install transformers==4.41.2
-          pip install sentencepiece
+          pip install requests==2.32.3
 
       - name: Run news analyzer
         env:
-          TELEGRAM_BOT_TOKEN: >-
-            ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: >-
-            ${{ secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python crypto/collect/news.py
 
       - name: Run news report
         env:
-          TELEGRAM_BOT_TOKEN: >-
-            ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: >-
-            ${{ secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python crypto/report/news_report.py
 
       - name: Commit
         run: |
           git config user.name "ARGUS"
           git config user.email "argus@github.com"
-          git add -A
+          git add crypto/data/news_sentiment.json || true
+          git add crypto/data/news_history.json || true
+          git add crypto/data/news_sent_history.json || true
+          git add crypto/data/news_translate_cache.json || true
           if git diff --staged --quiet; then
             echo "No changes"
             exit 0
@@ -94,14 +80,10 @@ jobs:
       - name: Notify on failure
         if: failure()
         env:
-          TELEGRAM_BOT_TOKEN: >-
-            ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: >-
-            ${{ secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           curl -s -X POST \
             "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
             -H "Content-Type: application/json" \
-            -d "{\"chat_id\": \"${TELEGRAM_CHAT_ID}\", \
-                 \"text\": \"News упал\", \
-                 \"parse_mode\": \"HTML\"}" || true
+            -d "{\"chat_id\": \"${TELEGRAM_CHAT_ID}\", \"text\": \"News упал\", \"parse_mode\": \"HTML\"}" || true
