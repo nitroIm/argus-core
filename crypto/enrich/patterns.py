@@ -1,10 +1,11 @@
 # ============================================================
-# ARGUS-Trader — PATTERNS v2.1
+# ARGUS-Trader — PATTERNS v2.2
 # ------------------------------------------------------------
+# v2.2: batch INSERT in save_patterns. No double fetch.
+#       82s -> ~5s expected.
 # v2.1: fix fetch_features — merge features_hourly + candles.
-#       features_hourly has no close/high/low columns.
 # v2: + regime detection (trend_up / trend_down / flat /
-#     chop / volatile). Written to patterns_analysis.json.
+#     chop / volatile).
 # ============================================================
 
 import sys
@@ -251,7 +252,7 @@ def detect_regime(features):
     if switch_rate > 0.5:
         return {
             "label": "chop",
-            "reason": f"switch_rate={switch_rate:.2f}",
+            "reason": f"switch_rate={switch_rate:.3f}",
             "trade_allowed": False,
             "preferred_direction": "none",
             **base,
@@ -304,52 +305,96 @@ def analyze_symbol(symbol):
         "last_24h": full_str[-24:] if len(full_str) >= 24 else full_str,
         "last_168h": full_str[-168:] if len(full_str) >= 168 else full_str,
         "regime": regime,
+        "_features": features,  # cached, stripped before JSON dump
     }
 
 
 def save_patterns(symbol, analysis):
+    """Single batch INSERT for all rows of one symbol."""
     if not analysis:
         return 0
 
     binary = analysis["binary_string"]
-    features = fetch_features(symbol, limit=500)
+    features = analysis.get("_features") or []
 
+    if not features:
+        return 0
+
+    rows = []
+    for i, f in enumerate(features):
+        ts = f["timestamp"]
+        bit = 1 if binary[i] == "1" else 0
+
+        p_4h = binary[max(0, i - 3):i + 1] \
+            if i >= 3 else binary[:i + 1]
+        p_24h = binary[max(0, i - 23):i + 1] \
+            if i >= 23 else binary[:i + 1]
+        p_7d = binary[max(0, i - 167):i + 1] \
+            if i >= 167 else binary[:i + 1]
+
+        rows.append((symbol, ts, bit, p_4h, p_24h, p_7d))
+
+    if not rows:
+        return 0
+
+    sql_head = (
+        "INSERT INTO price_patterns "
+        "(symbol, timestamp, pattern_1h, pattern_4h, "
+        "pattern_24h, pattern_7d) VALUES "
+    )
+    placeholders = ",".join(["(%s,%s,%s,%s,%s,%s)"] * len(rows))
+    sql = sql_head + placeholders + " ON CONFLICT (symbol, timestamp) DO NOTHING"
+
+    params = []
+    for r in rows:
+        params.extend(r)
+
+    try:
+        with get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(sql, tuple(params))
+                return cur.rowcount or 0
+    except Exception as e:
+        log.error(f"save_patterns batch failed: {e}, fallback single")
+        return _save_patterns_single(rows)
+
+
+def _save_patterns_single(rows):
     added = 0
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
-                for i, f in enumerate(features):
-                    ts = f["timestamp"]
-                    bit = 1 if binary[i] == "1" else 0
-
-                    p_4h = binary[max(0, i - 3):i + 1] \
-                        if i >= 3 else binary[:i + 1]
-                    p_24h = binary[max(0, i - 23):i + 1] \
-                        if i >= 23 else binary[:i + 1]
-                    p_7d = binary[max(0, i - 167):i + 1] \
-                        if i >= 167 else binary[:i + 1]
-
+                for i, r in enumerate(rows):
+                    sp = "sp_p_" + str(i)
                     try:
+                        cur.execute("SAVEPOINT " + sp)
                         cur.execute(
                             "INSERT INTO price_patterns "
                             "(symbol, timestamp, pattern_1h, "
                             "pattern_4h, pattern_24h, pattern_7d) "
-                            "VALUES (%s, %s, %s, %s, %s, %s) "
+                            "VALUES (%s,%s,%s,%s,%s,%s) "
                             "ON CONFLICT (symbol, timestamp) DO NOTHING",
-                            (symbol, ts, bit, p_4h, p_24h, p_7d),
+                            r,
                         )
-                        if cur.rowcount and cur.rowcount > 0:
-                            added += cur.rowcount
-                    except Exception as e:
-                        log.warning(f"INSERT pattern skip: {e}")
+                        n = cur.rowcount or 0
+                        cur.execute("RELEASE SAVEPOINT " + sp)
+                        added += n
+                    except Exception as ex:
+                        try:
+                            cur.execute(
+                                "ROLLBACK TO SAVEPOINT " + sp
+                            )
+                        except Exception:
+                            pass
+                        log.warning(f"row {i} skip: {ex}")
     except Exception as e:
-        log.error(f"save_patterns: {e}")
+        log.error(f"_save_patterns_single: {e}")
     return added
 
 
 def main():
     log.info("=" * 60)
-    log.info("🧩 ARGUS-Trader PATTERNS v2.1")
+    log.info("🧩 ARGUS-Trader PATTERNS v2.2")
     log.info("=" * 60)
 
     all_analysis = {}
@@ -360,7 +405,6 @@ def main():
         if not analysis:
             continue
 
-        all_analysis[symbol] = analysis
         saved = save_patterns(symbol, analysis)
         total_saved += saved
 
@@ -375,7 +419,12 @@ def main():
         log.info(f"      trade_allowed={rg['trade_allowed']}, "
                  f"direction={rg['preferred_direction']}, "
                  f"up_ratio={rg.get('up_ratio')}, "
+                 f"switch_rate={rg.get('switch_rate')}, "
                  f"vol_ratio={rg.get('vol_ratio')}")
+
+        # Remove cached features before storing in JSON
+        analysis.pop("_features", None)
+        all_analysis[symbol] = analysis
 
     try:
         with open(ANALYSIS_FILE, "w", encoding="utf-8") as f:
