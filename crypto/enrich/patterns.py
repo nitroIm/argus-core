@@ -1,13 +1,9 @@
 # ============================================================
-# ARGUS-Trader — PATTERNS
+# ARGUS-Trader — PATTERNS v2
 # ------------------------------------------------------------
-# Из features_hourly собирает:
-#   - бинарные строки (0/1) за окна 24ч, 7д
-#   - n-граммы (4-символьные)
-#   - матрицу переходов Маркова
-# Сохраняет в price_patterns + analysis файл.
-# ------------------------------------------------------------
-# v1: начальная версия
+# v2: + regime detection (trend_up / trend_down / flat /
+#     chop / volatile). Written to patterns_analysis.json.
+# v1: ngrams, markov, binary strings
 # ============================================================
 
 import sys
@@ -35,15 +31,18 @@ logging.basicConfig(
 )
 log = logging.getLogger("crypto.patterns")
 
+REGIME_WINDOW = 48
+VOLATILE_RATIO = 1.6
+
 
 def fetch_features(symbol, limit=500):
-    """Возвращает features в порядке от старых к новым."""
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute(
-                    "SELECT timestamp, change_pct, range_pct, body_pct, "
-                    "upper_wick_pct, lower_wick_pct, volume_ratio_24h "
+                    "SELECT timestamp, change_pct, range_pct, "
+                    "body_pct, upper_wick_pct, lower_wick_pct, "
+                    "volume_ratio_24h, close, high, low "
                     "FROM features_hourly WHERE symbol = %s "
                     "ORDER BY timestamp DESC LIMIT %s",
                     (symbol, limit),
@@ -59,6 +58,9 @@ def fetch_features(symbol, limit=500):
                         "upper_wick_pct": float(r[4]) if r[4] is not None else 0,
                         "lower_wick_pct": float(r[5]) if r[5] is not None else 0,
                         "volume_ratio_24h": float(r[6]) if r[6] is not None else 0,
+                        "close": float(r[7]) if r[7] is not None else 0,
+                        "high": float(r[8]) if r[8] is not None else 0,
+                        "low": float(r[9]) if r[9] is not None else 0,
                     }
                     for r in rows
                 ]
@@ -68,7 +70,6 @@ def fetch_features(symbol, limit=500):
 
 
 def build_binary_string(features, bit_field="change_pct"):
-    """Собирает строку '0' и '1' по свечам."""
     result = []
     for f in features:
         value = f.get(bit_field, 0)
@@ -78,9 +79,9 @@ def build_binary_string(features, bit_field="change_pct"):
 
 
 def count_ngrams(binary_str, n=4):
-    """Считает частоту всех n-грамм и что идёт СЛЕДУЮЩИМ."""
-    ngram_stats = defaultdict(lambda: {"total": 0, "next_1": 0, "next_0": 0})
-
+    ngram_stats = defaultdict(
+        lambda: {"total": 0, "next_1": 0, "next_0": 0}
+    )
     for i in range(len(binary_str) - n):
         ngram = binary_str[i:i + n]
         next_bit = binary_str[i + n]
@@ -105,7 +106,6 @@ def count_ngrams(binary_str, n=4):
 
 
 def build_markov_matrix(binary_str):
-    """P(1|1), P(0|1), P(1|0), P(0|0)."""
     transitions = {"00": 0, "01": 0, "10": 0, "11": 0}
     for i in range(len(binary_str) - 1):
         pair = binary_str[i:i + 2]
@@ -117,16 +117,23 @@ def build_markov_matrix(binary_str):
 
     result = {
         "total_transitions": sum(transitions.values()),
-        "p_1_given_1": round(transitions["11"] / total_from_1, 4) if total_from_1 else 0,
-        "p_0_given_1": round(transitions["10"] / total_from_1, 4) if total_from_1 else 0,
-        "p_1_given_0": round(transitions["01"] / total_from_0, 4) if total_from_0 else 0,
-        "p_0_given_0": round(transitions["00"] / total_from_0, 4) if total_from_0 else 0,
+        "p_1_given_1": round(
+            transitions["11"] / total_from_1, 4
+        ) if total_from_1 else 0,
+        "p_0_given_1": round(
+            transitions["10"] / total_from_1, 4
+        ) if total_from_1 else 0,
+        "p_1_given_0": round(
+            transitions["01"] / total_from_0, 4
+        ) if total_from_0 else 0,
+        "p_0_given_0": round(
+            transitions["00"] / total_from_0, 4
+        ) if total_from_0 else 0,
     }
     return result
 
 
 def longest_streak(binary_str, bit="1"):
-    """Самая длинная цепочка подряд."""
     max_streak = 0
     current = 0
     for c in binary_str:
@@ -138,8 +145,107 @@ def longest_streak(binary_str, bit="1"):
     return max_streak
 
 
+def compute_atr_simple(candles, period):
+    if len(candles) < period + 1:
+        return None
+    trs = []
+    for i in range(1, len(candles)):
+        h = candles[i]["high"]
+        l = candles[i]["low"]
+        pc = candles[i - 1]["close"]
+        tr = max(h - l, abs(h - pc), abs(l - pc))
+        trs.append(tr)
+    if len(trs) < period:
+        return None
+    return sum(trs[-period:]) / period
+
+
+def detect_regime(features):
+    """Returns dict with regime label + metrics."""
+    if len(features) < REGIME_WINDOW:
+        return {
+            "label": "unknown",
+            "reason": "not enough data",
+            "trade_allowed": True,
+            "preferred_direction": "both",
+        }
+
+    window = features[-REGIME_WINDOW:]
+    binary = "".join(
+        "1" if f["change_pct"] > 0 else "0"
+        for f in window
+    )
+
+    up_ratio = binary.count("1") / len(binary)
+    max_up = longest_streak(binary, "1")
+    max_down = longest_streak(binary, "0")
+
+    switches = 0
+    for i in range(1, len(binary)):
+        if binary[i] != binary[i - 1]:
+            switches += 1
+    switch_rate = switches / max(1, len(binary) - 1)
+
+    atr_short = compute_atr_simple(features, 24)
+    atr_long = compute_atr_simple(features, 168)
+    vol_ratio = None
+    if atr_short and atr_long and atr_long > 0:
+        vol_ratio = atr_short / atr_long
+
+    base = {
+        "up_ratio": round(up_ratio, 3),
+        "max_streak_up": max_up,
+        "max_streak_down": max_down,
+        "switch_rate": round(switch_rate, 3),
+        "vol_ratio": round(vol_ratio, 3) if vol_ratio else None,
+    }
+
+    if vol_ratio is not None and vol_ratio > VOLATILE_RATIO:
+        return {
+            "label": "volatile",
+            "reason": f"ATR short/long={vol_ratio:.2f}",
+            "trade_allowed": False,
+            "preferred_direction": "none",
+            **base,
+        }
+
+    if up_ratio >= 0.6 and max_up >= 4 and switch_rate < 0.4:
+        return {
+            "label": "trend_up",
+            "reason": f"up_ratio={up_ratio:.2f}, streak={max_up}",
+            "trade_allowed": True,
+            "preferred_direction": "LONG",
+            **base,
+        }
+
+    if up_ratio <= 0.4 and max_down >= 4 and switch_rate < 0.4:
+        return {
+            "label": "trend_down",
+            "reason": f"up_ratio={up_ratio:.2f}, streak={max_down}",
+            "trade_allowed": True,
+            "preferred_direction": "SHORT",
+            **base,
+        }
+
+    if switch_rate > 0.5:
+        return {
+            "label": "chop",
+            "reason": f"switch_rate={switch_rate:.2f}",
+            "trade_allowed": False,
+            "preferred_direction": "none",
+            **base,
+        }
+
+    return {
+        "label": "flat",
+        "reason": f"up_ratio={up_ratio:.2f}, streak={max(max_up, max_down)}",
+        "trade_allowed": False,
+        "preferred_direction": "none",
+        **base,
+    }
+
+
 def analyze_symbol(symbol):
-    """Считает все паттерны для одного символа."""
     log.info(f"📊 {symbol} — анализ паттернов")
     features = fetch_features(symbol, limit=500)
     if not features:
@@ -149,23 +255,19 @@ def analyze_symbol(symbol):
     log.info(f"   Свечей: {len(features)}")
 
     full_str = build_binary_string(features, "change_pct")
-
-    # N-граммы разной длины
     ngrams_4 = count_ngrams(full_str, 4)
-
-    # Матрица переходов
     markov = build_markov_matrix(full_str)
 
-    # Серии
     max_up = longest_streak(full_str, "1")
     max_down = longest_streak(full_str, "0")
 
-    # Топ паттернов по силе сигнала
     top_ngrams = sorted(
         [(k, v) for k, v in ngrams_4.items() if v["count"] >= 10],
         key=lambda x: abs(x[1]["p_up"] - 0.5),
         reverse=True,
     )[:10]
+
+    regime = detect_regime(features)
 
     result = {
         "symbol": symbol,
@@ -180,12 +282,12 @@ def analyze_symbol(symbol):
         "binary_string": full_str,
         "last_24h": full_str[-24:] if len(full_str) >= 24 else full_str,
         "last_168h": full_str[-168:] if len(full_str) >= 168 else full_str,
+        "regime": regime,
     }
     return result
 
 
 def save_patterns(symbol, analysis):
-    """Сохраняет в price_patterns для каждого часа."""
     if not analysis:
         return 0
 
@@ -200,15 +302,18 @@ def save_patterns(symbol, analysis):
                     ts = f["timestamp"]
                     bit = 1 if binary[i] == "1" else 0
 
-                    # Строки контекста
-                    p_4h = binary[max(0, i - 3):i + 1] if i >= 3 else binary[:i + 1]
-                    p_24h = binary[max(0, i - 23):i + 1] if i >= 23 else binary[:i + 1]
-                    p_7d = binary[max(0, i - 167):i + 1] if i >= 167 else binary[:i + 1]
+                    p_4h = binary[max(0, i - 3):i + 1] \
+                        if i >= 3 else binary[:i + 1]
+                    p_24h = binary[max(0, i - 23):i + 1] \
+                        if i >= 23 else binary[:i + 1]
+                    p_7d = binary[max(0, i - 167):i + 1] \
+                        if i >= 167 else binary[:i + 1]
 
                     try:
                         cur.execute(
                             "INSERT INTO price_patterns "
-                            "(symbol, timestamp, pattern_1h, pattern_4h, pattern_24h, pattern_7d) "
+                            "(symbol, timestamp, pattern_1h, "
+                            "pattern_4h, pattern_24h, pattern_7d) "
                             "VALUES (%s, %s, %s, %s, %s, %s) "
                             "ON CONFLICT (symbol, timestamp) DO NOTHING",
                             (symbol, ts, bit, p_4h, p_24h, p_7d),
@@ -224,7 +329,7 @@ def save_patterns(symbol, analysis):
 
 def main():
     log.info("=" * 60)
-    log.info("🧩 ARGUS-Trader PATTERNS")
+    log.info("🧩 ARGUS-Trader PATTERNS v2")
     log.info("=" * 60)
 
     all_analysis = {}
@@ -239,7 +344,6 @@ def main():
         saved = save_patterns(symbol, analysis)
         total_saved += saved
 
-        # Лог
         log.info(f"   Up/Down: {analysis['up_count']}/{analysis['down_count']} "
                  f"({analysis['up_ratio'] * 100:.1f}% up)")
         log.info(f"   Серия вверх: {analysis['max_streak_up']} | "
@@ -248,13 +352,17 @@ def main():
         log.info(f"   P(1|1)={mk['p_1_given_1']} | P(0|1)={mk['p_0_given_1']}")
         log.info(f"   P(1|0)={mk['p_1_given_0']} | P(0|0)={mk['p_0_given_0']}")
 
+        rg = analysis["regime"]
+        log.info(f"   🎯 REGIME: {rg['label']} — {rg['reason']}")
+        log.info(f"      trade_allowed={rg['trade_allowed']}, "
+                 f"direction={rg['preferred_direction']}")
+
         if analysis["ngrams_top"]:
             log.info("   Топ паттернов:")
             for item in analysis["ngrams_top"][:5]:
                 log.info(f"     {item['ngram']} → P(up)={item['p_up']} "
                          f"(N={item['count']})")
 
-    # Сохраняем анализ в JSON
     try:
         with open(ANALYSIS_FILE, "w", encoding="utf-8") as f:
             json.dump({
