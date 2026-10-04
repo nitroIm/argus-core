@@ -1,14 +1,10 @@
 # ============================================================
-# ARGUS-Trader — CAUSAL
+# ARGUS-Trader — CAUSAL v2
 # ------------------------------------------------------------
-# Для каждого события (из events) собирает что было ДО него:
-#   - features за 1ч/4ч/24ч до
-#   - funding rate, OI, LS ratio
-#   - ближайшие уровни (из levels_analysis.json)
-#   - 0/1 паттерн (из patterns_analysis.json)
-# Пишет в causal_links + JSON.
-# ------------------------------------------------------------
-# v1: начальная версия
+# v2: batch load all data per symbol, process in memory,
+#     batch insert. No per-event SELECT.
+#     707s -> ~30s expected.
+# v1: initial version
 # ============================================================
 
 import sys
@@ -37,9 +33,8 @@ logging.basicConfig(
 )
 log = logging.getLogger("crypto.causal")
 
-
-# Окна предшествия (часов назад от события)
-WINDOWS = [1, 4, 24]
+WINDOW_HOURS = 24
+EVENT_LIMIT = 200
 
 
 def load_json(path, default=None):
@@ -53,13 +48,13 @@ def load_json(path, default=None):
         return default if default is not None else {}
 
 
-def fetch_events(symbol, limit=200):
-    """Свежие события для символа."""
+def fetch_events(symbol, limit=EVENT_LIMIT):
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute(
-                    "SELECT id, timestamp, event_type, change_pct, magnitude "
+                    "SELECT id, timestamp, event_type, "
+                    "change_pct, magnitude "
                     "FROM events WHERE symbol = %s "
                     "ORDER BY timestamp DESC LIMIT %s",
                     (symbol, limit),
@@ -79,120 +74,130 @@ def fetch_events(symbol, limit=200):
         return []
 
 
-def fetch_existing_causal(event_id):
-    """Проверяет, есть ли уже записи для события."""
+def fetch_existing_event_ids(events):
+    if not events:
+        return set()
+    ids = [e["id"] for e in events]
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute(
-                    "SELECT COUNT(*) FROM causal_links WHERE event_id = %s",
-                    (event_id,),
+                    "SELECT event_id FROM causal_links "
+                    "WHERE event_id = ANY(%s)",
+                    (ids,),
                 )
-                return cur.fetchone()[0]
-    except Exception:
-        return 0
+                return {r[0] for r in cur.fetchall()}
+    except Exception as e:
+        log.error(f"fetch_existing_event_ids: {e}")
+        return set()
 
 
-def fetch_ohlcv_before(symbol, event_ts, hours):
-    """Возвращает свечи за N часов ДО события."""
+def load_window_data(symbol, events):
+    """Load candles/funding/oi/ls for entire event window."""
+    if not events:
+        return {}
+    earliest = min(e["timestamp"] for e in events)
+    latest = max(e["timestamp"] for e in events)
+    start = earliest - timedelta(hours=WINDOW_HOURS)
+
+    out = {
+        "start": start,
+        "latest": latest,
+        "candles": [],
+        "funding": [],
+        "oi": [],
+        "ls": [],
+    }
+
     try:
-        start = event_ts - timedelta(hours=hours)
         with get_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute(
                     "SELECT timestamp, open, high, low, close, volume "
-                    "FROM candles WHERE symbol = %s AND timeframe = '1h' "
-                    "AND timestamp >= %s AND timestamp < %s "
+                    "FROM candles WHERE symbol = %s "
+                    "AND timeframe =] else '1h' "
+                    " AND timestamp >= %s AND timestamp <= %s0 "
                     "ORDER BY timestamp",
-                    (symbol, start, event_ts),
+                    (symbol,,
+ start, latest),
                 )
-                return [
-                    {
+                for r in cur                       .fetchall():
+                    out["candles"].append({
                         "timestamp": r[0],
-                        "open": float(r[1]),
-                        "high": float(r[2]),
-                        "low": float(r[3]),
-                        "close": float(r[4]),
-                        "volume": float(r[5]),
-                    }
+                        "open": float(r[1]) if r[1] else 0,
+                        "high": float(r[2]) if r[2 "low": float(r[3]) if r[3] else 0,
+                        "close": float(r[4]) if r[4] else 0,
+                        "volume": float(r[5]) if r[5] else 0,
+                    })
+
+                cur.execute(
+                    "SELECT timestamp, rate FROM funding_rates "
+                    "WHERE symbol = %s "
+                    "AND timestamp >= %s AND timestamp <= %s "
+                    "ORDER BY timestamp",
+                    (symbol, start, latest),
+                )
+                out["funding"] = [
+                    (r[0], float(r[1]) if r[1] is not None else None)
+                    for r in cur.fetchall()
+                ]
+
+                cur.execute(
+                    "SELECT timestamp, oi FROM open_interest "
+                    "WHERE symbol = %s "
+                    "AND timestamp >= %s AND timestamp <= %s "
+                    "ORDER BY timestamp",
+                    (symbol, start, latest),
+                )
+                out["oi"] = [
+                    (r[0], float(r[1]) if r[1] is not None else None)
+                    for r in cur.fetchall()
+                ]
+
+                cur.execute(
+                    "SELECT timestamp, ls_ratio FROM long_short_ratio "
+                    "WHERE symbol = %s "
+                    "AND timestamp >= %s AND timestamp <= %s "
+                    "ORDER BY timestamp",
+                    (symbol, start, latest),
+                )
+                out["ls"] = [
+                    (r[0], float(r[1]) if r[1] is not None else None)
                     for r in cur.fetchall()
                 ]
     except Exception as e:
-        log.warning(f"fetch_ohlcv_before: {e}")
-        return []
+        log.error(f"load_window_data: {e}")
+    return out
 
 
-def fetch_funding_before(symbol, event_ts, hours=24):
-    """Последняя funding rate ДО события."""
-    try:
-        start = event_ts - timedelta(hours=hours)
-        with get_connection() as conn:
-            with conn.cursor() as cur:
-                cur.execute(
-                    "SELECT rate FROM funding_rates "
-                    "WHERE symbol = %s AND timestamp >= %s AND timestamp < %s "
-                    "ORDER BY timestamp DESC LIMIT 1",
-                    (symbol, start, event_ts),
-                )
-                row = cur.fetchone()
-                return float(row[0]) if row and row[0] is not None else None
-    except Exception:
-        return None
+def candles_before(candles, event_ts, hours):
+    end = event_ts
+    start = event_ts - timedelta(hours=hours)
+    return [
+        c for c in candles
+        if start <= c["timestamp"] < end
+    ]
 
 
-def fetch_oi_before(symbol, event_ts, hours=24):
-    """OI в начале окна и в конце — считаем % изменения."""
-    try:
-        start = event_ts - timedelta(hours=hours)
-        with get_connection() as conn:
-            with conn.cursor() as cur:
-                cur.execute(
-                    "SELECT oi FROM open_interest "
-                    "WHERE symbol = %s AND timestamp >= %s AND timestamp < %s "
-                    "ORDER BY timestamp LIMIT 1",
-                    (symbol, start, event_ts),
-                )
-                row_start = cur.fetchone()
-
-                cur.execute(
-                    "SELECT oi FROM open_interest "
-                    "WHERE symbol = %s AND timestamp >= %s AND timestamp < %s "
-                    "ORDER BY timestamp DESC LIMIT 1",
-                    (symbol, start, event_ts),
-                )
-                row_end = cur.fetchone()
-
-        if not row_start or not row_end:
-            return None
-        oi_start = float(row_start[0]) if row_start[0] else 0
-        oi_end = float(row_end[0]) if row_end[0] else 0
-        if oi_start == 0:
-            return None
-        return round((oi_end - oi_start) / oi_start * 100, 4)
-    except Exception:
-        return None
+def last_before(series, event_ts):
+    """Last (ts, val) with ts < event_ts."""
+    result = None
+    for ts, val in series:
+        if ts < event_ts:
+            result = (ts, val)
+        else:
+            break
+    return result
 
 
-def fetch_ls_before(symbol, event_ts, hours=4):
-    """Последний LS ratio ДО события."""
-    try:
-        start = event_ts - timedelta(hours=hours)
-        with get_connection() as conn:
-            with conn.cursor() as cur:
-                cur.execute(
-                    "SELECT ls_ratio FROM long_short_ratio "
-                    "WHERE symbol = %s AND timestamp >= %s AND timestamp < %s "
-                    "ORDER BY timestamp DESC LIMIT 1",
-                    (symbol, start, event_ts),
-                )
-                row = cur.fetchone()
-                return float(row[0]) if row and row[0] is not None else None
-    except Exception:
-        return None
+def first_after(series, ts):
+    for row in series:
+        if row[0] >= ts:
+            return row
+    return None
 
 
 def compute_change_pct(candles):
-    """Изменение close первого → close последнего."""
     if len(candles) < 2:
         return None
     first = candles[0]["open"]
@@ -203,7 +208,6 @@ def compute_change_pct(candles):
 
 
 def compute_volatility(candles):
-    """Std change_pct по часовым свечам."""
     if len(candles) < 2:
         return None
     changes = []
@@ -218,159 +222,184 @@ def compute_volatility(candles):
     return round(var ** 0.5, 4)
 
 
-def find_nearest_level(symbol, price, levels_data):
-    """Ближайший круглый уровень к цене события."""
+def find_nearest_level(price, levels_data, symbol):
     try:
         sym_data = levels_data.get("symbols", {}).get(symbol, {})
         round_levels = sym_data.get("round_levels", [])
-        if not round_levels:
+        if not round_levels or price <= 0:
             return None
-        return min(round_levels, key=lambda x: abs(x["price"] - price))
+        return min(
+            round_levels, key=lambda x: abs(x["price"] - price)
+        )
     except Exception:
         return None
 
 
-def get_pattern_before(symbol, event_ts, patterns_data):
-    """Возвращает паттерн 0/1 за окно перед событием."""
+def get_pattern_before(patterns_data, symbol):
     try:
         sym_data = patterns_data.get("symbols", {}).get(symbol, {})
         binary = sym_data.get("binary_string", "")
         if not binary:
             return None
-        # Берём последние 4 символа (для события)
         return binary[-4:] if len(binary) >= 4 else binary
     except Exception:
         return None
 
 
-def build_causal_entry(symbol, event, levels_data, patterns_data):
-    """Собирает causal_links для одного события."""
+def build_entry(symbol, event, data, levels_data, patterns_data):
     event_ts = event["timestamp"]
+    candles_all = data.get("candles", [])
 
-    # Если уже есть — не дублируем
-    if fetch_existing_causal(event["id"]) > 0:
-        return None
+    ohlcv_1h = candles_before(candles_all, event_ts, 1)
+    ohlcv_4h = candles_before(candles_all, event_ts, 4)
+    ohlcv_24h = candles_before(candles_all, event_ts, WINDOW_HOURS)
 
-    # Собираем по окнам
-    features_1h = None
-    features_4h = None
-    features_24h = None
-
-    ohlcv_1h = fetch_ohlcv_before(symbol, event_ts, 1)
+    f_1h = None
     if ohlcv_1h:
-        features_1h = {
+        f_1h = {
             "change_pct": compute_change_pct(ohlcv_1h),
             "volatility": compute_volatility(ohlcv_1h),
-            "candles": len(ohlcv_1h),
         }
 
-    ohlcv_4h = fetch_ohlcv_before(symbol, event_ts, 4)
-    if ohlcv_4h:
-        features_4h = {
-            "change_pct": compute_change_pct(ohlcv_4h),
-            "volatility": compute_volatility(ohlcv_4h),
-            "candles": len(ohlcv_4h),
-        }
+    # Funding: last rate before event
+    funding = None
+    row = last_before(data.get("funding", []), event_ts)
+    if row is not None:
+        funding = row[1]
 
-    ohlcv_24h = fetch_ohlcv_before(symbol, event_ts, 24)
-    if ohlcv_24h:
-        features_24h = {
-            "change_pct": compute_change_pct(ohlcv_24h),
-            "volatility": compute_volatility(ohlcv_24h),
-            "candles": len(ohlcv_24h),
-        }
+    # OI change over window
+    oi_change = None
+    oi_series = data.get("oi", [])
+    oi_start = first_after(
+        oi_series, event_ts - timedelta(hours=WINDOW_HOURS)
+    )
+    oi_end = last_before(oi_series, event_ts)
+    if oi_start and oi_end and oi_start[1] and oi_start[1] > 0:
+        oi_change = round(
+            (oi_end[1] - oi_start[1]) / oi_start[1] * 100, 4
+        )
 
-    # Деривативы
-    funding = fetch_funding_before(symbol, event_ts, 24)
-    oi_change = fetch_oi_before(symbol, event_ts, 24)
-    ls_ratio = fetch_ls_before(symbol, event_ts, 4)
+    # LS: last before event
+    ls_ratio = None
+    row = last_before(data.get("ls", []), event_ts)
+    if row is not None:
+        ls_ratio = row[1]
 
-    # Уровни
-    entry_price = event.get("magnitude", 0)
-    if ohlcv_1h:
-        entry_price = ohlcv_1h[-1]["close"] if ohlcv_1h else 0
-
-    nearest_level = find_nearest_level(symbol, entry_price, levels_data)
-
-    # Паттерн
-    pattern = get_pattern_before(symbol, event_ts, patterns_data)
+    entry_price = ohlcv_1h[-1]["close"] if ohlcv_1h else 0
+    nearest = find_nearest_level(
+        entry_price, levels_data, symbol
+    )
+    pattern = get_pattern_before(patterns_data, symbol)
 
     return {
         "event_id": event["id"],
         "symbol": symbol,
         "event_type": event["event_type"],
         "event_ts": event_ts,
-        "features_1h": features_1h,
-        "features_4h": features_4h,
-        "features_24h": features_24h,
+        "features_1h": f_1h,
         "funding_rate": funding,
         "oi_change_pct": oi_change,
         "ls_ratio": ls_ratio,
-        "nearest_level": nearest_level,
+        "nearest_level": nearest,
         "pattern_before": pattern,
+        "volatility_24h": (
+            compute_volatility(ohlcv_24h) if ohlcv_24h else None
+        ),
+        "change_24h": (
+            compute_change_pct(ohlcv_24h) if ohlcv_24h else None
+        ),
     }
 
 
-def save_causal_links(symbol, entries):
-    """Записывает entries в causal_links."""
+def save_batch(entries):
+    """Single INSERT for all entries."""
     if not entries:
         return 0
-    added = 0
+
+    sql_head = (
+        "INSERT INTO causal_links "
+        "(event_id, hours_before, funding_rate, "
+        "oi_change_pct, ls_ratio, taker_ratio, "
+        "volume_ratio, volatility, change_pct, "
+        "is_anomaly) VALUES "
+    )
+    sql_tail = " ON CONFLICT (event_id, hours_before) DO NOTHING"
+
+    placeholders = ",".join(["(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"] * len(entries))
+    sql = sql_head + placeholders + sql_tail
+
+    params = []
+    for e in entries:
+        params.extend([
+            e["event_id"], WINDOW_HOURS,
+            e.get("funding_rate"),
+            e.get("oi_change_pct"),
+            e.get("ls_ratio"),
+            None,
+            None,
+            e.get("volatility_24h"),
+            e.get("change_24h"),
+            False,
+        ])
+
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
-                for e in entries:
-                    try:
-                        cur.execute(
-                            "INSERT INTO causal_links "
-                            "(event_id, hours_before, funding_rate, oi_change_pct, "
-                            "ls_ratio, taker_ratio, volume_ratio, volatility, change_pct, "
-                            "is_anomaly) "
-                            "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s) "
-                            "ON CONFLICT (event_id, hours_before) DO NOTHING",
-                            (
-                                e["event_id"], 24,
-                                e.get("funding_rate"),
-                                e.get("oi_change_pct"),
-                                e.get("ls_ratio"),
-                                None,
-                                None,
-                                (e.get("features_24h") or {}).get("volatility"),
-                                (e.get("features_24h") or {}).get("change_pct"),
-                                False,
-                            ),
-                        )
-                        if cur.rowcount and cur.rowcount > 0:
-                            added += cur.rowcount
-                    except Exception as ex:
-                        log.warning(f"INSERT causal skip: {ex}")
+                cur.execute(sql, tuple(params))
+                return cur.rowcount or 0
     except Exception as e:
-        log.error(f"save_causal_links: {e}")
-    return added
+        log.error(f"save_batch: {e}")
+        return 0
 
 
 def analyze_symbol(symbol, levels_data, patterns_data):
-    log.info(f"📊 {symbol} — causal analysis")
-    events = fetch_events(symbol, limit=200)
+    log.info(f"📊 {symbol} — causal")
+    events = fetch_events(symbol, limit=EVENT_LIMIT)
     if not events:
         log.warning(f"{symbol}: событий нет")
         return None
 
     log.info(f"   Событий в БД: {len(events)}")
 
+    existing = fetch_existing_event_ids(events)
+    log.info(f"   Уже в causal_links: {len(existing)}")
+
+    new_events = [e for e in events if e["id"] not in existing]
+    log.info(f"   Новых для обработки: {len(new_events)}")
+
+    if not new_events:
+        return {
+            "symbol": symbol,
+            "total_events": len(events),
+            "processed": 0,
+            "saved": 0,
+            "summary_by_type": {},
+        }
+
+    data = load_window_data(symbol, new_events)
+    log.info(
+        "   Window: candles=%d funding=%d oi=%d ls=%d",
+        len(data.get("candles", [])),
+        len(data.get("funding", [])),
+        len(data.get("oi", [])),
+        len(data.get("ls", [])),
+    )
+
     entries = []
-    for ev in events:
-        entry = build_causal_entry(symbol, ev, levels_data, patterns_data)
-        if entry:
+    for ev in new_events:
+        try:
+            entry = build_entry(
+                symbol, ev, data, levels_data, patterns_data
+            )
             entries.append(entry)
+        except Exception as e:
+            log.warning(f"build_entry {ev['id']}: {e}")
 
-    log.info(f"   Новых для обработки: {len(entries)}")
+    log.info(f"   Построено entries: {len(entries)}")
 
-    # Сохраняем в БД
-    saved = save_causal_links(symbol, entries)
+    saved = save_batch(entries)
     log.info(f"   ✅ Добавлено в causal_links: {saved}")
 
-    # Статистика по типам событий — какие lead-сигналы чаще
     summary = {}
     for e in entries:
         t = e["event_type"]
@@ -390,13 +419,14 @@ def analyze_symbol(symbol, levels_data, patterns_data):
             s["oi_change_avg"].append(e["oi_change_pct"])
         if e.get("ls_ratio") is not None:
             s["ls_avg"].append(e["ls_ratio"])
-        if e.get("features_24h") and e["features_24h"].get("change_pct") is not None:
-            s["change_24h_avg"].append(e["features_24h"]["change_pct"])
+        if e.get("change_24h") is not None:
+            s["change_24h_avg"].append(e["change_24h"])
+
+    def avg(arr):
+        return round(sum(arr) / len(arr), 4) if arr else None
 
     summary_out = {}
     for t, s in summary.items():
-        def avg(arr):
-            return round(sum(arr) / len(arr), 4) if arr else None
         summary_out[t] = {
             "count": s["count"],
             "avg_funding": avg(s["funding_avg"]),
@@ -407,15 +437,7 @@ def analyze_symbol(symbol, levels_data, patterns_data):
 
     log.info(f"   Сводка по событиям:")
     for t, s in summary_out.items():
-        log.info(f"     {t} (N={s['count']}):")
-        if s["avg_funding"] is not None:
-            log.info(f"       funding={s['avg_funding']:+.6f}")
-        if s["avg_oi_change"] is not None:
-            log.info(f"       oi_change={s['avg_oi_change']:+.2f}%")
-        if s["avg_ls_ratio"] is not None:
-            log.info(f"       ls_ratio={s['avg_ls_ratio']:.3f}")
-        if s["avg_change_24h"] is not None:
-            log.info(f"       change_24h={s['avg_change_24h']:+.2f}%")
+        log.info(f"     {t} (N={s['count']})")
 
     return {
         "symbol": symbol,
@@ -428,7 +450,7 @@ def analyze_symbol(symbol, levels_data, patterns_data):
 
 def main():
     log.info("=" * 60)
-    log.info("🔗 ARGUS-Trader CAUSAL")
+    log.info("🔗 ARGUS-Trader CAUSAL v2 (batch)")
     log.info("=" * 60)
 
     levels_data = load_json(LEVELS_FILE, {})
@@ -438,9 +460,10 @@ def main():
     log.info("")
 
     all_analysis = {}
-
     for symbol in SYMBOLS:
-        result = analyze_symbol(symbol, levels_data, patterns_data)
+        result = analyze_symbol(
+            symbol, levels_data, patterns_data
+        )
         if result:
             all_analysis[symbol] = result
         log.info("")
@@ -448,7 +471,9 @@ def main():
     try:
         with open(ANALYSIS_FILE, "w", encoding="utf-8") as f:
             json.dump({
-                "generated_at": datetime.now(timezone.utc).isoformat(),
+                "generated_at": datetime.now(
+                    timezone.utc
+                ).isoformat(),
                 "symbols": all_analysis,
             }, f, ensure_ascii=False, indent=2, default=str)
         log.info(f"💾 {ANALYSIS_FILE.name} сохранён")
