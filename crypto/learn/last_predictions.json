@@ -1,19 +1,19 @@
 {
-  "predicted_at": "2026-10-04T00:40:58.073848+00:00",
-  "model_accuracy": 0.5137,
+  "predicted_at": "2026-10-04T00:45:43.191210+00:00",
+  "model_accuracy": 0.5577,
   "model_features": 33,
   "predictions": [
     {
       "symbol": "BTCUSDT",
-      "prob_up": 0.5604,
+      "prob_up": 0.5369,
       "direction": 1,
-      "confidence": 0.1207
+      "confidence": 0.0738
     },
     {
       "symbol": "ETHUSDT",
-      "prob_up": 0.3851,
-      "direction": 0,
-      "confidence": 0.2299
+      "prob_up": 0.5111,
+      "direction": 1,
+      "confidence": 0.0221
     }
   ]
 }
