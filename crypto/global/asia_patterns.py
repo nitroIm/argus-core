@@ -1,6 +1,7 @@
 # ============================================================
 # ARGUS-Trader — ASIA + EUROPE PATTERNS (узел global)
 # ------------------------------------------------------------
+# v2.7: MIN_SAMPLES=10 (align with explorer filter).
 # v2.6: skip gap points (dt > 2h) in load_asia.
 #       Log forecast price per pattern.
 # v2.5: MIN_SAMPLES=5 (align with explorer filter).
@@ -8,7 +9,6 @@
 #       log_run at end.
 # v2.4: + USA (VIX, NASDAQ, US10Y) +
 #       ASIA_EXTRA (USDJPY, KOSPI, TAIEX).
-# v2.3: + DAX, SX5E, FTSE, EURUSD.
 # ============================================================
 
 import os
@@ -37,7 +37,7 @@ log = logging.getLogger("global.patterns")
 WINDOW_DAYS = 30
 LAGS = [1, 2, 3, 6, 12]
 THRESHOLDS = [1.0, 2.0]
-MIN_SAMPLES = 5
+MIN_SAMPLES = 10
 MIN_CORR_SAMPLES = 20
 TOL_SEC = 1800
 GAP_HOURS = 2.0
@@ -67,7 +67,6 @@ def _db1_conn():
 
 
 def load_asia():
-    """Load asia_market, drop gap points (dt > GAP_HOURS)."""
     sql = (
         "SELECT symbol, timestamp, change_pct "
         "FROM asia_market "
@@ -268,7 +267,6 @@ def build_sorted(seq_dict):
 
 
 def latest_close(seq_dict):
-    """Latest close-like value (last change_pct is fine)."""
     if not seq_dict:
         return None
     ts = sorted(seq_dict.keys())[-1]
@@ -387,7 +385,7 @@ def process_pair(a_sym, c_sym, asia, crypto):
 
 def main():
     log.info("=" * 60)
-    log.info("ARGUS PATTERNS v2.6")
+    log.info("ARGUS PATTERNS v2.7")
     log.info("window=%d, lags=%s", WINDOW_DAYS, LAGS)
     log.info(
         "min_samples=%d, min_corr_n=%d, tol=%ds",
