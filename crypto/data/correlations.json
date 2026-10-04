@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-10-04T13:16:22.979181+00:00",
+  "generated_at": "2026-10-04T14:16:21.103295+00:00",
   "min_samples": 10,
   "min_edge": 0.15,
   "symbols": {
     "BTCUSDT": {
       "symbol": "BTCUSDT",
-      "total_events": 284,
-      "base_rate": 0.6111,
+      "total_events": 285,
+      "base_rate": 0.5789,
       "rules_found": 1,
       "rules": [
         {
@@ -16,8 +16,8 @@
           "falls": 2,
           "direction": "up",
           "confidence": 0.8182,
-          "base_rate": 0.6111,
-          "edge": 0.2071
+          "base_rate": 0.5789,
+          "edge": 0.2392
         }
       ]
     },

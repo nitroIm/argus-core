@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-10-04T13:16:18.051413+00:00",
+  "generated_at": "2026-10-04T14:16:18.166343+00:00",
   "symbols": {
     "BTCUSDT": {
       "symbol": "BTCUSDT",
-      "total_events": 469,
+      "total_events": 470,
       "new_events": 1,
       "saved": 1,
       "by_type": {
@@ -16,22 +16,22 @@
         "oi_spike": 36,
         "ls_short_extreme": 64,
         "funding_spike_pos": 65,
-        "fall_4h": 9,
+        "fall_4h": 10,
         "rsi_oversold": 59,
         "new_high_7d": 3
       },
       "thresholds": {
         "source": "quantile",
-        "samples": 403,
+        "samples": 404,
         "rise_1h_pct": 0.257,
-        "rise_4h_pct": 0.4854,
-        "volume_ratio": 1.9714,
+        "rise_4h_pct": 0.4803,
+        "volume_ratio": 1.9668,
         "funding_pct": 0.01,
         "oi_pct": 0.9432,
         "ls_high": 1.39,
         "ls_low": 1.0,
-        "rsi_high": 68.86,
-        "rsi_low": 42.35
+        "rsi_high": 68.84,
+        "rsi_low": 42.36
       },
       "recent_events": [
         {
@@ -39,77 +39,77 @@
           "type": "rsi_overbought",
           "change_pct": 0.0254,
           "magnitude": 69.74,
-          "threshold": 68.86
+          "threshold": 68.84
         },
         {
           "timestamp": "2026-10-03 22:00:00+00:00",
           "type": "volume_spike",
           "change_pct": 0.0694,
           "magnitude": 25.298,
-          "threshold": 1.9714
+          "threshold": 1.9668
         },
         {
           "timestamp": "2026-10-03 05:00:00+00:00",
           "type": "rsi_oversold",
           "change_pct": -0.0231,
           "magnitude": 42.33,
-          "threshold": 42.35
+          "threshold": 42.36
         },
         {
           "timestamp": "2026-10-03 00:00:00+00:00",
           "type": "rsi_oversold",
           "change_pct": -0.0143,
           "magnitude": 40.53,
-          "threshold": 42.35
+          "threshold": 42.36
         },
         {
           "timestamp": "2026-10-02 23:00:00+00:00",
           "type": "rsi_oversold",
           "change_pct": 0.0001,
           "magnitude": 41.17,
-          "threshold": 42.35
+          "threshold": 42.36
         },
         {
           "timestamp": "2026-10-02 22:00:00+00:00",
           "type": "rsi_oversold",
           "change_pct": -0.0037,
           "magnitude": 40.53,
-          "threshold": 42.35
+          "threshold": 42.36
         },
         {
           "timestamp": "2026-10-02 21:00:00+00:00",
           "type": "rsi_oversold",
           "change_pct": 0.0737,
           "magnitude": 40.34,
-          "threshold": 42.35
+          "threshold": 42.36
         },
         {
           "timestamp": "2026-10-02 20:00:00+00:00",
           "type": "rsi_oversold",
           "change_pct": 0.0907,
           "magnitude": 38.16,
-          "threshold": 42.35
+          "threshold": 42.36
         },
         {
           "timestamp": "2026-10-02 19:00:00+00:00",
           "type": "rsi_oversold",
           "change_pct": 0.0552,
           "magnitude": 37.15,
-          "threshold": 42.35
+          "threshold": 42.36
         },
         {
           "timestamp": "2026-10-02 16:00:00+00:00",
           "type": "volume_spike",
           "change_pct": 0.1172,
           "magnitude": 3.157,
-          "threshold": 1.9714
+          "threshold": 1.9668
         },
         {
           "timestamp": "2026-10-02 15:00:00+00:00",
           "type": "volume_spike",
           "change_pct": -0.0274,
           "magnitude": 1.976,
-          "threshold": 1.9714
+          "threshold": 1.9668
         },
         {
           "timestamp": "2026-10-02 15:00:00+00:00",
@@ -144,7 +144,7 @@
           "type": "rsi_overbought",
           "change_pct": 0.0543,
           "magnitude": 73.68,
-          "threshold": 68.86
+          "threshold": 68.84
         },
         {
           "timestamp": "2026-10-02 12:00:00+00:00",
@@ -158,34 +158,34 @@
           "type": "rsi_overbought",
           "change_pct": 0.054,
           "magnitude": 71.46,
-          "threshold": 68.86
+          "threshold": 68.84
         },
         {
           "timestamp": "2026-10-02 09:00:00+00:00",
           "type": "rsi_overbought",
           "change_pct": -0.0471,
           "magnitude": 69.54,
-          "threshold": 68.86
+          "threshold": 68.84
         },
         {
           "timestamp": "2026-10-02 08:00:00+00:00",
           "type": "rsi_overbought",
           "change_pct": 0.0201,
           "magnitude": 68.88,
-          "threshold": 68.86
+          "threshold": 68.84
         }
       ]
     },
     "ETHUSDT": {
       "symbol": "ETHUSDT",
-      "total_events": 456,
-      "new_events": 0,
-      "saved": 0,
+      "total_events": 457,
+      "new_events": 1,
+      "saved": 1,
       "by_type": {
         "ls_long_extreme": 66,
         "rise_1h": 28,
         "volume_spike": 41,
-        "rise_4h": 30,
+        "rise_4h": 31,
         "fall_1h": 12,
         "fall_4h": 10,
         "rsi_overbought": 59,
@@ -197,16 +197,16 @@
       },
       "thresholds": {
         "source": "quantile",
-        "samples": 403,
-        "rise_1h_pct": 0.3329,
-        "rise_4h_pct": 0.8407,
-        "volume_ratio": 1.9824,
+        "samples": 404,
+        "rise_1h_pct": 0.3326,
+        "rise_4h_pct": 0.8387,
+        "volume_ratio": 1.9768,
         "funding_pct": 0.00805,
         "oi_pct": 1.3392,
         "ls_high": 1.6,
         "ls_low": 1.1,
-        "rsi_high": 67.5,
-        "rsi_low": 41.77
+        "rsi_high": 67.45,
+        "rsi_low": 41.78
       },
       "recent_events": [
         {
@@ -228,7 +228,7 @@
           "type": "volume_spike",
           "change_pct": -0.0747,
           "magnitude": 5.51,
-          "threshold": 1.9824
+          "threshold": 1.9768
         },
         {
           "timestamp": "2026-10-04 08:00:00+00:00",
@@ -284,7 +284,7 @@
           "type": "volume_spike",
           "change_pct": 0.0007,
           "magnitude": 2.27,
-          "threshold": 1.9824
+          "threshold": 1.9768
         },
         {
           "timestamp": "2026-10-04 01:00:00+00:00",
@@ -312,7 +312,7 @@
           "type": "volume_spike",
           "change_pct": 0.0458,
           "magnitude": 22.655,
-          "threshold": 1.9824
+          "threshold": 1.9768
         },
         {
           "timestamp": "2026-10-03 22:00:00+00:00",
