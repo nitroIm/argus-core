@@ -1,6 +1,9 @@
 # ============================================================
-# ARGUS - УТРЕННИЙ ОТЧЁТ v5
+# ARGUS - УТРЕННИЙ ОТЧЁТ v6
 # ------------------------------------------------------------
+# v6: use explorer.analyze() instead of risk.build_setup.
+#     Show regime + direction + trade_allowed + size.
+#     Show edge for correlation rules.
 # v5: + торговые сетапы с рисками (R:R, стоп, цель)
 # v4: + spot цена (актуальная, не от 1h свечи)
 # ============================================================
@@ -20,6 +23,7 @@ TMP_DIR = Path("/tmp/argus_charts")
 TMP_DIR.mkdir(parents=True, exist_ok=True)
 
 sys.path.insert(0, str(CRYPTO_ROOT))
+sys.path.insert(0, str(CRYPTO_ROOT / "mexc" / "simulator_01"))
 
 from db import get_connection
 from db import close_connection
@@ -30,9 +34,6 @@ from report.charts import plot_funding
 from report.charts import plot_oi
 from report.charts import compute_rsi
 from report.risk import compute_atr
-from report.risk import compute_rsi as risk_rsi
-from report.risk import build_setup
-from report.risk import fmt_setup
 
 BOT_TOKEN = (
     os.getenv("TELEGRAM_BOT_TOKEN")
@@ -67,6 +68,15 @@ SPOT_SOURCES = [
         "sym_fmt": lambda s: s.replace("USDT", "-USDT"),
     },
 ]
+
+# Пытаемся загрузить explorer
+EXPLORER_OK = False
+try:
+    import explorer as explorer_mod
+    EXPLORER_OK = True
+except Exception as e:
+    print("explorer import failed: " + str(e))
+    explorer_mod = None
 
 
 def fetch_spot(symbol):
@@ -109,6 +119,8 @@ def load_json(path, default=None):
 
 
 def fmt_price(p):
+    if p is None:
+        return "?"
     if p >= 1000:
         return "$" + format(int(p), ",")
     if p >= 1:
@@ -304,107 +316,26 @@ def fetch_oi(symbol, limit=100):
         return []
 
 
-def build_scenario(name, patterns, levels):
-    p = patterns.get("symbols", {}).get(
-        name + "USDT", {}
-    )
-    mk = p.get("markov", {})
-    p10 = mk.get("p_1_given_0", 0)
-    p11 = mk.get("p_1_given_1", 0)
-
-    if p10 > 0.58:
-        return "после падения - отскок"
-    if p10 < 0.42:
-        return "падение продолжается"
-    if p11 > 0.58:
-        return "рост продолжается"
-    return "нейтрально, ждём пробоя"
-
-
-def build_trade_advice(
-    name, symbol, candles, levels,
-    patterns, funding_data, oi_data,
-):
-    lines = []
-    if not candles:
-        return lines
-
-    price = candles[-1]["close"]
-    atr = compute_atr(candles, 14)
-
-    sym_lvl = levels.get("symbols", {}).get(
-        symbol, {}
-    )
-    supports = sym_lvl.get("supports", [])
-    resistances = sym_lvl.get("resistances", [])
-
-    if atr:
-        stop_tight = round(price - atr * 1.5, 2)
-        stop_wide = round(price - atr * 2.5, 2)
-        line = "  ATR(14): " + fmt_price(atr)
-        line += " | стоп: "
-        line += fmt_price(stop_tight)
-        line += " / " + fmt_price(stop_wide)
-        lines.append(line)
-
-    closes = [c["close"] for c in candles]
-    rsi = compute_rsi(closes, 14)
-    if rsi and rsi[-1] is not None:
-        r = rsi[-1]
-        if r >= 70:
-            state = "перекуплен"
-        elif r <= 30:
-            state = "перепродан"
-        else:
-            state = "нейтрально"
-        line = "  RSI(14): "
-        line += format(r, ".1f")
-        line += " - " + state
-        lines.append(line)
-
-    if funding_data:
-        cur_f = funding_data[-1]["rate"] * 100
-        if cur_f > 0.01:
-            state = "перегрев лонгов"
-        elif cur_f < -0.01:
-            state = "перегрев шортов"
-        else:
-            state = "сбалансирован"
-        line = "  Funding: "
-        line += format(cur_f, "+.4f")
-        line += "% - " + state
-        lines.append(line)
-
-    if oi_data and len(oi_data) >= 2:
-        first = oi_data[0]["oi"]
-        cur = oi_data[-1]["oi"]
-        if first:
-            oi_ch = (cur - first) / first * 100
-            if oi_ch > 1:
-                state = "тренд усиливается"
-            elif oi_ch < -1:
-                state = "тренд слабеет"
-            else:
-                state = "флэт"
-            line = "  OI: "
-            line += format(oi_ch, "+.2f")
-            line += "% - " + state
-            lines.append(line)
-
-    if supports and resistances:
-        s1 = supports[0]["price"]
-        r1 = resistances[0]["price"]
-        line = "  Уровни: " + fmt_price(s1)
-        line += " / " + fmt_price(r1)
-        lines.append(line)
-
-    return lines
+def fmt_regime(regime):
+    """Human-readable regime label."""
+    if not regime:
+        return "?"
+    label = regime.get("label", "?")
+    mapping = {
+        "trend_up": "тренд вверх",
+        "trend_down": "тренд вниз",
+        "flat": "флэт",
+        "chop": "пила",
+        "volatile": "волатильно",
+        "unknown": "нет данных",
+    }
+    return mapping.get(label, label)
 
 
 def build_report_text():
     now = datetime.now(timezone.utc)
     lines = []
-    lines.append("☀️ ARGUS — утренний отчёт")
+    lines.append("☀️ ARGUS — утренний отчёт v6")
     lines.append(now.strftime("%d.%m.%Y %H:%M UTC"))
     lines.append("")
 
@@ -417,13 +348,13 @@ def build_report_text():
     corr = load_json(DATA_DIR / "correlations.json")
 
     pairs = [
-        ("BTCUSDT", "BTC", "BTC"),
-        ("ETHUSDT", "ETH", "ETH"),
+        ("BTCUSDT", "BTC"),
+        ("ETHUSDT", "ETH"),
     ]
 
-    setups = []
+    trade_lines = []
 
-    for symbol, name, _ in pairs:
+    for symbol, name in pairs:
         candles = fetch_candles(symbol, 200)
         if not candles:
             continue
@@ -448,73 +379,140 @@ def build_report_text():
         line += format(change_24h, "+.2f") + "% 24ч"
         lines.append(line)
 
-        funding_data = fetch_funding(symbol, 50)
-        oi_data = fetch_oi(symbol, 100)
+        # --- REGIME ---
+        sym_p = patterns.get("symbols", {}).get(symbol, {})
+        regime = sym_p.get("regime", {})
+        if regime:
+            reg_label = fmt_regime(regime)
+            allowed = regime.get("trade_allowed", True)
+            mark = "✅" if allowed else "⛔"
+            line = "  " + mark + " Режим: " + reg_label
+            up_ratio = regime.get("up_ratio")
+            if up_ratio is not None:
+                line += " (up_ratio=" + format(up_ratio, ".2f") + ")"
+            lines.append(line)
 
-        advice = build_trade_advice(
-            name, symbol, candles, levels,
-            patterns, funding_data, oi_data,
-        )
-        lines.extend(advice)
+        # --- ATR + RSI + funding + OI ---
+        atr = compute_atr(candles, 14)
+        if atr:
+            lines.append(
+                "  ATR(14): " + fmt_price(atr)
+            )
 
-        scenario = build_scenario(name, patterns, levels)
-        lines.append("  🎯 Сценарий: " + scenario)
-
-        # Торговый сетап
         closes = [c["close"] for c in candles]
-        rsi_val = risk_rsi(closes, 14)
-        setup = build_setup(
-            symbol, name, candles, levels,
-            rsi_val, funding_data,
-        )
-        if setup:
-            setups.append(setup)
+        rsi = compute_rsi(closes, 14)
+        if rsi and rsi[-1] is not None:
+            r = rsi[-1]
+            if r >= 70:
+                state = "перекуплен"
+            elif r <= 30:
+                state = "перепродан"
+            else:
+                state = "нейтрально"
+            lines.append(
+                "  RSI(14): " + format(r, ".1f")
+                + " - " + state
+            )
+
+        funding_data = fetch_funding(symbol, 50)
+        if funding_data:
+            cur_f = funding_data[-1]["rate"] * 100
+            if cur_f > 0.01:
+                state = "перегрев лонгов"
+            elif cur_f < -0.01:
+                state = "перегрев шортов"
+            else:
+                state = "сбалансирован"
+            lines.append(
+                "  Funding: " + format(cur_f, "+.4f")
+                + "% - " + state
+            )
+
+        oi_data = fetch_oi(symbol, 100)
+        if oi_data and len(oi_data) >= 2:
+            first = oi_data[0]["oi"]
+            cur = oi_data[-1]["oi"]
+            if first:
+                oi_ch = (cur - first) / first * 100
+                if oi_ch > 1:
+                    state = "тренд усиливается"
+                elif oi_ch < -1:
+                    state = "тренд слабеет"
+                else:
+                    state = "флэт"
+                lines.append(
+                    "  OI: " + format(oi_ch, "+.2f")
+                    + "% - " + state
+                )
+
+        # --- EXPLORER SIGNAL ---
+        if EXPLORER_OK:
+            try:
+                r = explorer_mod.analyze(symbol)
+                direction = r.get("direction", "NONE")
+                score = r.get("score", 0)
+
+                if direction == "NONE":
+                    line = "  🎯 Сигнал: NONE"
+                    reg = r.get("regime", {})
+                    if not reg.get("trade_allowed", True):
+                        line += " (вето: " + fmt_regime(reg) + ")"
+                    line += " | score=" + format(score, ".3f")
+                    lines.append(line)
+                else:
+                    emoji = "📈" if direction == "LONG" else "📉"
+                    line = "  " + emoji + " Сигнал: " + direction
+                    line += " | score=" + format(score, ".3f")
+                    lines.append(line)
+                    trade_lines.append(
+                        "[" + name + "] " + direction
+                        + " score=" + format(score, ".3f")
+                    )
+            except Exception as e:
+                print("explorer fail: " + str(e))
 
         lines.append("")
 
     # --- Торговые сетапы ---
-    long_setups = [
-        s for s in setups
-        if s.get("action") == "LONG"
-    ]
-
-    if long_setups:
+    if trade_lines:
+        lines.append("💼 <b>Торговые сигналы</b>")
+        for t in trade_lines:
+            lines.append("  " + escape_html(t))
         lines.append("")
-        lines.append("💼 <b>Торговые возможности</b>")
+    else:
+        lines.append("💼 Сигналов нет — не торгуем")
         lines.append("")
-        for s in long_setups:
-            lines.append(fmt_setup(s))
-            lines.append("")
 
-    # Закономерности
+    # --- Закономерности с edge ---
     if corr and corr.get("symbols"):
         rules = []
         for sym, d in corr["symbols"].items():
             for r in d.get("rules", []):
+                if r.get("samples", 0) < 10:
+                    continue
                 r2 = dict(r)
                 r2["symbol"] = sym.replace("USDT", "")
                 rules.append(r2)
         rules.sort(
-            key=lambda x: (
-                x["confidence"], x["samples"]
-            ),
+            key=lambda x: x.get("edge", 0),
             reverse=True,
         )
         if rules:
-            lines.append("🧠 Закономерности:")
-            for r in rules[:3]:
-                if r["direction"] == "up":
-                    arrow = "↑"
-                else:
-                    arrow = "↓"
+            lines.append("🧠 Закономерности (edge > 0.15):")
+            for r in rules[:5]:
+                arrow = "↑" if r["direction"] == "up" else "↓"
                 sym_safe = escape_html(r["symbol"])
                 rule_safe = escape_html(r["rule"])
                 line = "  " + arrow + " ["
                 line += sym_safe + "] "
                 line += rule_safe
-                line += " ("
-                line += format(r["confidence"] * 100, ".0f")
-                line += "%, N=" + str(r["samples"]) + ")"
+                line += " (" + format(
+                    r["confidence"] * 100, ".0f"
+                ) + "%"
+                line += ", N=" + str(r["samples"])
+                edge = r.get("edge", 0)
+                line += ", edge=" + format(edge, ".2f")
+                line += ")"
                 lines.append(line)
             lines.append("")
 
@@ -524,7 +522,7 @@ def build_report_text():
 
 
 def main():
-    print("Morning report v5 - start")
+    print("Morning report v6 - start")
 
     text = build_report_text()
     print("text len: " + str(len(text)))
@@ -611,6 +609,12 @@ def main():
         print("album: " + str(ok))
     else:
         print("no charts")
+
+    if EXPLORER_OK and explorer_mod is not None:
+        try:
+            explorer_mod.close_all()
+        except Exception:
+            pass
 
     close_connection()
     print("Morning report - done")
