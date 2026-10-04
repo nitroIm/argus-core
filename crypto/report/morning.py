@@ -1,7 +1,8 @@
 # ============================================================
-# ARGUS - УТРЕННИЙ ОТЧЁТ v9
+# ARGUS - УТРЕННИЙ ОТЧЁТ v10
 # ------------------------------------------------------------
-# v9: SOL/BNB read from DB2. DB1 for BTC/ETH.
+# v10: auto-locate db2.py + close DB2 + safe reconnect.
+# v9: SOL/BNB read from DB2.
 # v8: + system health block.
 # v7: + portfolio block.
 # ============================================================
@@ -30,6 +31,15 @@ sys.path.insert(
     0, str(CRYPTO_ROOT / "mexc" / "simulator_01")
 )
 
+# --- Auto-locate db2.py anywhere under crypto/ ---
+for _p in CRYPTO_ROOT.rglob("db2.py"):
+    _d = str(_p.parent)
+    if "__pycache__" in _d:
+        continue
+    if _d not in sys.path:
+        sys.path.insert(0, _d)
+    break
+
 from db import get_connection
 from db import close_connection
 from report.charts import plot_candles
@@ -41,15 +51,16 @@ from report.charts import compute_rsi
 from report.risk import compute_atr
 
 # DB2 for SOL/BNB
+DB2_OK = False
+get_conn_db2 = None
+close_conn_db2 = None
 try:
     from db2 import get_connection as get_conn_db2
     from db2 import close_connection as close_conn_db2
     DB2_OK = True
+    print("DB2 module loaded OK")
 except Exception as e:
     print("db2 import failed: " + str(e))
-    DB2_OK = False
-    get_conn_db2 = None
-    close_conn_db2 = None
 
 BOT_TOKEN = (
     os.getenv("TELEGRAM_BOT_TOKEN")
@@ -105,7 +116,10 @@ except Exception as e:
 def candles_conn(symbol):
     """DB2 for SOL/BNB, DB1 for the rest."""
     if symbol in DB2_SYMBOLS and DB2_OK:
-        return get_conn_db2()
+        try:
+            return get_conn_db2()
+        except Exception as e:
+            print("db2 conn fail: " + str(e))
     return get_connection()
 
 
@@ -333,9 +347,10 @@ def _max_ts_in(conn, table):
 def fmt_system_block():
     lines = ["📦 <b>Система</b>"]
 
-    # --- Candles per symbol (with DB2 routing) ---
+    # --- Candles per symbol (DB2 routing) ---
     candle_parts = []
     for sym, name, _ in SYMBOLS:
+        n = -1
         try:
             with candles_conn(sym) as conn:
                 with conn.cursor() as cur:
@@ -346,9 +361,12 @@ def fmt_system_block():
                         (sym,),
                     )
                     n = cur.fetchone()[0] or 0
-            candle_parts.append(name + " " + str(n))
-        except Exception:
+        except Exception as e:
+            print("candles count " + sym + ": " + str(e))
+        if n < 0:
             candle_parts.append(name + " ?")
+        else:
+            candle_parts.append(name + " " + str(n))
     lines.append(
         "  Свечи: " + " | ".join(candle_parts)
     )
@@ -708,7 +726,7 @@ def fmt_regime(regime):
 def build_report_text():
     now = datetime.now(timezone.utc)
     lines = []
-    lines.append("☀️ <b>ARGUS — утро</b> v9")
+    lines.append("☀️ <b>ARGUS — утро</b> v10")
     lines.append(now.strftime("%d.%m.%Y %H:%M UTC"))
     lines.append("")
 
@@ -863,7 +881,8 @@ def build_report_text():
 
 
 def main():
-    print("Morning report v9 - start")
+    print("Morning report v10 - start")
+    print("DB2_OK = " + str(DB2_OK))
 
     text = build_report_text()
     print("text len: " + str(len(text)))
@@ -947,7 +966,7 @@ def main():
             pass
 
     close_connection()
-    if DB2_OK:
+    if DB2_OK and close_conn_db2 is not None:
         try:
             close_conn_db2()
         except Exception:
