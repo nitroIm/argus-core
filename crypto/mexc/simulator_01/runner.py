@@ -1,6 +1,9 @@
 # ============================================================
-# ARGUS - SIMULATOR 01 v9.8
+# ARGUS - SIMULATOR 01 v9.9
 # ------------------------------------------------------------
+# v9.9: dynamic position size by |score|.
+#       early exit on RSI flip + profit.
+#       verbose veto logging (why not opened).
 # v9.8: get_cooldowns auto-cleans expired entries.
 # v9.7: fallback to ATR stop when level is too far.
 # v9.6: auto-locate db2.py anywhere in repo.
@@ -65,7 +68,12 @@ TRADES_FILE = STATE_DIR / "trades.json"
 COOLDOWN_FILE = STATE_DIR / "cooldowns.json"
 
 START_BALANCE = 50.0
-POSITION_SIZE = 8.0
+
+# --- Position sizing ---
+POSITION_SIZE_BASE = 8.0
+POSITION_SIZE_MAX = 12.0
+SCORE_FULL = 0.5
+
 MAX_POSITIONS = 3
 TAKER_FEE = 0.0005
 SLIPPAGE = 0.0005
@@ -83,6 +91,9 @@ CANDLES_MAX_AGE_H = 2
 RULES_MAX_AGE_H = 24
 
 TIME_EXIT_HOURS = 12
+
+# --- Early exit ---
+EARLY_EXIT_MIN_PROFIT = 0.5
 
 WATCH_INTERVAL_SEC = 600
 WATCH_MAX_MIN = 55
@@ -102,6 +113,17 @@ def candles_conn(symbol):
     if symbol in DB2_SYMBOLS:
         return get_conn_db2()
     return get_connection()
+
+
+def compute_position_size(score):
+    """Dynamic size: |score| 0..SCORE_FULL -> base..max."""
+    try:
+        s = abs(float(score))
+    except Exception:
+        return POSITION_SIZE_BASE
+    ratio = min(1.0, s / SCORE_FULL)
+    size = POSITION_SIZE_BASE * (1 + 0.5 * ratio)
+    return round(min(POSITION_SIZE_MAX, size), 2)
 
 
 def notify(text):
@@ -477,39 +499,42 @@ def build_levels(price, sup, resistances, atr, direction):
 
 
 def check_signal(client, symbol):
+    """Return signal dict or None. Logs reason for every skip."""
     if in_cooldown(symbol):
-        log.info("  %s: in cooldown", symbol)
+        log.info("  %s: skip — in cooldown", symbol)
         return None
 
     for p in get_positions():
         if p["symbol"] == symbol:
-            log.info("  %s: already in positions", symbol)
+            log.info("  %s: skip — already in positions", symbol)
             return None
 
     price = get_price(client, symbol)
     if not price:
-        log.info("  %s: no price", symbol)
+        log.info("  %s: skip — no price", symbol)
         return None
 
     candles = get_candles(symbol, 100)
     if len(candles) < 20:
-        log.info("  %s: few candles (%d)", symbol, len(candles))
+        log.info("  %s: skip — few candles (%d)",
+                 symbol, len(candles))
         return None
     if not candles_are_fresh(candles):
-        log.info("  %s: candles stale", symbol)
+        log.info("  %s: skip — candles stale", symbol)
         return None
 
     closes = [c["close"] for c in candles]
     rsi = compute_rsi(closes, 14)
     atr = compute_atr(candles, 14)
     if not rsi or not atr:
-        log.info("  %s: no RSI/ATR", symbol)
+        log.info("  %s: skip — no RSI/ATR", symbol)
         return None
 
     direction = "NONE"
     score = 0.0
     breakdown = {}
     active = []
+    regime = {}
 
     if EXPLORER_OK:
         try:
@@ -518,14 +543,20 @@ def check_signal(client, symbol):
             direction = r.get("direction", "NONE")
             breakdown = r.get("breakdown", {})
             active = r.get("active", [])
-            log.info("  %s: explorer score=%.4f dir=%s",
-                     symbol, score, direction)
+            regime = r.get("regime", {})
+            log.info(
+                "  %s: explorer score=%.4f dir=%s regime=%s",
+                symbol, score, direction,
+                regime.get("label", "?"),
+            )
         except Exception as e:
             log.warning("  %s: explorer fail: %s", symbol, e)
             direction = "NONE"
 
     if direction == "NONE":
-        log.info("  %s: explorer NONE, skip", symbol)
+        reg_label = regime.get("label", "?")
+        log.info("  %s: skip — explorer NONE (regime=%s)",
+                 symbol, reg_label)
         return None
 
     votes = ["Explorer"]
@@ -557,7 +588,7 @@ def check_signal(client, symbol):
             sup_used = sup_list[0].get("price")
 
     if not stop:
-        log.info("  %s: no stop", symbol)
+        log.info("  %s: skip — no stop", symbol)
         return None
 
     if direction == "LONG":
@@ -576,7 +607,8 @@ def check_signal(client, symbol):
             return None
 
     if rr < MIN_RR:
-        log.info("  %s: R:R=%.2f < %.1f, skip", symbol, rr, MIN_RR)
+        log.info("  %s: skip — R:R=%.2f < %.1f",
+                 symbol, rr, MIN_RR)
         return None
 
     return {
@@ -595,11 +627,13 @@ def check_signal(client, symbol):
         "active": active[:5],
         "support": sup_used,
         "resistance": target,
+        "regime_label": regime.get("label"),
     }
 
 
 def try_open_new(client):
     if len(get_positions()) >= MAX_POSITIONS:
+        log.info("  skip scan — max positions reached")
         return False
     for symbol in SYMBOLS:
         signal = check_signal(client, symbol)
@@ -613,9 +647,16 @@ def try_open_new(client):
 def open_position(signal):
     portfolio = get_portfolio()
     positions = get_positions()
-    if portfolio["balance"] < POSITION_SIZE:
-        log.warning("low balance")
+
+    size_usd = compute_position_size(signal.get("score", 0))
+
+    if portfolio["balance"] < size_usd:
+        log.warning(
+            "low balance: $%.2f < $%.2f",
+            portfolio["balance"], size_usd,
+        )
         return None
+
     for p in positions:
         if p["symbol"] == signal["symbol"]:
             return None
@@ -628,9 +669,9 @@ def open_position(signal):
     else:
         entry = signal["price"] * (1 - SLIPPAGE)
 
-    fee = POSITION_SIZE * TAKER_FEE
-    portfolio["balance"] -= POSITION_SIZE
-    size_coins = POSITION_SIZE / entry
+    fee = size_usd * TAKER_FEE
+    portfolio["balance"] -= size_usd
+    size_coins = size_usd / entry
 
     pos = {
         "id": str(uuid.uuid4()),
@@ -638,7 +679,7 @@ def open_position(signal):
         "direction": direction,
         "entry_price": round(entry, 6),
         "entry_time": datetime.now(timezone.utc).isoformat(),
-        "size_usd": POSITION_SIZE,
+        "size_usd": size_usd,
         "size_coins": round(size_coins, 8),
         "stop": round(signal["stop"], 6),
         "target": round(signal["target"], 6),
@@ -649,6 +690,7 @@ def open_position(signal):
         "explorer_score": signal.get("score"),
         "explorer_breakdown": signal.get("breakdown", {}),
         "explorer_active": signal.get("active", []),
+        "regime_label": signal.get("regime_label"),
         "votes": signal["votes"],
         "reasons": signal["reasons"],
     }
@@ -664,9 +706,15 @@ def open_position(signal):
         "Target: $" + format(signal["target"], ".4f"),
         "R:R 1:" + str(signal["rr"]),
         "Score: " + format(signal.get("score", 0), ".3f"),
+        "Size: $" + format(size_usd, ".2f"),
+        "Regime: " + str(signal.get("regime_label", "?")),
     ]
     notify("\n".join(lines))
-    log.info("OPEN %s %s", direction, signal["symbol"])
+    log.info(
+        "OPEN %s %s size=$%.2f score=%.3f",
+        direction, signal["symbol"], size_usd,
+        signal.get("score", 0),
+    )
     return pos
 
 
@@ -692,7 +740,7 @@ def close_position(pos, exit_price, reason):
 
     pnl -= pos["entry_fee"]
     pnl -= exit_fee
-    pnl_pct = pnl / entry_cost * 100
+    pnl_pct = pnl / entry_cost * 100 if entry_cost else 0
 
     portfolio["balance"] += entry_cost + pnl
     portfolio["realized_pnl"] += pnl
@@ -730,8 +778,10 @@ def close_position(pos, exit_price, reason):
         "Balance: $" + format(portfolio["balance"], ".2f"),
     ]
     notify("\n".join(lines))
-    log.info("CLOSE %s %s PnL=%.4f (%s)",
-             direction, pos["symbol"], pnl, reason)
+    log.info(
+        "CLOSE %s %s PnL=%.4f (%s)",
+        direction, pos["symbol"], pnl, reason,
+    )
     return True
 
 
@@ -824,9 +874,46 @@ def check_time_exit(pos, current_price):
     pnl -= pos["entry_fee"]
     pnl -= exit_fee
     if pnl > 0:
-        log.info("  %s: TIME EXIT (age=%.1fh, pnl=%.4f)",
-                 pos["symbol"], age_h, pnl)
+        log.info(
+            "  %s: TIME EXIT (age=%.1fh, pnl=%.4f)",
+            pos["symbol"], age_h, pnl,
+        )
         return True
+    return False
+
+
+def check_early_exit(pos, current_price, rsi_now):
+    """Close if in profit and RSI flipped against us."""
+    direction = pos.get("direction", "LONG")
+    entry = pos.get("entry_price")
+    if not entry or entry <= 0:
+        return False
+
+    pnl_pct = (current_price - entry) / entry * 100
+    if direction == "SHORT":
+        pnl_pct = -pnl_pct
+
+    if pnl_pct < EARLY_EXIT_MIN_PROFIT:
+        return False
+
+    rsi_entry = pos.get("rsi_entry")
+    if rsi_entry is None or rsi_now is None:
+        return False
+
+    if direction == "LONG":
+        if rsi_entry >= 60 and rsi_now < 50:
+            log.info(
+                "  %s: EARLY EXIT (LONG rsi %.1f->%.1f, pnl=%.2f%%)",
+                pos["symbol"], rsi_entry, rsi_now, pnl_pct,
+            )
+            return True
+    else:
+        if rsi_entry <= 40 and rsi_now > 50:
+            log.info(
+                "  %s: EARLY EXIT (SHORT rsi %.1f->%.1f, pnl=%.2f%%)",
+                pos["symbol"], rsi_entry, rsi_now, pnl_pct,
+            )
+            return True
     return False
 
 
@@ -834,9 +921,22 @@ def check_one_position(client, pos):
     closed, exit_price, reason = check_stop_target_1h(pos)
     if closed:
         return close_position(pos, exit_price, reason)
+
     price = get_price(client, pos["symbol"])
-    if price and check_time_exit(pos, price):
+    if not price:
+        return False
+
+    if check_time_exit(pos, price):
         return close_position(pos, price, "time_exit")
+
+    # Early exit: only if in profit and RSI reversed
+    candles = get_candles(pos["symbol"], 50)
+    if len(candles) >= 15:
+        closes = [c["close"] for c in candles]
+        rsi_now = compute_rsi(closes, 14)
+        if check_early_exit(pos, price, rsi_now):
+            return close_position(pos, price, "early_exit")
+
     return False
 
 
@@ -874,9 +974,12 @@ def watch_position(client):
 
 def main():
     log.info("=" * 50)
-    log.info("SIMULATOR 01 v9.8")
-    log.info("MAX_POSITIONS=%d, SIZE=$%.2f, TIME_EXIT=%dh",
-             MAX_POSITIONS, POSITION_SIZE, TIME_EXIT_HOURS)
+    log.info("SIMULATOR 01 v9.9")
+    log.info(
+        "MAX_POS=%d, SIZE=$%.2f-$%.2f, TIME_EXIT=%dh",
+        MAX_POSITIONS, POSITION_SIZE_BASE,
+        POSITION_SIZE_MAX, TIME_EXIT_HOURS,
+    )
     log.info("DB2 symbols: %s", ", ".join(sorted(DB2_SYMBOLS)))
     log.info("=" * 50)
     client = MexcClient()
