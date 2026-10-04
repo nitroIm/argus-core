@@ -1,12 +1,8 @@
 # ============================================================
-# ARGUS-Trader — EVENTS v3
+# ARGUS-Trader — EVENTS v3.1
 # ------------------------------------------------------------
+# v3.1: batch INSERT in save_events. 73s -> ~3s.
 # v3: adaptive thresholds via percentile over last 30 days.
-#     Includes RSI (85/15), funding, OI, LS, volume, moves.
-#     Thresholds logged in JSON for traceability.
-# v2: + funding_spike, oi_spike, ls_extreme, rsi_extreme
-# v1: rise_1h, fall_1h, rise_4h, fall_4h,
-#     new_high_7d, new_low_7d, volume_spike
 # ============================================================
 
 import sys
@@ -34,9 +30,6 @@ logging.basicConfig(
 log = logging.getLogger("crypto.events")
 
 
-# ============================================================
-# АДАПТИВНЫЕ ПОРОГИ (percentile)
-# ============================================================
 THRESHOLD_WINDOW_DAYS = 30
 THRESHOLD_LOOKBACK_HOURS = THRESHOLD_WINDOW_DAYS * 24
 
@@ -51,7 +44,6 @@ PCT_RSI_LOW = 15
 
 MIN_SAMPLES_FOR_QUANTILE = 100
 
-# Fallback (если данных мало)
 FALLBACK_RISE_1H = 1.5
 FALLBACK_RISE_4H = 3.0
 FALLBACK_VOLUME = 3.0
@@ -66,7 +58,6 @@ RSI_PERIOD = 14
 
 
 def percentile(values, p):
-    """Simple percentile (linear interpolation)."""
     if not values:
         return None
     s = sorted(values)
@@ -79,7 +70,6 @@ def percentile(values, p):
 
 
 def fetch_data(symbol, limit=2000):
-    """Returns candles + features merged by timestamp."""
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
@@ -134,7 +124,6 @@ def fetch_data(symbol, limit=2000):
 
 
 def compute_rsi_series(closes, period=RSI_PERIOD):
-    """RSI series for whole array."""
     n = len(closes)
     out = [None] * n
     if n < period + 1:
@@ -169,7 +158,6 @@ def compute_rsi_series(closes, period=RSI_PERIOD):
 
 
 def compute_thresholds(data):
-    """Adaptive thresholds from last 30 days."""
     if len(data) < MIN_SAMPLES_FOR_QUANTILE:
         log.warning(
             "   few data (%d < %d), fallback thresholds",
@@ -265,7 +253,6 @@ def fetch_existing_events(symbol):
 
 
 def detect_events(symbol, data, th):
-    """Detect events using adaptive thresholds."""
     events = []
     if len(data) < 2:
         return events
@@ -287,7 +274,6 @@ def detect_events(symbol, data, th):
         row = data[i]
         ts = row["timestamp"]
 
-        # --- rise_1h / fall_1h ---
         if row["change_pct"] >= rise_1h:
             events.append({
                 "timestamp": ts,
@@ -307,7 +293,6 @@ def detect_events(symbol, data, th):
                 "threshold": rise_1h,
             })
 
-        # --- rise_4h / fall_4h ---
         if i >= 3:
             sum_4h = sum(
                 data[j]["change_pct"] for j in range(i - 3, i + 1)
@@ -331,7 +316,6 @@ def detect_events(symbol, data, th):
                     "threshold": rise_4h,
                 })
 
-        # --- new_high_7d / new_low_7d ---
         if i >= 167:
             prev_high = max(
                 data[j]["high"] for j in range(i - 167, i)
@@ -345,7 +329,6 @@ def detect_events(symbol, data, th):
                     "duration_hours": 168,
                     "threshold": None,
                 })
-
             prev_low = min(
                 data[j]["low"] for j in range(i - 167, i)
             )
@@ -359,7 +342,6 @@ def detect_events(symbol, data, th):
                     "threshold": None,
                 })
 
-        # --- volume_spike ---
         if row["volume_ratio"] >= vol_th:
             events.append({
                 "timestamp": ts,
@@ -370,7 +352,6 @@ def detect_events(symbol, data, th):
                 "threshold": vol_th,
             })
 
-        # --- funding_spike ---
         fr = row.get("funding_rate")
         if fr is not None:
             if fr >= fund_th:
@@ -392,7 +373,6 @@ def detect_events(symbol, data, th):
                     "threshold": fund_th,
                 })
 
-        # --- oi_spike ---
         oic = row.get("oi_change_pct")
         if oic is not None and abs(oic) >= oi_th:
             events.append({
@@ -404,7 +384,6 @@ def detect_events(symbol, data, th):
                 "threshold": oi_th,
             })
 
-        # --- ls_extreme ---
         lsr = row.get("ls_ratio")
         if lsr is not None:
             if lsr >= ls_high:
@@ -426,7 +405,6 @@ def detect_events(symbol, data, th):
                     "threshold": ls_low,
                 })
 
-        # --- rsi_extreme (adaptive thresholds) ---
         rsi_val = rsi_series[i] if i < len(rsi_series) else None
         if rsi_val is not None:
             if rsi_val >= rsi_high:
@@ -452,32 +430,71 @@ def detect_events(symbol, data, th):
 
 
 def save_events(symbol, events):
+    """Single INSERT for all events."""
     if not events:
         return 0
 
+    sql_head = (
+        "INSERT INTO events "
+        "(symbol, timestamp, event_type, "
+        "change_pct, magnitude, duration_hours) VALUES "
+    )
+    placeholders = ",".join(["(%s,%s,%s,%s,%s,%s)"] * len(events))
+    sql = sql_head + placeholders
+
+    params = []
+    for e in events:
+        params.extend([
+            symbol, e["timestamp"], e["event_type"],
+            e["change_pct"], e["magnitude"],
+            e["duration_hours"],
+        ])
+
+    try:
+        with get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(sql, tuple(params))
+                return cur.rowcount or 0
+    except Exception as e:
+        log.error(f"save_events batch failed: {e}, fallback to single")
+        return save_events_single(symbol, events)
+
+
+def save_events_single(symbol, events):
+    """Fallback: insert one by one with SAVEPOINT."""
     added = 0
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
-                for e in events:
+                for i, e in enumerate(events):
+                    sp = "sp_ev_" + str(i)
                     try:
+                        cur.execute("SAVEPOINT " + sp)
                         cur.execute(
                             "INSERT INTO events "
                             "(symbol, timestamp, event_type, "
                             "change_pct, magnitude, duration_hours) "
                             "VALUES (%s, %s, %s, %s, %s, %s)",
                             (
-                                symbol, e["timestamp"], e["event_type"],
+                                symbol, e["timestamp"],
+                                e["event_type"],
                                 e["change_pct"], e["magnitude"],
                                 e["duration_hours"],
                             ),
                         )
-                        if cur.rowcount and cur.rowcount > 0:
-                            added += cur.rowcount
+                        n = cur.rowcount or 0
+                        cur.execute("RELEASE SAVEPOINT " + sp)
+                        added += n
                     except Exception as ex:
-                        log.warning(f"INSERT event skip: {ex}")
+                        try:
+                            cur.execute(
+                                "ROLLBACK TO SAVEPOINT " + sp
+                            )
+                        except Exception:
+                            pass
+                        log.warning(f"row {i} skip: {ex}")
     except Exception as e:
-        log.error(f"save_events: {e}")
+        log.error(f"save_events_single: {e}")
     return added
 
 
@@ -549,11 +566,10 @@ def analyze_symbol(symbol):
 
 def main():
     log.info("=" * 60)
-    log.info("⚡ ARGUS-Trader EVENTS v3 (adaptive)")
+    log.info("⚡ ARGUS-Trader EVENTS v3.1 (adaptive + batch)")
     log.info("=" * 60)
 
     all_analysis = {}
-
     for symbol in SYMBOLS:
         analysis = analyze_symbol(symbol)
         if analysis:
