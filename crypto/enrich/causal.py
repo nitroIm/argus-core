@@ -93,7 +93,6 @@ def fetch_existing_event_ids(events):
 
 
 def load_window_data(symbol, events):
-    """Load candles/funding/oi/ls for entire event window."""
     if not events:
         return {}
     earliest = min(e["timestamp"] for e in events)
@@ -115,17 +114,17 @@ def load_window_data(symbol, events):
                 cur.execute(
                     "SELECT timestamp, open, high, low, close, volume "
                     "FROM candles WHERE symbol = %s "
-                    "AND timeframe =] else '1h' "
-                    " AND timestamp >= %s AND timestamp <= %s0 "
+                    "AND timeframe = '1h' "
+                    "AND timestamp >= %s AND timestamp <= %s "
                     "ORDER BY timestamp",
-                    (symbol,,
- start, latest),
+                    (symbol, start, latest),
                 )
-                for r in cur                       .fetchall():
+                for r in cur.fetchall():
                     out["candles"].append({
                         "timestamp": r[0],
                         "open": float(r[1]) if r[1] else 0,
-                        "high": float(r[2]) if r[2 "low": float(r[3]) if r[3] else 0,
+                        "high": float(r[2]) if r[2] else 0,
+                        "low": float(r[3]) if r[3] else 0,
                         "close": float(r[4]) if r[4] else 0,
                         "volume": float(r[5]) if r[5] else 0,
                     })
@@ -180,7 +179,6 @@ def candles_before(candles, event_ts, hours):
 
 
 def last_before(series, event_ts):
-    """Last (ts, val) with ts < event_ts."""
     result = None
     for ts, val in series:
         if ts < event_ts:
@@ -261,13 +259,11 @@ def build_entry(symbol, event, data, levels_data, patterns_data):
             "volatility": compute_volatility(ohlcv_1h),
         }
 
-    # Funding: last rate before event
     funding = None
     row = last_before(data.get("funding", []), event_ts)
     if row is not None:
         funding = row[1]
 
-    # OI change over window
     oi_change = None
     oi_series = data.get("oi", [])
     oi_start = first_after(
@@ -279,7 +275,6 @@ def build_entry(symbol, event, data, levels_data, patterns_data):
             (oi_end[1] - oi_start[1]) / oi_start[1] * 100, 4
         )
 
-    # LS: last before event
     ls_ratio = None
     row = last_before(data.get("ls", []), event_ts)
     if row is not None:
@@ -312,7 +307,6 @@ def build_entry(symbol, event, data, levels_data, patterns_data):
 
 
 def save_batch(entries):
-    """Single INSERT for all entries."""
     if not entries:
         return 0
 
@@ -325,7 +319,9 @@ def save_batch(entries):
     )
     sql_tail = " ON CONFLICT (event_id, hours_before) DO NOTHING"
 
-    placeholders = ",".join(["(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"] * len(entries))
+    placeholders = ",".join(
+        ["(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"] * len(entries)
+    )
     sql = sql_head + placeholders + sql_tail
 
     params = []
