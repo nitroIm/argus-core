@@ -1,9 +1,11 @@
 # ============================================================
-# ARGUS-Trader - LEARN WEIGHTS
+# ARGUS-Trader - LEARN WEIGHTS v2
 # ------------------------------------------------------------
-# Updates explorer weights from closed trades.
-# Only uses trades with explorer_breakdown (v9.5+ format).
-# Writes crypto/mexc/simulator_01/state/weights.json
+# v2: per-regime weights.
+#     Learns separately for trend_up/trend_down/flat/chop.
+#     Source that works in trend gets higher weight there.
+#     Falls back to base weight if regime stats too small.
+# v1: base weights from hits/misses.
 # ============================================================
 
 import sys
@@ -38,6 +40,12 @@ SOURCES = [
     "ml", "news", "events", "causal",
     "levels", "patterns", "correlations",
     "db2_patterns", "db2_vectors", "anomaly",
+    "regime",
+]
+
+REGIMES = [
+    "trend_up", "trend_down", "flat",
+    "chop", "volatile", "unknown",
 ]
 
 
@@ -60,12 +68,13 @@ def save_json(path, data):
 
 
 def collect_from_trade(trade):
-    """Only new format. Returns list of (source, agreed)."""
+    """Return list of (source, agreed, won, regime)."""
     pnl = trade.get("pnl_usd")
     if pnl is None:
         return []
     direction = trade.get("direction", "LONG")
     won = pnl > 0
+    regime = trade.get("regime_label") or "unknown"
 
     br = trade.get("explorer_breakdown")
     if not isinstance(br, dict) or not br:
@@ -83,13 +92,23 @@ def collect_from_trade(trade):
             continue
         voted_dir = "LONG" if contrib > 0 else "SHORT"
         agreed = (voted_dir == direction)
-        out.append((src, agreed, won))
+        out.append((src, agreed, won, regime))
     return out
+
+
+def compute_update(w_old, hits, total):
+    """Common weight update math."""
+    if total < MIN_SAMPLES:
+        return None
+    hit_rate = hits / total
+    w_new = w_old * (1 + LR * (hit_rate - 0.5))
+    w_new = max(MIN_WEIGHT, min(MAX_WEIGHT, w_new))
+    return round(w_new, 4), round(hit_rate, 4)
 
 
 def main():
     log.info("=" * 60)
-    log.info("ARGUS LEARN WEIGHTS")
+    log.info("ARGUS LEARN WEIGHTS v2 (regime-aware)")
     log.info("=" * 60)
 
     trades = load_json(TRADES_FILE, [])
@@ -97,21 +116,33 @@ def main():
         log.warning("no trades, nothing to learn")
         return
 
-    hits = {s: 0 for s in SOURCES}
-    miss = {s: 0 for s in SOURCES}
-    counted = 0
+    # Base counters (all trades regardless of regime)
+    base_hits = {s: 0 for s in SOURCES}
+    base_total = {s: 0 for s in SOURCES}
 
+    # Per-regime counters
+    regime_hits = {
+        r: {s: 0 for s in SOURCES} for r in REGIMES
+    }
+    regime_total = {
+        r: {s: 0 for s in SOURCES} for r in REGIMES
+    }
+
+    counted = 0
     for t in trades:
         if not isinstance(t, dict):
             continue
         pairs = collect_from_trade(t)
         if not pairs:
             continue
-        for src, agreed, won in pairs:
+        for src, agreed, won, regime in pairs:
+            if regime not in REGIMES:
+                regime = "unknown"
+            base_total[src] += 1
+            regime_total[regime][src] += 1
             if agreed == won:
-                hits[src] += 1
-            else:
-                miss[src] += 1
+                base_hits[src] += 1
+                regime_hits[regime][src] += 1
         counted += 1
 
     log.info(
@@ -128,30 +159,73 @@ def main():
         log.warning("weights.json empty")
         return
 
-    changed = []
+    # --- Base weights (as v1) ---
+    base_changed = []
     for src in SOURCES:
-        n = hits[src] + miss[src]
-        if n < MIN_SAMPLES:
+        total = base_total[src]
+        if total < MIN_SAMPLES:
             continue
-        hit_rate = hits[src] / n
         w_old = float(weights.get(src, 1.0))
-        w_new = w_old * (1 + LR * (hit_rate - 0.5))
-        w_new = max(MIN_WEIGHT, min(MAX_WEIGHT, w_new))
-        w_new = round(w_new, 4)
+        upd = compute_update(w_old, base_hits[src], total)
+        if upd is None:
+            continue
+        w_new, hit_rate = upd
         if abs(w_new - w_old) > 1e-6:
             weights[src] = w_new
-            changed.append((src, w_old, w_new, n, hit_rate))
+            base_changed.append(
+                (src, w_old, w_new, total, hit_rate)
+            )
 
-    if not changed:
+    if base_changed:
+        log.info("--- base weights ---")
+        for src, wo, wn, n, hr in base_changed:
+            log.info(
+                "%s: %.4f -> %.4f (n=%d hit=%.2f)",
+                src, wo, wn, n, hr,
+            )
+
+    # --- Per-regime weights ---
+    regime_weights = weights.get("regime_weights", {})
+    regime_changed = []
+
+    for regime in REGIMES:
+        section = regime_weights.get(regime, {})
+        for src in SOURCES:
+            total = regime_total[regime][src]
+            if total < MIN_SAMPLES:
+                continue
+            # start from current base or last regime value
+            w_old = float(
+                section.get(src, weights.get(src, 1.0))
+            )
+            upd = compute_update(
+                w_old, regime_hits[regime][src], total
+            )
+            if upd is None:
+                continue
+            w_new, hit_rate = upd
+            if abs(w_new - w_old) > 1e-6:
+                section[src] = w_new
+                regime_changed.append(
+                    (regime, src, w_old, w_new,
+                     total, hit_rate)
+                )
+        if section:
+            regime_weights[regime] = section
+
+    if regime_changed:
+        log.info("--- regime weights ---")
+        for reg, src, wo, wn, n, hr in regime_changed:
+            log.info(
+                "[%s] %s: %.4f -> %.4f (n=%d hit=%.2f)",
+                reg, src, wo, wn, n, hr,
+            )
+
+    if not base_changed and not regime_changed:
         log.info("no updates (threshold not met)")
         return
 
-    for src, wo, wn, n, hr in changed:
-        log.info(
-            "%s: %.4f -> %.4f (n=%d hit=%.2f)",
-            src, wo, wn, n, hr,
-        )
-
+    weights["regime_weights"] = regime_weights
     weights["updated_at"] = datetime.now(
         timezone.utc
     ).isoformat()
