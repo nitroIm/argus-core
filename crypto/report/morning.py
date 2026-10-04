@@ -1,10 +1,9 @@
 # ============================================================
-# ARGUS - УТРЕННИЙ ОТЧЁТ v8
+# ARGUS - УТРЕННИЙ ОТЧЁТ v9
 # ------------------------------------------------------------
-# v8: + system health block (DB rows, ages, model meta,
-#     files freshness, source votes). 4 coins.
-# v7: + portfolio block (balance, PnL, trades 24h).
-# v6: use explorer.analyze() instead of risk.build_setup.
+# v9: SOL/BNB read from DB2. DB1 for BTC/ETH.
+# v8: + system health block.
+# v7: + portfolio block.
 # ============================================================
 
 import os
@@ -41,6 +40,17 @@ from report.charts import plot_oi
 from report.charts import compute_rsi
 from report.risk import compute_atr
 
+# DB2 for SOL/BNB
+try:
+    from db2 import get_connection as get_conn_db2
+    from db2 import close_connection as close_conn_db2
+    DB2_OK = True
+except Exception as e:
+    print("db2 import failed: " + str(e))
+    DB2_OK = False
+    get_conn_db2 = None
+    close_conn_db2 = None
+
 BOT_TOKEN = (
     os.getenv("TELEGRAM_BOT_TOKEN")
     or os.getenv("BOT_TOKEN")
@@ -53,7 +63,6 @@ CHAT_ID = (
 
 MAX_POSITIONS = 3
 
-# All traded symbols
 SYMBOLS = [
     ("BTCUSDT", "BTC", "DB1"),
     ("ETHUSDT", "ETH", "DB1"),
@@ -62,7 +71,6 @@ SYMBOLS = [
 ]
 DB2_SYMBOLS = {"SOLUSDT", "BNBUSDT"}
 
-# JSON files to check freshness
 WATCHED_FILES = [
     ("levels_analysis.json",   120),
     ("patterns_analysis.json", 120),
@@ -92,6 +100,13 @@ try:
 except Exception as e:
     print("explorer import failed: " + str(e))
     explorer_mod = None
+
+
+def candles_conn(symbol):
+    """DB2 for SOL/BNB, DB1 for the rest."""
+    if symbol in DB2_SYMBOLS and DB2_OK:
+        return get_conn_db2()
+    return get_connection()
 
 
 # ============================================================
@@ -289,7 +304,7 @@ def fmt_portfolio_block():
 # ============================================================
 # SYSTEM HEALTH
 # ============================================================
-def db_count(conn, table):
+def _count_in(conn, table):
     try:
         with conn.cursor() as cur:
             cur.execute("SELECT COUNT(*) FROM " + table)
@@ -298,7 +313,7 @@ def db_count(conn, table):
         return -1
 
 
-def db_max_ts(conn, table):
+def _max_ts_in(conn, table):
     try:
         with conn.cursor() as cur:
             cur.execute(
@@ -318,32 +333,33 @@ def db_max_ts(conn, table):
 def fmt_system_block():
     lines = ["📦 <b>Система</b>"]
 
+    # --- Candles per symbol (with DB2 routing) ---
+    candle_parts = []
+    for sym, name, _ in SYMBOLS:
+        try:
+            with candles_conn(sym) as conn:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        "SELECT COUNT(*) FROM candles "
+                        "WHERE symbol=%s AND "
+                        "timeframe='1h'",
+                        (sym,),
+                    )
+                    n = cur.fetchone()[0] or 0
+            candle_parts.append(name + " " + str(n))
+        except Exception:
+            candle_parts.append(name + " ?")
+    lines.append(
+        "  Свечи: " + " | ".join(candle_parts)
+    )
+
+    # --- DB1 stats ---
     try:
         with get_connection() as conn:
-            # Candles per symbol
-            candle_parts = []
-            for sym, name, _ in SYMBOLS:
-                try:
-                    with conn.cursor() as cur:
-                        cur.execute(
-                            "SELECT COUNT(*) FROM candles "
-                            "WHERE symbol=%s AND "
-                            "timeframe='1h'",
-                            (sym,),
-                        )
-                        n = cur.fetchone()[0] or 0
-                    candle_parts.append(
-                        name + " " + str(n)
-                    )
-                except Exception:
-                    candle_parts.append(name + " ?")
-            lines.append(
-                "  Свечи: " + " | ".join(candle_parts)
+            n_feat = _count_in(conn, "features_hourly")
+            ts_feat = _max_ts_in(
+                conn, "features_hourly"
             )
-
-            # Features
-            n_feat = db_count(conn, "features_hourly")
-            ts_feat = db_max_ts(conn, "features_hourly")
             age = None
             if ts_feat:
                 age = int(
@@ -354,9 +370,8 @@ def fmt_system_block():
             line += " (age " + fmt_age(age) + ")"
             lines.append(line)
 
-            # Events
-            n_ev = db_count(conn, "events")
-            ts_ev = db_max_ts(conn, "events")
+            n_ev = _count_in(conn, "events")
+            ts_ev = _max_ts_in(conn, "events")
             age_ev = None
             if ts_ev:
                 age_ev = int(
@@ -367,11 +382,9 @@ def fmt_system_block():
             line += " (age " + fmt_age(age_ev) + ")"
             lines.append(line)
 
-            # Causal
-            n_ca = db_count(conn, "causal_links")
+            n_ca = _count_in(conn, "causal_links")
             lines.append("  Causal: " + str(n_ca))
 
-            # Anomaly 24h
             try:
                 with conn.cursor() as cur:
                     cur.execute(
@@ -385,7 +398,6 @@ def fmt_system_block():
                 )
             except Exception:
                 pass
-
     except Exception as e:
         lines.append("  DB error: " + str(e)[:80])
 
@@ -474,46 +486,6 @@ def fmt_files_block():
             "  " + icon + " " + name
             + " (" + fmt_age(age) + ")"
         )
-
-    return lines
-
-
-def fmt_sources_block(symbol):
-    lines = []
-
-    if not EXPLORER_OK:
-        return lines
-
-    try:
-        r = explorer_mod.analyze(symbol)
-    except Exception:
-        return lines
-
-    breakdown = r.get("breakdown", {})
-    if not breakdown:
-        return lines
-
-    name = symbol.replace("USDT", "")
-    lines.append("⚙️ <b>Источники " + name + "</b>")
-
-    sorted_items = sorted(
-        breakdown.items(),
-        key=lambda kv: abs(kv[1].get("contrib", 0)),
-        reverse=True,
-    )
-
-    for src, info in sorted_items[:8]:
-        contrib = info.get("contrib", 0)
-        raw = info.get("raw", 0)
-        if abs(contrib) < 1e-9:
-            if abs(raw) < 1e-9:
-                continue
-            icon = "⚪"
-        else:
-            icon = "✅" if contrib > 0 else "🔻"
-        line = "  " + icon + " " + src + " "
-        line += format(contrib, "+.4f")
-        lines.append(line)
 
     return lines
 
@@ -642,11 +614,11 @@ def send_media_group(photos):
 
 
 # ============================================================
-# DB READ HELPERS
+# DB READ HELPERS (with DB2 routing)
 # ============================================================
 def fetch_candles(symbol, limit=200):
     try:
-        with get_connection() as conn:
+        with candles_conn(symbol) as conn:
             with conn.cursor() as cur:
                 sql = (
                     "SELECT timestamp, open, high, "
@@ -669,13 +641,13 @@ def fetch_candles(symbol, limit=200):
                     })
                 return out
     except Exception as e:
-        print("candles: " + str(e))
+        print("candles " + symbol + ": " + str(e))
         return []
 
 
 def fetch_funding(symbol, limit=50):
     try:
-        with get_connection() as conn:
+        with candles_conn(symbol) as conn:
             with conn.cursor() as cur:
                 sql = (
                     "SELECT timestamp, rate "
@@ -696,7 +668,7 @@ def fetch_funding(symbol, limit=50):
 
 def fetch_oi(symbol, limit=100):
     try:
-        with get_connection() as conn:
+        with candles_conn(symbol) as conn:
             with conn.cursor() as cur:
                 sql = (
                     "SELECT timestamp, oi "
@@ -736,34 +708,27 @@ def fmt_regime(regime):
 def build_report_text():
     now = datetime.now(timezone.utc)
     lines = []
-    lines.append("☀️ <b>ARGUS — утро</b> v8")
+    lines.append("☀️ <b>ARGUS — утро</b> v9")
     lines.append(now.strftime("%d.%m.%Y %H:%M UTC"))
     lines.append("")
 
-    # PORTFOLIO
     lines.extend(fmt_portfolio_block())
     lines.append("")
     lines.append("─" * 20)
     lines.append("")
 
-    # SYSTEM
     lines.extend(fmt_system_block())
     lines.append("")
 
-    # MODEL
     lines.extend(fmt_model_block())
     lines.append("")
 
-    # FILES
     lines.extend(fmt_files_block())
     lines.append("")
     lines.append("─" * 20)
     lines.append("")
 
-    # MARKET per symbol
-    levels = load_json(
-        DATA_DIR / "levels_analysis.json"
-    )
+    levels = load_json(DATA_DIR / "levels_analysis.json")
     patterns = load_json(
         DATA_DIR / "patterns_analysis.json"
     )
@@ -771,7 +736,9 @@ def build_report_text():
     for symbol, name, db in SYMBOLS:
         candles = fetch_candles(symbol, 200)
         if not candles:
-            lines.append("⚠️ <b>" + name + "</b>: нет свечей")
+            line = "⚠️ <b>" + name + "</b> [" + db
+            line += "]: нет свечей"
+            lines.append(line)
             lines.append("")
             continue
 
@@ -856,7 +823,6 @@ def build_report_text():
 
         lines.append("")
 
-    # CORRELATIONS
     corr = load_json(DATA_DIR / "correlations.json", {})
     if corr and corr.get("symbols"):
         rules = []
@@ -897,7 +863,7 @@ def build_report_text():
 
 
 def main():
-    print("Morning report v8 - start")
+    print("Morning report v9 - start")
 
     text = build_report_text()
     print("text len: " + str(len(text)))
@@ -981,6 +947,11 @@ def main():
             pass
 
     close_connection()
+    if DB2_OK:
+        try:
+            close_conn_db2()
+        except Exception:
+            pass
     print("Morning report - done")
 
 
