@@ -1,16 +1,17 @@
 # ============================================================
-# ARGUS-Trader — PATTERNS v2
+# ARGUS-Trader — PATTERNS v2.1
 # ------------------------------------------------------------
+# v2.1: fix fetch_features — merge features_hourly + candles.
+#       features_hourly has no close/high/low columns.
 # v2: + regime detection (trend_up / trend_down / flat /
 #     chop / volatile). Written to patterns_analysis.json.
-# v1: ngrams, markov, binary strings
 # ============================================================
 
 import sys
 import json
 import logging
 from datetime import datetime, timezone
-from collections import Counter, defaultdict
+from collections import defaultdict
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -36,34 +37,54 @@ VOLATILE_RATIO = 1.6
 
 
 def fetch_features(symbol, limit=500):
+    """Merge features_hourly + candles by timestamp."""
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute(
                     "SELECT timestamp, change_pct, range_pct, "
                     "body_pct, upper_wick_pct, lower_wick_pct, "
-                    "volume_ratio_24h, close, high, low "
+                    "volume_ratio_24h "
                     "FROM features_hourly WHERE symbol = %s "
                     "ORDER BY timestamp DESC LIMIT %s",
                     (symbol, limit),
                 )
-                rows = cur.fetchall()
-                rows = list(reversed(rows))
-                return [
-                    {
-                        "timestamp": r[0],
-                        "change_pct": float(r[1]) if r[1] is not None else 0,
-                        "range_pct": float(r[2]) if r[2] is not None else 0,
-                        "body_pct": float(r[3]) if r[3] is not None else 0,
-                        "upper_wick_pct": float(r[4]) if r[4] is not None else 0,
-                        "lower_wick_pct": float(r[5]) if r[5] is not None else 0,
-                        "volume_ratio_24h": float(r[6]) if r[6] is not None else 0,
-                        "close": float(r[7]) if r[7] is not None else 0,
-                        "high": float(r[8]) if r[8] is not None else 0,
-                        "low": float(r[9]) if r[9] is not None else 0,
-                    }
-                    for r in rows
-                ]
+                features_rows = list(reversed(cur.fetchall()))
+
+                cur.execute(
+                    "SELECT timestamp, close, high, low "
+                    "FROM candles WHERE symbol = %s "
+                    "AND timeframe = '1h' "
+                    "ORDER BY timestamp DESC LIMIT %s",
+                    (symbol, limit),
+                )
+                candles_rows = list(reversed(cur.fetchall()))
+
+        cmap = {}
+        for r in candles_rows:
+            cmap[r[0]] = {
+                "close": float(r[1]) if r[1] is not None else 0,
+                "high": float(r[2]) if r[2] is not None else 0,
+                "low": float(r[3]) if r[3] is not None else 0,
+            }
+
+        result = []
+        for r in features_rows:
+            ts = r[0]
+            c = cmap.get(ts, {})
+            result.append({
+                "timestamp": ts,
+                "change_pct": float(r[1]) if r[1] is not None else 0,
+                "range_pct": float(r[2]) if r[2] is not None else 0,
+                "body_pct": float(r[3]) if r[3] is not None else 0,
+                "upper_wick_pct": float(r[4]) if r[4] is not None else 0,
+                "lower_wick_pct": float(r[5]) if r[5] is not None else 0,
+                "volume_ratio_24h": float(r[6]) if r[6] is not None else 0,
+                "close": c.get("close", 0),
+                "high": c.get("high", 0),
+                "low": c.get("low", 0),
+            })
+        return result
     except Exception as e:
         log.error(f"fetch_features: {e}")
         return []
@@ -115,7 +136,7 @@ def build_markov_matrix(binary_str):
     total_from_0 = transitions["00"] + transitions["01"]
     total_from_1 = transitions["10"] + transitions["11"]
 
-    result = {
+    return {
         "total_transitions": sum(transitions.values()),
         "p_1_given_1": round(
             transitions["11"] / total_from_1, 4
@@ -130,7 +151,6 @@ def build_markov_matrix(binary_str):
             transitions["00"] / total_from_0, 4
         ) if total_from_0 else 0,
     }
-    return result
 
 
 def longest_streak(binary_str, bit="1"):
@@ -153,6 +173,8 @@ def compute_atr_simple(candles, period):
         h = candles[i]["high"]
         l = candles[i]["low"]
         pc = candles[i - 1]["close"]
+        if h <= 0 or l <= 0 or pc <= 0:
+            continue
         tr = max(h - l, abs(h - pc), abs(l - pc))
         trs.append(tr)
     if len(trs) < period:
@@ -161,7 +183,6 @@ def compute_atr_simple(candles, period):
 
 
 def detect_regime(features):
-    """Returns dict with regime label + metrics."""
     if len(features) < REGIME_WINDOW:
         return {
             "label": "unknown",
@@ -269,7 +290,7 @@ def analyze_symbol(symbol):
 
     regime = detect_regime(features)
 
-    result = {
+    return {
         "symbol": symbol,
         "total_candles": len(features),
         "up_count": full_str.count("1"),
@@ -284,7 +305,6 @@ def analyze_symbol(symbol):
         "last_168h": full_str[-168:] if len(full_str) >= 168 else full_str,
         "regime": regime,
     }
-    return result
 
 
 def save_patterns(symbol, analysis):
@@ -329,7 +349,7 @@ def save_patterns(symbol, analysis):
 
 def main():
     log.info("=" * 60)
-    log.info("🧩 ARGUS-Trader PATTERNS v2")
+    log.info("🧩 ARGUS-Trader PATTERNS v2.1")
     log.info("=" * 60)
 
     all_analysis = {}
@@ -344,24 +364,18 @@ def main():
         saved = save_patterns(symbol, analysis)
         total_saved += saved
 
-        log.info(f"   Up/Down: {analysis['up_count']}/{analysis['down_count']} "
+        log.info(f"   Up/Down: {analysis['up_count']}/"
+                 f"{analysis['down_count']} "
                  f"({analysis['up_ratio'] * 100:.1f}% up)")
         log.info(f"   Серия вверх: {analysis['max_streak_up']} | "
                  f"Серия вниз: {analysis['max_streak_down']}")
-        mk = analysis["markov"]
-        log.info(f"   P(1|1)={mk['p_1_given_1']} | P(0|1)={mk['p_0_given_1']}")
-        log.info(f"   P(1|0)={mk['p_1_given_0']} | P(0|0)={mk['p_0_given_0']}")
 
         rg = analysis["regime"]
         log.info(f"   🎯 REGIME: {rg['label']} — {rg['reason']}")
         log.info(f"      trade_allowed={rg['trade_allowed']}, "
-                 f"direction={rg['preferred_direction']}")
-
-        if analysis["ngrams_top"]:
-            log.info("   Топ паттернов:")
-            for item in analysis["ngrams_top"][:5]:
-                log.info(f"     {item['ngram']} → P(up)={item['p_up']} "
-                         f"(N={item['count']})")
+                 f"direction={rg['preferred_direction']}, "
+                 f"up_ratio={rg.get('up_ratio')}, "
+                 f"vol_ratio={rg.get('vol_ratio')}")
 
     try:
         with open(ANALYSIS_FILE, "w", encoding="utf-8") as f:
