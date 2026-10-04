@@ -1,11 +1,11 @@
 # ============================================================
-# ARGUS - УТРЕННИЙ ОТЧЁТ v6
+# ARGUS - УТРЕННИЙ ОТЧЁТ v7
 # ------------------------------------------------------------
+# v7: + PORTFOLIO block (balance, PnL, trades, positions).
+#     + last 24h closed trades summary.
 # v6: use explorer.analyze() instead of risk.build_setup.
-#     Show regime + direction + trade_allowed + size.
-#     Show edge for correlation rules.
+#     Show regime + direction + edge.
 # v5: + торговые сетапы с рисками (R:R, стоп, цель)
-# v4: + spot цена (актуальная, не от 1h свечи)
 # ============================================================
 
 import os
@@ -19,11 +19,16 @@ from pathlib import Path
 SCRIPT_DIR = Path(__file__).resolve().parent
 CRYPTO_ROOT = SCRIPT_DIR.parent
 DATA_DIR = CRYPTO_ROOT / "data"
+STATE_DIR = (
+    CRYPTO_ROOT / "mexc" / "simulator_01" / "state"
+)
 TMP_DIR = Path("/tmp/argus_charts")
 TMP_DIR.mkdir(parents=True, exist_ok=True)
 
 sys.path.insert(0, str(CRYPTO_ROOT))
-sys.path.insert(0, str(CRYPTO_ROOT / "mexc" / "simulator_01"))
+sys.path.insert(
+    0, str(CRYPTO_ROOT / "mexc" / "simulator_01")
+)
 
 from db import get_connection
 from db import close_connection
@@ -44,6 +49,8 @@ CHAT_ID = (
     os.getenv("TELEGRAM_CHAT_ID")
     or ""
 ).strip()
+
+MAX_POSITIONS = 3
 
 SPOT_SOURCES = [
     {
@@ -69,7 +76,6 @@ SPOT_SOURCES = [
     },
 ]
 
-# Пытаемся загрузить explorer
 EXPLORER_OK = False
 try:
     import explorer as explorer_mod
@@ -79,6 +85,179 @@ except Exception as e:
     explorer_mod = None
 
 
+# ============================================================
+# PORTFOLIO / TRADES
+# ============================================================
+def load_state_json(name, default=None):
+    if default is None:
+        default = {}
+    path = STATE_DIR / name
+    if not path.exists():
+        return default
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return default
+
+
+def load_portfolio():
+    return load_state_json("portfolio.json", {})
+
+
+def load_positions():
+    return load_state_json("positions.json", [])
+
+
+def load_trades():
+    return load_state_json("trades.json", [])
+
+
+def trades_in_window(hours):
+    cutoff = datetime.now(timezone.utc) - timedelta(
+        hours=hours
+    )
+    out = []
+    for t in load_trades():
+        if not isinstance(t, dict):
+            continue
+        ts = t.get("exit_time")
+        if not ts:
+            continue
+        try:
+            dt = datetime.fromisoformat(ts)
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=timezone.utc)
+        except Exception:
+            continue
+        if dt >= cutoff:
+            out.append(t)
+    return out
+
+
+def _signed_usd(v):
+    sign = "+" if v >= 0 else "-"
+    return sign + "$" + format(abs(v), ".2f")
+
+
+def _signed_pct(v):
+    sign = "+" if v >= 0 else ""
+    return sign + format(v, ".2f") + "%"
+
+
+def fmt_portfolio_block():
+    """Portfolio + last 24h trading summary."""
+    p = load_portfolio()
+    lines = []
+
+    if not p:
+        lines.append("💼 <b>Портфель</b>")
+        lines.append("  файл portfolio.json не найден")
+        return lines
+
+    lines.append("💼 <b>Портфель</b>")
+
+    balance = float(p.get("balance", 0))
+    start = float(p.get("start_balance", 50))
+    pnl = float(p.get("realized_pnl", 0))
+    total = int(p.get("total_trades", 0))
+    wins = int(p.get("wins", 0))
+    losses = int(p.get("losses", 0))
+
+    pnl_pct = (pnl / start * 100) if start else 0
+    wr = (wins / total * 100) if total else 0
+
+    line = "  Баланс: $" + format(balance, ".2f")
+    line += " (старт $" + format(start, ".2f") + ")"
+    lines.append(line)
+
+    line = "  PnL всего: " + _signed_usd(pnl)
+    line += " (" + _signed_pct(pnl_pct) + ")"
+    lines.append(line)
+
+    line = "  Сделок: " + str(total)
+    line += " (" + str(wins) + "W/"
+    line += str(losses) + "L"
+    line += " | WR " + format(wr, ".1f") + "%)"
+    lines.append(line)
+
+    positions = load_positions()
+    line = "  Открыто: " + str(len(positions))
+    line += "/" + str(MAX_POSITIONS)
+    lines.append(line)
+
+    for pos in positions:
+        sym = str(pos.get("symbol", "?")).replace(
+            "USDT", ""
+        )
+        d = pos.get("direction", "?")
+        entry = float(pos.get("entry_price", 0))
+        stop = float(pos.get("stop", 0))
+        target = float(pos.get("target", 0))
+        size = float(pos.get("size_usd", 0))
+        line = "    " + sym + " " + d
+        line += " $" + format(size, ".2f")
+        line += " @ " + fmt_price(entry)
+        lines.append(line)
+        line = "      стоп " + fmt_price(stop)
+        line += " | цель " + fmt_price(target)
+        lines.append(line)
+
+    # --- Last 24h closed trades ---
+    recent = trades_in_window(24)
+    lines.append("")
+    lines.append("📊 <b>Сделки за 24ч</b>")
+
+    if not recent:
+        lines.append("  закрытий не было")
+        return lines
+
+    wins_24 = [
+        t for t in recent if t.get("pnl_usd", 0) > 0
+    ]
+    losses_24 = [
+        t for t in recent if t.get("pnl_usd", 0) <= 0
+    ]
+    pnl_24 = sum(
+        float(t.get("pnl_usd", 0)) for t in recent
+    )
+
+    line = "  Закрыто: " + str(len(recent))
+    line += " (" + str(len(wins_24)) + "W/"
+    line += str(len(losses_24)) + "L)"
+    lines.append(line)
+
+    line = "  PnL за день: " + _signed_usd(pnl_24)
+    lines.append(line)
+
+    if len(recent) >= 2:
+        sorted_t = sorted(
+            recent,
+            key=lambda x: float(x.get("pnl_usd", 0)),
+            reverse=True,
+        )
+        best = sorted_t[0]
+        worst = sorted_t[-1]
+        for label, t in [
+            ("Лучшая", best),
+            ("Худшая", worst),
+        ]:
+            sym = str(t.get("symbol", "?")).replace(
+                "USDT", ""
+            )
+            pnl_t = float(t.get("pnl_usd", 0))
+            reason = t.get("exit_reason", "?")
+            line = "  " + label + ": " + sym
+            line += " " + _signed_usd(pnl_t)
+            line += " (" + str(reason) + ")"
+            lines.append(line)
+
+    return lines
+
+
+# ============================================================
+# SPOT
+# ============================================================
 def fetch_spot(symbol):
     for src in SPOT_SOURCES:
         try:
@@ -156,7 +335,7 @@ def send_message(text):
     parts = split_text(text, 3800)
     ok_all = True
 
-    for i, part in enumerate(parts):
+    for part in parts:
         try:
             url = "https://api.telegram.org/bot"
             url += BOT_TOKEN + "/sendMessage"
@@ -170,9 +349,7 @@ def send_message(text):
                 url, json=payload, timeout=20,
             )
             if r.status_code != 200:
-                msg = "send err "
-                msg += str(r.status_code)
-                print(msg)
+                print("send err " + str(r.status_code))
                 ok_all = False
         except Exception as e:
             print("send: " + str(e))
@@ -317,7 +494,6 @@ def fetch_oi(symbol, limit=100):
 
 
 def fmt_regime(regime):
-    """Human-readable regime label."""
     if not regime:
         return "?"
     label = regime.get("label", "?")
@@ -335,8 +511,14 @@ def fmt_regime(regime):
 def build_report_text():
     now = datetime.now(timezone.utc)
     lines = []
-    lines.append("☀️ ARGUS — утренний отчёт v6")
+    lines.append("☀️ ARGUS — утренний отчёт v7")
     lines.append(now.strftime("%d.%m.%Y %H:%M UTC"))
+    lines.append("")
+
+    # --- PORTFOLIO BLOCK (first!) ---
+    lines.extend(fmt_portfolio_block())
+    lines.append("")
+    lines.append("─" * 20)
     lines.append("")
 
     levels = load_json(
@@ -379,7 +561,6 @@ def build_report_text():
         line += format(change_24h, "+.2f") + "% 24ч"
         lines.append(line)
 
-        # --- REGIME ---
         sym_p = patterns.get("symbols", {}).get(symbol, {})
         regime = sym_p.get("regime", {})
         if regime:
@@ -389,15 +570,12 @@ def build_report_text():
             line = "  " + mark + " Режим: " + reg_label
             up_ratio = regime.get("up_ratio")
             if up_ratio is not None:
-                line += " (up_ratio=" + format(up_ratio, ".2f") + ")"
+                line += " (up=" + format(up_ratio, ".2f") + ")"
             lines.append(line)
 
-        # --- ATR + RSI + funding + OI ---
         atr = compute_atr(candles, 14)
         if atr:
-            lines.append(
-                "  ATR(14): " + fmt_price(atr)
-            )
+            lines.append("  ATR(14): " + fmt_price(atr))
 
         closes = [c["close"] for c in candles]
         rsi = compute_rsi(closes, 14)
@@ -445,7 +623,6 @@ def build_report_text():
                     + "% - " + state
                 )
 
-        # --- EXPLORER SIGNAL ---
         if EXPLORER_OK:
             try:
                 r = explorer_mod.analyze(symbol)
@@ -456,13 +633,20 @@ def build_report_text():
                     line = "  🎯 Сигнал: NONE"
                     reg = r.get("regime", {})
                     if not reg.get("trade_allowed", True):
-                        line += " (вето: " + fmt_regime(reg) + ")"
-                    line += " | score=" + format(score, ".3f")
+                        line += " (вето: "
+                        line += fmt_regime(reg) + ")"
+                    line += " | score="
+                    line += format(score, ".3f")
                     lines.append(line)
                 else:
-                    emoji = "📈" if direction == "LONG" else "📉"
-                    line = "  " + emoji + " Сигнал: " + direction
-                    line += " | score=" + format(score, ".3f")
+                    emoji = (
+                        "📈" if direction == "LONG"
+                        else "📉"
+                    )
+                    line = "  " + emoji + " Сигнал: "
+                    line += direction
+                    line += " | score="
+                    line += format(score, ".3f")
                     lines.append(line)
                     trade_lines.append(
                         "[" + name + "] " + direction
@@ -473,7 +657,6 @@ def build_report_text():
 
         lines.append("")
 
-    # --- Торговые сетапы ---
     if trade_lines:
         lines.append("💼 <b>Торговые сигналы</b>")
         for t in trade_lines:
@@ -483,7 +666,6 @@ def build_report_text():
         lines.append("💼 Сигналов нет — не торгуем")
         lines.append("")
 
-    # --- Закономерности с edge ---
     if corr and corr.get("symbols"):
         rules = []
         for sym, d in corr["symbols"].items():
@@ -498,9 +680,13 @@ def build_report_text():
             reverse=True,
         )
         if rules:
-            lines.append("🧠 Закономерности (edge > 0.15):")
+            lines.append(
+                "🧠 Закономерности (edge > 0.15):"
+            )
             for r in rules[:5]:
-                arrow = "↑" if r["direction"] == "up" else "↓"
+                arrow = (
+                    "↑" if r["direction"] == "up" else "↓"
+                )
                 sym_safe = escape_html(r["symbol"])
                 rule_safe = escape_html(r["rule"])
                 line = "  " + arrow + " ["
@@ -522,7 +708,7 @@ def build_report_text():
 
 
 def main():
-    print("Morning report v6 - start")
+    print("Morning report v7 - start")
 
     text = build_report_text()
     print("text len: " + str(len(text)))
