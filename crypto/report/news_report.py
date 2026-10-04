@@ -1,9 +1,9 @@
 # ============================================================
-# ARGUS - NEWS REPORT v3 [PRODUCTION]
+# ARGUS - NEWS REPORT v4
 # ------------------------------------------------------------
-# v3: дедупликация — не отправляет одни и те же заголовки.
-#     История отправленных хранится 7 дней.
-# v2: перевод только топ-3+3
+# v4: Kaliningrad time in header.
+#     Data age + warning if stale.
+# v3: dedup via title hash, 7 day history.
 # ============================================================
 
 import os
@@ -15,6 +15,7 @@ import requests
 from datetime import datetime, timezone
 from datetime import timedelta
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 CRYPTO_ROOT = SCRIPT_DIR.parent
@@ -51,12 +52,16 @@ CHAT_ID = (
 
 MAX_MESSAGE_LEN = 3800
 HISTORY_DAYS = 7
+STALE_HOURS = 6
+
+TZ = ZoneInfo("Europe/Kaliningrad")
 
 
-# ============================================================
-# HELPERS
-# ============================================================
-def esc(s) -> str:
+def now_local():
+    return datetime.now(timezone.utc).astimezone(TZ)
+
+
+def esc(s):
     if not s:
         return ""
     s = str(s)
@@ -66,7 +71,7 @@ def esc(s) -> str:
     return s
 
 
-def split_text(text: str, max_len: int) -> list:
+def split_text(text, max_len):
     if len(text) <= max_len:
         return [text]
     parts = []
@@ -86,15 +91,13 @@ def split_text(text: str, max_len: int) -> list:
     return parts
 
 
-def send_message(text: str) -> bool:
+def send_message(text):
     if not BOT_TOKEN or not CHAT_ID:
         log.warning("TELEGRAM not configured")
         log.info(text)
         return False
-
     parts = split_text(text, MAX_MESSAGE_LEN)
     ok_all = True
-
     for i, part in enumerate(parts):
         try:
             url = "https://api.telegram.org/bot"
@@ -114,19 +117,13 @@ def send_message(text: str) -> bool:
                     r.status_code, r.text[:200],
                 )
                 ok_all = False
-            else:
-                log.info(
-                    "part %d/%d sent",
-                    i + 1, len(parts),
-                )
         except Exception as e:
             log.exception("send: %s", e)
             ok_all = False
-
     return ok_all
 
 
-def load_json(path: Path, default=None) -> dict:
+def load_json(path, default=None):
     if default is None:
         default = {}
     if not path.exists():
@@ -139,7 +136,7 @@ def load_json(path: Path, default=None) -> dict:
         return default
 
 
-def save_json(path: Path, data) -> None:
+def save_json(path, data):
     try:
         path.parent.mkdir(
             parents=True, exist_ok=True,
@@ -153,18 +150,37 @@ def save_json(path: Path, data) -> None:
         log.error("save %s: %s", path.name, e)
 
 
-def _title_hash(text: str) -> str:
+def _title_hash(text):
     t = (text or "").strip().lower()
-    return hashlib.md5(t.encode("utf-8")).hexdigest()
+    return hashlib.md5(
+        t.encode("utf-8"), usedforsecurity=False,
+    ).hexdigest()
+
+
+def file_age_hours(path):
+    if not path.exists():
+        return None
+    mtime = path.stat().st_mtime
+    now = datetime.now(timezone.utc).timestamp()
+    return (now - mtime) / 3600
+
+
+def fmt_age(h):
+    if h is None:
+        return "?"
+    if h < 1:
+        return str(int(h * 60)) + "м"
+    if h < 24:
+        return format(h, ".1f") + "ч"
+    return format(h / 24, ".1f") + "д"
 
 
 # ============================================================
 # HISTORY
 # ============================================================
-def load_sent_history() -> dict:
+def load_sent_history():
     data = load_json(
-        SENT_HISTORY_FILE,
-        {"entries": []},
+        SENT_HISTORY_FILE, {"entries": []},
     )
     if not isinstance(data, dict):
         data = {"entries": []}
@@ -173,8 +189,7 @@ def load_sent_history() -> dict:
     return data
 
 
-def clean_history(data: dict) -> dict:
-    """Убирает записи старше HISTORY_DAYS."""
+def clean_history(data):
     now = datetime.now(timezone.utc)
     cutoff = now - timedelta(days=HISTORY_DAYS)
     entries = []
@@ -194,7 +209,7 @@ def clean_history(data: dict) -> dict:
     return data
 
 
-def get_sent_hashes(data: dict) -> set:
+def get_sent_hashes(data):
     out = set()
     for e in data.get("entries", []):
         h = e.get("hash")
@@ -203,7 +218,7 @@ def get_sent_hashes(data: dict) -> set:
     return out
 
 
-def add_sent_hash(data: dict, h: str) -> None:
+def add_sent_hash(data, h):
     now_iso = datetime.now(timezone.utc).isoformat()
     data.setdefault("entries", []).append({
         "hash": h,
@@ -214,8 +229,7 @@ def add_sent_hash(data: dict, h: str) -> None:
 # ============================================================
 # TOP SELECTION
 # ============================================================
-def filter_fresh(items: list, seen: set) -> list:
-    """Оставляет только те что не отправлялись."""
+def filter_fresh(items, seen):
     out = []
     for it in items:
         t = it.get("title_original")
@@ -228,11 +242,9 @@ def filter_fresh(items: list, seen: set) -> list:
     return out
 
 
-def translate_top(items: list, n: int = 3) -> list:
-    """Переводит топ-N новостей."""
+def translate_top(items, n=3):
     if not items or not TRANSLATE_AVAILABLE:
         return []
-
     originals = []
     for it in items[:n]:
         t = it.get("title_original")
@@ -240,10 +252,8 @@ def translate_top(items: list, n: int = 3) -> list:
             t = it.get("title", "")
         if t:
             originals.append(t)
-
     if not originals:
         return []
-
     try:
         log.info(
             "translating %d items", len(originals),
@@ -258,12 +268,9 @@ def translate_top(items: list, n: int = 3) -> list:
 # REPORT
 # ============================================================
 def build_report(
-    data: dict,
-    bull_items: list,
-    bear_items: list,
-    bull_ru: list,
-    bear_ru: list,
-) -> str:
+    data, bull_items, bear_items,
+    bull_ru, bear_ru, age_h,
+):
     mood = data.get("mood", "Неизвестно")
     avg = data.get("avg_sentiment", 0.0)
     total = data.get("total_news", 0)
@@ -273,9 +280,24 @@ def build_report(
     fake = data.get("fake_count", 0)
     cross = data.get("cross_confirmed", 0)
 
+    now = now_local()
     lines = []
-    lines.append("📰 <b>ARGUS — Настроение рынка</b>")
+    lines.append("📰 <b>ARGUS — Новости</b> v4")
+    line = now.strftime("%d.%m %H:%M")
+    line += " КЛГ"
+    lines.append(line)
     lines.append("")
+
+    # Возраст данных
+    if age_h is not None:
+        icon = "✅" if age_h <= STALE_HOURS else "⚠️"
+        line = icon + " Данные: "
+        line += fmt_age(age_h) + " назад"
+        if age_h > STALE_HOURS:
+            line += " (устарели)"
+        lines.append(line)
+    lines.append("")
+
     lines.append("🎭 " + esc(mood))
     lines.append(
         "📊 Сентимент: <b>"
@@ -296,41 +318,36 @@ def build_report(
         )
     lines.append("")
 
-    # Позитив
     if bull_ru:
         lines.append("🟢 <b>Позитив:</b>")
         for t in bull_ru[:3]:
             lines.append("  • " + esc(t[:150]))
         lines.append("")
     elif bull_items:
-        # Есть позитив, но всё уже отправлялось
-        lines.append("🟢 <b>Позитив:</b> новых нет")
+        lines.append("🟢 Позитив: новых нет")
         lines.append("")
 
-    # Негатив
     if bear_ru:
         lines.append("🔴 <b>Негатив:</b>")
         for t in bear_ru[:3]:
             lines.append("  • " + esc(t[:150]))
         lines.append("")
     elif bear_items:
-        lines.append("🔴 <b>Негатив:</b> новых нет")
+        lines.append("🔴 Негатив: новых нет")
         lines.append("")
 
     lines.append(
         "<i>Настроение — один из факторов "
         "прогноза ARGUS.</i>"
     )
-
     return "\n".join(lines)
 
 
 # ============================================================
 # MAIN
 # ============================================================
-def main() -> None:
-    log.info("news report v3")
-    log.info("reading: %s", SENTIMENT_FILE)
+def main():
+    log.info("news report v4")
 
     if not SENTIMENT_FILE.exists():
         log.error("no sentiment file")
@@ -342,15 +359,15 @@ def main() -> None:
         log.error("sentiment file empty/broken")
         sys.exit(1)
 
-    # История отправленных
+    age_h = file_age_hours(SENTIMENT_FILE)
+    log.info("data age: %s",
+             fmt_age(age_h) if age_h else "?")
+
     history = load_sent_history()
     history = clean_history(history)
     seen = get_sent_hashes(history)
-    log.info(
-        "history: %d entries", len(seen),
-    )
+    log.info("history: %d entries", len(seen))
 
-    # Фильтруем
     top_bull = data.get("top_bullish", [])
     top_bear = data.get("top_bearish", [])
 
@@ -366,21 +383,17 @@ def main() -> None:
         len(top_bear), len(bear_fresh),
     )
 
-    # Переводим топ-3 из свежих
     bull_ru = translate_top(bull_fresh, 3)
     bear_ru = translate_top(bear_fresh, 3)
 
-    # Строим сообщение
     text = build_report(
-        data,
-        bull_fresh, bear_fresh,
-        bull_ru, bear_ru,
+        data, bull_fresh, bear_fresh,
+        bull_ru, bear_ru, age_h,
     )
     log.info("report: %d chars", len(text))
 
     ok = send_message(text)
 
-    # Записываем в историю — что отправили
     if ok:
         for it in bull_fresh[:3]:
             t = it.get("title_original")
@@ -394,7 +407,6 @@ def main() -> None:
                 t = it.get("title", "")
             if t:
                 add_sent_hash(history, _title_hash(t))
-
         save_json(SENT_HISTORY_FILE, history)
         log.info(
             "history updated: %d entries",
@@ -402,7 +414,7 @@ def main() -> None:
         )
         log.info("report sent")
     else:
-        log.warning("send failed, history not updated")
+        log.warning("send failed, no history update")
 
 
 if __name__ == "__main__":
