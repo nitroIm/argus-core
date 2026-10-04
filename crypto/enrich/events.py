@@ -1,10 +1,12 @@
 # ============================================================
-# ARGUS-Trader — EVENTS v2
+# ARGUS-Trader — EVENTS v3
 # ------------------------------------------------------------
+# v3: adaptive thresholds via percentile (90/85/15)
+#     over last 30 days of features.
+#     Thresholds logged in JSON for traceability.
 # v2: + funding_spike, oi_spike, ls_extreme, rsi_extreme
 # v1: rise_1h, fall_1h, rise_4h, fall_4h,
 #     new_high_7d, new_low_7d, volume_spike
-# Записывает в events (Supabase) + JSON для causal.py.
 # ============================================================
 
 import sys
@@ -33,24 +35,48 @@ log = logging.getLogger("crypto.events")
 
 
 # ============================================================
-# ПОРОГИ
+# АДАПТИВНЫЕ ПОРОГИ (percentile)
 # ============================================================
-RISE_1H_PCT = 1.5
-FALL_1H_PCT = -1.5
-RISE_4H_PCT = 3.0
-FALL_4H_PCT = -3.0
-VOLUME_SPIKE_RATIO = 3.0
-FUNDING_SPIKE_PCT = 0.05
-OI_SPIKE_PCT = 5.0
-LS_HIGH = 1.5
-LS_LOW = 0.7
+THRESHOLD_WINDOW_DAYS = 30
+THRESHOLD_LOOKBACK_HOURS = THRESHOLD_WINDOW_DAYS * 24
+
+PCT_MOVE = 90
+PCT_VOLUME = 90
+PCT_FUNDING = 90
+PCT_OI = 90
+PCT_LS_HIGH = 85
+PCT_LS_LOW = 15
+
+# Fallback (если данных мало)
+FALLBACK_RISE_1H = 1.5
+FALLBACK_RISE_4H = 3.0
+FALLBACK_VOLUME = 3.0
+FALLBACK_FUNDING = 0.05
+FALLBACK_OI = 5.0
+FALLBACK_LS_HIGH = 1.5
+FALLBACK_LS_LOW = 0.7
+MIN_SAMPLES_FOR_QUANTILE = 100
+
 RSI_OVERBOUGHT = 70
 RSI_OVERSOLD = 30
 RSI_PERIOD = 14
 
 
+def percentile(values, p):
+    """Simple percentile (linear interpolation)."""
+    if not values:
+        return None
+    s = sorted(values)
+    k = (len(s) - 1) * p / 100.0
+    f = int(k)
+    c = min(f + 1, len(s) - 1)
+    if f == c:
+        return s[f]
+    return s[f] + (s[c] - s[f]) * (k - f)
+
+
 def fetch_data(symbol, limit=2000):
-    """Возвращает свечи + features, объединённые по timestamp."""
+    """Returns candles + features merged by timestamp."""
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
@@ -104,6 +130,76 @@ def fetch_data(symbol, limit=2000):
         return []
 
 
+def compute_thresholds(data):
+    """Adaptive thresholds from last 30 days."""
+    if len(data) < MIN_SAMPLES_FOR_QUANTILE:
+        log.warning(
+            "   few data (%d < %d), fallback thresholds",
+            len(data), MIN_SAMPLES_FOR_QUANTILE,
+        )
+        return {
+            "source": "fallback",
+            "rise_1h_pct": FALLBACK_RISE_1H,
+            "rise_4h_pct": FALLBACK_RISE_4H,
+            "volume_ratio": FALLBACK_VOLUME,
+            "funding_pct": FALLBACK_FUNDING,
+            "oi_pct": FALLBACK_OI,
+            "ls_high": FALLBACK_LS_HIGH,
+            "ls_low": FALLBACK_LS_LOW,
+            "samples": len(data),
+        }
+
+    changes = [abs(d["change_pct"]) for d in data]
+    changes = [c for c in changes if c > 0]
+
+    sums_4h = []
+    for i in range(3, len(data)):
+        s = sum(data[j]["change_pct"] for j in range(i - 3, i + 1))
+        sums_4h.append(abs(s))
+    sums_4h = [s for s in sums_4h if s > 0]
+
+    volumes = [d["volume_ratio"] for d in data if d["volume_ratio"]]
+    fundings = [
+        abs(d["funding_rate"]) for d in data
+        if d["funding_rate"] is not None
+    ]
+    ois = [
+        abs(d["oi_change_pct"]) for d in data
+        if d["oi_change_pct"] is not None
+    ]
+    lsr = [
+        d["ls_ratio"] for d in data
+        if d["ls_ratio"] is not None
+    ]
+
+    thresholds = {
+        "source": "quantile",
+        "samples": len(data),
+        "rise_1h_pct": round(
+            percentile(changes, PCT_MOVE), 4
+        ) if changes else FALLBACK_RISE_1H,
+        "rise_4h_pct": round(
+            percentile(sums_4h, PCT_MOVE), 4
+        ) if sums_4h else FALLBACK_RISE_4H,
+        "volume_ratio": round(
+            percentile(volumes, PCT_VOLUME), 4
+        ) if volumes else FALLBACK_VOLUME,
+        "funding_pct": round(
+            percentile(fundings, PCT_FUNDING), 6
+        ) if fundings else FALLBACK_FUNDING,
+        "oi_pct": round(
+            percentile(ois, PCT_OI), 4
+        ) if ois else FALLBACK_OI,
+        "ls_high": round(
+            percentile(lsr, PCT_LS_HIGH), 4
+        ) if lsr else FALLBACK_LS_HIGH,
+        "ls_low": round(
+            percentile(lsr, PCT_LS_LOW), 4
+        ) if lsr else FALLBACK_LS_LOW,
+    }
+    return thresholds
+
+
 def fetch_existing_events(symbol):
     try:
         with get_connection() as conn:
@@ -119,7 +215,6 @@ def fetch_existing_events(symbol):
 
 
 def compute_rsi_series(closes, period=RSI_PERIOD):
-    """Возвращает список RSI для каждой точки."""
     n = len(closes)
     out = [None] * n
     if n < period + 1:
@@ -150,14 +245,22 @@ def compute_rsi_series(closes, period=RSI_PERIOD):
         else:
             rs = avg_gain / avg_loss
             out[i] = 100 - 100 / (1 + rs)
-
     return out
 
 
-def detect_events(symbol, data):
+def detect_events(symbol, data, th):
+    """Detect events using adaptive thresholds."""
     events = []
     if len(data) < 2:
         return events
+
+    rise_1h = th["rise_1h_pct"]
+    rise_4h = th["rise_4h_pct"]
+    vol_th = th["volume_ratio"]
+    fund_th = th["funding_pct"]
+    oi_th = th["oi_pct"]
+    ls_high = th["ls_high"]
+    ls_low = th["ls_low"]
 
     closes = [d["close"] for d in data]
     rsi_series = compute_rsi_series(closes, RSI_PERIOD)
@@ -167,46 +270,54 @@ def detect_events(symbol, data):
         ts = row["timestamp"]
 
         # --- rise_1h / fall_1h ---
-        if row["change_pct"] >= RISE_1H_PCT:
+        if row["change_pct"] >= rise_1h:
             events.append({
                 "timestamp": ts,
                 "event_type": "rise_1h",
                 "change_pct": round(row["change_pct"], 4),
                 "magnitude": round(row["change_pct"], 4),
                 "duration_hours": 1,
+                "threshold": rise_1h,
             })
-        elif row["change_pct"] <= FALL_1H_PCT:
+        elif row["change_pct"] <= -rise_1h:
             events.append({
                 "timestamp": ts,
                 "event_type": "fall_1h",
                 "change_pct": round(row["change_pct"], 4),
                 "magnitude": round(abs(row["change_pct"]), 4),
                 "duration_hours": 1,
+                "threshold": rise_1h,
             })
 
         # --- rise_4h / fall_4h ---
         if i >= 3:
-            sum_4h = sum(data[j]["change_pct"] for j in range(i - 3, i + 1))
-            if sum_4h >= RISE_4H_PCT:
+            sum_4h = sum(
+                data[j]["change_pct"] for j in range(i - 3, i + 1)
+            )
+            if sum_4h >= rise_4h:
                 events.append({
                     "timestamp": ts,
                     "event_type": "rise_4h",
                     "change_pct": round(sum_4h, 4),
                     "magnitude": round(sum_4h, 4),
                     "duration_hours": 4,
+                    "threshold": rise_4h,
                 })
-            elif sum_4h <= FALL_4H_PCT:
+            elif sum_4h <= -rise_4h:
                 events.append({
                     "timestamp": ts,
                     "event_type": "fall_4h",
                     "change_pct": round(sum_4h, 4),
                     "magnitude": round(abs(sum_4h), 4),
                     "duration_hours": 4,
+                    "threshold": rise_4h,
                 })
 
         # --- new_high_7d / new_low_7d ---
         if i >= 167:
-            prev_high = max(data[j]["high"] for j in range(i - 167, i))
+            prev_high = max(
+                data[j]["high"] for j in range(i - 167, i)
+            )
             if row["high"] > prev_high:
                 events.append({
                     "timestamp": ts,
@@ -214,9 +325,12 @@ def detect_events(symbol, data):
                     "change_pct": round(row["change_pct"], 4),
                     "magnitude": round(row["high"] - prev_high, 4),
                     "duration_hours": 168,
+                    "threshold": None,
                 })
 
-            prev_low = min(data[j]["low"] for j in range(i - 167, i))
+            prev_low = min(
+                data[j]["low"] for j in range(i - 167, i)
+            )
             if row["low"] < prev_low:
                 events.append({
                     "timestamp": ts,
@@ -224,70 +338,77 @@ def detect_events(symbol, data):
                     "change_pct": round(row["change_pct"], 4),
                     "magnitude": round(prev_low - row["low"], 4),
                     "duration_hours": 168,
+                    "threshold": None,
                 })
 
         # --- volume_spike ---
-        if row["volume_ratio"] >= VOLUME_SPIKE_RATIO:
+        if row["volume_ratio"] >= vol_th:
             events.append({
                 "timestamp": ts,
                 "event_type": "volume_spike",
                 "change_pct": round(row["change_pct"], 4),
                 "magnitude": round(row["volume_ratio"], 4),
                 "duration_hours": 1,
+                "threshold": vol_th,
             })
 
         # --- funding_spike ---
         fr = row.get("funding_rate")
         if fr is not None:
-            if fr >= FUNDING_SPIKE_PCT:
+            if fr >= fund_th:
                 events.append({
                     "timestamp": ts,
                     "event_type": "funding_spike_pos",
                     "change_pct": round(row["change_pct"], 4),
                     "magnitude": round(fr, 6),
                     "duration_hours": 1,
+                    "threshold": fund_th,
                 })
-            elif fr <= -FUNDING_SPIKE_PCT:
+            elif fr <= -fund_th:
                 events.append({
                     "timestamp": ts,
                     "event_type": "funding_spike_neg",
                     "change_pct": round(row["change_pct"], 4),
                     "magnitude": round(abs(fr), 6),
                     "duration_hours": 1,
+                    "threshold": fund_th,
                 })
 
         # --- oi_spike ---
         oic = row.get("oi_change_pct")
-        if oic is not None and abs(oic) >= OI_SPIKE_PCT:
+        if oic is not None and abs(oic) >= oi_th:
             events.append({
                 "timestamp": ts,
                 "event_type": "oi_spike",
                 "change_pct": round(row["change_pct"], 4),
                 "magnitude": round(abs(oic), 4),
                 "duration_hours": 1,
+                "threshold": oi_th,
             })
 
         # --- ls_extreme ---
         lsr = row.get("ls_ratio")
         if lsr is not None:
-            if lsr >= LS_HIGH:
+            if lsr >= ls_high:
                 events.append({
                     "timestamp": ts,
                     "event_type": "ls_long_extreme",
                     "change_pct": round(row["change_pct"], 4),
                     "magnitude": round(lsr, 4),
                     "duration_hours": 1,
+                    "threshold": ls_high,
                 })
-            elif lsr <= LS_LOW:
+            elif lsr <= ls_low:
                 events.append({
                     "timestamp": ts,
                     "event_type": "ls_short_extreme",
                     "change_pct": round(row["change_pct"], 4),
                     "magnitude": round(lsr, 4),
                     "duration_hours": 1,
+                    "threshold": ls_low,
                 })
 
-        # --- rsi_extreme ---
+        # --- rsi_extreme (fixed thresholds) ---
         rsi_val = rsi_series[i] if i < len(rsi_series) else None
         if rsi_val is not None:
             if rsi_val >= RSI_OVERBOUGHT:
@@ -297,6 +418,7 @@ def detect_events(symbol, data):
                     "change_pct": round(row["change_pct"], 4),
                     "magnitude": round(rsi_val, 2),
                     "duration_hours": 1,
+                    "threshold": RSI_OVERBOUGHT,
                 })
             elif rsi_val <= RSI_OVERSOLD:
                 events.append({
@@ -305,6 +427,7 @@ def detect_events(symbol, data):
                     "change_pct": round(row["change_pct"], 4),
                     "magnitude": round(rsi_val, 2),
                     "duration_hours": 1,
+                    "threshold": RSI_OVERSOLD,
                 })
 
     return events
@@ -322,10 +445,14 @@ def save_events(symbol, events):
                     try:
                         cur.execute(
                             "INSERT INTO events "
-                            "(symbol, timestamp, event_type, change_pct, magnitude, duration_hours) "
+                            "(symbol, timestamp, event_type, "
+                            "change_pct, magnitude, duration_hours) "
                             "VALUES (%s, %s, %s, %s, %s, %s)",
-                            (symbol, e["timestamp"], e["event_type"],
-                             e["change_pct"], e["magnitude"], e["duration_hours"]),
+                            (
+                                symbol, e["timestamp"], e["event_type"],
+                                e["change_pct"], e["magnitude"],
+                                e["duration_hours"],
+                            ),
                         )
                         if cur.rowcount and cur.rowcount > 0:
                             added += cur.rowcount
@@ -338,17 +465,27 @@ def save_events(symbol, events):
 
 def analyze_symbol(symbol):
     log.info(f"📊 {symbol} — детект событий")
-    data = fetch_data(symbol, limit=2000)
+    data = fetch_data(symbol, limit=THRESHOLD_LOOKBACK_HOURS)
     if not data:
         log.warning(f"{symbol}: данных нет")
         return None
 
     log.info(f"   Свечей: {len(data)}")
 
+    th = compute_thresholds(data)
+    log.info(f"   🎚 thresholds ({th['source']}):")
+    log.info(f"      rise_1h  = {th['rise_1h_pct']}%")
+    log.info(f"      rise_4h  = {th['rise_4h_pct']}%")
+    log.info(f"      volume   = x{th['volume_ratio']}")
+    log.info(f"      funding  = {th['funding_pct']}%")
+    log.info(f"      oi       = {th['oi_pct']}%")
+    log.info(f"      ls_high  = {th['ls_high']}")
+    log.info(f"      ls_low   = {th['ls_low']}")
+
     existing = fetch_existing_events(symbol)
     log.info(f"   Уже в БД: {len(existing)}")
 
-    all_events = detect_events(symbol, data)
+    all_events = detect_events(symbol, data, th)
 
     new_events = [
         e for e in all_events
@@ -374,21 +511,25 @@ def analyze_symbol(symbol):
         "new_events": len(new_events),
         "saved": saved,
         "by_type": by_type,
+        "thresholds": th,
         "recent_events": [
             {
                 "timestamp": str(e["timestamp"]),
                 "type": e["event_type"],
                 "change_pct": e["change_pct"],
                 "magnitude": e["magnitude"],
+                "threshold": e.get("threshold"),
             }
-            for e in sorted(all_events, key=lambda x: x["timestamp"], reverse=True)[:20]
+            for e in sorted(
+                all_events, key=lambda x: x["timestamp"], reverse=True
+            )[:20]
         ],
     }
 
 
 def main():
     log.info("=" * 60)
-    log.info("⚡ ARGUS-Trader EVENTS v2")
+    log.info("⚡ ARGUS-Trader EVENTS v3 (adaptive)")
     log.info("=" * 60)
 
     all_analysis = {}
