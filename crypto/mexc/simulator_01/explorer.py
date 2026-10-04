@@ -1,9 +1,11 @@
 # ============================================================
 # ARGUS - EXPLORER (simulator)
 # ------------------------------------------------------------
-# v4: signal_ml respects action=WAIT (returns raw=0).
+# v5: read regime from patterns_analysis.json.
+#     If regime.trade_allowed=False -> direction=NONE.
+#     Direction filtered by regime.preferred_direction.
+# v4: signal_ml respects action=WAIT.
 # v3: + signal_anomaly (stop_hunting, pump_dump и др)
-#     fix causal: N>=2 вместо N>=3
 # ============================================================
 
 import os
@@ -50,6 +52,7 @@ DEFAULT_WEIGHTS = {
     "db2_patterns": 1.2,
     "db2_vectors": 0.8,
     "anomaly": 1.0,
+    "regime": 1.0,
     "threshold": 0.30,
 }
 
@@ -115,6 +118,44 @@ def _get_db2():
     return _db2_conn
 
 
+def signal_regime(symbol):
+    """Read regime from patterns_analysis.json."""
+    data = load_json(PATTERNS_FILE, {})
+    sym = data.get("symbols", {}).get(symbol, {})
+    regime = sym.get("regime", {})
+    if not regime:
+        return {
+            "raw": 0.0,
+            "label": "unknown",
+            "trade_allowed": True,
+            "preferred_direction": "both",
+        }
+
+    label = regime.get("label", "unknown")
+    allowed = regime.get("trade_allowed", True)
+    pref = regime.get("preferred_direction", "both")
+
+    # raw: soft vote in preferred direction
+    if not allowed:
+        raw = 0.0
+    elif pref == "LONG":
+        raw = 0.3
+    elif pref == "SHORT":
+        raw = -0.3
+    else:
+        raw = 0.0
+
+    return {
+        "raw": round(raw, 4),
+        "label": label,
+        "trade_allowed": allowed,
+        "preferred_direction": pref,
+        "reason": regime.get("reason", ""),
+        "up_ratio": regime.get("up_ratio"),
+        "vol_ratio": regime.get("vol_ratio"),
+    }
+
+
 def signal_ml(symbol):
     data = load_json(SIGNALS_FILE, {})
     for s in data.get("signals", []):
@@ -124,7 +165,6 @@ def signal_ml(symbol):
         conf = float(s.get("confidence", 0) or 0)
         prob_up = float(s.get("prob_up", 0.5) or 0.5)
 
-        # v4: respect action=WAIT - model unsure, no vote
         if action == "WAIT":
             return {"raw": 0.0, "action": action,
                     "conf": conf, "prob_up": prob_up}
@@ -394,16 +434,25 @@ def signal_correlations(symbol):
         direction = r.get("direction")
         conf = float(r.get("confidence", 0) or 0)
         n = int(r.get("samples", 0) or 0)
-        if n < 5 or conf < 0.55:
+        edge = float(r.get("edge", 0) or 0)
+        if n < 10 or conf < 0.55:
             continue
-        sign = 1.0 if direction == "up" else (-1.0 if direction == "down" else 0)
+        sign = 1.0 if direction == "up" else (
+            -1.0 if direction == "down" else 0
+        )
         if sign == 0:
             continue
-        w = (conf - 0.5) * 2 * min(1.0, n / 30.0)
+        # weight by edge (stronger signal = bigger vote)
+        w = min(1.0, edge / 0.3) * min(1.0, n / 30.0)
         total += sign * w
         count += 1
-        active.append({"rule": r.get("rule"), "dir": direction,
-                       "conf": conf, "n": n})
+        active.append({
+            "rule": r.get("rule"),
+            "dir": direction,
+            "conf": conf,
+            "n": n,
+            "edge": edge,
+        })
 
     if count == 0:
         return {"raw": 0.0, "active": []}
@@ -428,7 +477,7 @@ def signal_db2_patterns(symbol):
             cur.execute(
                 "SELECT source_symbol, condition_pct, direction, "
                 "lag_hours, samples, hit_rate FROM asia_patterns "
-                "WHERE target_symbol = %s AND samples >= 5",
+                "WHERE target_symbol = %s AND samples >= 10",
                 (symbol,),
             )
             total = 0.0
@@ -583,6 +632,7 @@ def signal_db2_market():
 
 
 SOURCES = [
+    ("regime", signal_regime),
     ("ml", signal_ml),
     ("news", signal_news),
     ("events", signal_events),
@@ -621,14 +671,39 @@ def analyze(symbol):
             for a in res["active"]:
                 active_all.append({"src": name, **a})
 
+    regime_info = signal_regime(symbol)
     market_info = signal_db2_market()
     threshold = float(weights.get("threshold", 0.3))
 
-    if total >= threshold:
+    # Regime veto: if trade not allowed -> NONE
+    trade_allowed = regime_info.get("trade_allowed", True)
+    preferred = regime_info.get("preferred_direction", "both")
+
+    if not trade_allowed:
+        direction = "NONE"
+        log.info(
+            "  [%s] regime=%s -> trade_allowed=False, NONE",
+            symbol, regime_info.get("label", "?"),
+        )
+    elif total >= threshold:
         direction = "LONG"
     elif total <= -threshold:
         direction = "SHORT"
     else:
+        direction = "NONE"
+
+    # Direction filter by regime
+    if direction == "LONG" and preferred == "SHORT":
+        log.info(
+            "  [%s] regime=%s forbids LONG, NONE",
+            symbol, regime_info.get("label", "?"),
+        )
+        direction = "NONE"
+    elif direction == "SHORT" and preferred == "LONG":
+        log.info(
+            "  [%s] regime=%s forbids SHORT, NONE",
+            symbol, regime_info.get("label", "?"),
+        )
         direction = "NONE"
 
     return {
@@ -639,6 +714,7 @@ def analyze(symbol):
         "breakdown": breakdown,
         "active": active_all[:15],
         "markets": market_info.get("markets", {}),
+        "regime": regime_info,
     }
 
 
@@ -660,6 +736,9 @@ if __name__ == "__main__":
         print(r["symbol"], r["direction"],
               "score=", r["score"],
               "thr=", r["threshold"])
+        print("  regime:", r["regime"].get("label"),
+              "allowed:", r["regime"].get("trade_allowed"),
+              "pref:", r["regime"].get("preferred_direction"))
         for k, v in r["breakdown"].items():
             print("  ", k, "raw=", v["raw"],
                   "w=", v["weight"],
