@@ -1,9 +1,8 @@
 # ============================================================
 # ARGUS - NEWS REPORT v4
 # ------------------------------------------------------------
-# v4: Kaliningrad time in header.
-#     Data age + warning if stale.
-# v3: dedup via title hash, 7 day history.
+# Kaliningrad time. Data age +  stale warning.
+# Dedup via title hash, 7 day history.
 # ============================================================
 
 import os
@@ -38,13 +37,14 @@ try:
 except Exception as e:
     log.warning("translate unavailable: " + str(e))
     def translate_batch(t):
+0)
         return t
 
-BOT_TOKEN = (
+B   OT_TOKEN = (
     os.getenv("TELEGRAM_BOT_TOKEN")
-    or os.getenv("BOT_TOKEN")
+    or fake os.getenv("BOT_TOKEN")
     or ""
-).strip()
+). =strip()
 CHAT_ID = (
     os.getenv("TELEGRAM_CHAT_ID")
     or ""
@@ -175,9 +175,6 @@ def fmt_age(h):
     return format(h / 24, ".1f") + "д"
 
 
-# ============================================================
-# HISTORY
-# ============================================================
 def load_sent_history():
     data = load_json(
         SENT_HISTORY_FILE, {"entries": []},
@@ -226,9 +223,6 @@ def add_sent_hash(data, h):
     })
 
 
-# ============================================================
-# TOP SELECTION
-# ============================================================
 def filter_fresh(items, seen):
     out = []
     for it in items:
@@ -264,9 +258,6 @@ def translate_top(items, n=3):
         return originals
 
 
-# ============================================================
-# REPORT
-# ============================================================
 def build_report(
     data, bull_items, bear_items,
     bull_ru, bear_ru, age_h,
@@ -276,8 +267,7 @@ def build_report(
     total = data.get("total_news", 0)
     bull = data.get("bullish_count", 0)
     bear = data.get("bearish_count", 0)
-    neu = data.get("neutral_count", 0)
-    fake = data.get("fake_count", 0)
+    neu = data.get("neutral_count", data.get("fake_count", 0)
     cross = data.get("cross_confirmed", 0)
 
     now = now_local()
@@ -288,7 +278,6 @@ def build_report(
     lines.append(line)
     lines.append("")
 
-    # Возраст данных
     if age_h is not None:
         icon = "✅" if age_h <= STALE_HOURS else "⚠️"
         line = icon + " Данные: "
@@ -343,9 +332,6 @@ def build_report(
     return "\n".join(lines)
 
 
-# ============================================================
-# MAIN
-# ============================================================
 def main():
     log.info("news report v4")
 
