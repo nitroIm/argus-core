@@ -1,16 +1,16 @@
 # ============================================================
 # ARGUS - EXPLORER (simulator)
 # ------------------------------------------------------------
+# v6: smart signal_news (uses all fields, file age,
+#     trust, cross-confirm, balance, volume).
 # v5: read regime from patterns_analysis.json.
-#     If regime.trade_allowed=False -> direction=NONE.
-#     Direction filtered by regime.preferred_direction.
 # v4: signal_ml respects action=WAIT.
-# v3: + signal_anomaly (stop_hunting, pump_dump и др)
 # ============================================================
 
 import os
 import sys
 import json
+import time
 import logging
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
@@ -68,6 +68,12 @@ def load_json(path, default=None):
             return json.load(f)
     except Exception:
         return default if default is not None else {}
+
+
+def file_age_hours(path):
+    if not path.exists():
+        return None
+    return (time.time() - path.stat().st_mtime) / 3600
 
 
 def load_weights():
@@ -135,7 +141,6 @@ def signal_regime(symbol):
     allowed = regime.get("trade_allowed", True)
     pref = regime.get("preferred_direction", "both")
 
-    # raw: soft vote in preferred direction
     if not allowed:
         raw = 0.0
     elif pref == "LONG":
@@ -176,23 +181,87 @@ def signal_ml(symbol):
 
 
 def signal_news(symbol):
+    """Smart news signal v6.
+
+    Uses: avg_sentiment, bullish/bearish/neutral counts,
+    fake_count, cross_confirmed, total_news, file age.
+    News is market-wide (not per-symbol), so all pairs
+    get same raw — but only when file is fresh.
+    """
     data = load_json(NEWS_FILE, {})
-    if not isinstance(data, dict):
+    if not isinstance(data, dict) or not data:
         return {"raw": 0.0, "found": False}
-    sc = data.get("avg_sentiment")
-    if sc is None:
-        return {"raw": 0.0, "found": False}
+
+    # --- age check ---
+    age_h = file_age_hours(NEWS_FILE)
+    if age_h is None:
+        return {"raw": 0.0, "found": False, "src": "no_file"}
+    if age_h > 24:
+        return {"raw": 0.0, "found": False,
+                "src": "stale", "age_h": round(age_h, 1)}
+
+    # --- counters ---
+    total = int(data.get("total_news", 0) or 0)
+    if total < 5:
+        return {"raw": 0.0, "found": False, "src": "few_news"}
+
+    bull = int(data.get("bullish_count", 0) or 0)
+    bear = int(data.get("bearish_count", 0) or 0)
+    neu = int(data.get("neutral_count", 0) or 0)
+    fake = int(data.get("fake_count", 0) or 0)
+    cross = int(data.get("cross_confirmed", 0) or 0)
+
     try:
-        sc = float(sc)
+        avg = float(data.get("avg_sentiment", 0) or 0)
     except Exception:
-        return {"raw": 0.0, "found": False}
-    raw = max(-1.0, min(1.0, sc * 2.0))
+        avg = 0.0
+    avg = max(-1.0, min(1.0, avg))
+
+    # --- 1. balance: (bull - bear) / all ---
+    denom = bull + bear + neu
+    if denom > 0:
+        balance = (bull - bear) / denom
+    else:
+        balance = 0.0
+
+    # --- 2. trust: fake ratio discount ---
+    fake_ratio = fake / max(1, total)
+    trust = 1.0 - min(0.7, fake_ratio * 2.0)
+
+    # --- 3. cross-confirm ---
+    # many cross-confirmed = stronger
+    confirm = min(1.0, cross / max(3, total * 0.3))
+
+    # --- 4. volume: fewer than 30 news = weak ---
+    volume = min(1.0, total / 30.0)
+
+    # --- 5. freshness: news lose weight over hours ---
+    fresh = max(0.3, 1.0 - age_h / 24.0)
+
+    # --- combine ---
+    avg_part = avg * 2.0
+    combined = 0.4 * avg_part + 0.6 * balance
+    raw = combined * trust * (0.5 + 0.5 * confirm)
+    raw = raw * volume * fresh
+    raw = max(-1.0, min(1.0, raw))
+
     return {
         "raw": round(raw, 4),
-        "avg_sent": sc,
+        "found": True,
+        "avg_sent": round(avg, 3),
+        "balance": round(balance, 3),
+        "trust": round(trust, 3),
+        "confirm": round(confirm, 3),
+        "volume": round(volume, 3),
+        "fresh": round(fresh, 3),
         "mood": data.get("mood", ""),
-        "bull": data.get("bullish_count", 0),
-        "bear": data.get("bearish_count", 0),
+        "bull": bull,
+        "bear": bear,
+        "neu": neu,
+        "fake": fake,
+        "total": total,
+        "cross": cross,
+        "age_h": round(age_h, 1),
     }
 
 
@@ -442,7 +511,6 @@ def signal_correlations(symbol):
         )
         if sign == 0:
             continue
-        # weight by edge (stronger signal = bigger vote)
         w = min(1.0, edge / 0.3) * min(1.0, n / 30.0)
         total += sign * w
         count += 1
@@ -675,7 +743,6 @@ def analyze(symbol):
     market_info = signal_db2_market()
     threshold = float(weights.get("threshold", 0.3))
 
-    # Regime veto: if trade not allowed -> NONE
     trade_allowed = regime_info.get("trade_allowed", True)
     preferred = regime_info.get("preferred_direction", "both")
 
@@ -692,7 +759,6 @@ def analyze(symbol):
     else:
         direction = "NONE"
 
-    # Direction filter by regime
     if direction == "LONG" and preferred == "SHORT":
         log.info(
             "  [%s] regime=%s forbids LONG, NONE",
