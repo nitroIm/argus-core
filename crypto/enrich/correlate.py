@@ -1,6 +1,9 @@
 # ============================================================
-# ARGUS-Trader — CORRELATE v2
+# ARGUS-Trader — CORRELATE v3
 # ------------------------------------------------------------
+# v3: base_rate + edge. MIN_SAMPLES=10, MIN_EDGE=0.15.
+#     Rules without edge over base are dropped.
+#     Sorted by edge, not by confidence.
 # v2: fix compute_rule_stats — считает directional только
 #     (rise/fall), а не все события (rsi_overbought и т.д.)
 # v1: начальная версия
@@ -10,7 +13,6 @@ import sys
 import json
 import logging
 from datetime import datetime, timezone
-from collections import defaultdict
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -31,7 +33,8 @@ logging.basicConfig(
 )
 log = logging.getLogger("crypto.correlate")
 
-MIN_SAMPLES = 3
+MIN_SAMPLES = 10
+MIN_EDGE = 0.15
 
 
 def fetch_causal_data(symbol):
@@ -73,19 +76,29 @@ def fetch_causal_data(symbol):
         return []
 
 
-def compute_rule_stats(rows, condition_fn, label):
-    """
-    Применяет условие к строкам, считает статистику.
-    Считает только события с направлением (rise/fall).
-    """
-    matched = [r for r in rows if condition_fn(r)]
+def is_directional(event_type):
+    return (
+        event_type.startswith("rise")
+        or event_type.startswith("fall")
+    )
 
-    # Только трендовые события — rise_*, fall_*
-    directional = [
-        r for r in matched
+
+def compute_base_rate(rows):
+    """Base rate of 'rise' among all directional events."""
+    directional = [r for r in rows if is_directional(r["event_type"])]
+    if not directional:
+        return None
+    rises = sum(
+        1 for r in directional
         if r["event_type"].startswith("rise")
-        or r["event_type"].startswith("fall")
-    ]
+    )
+    return rises / len(directional)
+
+
+def compute_rule_stats(rows, condition_fn, label, base_rate):
+    """Apply condition, compute stats over base_rate."""
+    matched = [r for r in rows if condition_fn(r)]
+    directional = [r for r in matched if is_directional(r["event_type"])]
 
     if len(directional) < MIN_SAMPLES:
         return None
@@ -94,24 +107,21 @@ def compute_rule_stats(rows, condition_fn, label):
         1 for r in directional
         if r["event_type"].startswith("rise")
     )
-    falls = sum(
-        1 for r in directional
-        if r["event_type"].startswith("fall")
-    )
+    falls = len(directional) - rises
     total = len(directional)
 
-    if total == 0:
+    p_rule = rises / total
+    edge = abs(p_rule - base_rate)
+
+    if edge < MIN_EDGE:
         return None
 
-    if rises > falls:
-        direction = "up"
-        p_correct = round(rises / total, 4)
-    elif falls > rises:
-        direction = "down"
-        p_correct = round(falls / total, 4)
+    direction = "up" if p_rule > base_rate else "down"
+
+    if direction == "down":
+        confidence = falls / total
     else:
-        direction = "neutral"
-        p_correct = 0.5
+        confidence = p_rule
 
     return {
         "rule": label,
@@ -119,15 +129,16 @@ def compute_rule_stats(rows, condition_fn, label):
         "rises": rises,
         "falls": falls,
         "direction": direction,
-        "confidence": p_correct,
+        "confidence": round(confidence, 4),
+        "base_rate": round(base_rate, 4),
+        "edge": round(edge, 4),
     }
 
 
-def find_rules(rows):
+def find_rules(rows, base_rate):
     """Ищет простые, двойные и тройные комбинации."""
     rules = []
-
-    if not rows:
+    if not rows or base_rate is None:
         return rules
 
     # --- funding ---
@@ -135,99 +146,136 @@ def find_rules(rows):
         rows,
         lambda x: x["funding"] is not None and x["funding"] < -0.00005,
         "funding < -0.005%",
+        base_rate,
     )
-    if r: rules.append(r)
+    if r:
+        rules.append(r)
 
     r = compute_rule_stats(
         rows,
         lambda x: x["funding"] is not None and x["funding"] > 0.00005,
         "funding > +0.005%",
+        base_rate,
     )
-    if r: rules.append(r)
+    if r:
+        rules.append(r)
 
     # --- oi_change ---
     r = compute_rule_stats(
         rows,
         lambda x: x["oi_change"] is not None and x["oi_change"] < -2,
         "OI change < -2%",
+        base_rate,
     )
-    if r: rules.append(r)
+    if r:
+        rules.append(r)
 
     r = compute_rule_stats(
         rows,
         lambda x: x["oi_change"] is not None and x["oi_change"] > 2,
         "OI change > +2%",
+        base_rate,
     )
-    if r: rules.append(r)
+    if r:
+        rules.append(r)
 
     # --- ls_ratio ---
     r = compute_rule_stats(
         rows,
         lambda x: x["ls_ratio"] is not None and x["ls_ratio"] < 1.0,
-        "LS ratio < 1.0 (толпа в шортах)",
+        "LS ratio < 1.0",
+        base_rate,
     )
-    if r: rules.append(r)
+    if r:
+        rules.append(r)
 
     r = compute_rule_stats(
         rows,
         lambda x: x["ls_ratio"] is not None and x["ls_ratio"] > 1.5,
-        "LS ratio > 1.5 (толпа в лонгах)",
+        "LS ratio > 1.5",
+        base_rate,
     )
-    if r: rules.append(r)
+    if r:
+        rules.append(r)
 
     # --- volatility ---
     r = compute_rule_stats(
         rows,
         lambda x: x["volatility"] is not None and x["volatility"] > 1.0,
         "Volatility > 1.0",
+        base_rate,
     )
-    if r: rules.append(r)
+    if r:
+        rules.append(r)
 
     # --- двойные ---
     r = compute_rule_stats(
         rows,
-        lambda x: (x["funding"] is not None and x["funding"] < -0.00005
-                   and x["ls_ratio"] is not None and x["ls_ratio"] < 1.0),
+        lambda x: (
+            x["funding"] is not None and x["funding"] < -0.00005
+            and x["ls_ratio"] is not None and x["ls_ratio"] < 1.0
+        ),
         "funding < -0.005% AND LS < 1.0",
+        base_rate,
     )
-    if r: rules.append(r)
+    if r:
+        rules.append(r)
 
     r = compute_rule_stats(
         rows,
-        lambda x: (x["oi_change"] is not None and x["oi_change"] > 2
-                   and x["ls_ratio"] is not None and x["ls_ratio"] > 1.5),
+        lambda x: (
+            x["oi_change"] is not None and x["oi_change"] > 2
+            and x["ls_ratio"] is not None and x["ls_ratio"] > 1.5
+        ),
         "OI > +2% AND LS > 1.5",
+        base_rate,
     )
-    if r: rules.append(r)
+    if r:
+        rules.append(r)
 
     r = compute_rule_stats(
         rows,
-        lambda x: (x["oi_change"] is not None and x["oi_change"] < -2
-                   and x["ls_ratio"] is not None and x["ls_ratio"] < 1.0),
+        lambda x: (
+            x["oi_change"] is not None and x["oi_change"] < -2
+            and x["ls_ratio"] is not None and x["ls_ratio"] < 1.0
+        ),
         "OI < -2% AND LS < 1.0",
+        base_rate,
     )
-    if r: rules.append(r)
+    if r:
+        rules.append(r)
 
     r = compute_rule_stats(
         rows,
-        lambda x: (x["volatility"] is not None and x["volatility"] > 1.0
-                   and x["oi_change"] is not None and abs(x["oi_change"]) > 3),
+        lambda x: (
+            x["volatility"] is not None and x["volatility"] > 1.0
+            and x["oi_change"] is not None
+            and abs(x["oi_change"]) > 3
+        ),
         "Volatility > 1.0 AND |OI change| > 3%",
+        base_rate,
     )
-    if r: rules.append(r)
+    if r:
+        rules.append(r)
 
     # --- тройные ---
     r = compute_rule_stats(
         rows,
-        lambda x: (x["funding"] is not None and x["funding"] < -0.00005
-                   and x["ls_ratio"] is not None and x["ls_ratio"] < 1.0
-                   and x["oi_change"] is not None and x["oi_change"] < 0),
+        lambda x: (
+            x["funding"] is not None and x["funding"] < -0.00005
+            and x["ls_ratio"] is not None and x["ls_ratio"] < 1.0
+            and x["oi_change"] is not None and x["oi_change"] < 0
+        ),
         "funding < -0.005% AND LS < 1.0 AND OI снижается",
+        base_rate,
     )
-    if r: rules.append(r)
+    if r:
+        rules.append(r)
 
-    rules = [r for r in rules if r["confidence"] >= 0.55]
-    rules.sort(key=lambda x: (x["confidence"], x["samples"]), reverse=True)
+    rules.sort(
+        key=lambda x: (x["edge"], x["samples"]),
+        reverse=True,
+    )
     return rules
 
 
@@ -239,16 +287,27 @@ def analyze_symbol(symbol):
     if not rows:
         return None
 
-    rules = find_rules(rows)
+    base_rate = compute_base_rate(rows)
+    if base_rate is None:
+        log.warning("   нет directional событий")
+        return None
+
+    log.info(f"   base_rate (rise) = {base_rate:.3f}")
+
+    rules = find_rules(rows, base_rate)
 
     log.info(f"   Найдено правил: {len(rules)}")
     for r in rules[:5]:
-        log.info(f"     • {r['rule']} → {r['direction'].upper()} "
-                 f"({r['confidence'] * 100:.0f}%, N={r['samples']})")
+        log.info(
+            f"     • {r['rule']} → {r['direction'].upper()} "
+            f"({r['confidence']*100:.0f}%, N={r['samples']}, "
+            f"edge={r['edge']:.2f})"
+        )
 
     return {
         "symbol": symbol,
         "total_events": len(rows),
+        "base_rate": round(base_rate, 4),
         "rules_found": len(rules),
         "rules": rules,
     }
@@ -256,9 +315,9 @@ def analyze_symbol(symbol):
 
 def main():
     log.info("=" * 60)
-    log.info("🧠 ARGUS-Trader CORRELATE v2")
+    log.info("🧠 ARGUS-Trader CORRELATE v3")
     log.info("=" * 60)
-    log.info(f"   Мин. сэмплов для правила: {MIN_SAMPLES}")
+    log.info(f"   MIN_SAMPLES={MIN_SAMPLES}, MIN_EDGE={MIN_EDGE}")
     log.info("")
 
     all_analysis = {}
@@ -274,6 +333,7 @@ def main():
             json.dump({
                 "generated_at": datetime.now(timezone.utc).isoformat(),
                 "min_samples": MIN_SAMPLES,
+                "min_edge": MIN_EDGE,
                 "symbols": all_analysis,
             }, f, ensure_ascii=False, indent=2, default=str)
         log.info(f"💾 {OUTPUT_FILE.name} сохранён")
