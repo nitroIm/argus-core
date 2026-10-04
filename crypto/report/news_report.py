@@ -1,8 +1,9 @@
 # ============================================================
-# ARGUS - NEWS REPORT v4
+# ARGUS - NEWS REPORT v6
 # ------------------------------------------------------------
-# Kaliningrad time. Data age +  stale warning.
-# Dedup via title hash, 7 day history.
+# v6: SEND_HOURS_LOCAL in Kaliningrad time.
+#     System converts to UTC itself.
+# v5: hour filter, manual always sends.
 # ============================================================
 
 import os
@@ -37,14 +38,13 @@ try:
 except Exception as e:
     log.warning("translate unavailable: " + str(e))
     def translate_batch(t):
-0)
         return t
 
-B   OT_TOKEN = (
+BOT_TOKEN = (
     os.getenv("TELEGRAM_BOT_TOKEN")
-    or fake os.getenv("BOT_TOKEN")
+    or os.getenv("BOT_TOKEN")
     or ""
-). =strip()
+).strip()
 CHAT_ID = (
     os.getenv("TELEGRAM_CHAT_ID")
     or ""
@@ -54,11 +54,31 @@ MAX_MESSAGE_LEN = 3800
 HISTORY_DAYS = 7
 STALE_HOURS = 6
 
+# ============================================================
+# ВРЕМЯ ОТПРАВКИ (в КАЛИНИНГРАДЕ)
+# ============================================================
 TZ = ZoneInfo("Europe/Kaliningrad")
+
+# Часы по КЛГ когда слать отчёт в TG.
+# 9 = утро, 20 = вечер.
+SEND_HOURS_LOCAL = {9, 20}
 
 
 def now_local():
     return datetime.now(timezone.utc).astimezone(TZ)
+
+
+def should_send_now():
+    """True if manual OR current local hour in SEND_HOURS_LOCAL."""
+    # Force override (для теста)
+    if os.getenv("FORCE_SEND", "").strip() == "1":
+        return True
+    # Ручной запуск всегда отправляет
+    if os.getenv("GITHUB_EVENT_NAME", "") == "workflow_dispatch":
+        return True
+    # Крон: проверяем локальный час
+    local = now_local()
+    return local.hour in SEND_HOURS_LOCAL
 
 
 def esc(s):
@@ -267,12 +287,13 @@ def build_report(
     total = data.get("total_news", 0)
     bull = data.get("bullish_count", 0)
     bear = data.get("bearish_count", 0)
-    neu = data.get("neutral_count", data.get("fake_count", 0)
+    neu = data.get("neutral_count", 0)
+    fake = data.get("fake_count", 0)
     cross = data.get("cross_confirmed", 0)
 
     now = now_local()
     lines = []
-    lines.append("📰 <b>ARGUS — Новости</b> v4")
+    lines.append("📰 <b>ARGUS — Новости</b> v6")
     line = now.strftime("%d.%m %H:%M")
     line += " КЛГ"
     lines.append(line)
@@ -333,11 +354,20 @@ def build_report(
 
 
 def main():
-    log.info("news report v4")
+    log.info("news report v6")
+    local = now_local()
+    log.info(
+        "local time: %s КЛГ (hour=%d, send_hours=%s)",
+        local.strftime("%H:%M"), local.hour,
+        sorted(SEND_HOURS_LOCAL),
+    )
+
+    if not should_send_now():
+        log.info("skip send — hour not in list")
+        return
 
     if not SENTIMENT_FILE.exists():
         log.error("no sentiment file")
-        log.error("run crypto/collect/news.py first")
         sys.exit(0)
 
     data = load_json(SENTIMENT_FILE)
