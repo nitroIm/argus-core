@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-10-04T20:05:33.798366+00:00",
+  "generated_at": "2026-10-04T21:05:39.384357+00:00",
   "total_news": 128,
-  "avg_sentiment": -0.077,
+  "avg_sentiment": -0.051,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
-  "bullish_count": 15,
-  "bearish_count": 26,
+  "bullish_count": 17,
+  "bearish_count": 24,
   "neutral_count": 87,
   "fake_count": 0,
-  "cross_confirmed": 2,
-  "single_source": 102,
+  "cross_confirmed": 5,
+  "single_source": 99,
   "by_source": {
     "Cointelegraph": {
       "total": 25,
@@ -27,13 +27,13 @@
     },
     "CryptoSlate": {
       "total": 10,
-      "bull": 0,
-      "bear": 3
+      "bull": 1,
+      "bear": 2
     },
     "CryptoPotato": {
       "total": 25,
-      "bull": 7,
-      "bear": 5
+      "bull": 8,
+      "bear": 4
     },
     "Bitcoinist": {
       "total": 8,
@@ -48,6 +48,22 @@
   },
   "top_bullish": [
     {
+      "title": "Bitcoin’s $85,000 recovery awaits proof that ETF investors kept buying after payrolls",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-04T20:45:36+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-04T21:05:37.956925+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Bitcoin’s $85,000 recovery awaits proof that ETF investors kept buying after payrolls",
+      "cross_check": 1
+    },
+    {
       "title": "Zcash Price Slides 23% as Grayscale ETF Hits Reverse",
       "source": "Bitcoin.com",
       "source_weight": 1.0,
@@ -56,28 +72,12 @@
       "sentiment": 1.0,
       "bull_weight": 1.2,
       "bear_weight": 0.0,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-04T20:05:32.604655+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Zcash Price Slides 23% as Grayscale ETF Hits Reverse",
-      "cross_check": 1
-    },
-    {
-      "title": "Uptober' Starts Green as Bitcoin ETFs Draw $134 Million",
-      "source": "Decrypt",
-      "source_weight": 1.1,
-      "lang": "en",
-      "pub_date": "2026-10-04T15:01:03+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-04T20:05:32.438351+00:00",
-      "effective_weight": 1.1,
-      "title_original": "Uptober' Starts Green as Bitcoin ETFs Draw $134 Million",
-      "cross_check": 2
+      "collected_at": "2026-10-04T21:05:37.822184+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Zcash Price Slides 23% as Grayscale ETF Hits Reverse",
+      "cross_check": 1
     },
     {
       "title": "SEC Approves Listing of Bitcoin ETF Targeting 3x Daily Futures Moves",
@@ -90,45 +90,61 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-04T20:05:32.604718+00:00",
+      "collected_at": "2026-10-04T21:05:37.822239+00:00",
       "effective_weight": 1.0,
       "title_original": "SEC Approves Listing of Bitcoin ETF Targeting 3x Daily Futures Moves",
       "cross_check": 2
     },
     {
-      "title": "Analyst Explains What Can Trigger DOGE’s Next Double-Digit Surge",
+      "title": "IMF Approves $138M for El Salvador After Bitcoin Accumulation Waiver",
       "source": "CryptoPotato",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-10-04T11:40:37+00:00",
+      "pub_date": "2026-10-04T20:01:34+00:00",
       "sentiment": 1.0,
       "bull_weight": 1.5,
       "bear_weight": 0.0,
-      "freshness": 0.8,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-04T20:05:32.841077+00:00",
-      "effective_weight": 0.8,
-      "title_original": "Analyst Explains What Can Trigger DOGE’s Next Double-Digit Surge",
-      "cross_check": 1
+      "collected_at": "2026-10-04T21:05:38.094675+00:00",
+      "effective_weight": 1.0,
+      "title_original": "IMF Approves $138M for El Salvador After Bitcoin Accumulation Waiver",
+      "cross_check": 2
     },
     {
-      "title": "PUMP Soars 16% in 24 Hours, Bitcoin Reclaims $85K: Weekend Watch",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
+      "title": "Uptober' Starts Green as Bitcoin ETFs Draw $134 Million",
+      "source": "Decrypt",
+      "source_weight": 1.1,
       "lang": "en",
-      "pub_date": "2026-10-04T10:27:14+00:00",
+      "pub_date": "2026-10-04T15:01:03+00:00",
       "sentiment": 1.0,
-      "bull_weight": 1.5,
+      "bull_weight": 1.2,
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-04T20:05:32.841134+00:00",
-      "effective_weight": 0.8,
-      "title_original": "PUMP Soars 16% in 24 Hours, Bitcoin Reclaims $85K: Weekend Watch",
-      "cross_check": 1
+      "collected_at": "2026-10-04T21:05:37.609328+00:00",
+      "effective_weight": 0.88,
+      "title_original": "Uptober' Starts Green as Bitcoin ETFs Draw $134 Million",
+      "cross_check": 2
     }
   ],
   "top_bearish": [
+    {
+      "title": "Community Bankers Sue US Banking Regulator Over ‘Side Door’ Crypto Charters",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-04T20:40:30+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-04T21:05:37.822126+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Community Bankers Sue US Banking Regulator Over ‘Side Door’ Crypto Charters",
+      "cross_check": 3
+    },
     {
       "title": "Banking Group Sues to Block Crypto's 'Side Door' Into the Banking System",
       "source": "Decrypt",
@@ -140,10 +156,10 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-04T20:05:32.438303+00:00",
+      "collected_at": "2026-10-04T21:05:37.609278+00:00",
       "effective_weight": 1.1,
       "title_original": "Banking Group Sues to Block Crypto's 'Side Door' Into the Banking System",
-      "cross_check": 2
+      "cross_check": 3
     },
     {
       "title": "Drift Hack Victims Get Their Money Back, 1 Cent at a Time",
@@ -156,7 +172,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-04T20:05:32.604771+00:00",
+      "collected_at": "2026-10-04T21:05:37.822290+00:00",
       "effective_weight": 1.0,
       "title_original": "Drift Hack Victims Get Their Money Back, 1 Cent at a Time",
       "cross_check": 2
@@ -172,7 +188,7 @@
       "bear_weight": 1.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-04T20:05:32.695287+00:00",
+      "collected_at": "2026-10-04T21:05:37.957108+00:00",
       "effective_weight": 1.0,
       "title_original": "India’s local crypto exchanges get just 0.7% of inflows, Chainalysis reports",
       "cross_check": 1
@@ -188,26 +204,10 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-04T20:05:32.695339+00:00",
+      "collected_at": "2026-10-04T21:05:37.957157+00:00",
       "effective_weight": 1.0,
       "title_original": "Drift hack recovery opened near one cent per dollar lost",
       "cross_check": 2
-    },
-    {
-      "title": "CEO BitGo сравнил провал CLARITY Act с крахом Lehman Brothers",
-      "source": "ForkLog",
-      "source_weight": 1.2,
-      "lang": "ru",
-      "pub_date": "2026-10-04T12:30:04+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.2,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-04T20:05:33.673938+00:00",
-      "effective_weight": 0.96,
-      "title_original": "CEO BitGo сравнил провал CLARITY Act с крахом Lehman Brothers",
-      "cross_check": 1
     }
   ]
 }
