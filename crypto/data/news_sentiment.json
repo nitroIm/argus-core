@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-10-04T18:05:32.321815+00:00",
+  "generated_at": "2026-10-04T19:05:32.323830+00:00",
   "total_news": 128,
-  "avg_sentiment": -0.121,
+  "avg_sentiment": -0.103,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
-  "bullish_count": 13,
+  "bullish_count": 14,
   "bearish_count": 27,
-  "neutral_count": 88,
+  "neutral_count": 87,
   "fake_count": 0,
-  "cross_confirmed": 3,
-  "single_source": 104,
+  "cross_confirmed": 4,
+  "single_source": 101,
   "by_source": {
     "Cointelegraph": {
       "total": 25,
@@ -22,13 +22,13 @@
     },
     "Bitcoin.com": {
       "total": 10,
-      "bull": 0,
-      "bear": 3
+      "bull": 1,
+      "bear": 2
     },
     "CryptoSlate": {
       "total": 10,
       "bull": 0,
-      "bear": 3
+      "bear": 4
     },
     "CryptoPotato": {
       "total": 25,
@@ -48,6 +48,22 @@
   },
   "top_bullish": [
     {
+      "title": "SEC Approves Listing of Bitcoin ETF Targeting 3x Daily Futures Moves",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-04T18:05:38+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 4.7,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-04T19:05:31.244542+00:00",
+      "effective_weight": 1.5,
+      "title_original": "SEC Approves Listing of Bitcoin ETF Targeting 3x Daily Futures Moves",
+      "cross_check": 2
+    },
+    {
       "title": "Uptober' Starts Green as Bitcoin ETFs Draw $134 Million",
       "source": "Decrypt",
       "source_weight": 1.1,
@@ -58,7 +74,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-04T18:05:30.926015+00:00",
+      "collected_at": "2026-10-04T19:05:31.108321+00:00",
       "effective_weight": 1.1,
       "title_original": "Uptober' Starts Green as Bitcoin ETFs Draw $134 Million",
       "cross_check": 2
@@ -74,7 +90,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-04T18:05:31.369964+00:00",
+      "collected_at": "2026-10-04T19:05:31.434567+00:00",
       "effective_weight": 0.8,
       "title_original": "Analyst Explains What Can Trigger DOGE’s Next Double-Digit Surge",
       "cross_check": 1
@@ -90,7 +106,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-04T18:05:31.370020+00:00",
+      "collected_at": "2026-10-04T19:05:31.434624+00:00",
       "effective_weight": 0.8,
       "title_original": "PUMP Soars 16% in 24 Hours, Bitcoin Reclaims $85K: Weekend Watch",
       "cross_check": 1
@@ -106,59 +122,27 @@
       "bear_weight": 0.0,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-04T18:05:30.866295+00:00",
+      "collected_at": "2026-10-04T19:05:31.074978+00:00",
       "effective_weight": 0.65,
       "title_original": "BNB Chain crosses $1B in tokenized stocks, ETFs as market hits $3.7B",
-      "cross_check": 1
-    },
-    {
-      "title": "Nvidia Hits Record High as Market Value Reaches $5.7 Trillion",
-      "source": "Decrypt",
-      "source_weight": 1.1,
-      "lang": "en",
-      "pub_date": "2026-10-02T17:30:40+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 2.2,
-      "bear_weight": 0.0,
-      "freshness": 0.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-04T18:05:30.927260+00:00",
-      "effective_weight": 0.55,
-      "title_original": "Nvidia Hits Record High as Market Value Reaches $5.7 Trillion",
       "cross_check": 1
     }
   ],
   "top_bearish": [
     {
-      "title": "Drift hack recovery opened near one cent per dollar lost",
+      "title": "India’s local crypto exchanges get just 0.7% of inflows, Chainalysis reports",
       "source": "CryptoSlate",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-10-04T17:20:02+00:00",
+      "pub_date": "2026-10-04T18:20:31+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 1.5,
+      "bear_weight": 1.0,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-04T18:05:31.212166+00:00",
+      "collected_at": "2026-10-04T19:05:31.379968+00:00",
       "effective_weight": 1.5,
-      "title_original": "Drift hack recovery opened near one cent per dollar lost",
-      "cross_check": 2
-    },
-    {
-      "title": "CEO BitGo сравнил провал CLARITY Act с крахом Lehman Brothers",
-      "source": "ForkLog",
-      "source_weight": 1.2,
-      "lang": "ru",
-      "pub_date": "2026-10-04T12:30:04+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.2,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-04T18:05:32.197903+00:00",
-      "effective_weight": 1.2,
-      "title_original": "CEO BitGo сравнил провал CLARITY Act с крахом Lehman Brothers",
+      "title_original": "India’s local crypto exchanges get just 0.7% of inflows, Chainalysis reports",
       "cross_check": 1
     },
     {
@@ -172,7 +156,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-04T18:05:30.925913+00:00",
+      "collected_at": "2026-10-04T19:05:31.108273+00:00",
       "effective_weight": 1.1,
       "title_original": "Banking Group Sues to Block Crypto's 'Side Door' Into the Banking System",
       "cross_check": 2
@@ -188,25 +172,41 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-04T18:05:31.151291+00:00",
+      "collected_at": "2026-10-04T19:05:31.244598+00:00",
       "effective_weight": 1.0,
       "title_original": "Drift Hack Victims Get Their Money Back, 1 Cent at a Time",
       "cross_check": 2
     },
     {
-      "title": "Latam Cartels Tap Crypto to Expand Their Illicit Workflows",
-      "source": "Bitcoin.com",
+      "title": "Drift hack recovery opened near one cent per dollar lost",
+      "source": "CryptoSlate",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-10-04T07:30:08+00:00",
+      "pub_date": "2026-10-04T17:20:02+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 1.0,
+      "bear_weight": 1.5,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-04T19:05:31.380018+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Drift hack recovery opened near one cent per dollar lost",
+      "cross_check": 2
+    },
+    {
+      "title": "CEO BitGo сравнил провал CLARITY Act с крахом Lehman Brothers",
+      "source": "ForkLog",
+      "source_weight": 1.2,
+      "lang": "ru",
+      "pub_date": "2026-10-04T12:30:04+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.2,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-04T18:05:31.151680+00:00",
-      "effective_weight": 0.8,
-      "title_original": "Latam Cartels Tap Crypto to Expand Their Illicit Workflows",
+      "collected_at": "2026-10-04T19:05:32.199357+00:00",
+      "effective_weight": 0.96,
+      "title_original": "CEO BitGo сравнил провал CLARITY Act с крахом Lehman Brothers",
       "cross_check": 1
     }
   ]
