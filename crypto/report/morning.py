@@ -1,10 +1,10 @@
 # ============================================================
-# ARGUS - УТРЕННИЙ ОТЧЁТ v10
+# ARGUS - УТРЕННИЙ ОТЧЁТ v11
 # ------------------------------------------------------------
-# v10: auto-locate db2.py + close DB2 + safe reconnect.
+# v11: Kaliningrad time (UTC+2). DB2 debug.
+#      Safe DB2 ping before use.
+# v10: auto-locate db2.py.
 # v9: SOL/BNB read from DB2.
-# v8: + system health block.
-# v7: + portfolio block.
 # ============================================================
 
 import os
@@ -14,6 +14,7 @@ import requests
 from datetime import datetime, timezone
 from datetime import timedelta
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 CRYPTO_ROOT = SCRIPT_DIR.parent
@@ -25,6 +26,8 @@ LEARN_DIR = CRYPTO_ROOT / "learn"
 MODELS_DIR = LEARN_DIR / "models"
 TMP_DIR = Path("/tmp/argus_charts")
 TMP_DIR.mkdir(parents=True, exist_ok=True)
+
+TZ = ZoneInfo("Europe/Kaliningrad")
 
 sys.path.insert(0, str(CRYPTO_ROOT))
 sys.path.insert(
@@ -38,6 +41,7 @@ for _p in CRYPTO_ROOT.rglob("db2.py"):
         continue
     if _d not in sys.path:
         sys.path.insert(0, _d)
+    print("db2.py located at: " + _d)
     break
 
 from db import get_connection
@@ -50,17 +54,37 @@ from report.charts import plot_oi
 from report.charts import compute_rsi
 from report.risk import compute_atr
 
-# DB2 for SOL/BNB
+# --- DB2 ---
+DB2_URL_PRESENT = bool(
+    (os.getenv("ARGUS_DB_URL_2") or "").strip()
+)
+print("ARGUS_DB_URL_2 present: " + str(DB2_URL_PRESENT))
+
 DB2_OK = False
 get_conn_db2 = None
 close_conn_db2 = None
-try:
-    from db2 import get_connection as get_conn_db2
-    from db2 import close_connection as close_conn_db2
-    DB2_OK = True
-    print("DB2 module loaded OK")
-except Exception as e:
-    print("db2 import failed: " + str(e))
+
+if DB2_URL_PRESENT:
+    try:
+        from db2 import get_connection as get_conn_db2
+        from db2 import close_connection as close_conn_db2
+        # Test ping
+        try:
+            _test = get_conn_db2()
+            with _test as _c:
+                with _c.cursor() as _cur:
+                    _cur.execute("SELECT 1")
+                    _cur.fetchone()
+            DB2_OK = True
+            print("DB2 ping OK")
+        except Exception as e:
+            print("DB2 ping failed: " + str(e))
+            DB2_OK = False
+    except Exception as e:
+        print("db2 import failed: " + str(e))
+        DB2_OK = False
+else:
+    print("DB2 skipped: ARGUS_DB_URL_2 not set in env")
 
 BOT_TOKEN = (
     os.getenv("TELEGRAM_BOT_TOKEN")
@@ -113,13 +137,15 @@ except Exception as e:
     explorer_mod = None
 
 
+def now_local():
+    """Current time in Kaliningrad."""
+    return datetime.now(timezone.utc).astimezone(TZ)
+
+
 def candles_conn(symbol):
-    """DB2 for SOL/BNB, DB1 for the rest."""
+    """Contextmanager: DB2 for SOL/BNB, DB1 otherwise."""
     if symbol in DB2_SYMBOLS and DB2_OK:
-        try:
-            return get_conn_db2()
-        except Exception as e:
-            print("db2 conn fail: " + str(e))
+        return get_conn_db2()
     return get_connection()
 
 
@@ -347,9 +373,8 @@ def _max_ts_in(conn, table):
 def fmt_system_block():
     lines = ["📦 <b>Система</b>"]
 
-    # --- Candles per symbol (DB2 routing) ---
     candle_parts = []
-    for sym, name, _ in SYMBOLS:
+    for sym, name, db in SYMBOLS:
         n = -1
         try:
             with candles_conn(sym) as conn:
@@ -362,7 +387,10 @@ def fmt_system_block():
                     )
                     n = cur.fetchone()[0] or 0
         except Exception as e:
-            print("candles count " + sym + ": " + str(e))
+            print(
+                "candles count " + sym
+                + " (" + db + "): " + str(e)
+            )
         if n < 0:
             candle_parts.append(name + " ?")
         else:
@@ -371,7 +399,6 @@ def fmt_system_block():
         "  Свечи: " + " | ".join(candle_parts)
     )
 
-    # --- DB1 stats ---
     try:
         with get_connection() as conn:
             n_feat = _count_in(conn, "features_hourly")
@@ -632,7 +659,7 @@ def send_media_group(photos):
 
 
 # ============================================================
-# DB READ HELPERS (with DB2 routing)
+# DB READ HELPERS
 # ============================================================
 def fetch_candles(symbol, limit=200):
     try:
@@ -724,10 +751,12 @@ def fmt_regime(regime):
 # REPORT
 # ============================================================
 def build_report_text():
-    now = datetime.now(timezone.utc)
+    now = now_local()
     lines = []
-    lines.append("☀️ <b>ARGUS — утро</b> v10")
-    lines.append(now.strftime("%d.%m.%Y %H:%M UTC"))
+    lines.append("☀️ <b>ARGUS — утро</b> v11")
+    line = now.strftime("%d.%m.%Y %H:%M")
+    line += " КЛГ"
+    lines.append(line)
     lines.append("")
 
     lines.extend(fmt_portfolio_block())
@@ -881,7 +910,7 @@ def build_report_text():
 
 
 def main():
-    print("Morning report v10 - start")
+    print("Morning report v11 - start")
     print("DB2_OK = " + str(DB2_OK))
 
     text = build_report_text()
