@@ -1,6 +1,7 @@
 # ============================================================
-# ARGUS-Trader - FEATURES v5 [PRODUCTION]
+# ARGUS-Trader - FEATURES v6
 # ------------------------------------------------------------
+# v6: batch INSERT in save_features. 86s -> ~3s.
 # v5: + EMA9/21/50 dist, MACD, Bollinger,
 #     + dist high/low 24h, consecutive, session
 # ============================================================
@@ -587,134 +588,189 @@ def compute_daily_features(daily_list, ts):
     return out
 
 
+def _feature_row_tuple(symbol, f, now_utc):
+    return (
+        symbol, f["timestamp"],
+        f.get("change_pct"),
+        f.get("range_pct"),
+        f.get("body_pct"),
+        f.get("upper_wick_pct"),
+        f.get("lower_wick_pct"),
+        f.get("volume_ratio_24h"),
+        f.get("volatility_24h"),
+        f.get("volatility_7d"),
+        f.get("change_4h"),
+        f.get("change_24h"),
+        f.get("change_7d"),
+        f.get("change_1d"),
+        f.get("change_3d"),
+        f.get("trend_up"),
+        f.get("hour_of_day"),
+        f.get("day_of_week"),
+        f.get("funding_rate"),
+        f.get("funding_trend"),
+        f.get("oi_change_pct"),
+        f.get("ls_ratio"),
+        f.get("taker_ratio"),
+        f.get("ema9_dist_pct"),
+        f.get("ema21_dist_pct"),
+        f.get("ema50_dist_pct"),
+        f.get("macd"),
+        f.get("macd_signal"),
+        f.get("bb_upper_dist"),
+        f.get("bb_lower_dist"),
+        f.get("bb_width_pct"),
+        f.get("dist_high_24h_pct"),
+        f.get("dist_low_24h_pct"),
+        f.get("consecutive_up"),
+        f.get("session"),
+        f.get("next_change_pct"),
+        f.get("next_direction"),
+        now_utc,
+    )
+
+
+FEATURES_COLS = (
+    "symbol, timestamp, "
+    "change_pct, range_pct, body_pct, "
+    "upper_wick_pct, lower_wick_pct, "
+    "volume_ratio_24h, volatility_24h, "
+    "volatility_7d, change_4h, "
+    "change_24h, change_7d, "
+    "change_1d, change_3d, trend_up, "
+    "hour_of_day, day_of_week, "
+    "funding_rate, funding_trend, "
+    "oi_change_pct, ls_ratio, taker_ratio, "
+    "ema9_dist_pct, ema21_dist_pct, "
+    "ema50_dist_pct, macd, macd_signal, "
+    "bb_upper_dist, bb_lower_dist, "
+    "bb_width_pct, dist_high_24h_pct, "
+    "dist_low_24h_pct, consecutive_up, "
+    "session, "
+    "next_change_pct, next_direction, "
+    "computed_at"
+)
+
+FEATURES_CONFLICT = (
+    " ON CONFLICT (symbol, timestamp) DO UPDATE SET "
+    "change_pct = EXCLUDED.change_pct, "
+    "range_pct = EXCLUDED.range_pct, "
+    "body_pct = EXCLUDED.body_pct, "
+    "upper_wick_pct = EXCLUDED.upper_wick_pct, "
+    "lower_wick_pct = EXCLUDED.lower_wick_pct, "
+    "volume_ratio_24h = EXCLUDED.volume_ratio_24h, "
+    "volatility_24h = EXCLUDED.volatility_24h, "
+    "volatility_7d = EXCLUDED.volatility_7d, "
+    "change_4h = EXCLUDED.change_4h, "
+    "change_24h = EXCLUDED.change_24h, "
+    "change_7d = EXCLUDED.change_7d, "
+    "change_1d = EXCLUDED.change_1d, "
+    "change_3d = EXCLUDED.change_3d, "
+    "trend_up = EXCLUDED.trend_up, "
+    "hour_of_day = EXCLUDED.hour_of_day, "
+    "day_of_week = EXCLUDED.day_of_week, "
+    "funding_rate = EXCLUDED.funding_rate, "
+    "funding_trend = EXCLUDED.funding_trend, "
+    "oi_change_pct = EXCLUDED.oi_change_pct, "
+    "ls_ratio = EXCLUDED.ls_ratio, "
+    "taker_ratio = EXCLUDED.taker_ratio, "
+    "ema9_dist_pct = EXCLUDED.ema9_dist_pct, "
+    "ema21_dist_pct = EXCLUDED.ema21_dist_pct, "
+    "ema50_dist_pct = EXCLUDED.ema50_dist_pct, "
+    "macd = EXCLUDED.macd, "
+    "macd_signal = EXCLUDED.macd_signal, "
+    "bb_upper_dist = EXCLUDED.bb_upper_dist, "
+    "bb_lower_dist = EXCLUDED.bb_lower_dist, "
+    "bb_width_pct = EXCLUDED.bb_width_pct, "
+    "dist_high_24h_pct = EXCLUDED.dist_high_24h_pct, "
+    "dist_low_24h_pct = EXCLUDED.dist_low_24h_pct, "
+    "consecutive_up = EXCLUDED.consecutive_up, "
+    "session = EXCLUDED.session, "
+    "next_change_pct = EXCLUDED.next_change_pct, "
+    "next_direction = EXCLUDED.next_direction, "
+    "computed_at = EXCLUDED.computed_at"
+)
+
+FEATURES_PLACEHOLDER = (
+    "(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,"
+    "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+)
+
+
 def save_features(symbol, features):
+    """Single batch INSERT. Fallback to SAVEPOINT per row."""
     if not features:
         return 0
 
-    added = 0
     now_utc = datetime.now(timezone.utc)
 
-    sql = (
-        "INSERT INTO features_hourly "
-        "(symbol, timestamp, "
-        "change_pct, range_pct, body_pct, "
-        "upper_wick_pct, lower_wick_pct, "
-        "volume_ratio_24h, volatility_24h, "
-        "volatility_7d, change_4h, "
-        "change_24h, change_7d, "
-        "change_1d, change_3d, trend_up, "
-        "hour_of_day, day_of_week, "
-        "funding_rate, funding_trend, "
-        "oi_change_pct, ls_ratio, taker_ratio, "
-        "ema9_dist_pct, ema21_dist_pct, "
-        "ema50_dist_pct, macd, macd_signal, "
-        "bb_upper_dist, bb_lower_dist, "
-        "bb_width_pct, dist_high_24h_pct, "
-        "dist_low_24h_pct, consecutive_up, "
-        "session, "
-        "next_change_pct, next_direction, "
-        "computed_at) "
-        "VALUES (%s, %s, %s, %s, %s, "
-        "%s, %s, %s, %s, %s, %s, %s, "
-        "%s, %s, %s, %s, %s, %s, "
-        "%s, %s, %s, %s, %s, "
-        "%s, %s, %s, %s, %s, "
-        "%s, %s, %s, %s, %s, %s, %s, "
-        "%s, %s, %s) "
-        "ON CONFLICT (symbol, timestamp) "
-        "DO UPDATE SET "
-        "change_pct = EXCLUDED.change_pct, "
-        "range_pct = EXCLUDED.range_pct, "
-        "body_pct = EXCLUDED.body_pct, "
-        "upper_wick_pct = EXCLUDED.upper_wick_pct, "
-        "lower_wick_pct = EXCLUDED.lower_wick_pct, "
-        "volume_ratio_24h = EXCLUDED.volume_ratio_24h, "
-        "volatility_24h = EXCLUDED.volatility_24h, "
-        "volatility_7d = EXCLUDED.volatility_7d, "
-        "change_4h = EXCLUDED.change_4h, "
-        "change_24h = EXCLUDED.change_24h, "
-        "change_7d = EXCLUDED.change_7d, "
-        "change_1d = EXCLUDED.change_1d, "
-        "change_3d = EXCLUDED.change_3d, "
-        "trend_up = EXCLUDED.trend_up, "
-        "hour_of_day = EXCLUDED.hour_of_day, "
-        "day_of_week = EXCLUDED.day_of_week, "
-        "funding_rate = EXCLUDED.funding_rate, "
-        "funding_trend = EXCLUDED.funding_trend, "
-        "oi_change_pct = EXCLUDED.oi_change_pct, "
-        "ls_ratio = EXCLUDED.ls_ratio, "
-        "taker_ratio = EXCLUDED.taker_ratio, "
-        "ema9_dist_pct = EXCLUDED.ema9_dist_pct, "
-        "ema21_dist_pct = EXCLUDED.ema21_dist_pct, "
-        "ema50_dist_pct = EXCLUDED.ema50_dist_pct, "
-        "macd = EXCLUDED.macd, "
-        "macd_signal = EXCLUDED.macd_signal, "
-        "bb_upper_dist = EXCLUDED.bb_upper_dist, "
-        "bb_lower_dist = EXCLUDED.bb_lower_dist, "
-        "bb_width_pct = EXCLUDED.bb_width_pct, "
-        "dist_high_24h_pct = EXCLUDED.dist_high_24h_pct, "
-        "dist_low_24h_pct = EXCLUDED.dist_low_24h_pct, "
-        "consecutive_up = EXCLUDED.consecutive_up, "
-        "session = EXCLUDED.session, "
-        "next_change_pct = EXCLUDED.next_change_pct, "
-        "next_direction = EXCLUDED.next_direction, "
-        "computed_at = EXCLUDED.computed_at"
-    )
+    # Split into chunks to avoid Postgres param limit (65535)
+    # 38 params per row -> max ~1500 rows per batch safely
+    CHUNK = 500
+    total_added = 0
 
+    for start in range(0, len(features), CHUNK):
+        chunk = features[start:start + CHUNK]
+        placeholders = ",".join(
+            [FEATURES_PLACEHOLDER] * len(chunk)
+        )
+        sql = (
+            "INSERT INTO features_hourly (" + FEATURES_COLS
+            + ") VALUES " + placeholders
+            + FEATURES_CONFLICT
+        )
+        params = []
+        for f in chunk:
+            params.extend(_feature_row_tuple(symbol, f, now_utc))
+
+        try:
+            with get_connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(sql, tuple(params))
+                    n = cur.rowcount or 0
+                    total_added += n
+        except Exception as e:
+            log.error(
+                "save_features chunk %d failed: %s, fallback",
+                start, e,
+            )
+            total_added += _save_features_single(symbol, chunk)
+
+    return total_added
+
+
+def _save_features_single(symbol, features):
+    added = 0
+    now_utc = datetime.now(timezone.utc)
+    single_sql = (
+        "INSERT INTO features_hourly (" + FEATURES_COLS
+        + ") VALUES " + FEATURES_PLACEHOLDER
+        + FEATURES_CONFLICT
+    )
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
-                for f in features:
+                for i, f in enumerate(features):
+                    sp = "sp_f_" + str(i)
                     try:
+                        cur.execute("SAVEPOINT " + sp)
                         cur.execute(
-                            sql,
-                            (
-                                symbol,
-                                f["timestamp"],
-                                f.get("change_pct"),
-                                f.get("range_pct"),
-                                f.get("body_pct"),
-                                f.get("upper_wick_pct"),
-                                f.get("lower_wick_pct"),
-                                f.get("volume_ratio_24h"),
-                                f.get("volatility_24h"),
-                                f.get("volatility_7d"),
-                                f.get("change_4h"),
-                                f.get("change_24h"),
-                                f.get("change_7d"),
-                                f.get("change_1d"),
-                                f.get("change_3d"),
-                                f.get("trend_up"),
-                                f.get("hour_of_day"),
-                                f.get("day_of_week"),
-                                f.get("funding_rate"),
-                                f.get("funding_trend"),
-                                f.get("oi_change_pct"),
-                                f.get("ls_ratio"),
-                                f.get("taker_ratio"),
-                                f.get("ema9_dist_pct"),
-                                f.get("ema21_dist_pct"),
-                                f.get("ema50_dist_pct"),
-                                f.get("macd"),
-                                f.get("macd_signal"),
-                                f.get("bb_upper_dist"),
-                                f.get("bb_lower_dist"),
-                                f.get("bb_width_pct"),
-                                f.get("dist_high_24h_pct"),
-                                f.get("dist_low_24h_pct"),
-                                f.get("consecutive_up"),
-                                f.get("session"),
-                                f.get("next_change_pct"),
-                                f.get("next_direction"),
-                                now_utc,
-                            ),
+                            single_sql,
+                            _feature_row_tuple(symbol, f, now_utc),
                         )
-                        if cur.rowcount and cur.rowcount > 0:
-                            added += cur.rowcount
-                    except Exception as e:
-                        log.warning("INSERT skip: %s", e)
+                        n = cur.rowcount or 0
+                        cur.execute("RELEASE SAVEPOINT " + sp)
+                        added += n
+                    except Exception as ex:
+                        try:
+                            cur.execute(
+                                "ROLLBACK TO SAVEPOINT " + sp
+                            )
+                        except Exception:
+                            pass
+                        log.warning(f"row {i} skip: {ex}")
     except Exception as e:
-        log.error("save_features: %s", e)
+        log.error("_save_features_single: %s", e)
     return added
 
 
@@ -1009,7 +1065,7 @@ def process_symbol(symbol, timeframe="1h"):
 
 def main():
     log.info("=" * 60)
-    log.info("ARGUS-Trader FEATURES v5")
+    log.info("ARGUS-Trader FEATURES v6")
     log.info("=" * 60)
 
     total = 0
