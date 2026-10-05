@@ -1,11 +1,11 @@
 # ============================================================
-# ARGUS-Trader - ENSEMBLE WEIGHTS v1
+# ARGUS-Trader - ENSEMBLE WEIGHTS v2
 # ------------------------------------------------------------
-# v1: per-symbol weights from ic_test of each algorithm.
-#     weight = max(0, ic) normalized.
-#     Writes models/ensemble_weights.json.
+# v2: + ridge, mlp. 5 algos total.
+# v1: per-symbol weights from ic_test.
 # ============================================================
 
+import os
 import sys
 import json
 import logging
@@ -25,14 +25,13 @@ log = logging.getLogger(
     "crypto.learn.train_weights"
 )
 
-ALGOS = ["lgb", "xgb", "cat"]
+ALGOS = ["lgb", "xgb", "cat", "ridge", "mlp"]
 
 SYMBOLS_LIST = [
     s.strip().upper()
     for s in (
-        __import__("os").getenv("SYMBOLS")
-        or "BTCUSDT,ETHUSDT,"
-           "SOLUSDT,BNBUSDT"
+        os.getenv("SYMBOLS")
+        or "BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT"
     ).split(",")
     if s.strip()
 ]
@@ -78,9 +77,7 @@ def compute_weights(sym):
     }
 
     if not positives:
-        log.warning(
-            "%s: no metas", sym
-        )
+        log.warning("%s: no metas", sym)
         return None
 
     total = sum(positives.values())
@@ -108,7 +105,8 @@ def compute_weights(sym):
 
 def main():
     log.info("=" * 60)
-    log.info("ENSEMBLE WEIGHTS v1")
+    log.info("ENSEMBLE WEIGHTS v2")
+    log.info("ALGOS=%s", ALGOS)
     log.info("SYMBOLS=%s", SYMBOLS_LIST)
     log.info("=" * 60)
 
@@ -123,35 +121,34 @@ def main():
     for sym in SYMBOLS_LIST:
         r = compute_weights(sym)
         if r is None:
-            log.warning("%s: skip", sym)
             continue
-
         out["symbols"][sym] = r
 
         ics = r["ic"]
         w = r["weights"]
         allowed = r["trade_allowed"]
 
-        log.info(
-            "%s: ic lgb=%s xgb=%s cat=%s",
-            sym,
-            ics.get("lgb"),
-            ics.get("xgb"),
-            ics.get("cat"),
+        ics_str = " ".join(
+            "%s=%s" % (a, ics.get(a))
+            for a in ALGOS
+        )
+        log.info("%s: %s", sym, ics_str)
+
+        w_str = " ".join(
+            "%s=%.3f" % (a, w.get(a, 0.0))
+            for a in ALGOS
         )
         log.info(
-            "  weights: lgb=%.3f xgb=%.3f "
-            "cat=%.3f  allowed=%s",
-            w.get("lgb", 0.0),
-            w.get("xgb", 0.0),
-            w.get("cat", 0.0),
-            allowed,
+            "  weights: %s  allowed=%s",
+            w_str, allowed,
         )
 
     out_path = MODELS_DIR / (
         "ensemble_weights.json"
     )
-    with open(out_path, "w", encoding="utf-8") as f:
+    with open(
+        out_path, "w", encoding="utf-8"
+    ) as f:
         json.dump(
             out, f,
             ensure_ascii=False, indent=2,
