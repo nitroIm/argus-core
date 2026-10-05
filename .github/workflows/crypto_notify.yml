@@ -1,7 +1,10 @@
 # ============================================================
 # ARGUS - Notify (hourly signals)
 # ------------------------------------------------------------
-# Читает модель, делает predict, шлёт BUY/SELL в TG.
+# v2: + ARGUS_DB_URL_2 in Predict env (SOL/BNB from DB2).
+#     Previously SOL/BNB silently fell back to DB1
+#     (empty) and were skipped in predictions.
+# v1: initial.
 # Cron-job.org: 45 * * * *
 # ============================================================
 
@@ -46,6 +49,10 @@ jobs:
       - name: Predict
         env:
           ARGUS_DB_URL: ${{ secrets.ARGUS_DB_URL }}
+          ARGUS_DB_URL_2: ${{ secrets.ARGUS_DB_URL_2 }}
+          SYMBOLS: BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT
+          DB2_SYMBOLS: SOLUSDT,BNBUSDT
+          USE_CROSS: '0'
         run: python crypto/learn/predict.py
 
       - name: Signals
@@ -54,6 +61,7 @@ jobs:
       - name: Notify
         env:
           ARGUS_DB_URL: ${{ secrets.ARGUS_DB_URL }}
+          ARGUS_DB_URL_2: ${{ secrets.ARGUS_DB_URL_2 }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python crypto/learn/notify.py
