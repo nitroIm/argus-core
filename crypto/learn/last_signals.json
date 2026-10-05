@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-05T14:41:07.044131+00:00",
-  "model_accuracy": 0.5022,
+  "generated_at": "2026-10-05T14:45:51.648664+00:00",
+  "model_accuracy": 0.4861,
   "signals": [
     {
       "symbol": "BTCUSDT",
@@ -15,6 +15,20 @@
       "strength": "weak",
       "prob_up": 0.6208,
       "confidence": 0.2416
+    },
+    {
+      "symbol": "SOLUSDT",
+      "action": "WAIT",
+      "strength": "weak",
+      "prob_up": 0.358,
+      "confidence": 0.2839
+    },
+    {
+      "symbol": "BNBUSDT",
+      "action": "WAIT",
+      "strength": "weak",
+      "prob_up": 0.4486,
+      "confidence": 0.1028
     }
   ]
 }
