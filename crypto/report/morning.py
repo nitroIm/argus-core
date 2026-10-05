@@ -1,9 +1,10 @@
 # ============================================================
-# ARGUS - УТРЕННИЙ ОТЧЁТ v12
+# ARGUS - УТРЕННИЙ ОТЧЁТ v13
 # ------------------------------------------------------------
-# v12: + external markets block (asia_patterns + live alerts).
-# v11: Kaliningrad time, DB2 debug.
-# v10: auto-locate db2.py.
+# v13: external block = ONLY active forecasts
+#      (event + lag > now). Shows current price + target.
+# v12: external markets block.
+# v11: Kaliningrad time, DB2.
 # ============================================================
 
 import os
@@ -86,6 +87,7 @@ SYMBOLS = [
     ("BNBUSDT", "BNB", "DB2"),
 ]
 DB2_SYMBOLS = {"SOLUSDT", "BNBUSDT"}
+DB1_SYMBOLS_LOCAL = {"BTCUSDT", "ETHUSDT"}
 
 WATCHED_FILES = [
     ("levels_analysis.json",   120),
@@ -135,6 +137,11 @@ MARKET_LABELS = {
     "TAIEX":    "TAIEX TW",
 }
 
+# Look back N hours for events
+EVENT_LOOKBACK_H = 12
+MIN_RULE_SAMPLES = 15
+MIN_RULE_HIT = 0.58
+
 
 def now_local():
     return datetime.now(timezone.utc).astimezone(TZ)
@@ -149,9 +156,6 @@ def candles_conn(symbol):
     return get_connection()
 
 
-# ============================================================
-# FMT
-# ============================================================
 def fmt_price(p):
     if p is None:
         return "?"
@@ -268,11 +272,11 @@ def fmt_portfolio_block():
 
     line = "  $" + format(balance, ".2f")
     line += " | PnL " + _signed_usd(pnl)
-    line += " (" + _signed_pct(pnl_pct) + ")"
+    line += " (" + _signed_pct(pnl_pct)l + ")"
     lines.append(line)
 
-    line = "  Сделок " + str(total)
-    line += " (" + str(wins) + "W/"
+_us    line =d "  Сделок " + str(total)
+    line", += " ("  + str(w0ins) + "W/"
     line += str(losses) + "L WR "
     line += format(wr, ".1f") + "%)"
     lines.append(line)
@@ -323,7 +327,7 @@ def fmt_portfolio_block():
     if len(recent) >= 2:
         st = sorted(
             recent,
-            key=lambda x: float(x.get("pnl_usd", 0)),
+            key=lambda x: float(x.get("pn)),
             reverse=True,
         )
         for label, t in [
@@ -386,8 +390,8 @@ def fmt_system_block():
                         (sym,),
                     )
                     n = cur.fetchone()[0] or 0
-        except Exception as e:
-            print("count " + sym + ": " + str(e))
+        except Exception:
+            pass
         candle_parts.append(
             name + " " + (str(n) if n >= 0 else "?")
         )
@@ -409,13 +413,12 @@ def fmt_system_block():
                 "  Features " + str(n_feat)
                 + " (" + fmt_age(age) + ")"
             )
-
-            n_ev = _count_in(conn, "events")
-            lines.append("  Events " + str(n_ev))
-
-            n_ca = _count_in(conn, "causal_links")
-            lines.append("  Causal " + str(n_ca))
-
+            lines.append(
+                "  Events " + str(_count_in(conn, "events"))
+            )
+            lines.append(
+                "  Causal " + str(_count_in(conn, "causal_links"))
+            )
             try:
                 with conn.cursor() as cur:
                     cur.execute(
@@ -510,84 +513,9 @@ def fmt_files_block():
 
 
 # ============================================================
-# EXTERNAL MARKETS (asia_patterns)
+# EXTERNAL MARKETS — только активные прогнозы
 # ============================================================
-def _fetch_active_external():
-    """Live predictions: recent market moves + rules."""
-    if not DB2_OK:
-        return [], []
-
-    try:
-        with get_conn_db2() as conn:
-            with conn.cursor() as cur:
-                # Recent market moves (last 3h, >0.5%)
-                cur.execute(
-                    "SELECT symbol, timestamp, change_pct "
-                    "FROM asia_market "
-                    "WHERE timestamp > "
-                    "NOW() - INTERVAL '3 hours' "
-                    "AND ABS(change_pct) > 0.5 "
-                    "ORDER BY timestamp DESC LIMIT 20"
-                )
-                moves = cur.fetchall()
-
-                active = []
-                for src, ts, chg in moves:
-                    chg = float(chg)
-                    direction = (
-                        "up" if chg > 0 else "down"
-                    )
-                    abs_chg = abs(chg)
-
-                    # find matching rules
-                    cur.execute(
-                        "SELECT target_symbol, "
-                        "condition_pct, lag_hours, "
-                        "samples, hit_rate, "
-                        "avg_impact_pct "
-                        "FROM asia_patterns "
-                        "WHERE source_symbol = %s "
-                        "AND direction = %s "
-                        "AND samples >= 15 "
-                        "AND hit_rate >= 0.58 "
-                        "AND condition_pct <= %s "
-                        "ORDER BY hit_rate DESC, "
-                        "samples DESC LIMIT 4",
-                        (src, direction, abs_chg),
-                    )
-                    rules = cur.fetchall()
-                    if not rules:
-                        continue
-
-                    active.append({
-                        "src": src,
-                        "event_ts": ts,
-                        "change": chg,
-                        "direction": direction,
-                        "rules": rules,
-                    })
-
-                # Top rules for week
-                cur.execute(
-                    "SELECT source_symbol, "
-                    "target_symbol, condition_pct, "
-                    "direction, lag_hours, samples, "
-                    "hit_rate, avg_impact_pct "
-                    "FROM asia_patterns "
-                    "WHERE samples >= 15 "
-                    "AND hit_rate >= 0.58 "
-                    "ORDER BY hit_rate DESC, "
-                    "samples DESC LIMIT 8"
-                )
-                top_rules = cur.fetchall()
-                return active, top_rules
-    except Exception as e:
-        print("external: " + str(e))
-        return [], []
-
-
 def _fetch_last_price(symbol):
-    """Latest close for crypto symbol."""
     try:
         if symbol in DB1_SYMBOLS_LOCAL:
             with get_connection() as conn:
@@ -621,86 +549,163 @@ def _fetch_last_price(symbol):
         return None
 
 
-DB1_SYMBOLS_LOCAL = {"BTCUSDT", "ETHUSDT"}
+def _fetch_active_forecasts():
+    """Only forecasts where event_ts + lag > now."""
+    if not DB2_OK:
+        return []
+
+    now = datetime.now(timezone.utc)
+    cutoff = now - timedelta(hours=EVENT_LOOKBACK_H)
+
+    out = []
+    try:
+        with get_conn_db2() as conn:
+            with conn.cursor() as cur:
+                # recent market moves
+                cur.execute(
+                    "SELECT symbol, timestamp, change_pct "
+                    "FROM asia_market "
+                    "WHERE timestamp > %s "
+                    "AND ABS(change_pct) > 0.5 "
+                    "ORDER BY timestamp DESC",
+                    (cutoff,),
+                )
+                moves = cur.fetchall()
+
+                for src, ev_ts, chg in moves:
+                    chg = float(chg)
+                    direction = (
+                        "up" if chg > 0 else "down"
+                    )
+                    abs_chg = abs(chg)
+
+                    # event_ts -> aware
+                    if ev_ts.tzinfo is None:
+                        ev_ts_utc = ev_ts.replace(
+                            tzinfo=timezone.utc
+                        )
+                    else:
+                        ev_ts_utc = ev_ts
+
+                    cur.execute(
+                        "SELECT target_symbol, "
+                        "condition_pct, lag_hours, "
+                        "samples, hit_rate, "
+                        "avg_impact_pct "
+                        "FROM asia_patterns "
+                        "WHERE source_symbol = %s "
+                        "AND direction = %s "
+                        "AND samples >= %s "
+                        "AND hit_rate >= %s "
+                        "AND condition_pct <= %s "
+                        "ORDER BY hit_rate DESC, "
+                        "samples DESC",
+                        (src, direction,
+                         MIN_RULE_SAMPLES, MIN_RULE_HIT,
+                         abs_chg),
+                    )
+                    rules = cur.fetchall()
+
+                    # Filter: only ACTIVE (event + lag > now)
+                    active = []
+                    for (tgt, cond, lag, n, hit, avg) in rules:
+                        forecast_ts = ev_ts_utc + timedelta(
+                            hours=int(lag)
+                        )
+                        if forecast_ts <= now:
+                            # already passed - skip
+                            continue
+                        active.append({
+                            "target": tgt,
+                            "cond": float(cond),
+                            "lag": int(lag),
+                            "n": int(n),
+                            "hit": float(hit),
+                            "avg": float(avg),
+                            "forecast_ts": forecast_ts,
+                        })
+
+                    if active:
+                        out.append({
+                            "src": src,
+                            "ev_ts": ev_ts_utc,
+                            "change": chg,
+                            "active": active,
+                        })
+    except Exception as e:
+        print("external: " + str(e))
+
+    return out
 
 
 def fmt_external_block():
-    """External markets: active predictions + top rules."""
-    lines = ["🌏 <b>Внешние рынки</b>"]
+    lines = ["🌏 <b>Ожидается</b>"]
 
     if not DB2_OK:
         lines.append("  DB2 недоступен")
         return lines
 
-    active, top_rules = _fetch_active_external()
+    active_list = _fetch_active_forecasts()
 
-    # --- Active predictions ---
-    if active:
-        lines.append("")
-        lines.append("🔮 <b>Прогнозы (актуальные)</b>")
+    if not active_list:
+        lines.append("  Активных прогнозов нет")
+        lines.append("  (нет движений рынков с непройденным lag)")
+        return lines
 
-        for a in active[:5]:
-            label = MARKET_LABELS.get(a["src"], a["src"])
-            sign = "+" if a["change"] > 0 else ""
-            arrow = "↑" if a["change"] > 0 else "↓"
-            line = "  " + arrow + " <b>" + label + "</b> "
-            line += sign + format(a["change"], ".2f") + "%"
-            line += " в " + _to_local(a["event_ts"]) + " КЛГ"
+    now = datetime.now(timezone.utc)
+
+    for a in active_list[:6]:
+        label = MARKET_LABELS.get(a["src"], a["src"])
+        sign = "+" if a["change"] > 0 else ""
+        arrow = "↑" if a["change"] > 0 else "↓"
+        ago_h = int(
+            (now - a["ev_ts"]).total_seconds() / 3600
+        )
+        ago_m = int(
+            ((now - a["ev_ts"]).total_seconds()
+             % 3600) / 60
+        )
+
+        line = "  " + arrow + " <b>" + label + "</b> "
+        line += sign + format(a["change"], ".2f") + "%"
+        line += " в " + _to_local(a["ev_ts"]) + " КЛГ"
+        line += " (" + str(ago_h) + "ч"
+        if ago_m > 0:
+            line += " " + str(ago_m) + "м"
+        line += " назад)"
+        lines.append(line)
+
+        for f in a["active"]:
+            tgt_s = f["target"].replace("USDT", "")
+            price = _fetch_last_price(f["target"])
+            avg_f = f["avg"]
+            d_sign = "+" if avg_f > 0 else ""
+            d_word = "↑ вверх" if avg_f > 0 else "↓ вниз"
+
+            line = "     <b>" + tgt_s + "</b> "
+            line += d_word + " " + d_sign
+            line += format(avg_f, ".2f") + "%"
             lines.append(line)
 
-            for (tgt, cond, lag, n, hit, avg) in a["rules"]:
-                tgt_s = tgt.replace("USDT", "")
-                price = _fetch_last_price(tgt)
-                forecast_ts = a["event_ts"] + timedelta(
-                    hours=int(lag)
+            if price:
+                forecast_price = price * (
+                    1 + avg_f / 100
                 )
-                avg_f = float(avg)
-                d_sign = "+" if avg_f > 0 else ""
-                d_word = "↑ вверх" if avg_f > 0 else "↓ вниз"
-
-                line = "     " + tgt_s + " " + d_word
-                line += " " + d_sign + format(avg_f, ".2f") + "%"
+                line = "       " + fmt_price(price)
+                line += " → " + fmt_price(forecast_price)
                 lines.append(line)
 
-                if price:
-                    forecast_price = price * (
-                        1 + avg_f / 100
-                    )
-                    line = "       " + fmt_price(price)
-                    line += " → " + fmt_price(forecast_price)
-                    lines.append(line)
-
-                line = "       когда: "
-                line += _to_local(forecast_ts) + " КЛГ"
-                line += " (+" + str(int(lag)) + "ч)"
-                lines.append(line)
-
-                line = "       точность: "
-                line += format(float(hit) * 100, ".0f") + "%"
-                line += " (N=" + str(int(n)) + ")"
-                lines.append(line)
-        lines.append("")
-
-    # --- Top rules (книга правил) ---
-    if top_rules:
-        lines.append("📚 <b>Правила (топ по надёжности)</b>")
-        for (src, tgt, cond, dr, lag, n, hit, avg) in top_rules:
-            label = MARKET_LABELS.get(src, src)
-            tgt_s = tgt.replace("USDT", "")
-            arrow = "↑" if dr == "up" else "↓"
-            line = "  " + arrow + " [" + label
-            line += " >" + format(float(cond), ".1f") + "%]"
-            line += " → " + tgt_s
-            avg_f = float(avg)
-            sign = "+" if avg_f > 0 else ""
-            line += " " + sign + format(avg_f, ".2f") + "%"
-            line += " / " + str(int(lag)) + "ч"
-            line += " (" + format(float(hit) * 100, ".0f") + "%"
-            line += ", N=" + str(int(n)) + ")"
+            line = "       когда: "
+            line += _to_local(f["forecast_ts"]) + " КЛГ"
+            line += " (+" + str(f["lag"]) + "ч)"
             lines.append(line)
 
-    if not active and not top_rules:
-        lines.append("  Правил пока нет (мало данных)")
+            line = "       точность: "
+            line += format(f["hit"] * 100, ".0f") + "%"
+            line += " (N=" + str(f["n"]) + ")"
+            lines.append(line)
+
+        lines.append("")
 
     return lines
 
@@ -909,7 +914,7 @@ def fmt_regime(regime):
 def build_report_text():
     now = now_local()
     lines = []
-    lines.append("☀️ <b>ARGUS — утро</b> v12")
+    lines.append("☀️ <b>ARGUS — утро</b> v13")
     lines.append(now.strftime("%d.%m.%Y %H:%M") + " КЛГ")
     lines.append("")
 
@@ -929,7 +934,7 @@ def build_report_text():
     lines.append("─" * 20)
     lines.append("")
 
-    # --- EXTERNAL MARKETS ---
+    # EXTERNAL — only active forecasts
     lines.extend(fmt_external_block())
     lines.append("")
     lines.append("─" * 20)
@@ -1029,45 +1034,12 @@ def build_report_text():
                 print("explorer: " + str(e))
         lines.append("")
 
-    corr = load_json(DATA_DIR / "correlations.json", {})
-    if corr and corr.get("symbols"):
-        rules = []
-        for sym, d in corr["symbols"].items():
-            for r in d.get("rules", []):
-                if r.get("samples", 0) < 10:
-                    continue
-                r2 = dict(r)
-                r2["symbol"] = sym.replace("USDT", "")
-                rules.append(r2)
-        rules.sort(
-            key=lambda x: x.get("edge", 0),
-            reverse=True,
-        )
-        if rules:
-            lines.append("🧠 <b>Внутр. правила</b>")
-            for r in rules[:5]:
-                arrow = (
-                    "↑" if r["direction"] == "up" else "↓"
-                )
-                line = "  " + arrow + " ["
-                line += escape_html(r["symbol"]) + "] "
-                line += escape_html(r["rule"])
-                line += " (" + format(
-                    r["confidence"] * 100, ".0f"
-                ) + "%"
-                line += " N=" + str(r["samples"])
-                line += " e=" + format(
-                    r.get("edge", 0), ".2f"
-                ) + ")"
-                lines.append(line)
-            lines.append("")
-
     lines.append("📊 Графики ниже")
     return "\n".join(lines)
 
 
 def main():
-    print("Morning report v12 - start")
+    print("Morning report v13 - start")
     print("DB2_OK = " + str(DB2_OK))
 
     text = build_report_text()
