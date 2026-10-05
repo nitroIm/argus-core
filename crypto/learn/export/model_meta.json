@@ -1,11 +1,11 @@
 {
-  "trained_at": "2026-10-05T08:46:28.230130+00:00",
+  "trained_at": "2026-10-05T10:18:24.674161+00:00",
   "version": "v6",
-  "n_total": 2766,
-  "n_train": 2212,
-  "n_test": 554,
-  "accuracy": 0.6011,
-  "num_trees": 30,
+  "n_total": 2914,
+  "n_train": 2331,
+  "n_test": 583,
+  "accuracy": 0.5369,
+  "num_trees": 6,
   "features": [
     "change_pct",
     "range_pct",
@@ -51,50 +51,50 @@
   "top_features": [
     {
       "name": "change_1d",
-      "gain": 352.37
+      "gain": 234.37
     },
     {
-      "name": "volatility_24h",
-      "gain": 204.13
-    },
-    {
-      "name": "change_3d",
-      "gain": 182.13
-    },
-    {
-      "name": "change_7d",
-      "gain": 170.66
-    },
-    {
-      "name": "bb_upper_dist",
-      "gain": 153.71
-    },
-    {
-      "name": "ema9_dist_pct",
-      "gain": 149.04
-    },
-    {
-      "name": "ema50_dist_pct",
-      "gain": 139.86
-    },
-    {
-      "name": "dist_low_24h_pct",
-      "gain": 139.65
+      "name": "bb_lower_dist",
+      "gain": 98.21
     },
     {
       "name": "change_4h",
-      "gain": 132.85
+      "gain": 83.1
     },
     {
-      "name": "hour_of_day",
-      "gain": 127.1
+      "name": "volatility_24h",
+      "gain": 63.55
+    },
+    {
+      "name": "bb_width_pct",
+      "gain": 55.1
+    },
+    {
+      "name": "change_3d",
+      "gain": 51.33
+    },
+    {
+      "name": "ref_change_1h",
+      "gain": 47.66
+    },
+    {
+      "name": "funding_rate",
+      "gain": 44.08
+    },
+    {
+      "name": "dist_high_24h_pct",
+      "gain": 33.41
+    },
+    {
+      "name": "dist_low_24h_pct",
+      "gain": 31.2
     }
   ],
   "balance": {
-    "up_total": 1397,
-    "down_total": 1369,
-    "up_train": 1104,
-    "down_train": 1108
+    "up_total": 1458,
+    "down_total": 1456,
+    "up_train": 1148,
+    "down_train": 1183
   },
   "symbols": [
     "BTCUSDT",
@@ -104,10 +104,10 @@
   "horizon": 4,
   "threshold_pct": 0.5,
   "confusion": {
-    "tp": 235,
-    "tn": 98,
-    "fp": 163,
-    "fn": 58
+    "tp": 198,
+    "tn": 115,
+    "fp": 158,
+    "fn": 112
   },
-  "exported_at": "2026-10-05T09:45:39.500549+00:00"
+  "exported_at": "2026-10-05T10:45:41.801593+00:00"
 }
