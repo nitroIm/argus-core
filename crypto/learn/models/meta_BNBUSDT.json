@@ -1,22 +1,22 @@
 {
-  "trained_at": "2026-10-05T22:49:53.806881+00:00",
+  "trained_at": "2026-10-05T22:50:02.453687+00:00",
   "version": "v13",
   "objective": "regression",
-  "symbol": "SOLUSDT",
+  "symbol": "BNBUSDT",
   "n_total": 5854,
   "n_train": 4671,
   "n_test": 1171,
   "n_val_inner": 701,
-  "best_iteration": 12,
-  "ic_train": 0.3353,
-  "ic_test": 0.0588,
-  "mae_train": 1.5923,
-  "mae_test": 1.7376,
-  "rmse_train": 2.2244,
-  "rmse_test": 2.3748,
-  "sign_acc_train": 0.5549,
-  "sign_acc_test": 0.4748,
-  "num_trees": 12,
+  "best_iteration": 66,
+  "ic_train": 0.5012,
+  "ic_test": 0.0148,
+  "mae_train": 1.0267,
+  "mae_test": 1.1489,
+  "rmse_train": 1.4456,
+  "rmse_test": 1.5967,
+  "sign_acc_train": 0.6256,
+  "sign_acc_test": 0.4825,
+  "num_trees": 66,
   "features": [
     "change_pct",
     "range_pct",
@@ -84,46 +84,45 @@
   ],
   "top_features": [
     {
-      "name": "volatility_7d",
-      "gain": 5070.69
-    },
-    {
-      "name": "volatility_24h",
-      "gain": 1108.17
-    },
-    {
       "name": "change_3d",
-      "gain": 1067.19
+      "gain": 4492.45
     },
     {
-      "name": "trend_up",
-      "gain": 810.46
+      "name": "volatility_7d",
+      "gain": 4366.89
     },
     {
       "name": "change_1d",
-      "gain": 764.5
+      "gain": 2591.65
+    },
+    {
+      "name": "volatility_24h",
+      "gain": 1936.74
     },
     {
       "name": "change_7d",
-      "gain": 362.6
+      "gain": 1299.68
     },
     {
       "name": "bb_width_pct",
-      "gain": 234.77
+      "gain": 1045.01
     },
     {
       "name": "macd_signal",
-      "gain": 163.48
-    },
-    {
-      "name": "funding_trend",
-      "gain": 132.12
+      "gain": 922.5
     },
     {
       "name": "macd",
-      "gain": 126.33
+      "gain": 680.31
+    },
+    {
+      "name": "ema50_dist_pct",
+      "gain": 543.49
+    },
+    {
+      "name": "dist_low_24h_pct",
+      "gain": 491.59
     }
   ],
-  "horizon": 12,
-  "exported_at": "2026-10-05T22:50:02.622370+00:00"
+  "horizon": 12
 }

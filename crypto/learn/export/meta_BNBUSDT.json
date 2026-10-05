@@ -1,22 +1,22 @@
 {
-  "trained_at": "2026-10-05T22:41:02.155113+00:00",
+  "trained_at": "2026-10-05T22:50:02.453687+00:00",
   "version": "v13",
   "objective": "regression",
   "symbol": "BNBUSDT",
   "n_total": 5854,
-  "n_train": 4683,
+  "n_train": 4671,
   "n_test": 1171,
-  "n_val_inner": 703,
-  "best_iteration": 93,
-  "ic_train": 0.5334,
-  "ic_test": -0.0715,
-  "mae_train": 1.0062,
-  "mae_test": 1.1593,
-  "rmse_train": 1.4125,
-  "rmse_test": 1.614,
-  "sign_acc_train": 0.6366,
-  "sign_acc_test": 0.468,
-  "num_trees": 93,
+  "n_val_inner": 701,
+  "best_iteration": 66,
+  "ic_train": 0.5012,
+  "ic_test": 0.0148,
+  "mae_train": 1.0267,
+  "mae_test": 1.1489,
+  "rmse_train": 1.4456,
+  "rmse_test": 1.5967,
+  "sign_acc_train": 0.6256,
+  "sign_acc_test": 0.4825,
+  "num_trees": 66,
   "features": [
     "change_pct",
     "range_pct",
@@ -33,7 +33,6 @@
     "change_3d",
     "trend_up",
     "hour_of_day",
-    "day_of_week",
     "funding_rate",
     "funding_trend",
     "ema9_dist_pct",
@@ -86,45 +85,45 @@
   "top_features": [
     {
       "name": "change_3d",
-      "gain": 4663.7
+      "gain": 4492.45
     },
     {
       "name": "volatility_7d",
-      "gain": 4169.54
+      "gain": 4366.89
     },
     {
       "name": "change_1d",
-      "gain": 3810.72
+      "gain": 2591.65
     },
     {
       "name": "volatility_24h",
-      "gain": 2348.29
-    },
-    {
-      "name": "day_of_week",
-      "gain": 1576.31
-    },
-    {
-      "name": "macd_signal",
-      "gain": 1566.08
+      "gain": 1936.74
     },
     {
       "name": "change_7d",
-      "gain": 1510.17
+      "gain": 1299.68
     },
     {
       "name": "bb_width_pct",
-      "gain": 1045.26
+      "gain": 1045.01
+    },
+    {
+      "name": "macd_signal",
+      "gain": 922.5
+    },
+    {
+      "name": "macd",
+      "gain": 680.31
     },
     {
       "name": "ema50_dist_pct",
-      "gain": 923.72
+      "gain": 543.49
     },
     {
-      "name": "funding_rate",
-      "gain": 679.62
+      "name": "dist_low_24h_pct",
+      "gain": 491.59
     }
   ],
   "horizon": 12,
-  "exported_at": "2026-10-05T22:45:48.060870+00:00"
+  "exported_at": "2026-10-05T22:50:02.622987+00:00"
 }

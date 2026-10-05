@@ -1,22 +1,22 @@
 {
-  "trained_at": "2026-10-05T22:40:41.143660+00:00",
+  "trained_at": "2026-10-05T22:49:45.029053+00:00",
   "version": "v13",
   "objective": "regression",
   "symbol": "ETHUSDT",
   "n_total": 8998,
-  "n_train": 7198,
+  "n_train": 7186,
   "n_test": 1800,
-  "n_val_inner": 1080,
-  "best_iteration": 45,
-  "ic_train": 0.4059,
-  "ic_test": -0.1282,
-  "mae_train": 1.5871,
-  "mae_test": 1.1672,
-  "rmse_train": 2.2437,
-  "rmse_test": 1.9567,
-  "sign_acc_train": 0.5877,
-  "sign_acc_test": 0.4828,
-  "num_trees": 45,
+  "n_val_inner": 1078,
+  "best_iteration": 27,
+  "ic_train": 0.3848,
+  "ic_test": -0.1025,
+  "mae_train": 1.6108,
+  "mae_test": 1.1561,
+  "rmse_train": 2.2841,
+  "rmse_test": 1.9355,
+  "sign_acc_train": 0.5582,
+  "sign_acc_test": 0.4439,
+  "num_trees": 27,
   "features": [
     "change_pct",
     "range_pct",
@@ -33,7 +33,6 @@
     "change_3d",
     "trend_up",
     "hour_of_day",
-    "day_of_week",
     "funding_rate",
     "funding_trend",
     "ema9_dist_pct",
@@ -85,46 +84,46 @@
   ],
   "top_features": [
     {
-      "name": "change_3d",
-      "gain": 7350.65
+      "name": "change_1d",
+      "gain": 5236.79
     },
     {
-      "name": "change_1d",
-      "gain": 6307.49
+      "name": "change_3d",
+      "gain": 3498.26
     },
     {
       "name": "funding_rate",
-      "gain": 4950.93
-    },
-    {
-      "name": "change_7d",
-      "gain": 4024.67
+      "gain": 3058.13
     },
     {
       "name": "volatility_7d",
-      "gain": 2974.37
+      "gain": 2682.7
     },
     {
-      "name": "day_of_week",
-      "gain": 2741.75
-    },
-    {
-      "name": "volatility_24h",
-      "gain": 1469.4
+      "name": "change_7d",
+      "gain": 1793.94
     },
     {
       "name": "ema50_dist_pct",
-      "gain": 1257.11
+      "gain": 1247.85
+    },
+    {
+      "name": "volatility_24h",
+      "gain": 969.16
+    },
+    {
+      "name": "macd",
+      "gain": 762.87
     },
     {
       "name": "dist_low_24h_pct",
-      "gain": 1120.81
+      "gain": 748.03
     },
     {
-      "name": "bb_lower_dist",
-      "gain": 752.39
+      "name": "bb_width_pct",
+      "gain": 591.16
     }
   ],
   "horizon": 12,
-  "exported_at": "2026-10-05T22:45:48.059649+00:00"
+  "exported_at": "2026-10-05T22:50:02.621717+00:00"
 }
