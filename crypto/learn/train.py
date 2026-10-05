@@ -1,11 +1,11 @@
 # ============================================================
 # ARGUS-Trader - TRAIN [PRODUCTION]
 # ------------------------------------------------------------
-# v7: убран is_unbalance=True (нестабилен при балансе 50/50).
-#     + диагностика: best_iteration, pred distribution.
-# v6: fix prepare() call — v7.1 dataset is config-driven.
-# v5: читает best_params.json если есть (от autotune)
-# v4: регуляризация для малых данных
+# v8: убран early_stopping (best_iteration=1 ломал модель).
+#     Фиксированно NUM_ROUNDS=100.
+#     + диагностика предсказаний на train (не только test).
+# v7: убран is_unbalance=True.
+# v6: fix prepare() call.
 # ============================================================
 
 import sys
@@ -45,6 +45,7 @@ PREV_META = PREV_DIR / "model_meta.json"
 BEST_PARAMS_FILE = MODELS_DIR / "best_params.json"
 
 MIN_SAMPLES = 200
+NUM_ROUNDS = 100
 
 PARAMS = {
     "objective": "binary",
@@ -63,12 +64,8 @@ PARAMS = {
     "seed": 42,
 }
 
-NUM_ROUNDS = 300
-EARLY_STOP = 40
-
 
 def load_best_params():
-    """Читает best_params.json если есть."""
     if not BEST_PARAMS_FILE.exists():
         log.info("no best_params, using defaults")
         return False
@@ -109,7 +106,7 @@ def save_prev():
 
 def train():
     log.info("=" * 60)
-    log.info("ARGUS-Trader TRAIN v7")
+    log.info("ARGUS-Trader TRAIN v8")
     log.info("=" * 60)
 
     load_best_params()
@@ -118,12 +115,6 @@ def train():
     if data is None:
         log.error("no data")
         return None
-
-    if data["n_train"] < MIN_SAMPLES:
-        log.warning(
-            "not enough samples: %d < %d",
-            data["n_train"], MIN_SAMPLES,
-        )
 
     X_train = data["X_train"]
     y_train = data["y_train"]
@@ -135,35 +126,39 @@ def train():
         len(X_train), len(X_test),
     )
     log.info(
-        "train balance: up=%d down=%d",
+        "train balance: up=%d down=%d (up %.1f%%)",
         int(y_train.sum()),
         int(len(y_train) - y_train.sum()),
+        y_train.mean() * 100,
     )
     log.info(
-        "test balance:  up=%d down=%d",
+        "test balance:  up=%d down=%d (up %.1f%%)",
         int(y_test.sum()),
         int(len(y_test) - y_test.sum()),
+        y_test.mean() * 100,
     )
 
     train_set = lgb.Dataset(X_train, label=y_train)
-    valid_set = lgb.Dataset(
-        X_test, label=y_test, reference=train_set,
-    )
 
-    log.info("training...")
+    log.info("training (%d rounds, no early stop)...",
+             NUM_ROUNDS)
     model = lgb.train(
         PARAMS, train_set,
         num_boost_round=NUM_ROUNDS,
-        valid_sets=[valid_set],
-        callbacks=[
-            lgb.early_stopping(EARLY_STOP),
-            lgb.log_evaluation(50),
-        ],
+        callbacks=[lgb.log_evaluation(50)],
     )
 
-    best_iter = model.best_iteration or 0
-    log.info("best_iteration: %d", best_iter)
+    # --- train diag ---
+    y_train_prob = model.predict(X_train)
+    y_train_pred = (y_train_prob > 0.5).astype(int)
+    train_acc = float((y_train_pred == y_train).mean())
+    train_up = int(y_train_pred.sum())
+    log.info(
+        "train: acc=%.4f pred_up=%.1f%%",
+        train_acc, train_up / len(y_train_pred) * 100,
+    )
 
+    # --- test diag ---
     y_pred_prob = model.predict(X_test)
     y_pred = (y_pred_prob > 0.5).astype(int)
     acc = float((y_pred == y_test).mean())
@@ -171,12 +166,10 @@ def train():
     pred_up = int(y_pred.sum())
     pred_dn = int(len(y_pred) - pred_up)
     log.info(
-        "predicted: up=%d (%.1f%%) down=%d (%.1f%%)",
-        pred_up, pred_up / len(y_pred) * 100,
-        pred_dn, pred_dn / len(y_pred) * 100,
+        "test:  acc=%.4f pred_up=%.1f%% pred_down=%.1f%%",
+        acc, pred_up / len(y_pred) * 100,
+        pred_dn / len(y_pred) * 100,
     )
-
-    log.info("test accuracy: %.4f", acc)
 
     tp = int(((y_test == 1) & (y_pred == 1)).sum())
     tn = int(((y_test == 0) & (y_pred == 0)).sum())
@@ -207,23 +200,28 @@ def train():
         "trained_at": datetime.now(
             timezone.utc
         ).isoformat(),
-        "version": "v7",
+        "version": "v8",
         "n_total": data["n_total"],
         "n_train": data["n_train"],
         "n_test": data["n_test"],
         "accuracy": round(acc, 4),
+        "train_accuracy": round(train_acc, 4),
         "num_trees": model.num_trees(),
-        "best_iteration": best_iter,
         "features": feat_names,
         "top_features": [
             {"name": n, "gain": round(float(s), 2)}
             for n, s in pairs[:10]
         ],
         "balance": data["balance"],
-        "pred_balance": {
-            "up": pred_up,
-            "down": pred_dn,
-        },
+        "train_up_pct": round(
+            float(y_train.mean()) * 100, 2
+        ),
+        "test_up_pct": round(
+            float(y_test.mean()) * 100, 2
+        ),
+        "pred_up_pct": round(
+            pred_up / len(y_pred) * 100, 2
+        ),
         "symbols": data["symbols"],
         "reference": data["reference"],
         "horizon": data["horizon"],
@@ -247,9 +245,9 @@ def main():
         return
     log.info("=" * 60)
     log.info(
-        "DONE. accuracy=%.4f trees=%d best_iter=%d",
-        meta["accuracy"], meta["num_trees"],
-        meta["best_iteration"],
+        "DONE. train=%.4f test=%.4f trees=%d",
+        meta["train_accuracy"], meta["accuracy"],
+        meta["num_trees"],
     )
     log.info("=" * 60)
 
