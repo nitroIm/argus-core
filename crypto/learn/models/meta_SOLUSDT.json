@@ -1,12 +1,12 @@
 {
-  "trained_at": "2026-10-05T13:16:58.882548+00:00",
-  "version": "v10",
+  "trained_at": "2026-10-05T13:22:52.465675+00:00",
+  "version": "v11",
   "symbol": "SOLUSDT",
   "n_total": 3269,
   "n_train": 2615,
   "n_test": 654,
-  "train_accuracy": 0.8149,
-  "accuracy": 0.5122,
+  "train_accuracy": 0.7013,
+  "accuracy": 0.4985,
   "num_trees": 100,
   "features": [
     "change_pct",
@@ -45,52 +45,52 @@
   ],
   "top_features": [
     {
-      "name": "change_1d",
-      "gain": 865.91
+      "name": "volatility_7d",
+      "gain": 483.44
     },
     {
-      "name": "volatility_7d",
-      "gain": 708.54
+      "name": "change_1d",
+      "gain": 478.36
     },
     {
       "name": "change_3d",
-      "gain": 667.28
-    },
-    {
-      "name": "change_7d",
-      "gain": 536.12
+      "gain": 415.1
     },
     {
       "name": "bb_width_pct",
-      "gain": 523.89
+      "gain": 252.22
     },
     {
-      "name": "volatility_24h",
-      "gain": 432.92
+      "name": "change_7d",
+      "gain": 247.82
     },
     {
       "name": "bb_lower_dist",
-      "gain": 374.91
+      "gain": 230.17
     },
     {
       "name": "volume_ratio_24h",
-      "gain": 341.65
+      "gain": 197.74
     },
     {
-      "name": "dist_high_24h_pct",
-      "gain": 331.91
+      "name": "volatility_24h",
+      "gain": 196.75
     },
     {
-      "name": "macd_signal",
-      "gain": 324.52
+      "name": "hour_of_day",
+      "gain": 190.75
+    },
+    {
+      "name": "bb_upper_dist",
+      "gain": 155.11
     }
   ],
   "horizon": 4,
   "threshold_pct": 0.5,
   "confusion": {
-    "tp": 149,
-    "tn": 186,
-    "fp": 108,
-    "fn": 211
+    "tp": 127,
+    "tn": 199,
+    "fp": 95,
+    "fn": 233
   }
 }

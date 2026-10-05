@@ -1,34 +1,34 @@
 {
-  "generated_at": "2026-10-05T13:17:04.493884+00:00",
-  "model_accuracy": null,
+  "generated_at": "2026-10-05T13:22:56.173236+00:00",
+  "model_accuracy": 0.4861,
   "signals": [
     {
       "symbol": "BTCUSDT",
       "action": "WAIT",
       "strength": "weak",
-      "prob_up": 0.5062,
-      "confidence": 0.0123
+      "prob_up": 0.4807,
+      "confidence": 0.0387
     },
     {
       "symbol": "ETHUSDT",
-      "action": "BUY",
-      "strength": "strong",
-      "prob_up": 0.7718,
-      "confidence": 0.5436
+      "action": "WAIT",
+      "strength": "weak",
+      "prob_up": 0.6208,
+      "confidence": 0.2416
     },
     {
       "symbol": "SOLUSDT",
-      "action": "SELL",
-      "strength": "normal",
-      "prob_up": 0.2543,
-      "confidence": 0.4914
+      "action": "WAIT",
+      "strength": "weak",
+      "prob_up": 0.358,
+      "confidence": 0.2839
     },
     {
       "symbol": "BNBUSDT",
-      "action": "SELL",
-      "strength": "normal",
-      "prob_up": 0.3469,
-      "confidence": 0.3062
+      "action": "WAIT",
+      "strength": "weak",
+      "prob_up": 0.4486,
+      "confidence": 0.1028
     }
   ]
 }
