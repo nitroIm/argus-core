@@ -1,9 +1,9 @@
 # ============================================================
-# ARGUS-Trader - PREDICT v3 [PRODUCTION]
+# ARGUS-Trader - PREDICT v4 [PRODUCTION]
 # ------------------------------------------------------------
-# v3: читает FEATURE_COLS из model_meta.json
-#     (всегда согласован с обученной моделью)
-# v2: reads external через fetch
+# v4: + cross-features built on-the-fly via dataset helpers.
+#     Feature order from FEATURE_COLS (always matches model).
+# v3: reads features from model_meta.json.
 # ============================================================
 
 import sys
@@ -22,6 +22,27 @@ sys.path.insert(0, str(SCRIPT_DIR))
 
 from db import get_connection
 
+# Импортируем ВСЮ логику из dataset — одно место для
+# кросс-фич. Если dataset поменяется — predict подхватит.
+from dataset import (
+    FEATURE_COLS,
+    INTERNAL_COLS,
+    CROSS_COLS,
+    EXTERNAL_COLS,
+    USE_EXTERNAL,
+    REFERENCE,
+    SYMBOLS,
+    DB2_SYMBOLS,
+    symbol_conn,
+    fetch_features,
+    fetch_candles,
+    fetch_external,
+    build_targets,
+    build_cross_full,
+    _get_feat_map,
+    ext_lookup,
+)
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
@@ -31,6 +52,10 @@ log = logging.getLogger("crypto.learn.predict")
 
 MODEL_FILE = SCRIPT_DIR / "models" / "lgb_model.txt"
 META_FILE = SCRIPT_DIR / "models" / "model_meta.json"
+
+# Сколько последних свечей загружать для cross-features
+# (окно 24h + запас)
+LOOKBACK = 500
 
 
 def load_meta():
@@ -43,43 +68,113 @@ def load_meta():
         return None
 
 
-def fetch_last_row(symbol, feature_cols):
-    """Читает последнюю строку features_hourly."""
-    try:
-        with get_connection() as conn:
-            with conn.cursor() as cur:
-                cols = ", ".join(feature_cols)
-                sql = (
-                    "SELECT " + cols
-                    + " FROM features_hourly "
-                    + "WHERE symbol = %s "
-                    + "ORDER BY timestamp DESC "
-                    + "LIMIT 1"
-                )
-                cur.execute(sql, (symbol,))
-                row = cur.fetchone()
-                if not row:
-                    return None
-                out = []
-                for v in row:
-                    if v is None:
-                        out.append(np.nan)
-                    else:
-                        try:
-                            out.append(float(v))
-                        except Exception:
-                            out.append(np.nan)
-                return np.array([out], dtype=np.float32)
-    except Exception as e:
-        log.error(
-            "fetch_last_row %s: %s", symbol, e,
+def load_all_feat_and_candles():
+    """Загружает features + candles для всех SYMBOLS
+    и для REFERENCE (если его нет в списке).
+    Возвращает (feat_maps, candle_maps).
+    """
+    need = set(SYMBOLS) | {REFERENCE}
+    feat_maps = {}
+    candle_maps = {}
+
+    for sym in sorted(need):
+        # features
+        rows = fetch_features(sym, limit=LOOKBACK)
+        if not rows:
+            log.warning("no features: %s", sym)
+            continue
+        base_cols = (
+            ["symbol", "timestamp"] + INTERNAL_COLS
         )
+        feat_maps[sym] = _get_feat_map(rows, base_cols)
+
+        # candles
+        candles = fetch_candles(sym, limit=LOOKBACK)
+        if not candles:
+            log.warning("no candles: %s", sym)
+            continue
+        candle_maps[sym] = {
+            c["ts"]: c["close"] for c in candles
+            if c["close"]
+        }
+
+    return feat_maps, candle_maps
+
+
+def build_feature_row(
+    symbol, ts,
+    feat_maps, cross_maps,
+    ext_dxy, ext_spx, ext_gold,
+):
+    """Строит один X-вектор в порядке FEATURE_COLS."""
+    feats = feat_maps.get(symbol, {}).get(ts)
+    if feats is None:
         return None
+
+    row = []
+
+    # --- internal ---
+    for col in INTERNAL_COLS:
+        v = feats.get(col, np.nan)
+        row.append(v)
+
+    # --- external ---
+    if USE_EXTERNAL:
+        v = ext_lookup(ext_dxy, ts)
+        row.append(v if v is not None else np.nan)
+        v = ext_lookup(ext_spx, ts)
+        row.append(v if v is not None else np.nan)
+        v = ext_lookup(ext_gold, ts)
+        row.append(v if v is not None else np.nan)
+
+    # --- cross ---
+    cm = cross_maps.get(symbol, {}).get(ts, {})
+    for col in CROSS_COLS:
+        row.append(cm.get(col, np.nan))
+
+    return row
+
+
+def predict_one(
+    symbol, model, feature_cols,
+    feat_maps, cross_maps,
+    ext_dxy, ext_spx, ext_gold,
+):
+    """Предсказание для одного символа."""
+    feats = feat_maps.get(symbol)
+    if not feats:
+        log.warning("%s: no features", symbol)
+        return None
+
+    # последний timestamp
+    ts = sorted(feats.keys())[-1]
+
+    row = build_feature_row(
+        symbol, ts, feat_maps, cross_maps,
+        ext_dxy, ext_spx, ext_gold,
+    )
+    if row is None:
+        log.warning("%s: cannot build row", symbol)
+        return None
+
+    X = np.array([row], dtype=np.float32)
+    prob_up = float(model.predict(X)[0])
+    direction = 1 if prob_up > 0.5 else 0
+
+    return {
+        "symbol": symbol,
+        "timestamp": ts.isoformat(),
+        "prob_up": round(prob_up, 4),
+        "direction": direction,
+        "confidence": round(
+            abs(prob_up - 0.5) * 2, 4
+        ),
+    }
 
 
 def predict_all(symbols=None):
     if symbols is None:
-        symbols = ["BTCUSDT", "ETHUSDT"]
+        symbols = list(SYMBOLS)
 
     if not MODEL_FILE.exists():
         log.error("model not found")
@@ -90,37 +185,57 @@ def predict_all(symbols=None):
         log.error("meta missing")
         return None
 
-    feature_cols = meta.get("features", [])
-    if not feature_cols:
-        log.error("meta has no features list")
+    # FEATURE_COLS из кода — источник истины.
+    # Сверяем с meta.features (на случай если model устарела)
+    meta_features = meta.get("features", [])
+    if meta_features and meta_features != FEATURE_COLS:
+        log.warning(
+            "meta.features != FEATURE_COLS "
+            "(%d vs %d) — модель устарела, "
+            "переобучи (Crypto Learn)",
+            len(meta_features), len(FEATURE_COLS),
+        )
         return None
 
     log.info(
         "model features: %d (accuracy=%.4f)",
-        len(feature_cols),
+        len(FEATURE_COLS),
         meta.get("accuracy", 0),
     )
+    log.info("REFERENCE=%s", REFERENCE)
 
     model = lgb.Booster(model_file=str(MODEL_FILE))
 
+    # Загружаем все features + candles
+    feat_maps, candle_maps = load_all_feat_and_candles()
+    if not feat_maps:
+        log.error("no data loaded")
+        return None
+
+    # Кросс-фичи для всех символов разом
+    cross_maps = build_cross_full(
+        feat_maps, candle_maps, REFERENCE,
+    )
+
+    # External
+    if USE_EXTERNAL:
+        ext_dxy = fetch_external("DXY")
+        ext_spx = fetch_external("SPX")
+        ext_gold = fetch_external("GOLD")
+    else:
+        ext_dxy = []
+        ext_spx = []
+        ext_gold = []
+
     results = []
     for symbol in symbols:
-        X = fetch_last_row(symbol, feature_cols)
-        if X is None:
-            log.warning("%s: no data", symbol)
+        r = predict_one(
+            symbol, model, FEATURE_COLS,
+            feat_maps, cross_maps,
+            ext_dxy, ext_spx, ext_gold,
+        )
+        if r is None:
             continue
-
-        prob_up = float(model.predict(X)[0])
-        direction = 1 if prob_up > 0.5 else 0
-
-        r = {
-            "symbol": symbol,
-            "prob_up": round(prob_up, 4),
-            "direction": direction,
-            "confidence": round(
-                abs(prob_up - 0.5) * 2, 4
-            ),
-        }
         results.append(r)
         log.info(
             "%s: prob_up=%.4f dir=%d conf=%.4f",
@@ -133,14 +248,15 @@ def predict_all(symbols=None):
             timezone.utc
         ).isoformat(),
         "model_accuracy": meta.get("accuracy"),
-        "model_features": len(feature_cols),
+        "model_features": len(FEATURE_COLS),
+        "reference": REFERENCE,
         "predictions": results,
     }
 
 
 def main():
     log.info("=" * 60)
-    log.info("ARGUS-Trader PREDICT v3")
+    log.info("ARGUS-Trader PREDICT v4")
     log.info("=" * 60)
 
     result = predict_all()
