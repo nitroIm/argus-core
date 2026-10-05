@@ -1,6 +1,8 @@
 # ============================================================
 # ARGUS-Trader - TRAIN [PRODUCTION]
 # ------------------------------------------------------------
+# v6: fix prepare() call — v7.1 dataset is config-driven,
+#     no symbol kwarg. meta stores symbols list.
 # v5: читает best_params.json если есть (от autotune)
 # v4: регуляризация для малых данных
 # v3: is_unbalance + prev
@@ -106,14 +108,14 @@ def save_prev():
         log.warning("prev save: %s", e)
 
 
-def train(symbol=None):
+def train():
     log.info("=" * 60)
-    log.info("ARGUS-Trader TRAIN v5")
+    log.info("ARGUS-Trader TRAIN v6")
     log.info("=" * 60)
 
     load_best_params()
 
-    data = prepare(symbol=symbol)
+    data = prepare()
     if data is None:
         log.error("no data")
         return None
@@ -185,7 +187,7 @@ def train(symbol=None):
         "trained_at": datetime.now(
             timezone.utc
         ).isoformat(),
-        "version": "v5",
+        "version": "v6",
         "n_total": data["n_total"],
         "n_train": data["n_train"],
         "n_test": data["n_test"],
@@ -197,7 +199,10 @@ def train(symbol=None):
             for n, s in pairs[:10]
         ],
         "balance": data["balance"],
-        "symbol": symbol,
+        "symbols": data["symbols"],
+        "reference": data["reference"],
+        "horizon": data["horizon"],
+        "threshold_pct": data["threshold_pct"],
         "confusion": {
             "tp": tp, "tn": tn,
             "fp": fp, "fn": fn,
