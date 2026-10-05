@@ -1,9 +1,9 @@
 # ============================================================
 # ARGUS - ENRICH
 # ------------------------------------------------------------
-# v6: убрана FEATURES_BOOTSTRAP — переход на часовой режим
-#     (LIMIT=500). Пересчёт на 9000 сделан разово в v5.
-# v5: ВРЕМЕННО + FEATURES_BOOTSTRAP='1' (одноразовый).
+# v5b: ВРЕМЕННО + FEATURES_BOOTSTRAP='1' — одноразовый
+#      пересчёт features_hourly на всю историю (LIMIT=9000).
+#      После одного прогона убрать эту строку (см. v6).
 # v4: + ARGUS_DB_URL_2, SYMBOLS, DB2_SYMBOLS.
 # v3: общая очередь с detect (argus-crypto-pipeline).
 # ============================================================
@@ -53,6 +53,7 @@ jobs:
             ${{ secrets.ARGUS_DB_URL_2 }}
           SYMBOLS: BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT
           DB2_SYMBOLS: SOLUSDT,BNBUSDT
+          FEATURES_BOOTSTRAP: '1'
           TELEGRAM_BOT_TOKEN: >-
             ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: >-
