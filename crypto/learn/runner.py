@@ -1,13 +1,10 @@
 # ============================================================
 # ARGUS-Trader - LEARN RUNNER
 # ------------------------------------------------------------
-# Оркестратор: train -> evaluate -> predict -> signals
-#              -> learn_weights.
-# v4: version-aware. If model_meta.version == v12 (regression),
-#     skip evaluate/predict/signals — they expect binary
-#     predict_proba and will fail. Train-only cycle.
+# v5: REGRESSION_VERSIONS = {v12, v13}.
+# v4: version-aware skip for regression models.
 # v3: + STEP 5 learn_weights.
-# v2: skip train/evaluate if model fresh (<24h).
+# v2: skip train if model fresh (<24h).
 # ============================================================
 
 import sys
@@ -31,17 +28,19 @@ log = logging.getLogger("crypto.learn.runner")
 MODEL_META = SCRIPT_DIR / "models" / "model_meta.json"
 MODEL_MAX_AGE_H = 24
 
-# Регрессионные версии — predict/signals/evaluate ещё не
-# адаптированы. Пропускаем, тренируем только train.
-REGRESSION_VERSIONS = {"v12"}
+REGRESSION_VERSIONS = {"v12", "v13"}
 
 
 def read_meta():
     if not MODEL_META.exists():
-        log.warning("meta missing: %s", MODEL_META.name)
+        log.warning(
+            "meta missing: %s", MODEL_META.name
+        )
         return None
     try:
-        with open(MODEL_META, "r", encoding="utf-8") as f:
+        with open(
+            MODEL_META, "r", encoding="utf-8"
+        ) as f:
             return json.load(f)
     except Exception as e:
         log.warning("meta read: %s", e)
@@ -49,7 +48,6 @@ def read_meta():
 
 
 def model_is_fresh(meta):
-    """True if trained_at younger than MODEL_MAX_AGE_H."""
     if not meta:
         return False
 
@@ -65,7 +63,9 @@ def model_is_fresh(meta):
         return False
 
     if trained.tzinfo is None:
-        trained = trained.replace(tzinfo=timezone.utc)
+        trained = trained.replace(
+            tzinfo=timezone.utc
+        )
 
     age_h = (
         datetime.now(timezone.utc) - trained
@@ -81,6 +81,11 @@ def model_is_fresh(meta):
 def is_regression(meta):
     if not meta:
         return False
+    obj = str(
+        meta.get("objective", "")
+    ).strip().lower()
+    if obj == "regression":
+        return True
     v = str(meta.get("version", "")).strip()
     return v in REGRESSION_VERSIONS
 
@@ -108,13 +113,15 @@ def main():
         if meta:
             log.info(
                 "trained %d models, version=%s",
-                len(metas), meta.get("version", "?"),
+                len(metas),
+                meta.get("version", "?"),
             )
 
     if is_regression(meta):
         log.warning(
-            "STEP 2-5: SKIPPED — regression model (%s). "
-            "evaluate/predict/signals not yet adapted.",
+            "STEP 2-5: SKIPPED - regression model "
+            "(%s). evaluate/predict/signals not "
+            "adapted yet.",
             meta.get("version"),
         )
         log.info("=" * 60)
@@ -144,7 +151,9 @@ def main():
         import learn_weights
         learn_weights.main()
     except Exception as e:
-        log.warning("weights update skipped: %s", e)
+        log.warning(
+            "weights update skipped: %s", e
+        )
 
     log.info("=" * 60)
     log.info("LEARN DONE")
