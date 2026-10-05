@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-10-05T13:16:28.204610+00:00",
+  "generated_at": "2026-10-05T14:17:02.582648+00:00",
   "min_samples": 10,
   "min_edge": 0.15,
   "symbols": {
     "BTCUSDT": {
       "symbol": "BTCUSDT",
-      "total_events": 342,
+      "total_events": 344,
       "base_rate": 0.5789,
       "rules_found": 1,
       "rules": [
@@ -23,14 +23,14 @@
     },
     "ETHUSDT": {
       "symbol": "ETHUSDT",
-      "total_events": 326,
+      "total_events": 328,
       "base_rate": 0.6667,
       "rules_found": 0,
       "rules": []
     },
     "SOLUSDT": {
       "symbol": "SOLUSDT",
-      "total_events": 201,
+      "total_events": 203,
       "base_rate": 0.4545,
       "rules_found": 1,
       "rules": [
@@ -48,8 +48,8 @@
     },
     "BNBUSDT": {
       "symbol": "BNBUSDT",
-      "total_events": 202,
-      "base_rate": 0.619,
+      "total_events": 205,
+      "base_rate": 0.5909,
       "rules_found": 0,
       "rules": []
     }
