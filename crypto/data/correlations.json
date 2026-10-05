@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-10-05T19:17:34.475690+00:00",
+  "generated_at": "2026-10-05T21:22:30.274727+00:00",
   "min_samples": 10,
   "min_edge": 0.15,
   "symbols": {
     "BTCUSDT": {
       "symbol": "BTCUSDT",
-      "total_events": 350,
+      "total_events": 351,
       "base_rate": 0.5789,
       "rules_found": 1,
       "rules": [
@@ -23,7 +23,7 @@
     },
     "ETHUSDT": {
       "symbol": "ETHUSDT",
-      "total_events": 334,
+      "total_events": 335,
       "base_rate": 0.6667,
       "rules_found": 0,
       "rules": []
@@ -48,7 +48,7 @@
     },
     "BNBUSDT": {
       "symbol": "BNBUSDT",
-      "total_events": 253,
+      "total_events": 256,
       "base_rate": 0.5909,
       "rules_found": 0,
       "rules": []
