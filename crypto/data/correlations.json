@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-05T16:17:30.009824+00:00",
+  "generated_at": "2026-10-05T17:18:08.549650+00:00",
   "min_samples": 10,
   "min_edge": 0.15,
   "symbols": {
@@ -23,14 +23,14 @@
     },
     "ETHUSDT": {
       "symbol": "ETHUSDT",
-      "total_events": 331,
+      "total_events": 333,
       "base_rate": 0.6667,
       "rules_found": 0,
       "rules": []
     },
     "SOLUSDT": {
       "symbol": "SOLUSDT",
-      "total_events": 254,
+      "total_events": 255,
       "base_rate": 0.4444,
       "rules_found": 1,
       "rules": [
@@ -48,7 +48,7 @@
     },
     "BNBUSDT": {
       "symbol": "BNBUSDT",
-      "total_events": 250,
+      "total_events": 251,
       "base_rate": 0.5909,
       "rules_found": 0,
       "rules": []
