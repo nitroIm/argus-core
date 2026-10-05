@@ -1,22 +1,17 @@
 {
-  "trained_at": "2026-10-05T23:40:21.316778+00:00",
-  "version": "v13",
+  "trained_at": "2026-10-05T23:41:12.431103+00:00",
+  "version": "v1-xgb",
   "objective": "regression",
+  "algorithm": "xgboost",
   "symbol": "BTCUSDT",
   "n_total": 8999,
   "n_train": 7187,
   "n_test": 1800,
-  "n_val_inner": 1079,
-  "best_iteration": 25,
-  "ic_train": 0.3409,
-  "ic_test": -0.0136,
-  "mae_train": 1.1609,
-  "mae_test": 0.8945,
-  "rmse_train": 1.6127,
-  "rmse_test": 1.3966,
-  "sign_acc_train": 0.5321,
-  "sign_acc_test": 0.4528,
-  "num_trees": 25,
+  "best_iteration": 15,
+  "ic_train": 0.3673,
+  "ic_test": -0.144,
+  "mae_test": 0.8984,
+  "rmse_test": 1.4027,
   "features": [
     "change_pct",
     "range_pct",
@@ -82,46 +77,45 @@
   ],
   "top_features": [
     {
-      "name": "change_1d",
-      "gain": 3285.4
+      "name": "f10",
+      "gain": 132.06
     },
     {
-      "name": "volatility_7d",
-      "gain": 2017.08
+      "name": "f19",
+      "gain": 90.54
     },
     {
-      "name": "funding_rate",
-      "gain": 1574.02
+      "name": "f7",
+      "gain": 90.08
     },
     {
-      "name": "macd_signal",
-      "gain": 496.05
+      "name": "f9",
+      "gain": 82.79
     },
     {
-      "name": "bb_width_pct",
-      "gain": 449.99
+      "name": "f17",
+      "gain": 79.57
     },
     {
-      "name": "volatility_24h",
-      "gain": 434.93
+      "name": "f6",
+      "gain": 72.8
     },
     {
-      "name": "ema50_dist_pct",
-      "gain": 311.61
+      "name": "f13",
+      "gain": 72.15
     },
     {
-      "name": "dist_low_24h_pct",
-      "gain": 177.77
+      "name": "f18",
+      "gain": 66.21
     },
     {
-      "name": "change_4h",
-      "gain": 155.4
+      "name": "f20",
+      "gain": 61.22
     },
     {
-      "name": "macd",
-      "gain": 153.39
+      "name": "f26",
+      "gain": 54.25
     }
   ],
-  "horizon": 12,
-  "exported_at": "2026-10-05T23:42:37.324011+00:00"
+  "horizon": 12
 }

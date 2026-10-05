@@ -1,22 +1,17 @@
 {
-  "trained_at": "2026-10-05T23:40:21.316778+00:00",
-  "version": "v13",
+  "trained_at": "2026-10-05T23:41:46.524418+00:00",
+  "version": "v1-xgb",
   "objective": "regression",
-  "symbol": "BTCUSDT",
-  "n_total": 8999,
-  "n_train": 7187,
-  "n_test": 1800,
-  "n_val_inner": 1079,
-  "best_iteration": 25,
-  "ic_train": 0.3409,
-  "ic_test": -0.0136,
-  "mae_train": 1.1609,
-  "mae_test": 0.8945,
-  "rmse_train": 1.6127,
-  "rmse_test": 1.3966,
-  "sign_acc_train": 0.5321,
-  "sign_acc_test": 0.4528,
-  "num_trees": 25,
+  "algorithm": "xgboost",
+  "symbol": "BNBUSDT",
+  "n_total": 5855,
+  "n_train": 4672,
+  "n_test": 1171,
+  "best_iteration": 86,
+  "ic_train": 0.5607,
+  "ic_test": 0.1132,
+  "mae_test": 1.1189,
+  "rmse_test": 1.5591,
   "features": [
     "change_pct",
     "range_pct",
@@ -82,46 +77,45 @@
   ],
   "top_features": [
     {
-      "name": "change_1d",
-      "gain": 3285.4
+      "name": "f19",
+      "gain": 80.64
     },
     {
-      "name": "volatility_7d",
-      "gain": 2017.08
+      "name": "f6",
+      "gain": 77.24
     },
     {
-      "name": "funding_rate",
-      "gain": 1574.02
+      "name": "f10",
+      "gain": 69.52
     },
     {
-      "name": "macd_signal",
-      "gain": 496.05
+      "name": "f11",
+      "gain": 68.73
     },
     {
-      "name": "bb_width_pct",
-      "gain": 449.99
+      "name": "f9",
+      "gain": 64.44
     },
     {
-      "name": "volatility_24h",
-      "gain": 434.93
+      "name": "f7",
+      "gain": 59.43
     },
     {
-      "name": "ema50_dist_pct",
-      "gain": 311.61
+      "name": "f25",
+      "gain": 57.07
     },
     {
-      "name": "dist_low_24h_pct",
-      "gain": 177.77
+      "name": "f22",
+      "gain": 54.36
     },
     {
-      "name": "change_4h",
-      "gain": 155.4
+      "name": "f16",
+      "gain": 53.85
     },
     {
-      "name": "macd",
-      "gain": 153.39
+      "name": "f18",
+      "gain": 53.76
     }
   ],
-  "horizon": 12,
-  "exported_at": "2026-10-05T23:42:37.324011+00:00"
+  "horizon": 12
 }
