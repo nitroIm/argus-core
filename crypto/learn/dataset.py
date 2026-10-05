@@ -1,6 +1,9 @@
 # ============================================================
-# ARGUS-Trader - DATASET v7.1 [PRODUCTION]
+# ARGUS-Trader - DATASET v7.2 [PRODUCTION]
 # ------------------------------------------------------------
+# v7.2: per-symbol time split. Каждая монета делится на
+#       train/test по своему времени, потом склеиваются.
+#       Масштабируется на любое число монет с разной историей.
 # v7.1: backwards-compat alias TARGET_COL for export.py.
 # v7: config-driven symbols + DB routing (DB1/DB2).
 #     Cross-features "each vs reference (BTC)".
@@ -52,9 +55,6 @@ logging.basicConfig(
 log = logging.getLogger("crypto.learn.dataset")
 
 
-# ============================================================
-# CONFIG — расширяется одной строкой
-# ============================================================
 USE_EXTERNAL = (
     os.getenv("USE_EXTERNAL", "0").strip() == "1"
 )
@@ -88,9 +88,6 @@ DB2_SYMBOLS = {
 }
 
 
-# ============================================================
-# DB ROUTING
-# ============================================================
 def symbol_conn(symbol):
     if symbol in DB2_SYMBOLS and DB2_OK:
         try:
@@ -100,9 +97,6 @@ def symbol_conn(symbol):
     return get_connection()
 
 
-# ============================================================
-# COLS
-# ============================================================
 INTERNAL_COLS = [
     "change_pct",
     "range_pct",
@@ -170,9 +164,6 @@ TARGET_COL = TARGET_DIR
 EXT_MAX_AGE_H = 3
 
 
-# ============================================================
-# FETCH
-# ============================================================
 def fetch_features(symbol, limit=100000):
     base_cols = ["symbol", "timestamp"] + INTERNAL_COLS
     try:
@@ -250,9 +241,6 @@ def fetch_external(symbol):
         return []
 
 
-# ============================================================
-# TARGETS
-# ============================================================
 def build_targets(candles, horizon):
     out = {}
     n = len(candles)
@@ -270,9 +258,6 @@ def build_targets(candles, horizon):
     return out
 
 
-# ============================================================
-# CROSS FEATURES (each vs REFERENCE)
-# ============================================================
 def build_cross_full(
     feat_maps, candle_maps, ref_symbol,
 ):
@@ -301,7 +286,6 @@ def build_cross_full(
             set(feats.keys()) & set(ref_close.keys())
         )
 
-        # ratio
         ratio = {}
         for ts in common_ts:
             sc = sym_close.get(ts)
@@ -309,7 +293,6 @@ def build_cross_full(
             if sc and rc and rc > 0:
                 ratio[ts] = sc / rc * 1000
 
-        # zscore 24h
         ratio_ts = sorted(ratio.keys())
         zscore = {}
         for i in range(len(ratio_ts)):
@@ -330,7 +313,6 @@ def build_cross_full(
                     (ratio[ratio_ts[i]] - mu) / sd
                 )
 
-        # rolling corr 24h (change_pct)
         corr_ts = sorted(
             set(feats.keys()) & set(ref_feat.keys())
         )
@@ -360,7 +342,6 @@ def build_cross_full(
                 np.corrcoef(A, B)[0, 1]
             )
 
-        # build per-ts cross dict
         cross_map = {}
         for ts in feats:
             if symbol == ref_symbol:
@@ -407,9 +388,6 @@ def build_cross_full(
     return out
 
 
-# ============================================================
-# EXT LOOKUP
-# ============================================================
 def ext_lookup(ext_list, ts, max_age_h=EXT_MAX_AGE_H):
     if not ext_list:
         return None
@@ -428,9 +406,6 @@ def ext_lookup(ext_list, ts, max_age_h=EXT_MAX_AGE_H):
     return result[1]
 
 
-# ============================================================
-# X/y
-# ============================================================
 def _get_feat_map(rows, base_cols):
     idx = {col: i for i, col in enumerate(base_cols)}
     out = {}
@@ -535,26 +510,58 @@ def build_xy(
     )
 
 
-# ============================================================
-# SPLIT
-# ============================================================
-def time_split(X, y, test_frac=0.2):
-    n = len(X)
-    if n < 20:
-        return X, y, X, y
-    split = int(n * (1 - test_frac))
+def per_symbol_split(
+    X, y, y_ret, ts_list, sym_list,
+    test_frac=0.2,
+):
+    """Split each symbol by its own time, then merge.
+
+    Масштабируется: новые монеты с любой историей —
+    каждая даёт свой train/test пропорционально.
+    """
+    X = np.asarray(X)
+    y = np.asarray(y)
+    y_ret = np.asarray(y_ret)
+
+    train_idx = []
+    test_idx = []
+
+    for sym in sorted(set(sym_list)):
+        idxs = [
+            i for i, s in enumerate(sym_list)
+            if s == sym
+        ]
+        idxs_sorted = sorted(
+            idxs, key=lambda i: ts_list[i]
+        )
+        n = len(idxs_sorted)
+        if n < 20:
+            log.warning(
+                "%s: too few rows (%d) — all to train",
+                sym, n,
+            )
+            train_idx.extend(idxs_sorted)
+            continue
+        split = int(n * (1 - test_frac))
+        train_idx.extend(idxs_sorted[:split])
+        test_idx.extend(idxs_sorted[split:])
+        log.info(
+            "  %s: train=%d test=%d",
+            sym, split, n - split,
+        )
+
+    train_idx.sort(key=lambda i: ts_list[i])
+    test_idx.sort(key=lambda i: ts_list[i])
+
     return (
-        X[:split], y[:split],
-        X[split:], y[split:],
+        X[train_idx], y[train_idx], y_ret[train_idx],
+        X[test_idx], y[test_idx], y_ret[test_idx],
     )
 
 
-# ============================================================
-# PREPARE
-# ============================================================
 def prepare(test_frac=0.2):
     log.info("=" * 60)
-    log.info("DATASET v7.1")
+    log.info("DATASET v7.2")
     log.info("SYMBOLS=%s", SYMBOLS)
     log.info("REFERENCE=%s", REFERENCE)
     log.info("HORIZON=%dh  THRESHOLD=%.2f%%",
@@ -630,13 +637,12 @@ def prepare(test_frac=0.2):
         log.error("too few samples: %d", len(X))
         return None
 
+    log.info("per-symbol time split:")
     (
-        X_train, y_train,
-        X_test, y_test,
-    ) = time_split(X, y_dir, test_frac)
-
-    _, r_train, _, r_test = time_split(
-        X, y_ret, test_frac,
+        X_train, y_train, r_train,
+        X_test, y_test, r_test,
+    ) = per_symbol_split(
+        X, y_dir, y_ret, ts, sym, test_frac,
     )
 
     balance = {
