@@ -1,36 +1,37 @@
 {
-  "predicted_at": "2026-10-05T13:09:11.130115+00:00",
-  "model_accuracy": 0.5074,
-  "model_features": 40,
-  "reference": "BTCUSDT",
+  "predicted_at": "2026-10-05T13:17:04.492974+00:00",
   "predictions": [
     {
       "symbol": "BTCUSDT",
       "timestamp": "2025-10-15T22:00:00+00:00",
-      "prob_up": 0.526,
+      "prob_up": 0.5062,
       "direction": 1,
-      "confidence": 0.052
+      "confidence": 0.0123,
+      "model_acc": 0.4807
     },
     {
       "symbol": "ETHUSDT",
       "timestamp": "2025-10-15T22:00:00+00:00",
-      "prob_up": 0.5537,
+      "prob_up": 0.7718,
       "direction": 1,
-      "confidence": 0.1073
+      "confidence": 0.5436,
+      "model_acc": 0.4951
     },
     {
       "symbol": "SOLUSDT",
       "timestamp": "2026-02-24T08:00:00+00:00",
-      "prob_up": 0.4546,
+      "prob_up": 0.2543,
       "direction": 0,
-      "confidence": 0.0908
+      "confidence": 0.4914,
+      "model_acc": 0.5122
     },
     {
       "symbol": "BNBUSDT",
       "timestamp": "2026-02-24T08:00:00+00:00",
-      "prob_up": 0.4604,
+      "prob_up": 0.3469,
       "direction": 0,
-      "confidence": 0.0792
+      "confidence": 0.3062,
+      "model_acc": 0.5098
     }
   ]
 }
