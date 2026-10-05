@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-10-05T00:05:37.817380+00:00",
+  "generated_at": "2026-10-05T01:05:36.201014+00:00",
   "total_news": 128,
-  "avg_sentiment": -0.062,
+  "avg_sentiment": -0.04,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
-  "bullish_count": 17,
+  "bullish_count": 18,
   "bearish_count": 25,
-  "neutral_count": 86,
+  "neutral_count": 85,
   "fake_count": 0,
   "cross_confirmed": 6,
-  "single_source": 98,
+  "single_source": 100,
   "by_source": {
     "Cointelegraph": {
       "total": 25,
@@ -22,7 +22,7 @@
     },
     "Bitcoin.com": {
       "total": 10,
-      "bull": 2,
+      "bull": 3,
       "bear": 3
     },
     "CryptoSlate": {
@@ -48,6 +48,22 @@
   },
   "top_bullish": [
     {
+      "title": "Bitcoin Price Knocks on $87K as Uptober Bulls Smell $94K",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-05T00:20:56+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-05T01:05:34.958167+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Bitcoin Price Knocks on $87K as Uptober Bulls Smell $94K",
+      "cross_check": 1
+    },
+    {
       "title": "Zcash Price Slides 23% as Grayscale ETF Hits Reverse",
       "source": "Bitcoin.com",
       "source_weight": 1.0,
@@ -58,26 +74,10 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-05T00:05:36.470744+00:00",
+      "collected_at": "2026-10-05T01:05:34.958378+00:00",
       "effective_weight": 1.0,
       "title_original": "Zcash Price Slides 23% as Grayscale ETF Hits Reverse",
       "cross_check": 1
-    },
-    {
-      "title": "SEC Approves Listing of Bitcoin ETF Targeting 3x Daily Futures Moves",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-04T18:05:38+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 4.7,
-      "bear_weight": 0.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-05T00:05:36.470814+00:00",
-      "effective_weight": 1.0,
-      "title_original": "SEC Approves Listing of Bitcoin ETF Targeting 3x Daily Futures Moves",
-      "cross_check": 2
     },
     {
       "title": "Bitcoin’s $85,000 recovery awaits proof that ETF investors kept buying after payrolls",
@@ -90,7 +90,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-05T00:05:36.588943+00:00",
+      "collected_at": "2026-10-05T01:05:35.073109+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitcoin’s $85,000 recovery awaits proof that ETF investors kept buying after payrolls",
       "cross_check": 1
@@ -106,7 +106,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-05T00:05:36.697348+00:00",
+      "collected_at": "2026-10-05T01:05:35.199595+00:00",
       "effective_weight": 1.0,
       "title_original": "IMF Approves $138M for El Salvador After Bitcoin Accumulation Waiver",
       "cross_check": 2
@@ -122,10 +122,10 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-05T00:05:36.245502+00:00",
+      "collected_at": "2026-10-05T01:05:34.805139+00:00",
       "effective_weight": 0.88,
       "title_original": "Uptober' Starts Green as Bitcoin ETFs Draw $134 Million",
-      "cross_check": 2
+      "cross_check": 1
     }
   ],
   "top_bearish": [
@@ -138,10 +138,10 @@
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 1.5,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-05T00:05:36.470525+00:00",
-      "effective_weight": 1.5,
+      "collected_at": "2026-10-05T01:05:34.958222+00:00",
+      "effective_weight": 1.0,
       "title_original": "Crypto Weekly: ZEC Plunges as Bitcoin and Ether Hold Key Support Levels",
       "cross_check": 1
     },
@@ -156,7 +156,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-05T00:05:36.470679+00:00",
+      "collected_at": "2026-10-05T01:05:34.958331+00:00",
       "effective_weight": 1.0,
       "title_original": "Community Bankers Sue US Banking Regulator Over ‘Side Door’ Crypto Charters",
       "cross_check": 3
@@ -172,25 +172,9 @@
       "bear_weight": 1.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-05T00:05:36.588895+00:00",
+      "collected_at": "2026-10-05T01:05:35.073003+00:00",
       "effective_weight": 1.0,
       "title_original": "Ethereum’s past outflow charts can change when more exchange wallets are identified",
-      "cross_check": 1
-    },
-    {
-      "title": "India’s local crypto exchanges get just 0.7% of inflows, Chainalysis reports",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-04T18:20:31+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-05T00:05:36.589069+00:00",
-      "effective_weight": 1.0,
-      "title_original": "India’s local crypto exchanges get just 0.7% of inflows, Chainalysis reports",
       "cross_check": 1
     },
     {
@@ -204,10 +188,26 @@
       "bear_weight": 1.2,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-05T00:05:37.720676+00:00",
+      "collected_at": "2026-10-05T01:05:36.071171+00:00",
       "effective_weight": 0.96,
       "title_original": "CEO BitGo сравнил провал CLARITY Act с крахом Lehman Brothers",
       "cross_check": 1
+    },
+    {
+      "title": "Banking Group Sues to Block Crypto's 'Side Door' Into the Banking System",
+      "source": "Decrypt",
+      "source_weight": 1.1,
+      "lang": "en",
+      "pub_date": "2026-10-04T16:01:03+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-05T01:05:34.805080+00:00",
+      "effective_weight": 0.88,
+      "title_original": "Banking Group Sues to Block Crypto's 'Side Door' Into the Banking System",
+      "cross_check": 3
     }
   ]
 }
