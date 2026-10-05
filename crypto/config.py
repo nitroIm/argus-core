@@ -1,13 +1,11 @@
 # ============================================================
 # ARGUS-Trader — CONFIG
 # ------------------------------------------------------------
-# v4: RETENTION raw_candles 90 -> 400 (must exceed train
-#     window ~378 days, else retention cuts training data).
-#     PRIORITY oi/taker fixed: remove bitget/gate where
-#     method does not exist in exchanges.py.
-#     COINGECKO_API_KEY removed (unused).
-#     Drop print emoji in __main__.
-# v3: + LIMITS for incremental/backfill.
+# v5: removed dead PRIORITY (unused, lives in collect/priority).
+#     removed SYMBOL_FORMATS (unused, exchanges.py handles it).
+#     removed COINGECKO_API_KEY (unused).
+# v4: RETENTION 90 -> 400. PRIORITY oi/taker fixed.
+# v3: + LIMITS incremental/backfill.
 # ============================================================
 
 import os
@@ -20,54 +18,16 @@ COLLECT_DIR = CRYPTO_ROOT / "collect"
 
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
-DB_URL = (os.getenv("ARGUS_DB_URL") or "").strip()
+DB_URL = (
+    os.getenv("ARGUS_DB_URL") or ""
+).strip()
 
 SYMBOLS = ["BTCUSDT", "ETHUSDT"]
 
-SYMBOL_FORMATS = {
-    "okx": {
-        "BTCUSDT": "BTC-USDT-SWAP",
-        "ETHUSDT": "ETH-USDT-SWAP",
-    },
-    "bitget": {
-        "BTCUSDT": "BTCUSDT",
-        "ETHUSDT": "ETHUSDT",
-    },
-    "gate": {
-        "BTCUSDT": "BTC_USDT",
-        "ETHUSDT": "ETH_USDT",
-    },
-    "kucoin": {
-        "BTCUSDT": "XBTUSDTM",
-        "ETHUSDT": "ETHUSDTM",
-    },
-    "mexc": {
-        "BTCUSDT": "BTCUSDT",
-        "ETHUSDT": "ETHUSDT",
-    },
-    "coingecko": {
-        "BTCUSDT": "bitcoin",
-        "ETHUSDT": "ethereum",
-    },
-}
-
 TIMEFRAMES = ["1h", "1d"]
 
-PRIORITY = {
-    "ohlcv": [
-        "okx", "bitget", "gate", "kucoin",
-    ],
-    "funding": [
-        "okx", "bitget", "gate", "kucoin",
-    ],
-    "oi": ["okx", "gate"],
-    "ls_ratio": ["okx", "bitget", "gate"],
-    "taker": ["okx"],
-    "spot_price": ["okx", "bitget", "coingecko"],
-}
-
 # Retention for raw tables. Must exceed train window.
-# Train uses ~378 days of candles. Give 400 days headroom.
+# Train uses ~378 days of candles. Give 400 days.
 RETENTION = {
     "raw_candles": 400,
     "raw_funding": 400,
@@ -129,7 +89,7 @@ LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 
 
 if __name__ == "__main__":
-    print("ARGUS-Trader CONFIG v4")
+    print("ARGUS-Trader CONFIG v5")
     print("=" * 50)
     ok = "yes" if DB_URL else "no"
     print("DB_URL: %s" % ok)
