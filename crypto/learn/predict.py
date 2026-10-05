@@ -1,15 +1,9 @@
 # ============================================================
-# ARGUS-Trader - PREDICT v7 [PRODUCTION]
+# ARGUS-Trader - PREDICT v8
 # ------------------------------------------------------------
-# v7: regression-aware. Reads meta.objective.
-#     regression: model.predict() = return %.
-#       Maps to prob_up in [0,1] and conf in [0,1].
-#     binary: legacy path.
-#     Sanity: prob_up, confidence always in [0,1].
-#     Adds objective + model_version to output.
-#     Adds predicted_return_pct for regression.
-# v6: model_accuracy in top-level JSON.
-# v5: per-symbol models. USE_CROSS=0.
+# v8: drop _get_feat_map import (not in dataset v10).
+#     Inline feature map builder.
+# v7: regression-aware.
 # ============================================================
 
 import os
@@ -32,7 +26,6 @@ sys.path.insert(0, str(SCRIPT_DIR))
 import dataset as ds
 from dataset import (
     INTERNAL_COLS,
-    _get_feat_map,
     fetch_features,
 )
 
@@ -46,8 +39,6 @@ log = logging.getLogger("crypto.learn.predict")
 MODELS_DIR = SCRIPT_DIR / "models"
 LOOKBACK = 500
 
-# Map predicted_return (in %) to prob_up in [0,1].
-# +SCALE_PCT saturates to PROB_MAX, -SCALE_PCT to PROB_MIN.
 SCALE_PCT = 4.0
 PROB_MIN = 0.05
 PROB_MAX = 0.95
@@ -73,7 +64,9 @@ DB2_SET = {
 
 def load_model_meta(sym):
     mf = MODELS_DIR / ("lgb_" + sym + ".txt")
-    meta_f = MODELS_DIR / ("meta_" + sym + ".json")
+    meta_f = MODELS_DIR / (
+        "meta_" + sym + ".json"
+    )
     if not mf.exists() or not meta_f.exists():
         return None, None
     try:
@@ -83,24 +76,22 @@ def load_model_meta(sym):
             meta = json.load(f)
         model = lgb.Booster(model_file=str(mf))
         return model, meta
-    except Exception as e:
-        log.warning("%s: %s", sym, e)
+    except Exception as exc:
+        log.warning("%s: %s", sym, exc)
         return None, None
 
 
-def _map_return_to_prob(pred_pct):
-    """Map predicted return % to prob_up in [0,1]."""
-    p = 0.5 + float(pred_pct) / SCALE_PCT
-    if p < PROB_MIN:
+def _map_ret_to_prob(p):
+    x = 0.5 + float(p) / SCALE_PCT
+    if x < PROB_MIN:
         return PROB_MIN
-    if p > PROB_MAX:
+    if x > PROB_MAX:
         return PROB_MAX
-    return p
+    return x
 
 
-def _norm_confidence(pred_pct):
-    """|pred| / SCALE_PCT, clipped to [0,1]."""
-    c = abs(float(pred_pct)) / SCALE_PCT
+def _conf(p):
+    c = abs(float(p)) / SCALE_PCT
     if c < 0.0:
         return 0.0
     if c > 1.0:
@@ -116,22 +107,36 @@ def _clip01(v):
     return v
 
 
-def _build_row(f):
+def _last_feat_row(symbol):
+    rows = fetch_features(symbol, limit=LOOKBACK)
+    if not rows:
+        return None, None
+
+    latest_ts = None
+    latest_vals = None
+    for ts, vals in rows:
+        if latest_ts is None or ts > latest_ts:
+            latest_ts = ts
+            latest_vals = vals
+
+    if latest_vals is None:
+        return None, None
+
     row = []
-    for col in INTERNAL_COLS:
-        v = f.get(col, np.nan)
+    for v in latest_vals[:len(INTERNAL_COLS)]:
         if v is None:
-            v = np.nan
-        row.append(v)
-    return row
+            row.append(np.nan)
+        else:
+            try:
+                row.append(float(v))
+            except Exception:
+                row.append(np.nan)
+    return latest_ts, row
 
 
 def _get_model_acc(meta):
-    for key in (
-        "accuracy",
-        "sign_acc_test",
-        "ic_test",
-    ):
+    for key in ("accuracy", "sign_acc_test",
+                "ic_test"):
         v = meta.get(key)
         if v is not None:
             return v
@@ -152,38 +157,31 @@ def predict_one(symbol):
     ds.SYMBOLS = [symbol]
     ds.REFERENCE = symbol
     ds.DB2_SYMBOLS = (
-        {symbol} if symbol in DB2_SET else set()
+        {symbol} if symbol in DB2_SET
+        else set()
     )
 
-    base_cols = ["symbol", "timestamp"]
-    base_cols += INTERNAL_COLS
-    rows = fetch_features(symbol, limit=LOOKBACK)
-    if not rows:
-        log.warning("%s: no features", symbol)
+    ts, row = _last_feat_row(symbol)
+    if row is None:
+        log.warning(
+            "%s: no features", symbol
+        )
         return None
-
-    fmap = _get_feat_map(rows, base_cols)
-    ts = sorted(fmap.keys())[-1]
-    f = fmap[ts]
-    row = _build_row(f)
 
     X = np.array([row], dtype=np.float32)
     raw = float(model.predict(X)[0])
-
     pred_pct = None
 
     if objective == "regression":
         pred_pct = raw
-        prob_up = _map_return_to_prob(pred_pct)
-        conf = _norm_confidence(pred_pct)
+        prob_up = _map_ret_to_prob(pred_pct)
+        conf = _conf(pred_pct)
         direction = 1 if pred_pct > 0 else 0
     else:
-        # legacy binary
         prob_up = _clip01(raw)
         direction = 1 if prob_up > 0.5 else 0
         conf = abs(prob_up - 0.5) * 2.0
 
-    # hard sanity, both paths
     prob_up = _clip01(prob_up)
     conf = _clip01(conf)
 
@@ -206,35 +204,34 @@ def predict_one(symbol):
 
 def main():
     log.info("=" * 60)
-    log.info(
-        "ARGUS-Trader PREDICT v7 "
-        "(regression-aware)"
-    )
+    log.info("ARGUS-Trader PREDICT v8")
     log.info("SYMBOLS=%s", SYMBOLS_LIST)
     log.info("=" * 60)
 
     results = []
     accs = []
+
     for sym in SYMBOLS_LIST:
         r = predict_one(sym)
-        if r:
-            results.append(r)
-            a = r.get("model_acc")
-            if a is not None:
-                accs.append(a)
+        if not r:
+            continue
+        results.append(r)
+        a = r.get("model_acc")
+        if a is not None:
+            accs.append(a)
 
-            extra = ""
-            if "predicted_return_pct" in r:
-                extra = " ret=%.4f%%" % (
-                    r["predicted_return_pct"],
-                )
-            log.info(
-                "%s: prob_up=%.4f "
-                "dir=%d conf=%.4f%s",
-                r["symbol"], r["prob_up"],
-                r["direction"], r["confidence"],
-                extra,
+        extra = ""
+        if "predicted_return_pct" in r:
+            extra = " ret=%.4f%%" % (
+                r["predicted_return_pct"],
             )
+        log.info(
+            "%s: prob_up=%.4f dir=%d "
+            "conf=%.4f%s",
+            r["symbol"], r["prob_up"],
+            r["direction"], r["confidence"],
+            extra,
+        )
 
     avg_acc = None
     if accs:
