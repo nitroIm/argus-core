@@ -1,10 +1,10 @@
 # ============================================================
-# ARGUS-Trader - DATASET v8.0 [PRODUCTION]
+# ARGUS-Trader - DATASET v8.1 [PRODUCTION]
 # ------------------------------------------------------------
+# v8.1: MOVE_THRESHOLD_PCT kept as dummy const for export.py
+#       backwards compat. Not used in target building.
 # v8.0: regression target = next_return. No threshold.
-#       y_dir kept as sign for signals compat.
 # v7.2: per-symbol time split. USE_CROSS optional.
-# v7.1: backwards-compat TARGET_COL for export.py.
 # v7: config-driven symbols + DB routing.
 # ============================================================
 
@@ -59,6 +59,11 @@ USE_CROSS = (
 )
 
 HORIZON = int(os.getenv("HORIZON", "12"))
+
+# Dummy для export.py compat. Не используется в v8 target.
+MOVE_THRESHOLD_PCT = float(
+    os.getenv("MOVE_THRESHOLD_PCT", "0.5")
+)
 
 DEFAULT_SYMBOLS = ["BTCUSDT", "ETHUSDT"]
 
@@ -332,7 +337,8 @@ def build_cross_full(
             if A.std() == 0 or B.std() == 0:
                 corr[corr_ts[i]] = np.nan
                 continue
-            corr[corr_ts[i]] = float(np.corrcoef(A, B)[0, 1])
+            corr_val = float(np.corrcoef(A, B)[0, 1])
+            corr[corr_ts[i]] = corr_val
 
         cross_map = {}
         for ts in feats:
@@ -529,7 +535,7 @@ def per_symbol_split(
 
 def prepare(test_frac=0.2):
     log.info("=" * 60)
-    log.info("DATASET v8.0 (regression)")
+    log.info("DATASET v8.1 (regression)")
     log.info("SYMBOLS=%s", SYMBOLS)
     log.info("REFERENCE=%s", REFERENCE)
     log.info("USE_CROSS=%s", USE_CROSS)
