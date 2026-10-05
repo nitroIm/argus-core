@@ -1,6 +1,10 @@
 # ============================================================
-# ARGUS-Trader - FEATURES v7
+# ARGUS-Trader - FEATURES v8
 # ------------------------------------------------------------
+# v8: DB routing via symbol_conn (DB1: BTC/ETH, DB2: SOL/BNB).
+#     SYMBOLS from env, fallback to config.SYMBOLS.
+#     Автопоиск db2.py (как в dataset.py v7.1).
+#     Логика расчёта фичей не менялась с v7.
 # v7: BOOTSTRAP env — read up to 3500 candles (one-time).
 # v6: batch INSERT in save_features.
 # v5: + EMA9/21/50, MACD, BB, dist high/low, session.
@@ -16,8 +20,33 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 CRYPTO_ROOT = SCRIPT_DIR.parent
 sys.path.insert(0, str(CRYPTO_ROOT))
 
-from config import SYMBOLS
+# Auto-locate db2.py (same trick as dataset.py v7.1)
+for _p in CRYPTO_ROOT.rglob("db2.py"):
+    _d = str(_p.parent)
+    if "__pycache__" in _d:
+        continue
+    if _d not in sys.path:
+        sys.path.insert(0, _d)
+    break
+
+from config import SYMBOLS as CONFIG_SYMBOLS
 from db import get_connection, close_connection
+
+DB2_OK = False
+get_conn_db2 = None
+close_conn_db2 = None
+if (os.getenv("ARGUS_DB_URL_2") or "").strip():
+    try:
+        from db2 import get_connection as get_conn_db2
+        from db2 import close_connection as close_conn_db2
+        _t = get_conn_db2()
+        with _t as _c:
+            with _c.cursor() as _cur:
+                _cur.execute("SELECT 1")
+                _cur.fetchone()
+        DB2_OK = True
+    except Exception as e:
+        print("DB2 fail: " + str(e))
 
 logging.basicConfig(
     level=logging.INFO,
@@ -30,6 +59,26 @@ BOOTSTRAP = (
     os.getenv("FEATURES_BOOTSTRAP", "").strip() == "1"
 )
 LIMIT = 3500 if BOOTSTRAP else 500
+
+DEFAULT_SYMBOLS = (
+    list(CONFIG_SYMBOLS) if CONFIG_SYMBOLS
+    else ["BTCUSDT", "ETHUSDT"]
+)
+SYMBOLS = [
+    s.strip().upper()
+    for s in (
+        os.getenv("SYMBOLS")
+        or ",".join(DEFAULT_SYMBOLS)
+    ).split(",")
+    if s.strip()
+]
+DB2_SYMBOLS = {
+    s.strip().upper()
+    for s in (
+        os.getenv("DB2_SYMBOLS") or "SOLUSDT,BNBUSDT"
+    ).split(",")
+    if s.strip()
+}
 
 LIMITS = {
     "change_pct": 50.0,
@@ -67,6 +116,18 @@ MAX_FUNDING_AGE_H = 24
 MAX_OI_AGE_H = 2
 MAX_LS_AGE_H = 2
 MAX_TAKER_AGE_H = 2
+
+
+# ============================================================
+# DB ROUTING
+# ============================================================
+def symbol_conn(symbol):
+    if symbol in DB2_SYMBOLS and DB2_OK:
+        try:
+            return get_conn_db2()
+        except Exception as e:
+            log.warning("db2 conn %s: %s", symbol, e)
+    return get_connection()
 
 
 def is_valid(val, limit):
@@ -265,7 +326,7 @@ def fetch_candles(symbol, timeframe="1h", limit=None):
     if limit is None:
         limit = LIMIT
     try:
-        with get_connection() as conn:
+        with symbol_conn(symbol) as conn:
             with conn.cursor() as cur:
                 cur.execute(
                     "SELECT timestamp, open, high, low, "
@@ -295,7 +356,7 @@ def fetch_candles(symbol, timeframe="1h", limit=None):
 
 def fetch_daily_candles(symbol, limit=500):
     try:
-        with get_connection() as conn:
+        with symbol_conn(symbol) as conn:
             with conn.cursor() as cur:
                 cur.execute(
                     "SELECT timestamp, close FROM candles "
@@ -324,7 +385,7 @@ def fetch_daily_candles(symbol, limit=500):
 
 def fetch_funding(symbol):
     try:
-        with get_connection() as conn:
+        with symbol_conn(symbol) as conn:
             with conn.cursor() as cur:
                 cur.execute(
                     "SELECT timestamp, rate "
@@ -352,7 +413,7 @@ def fetch_funding(symbol):
 
 def fetch_open_interest(symbol):
     try:
-        with get_connection() as conn:
+        with symbol_conn(symbol) as conn:
             with conn.cursor() as cur:
                 cur.execute(
                     "SELECT timestamp, oi, oi_value "
@@ -385,7 +446,7 @@ def fetch_open_interest(symbol):
 
 def fetch_long_short(symbol):
     try:
-        with get_connection() as conn:
+        with symbol_conn(symbol) as conn:
             with conn.cursor() as cur:
                 cur.execute(
                     "SELECT timestamp, ls_ratio "
@@ -413,7 +474,7 @@ def fetch_long_short(symbol):
 
 def fetch_taker(symbol):
     try:
-        with get_connection() as conn:
+        with symbol_conn(symbol) as conn:
             with conn.cursor() as cur:
                 cur.execute(
                     "SELECT timestamp, buy_vol, "
@@ -730,7 +791,7 @@ def save_features(symbol, features):
             )
 
         try:
-            with get_connection() as conn:
+            with symbol_conn(symbol) as conn:
                 with conn.cursor() as cur:
                     cur.execute(sql, tuple(params))
                     n = cur.rowcount or 0
@@ -1035,8 +1096,12 @@ def process_symbol(symbol, timeframe="1h"):
 
 def main():
     log.info("=" * 60)
-    log.info("ARGUS-Trader FEATURES v7")
+    log.info("ARGUS-Trader FEATURES v8")
     log.info("BOOTSTRAP=%s, LIMIT=%d", BOOTSTRAP, LIMIT)
+    log.info(
+        "SYMBOLS=%s DB2_SYMBOLS=%s (DB2_OK=%s)",
+        SYMBOLS, sorted(DB2_SYMBOLS), DB2_OK,
+    )
     log.info("=" * 60)
 
     total = 0
@@ -1049,6 +1114,11 @@ def main():
     log.info("=" * 60)
 
     close_connection()
+    if DB2_OK and close_conn_db2:
+        try:
+            close_conn_db2()
+        except Exception:
+            pass
 
 
 if __name__ == "__main__":
