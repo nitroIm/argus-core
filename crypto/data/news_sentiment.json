@@ -1,23 +1,23 @@
 {
-  "generated_at": "2026-10-05T19:05:44.831868+00:00",
+  "generated_at": "2026-10-05T21:11:28.772602+00:00",
   "total_news": 127,
-  "avg_sentiment": 0.036,
+  "avg_sentiment": 0.009,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
-  "bullish_count": 16,
-  "bearish_count": 14,
+  "bullish_count": 15,
+  "bearish_count": 15,
   "neutral_count": 97,
   "fake_count": 0,
-  "cross_confirmed": 7,
+  "cross_confirmed": 8,
   "single_source": 104,
   "by_source": {
     "Cointelegraph": {
       "total": 24,
       "bull": 2,
-      "bear": 3
+      "bear": 4
     },
     "Decrypt": {
       "total": 25,
-      "bull": 4,
+      "bull": 3,
       "bear": 5
     },
     "Bitcoin.com": {
@@ -56,10 +56,10 @@
       "sentiment": 1.0,
       "bull_weight": 2.0,
       "bear_weight": 0.0,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-05T19:05:42.917075+00:00",
-      "effective_weight": 1.65,
+      "collected_at": "2026-10-05T21:11:26.644892+00:00",
+      "effective_weight": 1.1,
       "title_original": "SEC Clears 3x Leveraged Bitcoin and Ethereum Funds for Trading",
       "cross_check": 1
     },
@@ -72,10 +72,10 @@
       "sentiment": 1.0,
       "bull_weight": 1.0,
       "bear_weight": 0.0,
-      "freshness": 1.0,
+      "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-05T19:05:42.859003+00:00",
-      "effective_weight": 1.3,
+      "collected_at": "2026-10-05T21:11:26.537503+00:00",
+      "effective_weight": 1.04,
       "title_original": "Bitcoin price fails to break higher after best weekly close in eight months",
       "cross_check": 4
     },
@@ -90,10 +90,10 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-05T19:05:42.859581+00:00",
+      "collected_at": "2026-10-05T21:11:26.537881+00:00",
       "effective_weight": 1.04,
       "title_original": "OKX, NYSE parent file to launch tokenized US stock platform",
-      "cross_check": 3
+      "cross_check": 4
     },
     {
       "title": "Metaplanet sold 10,000 Bitcoin in a credit-rating bid, only to buy back 11,000 BTC at a higher price per coin",
@@ -106,7 +106,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-05T19:05:43.382918+00:00",
+      "collected_at": "2026-10-05T21:11:27.015882+00:00",
       "effective_weight": 1.0,
       "title_original": "Metaplanet sold 10,000 Bitcoin in a credit-rating bid, only to buy back 11,000 BTC at a higher price per coin",
       "cross_check": 4
@@ -122,13 +122,29 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-05T19:05:44.710443+00:00",
+      "collected_at": "2026-10-05T21:11:28.674603+00:00",
       "effective_weight": 0.96,
       "title_original": "Goldman Sachs сохранил прогноз роста дата-центров в США",
       "cross_check": 1
     }
   ],
   "top_bearish": [
+    {
+      "title": "Modern Treasury seeks US trust bank charter for digital asset custody",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-10-05T19:53:52+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-05T21:11:26.537301+00:00",
+      "effective_weight": 1.3,
+      "title_original": "Modern Treasury seeks US trust bank charter for digital asset custody",
+      "cross_check": 1
+    },
     {
       "title": "Too big to pause: Could an AI slowdown crash the economy?",
       "source": "Cointelegraph",
@@ -140,7 +156,7 @@
       "bear_weight": 3.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-05T19:05:42.859272+00:00",
+      "collected_at": "2026-10-05T21:11:26.537670+00:00",
       "effective_weight": 1.04,
       "title_original": "Too big to pause: Could an AI slowdown crash the economy?",
       "cross_check": 1
@@ -156,7 +172,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-05T19:05:42.859441+00:00",
+      "collected_at": "2026-10-05T21:11:26.537784+00:00",
       "effective_weight": 1.04,
       "title_original": "Kraken parent adds 24/7 dollar settlement with Singapore Gulf Bank",
       "cross_check": 2
@@ -172,7 +188,7 @@
       "bear_weight": 1.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-05T19:05:43.503418+00:00",
+      "collected_at": "2026-10-05T21:11:27.566679+00:00",
       "effective_weight": 1.0,
       "title_original": "Peter Schiff Predicts Bitcoin Will Drop If Tech Stocks Pull Back",
       "cross_check": 1
@@ -188,26 +204,10 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-05T19:05:44.710795+00:00",
+      "collected_at": "2026-10-05T21:11:28.674834+00:00",
       "effective_weight": 0.96,
       "title_original": "Материнская компания Kraken и Singapore Gulf Bank запустили расчеты 24/7",
       "cross_check": 2
-    },
-    {
-      "title": "Рынки на старте IV квартала: капитал уходит из кэша в риск",
-      "source": "ForkLog",
-      "source_weight": 1.2,
-      "lang": "ru",
-      "pub_date": "2026-10-05T09:13:40+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.2,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-05T19:05:44.710892+00:00",
-      "effective_weight": 0.96,
-      "title_original": "Рынки на старте IV квартала: капитал уходит из кэша в риск",
-      "cross_check": 1
     }
   ]
 }
