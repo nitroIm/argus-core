@@ -1,9 +1,9 @@
 # ============================================================
 # ARGUS - LEARN (ML training)
 # ------------------------------------------------------------
-# v2: STEP "Run learn" — добавлены ARGUS_DB_URL_2, SYMBOLS,
-#     DB2_SYMBOLS. Без них dataset.py видит только DB1
-#     и учится на BTC/ETH. С ними — 4 монеты (BTC/ETH/SOL/BNB).
+# v3: HORIZON=12h (было 4h). Гипотеза: 4h направление
+#     слишком шумное, на 12h сигнал может быть сильнее.
+# v2: STEP "Run learn" — ARGUS_DB_URL_2, SYMBOLS, DB2_SYMBOLS.
 # v1: Train -> evaluate -> predict -> signals -> export.
 # ============================================================
 
@@ -51,6 +51,8 @@ jobs:
           ARGUS_DB_URL_2: ${{ secrets.ARGUS_DB_URL_2 }}
           SYMBOLS: BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT
           DB2_SYMBOLS: SOLUSDT,BNBUSDT
+          HORIZON: '12'
+          MOVE_THRESHOLD_PCT: '0.5'
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python crypto/learn/runner.py
