@@ -1,13 +1,8 @@
 # ============================================================
-# ARGUS-Trader - DATASET v11
+# ARGUS-Trader - DATASET v12
 # ------------------------------------------------------------
-# v11 fixes:
-#   - fetch_events/anomaly: unpack row to str
-#   - _count_type: handle both tuple and str
-#   - ASIA_TOL_SEC: 1800 -> 7200
-#   - purge HORIZON pts between train and test
-#   - drop day_of_week (overfit on weekday)
-#   - prepare_one() for predict
+# v12: change_3d, change_7d disabled (momentum overfit).
+# v11: purge 12pts, day_of_week off, asia 2h window.
 # ============================================================
 
 import os
@@ -99,7 +94,7 @@ def symbol_conn(symbol):
     return get_connection()
 
 
-# v11: day_of_week removed (weekday overfit).
+# v12: change_3d, change_7d disabled.
 INTERNAL_COLS = [
     "change_pct",
     "range_pct",
@@ -111,9 +106,7 @@ INTERNAL_COLS = [
     "volatility_7d",
     "change_4h",
     "change_24h",
-    "change_7d",
     "change_1d",
-    "change_3d",
     "trend_up",
     "hour_of_day",
     "funding_rate",
@@ -188,7 +181,6 @@ FEATURE_COLS = (
 TARGET_RET = "next_return"
 TARGET_COL = "next_change_pct"
 
-# v11: asia match window 30min -> 2h.
 ASIA_TOL_SEC = 7200
 
 MAX_AGE = {
@@ -226,7 +218,6 @@ def _fetch(conn, sql, params=()):
 
 
 def _fetch_flat(conn, sql, params=()):
-    """v11: second element is a scalar, not tuple."""
     try:
         with conn.cursor() as cur:
             cur.execute(sql, params)
@@ -397,7 +388,6 @@ def fetch_orderbook(symbol):
 
 
 def fetch_events(symbol):
-    """v11: returns (ts, event_type_str)."""
     cols = ["timestamp", "event_type"]
     sql = _sel(
         cols,
@@ -413,7 +403,6 @@ def fetch_events(symbol):
 
 
 def fetch_anomaly(symbol):
-    """v11: returns (ts, anomaly_type_str)."""
     cols = ["timestamp", "anomaly_type"]
     sql = _sel(
         cols,
@@ -500,7 +489,6 @@ def asof_shift(series, ts, shift_h, max_age_h):
 
 
 def asia_at(asia_list, ts, lag_hours):
-    """v11: match window is 2h, not 30min."""
     if not asia_list:
         return None
     target = ts - timedelta(hours=lag_hours)
@@ -653,7 +641,6 @@ def _count_events(series, ts, hours):
 
 
 def _count_type(series, ts, hours, etype):
-    """v11: handle both str and tuple."""
     if not series:
         return 0
     cutoff = ts - timedelta(hours=hours)
@@ -833,7 +820,6 @@ def per_symbol_split(
             continue
         split = int(n * (1 - test_frac))
 
-        # v11: purge last HORIZON points from train.
         purge = min(HORIZON, split)
         train_keep = split - purge
         if train_keep < 20:
@@ -905,7 +891,7 @@ def _load_symbol(symbol):
 
 def prepare(test_frac=0.2):
     log.info("=" * 60)
-    log.info("DATASET v11")
+    log.info("DATASET v12")
     log.info("SYMBOLS=%s", SYMBOLS)
     log.info("HORIZON=%dh", HORIZON)
     log.info("DB2_OK=%s", DB2_OK)
@@ -1020,7 +1006,6 @@ def prepare(test_frac=0.2):
 
 
 def prepare_one(symbol):
-    """v11: latest X row for predict. Same 64 features."""
     d = _load_symbol(symbol)
     if d is None:
         return None, None
