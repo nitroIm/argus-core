@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-10-05T13:05:39.804734+00:00",
+  "generated_at": "2026-10-05T14:05:36.663296+00:00",
   "total_news": 128,
-  "avg_sentiment": -0.004,
+  "avg_sentiment": -0.008,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
   "bullish_count": 18,
   "bearish_count": 20,
@@ -56,27 +56,11 @@
       "sentiment": 1.0,
       "bull_weight": 1.0,
       "bear_weight": 0.0,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-05T13:05:39.710859+00:00",
-      "effective_weight": 1.8,
+      "collected_at": "2026-10-05T14:05:36.539231+00:00",
+      "effective_weight": 1.2,
       "title_original": "Goldman Sachs сохранил прогноз роста дата-центров в США",
-      "cross_check": 1
-    },
-    {
-      "title": "Strategy Posts $21B Q3 Gain, Buys $29M in BTC, Repurchases $176M in STRC",
-      "source": "Decrypt",
-      "source_weight": 1.1,
-      "lang": "en",
-      "pub_date": "2026-10-05T12:51:42+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
-      "freshness": 1.5,
-      "fake_score": 0.2,
-      "collected_at": "2026-10-05T13:05:37.505472+00:00",
-      "effective_weight": 1.32,
-      "title_original": "Strategy Posts $21B Q3 Gain, Buys $29M in BTC, Repurchases $176M in STRC",
       "cross_check": 1
     },
     {
@@ -90,7 +74,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-05T13:05:37.379521+00:00",
+      "collected_at": "2026-10-05T14:05:35.345060+00:00",
       "effective_weight": 1.04,
       "title_original": "OKX, NYSE parent file to launch tokenized US stock platform",
       "cross_check": 2
@@ -106,7 +90,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-05T13:05:37.898787+00:00",
+      "collected_at": "2026-10-05T14:05:35.688616+00:00",
       "effective_weight": 1.0,
       "title_original": "US jobs revision turns July’s 21,000 gain into a 10,000 loss",
       "cross_check": 1
@@ -122,10 +106,26 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-05T13:05:38.638422+00:00",
+      "collected_at": "2026-10-05T14:05:35.796976+00:00",
       "effective_weight": 1.0,
       "title_original": "XRP Is Coiling for a Big Move: Analysts Point to Breakout Levels and Rising Bullish Momentum",
       "cross_check": 1
+    },
+    {
+      "title": "Bitcoin (BTC) Rejected at $87K Again, Cardano (ADA) Soars 11%: Market Watch",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-05T09:37:23+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 2.5,
+      "bear_weight": 0.0,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-05T14:05:35.797027+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Bitcoin (BTC) Rejected at $87K Again, Cardano (ADA) Soars 11%: Market Watch",
+      "cross_check": 2
     }
   ],
   "top_bearish": [
@@ -138,10 +138,10 @@
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 3.0,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-05T13:05:37.379188+00:00",
-      "effective_weight": 1.95,
+      "collected_at": "2026-10-05T14:05:35.344728+00:00",
+      "effective_weight": 1.3,
       "title_original": "Too big to pause: Could an AI slowdown crash the economy?",
       "cross_check": 1
     },
@@ -156,7 +156,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-05T13:05:37.379367+00:00",
+      "collected_at": "2026-10-05T14:05:35.344908+00:00",
       "effective_weight": 1.3,
       "title_original": "Kraken parent adds 24/7 dollar settlement with Singapore Gulf Bank",
       "cross_check": 2
@@ -172,7 +172,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-05T13:05:39.711111+00:00",
+      "collected_at": "2026-10-05T14:05:36.539593+00:00",
       "effective_weight": 1.2,
       "title_original": "Материнская компания Kraken и Singapore Gulf Bank запустили расчеты 24/7",
       "cross_check": 2
@@ -188,7 +188,7 @@
       "bear_weight": 1.2,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-05T13:05:39.711180+00:00",
+      "collected_at": "2026-10-05T14:05:36.539699+00:00",
       "effective_weight": 1.2,
       "title_original": "Рынки на старте IV квартала: капитал уходит из кэша в риск",
       "cross_check": 1
@@ -204,7 +204,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-05T13:05:37.751261+00:00",
+      "collected_at": "2026-10-05T14:05:35.589780+00:00",
       "effective_weight": 1.0,
       "title_original": "Czechia’s Partners Banka Adds Direct Bitcoin Trading",
       "cross_check": 1
