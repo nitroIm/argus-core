@@ -18,7 +18,7 @@
 - HORIZON: 12h
 - THRESHOLD: 0.5%
 - REFERENCE: BTCUSDT
-- FEATURE_COLS: 40
+- FEATURE_COLS: 37
 
 ## Использование
 1. pip install lightgbm==4.5.0
