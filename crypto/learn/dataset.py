@@ -1,9 +1,9 @@
 # ============================================================
-# ARGUS-Trader - DATASET v7 [PRODUCTION]
+# ARGUS-Trader - DATASET v7.1 [PRODUCTION]
 # ------------------------------------------------------------
+# v7.1: backwards-compat alias TARGET_COL for export.py.
 # v7: config-driven symbols + DB routing (DB1/DB2).
-#     Cross-features "each vs reference (BTC)" — auto for
-#     any new symbol. Graceful skip if symbol has no data.
+#     Cross-features "each vs reference (BTC)".
 # v6: cross-features BTC<->ETH, regression target.
 # ============================================================
 
@@ -64,9 +64,6 @@ MOVE_THRESHOLD_PCT = float(
     os.getenv("MOVE_THRESHOLD_PCT", "0.5")
 )
 
-# Список монет для обучения.
-# Чтобы добавить новую — дописать в этот список.
-# Данные для SOL/BNB лежат в DB2 (см. DB2_SYMBOLS).
 DEFAULT_SYMBOLS = ["BTCUSDT", "ETHUSDT"]
 
 SYMBOLS = [
@@ -78,10 +75,10 @@ SYMBOLS = [
     if s.strip()
 ]
 
-# Опорная монета для кросс-фич
-REFERENCE = (os.getenv("REFERENCE") or "BTCUSDT").strip().upper()
+REFERENCE = (
+    os.getenv("REFERENCE") or "BTCUSDT"
+).strip().upper()
 
-# Символы, чьи candles/features лежат в DB2
 DB2_SYMBOLS = {
     s.strip().upper()
     for s in (
@@ -95,7 +92,6 @@ DB2_SYMBOLS = {
 # DB ROUTING
 # ============================================================
 def symbol_conn(symbol):
-    """DB2 for SOL/BNB, DB1 for the rest."""
     if symbol in DB2_SYMBOLS and DB2_OK:
         try:
             return get_conn_db2()
@@ -105,7 +101,7 @@ def symbol_conn(symbol):
 
 
 # ============================================================
-# INTERNAL / CROSS FEATURES
+# COLS
 # ============================================================
 INTERNAL_COLS = [
     "change_pct",
@@ -149,7 +145,6 @@ EXTERNAL_COLS = [
     "gold_change_pct",
 ]
 
-# Cross-features: "each symbol vs reference"
 CROSS_COLS = [
     "ref_change_1h",
     "ref_change_4h",
@@ -168,6 +163,9 @@ FEATURE_COLS = (
 
 TARGET_DIR = "next_direction"
 TARGET_RET = "next_return"
+
+# Backwards-compat for export.py and other legacy modules
+TARGET_COL = TARGET_DIR
 
 EXT_MAX_AGE_H = 3
 
@@ -273,55 +271,11 @@ def build_targets(candles, horizon):
 
 
 # ============================================================
-# CROSS FEATURES (vs REFERENCE)
+# CROSS FEATURES (each vs REFERENCE)
 # ============================================================
-def build_cross_map(feat_maps, ref_symbol):
-    """Cross-features for every symbol vs reference.
-
-    Returns dict[symbol] -> dict[ts] -> dict[cross_cols]
-    """
-    ref_feat = feat_maps.get(ref_symbol) or {}
-    if not ref_feat:
-        return {}
-
-    ref_ch = {
-        ts: f["change_pct"] for ts, f in ref_feat.items()
-    }
-    ref_ch4 = {
-        ts: f["change_4h"] for ts, f in ref_feat.items()
-    }
-    ref_ch24 = {
-        ts: f["change_24h"] for ts, f in ref_feat.items()
-    }
-
-    out = {}
-    for symbol, feats in feat_maps.items():
-        if not feats:
-            continue
-        if symbol == ref_symbol:
-            # Reference имеет пустые кросс-фичи
-            out[symbol] = {
-                ts: {c: np.nan for c in CROSS_COLS}
-                for ts in feats
-            }
-            continue
-
-        # Ratio = (price / ref_price) * 1000
-        sym_candles = None  # заполним ниже
-        # Для ratio нужны свечи символа и reference — их передадим отдельно
-        out[symbol] = {}
-
-    return out
-
-
 def build_cross_full(
     feat_maps, candle_maps, ref_symbol,
 ):
-    """Cross-features for every symbol vs reference.
-
-    feat_maps: symbol -> {ts: {col: val}}
-    candle_maps: symbol -> {ts: close}
-    """
     ref_feat = feat_maps.get(ref_symbol) or {}
     ref_close = candle_maps.get(ref_symbol) or {}
 
@@ -343,12 +297,11 @@ def build_cross_full(
     for symbol, feats in feat_maps.items():
         sym_close = candle_maps.get(symbol) or {}
 
-        # common timestamps для symbol и ref
         common_ts = sorted(
             set(feats.keys()) & set(ref_close.keys())
         )
 
-        # --- ratio ---
+        # ratio
         ratio = {}
         for ts in common_ts:
             sc = sym_close.get(ts)
@@ -356,7 +309,7 @@ def build_cross_full(
             if sc and rc and rc > 0:
                 ratio[ts] = sc / rc * 1000
 
-        # --- zscore 24h ---
+        # zscore 24h
         ratio_ts = sorted(ratio.keys())
         zscore = {}
         for i in range(len(ratio_ts)):
@@ -377,7 +330,7 @@ def build_cross_full(
                     (ratio[ratio_ts[i]] - mu) / sd
                 )
 
-        # --- rolling correlation 24h (change_pct) ---
+        # rolling corr 24h (change_pct)
         corr_ts = sorted(
             set(feats.keys()) & set(ref_feat.keys())
         )
@@ -407,7 +360,7 @@ def build_cross_full(
                 np.corrcoef(A, B)[0, 1]
             )
 
-        # --- spread 4h ---
+        # build per-ts cross dict
         cross_map = {}
         for ts in feats:
             if symbol == ref_symbol:
@@ -476,7 +429,7 @@ def ext_lookup(ext_list, ts, max_age_h=EXT_MAX_AGE_H):
 
 
 # ============================================================
-# BUILD X/y
+# X/y
 # ============================================================
 def _get_feat_map(rows, base_cols):
     idx = {col: i for i, col in enumerate(base_cols)}
@@ -564,7 +517,6 @@ def build_xy(
             [], [],
         )
 
-    # sort by time — модель не должна видеть будущее
     order = sorted(
         range(len(ts_list)), key=lambda i: ts_list[i]
     )
@@ -602,10 +554,8 @@ def time_split(X, y, test_frac=0.2):
 # ============================================================
 def prepare(test_frac=0.2):
     log.info("=" * 60)
-    log.info("DATASET v7")
-    log.info(
-        "SYMBOLS=%s", SYMBOLS,
-    )
+    log.info("DATASET v7.1")
+    log.info("SYMBOLS=%s", SYMBOLS)
     log.info("REFERENCE=%s", REFERENCE)
     log.info("HORIZON=%dh  THRESHOLD=%.2f%%",
              HORIZON, MOVE_THRESHOLD_PCT)
@@ -733,9 +683,6 @@ def prepare(test_frac=0.2):
     }
 
 
-# ============================================================
-# MAIN (test)
-# ============================================================
 def main():
     data = prepare()
     if data is None:
