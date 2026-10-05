@@ -1,10 +1,7 @@
 # ============================================================
-# ARGUS-Trader - EXPORT v5 [PRODUCTION]
+# ARGUS-Trader - EXPORT v6
 # ------------------------------------------------------------
-# v5: USE_CROSS=0 in env — same as train.py.
-#     Without it dataset.py defaults USE_CROSS=1 and
-#     FEATURE_COLS in meta goes to 37 while model has 30.
-# v4: export all per-symbol models + compat.
+# v6: drop MOVE_THRESHOLD_PCT import (not in dataset v10).
 # ============================================================
 
 import os
@@ -27,7 +24,7 @@ from db import get_connection
 from dataset import (
     FEATURE_COLS, INTERNAL_COLS,
     EXTERNAL_COLS, TARGET_COL,
-    HORIZON, MOVE_THRESHOLD_PCT, REFERENCE,
+    HORIZON, REFERENCE,
 )
 
 logging.basicConfig(
@@ -42,8 +39,10 @@ EXPORT_DIR = SCRIPT_DIR / "export"
 EXPORT_DIR.mkdir(parents=True, exist_ok=True)
 
 SYMBOLS_LIST = [
-    "BTCUSDT", "ETHUSDT",
-    "SOLUSDT", "BNBUSDT",
+    "BTCUSDT",
+    "ETHUSDT",
+    "SOLUSDT",
+    "BNBUSDT",
 ]
 
 
@@ -141,8 +140,8 @@ def export_dataset_csv():
             "features -> %s (%d rows)",
             out1.name, len(rows),
         )
-    except Exception as e:
-        log.error("export features: %s", e)
+    except Exception as exc:
+        log.error("export features: %s", exc)
 
     out2 = EXPORT_DIR / "external_market.csv"
     try:
@@ -161,8 +160,10 @@ def export_dataset_csv():
         ) as f:
             w = csv.writer(f)
             w.writerow([
-                "symbol", "timestamp",
-                "close", "change_pct",
+                "symbol",
+                "timestamp",
+                "close",
+                "change_pct",
             ])
             for r in rows:
                 w.writerow(r)
@@ -170,28 +171,28 @@ def export_dataset_csv():
             "external -> %s (%d rows)",
             out2.name, len(rows),
         )
-    except Exception as e:
-        log.error("export external: %s", e)
+    except Exception as exc:
+        log.error("export external: %s", exc)
 
 
 def export_readme():
     readme = EXPORT_DIR / "README.md"
     lines = [
-        "# ARGUS ML - Export v5",
+        "# ARGUS ML - Export v6",
         "",
         "## Per-symbol models",
-        "- `lgb_BTCUSDT.txt` + `meta_BTCUSDT.json`",
-        "- `lgb_ETHUSDT.txt` + `meta_ETHUSDT.json`",
-        "- `lgb_SOLUSDT.txt` + `meta_SOLUSDT.json`",
-        "- `lgb_BNBUSDT.txt` + `meta_BNBUSDT.json`",
+        "- lgb_BTCUSDT.txt + meta_BTCUSDT.json",
+        "- lgb_ETHUSDT.txt + meta_ETHUSDT.json",
+        "- lgb_SOLUSDT.txt + meta_SOLUSDT.json",
+        "- lgb_BNBUSDT.txt + meta_BNBUSDT.json",
         "",
         "## Compat",
-        "- `lgb_model.txt` = copy of BTC",
-        "- `model_meta.json` = copy of BTC meta",
+        "- lgb_model.txt = copy of BTC",
+        "- model_meta.json = copy of BTC meta",
         "",
         "## Data",
-        "- `features_hourly.csv` - INTERNAL + target",
-        "- `external_market.csv` - DXY/SPX/GOLD",
+        "- features_hourly.csv - 30 internal cols",
+        "- external_market.csv - DXY/SPX/GOLD",
         "",
         "## Config",
         "- HORIZON: " + str(HORIZON) + "h",
@@ -204,19 +205,20 @@ def export_readme():
         "2. model = lgb.Booster(",
         "     model_file='lgb_BTCUSDT.txt')",
     ]
-    with open(readme, "w", encoding="utf-8") as f:
+    with open(
+        readme, "w", encoding="utf-8"
+    ) as f:
         f.write("\n".join(lines))
     log.info("README -> %s", readme.name)
 
 
 def main():
     log.info("=" * 60)
-    log.info("ARGUS-Trader EXPORT v5")
+    log.info("ARGUS-Trader EXPORT v6")
     log.info(
-        "FEATURE_COLS=%d INTERNAL=%d EXTERNAL=%d",
+        "FEATURE_COLS=%d INTERNAL=%d",
         len(FEATURE_COLS),
         len(INTERNAL_COLS),
-        len(EXTERNAL_COLS),
     )
     log.info("=" * 60)
 
