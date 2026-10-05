@@ -1,11 +1,11 @@
 # ============================================================
 # ARGUS-Trader - TRAIN [PRODUCTION]
 # ------------------------------------------------------------
-# v6: fix prepare() call — v7.1 dataset is config-driven,
-#     no symbol kwarg. meta stores symbols list.
+# v7: убран is_unbalance=True (нестабилен при балансе 50/50).
+#     + диагностика: best_iteration, pred distribution.
+# v6: fix prepare() call — v7.1 dataset is config-driven.
 # v5: читает best_params.json если есть (от autotune)
 # v4: регуляризация для малых данных
-# v3: is_unbalance + prev
 # ============================================================
 
 import sys
@@ -48,7 +48,6 @@ MIN_SAMPLES = 200
 
 PARAMS = {
     "objective": "binary",
-    "is_unbalance": True,
     "metric": "binary_logloss",
     "boosting_type": "gbdt",
     "num_leaves": 15,
@@ -110,7 +109,7 @@ def save_prev():
 
 def train():
     log.info("=" * 60)
-    log.info("ARGUS-Trader TRAIN v6")
+    log.info("ARGUS-Trader TRAIN v7")
     log.info("=" * 60)
 
     load_best_params()
@@ -135,6 +134,16 @@ def train():
         "train=%d test=%d",
         len(X_train), len(X_test),
     )
+    log.info(
+        "train balance: up=%d down=%d",
+        int(y_train.sum()),
+        int(len(y_train) - y_train.sum()),
+    )
+    log.info(
+        "test balance:  up=%d down=%d",
+        int(y_test.sum()),
+        int(len(y_test) - y_test.sum()),
+    )
 
     train_set = lgb.Dataset(X_train, label=y_train)
     valid_set = lgb.Dataset(
@@ -152,9 +161,20 @@ def train():
         ],
     )
 
+    best_iter = model.best_iteration or 0
+    log.info("best_iteration: %d", best_iter)
+
     y_pred_prob = model.predict(X_test)
     y_pred = (y_pred_prob > 0.5).astype(int)
     acc = float((y_pred == y_test).mean())
+
+    pred_up = int(y_pred.sum())
+    pred_dn = int(len(y_pred) - pred_up)
+    log.info(
+        "predicted: up=%d (%.1f%%) down=%d (%.1f%%)",
+        pred_up, pred_up / len(y_pred) * 100,
+        pred_dn, pred_dn / len(y_pred) * 100,
+    )
 
     log.info("test accuracy: %.4f", acc)
 
@@ -187,18 +207,23 @@ def train():
         "trained_at": datetime.now(
             timezone.utc
         ).isoformat(),
-        "version": "v6",
+        "version": "v7",
         "n_total": data["n_total"],
         "n_train": data["n_train"],
         "n_test": data["n_test"],
         "accuracy": round(acc, 4),
         "num_trees": model.num_trees(),
+        "best_iteration": best_iter,
         "features": feat_names,
         "top_features": [
             {"name": n, "gain": round(float(s), 2)}
             for n, s in pairs[:10]
         ],
         "balance": data["balance"],
+        "pred_balance": {
+            "up": pred_up,
+            "down": pred_dn,
+        },
         "symbols": data["symbols"],
         "reference": data["reference"],
         "horizon": data["horizon"],
@@ -222,8 +247,9 @@ def main():
         return
     log.info("=" * 60)
     log.info(
-        "DONE. accuracy=%.4f trees=%d",
+        "DONE. accuracy=%.4f trees=%d best_iter=%d",
         meta["accuracy"], meta["num_trees"],
+        meta["best_iteration"],
     )
     log.info("=" * 60)
 
