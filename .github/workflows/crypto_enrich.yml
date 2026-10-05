@@ -1,8 +1,10 @@
 # ============================================================
 # ARGUS - ENRICH
 # ------------------------------------------------------------
+# v4: + ARGUS_DB_URL_2, SYMBOLS, DB2_SYMBOLS.
+#     Без них runner.py видит только DB1 (BTC/ETH).
+#     С ними — 4 монеты, роутинг DB1/DB2.
 # v3: общая очередь с detect (argus-crypto-pipeline).
-#     git pull -X theirs — авто-разрешение конфликта.
 # v2: коммит JSON в crypto/data/
 # ============================================================
 
@@ -16,8 +18,6 @@ on:
 permissions:
   contents: write
 
-# ОБЩАЯ очередь с detect и collect.
-# Одновременно выполняется только один.
 concurrency:
   group: argus-crypto-pipeline
   cancel-in-progress: false
@@ -51,6 +51,10 @@ jobs:
         env:
           ARGUS_DB_URL: >-
             ${{ secrets.ARGUS_DB_URL }}
+          ARGUS_DB_URL_2: >-
+            ${{ secrets.ARGUS_DB_URL_2 }}
+          SYMBOLS: BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT
+          DB2_SYMBOLS: SOLUSDT,BNBUSDT
           TELEGRAM_BOT_TOKEN: >-
             ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: >-
