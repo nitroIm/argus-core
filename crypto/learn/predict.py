@@ -1,11 +1,9 @@
 # ============================================================
-# ARGUS-Trader - PREDICT v11
+# ARGUS-Trader - PREDICT v12
 # ------------------------------------------------------------
-# v11: ensemble — average of LightGBM + XGBoost.
-#      Falls back to LGB only if XGB missing.
-#      Checks feature count for both.
-# v10: feature count sanity.
-# v9:  use dataset.prepare_one.
+# v12: 3-model blend (LightGBM + XGBoost + CatBoost).
+#      Weights: equal. Adaptive weights -> next step.
+# v11: ensemble lgb+xgb.
 # ============================================================
 
 import os
@@ -20,6 +18,7 @@ from datetime import datetime, timezone
 import numpy as np
 import lightgbm as lgb
 import xgboost as xgb
+from catboost import CatBoostRegressor
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 CRYPTO_ROOT = SCRIPT_DIR.parent
@@ -41,8 +40,9 @@ SCALE_PCT = 4.0
 PROB_MIN = 0.05
 PROB_MAX = 0.95
 
-LGB_WEIGHT = 0.5
-XGB_WEIGHT = 0.5
+LGB_WEIGHT = 1.0
+XGB_WEIGHT = 1.0
+CAT_WEIGHT = 1.0
 
 SYMBOLS_LIST = [
     s.strip().upper()
@@ -94,6 +94,22 @@ def load_xgb(sym):
         return None, None
 
 
+def load_cat(sym):
+    mf = MODELS_DIR / ("cat_" + sym + ".cbm")
+    meta_f = MODELS_DIR / ("meta_cat_" + sym + ".json")
+    if not mf.exists() or not meta_f.exists():
+        return None, None
+    try:
+        with open(meta_f, "r", encoding="utf-8") as f:
+            meta = json.load(f)
+        model = CatBoostRegressor()
+        model.load_model(str(mf))
+        return model, meta
+    except Exception as exc:
+        log.warning("cat %s: %s", sym, exc)
+        return None, None
+
+
 def _map_ret_to_prob(p):
     x = 0.5 + float(p) / SCALE_PCT
     if x < PROB_MIN:
@@ -120,8 +136,13 @@ def _clip01(v):
     return v
 
 
-def _get_lgb_acc(meta):
-    for key in ("accuracy", "sign_acc_test", "ic_test"):
+def _get_acc(meta):
+    if not meta:
+        return None
+    for key in (
+        "accuracy", "sign_acc_test",
+        "ic_test",
+    ):
         v = meta.get(key)
         if v is not None:
             return v
@@ -129,37 +150,47 @@ def _get_lgb_acc(meta):
 
 
 def predict_one(symbol):
-    lgb_m, lgb_meta = load_lgb(symbol)
-    xgb_m, xgb_meta = load_xgb(symbol)
-
-    if lgb_m is None and xgb_m is None:
-        log.warning("%s: no models", symbol)
-        return None
-
     expected = len(ds.FEATURE_COLS)
 
-    if lgb_m is not None and lgb_m.num_feature() != expected:
+    lgb_m, lgb_meta = load_lgb(symbol)
+    xgb_m, xgb_meta = load_xgb(symbol)
+    cat_m, cat_meta = load_cat(symbol)
+
+    if lgb_m is not None and \
+            lgb_m.num_feature() != expected:
         log.warning(
-            "%s: lgb has %d feat, need %d -> skip lgb",
+            "%s: lgb nf=%d need %d -> skip",
             symbol, lgb_m.num_feature(), expected,
         )
         lgb_m = None
-        lgb_meta = None
 
     if xgb_m is not None:
         try:
-            xgb_nf = xgb_m.num_features()
+            nf = xgb_m.num_features()
+            if nf != expected:
+                log.warning(
+                    "%s: xgb nf=%d need %d -> skip",
+                    symbol, nf, expected,
+                )
+                xgb_m = None
         except Exception:
-            xgb_nf = None
-        if xgb_nf is not None and xgb_nf != expected:
-            log.warning(
-                "%s: xgb has %d feat, need %d -> skip xgb",
-                symbol, xgb_nf, expected,
-            )
-            xgb_m = None
-            xgb_meta = None
+            pass
 
-    if lgb_m is None and xgb_m is None:
+    if cat_m is not None:
+        try:
+            nf = cat_m.n_features_in_
+            if nf != expected:
+                log.warning(
+                    "%s: cat nf=%d need %d -> skip",
+                    symbol, nf, expected,
+                )
+                cat_m = None
+        except Exception:
+            pass
+
+    if lgb_m is None and xgb_m is None \
+            and cat_m is None:
+        log.warning("%s: no models", symbol)
         return None
 
     ds.SYMBOLS = [symbol]
@@ -175,7 +206,7 @@ def predict_one(symbol):
 
     if len(row) != expected:
         log.warning(
-            "%s: row has %d, need %d -> skip",
+            "%s: row=%d need %d -> skip",
             symbol, len(row), expected,
         )
         return None
@@ -187,32 +218,38 @@ def predict_one(symbol):
     sources = []
 
     if lgb_m is not None:
-        p_lgb = float(lgb_m.predict(X)[0])
-        preds.append(p_lgb)
-        weights.append(LGB_WEIGHT)
-        sources.append("lgb")
+        try:
+            p = float(lgb_m.predict(X)[0])
+            preds.append(p)
+            weights.append(LGB_WEIGHT)
+            sources.append("lgb")
+        except Exception as exc:
+            log.warning("lgb pred %s: %s", symbol, exc)
 
     if xgb_m is not None:
-        d = xgb.DMatrix(X)
         try:
-            best_iter = None
-            try:
-                best_iter = xgb_m.best_iteration
-            except Exception:
-                pass
-            if best_iter is not None:
-                p_xgb = float(xgb_m.predict(
-                    d, iteration_range=(0, best_iter + 1)
+            d = xgb.DMatrix(X)
+            bi = getattr(xgb_m, "best_iteration", None)
+            if bi is not None:
+                p = float(xgb_m.predict(
+                    d, iteration_range=(0, bi + 1)
                 )[0])
             else:
-                p_xgb = float(xgb_m.predict(d)[0])
-        except Exception as exc:
-            log.warning("xgb predict %s: %s", symbol, exc)
-            p_xgb = None
-        if p_xgb is not None:
-            preds.append(p_xgb)
+                p = float(xgb_m.predict(d)[0])
+            preds.append(p)
             weights.append(XGB_WEIGHT)
             sources.append("xgb")
+        except Exception as exc:
+            log.warning("xgb pred %s: %s", symbol, exc)
+
+    if cat_m is not None:
+        try:
+            p = float(cat_m.predict(X)[0])
+            preds.append(p)
+            weights.append(CAT_WEIGHT)
+            sources.append("cat")
+        except Exception as exc:
+            log.warning("cat pred %s: %s", symbol, exc)
 
     if not preds:
         return None
@@ -229,8 +266,8 @@ def predict_one(symbol):
     prob_up = _clip01(prob_up)
     conf = _clip01(conf)
 
-    meta_for_acc = lgb_meta or xgb_meta
-    acc = _get_lgb_acc(meta_for_acc) if meta_for_acc else None
+    meta = lgb_meta or xgb_meta or cat_meta
+    acc = _get_acc(meta)
 
     out = {
         "symbol": symbol,
@@ -238,27 +275,36 @@ def predict_one(symbol):
         "prob_up": round(prob_up, 4),
         "direction": direction,
         "confidence": round(conf, 4),
-        "predicted_return_pct": round(float(pred_pct), 4),
+        "predicted_return_pct": round(
+            float(pred_pct), 4
+        ),
         "model_acc": acc,
         "objective": "regression",
-        "model_version": "v11-blend",
+        "model_version": "v12-triple",
         "sources": sources,
         "blend": len(sources) > 1,
         "features_used": expected,
     }
-    if len(sources) > 1:
-        out["lgb_pred"] = round(float(preds[0]), 4)
-        out["xgb_pred"] = round(float(preds[1]), 4)
+    if lgb_m is not None and "lgb" in sources:
+        out["lgb_pred"] = round(
+            float(preds[sources.index("lgb")]), 4
+        )
+    if xgb_m is not None and "xgb" in sources:
+        out["xgb_pred"] = round(
+            float(preds[sources.index("xgb")]), 4
+        )
+    if cat_m is not None and "cat" in sources:
+        out["cat_pred"] = round(
+            float(preds[sources.index("cat")]), 4
+        )
     return out
 
 
 def main():
     log.info("=" * 60)
-    log.info("ARGUS-Trader PREDICT v11 (blend lgb+xgb)")
+    log.info("ARGUS-Trader PREDICT v12 (lgb+xgb+cat)")
     log.info("SYMBOLS=%s", SYMBOLS_LIST)
     log.info("FEATURE_COLS=%d", len(ds.FEATURE_COLS))
-    log.info("WEIGHTS: lgb=%.2f xgb=%.2f",
-             LGB_WEIGHT, XGB_WEIGHT)
     log.info("=" * 60)
 
     results = []
@@ -273,11 +319,14 @@ def main():
         if a is not None:
             accs.append(a)
 
-        extra = ""
-        if "lgb_pred" in r and "xgb_pred" in r:
-            extra = " lgb=%.4f xgb=%.4f" % (
-                r["lgb_pred"], r["xgb_pred"]
-            )
+        parts = []
+        for k in ("lgb_pred", "xgb_pred", "cat_pred"):
+            if k in r:
+                parts.append(
+                    k.split("_")[0] + "=%.4f" % r[k]
+                )
+        extra = " " + " ".join(parts) if parts else ""
+
         log.info(
             "%s: prob_up=%.4f dir=%d "
             "conf=%.4f ret=%.4f%% [%s]%s",
@@ -299,7 +348,7 @@ def main():
         "model_accuracy": avg_acc,
         "model_accuracy_avg": avg_acc,
         "feature_count": len(ds.FEATURE_COLS),
-        "mode": "blend",
+        "mode": "triple_blend",
         "symbols": SYMBOLS_LIST,
         "predictions": results,
     }
