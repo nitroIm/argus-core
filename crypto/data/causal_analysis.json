@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-05T12:15:07.690689+00:00",
+  "generated_at": "2026-10-05T12:17:36.127643+00:00",
   "symbols": {
     "BTCUSDT": {
       "symbol": "BTCUSDT",
@@ -18,193 +18,16 @@
     "SOLUSDT": {
       "symbol": "SOLUSDT",
       "total_events": 200,
-      "processed": 200,
-      "saved": 200,
-      "summary_by_type": {
-        "ls_long_extreme": {
-          "count": 17,
-          "avg_funding": 0.0,
-          "avg_oi_change": -0.8357,
-          "avg_ls_ratio": 1.7224,
-          "avg_change_24h": -1.0301
-        },
-        "ls_short_extreme": {
-          "count": 17,
-          "avg_funding": 0.0001,
-          "avg_oi_change": -19.86,
-          "avg_ls_ratio": 1.2715,
-          "avg_change_24h": 2.2906
-        },
-        "funding_spike_pos": {
-          "count": 42,
-          "avg_funding": 0.0001,
-          "avg_oi_change": -70.3609,
-          "avg_ls_ratio": 1.3329,
-          "avg_change_24h": 1.6664
-        },
-        "rise_1h": {
-          "count": 11,
-          "avg_funding": 0.0,
-          "avg_oi_change": -0.023,
-          "avg_ls_ratio": 1.4874,
-          "avg_change_24h": -0.1405
-        },
-        "volume_spike": {
-          "count": 22,
-          "avg_funding": 0.0,
-          "avg_oi_change": -18.5216,
-          "avg_ls_ratio": 1.3285,
-          "avg_change_24h": 1.2995
-        },
-        "rsi_overbought": {
-          "count": 24,
-          "avg_funding": 0.0,
-          "avg_oi_change": -5.7631,
-          "avg_ls_ratio": 1.369,
-          "avg_change_24h": 1.963
-        },
-        "rsi_oversold": {
-          "count": 18,
-          "avg_funding": 0.0,
-          "avg_oi_change": -26.8236,
-          "avg_ls_ratio": 1.4496,
-          "avg_change_24h": -2.0499
-        },
-        "fall_4h": {
-          "count": 11,
-          "avg_funding": 0.0001,
-          "avg_oi_change": -36.1309,
-          "avg_ls_ratio": 1.392,
-          "avg_change_24h": 0.3652
-        },
-        "fall_1h": {
-          "count": 13,
-          "avg_funding": 0.0,
-          "avg_oi_change": -16.8759,
-          "avg_ls_ratio": 1.2893,
-          "avg_change_24h": 0.5648
-        },
-        "rise_4h": {
-          "count": 9,
-          "avg_funding": 0.0,
-          "avg_oi_change": 1.1901,
-          "avg_ls_ratio": 1.3659,
-          "avg_change_24h": 1.8231
-        },
-        "oi_spike": {
-          "count": 14,
-          "avg_funding": 0.0,
-          "avg_oi_change": -1.6122,
-          "avg_ls_ratio": 1.5326,
-          "avg_change_24h": -0.0323
-        },
-        "new_high_7d": {
-          "count": 2,
-          "avg_funding": 0.0,
-          "avg_oi_change": 1.9604,
-          "avg_ls_ratio": null,
-          "avg_change_24h": 1.8577
-        }
-      }
+      "processed": 0,
+      "saved": 0,
+      "summary_by_type": {}
     },
     "BNBUSDT": {
       "symbol": "BNBUSDT",
       "total_events": 200,
-      "processed": 200,
-      "saved": 200,
-      "summary_by_type": {
-        "funding_spike_pos": {
-          "count": 75,
-          "avg_funding": 0.0001,
-          "avg_oi_change": -0.2019,
-          "avg_ls_ratio": 1.6512,
-          "avg_change_24h": 1.3269
-        },
-        "ls_long_extreme": {
-          "count": 20,
-          "avg_funding": -0.0,
-          "avg_oi_change": -79.7063,
-          "avg_ls_ratio": 1.8377,
-          "avg_change_24h": -0.5234
-        },
-        "ls_short_extreme": {
-          "count": 17,
-          "avg_funding": 0.0001,
-          "avg_oi_change": 5.7943,
-          "avg_ls_ratio": 1.5456,
-          "avg_change_24h": 1.9165
-        },
-        "volume_spike": {
-          "count": 15,
-          "avg_funding": 0.0001,
-          "avg_oi_change": -27.8169,
-          "avg_ls_ratio": 1.6393,
-          "avg_change_24h": 0.9626
-        },
-        "fall_1h": {
-          "count": 6,
-          "avg_funding": 0.0001,
-          "avg_oi_change": -39.8057,
-          "avg_ls_ratio": 1.5214,
-          "avg_change_24h": 1.3173
-        },
-        "new_high_7d": {
-          "count": 7,
-          "avg_funding": 0.0001,
-          "avg_oi_change": null,
-          "avg_ls_ratio": 1.6154,
-          "avg_change_24h": 1.775
-        },
-        "rsi_overbought": {
-          "count": 27,
-          "avg_funding": 0.0001,
-          "avg_oi_change": -37.8447,
-          "avg_ls_ratio": 1.6227,
-          "avg_change_24h": 1.6148
-        },
-        "rise_4h": {
-          "count": 8,
-          "avg_funding": 0.0001,
-          "avg_oi_change": 1.4614,
-          "avg_ls_ratio": 1.6594,
-          "avg_change_24h": 0.9185
-        },
-        "rise_1h": {
-          "count": 5,
-          "avg_funding": 0.0001,
-          "avg_oi_change": 1.3661,
-          "avg_ls_ratio": 1.7026,
-          "avg_change_24h": 0.3141
-        },
-        "funding_spike_neg": {
-          "count": 8,
-          "avg_funding": -0.0001,
-          "avg_oi_change": -100.0,
-          "avg_ls_ratio": 1.7644,
-          "avg_change_24h": -0.9613
-        },
-        "rsi_oversold": {
-          "count": 4,
-          "avg_funding": 0.0,
-          "avg_oi_change": -100.0,
-          "avg_ls_ratio": 1.6573,
-          "avg_change_24h": -0.6431
-        },
-        "fall_4h": {
-          "count": 2,
-          "avg_funding": 0.0001,
-          "avg_oi_change": -100.0,
-          "avg_ls_ratio": 1.6282,
-          "avg_change_24h": -0.1434
-        },
-        "oi_spike": {
-          "count": 6,
-          "avg_funding": 0.0001,
-          "avg_oi_change": 1.6093,
-          "avg_ls_ratio": 1.6855,
-          "avg_change_24h": 0.5495
-        }
-      }
+      "processed": 0,
+      "saved": 0,
+      "summary_by_type": {}
     }
   }
 }
