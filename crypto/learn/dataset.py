@@ -1,11 +1,13 @@
 # ============================================================
-# ARGUS-Trader - DATASET v8.1 [PRODUCTION]
+# ARGUS-Trader - DATASET v8.2 [PRODUCTION]
 # ------------------------------------------------------------
-# v8.1: MOVE_THRESHOLD_PCT kept as dummy const for export.py
-#       backwards compat. Not used in target building.
-# v8.0: regression target = next_return. No threshold.
+# v8.2: TARGET_COL = "next_change_pct" (real column).
+#       Disabled 3 empty features (oi_change_pct, ls_ratio,
+#       taker_ratio — 92% NULL, IC=0.0000 on audit).
+#       They stay in DB, just not fed to model.
+# v8.1: MOVE_THRESHOLD_PCT kept as dummy const.
+# v8.0: regression target = next_return.
 # v7.2: per-symbol time split. USE_CROSS optional.
-# v7: config-driven symbols + DB routing.
 # ============================================================
 
 import os
@@ -60,7 +62,7 @@ USE_CROSS = (
 
 HORIZON = int(os.getenv("HORIZON", "12"))
 
-# Dummy для export.py compat. Не используется в v8 target.
+# Dummy for export.py compat. Not used in target.
 MOVE_THRESHOLD_PCT = float(
     os.getenv("MOVE_THRESHOLD_PCT", "0.5")
 )
@@ -98,6 +100,8 @@ def symbol_conn(symbol):
     return get_connection()
 
 
+# v8.2: oi_change_pct, ls_ratio, taker_ratio disabled.
+# Re-enable when VPS accumulates 2000+ hours of LS/OI/taker.
 INTERNAL_COLS = [
     "change_pct",
     "range_pct",
@@ -117,9 +121,9 @@ INTERNAL_COLS = [
     "day_of_week",
     "funding_rate",
     "funding_trend",
-    "oi_change_pct",
-    "ls_ratio",
-    "taker_ratio",
+    # "oi_change_pct",   # disabled: 92% NULL
+    # "ls_ratio",        # disabled: 92% NULL
+    # "taker_ratio",     # disabled: 92% NULL
     "ema9_dist_pct",
     "ema21_dist_pct",
     "ema50_dist_pct",
@@ -160,7 +164,8 @@ FEATURE_COLS = (
 
 TARGET_DIR = "next_direction"
 TARGET_RET = "next_return"
-TARGET_COL = TARGET_RET
+# v8.2: real column in features_hourly
+TARGET_COL = "next_change_pct"
 
 EXT_MAX_AGE_H = 3
 
@@ -307,10 +312,13 @@ def build_cross_full(
             arr = np.array(window, dtype=float)
             mu = arr.mean()
             sd = arr.std()
-            zscore[ratio_ts[i]] = (
-                0.0 if sd == 0
-                else float((ratio[ratio_ts[i]] - mu) / sd)
-            )
+            if sd == 0:
+                zscore[ratio_ts[i]] = 0.0
+            else:
+                val = ratio[ratio_ts[i]]
+                zscore[ratio_ts[i]] = float(
+                    (val - mu) / sd
+                )
 
         corr_ts = sorted(
             set(feats.keys()) & set(ref_feat.keys())
@@ -337,8 +345,8 @@ def build_cross_full(
             if A.std() == 0 or B.std() == 0:
                 corr[corr_ts[i]] = np.nan
                 continue
-            corr_val = float(np.corrcoef(A, B)[0, 1])
-            corr[corr_ts[i]] = corr_val
+            cc = float(np.corrcoef(A, B)[0, 1])
+            corr[corr_ts[i]] = cc
 
         cross_map = {}
         for ts in feats:
@@ -369,8 +377,12 @@ def build_cross_full(
                     else np.nan
                 ),
                 "ratio": ratio.get(ts, np.nan),
-                "ratio_zscore_24h": zscore.get(ts, np.nan),
-                "lead_lag_corr_24h": corr.get(ts, np.nan),
+                "ratio_zscore_24h": zscore.get(
+                    ts, np.nan
+                ),
+                "lead_lag_corr_24h": corr.get(
+                    ts, np.nan
+                ),
                 "spread_pct": (
                     spread if spread is not None
                     else np.nan
@@ -380,7 +392,8 @@ def build_cross_full(
     return out
 
 
-def ext_lookup(ext_list, ts, max_age_h=EXT_MAX_AGE_H):
+def ext_lookup(ext_list, ts,
+               max_age_h=EXT_MAX_AGE_H):
     if not ext_list:
         return None
     if ts.tzinfo is None:
@@ -399,7 +412,7 @@ def ext_lookup(ext_list, ts, max_age_h=EXT_MAX_AGE_H):
 
 
 def _get_feat_map(rows, base_cols):
-    idx = {col: i for i, col in enumerate(base_cols)}
+    idx = {c: i for i, c in enumerate(base_cols)}
     out = {}
     for r in rows:
         ts = r[idx["timestamp"]]
@@ -427,7 +440,8 @@ def build_xy(
         feat_maps, close_maps, REFERENCE,
     )
 
-    X, y_dir, y_ret, ts_list, sym_list = [], [], [], [], []
+    X, y_dir, y_ret = [], [], []
+    ts_list, sym_list = [], []
 
     for symbol in SYMBOLS:
         feats = feat_maps.get(symbol) or {}
@@ -449,11 +463,17 @@ def build_xy(
 
             if USE_EXTERNAL:
                 v = ext_lookup(ext_dxy, ts)
-                row.append(v if v is not None else np.nan)
+                row.append(
+                    v if v is not None else np.nan
+                )
                 v = ext_lookup(ext_spx, ts)
-                row.append(v if v is not None else np.nan)
+                row.append(
+                    v if v is not None else np.nan
+                )
                 v = ext_lookup(ext_gold, ts)
-                row.append(v if v is not None else np.nan)
+                row.append(
+                    v if v is not None else np.nan
+                )
 
             cm = cross.get(ts, {})
             for col in CROSS_COLS:
@@ -474,7 +494,8 @@ def build_xy(
         )
 
     order = sorted(
-        range(len(ts_list)), key=lambda i: ts_list[i]
+        range(len(ts_list)),
+        key=lambda i: ts_list[i],
     )
     X = [X[i] for i in order]
     y_dir = [y_dir[i] for i in order]
@@ -507,11 +528,13 @@ def per_symbol_split(
             i for i, s in enumerate(sym_list)
             if s == sym
         ]
-        idxs_sorted = sorted(idxs, key=lambda i: ts_list[i])
+        idxs_sorted = sorted(
+            idxs, key=lambda i: ts_list[i]
+        )
         n = len(idxs_sorted)
         if n < 20:
             log.warning(
-                "%s: too few rows (%d) — all to train",
+                "%s: too few rows (%d)",
                 sym, n,
             )
             train_idx.extend(idxs_sorted)
@@ -528,18 +551,22 @@ def per_symbol_split(
     test_idx.sort(key=lambda i: ts_list[i])
 
     return (
-        X[train_idx], y[train_idx], y_ret[train_idx],
-        X[test_idx], y[test_idx], y_ret[test_idx],
+        X[train_idx], y[train_idx],
+        y_ret[train_idx],
+        X[test_idx], y[test_idx],
+        y_ret[test_idx],
     )
 
 
 def prepare(test_frac=0.2):
     log.info("=" * 60)
-    log.info("DATASET v8.1 (regression)")
+    log.info("DATASET v8.2 (regression)")
     log.info("SYMBOLS=%s", SYMBOLS)
     log.info("REFERENCE=%s", REFERENCE)
     log.info("USE_CROSS=%s", USE_CROSS)
-    log.info("HORIZON=%dh  TARGET=next_return", HORIZON)
+    log.info(
+        "HORIZON=%dh  TARGET=next_return", HORIZON,
+    )
     log.info(
         "DB2_SYMBOLS=%s (DB2_OK=%s)",
         sorted(DB2_SYMBOLS), DB2_OK,
@@ -554,15 +581,22 @@ def prepare(test_frac=0.2):
     for symbol in SYMBOLS:
         rows = fetch_features(symbol)
         if not rows:
-            log.warning("%s: no features (skip)", symbol)
+            log.warning(
+                "%s: no features (skip)", symbol
+            )
             continue
 
-        base_cols = ["symbol", "timestamp"] + INTERNAL_COLS
-        feat_maps[symbol] = _get_feat_map(rows, base_cols)
+        base_cols = ["symbol", "timestamp"]
+        base_cols += INTERNAL_COLS
+        feat_maps[symbol] = _get_feat_map(
+            rows, base_cols
+        )
 
         candles = fetch_candles(symbol)
         if not candles:
-            log.warning("%s: no candles (skip)", symbol)
+            log.warning(
+                "%s: no candles (skip)", symbol
+            )
             continue
 
         candle_maps[symbol] = candles
@@ -581,8 +615,7 @@ def prepare(test_frac=0.2):
 
     if REFERENCE not in feat_maps:
         log.error(
-            "REFERENCE %s has no data — abort",
-            REFERENCE,
+            "REFERENCE %s has no data", REFERENCE,
         )
         return None
 
@@ -640,7 +673,8 @@ def prepare(test_frac=0.2):
     )
     log.info(
         "ret_train: mean=%.4f std=%.4f",
-        balance["ret_mean"], balance["ret_std"],
+        balance["ret_mean"],
+        balance["ret_std"],
     )
 
     return {
@@ -671,7 +705,9 @@ def main():
         data["n_train"], data["n_test"],
         len(data["feature_cols"]),
     )
-    log.info("symbols in dataset: %s", data["symbols"])
+    log.info(
+        "symbols in dataset: %s", data["symbols"]
+    )
 
 
 if __name__ == "__main__":
