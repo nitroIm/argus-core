@@ -1,22 +1,22 @@
 {
-  "trained_at": "2026-10-05T23:11:36.410246+00:00",
+  "trained_at": "2026-10-05T23:12:15.538857+00:00",
   "version": "v13",
   "objective": "regression",
-  "symbol": "BTCUSDT",
-  "n_total": 8999,
-  "n_train": 7187,
-  "n_test": 1800,
-  "n_val_inner": 1079,
-  "best_iteration": 16,
-  "ic_train": 0.3372,
-  "ic_test": -0.1083,
-  "mae_train": 1.1666,
-  "mae_test": 0.8978,
-  "rmse_train": 1.6262,
-  "rmse_test": 1.4018,
-  "sign_acc_train": 0.5148,
-  "sign_acc_test": 0.4517,
-  "num_trees": 16,
+  "symbol": "BNBUSDT",
+  "n_total": 5855,
+  "n_train": 4672,
+  "n_test": 1171,
+  "n_val_inner": 701,
+  "best_iteration": 70,
+  "ic_train": 0.4225,
+  "ic_test": -0.0303,
+  "mae_train": 1.0468,
+  "mae_test": 1.1427,
+  "rmse_train": 1.4785,
+  "rmse_test": 1.5906,
+  "sign_acc_train": 0.6145,
+  "sign_acc_test": 0.4782,
+  "num_trees": 70,
   "features": [
     "change_pct",
     "range_pct",
@@ -85,46 +85,45 @@
   ],
   "top_features": [
     {
-      "name": "change_1d",
-      "gain": 2218.72
-    },
-    {
-      "name": "funding_rate",
-      "gain": 1285.86
-    },
-    {
       "name": "volatility_7d",
-      "gain": 606.06
+      "gain": 3070.14
+    },
+    {
+      "name": "change_1d",
+      "gain": 2373.03
     },
     {
       "name": "volatility_24h",
-      "gain": 560.57
-    },
-    {
-      "name": "ema50_dist_pct",
-      "gain": 290.05
-    },
-    {
-      "name": "macd_signal",
-      "gain": 249.19
+      "gain": 2163.63
     },
     {
       "name": "bb_width_pct",
-      "gain": 220.74
+      "gain": 1285.88
+    },
+    {
+      "name": "funding_rate",
+      "gain": 1192.94
     },
     {
       "name": "macd",
-      "gain": 147.02
+      "gain": 876.29
+    },
+    {
+      "name": "macd_signal",
+      "gain": 843.51
+    },
+    {
+      "name": "ema50_dist_pct",
+      "gain": 711.72
     },
     {
       "name": "ref_change_24h",
-      "gain": 132.23
+      "gain": 710.56
     },
     {
-      "name": "dist_high_24h_pct",
-      "gain": 126.1
+      "name": "dist_low_24h_pct",
+      "gain": 465.6
     }
   ],
-  "horizon": 12,
-  "exported_at": "2026-10-05T23:12:15.715828+00:00"
+  "horizon": 12
 }

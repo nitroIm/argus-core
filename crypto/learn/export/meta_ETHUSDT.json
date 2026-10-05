@@ -1,22 +1,22 @@
 {
-  "trained_at": "2026-10-05T22:56:07.936319+00:00",
+  "trained_at": "2026-10-05T23:11:52.812932+00:00",
   "version": "v13",
   "objective": "regression",
   "symbol": "ETHUSDT",
-  "n_total": 8998,
-  "n_train": 7186,
+  "n_total": 8999,
+  "n_train": 7187,
   "n_test": 1800,
-  "n_val_inner": 1078,
-  "best_iteration": 60,
-  "ic_train": 0.4184,
-  "ic_test": -0.0221,
-  "mae_train": 1.5796,
-  "mae_test": 1.1458,
-  "rmse_train": 2.2344,
-  "rmse_test": 1.9206,
-  "sign_acc_train": 0.5857,
-  "sign_acc_test": 0.4717,
-  "num_trees": 60,
+  "n_val_inner": 1079,
+  "best_iteration": 23,
+  "ic_train": 0.3557,
+  "ic_test": -0.0095,
+  "mae_train": 1.6125,
+  "mae_test": 1.1439,
+  "rmse_train": 2.2929,
+  "rmse_test": 1.9149,
+  "sign_acc_train": 0.5534,
+  "sign_acc_test": 0.4506,
+  "num_trees": 23,
   "features": [
     "change_pct",
     "range_pct",
@@ -45,6 +45,9 @@
     "dist_low_24h_pct",
     "consecutive_up",
     "session",
+    "ref_change_1h",
+    "ref_change_4h",
+    "ref_change_24h",
     "oi_change_1h",
     "oi_change_24h",
     "ls_ratio_asof",
@@ -83,45 +86,45 @@
   "top_features": [
     {
       "name": "change_1d",
-      "gain": 13308.75
-    },
-    {
-      "name": "volatility_7d",
-      "gain": 6098.15
+      "gain": 4910.02
     },
     {
       "name": "funding_rate",
-      "gain": 5961.77
+      "gain": 3699.57
+    },
+    {
+      "name": "volatility_7d",
+      "gain": 2200.48
     },
     {
       "name": "ema50_dist_pct",
-      "gain": 2652.13
-    },
-    {
-      "name": "volatility_24h",
-      "gain": 2560.55
+      "gain": 1713.44
     },
     {
       "name": "macd_signal",
-      "gain": 1791.84
+      "gain": 823.86
     },
     {
-      "name": "bb_upper_dist",
-      "gain": 1543.95
+      "name": "change_24h",
+      "gain": 713.89
     },
     {
-      "name": "dist_low_24h_pct",
-      "gain": 1431.5
+      "name": "volatility_24h",
+      "gain": 642.76
+    },
+    {
+      "name": "macd",
+      "gain": 584.69
+    },
+    {
+      "name": "bb_lower_dist",
+      "gain": 539.16
     },
     {
       "name": "volume_ratio_24h",
-      "gain": 965.99
-    },
-    {
-      "name": "funding_trend",
-      "gain": 777.62
+      "gain": 499.33
     }
   ],
   "horizon": 12,
-  "exported_at": "2026-10-05T22:56:32.033814+00:00"
+  "exported_at": "2026-10-05T23:12:15.713899+00:00"
 }
