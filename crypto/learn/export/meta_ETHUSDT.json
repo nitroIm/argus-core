@@ -1,5 +1,5 @@
 {
-  "trained_at": "2026-10-05T22:49:45.029053+00:00",
+  "trained_at": "2026-10-05T22:56:07.936319+00:00",
   "version": "v13",
   "objective": "regression",
   "symbol": "ETHUSDT",
@@ -7,16 +7,16 @@
   "n_train": 7186,
   "n_test": 1800,
   "n_val_inner": 1078,
-  "best_iteration": 27,
-  "ic_train": 0.3848,
-  "ic_test": -0.1025,
-  "mae_train": 1.6108,
-  "mae_test": 1.1561,
-  "rmse_train": 2.2841,
-  "rmse_test": 1.9355,
-  "sign_acc_train": 0.5582,
-  "sign_acc_test": 0.4439,
-  "num_trees": 27,
+  "best_iteration": 60,
+  "ic_train": 0.4184,
+  "ic_test": -0.0221,
+  "mae_train": 1.5796,
+  "mae_test": 1.1458,
+  "rmse_train": 2.2344,
+  "rmse_test": 1.9206,
+  "sign_acc_train": 0.5857,
+  "sign_acc_test": 0.4717,
+  "num_trees": 60,
   "features": [
     "change_pct",
     "range_pct",
@@ -28,9 +28,7 @@
     "volatility_7d",
     "change_4h",
     "change_24h",
-    "change_7d",
     "change_1d",
-    "change_3d",
     "trend_up",
     "hour_of_day",
     "funding_rate",
@@ -85,45 +83,45 @@
   "top_features": [
     {
       "name": "change_1d",
-      "gain": 5236.79
-    },
-    {
-      "name": "change_3d",
-      "gain": 3498.26
-    },
-    {
-      "name": "funding_rate",
-      "gain": 3058.13
+      "gain": 13308.75
     },
     {
       "name": "volatility_7d",
-      "gain": 2682.7
+      "gain": 6098.15
     },
     {
-      "name": "change_7d",
-      "gain": 1793.94
+      "name": "funding_rate",
+      "gain": 5961.77
     },
     {
       "name": "ema50_dist_pct",
-      "gain": 1247.85
+      "gain": 2652.13
     },
     {
       "name": "volatility_24h",
-      "gain": 969.16
+      "gain": 2560.55
     },
     {
-      "name": "macd",
-      "gain": 762.87
+      "name": "macd_signal",
+      "gain": 1791.84
+    },
+    {
+      "name": "bb_upper_dist",
+      "gain": 1543.95
     },
     {
       "name": "dist_low_24h_pct",
-      "gain": 748.03
+      "gain": 1431.5
     },
     {
-      "name": "bb_width_pct",
-      "gain": 591.16
+      "name": "volume_ratio_24h",
+      "gain": 965.99
+    },
+    {
+      "name": "funding_trend",
+      "gain": 777.62
     }
   ],
   "horizon": 12,
-  "exported_at": "2026-10-05T22:50:02.621717+00:00"
+  "exported_at": "2026-10-05T22:56:32.033814+00:00"
 }

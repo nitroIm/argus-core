@@ -1,22 +1,22 @@
 {
-  "trained_at": "2026-10-05T22:56:31.786512+00:00",
+  "trained_at": "2026-10-05T22:56:19.842458+00:00",
   "version": "v13",
   "objective": "regression",
-  "symbol": "BNBUSDT",
+  "symbol": "SOLUSDT",
   "n_total": 5854,
   "n_train": 4671,
   "n_test": 1171,
   "n_val_inner": 701,
-  "best_iteration": 70,
-  "ic_train": 0.4308,
-  "ic_test": 0.0215,
-  "mae_train": 1.0439,
-  "mae_test": 1.1374,
-  "rmse_train": 1.4749,
-  "rmse_test": 1.5822,
-  "sign_acc_train": 0.6217,
-  "sign_acc_test": 0.497,
-  "num_trees": 70,
+  "best_iteration": 1,
+  "ic_train": 0.2499,
+  "ic_test": 0.0181,
+  "mae_train": 1.6202,
+  "mae_test": 1.7362,
+  "rmse_train": 2.2645,
+  "rmse_test": 2.3774,
+  "sign_acc_train": 0.5202,
+  "sign_acc_test": 0.4441,
+  "num_trees": 1,
   "features": [
     "change_pct",
     "range_pct",
@@ -83,45 +83,44 @@
   "top_features": [
     {
       "name": "volatility_7d",
-      "gain": 3309.64
+      "gain": 582.4
     },
     {
       "name": "change_1d",
-      "gain": 3041.47
+      "gain": 354.41
     },
     {
       "name": "volatility_24h",
-      "gain": 1945.95
+      "gain": 130.38
     },
     {
-      "name": "bb_width_pct",
-      "gain": 1488.65
+      "name": "volume_ratio_24h",
+      "gain": 61.37
     },
     {
-      "name": "ema50_dist_pct",
-      "gain": 1131.27
+      "name": "change_pct",
+      "gain": 0.0
     },
     {
-      "name": "macd_signal",
-      "gain": 1019.23
+      "name": "range_pct",
+      "gain": 0.0
     },
     {
-      "name": "funding_rate",
-      "gain": 783.61
+      "name": "body_pct",
+      "gain": 0.0
     },
     {
-      "name": "macd",
-      "gain": 645.71
+      "name": "upper_wick_pct",
+      "gain": 0.0
     },
     {
-      "name": "dist_low_24h_pct",
-      "gain": 598.35
+      "name": "lower_wick_pct",
+      "gain": 0.0
     },
     {
-      "name": "bb_lower_dist",
-      "gain": 503.09
+      "name": "change_4h",
+      "gain": 0.0
     }
   ],
-  "horizon": 12,
-  "exported_at": "2026-10-05T22:56:32.035604+00:00"
+  "horizon": 12
 }
