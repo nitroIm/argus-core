@@ -1,10 +1,10 @@
 # ============================================================
-# ARGUS-Trader - FEATURES v8
+# ARGUS-Trader - FEATURES v9
 # ------------------------------------------------------------
+# v9: BOOTSTRAP LIMIT 3500 -> 9000 (полная история candles).
 # v8: DB routing via symbol_conn (DB1: BTC/ETH, DB2: SOL/BNB).
 #     SYMBOLS from env, fallback to config.SYMBOLS.
 #     Автопоиск db2.py (как в dataset.py v7.1).
-#     Логика расчёта фичей не менялась с v7.
 # v7: BOOTSTRAP env — read up to 3500 candles (one-time).
 # v6: batch INSERT in save_features.
 # v5: + EMA9/21/50, MACD, BB, dist high/low, session.
@@ -58,7 +58,7 @@ log = logging.getLogger("crypto.features")
 BOOTSTRAP = (
     os.getenv("FEATURES_BOOTSTRAP", "").strip() == "1"
 )
-LIMIT = 3500 if BOOTSTRAP else 500
+LIMIT = 9000 if BOOTSTRAP else 500
 
 DEFAULT_SYMBOLS = (
     list(CONFIG_SYMBOLS) if CONFIG_SYMBOLS
@@ -118,9 +118,6 @@ MAX_LS_AGE_H = 2
 MAX_TAKER_AGE_H = 2
 
 
-# ============================================================
-# DB ROUTING
-# ============================================================
 def symbol_conn(symbol):
     if symbol in DB2_SYMBOLS and DB2_OK:
         try:
@@ -1096,7 +1093,7 @@ def process_symbol(symbol, timeframe="1h"):
 
 def main():
     log.info("=" * 60)
-    log.info("ARGUS-Trader FEATURES v8")
+    log.info("ARGUS-Trader FEATURES v9")
     log.info("BOOTSTRAP=%s, LIMIT=%d", BOOTSTRAP, LIMIT)
     log.info(
         "SYMBOLS=%s DB2_SYMBOLS=%s (DB2_OK=%s)",
