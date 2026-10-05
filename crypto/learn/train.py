@@ -1,12 +1,11 @@
 # ============================================================
 # ARGUS-Trader - TRAIN [PRODUCTION]
 # ------------------------------------------------------------
-# v10: per-symbol модели. Каждая монета учится отдельно,
-#      своя lgb_{sym}.txt и meta_{sym}.json.
-#      lgb_model.txt / model_meta.json = копия BTC (compat).
-#      USE_CROSS=0 — без cross vs REFERENCE.
-# v9: best_params отключён, простая модель.
-# v8: убран early_stopping.
+# v11: PARAMS упрощены под per-symbol данные (2500-4500 samples).
+#      num_leaves 15->8, max_depth 5->3, lr 0.05->0.03,
+#      min_data_in_leaf 40->80, feature_fraction 0.6->0.5,
+#      bagging_fraction 0.7->0.6, lambda_l1/l2 0.5->1.0.
+# v10: per-symbol модели.
 # ============================================================
 
 import os
@@ -44,19 +43,20 @@ PREV_DIR = MODELS_DIR / "prev"
 MIN_SAMPLES = 200
 NUM_ROUNDS = 100
 
+# Упрощено под per-symbol 2500-4500 samples
 PARAMS = {
     "objective": "binary",
     "metric": "binary_logloss",
     "boosting_type": "gbdt",
-    "num_leaves": 15,
-    "max_depth": 5,
-    "learning_rate": 0.05,
-    "feature_fraction": 0.6,
-    "bagging_fraction": 0.7,
+    "num_leaves": 8,
+    "max_depth": 3,
+    "learning_rate": 0.03,
+    "feature_fraction": 0.5,
+    "bagging_fraction": 0.6,
     "bagging_freq": 5,
-    "min_data_in_leaf": 40,
-    "lambda_l1": 0.5,
-    "lambda_l2": 0.5,
+    "min_data_in_leaf": 80,
+    "lambda_l1": 1.0,
+    "lambda_l2": 1.0,
     "verbose": -1,
     "seed": 42,
 }
@@ -193,7 +193,7 @@ def train_one(symbol):
         "trained_at": datetime.now(
             timezone.utc
         ).isoformat(),
-        "version": "v10",
+        "version": "v11",
         "symbol": symbol,
         "n_total": data["n_total"],
         "n_train": data["n_train"],
@@ -220,7 +220,6 @@ def train_one(symbol):
 
 
 def write_compat(symbols, metas):
-    """lgb_model.txt + model_meta.json = BTC."""
     ref = "BTCUSDT" if "BTCUSDT" in symbols else symbols[0]
     src = model_file(ref)
     if src.exists():
@@ -241,8 +240,9 @@ def write_compat(symbols, metas):
 
 def train():
     log.info("=" * 60)
-    log.info("ARGUS-Trader TRAIN v10 (per-symbol)")
+    log.info("ARGUS-Trader TRAIN v11 (per-symbol, simplified)")
     log.info("SYMBOLS=%s", SYMBOLS_LIST)
+    log.info("PARAMS: %s", PARAMS)
     log.info("=" * 60)
 
     metas = {}
