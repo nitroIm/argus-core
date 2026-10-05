@@ -1,13 +1,20 @@
 {
-  "trained_at": "2026-10-05T15:50:25.829842+00:00",
-  "version": "v11",
+  "trained_at": "2026-10-05T16:50:36.739467+00:00",
+  "version": "v12",
+  "objective": "regression",
   "symbol": "SOLUSDT",
-  "n_total": 4485,
-  "n_train": 3588,
-  "n_test": 897,
-  "train_accuracy": 0.7517,
-  "accuracy": 0.544,
-  "num_trees": 100,
+  "n_total": 5848,
+  "n_train": 4678,
+  "n_test": 1170,
+  "ic_train": 0.5181,
+  "ic_test": 0.06,
+  "mae_train": 1.407,
+  "mae_test": 1.7604,
+  "rmse_train": 1.9153,
+  "rmse_test": 2.3747,
+  "sign_acc_train": 0.668,
+  "sign_acc_test": 0.5145,
+  "num_trees": 200,
   "features": [
     "change_pct",
     "range_pct",
@@ -45,53 +52,46 @@
   ],
   "top_features": [
     {
-      "name": "change_1d",
-      "gain": 1097.43
-    },
-    {
       "name": "volatility_7d",
-      "gain": 1066.01
+      "gain": 16083.4
     },
     {
       "name": "change_3d",
-      "gain": 863.31
+      "gain": 9845.47
     },
     {
       "name": "volatility_24h",
-      "gain": 640.29
+      "gain": 9528.36
     },
     {
-      "name": "funding_rate",
-      "gain": 545.56
-    },
-    {
-      "name": "bb_width_pct",
-      "gain": 391.63
-    },
-    {
-      "name": "change_7d",
-      "gain": 372.49
+      "name": "change_1d",
+      "gain": 8558.94
     },
     {
       "name": "macd_signal",
-      "gain": 356.51
+      "gain": 6180.63
     },
     {
-      "name": "ema50_dist_pct",
-      "gain": 257.68
+      "name": "funding_rate",
+      "gain": 5737.89
     },
     {
       "name": "day_of_week",
-      "gain": 198.48
+      "gain": 3849.15
+    },
+    {
+      "name": "bb_width_pct",
+      "gain": 3626.66
+    },
+    {
+      "name": "change_7d",
+      "gain": 2202.04
+    },
+    {
+      "name": "macd",
+      "gain": 2009.92
     }
   ],
   "horizon": 12,
-  "threshold_pct": 0.5,
-  "confusion": {
-    "tp": 188,
-    "tn": 300,
-    "fp": 95,
-    "fn": 314
-  },
-  "exported_at": "2026-10-05T15:50:31.686700+00:00"
+  "exported_at": "2026-10-05T16:50:38.144669+00:00"
 }

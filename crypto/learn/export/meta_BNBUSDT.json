@@ -1,13 +1,20 @@
 {
-  "trained_at": "2026-10-05T15:50:26.617565+00:00",
-  "version": "v11",
+  "trained_at": "2026-10-05T16:50:37.876253+00:00",
+  "version": "v12",
+  "objective": "regression",
   "symbol": "BNBUSDT",
-  "n_total": 3826,
-  "n_train": 3060,
-  "n_test": 766,
-  "train_accuracy": 0.765,
-  "accuracy": 0.4648,
-  "num_trees": 100,
+  "n_total": 5848,
+  "n_train": 4678,
+  "n_test": 1170,
+  "ic_train": 0.5304,
+  "ic_test": -0.0482,
+  "mae_train": 0.9523,
+  "mae_test": 1.1795,
+  "rmse_train": 1.3227,
+  "rmse_test": 1.6474,
+  "sign_acc_train": 0.6851,
+  "sign_acc_test": 0.4744,
+  "num_trees": 200,
   "features": [
     "change_pct",
     "range_pct",
@@ -46,52 +53,45 @@
   "top_features": [
     {
       "name": "change_3d",
-      "gain": 967.26
+      "gain": 6873.58
     },
     {
       "name": "volatility_7d",
-      "gain": 918.07
+      "gain": 6601.25
     },
     {
       "name": "change_1d",
-      "gain": 912.99
-    },
-    {
-      "name": "funding_rate",
-      "gain": 703.21
-    },
-    {
-      "name": "macd_signal",
-      "gain": 499.78
-    },
-    {
-      "name": "change_7d",
-      "gain": 477.39
-    },
-    {
-      "name": "macd",
-      "gain": 464.74
+      "gain": 5156.41
     },
     {
       "name": "volatility_24h",
-      "gain": 409.79
+      "gain": 3007.61
+    },
+    {
+      "name": "macd_signal",
+      "gain": 2867.47
+    },
+    {
+      "name": "change_7d",
+      "gain": 2819.8
+    },
+    {
+      "name": "bb_width_pct",
+      "gain": 2525.15
+    },
+    {
+      "name": "day_of_week",
+      "gain": 2090.37
     },
     {
       "name": "ema50_dist_pct",
-      "gain": 354.78
+      "gain": 1258.45
     },
     {
-      "name": "dist_low_24h_pct",
-      "gain": 320.31
+      "name": "funding_rate",
+      "gain": 1113.51
     }
   ],
   "horizon": 12,
-  "threshold_pct": 0.5,
-  "confusion": {
-    "tp": 181,
-    "tn": 175,
-    "fp": 143,
-    "fn": 267
-  },
-  "exported_at": "2026-10-05T15:50:31.687660+00:00"
+  "exported_at": "2026-10-05T16:50:38.145250+00:00"
 }

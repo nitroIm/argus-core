@@ -1,19 +1,19 @@
 {
-  "trained_at": "2026-10-05T16:50:33.350647+00:00",
+  "trained_at": "2026-10-05T16:50:36.739467+00:00",
   "version": "v12",
   "objective": "regression",
-  "symbol": "BTCUSDT",
-  "n_total": 8992,
-  "n_train": 7193,
-  "n_test": 1799,
-  "ic_train": 0.5179,
-  "ic_test": -0.046,
-  "mae_train": 1.0458,
-  "mae_test": 0.9238,
-  "rmse_train": 1.4352,
-  "rmse_test": 1.4449,
-  "sign_acc_train": 0.6656,
-  "sign_acc_test": 0.4797,
+  "symbol": "SOLUSDT",
+  "n_total": 5848,
+  "n_train": 4678,
+  "n_test": 1170,
+  "ic_train": 0.5181,
+  "ic_test": 0.06,
+  "mae_train": 1.407,
+  "mae_test": 1.7604,
+  "rmse_train": 1.9153,
+  "rmse_test": 2.3747,
+  "sign_acc_train": 0.668,
+  "sign_acc_test": 0.5145,
   "num_trees": 200,
   "features": [
     "change_pct",
@@ -52,46 +52,45 @@
   ],
   "top_features": [
     {
-      "name": "change_3d",
-      "gain": 10581.81
-    },
-    {
-      "name": "change_1d",
-      "gain": 8813.17
-    },
-    {
-      "name": "funding_rate",
-      "gain": 5788.14
-    },
-    {
-      "name": "change_7d",
-      "gain": 5528.62
-    },
-    {
       "name": "volatility_7d",
-      "gain": 5233.3
+      "gain": 16083.4
+    },
+    {
+      "name": "change_3d",
+      "gain": 9845.47
     },
     {
       "name": "volatility_24h",
-      "gain": 4078.84
+      "gain": 9528.36
     },
     {
-      "name": "day_of_week",
-      "gain": 3150.59
+      "name": "change_1d",
+      "gain": 8558.94
     },
     {
       "name": "macd_signal",
-      "gain": 2160.77
+      "gain": 6180.63
+    },
+    {
+      "name": "funding_rate",
+      "gain": 5737.89
+    },
+    {
+      "name": "day_of_week",
+      "gain": 3849.15
     },
     {
       "name": "bb_width_pct",
-      "gain": 2155.48
+      "gain": 3626.66
     },
     {
-      "name": "dist_high_24h_pct",
-      "gain": 1627.56
+      "name": "change_7d",
+      "gain": 2202.04
+    },
+    {
+      "name": "macd",
+      "gain": 2009.92
     }
   ],
-  "horizon": 12,
-  "exported_at": "2026-10-05T16:50:38.143185+00:00"
+  "horizon": 12
 }

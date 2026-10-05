@@ -15,7 +15,7 @@
 - `external_market.csv` - DXY/SPX/GOLD
 
 ## Параметры
-- HORIZON: 4h
+- HORIZON: 12h
 - THRESHOLD: 0.5%
 - REFERENCE: BTCUSDT
 - FEATURE_COLS: 40
