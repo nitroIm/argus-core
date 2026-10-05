@@ -1,14 +1,9 @@
 # ============================================================
 # ARGUS - BOOTSTRAP ONCE
 # ------------------------------------------------------------
-# РАЗОВЫЙ workflow:
-#   1. Загружает 120 дней истории свечей
-#   2. Пересчитывает features на всей истории
-#   3. Пересчитывает enrich (patterns, events, causal, corr)
-#   4. Обучает модель на всей истории
-#
-# Запускается РУЧНО, ОДИН РАЗ.
-# После этого — никогда не запускается.
+# v2: STEP 2 (features.py v8) — добавлен ARGUS_DB_URL_2,
+#     SYMBOLS (4 монеты), DB2_SYMBOLS. Иначе SOL/BNB пропуск.
+# v1: разовый прогон — candles + features + enrich + train.
 # ============================================================
 
 name: ARGUS Bootstrap Once
@@ -58,7 +53,10 @@ jobs:
       - name: STEP 2 — Features (all history)
         env:
           ARGUS_DB_URL: ${{ secrets.ARGUS_DB_URL }}
+          ARGUS_DB_URL_2: ${{ secrets.ARGUS_DB_URL_2 }}
           FEATURES_BOOTSTRAP: '1'
+          SYMBOLS: BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT
+          DB2_SYMBOLS: SOLUSDT,BNBUSDT
         run: python crypto/enrich/features.py
 
       - name: STEP 3 — Enrich chain
