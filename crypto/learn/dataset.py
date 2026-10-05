@@ -1,16 +1,12 @@
 # ============================================================
-# ARGUS-Trader - DATASET v10 [PRODUCTION]
+# ARGUS-Trader - DATASET v10
 # ------------------------------------------------------------
-# v10: pulls ALL available tables from DB1+DB2.
-#      Feature buckets: internal, oi, ls, taker, macro,
-#      onchain, orderbook, events, anomaly, asia, cross.
-#      As-of joins with forward-fill. ~70 features.
-# v8.2: regression target, 30 features.
+# v10: 64 features from 13 tables (DB1 + DB2).
+#      Fixes: no long lines, no weird indents.
 # ============================================================
 
 import os
 import sys
-import json
 import logging
 from pathlib import Path
 from datetime import (
@@ -46,8 +42,8 @@ if (os.getenv("ARGUS_DB_URL_2") or "").strip():
                 _cur.execute("SELECT 1")
                 _cur.fetchone()
         DB2_OK = True
-    except Exception as e:
-        print("DB2 fail: " + str(e))
+    except Exception as exc:
+        print("DB2 fail: " + str(exc))
 
 logging.basicConfig(
     level=logging.INFO,
@@ -64,10 +60,6 @@ USE_CROSS = (
 )
 
 HORIZON = int(os.getenv("HORIZON", "12"))
-
-MOVE_THRESHOLD_PCT = float(
-    os.getenv("MOVE_THRESHOLD_PCT", "0.5")
-)
 
 DEFAULT_SYMBOLS = ["BTCUSDT", "ETHUSDT"]
 
@@ -87,40 +79,26 @@ REFERENCE = (
 DB2_SYMBOLS = {
     s.strip().upper()
     for s in (
-        os.getenv("DB2_SYMBOLS") or "SOLUSDT,BNBUSDT"
+        os.getenv("DB2_SYMBOLS")
+        or "SOLUSDT,BNBUSDT"
     ).split(",")
     if s.strip()
 }
 
 DATA_DIR = CRYPTO_ROOT / "data"
 
-# As-of max age (hours). Older -> NaN.
-MAX_AGE = {
-    "funding": 24,
-    "oi": 4,
-    "ls": 4,
-    "taker": 4,
-    "macro": 12,
-    "onchain": 72,
-    "orderbook": 4,
-    "asia": 2,
-    "events": 168,
-    "anomaly": 48,
-}
-
 
 def symbol_conn(symbol):
     if symbol in DB2_SYMBOLS and DB2_OK:
         try:
             return get_conn_db2()
-        except Exception as e:
-            log.warning("db2 conn %s: %s", symbol, e)
+        except Exception as exc:
+            log.warning(
+                "db2 conn %s: %s", symbol, exc
+            )
     return get_connection()
 
 
-# ============================================================
-# Feature buckets
-# ============================================================
 INTERNAL_COLS = [
     "change_pct",
     "range_pct",
@@ -221,7 +199,7 @@ EXTERNAL_COLS = [
     "gold_change_pct",
 ]
 
-CROSS_COLS = [
+_CROSS_ALL = [
     "ref_change_1h",
     "ref_change_4h",
     "ref_change_24h",
@@ -229,7 +207,9 @@ CROSS_COLS = [
     "ratio_zscore_24h",
     "lead_lag_corr_24h",
     "spread_pct",
-] if USE_CROSS else []
+]
+
+CROSS_COLS = _CROSS_ALL if USE_CROSS else []
 
 FEATURE_COLS = (
     INTERNAL_COLS
@@ -249,10 +229,20 @@ FEATURE_COLS = (
 TARGET_RET = "next_return"
 TARGET_COL = "next_change_pct"
 
+MAX_AGE = {
+    "funding": 24,
+    "oi": 4,
+    "ls": 4,
+    "taker": 4,
+    "macro": 12,
+    "onchain": 72,
+    "orderbook": 4,
+    "asia": 2,
+    "events": 168,
+    "anomaly": 48,
+}
 
-# ============================================================
-# Generic DB fetch
-# ============================================================
+
 def _fetch(conn, sql, params=()):
     try:
         with conn.cursor() as cur:
@@ -264,178 +254,192 @@ def _fetch(conn, sql, params=()):
             if ts is None:
                 continue
             if ts.tzinfo is None:
-                ts = ts.replace(tzinfo=timezone.utc)
+                ts = ts.replace(
+                    tzinfo=timezone.utc
+                )
             out.append((ts, r[1:]))
         return out
-    except Exception as e:
-        log.warning("fetch: %s", e)
+    except Exception as exc:
+        log.warning("fetch: %s", exc)
         return []
 
 
+def _sql_sel(cols, table, where):
+    return (
+        "SELECT "
+        + ", ".join(cols)
+        + " FROM "
+        + table
+        + " WHERE "
+        + where
+    )
+
+
 def fetch_features(symbol, limit=100000):
-    base_cols = ["timestamp"] + INTERNAL_COLS
+    cols = ["timestamp"] + INTERNAL_COLS
+    sql = _sql_sel(
+        cols,
+        "features_hourly",
+        "symbol = %s ORDER BY timestamp LIMIT %s",
+    )
     try:
         with symbol_conn(symbol) as conn:
-            return _fetch(
-                conn,
-                "SELECT " + ", ".join(base_cols)
-                + " FROM features_hourly "
-                + "WHERE symbol = %s "
-                + "ORDER BY timestamp LIMIT %s",
-                (symbol, limit),
-            )
-    except Exception as e:
-        log.warning("features %s: %s", symbol, e)
+            return _fetch(conn, sql, (symbol, limit))
+    except Exception as exc:
+        log.warning("features %s: %s", symbol, exc)
         return []
 
 
 def fetch_candles(symbol, limit=100000):
+    cols = [
+        "timestamp",
+        "open",
+        "high",
+        "low",
+        "close",
+    ]
+    sql = _sql_sel(
+        cols,
+        "candles",
+        "symbol = %s AND timeframe = '1h' "
+        "ORDER BY timestamp LIMIT %s",
+    )
     try:
         with symbol_conn(symbol) as conn:
-            return _fetch(
-                conn,
-                "SELECT timestamp, open, high, low, close "
-                "FROM candles "
-                "WHERE symbol = %s "
-                "AND timeframe = '1h' "
-                "ORDER BY timestamp LIMIT %s",
-                (symbol, limit),
-               )
-    except Exception as e:
-        log.warning(" except Exceptioncandles %s: as %s", symbol, e)
+            return _fetch(conn, sql, (symbol, limit))
+    except Exception as exc:
+        log.warning("candles %s: %s", symbol, exc)
         return []
 
- e
+
 def fetch_oi(symbol):
+    cols = ["timestamp", "oi", "oi_value"]
+    sql = _sql_sel(
+        cols,
+        "open_interest",
+        "symbol = %s AND oi IS NOT NULL "
+        "ORDER BY timestamp",
+    )
     try:
         with symbol_conn(symbol) as conn:
-            return _fetch(
-                conn,
-                "SELECT timestamp, oi, oi_value "
-                "FROM open_interest "
-                "WHERE symbol = %s "
-                "AND (oi IS NOT NULL OR oi_value IS NOT NULL) "
-                "ORDER BY timestamp",
-                (symbol,),
-            )
-    except Exception as e:
-        log.warning("oi %s: %s", symbol, e)
+            return _fetch(conn, sql, (symbol,))
+    except Exception as exc:
+        log.warning("oi %s: %s", symbol, exc)
         return []
 
 
 def fetch_ls(symbol):
+    cols = ["timestamp", "ls_ratio"]
+    sql = _sql_sel(
+        cols,
+        "long_short_ratio",
+        "symbol = %s AND ls_ratio IS NOT NULL "
+        "ORDER BY timestamp",
+    )
     try:
         with symbol_conn(symbol) as conn:
-            return _fetch(
-                conn,
-                "SELECT timestamp, ls_ratio "
-                "FROM long_short_ratio "
-                "WHERE symbol = %s "
-                "AND ls_ratio IS NOT NULL "
-                "ORDER BY timestamp",
-                (symbol,),
-            )
-    except Exception as e:
-        log.warning("ls %s: %s", symbol, e)
+            return _fetch(conn, sql, (symbol,))
+    except Exception as exc:
+        log.warning("ls %s: %s", symbol, exc)
         return []
 
 
 def fetch_taker(symbol):
+    cols = ["timestamp", "buy_vol", "sell_vol"]
+    sql = _sql_sel(
+        cols,
+        "taker_flow",
+        "symbol = %s AND buy_vol IS NOT NULL "
+        "ORDER BY timestamp",
+    )
     try:
         with symbol_conn(symbol) as conn:
-            return _fetch(
-                conn,
-                "SELECT timestamp, buy_vol, sell_vol "
-                "FROM taker_flow "
-                "WHERE symbol = %s "
-                "AND buy_vol IS NOT NULL "
-                "AND sell_vol IS NOT NULL "
-                "ORDER BY timestamp",
-                (symbol,),
-            )
-    except Exception as e:
-        log.warning("taker %s: %s", symbol, e)
+            return _fetch(conn, sql, (symbol,))
+    except Exception as exc:
+        log.warning("taker %s: %s", symbol, exc)
         return []
 
 
 def fetch_macro():
+    cols = ["timestamp", "close"]
+    sql = _sql_sel(
+        cols,
+        "macro_metrics",
+        "symbol = 'US10Y' AND close IS NOT NULL "
+        "ORDER BY timestamp",
+    )
     try:
         with get_connection() as conn:
-            return _fetch(
-                conn,
-                "SELECT timestamp, close "
-                "FROM macro_metrics "
-                "WHERE symbol = 'US10Y' "
-                "AND close IS NOT NULL "
-                "ORDER BY timestamp",
-            )
-:
-        log.warning("macro: %s", e)
+            return _fetch(conn, sql)
+    except Exception as exc:
+        log.warning("macro: %s", exc)
         return []
 
 
 def fetch_onchain():
+    cols = ["timestamp", "hashrate"]
+    sql = _sql_sel(
+        cols,
+        "onchain_metrics",
+        "symbol = 'BTC' AND hashrate IS NOT NULL "
+        "ORDER BY timestamp",
+    )
     try:
         with get_connection() as conn:
-            return _fetch(
-                conn,
-                "SELECT timestamp, hashrate "
-                "FROM onchain_metrics "
-                "WHERE symbol = 'BTC' "
-                "AND hashrate IS NOT NULL "
-                "ORDER BY timestamp",
-            )
-    except Exception as e:
-        log.warning("onchain: %s", e)
+            return _fetch(conn, sql)
+    except Exception as exc:
+        log.warning("onchain: %s", exc)
         return []
 
 
 def fetch_orderbook(symbol):
+    cols = [
+        "timestamp",
+        "bid_pct",
+        "ask_pct",
+        "spread_pct",
+    ]
+    sql = _sql_sel(
+        cols,
+        "orderbook_snapshots",
+        "symbol = %s AND bid_pct IS NOT NULL "
+        "ORDER BY timestamp",
+    )
     try:
         with symbol_conn(symbol) as conn:
-            return _fetch(
-                conn,
-                "SELECT timestamp, bid_pct, ask_pct, "
-                "spread_pct FROM orderbook_snapshots "
-                "WHERE symbol = %s "
-                "AND bid_pct IS NOT NULL "
-                "ORDER BY timestamp",
-                (symbol,),
-            )
-    except Exception as e:
-        log.warning("orderbook %s: %s", symbol, e)
+            return _fetch(conn, sql, (symbol,))
+    except Exception as exc:
+        log.warning("ob %s: %s", symbol, exc)
         return []
 
 
 def fetch_events(symbol):
+    cols = ["timestamp", "event_type"]
+    sql = _sql_sel(
+        cols,
+        "events",
+        "symbol = %s ORDER BY timestamp",
+    )
     try:
         with symbol_conn(symbol) as conn:
-            return _fetch(
-                conn,
-                "SELECT timestamp, event_type "
-                "FROM events "
-                "WHERE symbol = %s "
-                "ORDER BY timestamp",
-                (symbol,),
-            )
-    except Exception as e:
-        log.warning("events %s: %s", symbol, e)
+            return _fetch(conn, sql, (symbol,))
+    except Exception as exc:
+        log.warning("events %s: %s", symbol, exc)
         return []
 
 
 def fetch_anomaly(symbol):
+    cols = ["timestamp", "anomaly_type"]
+    sql = _sql_sel(
+        cols,
+        "anomaly_log",
+        "symbol = %s ORDER BY timestamp",
+    )
     try:
         with symbol_conn(symbol) as conn:
-            return _fetch(
-                conn,
-                "SELECT timestamp, anomaly_type "
-                "FROM anomaly_log "
-                "WHERE symbol = %s "
-                "ORDER BY timestamp",
-                (symbol,),
-            )
-    except Exception as e:
-        log.warning("anomaly %s: %s", symbol, e)
+            return _fetch(conn, sql, (symbol,))
+    except Exception as exc:
+        log.warning("anom %s: %s", symbol, exc)
         return []
 
 
@@ -446,8 +450,8 @@ def fetch_asia_market():
         with get_conn_db2() as conn:
             with conn.cursor() as cur:
                 cur.execute(
-                    "SELECT symbol, timestamp, change_pct "
-                    "FROM asia_market "
+                    "SELECT symbol, timestamp, "
+                    "change_pct FROM asia_market "
                     "WHERE change_pct IS NOT NULL "
                     "ORDER BY symbol, timestamp"
                 )
@@ -459,37 +463,32 @@ def fetch_asia_market():
                         ts = ts.replace(
                             tzinfo=timezone.utc
                         )
-                    out.setdefault(sym, []).append(
-                        (ts, float(ch))
-                    )
+                    out.setdefault(
+                        sym, []
+                    ).append((ts, float(ch)))
                 return out
-    except Exception as e:
-        log.warning("asia_market: %s", e)
+    except Exception as exc:
+        log.warning("asia: %s", exc)
         return {}
 
 
 def fetch_external(symbol):
+    cols = ["timestamp", "change_pct"]
+    sql = _sql_sel(
+        cols,
+        "external_market",
+        "symbol = %s AND change_pct IS NOT NULL "
+        "ORDER BY timestamp",
+    )
     try:
         with get_connection() as conn:
-            return _fetch(
-                conn,
-                "SELECT timestamp, change_pct "
-                "FROM external_market "
-                "WHERE symbol = %s "
-                "AND change_pct IS NOT NULL "
-                "ORDER BY timestamp",
-                (symbol,),
-            )
-    except Exception as e:
-        log.warning("external %s: %s", symbol, e)
+            return _fetch(conn, sql, (symbol,))
+    except Exception as exc:
+        log.warning("ext %s: %s", symbol, exc)
         return []
 
 
-# ============================================================
-# As-of joins (forward fill, with max age)
-# ============================================================
 def asof(series, ts, max_age_h):
-    """Return last value at or before ts, else None."""
     if not series:
         return None
     best = None
@@ -500,14 +499,19 @@ def asof(series, ts, max_age_h):
             break
     if best is None:
         return None
-    if ts - best[0] > timedelta(hours=max_age_h):
+    if ts - best[0] > timedelta(
+        hours=max_age_h
+    ):
         return None
     return best[1]
 
 
 def asof_shift(series, ts, shift_h, max_age_h):
-    return asof(series, ts - timedelta(hours=shift_h),
-                max_age_h)
+    return asof(
+        series,
+        ts - timedelta(hours=shift_h),
+        max_age_h,
+    )
 
 
 def asia_at(asia_list, ts, lag_hours):
@@ -517,7 +521,9 @@ def asia_at(asia_list, ts, lag_hours):
     best_val = None
     best_diff = None
     for a_ts, a_val in asia_list:
-        diff = abs((a_ts - target).total_seconds())
+        diff = abs(
+            (a_ts - target).total_seconds()
+        )
         if diff <= 1800:
             if best_diff is None or diff < best_diff:
                 best_val = a_val
@@ -542,9 +548,6 @@ def asia_impact_score(asia, ts):
     return round(sum(parts), 4)
 
 
-# ============================================================
-# Feature construction
-# ============================================================
 def _safe(v):
     if v is None:
         return np.nan
@@ -554,83 +557,97 @@ def _safe(v):
         return np.nan
 
 
-def _build_oi_feats(oi_series, ts):
-    """oi_change_1h and oi_change_24h from as-of OI."""
+def _oi_feats(oi_series, ts):
     now = asof(oi_series, ts, MAX_AGE["oi"])
-    prev1 = asof_shift(oi_series, ts, 1, MAX_AGE["oi"])
-    prev24 = asof_shift(oi_series, ts, 24, MAX_AGE["oi"])
-
+    p1 = asof_shift(
+        oi_series, ts, 1, MAX_AGE["oi"]
+    )
+    p24 = asof_shift(
+        oi_series, ts, 24, MAX_AGE["oi"]
+    )
     c1 = np.nan
     c24 = np.nan
-    if now is not None and prev1 is not None:
-        if prev1[0] > 0:
-            c1 = (now[0] - prev1[0]) / prev1[0] * 100
-    if now is not None and prev24 is not None:
-        if prev24[0] > 0:
-            c24 = (now[0] - prev24[0]) / prev24[0] * 100
+    if now is not None and p1 is not None:
+        if p1[0] > 0:
+            c1 = (now[0] - p1[0]) / p1[0] * 100
+    if now is not None and p24 is not None:
+        if p24[0] > 0:
+            c24 = (
+                (now[0] - p24[0]) / p24[0] * 100
+            )
     return [_safe(c1), _safe(c24)]
 
 
-def _build_ls_feats(ls_series, ts):
+def _ls_feats(ls_series, ts):
     now = asof(ls_series, ts, MAX_AGE["ls"])
-    prev1 = asof_shift(ls_series, ts, 1, MAX_AGE["ls"])
+    p1 = asof_shift(
+        ls_series, ts, 1, MAX_AGE["ls"]
+    )
     ch = np.nan
-    if now is not None and prev1 is not None:
-        ch = now[0] - prev1[0]
-    return [_safe(now[0]) if now else np.nan,
-            _safe(ch)]
+    if now is not None and p1 is not None:
+        ch = now[0] - p1[0]
+    v = now[0] if now else None
+    return [_safe(v), _safe(ch)]
 
 
-def _build_taker_feats(tk_series, ts):
+def _taker_feats(tk_series, ts):
     now = asof(tk_series, ts, MAX_AGE["taker"])
-    prev1 = asof_shift(tk_series, ts, 1, MAX_AGE["taker"])
-    buy_pct = np.nan
+    p1 = asof_shift(
+        tk_series, ts, 1, MAX_AGE["taker"]
+    )
+    bp = np.nan
     ch = np.nan
     if now is not None:
         bv, sv = now
         if bv + sv > 0:
-            buy_pct = bv / (bv + sv) * 100
-    if now is not None and prev1 is not None:
+            bp = bv / (bv + sv) * 100
+    if now is not None and p1 is not None:
         bv, sv = now
-        pbv, psv = prev1
+        pbv, psv = p1
         if bv + sv > 0 and pbv + psv > 0:
             cur = bv / (bv + sv)
             prev = pbv / (pbv + psv)
             ch = (cur - prev) * 100
-    return [_safe(buy_pct), _safe(ch)]
+    return [_safe(bp), _safe(ch)]
 
 
-def _build_macro_feats(series, ts):
+def _macro_feats(series, ts):
     now = asof(series, ts, MAX_AGE["macro"])
-    prev = asof_shift(series, ts, 24,
-                      MAX_AGE["macro"])
+    p = asof_shift(
+        series, ts, 24, MAX_AGE["macro"]
+    )
     lvl = np.nan
     ch = np.nan
     if now is not None:
         lvl = now[0]
-    if now is not None and prev is not None:
-        if prev[0] != 0:
-            ch = (now[0] - prev[0]) / abs(
-                prev[0]
-            ) * 100
+    if now is not None and p is not None:
+        if p[0] != 0:
+            ch = (
+                (now[0] - p[0])
+                / abs(p[0])
+                * 100
+            )
     return [_safe(lvl), _safe(ch)]
 
 
-def _build_onchain_feats(series, ts):
-    now = asof(series, ts, MAX_AGE["onchain"])
-    prev = asof_shift(series, ts, 24,
-                      MAX_AGE["onchain"])
-    log_hr = np.nan
+def _onchain_feats(series, ts):
+    now = asof(
+        series, ts, MAX_AGE["onchain"]
+    )
+    p = asof_shift(
+        series, ts, 24, MAX_AGE["onchain"]
+    )
+    lh = np.nan
     ch = np.nan
     if now is not None and now[0] > 0:
-        log_hr = float(np.log(now[0]))
-    if now is not None and prev is not None:
-        if prev[0] > 0:
-            ch = (now[0] - prev[0]) / prev[0] * 100
-    return [_safe(log_hr), _safe(ch)]
+        lh = float(np.log(now[0]))
+    if now is not None and p is not None:
+        if p[0] > 0:
+            ch = (now[0] - p[0]) / p[0] * 100
+    return [_safe(lh), _safe(ch)]
 
 
-def _build_ob_feats(series, ts):
+def _ob_feats(series, ts):
     now = asof(series, ts, MAX_AGE["orderbook"])
     if now is None:
         return [np.nan, np.nan, np.nan]
@@ -649,32 +666,33 @@ def _count_events(series, ts, hours):
     return n
 
 
-def _count_events_type(series, ts, hours, etype):
+def _count_type(series, ts, hours, etype):
     if not series:
         return 0
     cutoff = ts - timedelta(hours=hours)
     n = 0
     for e_ts, et in series:
-        if e_ts > cutoff and e_ts <= ts and et == etype:
-            n += 1
+        if e_ts > cutoff and e_ts <= ts:
+            if et == etype:
+                n += 1
     return n
 
 
-def _build_event_feats(series, ts):
+def _event_feats(series, ts):
     return [
         _count_events(series, ts, 1),
         _count_events(series, ts, 24),
-        _count_events_type(
+        _count_type(
             series, ts, 24, "rsi_overbought"
         ),
     ]
 
 
-def _build_anomaly_feats(series, ts):
+def _anom_feats(series, ts):
     return [_count_events(series, ts, 24)]
 
 
-def _build_asia_feats(asia, ts):
+def _asia_feats(asia, ts):
     return [
         asia_at(asia.get("NIKKEI", []), ts, 6),
         asia_at(asia.get("SHANGHAI", []), ts, 6),
@@ -696,11 +714,10 @@ def _build_asia_feats(asia, ts):
     ]
 
 
-def _build_external_feats(ext_dxy, ext_spx,
-                          ext_gold, ts):
-    v1 = asof(ext_dxy, ts, 3)
-    v2 = asof(ext_spx, ts, 3)
-    v3 = asof(ext_gold, ts, 3)
+def _ext_feats(dxy, spx, gold, ts):
+    v1 = asof(dxy, ts, 3)
+    v2 = asof(spx, ts, 3)
+    v3 = asof(gold, ts, 3)
     return [
         _safe(v1[0]) if v1 else np.nan,
         _safe(v2[0]) if v2 else np.nan,
@@ -708,29 +725,45 @@ def _build_external_feats(ext_dxy, ext_spx,
     ]
 
 
-# ============================================================
-# Targets
-# ============================================================
 def build_targets(candles, horizon):
     out = {}
     n = len(candles)
     for i in range(n):
+        ts = candles[i][0]
         if i + horizon >= n:
-            out[candles[i][0]] = None
+            out[ts] = None
             continue
         c0 = candles[i][1][3]
         c1 = candles[i + horizon][1][3]
         if not c0 or not c1 or c0 <= 0:
-            out[candles[i][0]] = None
+            out[ts] = None
             continue
-        ret = (c1 - c0) / c0 * 100
-        out[candles[i][0]] = ret
+        out[ts] = (c1 - c0) / c0 * 100
     return out
 
 
-# ============================================================
-# Build X, y
-# ============================================================
+def _row_for(symbol, d, asia, ts,
+             ext_dxy, ext_spx, ext_gold):
+    row = []
+    for i in range(len(INTERNAL_COLS)):
+        v = d["fa"][i].get(ts)
+        row.append(v if v is not None else np.nan)
+    row.extend(_oi_feats(d["oi"], ts))
+    row.extend(_ls_feats(d["ls"], ts))
+    row.extend(_taker_feats(d["taker"], ts))
+    row.extend(_macro_feats(d["macro"], ts))
+    row.extend(_onchain_feats(d["onchain"], ts))
+    row.extend(_ob_feats(d["ob"], ts))
+    row.extend(_event_feats(d["events"], ts))
+    row.extend(_anom_feats(d["anom"], ts))
+    row.extend(_asia_feats(asia, ts))
+    if USE_EXTERNAL:
+        row.extend(_ext_feats(
+            ext_dxy, ext_spx, ext_gold, ts
+        ))
+    return row
+
+
 def build_xy_all(
     symbols_data, targets_map, asia,
     ext_dxy, ext_spx, ext_gold,
@@ -742,48 +775,16 @@ def build_xy_all(
         d = symbols_data.get(symbol)
         if not d:
             continue
-        feats = d["feats"]
         targets = targets_map.get(symbol) or {}
 
-        for ts in sorted(feats.keys()):
+        for ts in sorted(d["feats"]):
             ret = targets.get(ts)
             if ret is None:
                 continue
-            row = []
-            for i, col in enumerate(INTERNAL_COLS):
-                row.append(
-                    d["feat_arrays"][i].get(ts, np.nan)
-                )
-            row.extend(_build_oi_feats(
-                d["oi"], ts,
-            ))
-            row.extend(_build_ls_feats(
-                d["ls"], ts,
-            ))
-            row.extend(_build_taker_feats(
-                d["taker"], ts,
-            ))
-            row.extend(_build_macro_feats(
-                d["macro"], ts,
-            ))
-            row.extend(_build_onchain_feats(
-                d["onchain"], ts,
-            ))
-            row.extend(_build_ob_feats(
-                d["ob"], ts,
-            ))
-            row.extend(_build_event_feats(
-                d["events"], ts,
-            ))
-            row.extend(_build_anomaly_feats(
-                d["anomaly"], ts,
-            ))
-            row.extend(_build_asia_feats(asia, ts))
-            if USE_EXTERNAL:
-                row.extend(_build_external_feats(
-                    ext_dxy, ext_spx,
-                    ext_gold, ts,
-                ))
+            row = _row_for(
+                symbol, d, asia, ts,
+                ext_dxy, ext_spx, ext_gold,
+            )
             X.append(row)
             y_dir.append(1 if ret > 0 else 0)
             y_ret.append(float(ret))
@@ -858,6 +859,21 @@ def per_symbol_split(
     )
 
 
+def _build_feat_arrays(rows):
+    feats = {}
+    fa = [dict() for _ in INTERNAL_COLS]
+    for ts, vals in rows:
+        feats[ts] = True
+        for i, v in enumerate(vals):
+            if v is None:
+                continue
+            try:
+                fa[i][ts] = float(v)
+            except Exception:
+                pass
+    return feats, fa
+
+
 def prepare(test_frac=0.2):
     log.info("=" * 60)
     log.info("DATASET v10 (all features)")
@@ -865,7 +881,8 @@ def prepare(test_frac=0.2):
     log.info("HORIZON=%dh", HORIZON)
     log.info("DB2_OK=%s", DB2_OK)
     log.info(
-        "features expected: %d", len(FEATURE_COLS),
+        "features expected: %d",
+        len(FEATURE_COLS),
     )
     log.info("=" * 60)
 
@@ -874,15 +891,24 @@ def prepare(test_frac=0.2):
         "asia_market: %d symbols", len(asia)
     )
 
-    ext_dxy = fetch_external("DXY") if USE_EXTERNAL else []
-    ext_spx = fetch_external("SPX") if USE_EXTERNAL else []
-    ext_gold = fetch_external("GOLD") if USE_EXTERNAL else []
+    ext_dxy = (
+        fetch_external("DXY")
+        if USE_EXTERNAL else []
+    )
+    ext_spx = (
+        fetch_external("SPX")
+        if USE_EXTERNAL else []
+    )
+    ext_gold = (
+        fetch_external("GOLD")
+        if USE_EXTERNAL else []
+    )
 
     macro = fetch_macro()
     log.info("macro points: %d", len(macro))
 
     onchain = fetch_onchain()
-    log.info("onchain points: %d", len(onchain))
+    log.info("onchain: %d", len(onchain))
 
     symbols_data = {}
     targets_map = {}
@@ -895,17 +921,7 @@ def prepare(test_frac=0.2):
             )
             continue
 
-        feats = {}
-        feat_arrays = [dict() for _ in INTERNAL_COLS]
-        for ts, vals in rows:
-            feats[ts] = True
-            for i, v in enumerate(vals):
-                if v is None:
-                    continue
-                try:
-                    feat_arrays[i][ts] = float(v)
-                except Exception:
-                    pass
+        feats, fa = _build_feat_arrays(rows)
 
         candles = fetch_candles(symbol)
         if not candles:
@@ -923,44 +939,28 @@ def prepare(test_frac=0.2):
         taker = fetch_taker(symbol)
         ob = fetch_orderbook(symbol)
         events = fetch_events(symbol)
-        anomaly = fetch_anomaly(symbol)
+        anom = fetch_anomaly(symbol)
 
         symbols_data[symbol] = {
             "feats": feats,
-            "feat_arrays": feat_arrays,
-            "oi": [
-                (ts, (v[0], v[1])) for ts, v in oi
-            ],
-            "ls": [
-                (ts, (v[0],)) for ts, v in ls
-            ],
-            "taker": [
-                (ts, (v[0], v[1])) for ts, v in taker
-            ],
-            "macro": [
-                (ts, (v[0],)) for ts, v in macro
-            ],
-            "onchain": [
-                (ts, (v[0],)) for ts, v in onchain
-            ],
-            "ob": [
-                (ts, (v[0], v[1], v[2]))
-                for ts, v in ob
-            ],
-            "events": [
-                (ts, v[0]) for ts, v in events
-            ],
-            "anomaly": [
-                (ts, v[0]) for ts, v in anomaly
-            ],
+            "fa": fa,
+            "oi": oi,
+            "ls": ls,
+            "taker": taker,
+            "macro": macro,
+            "onchain": onchain,
+            "ob": ob,
+            "events": events,
+            "anom": anom,
         }
 
         log.info(
-            "%s: feat=%d candles=%d oi=%d "
-            "ls=%d taker=%d ob=%d ev=%d an=%d",
+            "%s: feat=%d candles=%d "
+            "oi=%d ls=%d taker=%d "
+            "ob=%d ev=%d an=%d",
             symbol, len(feats), len(candles),
             len(oi), len(ls), len(taker),
-            len(ob), len(events), len(anomaly),
+            len(ob), len(events), len(anom),
         )
 
     if REFERENCE not in symbols_data:
