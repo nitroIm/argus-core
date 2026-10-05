@@ -1,12 +1,12 @@
 {
-  "trained_at": "2026-10-05T13:16:56.772121+00:00",
-  "version": "v10",
+  "trained_at": "2026-10-05T13:22:51.049783+00:00",
+  "version": "v11",
   "symbol": "ETHUSDT",
   "n_total": 4585,
   "n_train": 3668,
   "n_test": 917,
-  "train_accuracy": 0.8075,
-  "accuracy": 0.4951,
+  "train_accuracy": 0.6758,
+  "accuracy": 0.5104,
   "num_trees": 100,
   "features": [
     "change_pct",
@@ -46,51 +46,51 @@
   "top_features": [
     {
       "name": "change_1d",
-      "gain": 831.11
-    },
-    {
-      "name": "volatility_7d",
-      "gain": 811.8
+      "gain": 534.44
     },
     {
       "name": "change_3d",
-      "gain": 761.86
+      "gain": 409.3
     },
     {
-      "name": "macd_signal",
-      "gain": 671.3
-    },
-    {
-      "name": "change_7d",
-      "gain": 663.03
+      "name": "volatility_7d",
+      "gain": 395.96
     },
     {
       "name": "volatility_24h",
-      "gain": 651.72
+      "gain": 310.6
+    },
+    {
+      "name": "volume_ratio_24h",
+      "gain": 281.23
     },
     {
       "name": "bb_width_pct",
-      "gain": 505.67
+      "gain": 261.4
+    },
+    {
+      "name": "change_7d",
+      "gain": 258.31
+    },
+    {
+      "name": "ema50_dist_pct",
+      "gain": 238.7
     },
     {
       "name": "bb_lower_dist",
-      "gain": 412.89
+      "gain": 231.28
     },
     {
-      "name": "hour_of_day",
-      "gain": 376.5
-    },
-    {
-      "name": "day_of_week",
-      "gain": 367.31
+      "name": "dist_low_24h_pct",
+      "gain": 223.09
     }
   ],
   "horizon": 4,
   "threshold_pct": 0.5,
   "confusion": {
-    "tp": 242,
-    "tn": 212,
-    "fp": 205,
-    "fn": 258
+    "tp": 258,
+    "tn": 210,
+    "fp": 207,
+    "fn": 242
   }
 }
