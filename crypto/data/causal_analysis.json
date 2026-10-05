@@ -1,25 +1,18 @@
 {
-  "generated_at": "2026-10-05T14:16:58.629631+00:00",
+  "generated_at": "2026-10-05T15:14:01.666822+00:00",
   "symbols": {
     "BTCUSDT": {
       "symbol": "BTCUSDT",
       "total_events": 200,
-      "processed": 2,
-      "saved": 2,
+      "processed": 6,
+      "saved": 6,
       "summary_by_type": {
-        "volume_spike": {
-          "count": 1,
-          "avg_funding": 0.0,
-          "avg_oi_change": null,
-          "avg_ls_ratio": 1.1,
-          "avg_change_24h": 0.8651
-        },
-        "rsi_overbought": {
-          "count": 1,
-          "avg_funding": 0.0,
-          "avg_oi_change": null,
-          "avg_ls_ratio": 1.25,
-          "avg_change_24h": 0.582
+        "oi_spike": {
+          "count": 6,
+          "avg_funding": 0.0001,
+          "avg_oi_change": -66.7075,
+          "avg_ls_ratio": 1.09,
+          "avg_change_24h": 1.7574
         }
       }
     },
@@ -29,70 +22,77 @@
       "processed": 2,
       "saved": 2,
       "summary_by_type": {
-        "volume_spike": {
-          "count": 1,
-          "avg_funding": 0.0,
-          "avg_oi_change": null,
-          "avg_ls_ratio": 1.29,
-          "avg_change_24h": 0.55
-        },
-        "rsi_overbought": {
-          "count": 1,
-          "avg_funding": 0.0,
-          "avg_oi_change": 0.2389,
-          "avg_ls_ratio": 1.24,
-          "avg_change_24h": 1.0677
+        "oi_spike": {
+          "count": 2,
+          "avg_funding": 0.0001,
+          "avg_oi_change": -50.4186,
+          "avg_ls_ratio": 1.19,
+          "avg_change_24h": 1.6789
         }
       }
     },
     "SOLUSDT": {
       "symbol": "SOLUSDT",
       "total_events": 200,
-      "processed": 2,
-      "saved": 2,
+      "processed": 50,
+      "saved": 50,
       "summary_by_type": {
-        "ls_long_extreme": {
+        "rsi_oversold": {
+          "count": 2,
+          "avg_funding": 0.0,
+          "avg_oi_change": null,
+          "avg_ls_ratio": 1.72,
+          "avg_change_24h": -1.3633
+        },
+        "fall_1h": {
           "count": 1,
-          "avg_funding": 0.0001,
+          "avg_funding": 0.0,
           "avg_oi_change": null,
           "avg_ls_ratio": 1.7,
           "avg_change_24h": -0.7809
         },
+        "volume_spike": {
+          "count": 1,
+          "avg_funding": 0.0,
+          "avg_oi_change": null,
+          "avg_ls_ratio": 1.7,
+          "avg_change_24h": -0.7809
+        },
+        "ls_short_extreme": {
+          "count": 34,
+          "avg_funding": 0.0001,
+          "avg_oi_change": -87.704,
+          "avg_ls_ratio": 1.3725,
+          "avg_change_24h": 1.2826
+        },
         "rsi_overbought": {
           "count": 1,
+          "avg_funding": 0.0,
+          "avg_oi_change": 0.6691,
+          "avg_ls_ratio": 1.2293,
+          "avg_change_24h": 3.713
+        },
+        "ls_long_extreme": {
+          "count": 11,
           "avg_funding": -0.0,
-          "avg_oi_change": 6.6765,
-          "avg_ls_ratio": 1.2603,
-          "avg_change_24h": 3.6715
+          "avg_oi_change": -1.4953,
+          "avg_ls_ratio": 1.9368,
+          "avg_change_24h": -0.6809
         }
       }
     },
     "BNBUSDT": {
       "symbol": "BNBUSDT",
       "total_events": 200,
-      "processed": 3,
-      "saved": 3,
+      "processed": 44,
+      "saved": 44,
       "summary_by_type": {
-        "funding_spike_pos": {
-          "count": 1,
-          "avg_funding": 0.0001,
-          "avg_oi_change": null,
-          "avg_ls_ratio": 2.26,
-          "avg_change_24h": 0.3041
-        },
-        "ls_long_extreme": {
-          "count": 1,
-          "avg_funding": 0.0001,
-          "avg_oi_change": null,
-          "avg_ls_ratio": 2.26,
-          "avg_change_24h": 0.3041
-        },
-        "fall_1h": {
-          "count": 1,
+        "ls_short_extreme": {
+          "count": 44,
           "avg_funding": 0.0,
-          "avg_oi_change": 6.2047,
-          "avg_ls_ratio": 1.5,
-          "avg_change_24h": 1.5989
+          "avg_oi_change": -61.2155,
+          "avg_ls_ratio": 1.6121,
+          "avg_change_24h": 1.1508
         }
       }
     }
