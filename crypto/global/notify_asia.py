@@ -1,9 +1,8 @@
 # ============================================================
 # ARGUS-Trader — NOTIFY ASIA + EUROPE (узел global)
 # ------------------------------------------------------------
-# v2: alerts include forecasts from asia_patterns:
-#     direction, target price, hit rate, samples.
-#     Only recent moves (last RECENT_HOURS).
+# v3: Kaliningrad time in alerts.
+# v2: alerts include forecasts from asia_patterns.
 # v1: при |change_pct| > 2% за час → алерт в TG.
 # ============================================================
 
@@ -13,6 +12,7 @@ import logging
 import requests
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 CRYPTO_ROOT = SCRIPT_DIR.parent
@@ -27,6 +27,8 @@ logging.basicConfig(
     datefmt="%H:%M:%S",
 )
 log = logging.getLogger("global.notify")
+
+TZ = ZoneInfo("Europe/Kaliningrad")
 
 THRESHOLD = 2.0
 RECENT_HOURS = 2
@@ -70,6 +72,15 @@ def _db1_conn():
             DB1_URL, connect_timeout=15,
         )
     return _DB1_CONN
+
+
+def _to_local(ts):
+    """UTC datetime -> Kaliningrad string."""
+    if ts is None:
+        return "?"
+    if ts.tzinfo is None:
+        ts = ts.replace(tzinfo=timezone.utc)
+    return ts.astimezone(TZ).strftime("%d.%m %H:%M")
 
 
 def fetch_candidates():
@@ -204,7 +215,7 @@ def fmt_alert(symbol, ts, change, forecasts):
     lines = [
         f"[{arrow}] {name}",
         f"Izmenenie: {sign}{change:.2f}% za chas",
-        f"Vremya (UTC): {ts.strftime('%d.%m %H:%M')}",
+        f"Vremya: {_to_local(ts)} KLG",
     ]
 
     if forecasts:
@@ -260,7 +271,7 @@ def send_tg(text):
 def main():
     log.info("=" * 60)
     log.info(
-        "ARGUS NOTIFY v2 — porog %.1f%%, recent %dh",
+        "ARGUS NOTIFY v3 — porog %.1f%%, recent %dh",
         THRESHOLD, RECENT_HOURS,
     )
     log.info("=" * 60)
