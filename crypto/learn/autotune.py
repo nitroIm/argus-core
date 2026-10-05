@@ -1,11 +1,20 @@
 # ============================================================
-# ARGUS-Trader - AUTOTUNE v3 [PRODUCTION]
+# ARGUS-Trader - AUTOTUNE v4 [PRODUCTION]
 # ------------------------------------------------------------
-# v3: сохраняет best_params ТОЛЬКО если edge > MIN_EDGE
-# v2: fix make_params
+# v4: regression — objective='regression', metric='rmse'.
+#     Grid evaluated by test IC (Spearman), not accuracy.
+#     Saves to autotune_results.json (not best_params.json)
+#     because train.py v13 uses hardcoded PARAMS.
+#     Removed MIN_EDGE unlink (dangerous auto-delete).
+#     Reads meta.objective to detect model type.
+# v3: save best_params only if edge > MIN_EDGE.
+# v2: fix make_params.
 # ============================================================
 
 import sys
+import os
+os.environ.setdefault("USE_CROSS", "0")
+
 import json
 import logging
 import itertools
@@ -31,52 +40,72 @@ log = logging.getLogger("crypto.autotune")
 
 MODELS_DIR = SCRIPT_DIR / "models"
 MODELS_DIR.mkdir(parents=True, exist_ok=True)
-BEST_PARAMS_FILE = MODELS_DIR / "best_params.json"
-
-# Не сохраняем параметры если edge хуже порога
-MIN_EDGE = 0.02
+RESULTS_FILE = MODELS_DIR / "autotune_results.json"
 
 GRID = {
-    "num_leaves": [15, 31],
+    "num_leaves": [8, 15, 31],
     "learning_rate": [0.03, 0.05, 0.08],
     "max_depth": [3, 5],
 }
 
-NUM_ROUNDS = 200
+NUM_ROUNDS = 500
 EARLY_STOP = 30
+VAL_FRAC = 0.15
 
 
-def make_params(num_leaves, learning_rate, max_depth):
+def make_params(num_leaves, learning_rate,
+                max_depth):
     return {
-        "objective": "binary",
-        "is_unbalance": True,
-        "metric": "binary_logloss",
+        "objective": "regression",
+        "metric": "rmse",
         "boosting_type": "gbdt",
         "num_leaves": num_leaves,
         "max_depth": max_depth,
         "learning_rate": learning_rate,
-        "feature_fraction": 0.7,
-        "bagging_fraction": 0.7,
+        "feature_fraction": 0.5,
+        "bagging_fraction": 0.6,
         "bagging_freq": 5,
-        "min_data_in_leaf": 30,
-        "lambda_l1": 0.3,
-        "lambda_l2": 0.3,
+        "min_data_in_leaf": 80,
+        "lambda_l1": 1.0,
+        "lambda_l2": 1.0,
         "verbose": -1,
         "seed": 42,
     }
 
 
-def evaluate_params(params, X_train, y_train,
-                    X_test, y_test):
-    train_set = lgb.Dataset(X_train, label=y_train)
-    valid_set = lgb.Dataset(
-        X_test, label=y_test, reference=train_set,
+def _ic(y_true, y_pred):
+    if len(y_true) < 10:
+        return 0.0
+    if np.std(y_true) == 0 or np.std(y_pred) == 0:
+        return 0.0
+    yt = y_true - y_true.mean()
+    yp = y_pred - y_pred.mean()
+    d = np.sqrt((yt * yt).sum() * (yp * yp).sum())
+    if d == 0:
+        return 0.0
+    return float((yt * yp).sum() / d)
+
+
+def evaluate_params(params, X_train, r_train,
+                    X_test, r_test):
+    n_tr = len(X_train)
+    cut = int(n_tr * (1 - VAL_FRAC))
+    X_tr = X_train[:cut]
+    r_tr = r_train[:cut]
+    X_va = X_train[cut:]
+    r_va = r_train[cut:]
+
+    train_set = lgb.Dataset(X_tr, label=r_tr)
+    val_set = lgb.Dataset(
+        X_va, label=r_va,
+        reference=train_set,
     )
+
     try:
         model = lgb.train(
             params, train_set,
             num_boost_round=NUM_ROUNDS,
-            valid_sets=[valid_set],
+            valid_sets=[val_set],
             callbacks=[
                 lgb.early_stopping(
                     EARLY_STOP, verbose=False,
@@ -87,23 +116,31 @@ def evaluate_params(params, X_train, y_train,
         log.warning("train fail: %s", e)
         return None
 
-    y_pred = (model.predict(X_test) > 0.5).astype(int)
-    acc = float((y_pred == y_test).mean())
-    up = float(y_test.mean())
-    baseline = max(up, 1 - up)
-    edge = acc - baseline
+    p_test = model.predict(X_test).astype(
+        np.float32
+    )
+    ic_te = _ic(r_test, p_test)
+    mae_te = float(
+        np.mean(np.abs(p_test - r_test))
+    )
+    rmse_te = float(
+        np.sqrt(np.mean((p_test - r_test) ** 2))
+    )
+    best_iter = (
+        model.best_iteration or model.num_trees()
+    )
 
     return {
-        "accuracy": round(acc, 4),
-        "baseline": round(baseline, 4),
-        "edge": round(edge, 4),
-        "num_trees": model.num_trees(),
+        "ic_test": round(ic_te, 4),
+        "mae_test": round(mae_te, 4),
+        "rmse_test": round(rmse_te, 4),
+        "best_iter": int(best_iter),
     }
 
 
 def autotune():
     log.info("=" * 60)
-    log.info("ARGUS AUTOTUNE v3")
+    log.info("ARGUS AUTOTUNE v4 (regression)")
     log.info("=" * 60)
 
     data = prepare()
@@ -112,20 +149,23 @@ def autotune():
         return None
 
     X_train = data["X_train"]
-    y_train = data["y_train"]
     X_test = data["X_test"]
-    y_test = data["y_test"]
+    r_train = data["r_train"]
+    r_test = data["r_test"]
 
     log.info(
-        "train=%d test=%d",
+        "train=%d test=%d features=%d",
         len(X_train), len(X_test),
+        len(data["feature_cols"]),
     )
 
     keys = list(GRID.keys())
     values = list(GRID.values())
     combos = list(itertools.product(*values))
 
-    log.info("testing %d combinations", len(combos))
+    log.info(
+        "testing %d combinations", len(combos),
+    )
 
     results = []
     for i, combo in enumerate(combos, 1):
@@ -133,8 +173,8 @@ def autotune():
         params = make_params(**cfg)
 
         r = evaluate_params(
-            params, X_train, y_train,
-            X_test, y_test,
+            params, X_train, r_train,
+            X_test, r_test,
         )
         if r is None:
             continue
@@ -142,59 +182,53 @@ def autotune():
         r["params"] = cfg
         results.append(r)
         log.info(
-            "[%d/%d] %s -> edge=%+.4f acc=%.4f",
+            "[%d/%d] %s -> IC=%+.4f "
+            "RMSE=%.4f iter=%d",
             i, len(combos), cfg,
-            r["edge"], r["accuracy"],
+            r["ic_test"], r["rmse_test"],
+            r["best_iter"],
         )
 
     if not results:
         log.error("no results")
         return None
 
-    best = max(results, key=lambda x: x["edge"])
+    best = max(
+        results, key=lambda x: x["ic_test"],
+    )
     log.info("=" * 60)
     log.info("BEST: %s", best["params"])
     log.info(
-        "edge=%+.4f acc=%.4f trees=%d",
-        best["edge"], best["accuracy"],
-        best["num_trees"],
+        "IC=%+.4f RMSE=%.4f iter=%d",
+        best["ic_test"], best["rmse_test"],
+        best["best_iter"],
     )
     log.info("=" * 60)
 
-    if best["edge"] < MIN_EDGE:
-        log.warning(
-            "edge %+.4f < MIN_EDGE %.2f — "
-            "NOT saving best_params",
-            best["edge"], MIN_EDGE,
-        )
-        # Удаляем старый best_params если есть
-        if BEST_PARAMS_FILE.exists():
-            try:
-                BEST_PARAMS_FILE.unlink()
-                log.info("removed stale best_params.json")
-            except Exception as e:
-                log.warning("unlink: %s", e)
-        return best
-
-    log.info(
-        "edge %+.4f >= %.2f — saving best_params",
-        best["edge"], MIN_EDGE,
-    )
     out = {
         "tuned_at": datetime.now(
             timezone.utc
         ).isoformat(),
+        "version": "v4",
+        "objective": "regression",
         "n_train": len(X_train),
         "n_test": len(X_test),
+        "n_features": len(data["feature_cols"]),
         "best": best,
         "all_results": results,
     }
 
-    with open(BEST_PARAMS_FILE, "w",
-              encoding="utf-8") as f:
-        json.dump(out, f, ensure_ascii=False, indent=2)
+    with open(
+        RESULTS_FILE, "w", encoding="utf-8",
+    ) as f:
+        json.dump(
+            out, f,
+            ensure_ascii=False, indent=2,
+        )
 
-    log.info("saved: %s", BEST_PARAMS_FILE.name)
+    log.info(
+        "saved: %s", RESULTS_FILE.name
+    )
     return best
 
 
