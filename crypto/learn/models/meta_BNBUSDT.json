@@ -1,22 +1,22 @@
 {
-  "trained_at": "2026-10-05T22:11:20.321525+00:00",
+  "trained_at": "2026-10-05T22:11:21.175822+00:00",
   "version": "v13",
   "objective": "regression",
-  "symbol": "SOLUSDT",
+  "symbol": "BNBUSDT",
   "n_total": 5854,
   "n_train": 4683,
   "n_test": 1171,
   "n_val_inner": 703,
-  "best_iteration": 60,
-  "ic_train": 0.5097,
-  "ic_test": 0.1376,
-  "mae_train": 1.5193,
-  "mae_test": 1.7344,
-  "rmse_train": 2.0966,
-  "rmse_test": 2.3526,
-  "sign_acc_train": 0.6073,
-  "sign_acc_test": 0.5098,
-  "num_trees": 60,
+  "best_iteration": 93,
+  "ic_train": 0.5334,
+  "ic_test": -0.0715,
+  "mae_train": 1.0062,
+  "mae_test": 1.1593,
+  "rmse_train": 1.4125,
+  "rmse_test": 1.614,
+  "sign_acc_train": 0.6366,
+  "sign_acc_test": 0.468,
+  "num_trees": 93,
   "features": [
     "change_pct",
     "range_pct",
@@ -51,46 +51,45 @@
   ],
   "top_features": [
     {
-      "name": "volatility_7d",
-      "gain": 9470.51
-    },
-    {
-      "name": "volatility_24h",
-      "gain": 4931.76
-    },
-    {
       "name": "change_3d",
-      "gain": 4748.69
+      "gain": 4663.7
+    },
+    {
+      "name": "volatility_7d",
+      "gain": 4169.54
     },
     {
       "name": "change_1d",
-      "gain": 3211.12
+      "gain": 3810.72
     },
     {
-      "name": "macd_signal",
-      "gain": 2848.85
+      "name": "volatility_24h",
+      "gain": 2348.29
     },
     {
       "name": "day_of_week",
-      "gain": 2469.78
+      "gain": 1576.31
     },
     {
-      "name": "bb_width_pct",
-      "gain": 1561.32
+      "name": "macd_signal",
+      "gain": 1566.08
     },
     {
       "name": "change_7d",
-      "gain": 1550.42
+      "gain": 1510.17
+    },
+    {
+      "name": "bb_width_pct",
+      "gain": 1045.26
+    },
+    {
+      "name": "ema50_dist_pct",
+      "gain": 923.72
     },
     {
       "name": "funding_rate",
-      "gain": 1425.71
-    },
-    {
-      "name": "bb_lower_dist",
-      "gain": 1120.83
+      "gain": 679.62
     }
   ],
-  "horizon": 12,
-  "exported_at": "2026-10-05T22:11:21.377004+00:00"
+  "horizon": 12
 }

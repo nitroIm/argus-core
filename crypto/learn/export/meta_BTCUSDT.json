@@ -1,22 +1,22 @@
 {
-  "trained_at": "2026-10-05T21:45:49.776017+00:00",
+  "trained_at": "2026-10-05T22:11:17.447920+00:00",
   "version": "v13",
   "objective": "regression",
   "symbol": "BTCUSDT",
-  "n_total": 8997,
-  "n_train": 7197,
+  "n_total": 8998,
+  "n_train": 7198,
   "n_test": 1800,
   "n_val_inner": 1080,
-  "best_iteration": 11,
-  "ic_train": 0.3776,
-  "ic_test": -0.1271,
-  "mae_train": 1.1659,
-  "mae_test": 0.8964,
-  "rmse_train": 1.6244,
-  "rmse_test": 1.3998,
-  "sign_acc_train": 0.5188,
-  "sign_acc_test": 0.4522,
-  "num_trees": 11,
+  "best_iteration": 12,
+  "ic_train": 0.3873,
+  "ic_test": -0.1206,
+  "mae_train": 1.1641,
+  "mae_test": 0.8954,
+  "rmse_train": 1.6222,
+  "rmse_test": 1.4001,
+  "sign_acc_train": 0.52,
+  "sign_acc_test": 0.4517,
+  "num_trees": 12,
   "features": [
     "change_pct",
     "range_pct",
@@ -51,46 +51,46 @@
   ],
   "top_features": [
     {
-      "name": "change_1d",
-      "gain": 1587.13
-    },
-    {
       "name": "change_3d",
-      "gain": 1411.23
+      "gain": 1783.68
     },
     {
-      "name": "change_7d",
-      "gain": 609.09
+      "name": "change_1d",
+      "gain": 1577.77
     },
     {
       "name": "funding_rate",
-      "gain": 520.55
+      "gain": 847.8
     },
     {
-      "name": "volatility_24h",
-      "gain": 486.08
+      "name": "change_7d",
+      "gain": 756.56
     },
     {
       "name": "volatility_7d",
-      "gain": 431.42
+      "gain": 529.97
+    },
+    {
+      "name": "volatility_24h",
+      "gain": 257.38
     },
     {
       "name": "day_of_week",
-      "gain": 323.45
+      "gain": 242.35
     },
     {
-      "name": "bb_width_pct",
-      "gain": 249.06
+      "name": "dist_high_24h_pct",
+      "gain": 156.61
     },
     {
       "name": "macd_signal",
-      "gain": 184.06
+      "gain": 125.5
     },
     {
-      "name": "macd",
-      "gain": 74.23
+      "name": "bb_width_pct",
+      "gain": 121.53
     }
   ],
   "horizon": 12,
-  "exported_at": "2026-10-05T21:45:54.300306+00:00"
+  "exported_at": "2026-10-05T22:11:21.375483+00:00"
 }
