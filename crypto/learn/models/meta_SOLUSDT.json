@@ -1,22 +1,22 @@
 {
-  "trained_at": "2026-10-05T21:45:54.093102+00:00",
+  "trained_at": "2026-10-05T21:45:53.140642+00:00",
   "version": "v13",
   "objective": "regression",
-  "symbol": "BNBUSDT",
+  "symbol": "SOLUSDT",
   "n_total": 5853,
   "n_train": 4682,
   "n_test": 1171,
   "n_val_inner": 703,
-  "best_iteration": 92,
-  "ic_train": 0.533,
-  "ic_test": -0.0766,
-  "mae_train": 1.0083,
-  "mae_test": 1.1606,
-  "rmse_train": 1.4137,
-  "rmse_test": 1.6141,
-  "sign_acc_train": 0.6369,
-  "sign_acc_test": 0.4381,
-  "num_trees": 92,
+  "best_iteration": 27,
+  "ic_train": 0.4279,
+  "ic_test": 0.1584,
+  "mae_train": 1.5686,
+  "mae_test": 1.7299,
+  "rmse_train": 2.1811,
+  "rmse_test": 2.3584,
+  "sign_acc_train": 0.5769,
+  "sign_acc_test": 0.5013,
+  "num_trees": 27,
   "features": [
     "change_pct",
     "range_pct",
@@ -51,46 +51,45 @@
   ],
   "top_features": [
     {
-      "name": "change_3d",
-      "gain": 4744.43
+      "name": "volatility_7d",
+      "gain": 5772.88
     },
     {
-      "name": "volatility_7d",
-      "gain": 4030.58
+      "name": "change_3d",
+      "gain": 3200.76
     },
     {
       "name": "change_1d",
-      "gain": 3053.85
-    },
-    {
-      "name": "volatility_24h",
-      "gain": 2411.81
-    },
-    {
-      "name": "change_7d",
-      "gain": 1647.37
-    },
-    {
-      "name": "day_of_week",
-      "gain": 1541.68
-    },
-    {
-      "name": "bb_width_pct",
-      "gain": 1505.19
+      "gain": 1693.03
     },
     {
       "name": "macd_signal",
-      "gain": 1497.85
+      "gain": 1601.28
     },
     {
-      "name": "ema50_dist_pct",
-      "gain": 762.29
+      "name": "volatility_24h",
+      "gain": 1575.48
+    },
+    {
+      "name": "bb_width_pct",
+      "gain": 911.2
+    },
+    {
+      "name": "change_7d",
+      "gain": 789.74
+    },
+    {
+      "name": "change_24h",
+      "gain": 570.25
+    },
+    {
+      "name": "macd",
+      "gain": 531.98
     },
     {
       "name": "funding_rate",
-      "gain": 739.08
+      "gain": 499.45
     }
   ],
-  "horizon": 12,
-  "exported_at": "2026-10-05T21:45:54.301893+00:00"
+  "horizon": 12
 }

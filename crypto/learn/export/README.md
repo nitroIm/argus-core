@@ -1,26 +1,26 @@
-# ARGUS ML - Export v4
+# ARGUS ML - Export v5
 
-## Per-symbol модели
+## Per-symbol models
 - `lgb_BTCUSDT.txt` + `meta_BTCUSDT.json`
 - `lgb_ETHUSDT.txt` + `meta_ETHUSDT.json`
 - `lgb_SOLUSDT.txt` + `meta_SOLUSDT.json`
 - `lgb_BNBUSDT.txt` + `meta_BNBUSDT.json`
 
-## Совместимость
-- `lgb_model.txt` = копия BTC-модели
-- `model_meta.json` = копия meta BTC
+## Compat
+- `lgb_model.txt` = copy of BTC
+- `model_meta.json` = copy of BTC meta
 
-## Данные
-- `features_hourly.csv` - внутренние фичи
+## Data
+- `features_hourly.csv` - INTERNAL + target
 - `external_market.csv` - DXY/SPX/GOLD
 
-## Параметры
+## Config
 - HORIZON: 12h
-- THRESHOLD: 0.5%
 - REFERENCE: BTCUSDT
-- FEATURE_COLS: 37
+- FEATURE_COLS: 30
+- USE_CROSS: 0 (off)
 
-## Использование
+## Usage
 1. pip install lightgbm==4.5.0
 2. model = lgb.Booster(
      model_file='lgb_BTCUSDT.txt')

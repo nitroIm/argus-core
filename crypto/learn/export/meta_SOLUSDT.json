@@ -1,20 +1,22 @@
 {
-  "trained_at": "2026-10-05T16:50:36.739467+00:00",
-  "version": "v12",
+  "trained_at": "2026-10-05T21:45:53.140642+00:00",
+  "version": "v13",
   "objective": "regression",
   "symbol": "SOLUSDT",
-  "n_total": 5848,
-  "n_train": 4678,
-  "n_test": 1170,
-  "ic_train": 0.5181,
-  "ic_test": 0.06,
-  "mae_train": 1.407,
-  "mae_test": 1.7604,
-  "rmse_train": 1.9153,
-  "rmse_test": 2.3747,
-  "sign_acc_train": 0.668,
-  "sign_acc_test": 0.5145,
-  "num_trees": 200,
+  "n_total": 5853,
+  "n_train": 4682,
+  "n_test": 1171,
+  "n_val_inner": 703,
+  "best_iteration": 27,
+  "ic_train": 0.4279,
+  "ic_test": 0.1584,
+  "mae_train": 1.5686,
+  "mae_test": 1.7299,
+  "rmse_train": 2.1811,
+  "rmse_test": 2.3584,
+  "sign_acc_train": 0.5769,
+  "sign_acc_test": 0.5013,
+  "num_trees": 27,
   "features": [
     "change_pct",
     "range_pct",
@@ -34,9 +36,6 @@
     "day_of_week",
     "funding_rate",
     "funding_trend",
-    "oi_change_pct",
-    "ls_ratio",
-    "taker_ratio",
     "ema9_dist_pct",
     "ema21_dist_pct",
     "ema50_dist_pct",
@@ -53,45 +52,45 @@
   "top_features": [
     {
       "name": "volatility_7d",
-      "gain": 16083.4
+      "gain": 5772.88
     },
     {
       "name": "change_3d",
-      "gain": 9845.47
-    },
-    {
-      "name": "volatility_24h",
-      "gain": 9528.36
+      "gain": 3200.76
     },
     {
       "name": "change_1d",
-      "gain": 8558.94
+      "gain": 1693.03
     },
     {
       "name": "macd_signal",
-      "gain": 6180.63
+      "gain": 1601.28
     },
     {
-      "name": "funding_rate",
-      "gain": 5737.89
-    },
-    {
-      "name": "day_of_week",
-      "gain": 3849.15
+      "name": "volatility_24h",
+      "gain": 1575.48
     },
     {
       "name": "bb_width_pct",
-      "gain": 3626.66
+      "gain": 911.2
     },
     {
       "name": "change_7d",
-      "gain": 2202.04
+      "gain": 789.74
+    },
+    {
+      "name": "change_24h",
+      "gain": 570.25
     },
     {
       "name": "macd",
-      "gain": 2009.92
+      "gain": 531.98
+    },
+    {
+      "name": "funding_rate",
+      "gain": 499.45
     }
   ],
   "horizon": 12,
-  "exported_at": "2026-10-05T20:50:51.874570+00:00"
+  "exported_at": "2026-10-05T21:45:54.301401+00:00"
 }

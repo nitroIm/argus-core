@@ -1,22 +1,22 @@
 {
-  "trained_at": "2026-10-05T21:45:51.168732+00:00",
+  "trained_at": "2026-10-05T21:45:54.093102+00:00",
   "version": "v13",
   "objective": "regression",
-  "symbol": "ETHUSDT",
-  "n_total": 8997,
-  "n_train": 7197,
-  "n_test": 1800,
-  "n_val_inner": 1080,
-  "best_iteration": 24,
-  "ic_train": 0.3806,
-  "ic_test": -0.1378,
-  "mae_train": 1.6103,
-  "mae_test": 1.1565,
-  "rmse_train": 2.2837,
-  "rmse_test": 1.9402,
-  "sign_acc_train": 0.5556,
-  "sign_acc_test": 0.45,
-  "num_trees": 24,
+  "symbol": "BNBUSDT",
+  "n_total": 5853,
+  "n_train": 4682,
+  "n_test": 1171,
+  "n_val_inner": 703,
+  "best_iteration": 92,
+  "ic_train": 0.533,
+  "ic_test": -0.0766,
+  "mae_train": 1.0083,
+  "mae_test": 1.1606,
+  "rmse_train": 1.4137,
+  "rmse_test": 1.6141,
+  "sign_acc_train": 0.6369,
+  "sign_acc_test": 0.4381,
+  "num_trees": 92,
   "features": [
     "change_pct",
     "range_pct",
@@ -52,45 +52,44 @@
   "top_features": [
     {
       "name": "change_3d",
-      "gain": 4881.19
-    },
-    {
-      "name": "change_1d",
-      "gain": 3398.2
-    },
-    {
-      "name": "change_7d",
-      "gain": 2996.75
-    },
-    {
-      "name": "funding_rate",
-      "gain": 2755.12
+      "gain": 4744.43
     },
     {
       "name": "volatility_7d",
-      "gain": 1720.86
+      "gain": 4030.58
     },
     {
-      "name": "day_of_week",
-      "gain": 1160.35
-    },
-    {
-      "name": "dist_low_24h_pct",
-      "gain": 953.79
-    },
-    {
-      "name": "macd_signal",
-      "gain": 741.3
+      "name": "change_1d",
+      "gain": 3053.85
     },
     {
       "name": "volatility_24h",
-      "gain": 554.75
+      "gain": 2411.81
+    },
+    {
+      "name": "change_7d",
+      "gain": 1647.37
+    },
+    {
+      "name": "day_of_week",
+      "gain": 1541.68
+    },
+    {
+      "name": "bb_width_pct",
+      "gain": 1505.19
+    },
+    {
+      "name": "macd_signal",
+      "gain": 1497.85
     },
     {
       "name": "ema50_dist_pct",
-      "gain": 525.21
+      "gain": 762.29
+    },
+    {
+      "name": "funding_rate",
+      "gain": 739.08
     }
   ],
-  "horizon": 12,
-  "exported_at": "2026-10-05T21:45:54.300917+00:00"
+  "horizon": 12
 }

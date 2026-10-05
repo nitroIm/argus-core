@@ -1,20 +1,22 @@
 {
-  "trained_at": "2026-10-05T16:50:33.350647+00:00",
-  "version": "v12",
+  "trained_at": "2026-10-05T21:45:49.776017+00:00",
+  "version": "v13",
   "objective": "regression",
   "symbol": "BTCUSDT",
-  "n_total": 8992,
-  "n_train": 7193,
-  "n_test": 1799,
-  "ic_train": 0.5179,
-  "ic_test": -0.046,
-  "mae_train": 1.0458,
-  "mae_test": 0.9238,
-  "rmse_train": 1.4352,
-  "rmse_test": 1.4449,
-  "sign_acc_train": 0.6656,
-  "sign_acc_test": 0.4797,
-  "num_trees": 200,
+  "n_total": 8997,
+  "n_train": 7197,
+  "n_test": 1800,
+  "n_val_inner": 1080,
+  "best_iteration": 11,
+  "ic_train": 0.3776,
+  "ic_test": -0.1271,
+  "mae_train": 1.1659,
+  "mae_test": 0.8964,
+  "rmse_train": 1.6244,
+  "rmse_test": 1.3998,
+  "sign_acc_train": 0.5188,
+  "sign_acc_test": 0.4522,
+  "num_trees": 11,
   "features": [
     "change_pct",
     "range_pct",
@@ -34,9 +36,6 @@
     "day_of_week",
     "funding_rate",
     "funding_trend",
-    "oi_change_pct",
-    "ls_ratio",
-    "taker_ratio",
     "ema9_dist_pct",
     "ema21_dist_pct",
     "ema50_dist_pct",
@@ -52,46 +51,46 @@
   ],
   "top_features": [
     {
-      "name": "change_3d",
-      "gain": 10581.81
-    },
-    {
       "name": "change_1d",
-      "gain": 8813.17
+      "gain": 1587.13
     },
     {
-      "name": "funding_rate",
-      "gain": 5788.14
+      "name": "change_3d",
+      "gain": 1411.23
     },
     {
       "name": "change_7d",
-      "gain": 5528.62
+      "gain": 609.09
     },
     {
-      "name": "volatility_7d",
-      "gain": 5233.3
+      "name": "funding_rate",
+      "gain": 520.55
     },
     {
       "name": "volatility_24h",
-      "gain": 4078.84
+      "gain": 486.08
+    },
+    {
+      "name": "volatility_7d",
+      "gain": 431.42
     },
     {
       "name": "day_of_week",
-      "gain": 3150.59
-    },
-    {
-      "name": "macd_signal",
-      "gain": 2160.77
+      "gain": 323.45
     },
     {
       "name": "bb_width_pct",
-      "gain": 2155.48
+      "gain": 249.06
     },
     {
-      "name": "dist_high_24h_pct",
-      "gain": 1627.56
+      "name": "macd_signal",
+      "gain": 184.06
+    },
+    {
+      "name": "macd",
+      "gain": 74.23
     }
   ],
   "horizon": 12,
-  "exported_at": "2026-10-05T20:50:51.872968+00:00"
+  "exported_at": "2026-10-05T21:45:54.300306+00:00"
 }
