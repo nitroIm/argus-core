@@ -1,5 +1,5 @@
 {
-  "predicted_at": "2026-10-05T19:51:30.960892+00:00",
+  "predicted_at": "2026-10-05T21:40:56.092293+00:00",
   "model_accuracy": null,
   "model_accuracy_avg": null,
   "symbols": [
@@ -8,22 +8,5 @@
     "SOLUSDT",
     "BNBUSDT"
   ],
-  "predictions": [
-    {
-      "symbol": "BTCUSDT",
-      "timestamp": "2025-10-15T22:00:00+00:00",
-      "prob_up": -0.5254,
-      "direction": 0,
-      "confidence": 2.0508,
-      "model_acc": null
-    },
-    {
-      "symbol": "ETHUSDT",
-      "timestamp": "2025-10-15T22:00:00+00:00",
-      "prob_up": 0.1865,
-      "direction": 0,
-      "confidence": 0.627,
-      "model_acc": null
-    }
-  ]
+  "predictions": []
 }
