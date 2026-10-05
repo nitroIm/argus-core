@@ -1,13 +1,17 @@
 # ============================================================
-# ARGUS-Trader — PATTERNS v2.2
+# ARGUS-Trader — PATTERNS v3
 # ------------------------------------------------------------
+# v3: DB routing via symbol_conn (DB1: BTC/ETH, DB2: SOL/BNB).
+#     SYMBOLS from env, fallback to config.SYMBOLS.
+#     Автопоиск db2.py (как в features.py v8).
+#     Логика расчёта не менялась с v2.2.
 # v2.2: batch INSERT in save_patterns. No double fetch.
-#       82s -> ~5s expected.
 # v2.1: fix fetch_features — merge features_hourly + candles.
 # v2: + regime detection (trend_up / trend_down / flat /
 #     chop / volatile).
 # ============================================================
 
+import os
 import sys
 import json
 import logging
@@ -20,8 +24,33 @@ CRYPTO_ROOT = SCRIPT_DIR.parent
 DATA_DIR = CRYPTO_ROOT / "data"
 sys.path.insert(0, str(CRYPTO_ROOT))
 
-from config import SYMBOLS
+# Auto-locate db2.py (same trick as features.py v8)
+for _p in CRYPTO_ROOT.rglob("db2.py"):
+    _d = str(_p.parent)
+    if "__pycache__" in _d:
+        continue
+    if _d not in sys.path:
+        sys.path.insert(0, _d)
+    break
+
+from config import SYMBOLS as CONFIG_SYMBOLS
 from db import get_connection, close_connection
+
+DB2_OK = False
+get_conn_db2 = None
+close_conn_db2 = None
+if (os.getenv("ARGUS_DB_URL_2") or "").strip():
+    try:
+        from db2 import get_connection as get_conn_db2
+        from db2 import close_connection as close_conn_db2
+        _t = get_conn_db2()
+        with _t as _c:
+            with _c.cursor() as _cur:
+                _cur.execute("SELECT 1")
+                _cur.fetchone()
+        DB2_OK = True
+    except Exception as e:
+        print("DB2 fail: " + str(e))
 
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 ANALYSIS_FILE = DATA_DIR / "patterns_analysis.json"
@@ -36,11 +65,40 @@ log = logging.getLogger("crypto.patterns")
 REGIME_WINDOW = 48
 VOLATILE_RATIO = 1.6
 
+DEFAULT_SYMBOLS = (
+    list(CONFIG_SYMBOLS) if CONFIG_SYMBOLS
+    else ["BTCUSDT", "ETHUSDT"]
+)
+SYMBOLS = [
+    s.strip().upper()
+    for s in (
+        os.getenv("SYMBOLS")
+        or ",".join(DEFAULT_SYMBOLS)
+    ).split(",")
+    if s.strip()
+]
+DB2_SYMBOLS = {
+    s.strip().upper()
+    for s in (
+        os.getenv("DB2_SYMBOLS") or "SOLUSDT,BNBUSDT"
+    ).split(",")
+    if s.strip()
+}
+
+
+def symbol_conn(symbol):
+    if symbol in DB2_SYMBOLS and DB2_OK:
+        try:
+            return get_conn_db2()
+        except Exception as e:
+            log.warning("db2 conn %s: %s", symbol, e)
+    return get_connection()
+
 
 def fetch_features(symbol, limit=500):
     """Merge features_hourly + candles by timestamp."""
     try:
-        with get_connection() as conn:
+        with symbol_conn(symbol) as conn:
             with conn.cursor() as cur:
                 cur.execute(
                     "SELECT timestamp, change_pct, range_pct, "
@@ -350,19 +408,19 @@ def save_patterns(symbol, analysis):
         params.extend(r)
 
     try:
-        with get_connection() as conn:
+        with symbol_conn(symbol) as conn:
             with conn.cursor() as cur:
                 cur.execute(sql, tuple(params))
                 return cur.rowcount or 0
     except Exception as e:
         log.error(f"save_patterns batch failed: {e}, fallback single")
-        return _save_patterns_single(rows)
+        return _save_patterns_single(symbol, rows)
 
 
-def _save_patterns_single(rows):
+def _save_patterns_single(symbol, rows):
     added = 0
     try:
-        with get_connection() as conn:
+        with symbol_conn(symbol) as conn:
             with conn.cursor() as cur:
                 for i, r in enumerate(rows):
                     sp = "sp_p_" + str(i)
@@ -394,7 +452,11 @@ def _save_patterns_single(rows):
 
 def main():
     log.info("=" * 60)
-    log.info("🧩 ARGUS-Trader PATTERNS v2.2")
+    log.info("🧩 ARGUS-Trader PATTERNS v3")
+    log.info(
+        "SYMBOLS=%s DB2_SYMBOLS=%s (DB2_OK=%s)",
+        SYMBOLS, sorted(DB2_SYMBOLS), DB2_OK,
+    )
     log.info("=" * 60)
 
     all_analysis = {}
@@ -441,6 +503,11 @@ def main():
     log.info("=" * 60)
 
     close_connection()
+    if DB2_OK and close_conn_db2:
+        try:
+            close_conn_db2()
+        except Exception:
+            pass
 
 
 if __name__ == "__main__":
