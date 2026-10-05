@@ -1,10 +1,14 @@
 # ============================================================
-# ARGUS-Trader - LEARN WEIGHTS v2
+# ARGUS-Trader - LEARN WEIGHTS v3
 # ------------------------------------------------------------
-# v2: per-regime weights.
-#     Learns separately for trend_up/trend_down/flat/chop.
-#     Source that works in trend gets higher weight there.
-#     Falls back to base weight if regime stats too small.
+# v3: MIN_SAMPLES 5 -> 20 (5 was pure noise for
+#     regime-aware updates).
+#     + log skip reasons (no trades / no breakdown /
+#       few samples).
+#     + don't drop regime_weights section on empty
+#       update (preserve last known values).
+#     + track matched trades count per source.
+# v2: per-regime weights (trend_up/down/flat/chop/...).
 # v1: base weights from hits/misses.
 # ============================================================
 
@@ -32,7 +36,7 @@ TRADES_FILE = STATE_DIR / "trades.json"
 WEIGHTS_FILE = STATE_DIR / "weights.json"
 
 LR = 0.2
-MIN_SAMPLES = 5
+MIN_SAMPLES = 20
 MIN_WEIGHT = 0.3
 MAX_WEIGHT = 2.0
 
@@ -61,8 +65,13 @@ def load_json(path, default):
 
 def save_json(path, data):
     try:
-        with open(path, "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
+        with open(
+            path, "w", encoding="utf-8"
+        ) as f:
+            json.dump(
+                data, f,
+                ensure_ascii=False, indent=2,
+            )
     except Exception as e:
         log.error("save %s: %s", path.name, e)
 
@@ -84,20 +93,23 @@ def collect_from_trade(trade):
     for src, info in br.items():
         if src not in SOURCES:
             continue
+        if not isinstance(info, dict):
+            continue
         try:
             contrib = float(info.get("contrib", 0))
         except Exception:
             continue
         if abs(contrib) < 1e-9:
             continue
-        voted_dir = "LONG" if contrib > 0 else "SHORT"
+        voted_dir = (
+            "LONG" if contrib > 0 else "SHORT"
+        )
         agreed = (voted_dir == direction)
         out.append((src, agreed, won, regime))
     return out
 
 
 def compute_update(w_old, hits, total):
-    """Common weight update math."""
     if total < MIN_SAMPLES:
         return None
     hit_rate = hits / total
@@ -108,7 +120,10 @@ def compute_update(w_old, hits, total):
 
 def main():
     log.info("=" * 60)
-    log.info("ARGUS LEARN WEIGHTS v2 (regime-aware)")
+    log.info(
+        "ARGUS LEARN WEIGHTS v3 "
+        "(regime-aware, min=%d)", MIN_SAMPLES,
+    )
     log.info("=" * 60)
 
     trades = load_json(TRADES_FILE, [])
@@ -116,24 +131,33 @@ def main():
         log.warning("no trades, nothing to learn")
         return
 
-    # Base counters (all trades regardless of regime)
+    log.info("trades loaded: %d", len(trades))
+
     base_hits = {s: 0 for s in SOURCES}
     base_total = {s: 0 for s in SOURCES}
 
-    # Per-regime counters
     regime_hits = {
-        r: {s: 0 for s in SOURCES} for r in REGIMES
+        r: {s: 0 for s in SOURCES}
+        for r in REGIMES
     }
     regime_total = {
-        r: {s: 0 for s in SOURCES} for r in REGIMES
+        r: {s: 0 for s in SOURCES}
+        for r in REGIMES
     }
 
     counted = 0
+    no_breakdown = 0
+    no_pnl = 0
+
     for t in trades:
         if not isinstance(t, dict):
             continue
+        if t.get("pnl_usd") is None:
+            no_pnl += 1
+            continue
         pairs = collect_from_trade(t)
         if not pairs:
+            no_breakdown += 1
             continue
         for src, agreed, won, regime in pairs:
             if regime not in REGIMES:
@@ -149,24 +173,34 @@ def main():
         "trades with breakdown: %d / %d",
         counted, len(trades),
     )
+    log.info(
+        "  no pnl: %d, no breakdown: %d",
+        no_pnl, no_breakdown,
+    )
 
     if counted == 0:
-        log.info("no new-format trades yet, skip")
+        log.info("no usable trades, skip")
         return
 
     weights = load_json(WEIGHTS_FILE, {})
     if not weights:
-        log.warning("weights.json empty")
+        log.warning("weights.json empty, skip")
         return
 
-    # --- Base weights (as v1) ---
+    # --- Base weights ---
     base_changed = []
     for src in SOURCES:
         total = base_total[src]
         if total < MIN_SAMPLES:
+            log.info(
+                "%s: base samples %d < %d, skip",
+                src, total, MIN_SAMPLES,
+            )
             continue
         w_old = float(weights.get(src, 1.0))
-        upd = compute_update(w_old, base_hits[src], total)
+        upd = compute_update(
+            w_old, base_hits[src], total,
+        )
         if upd is None:
             continue
         w_new, hit_rate = upd
@@ -180,26 +214,37 @@ def main():
         log.info("--- base weights ---")
         for src, wo, wn, n, hr in base_changed:
             log.info(
-                "%s: %.4f -> %.4f (n=%d hit=%.2f)",
+                "%s: %.4f -> %.4f "
+                "(n=%d hit=%.2f)",
                 src, wo, wn, n, hr,
             )
 
     # --- Per-regime weights ---
-    regime_weights = weights.get("regime_weights", {})
+    regime_weights = weights.get(
+        "regime_weights", {}
+    )
+    if not isinstance(regime_weights, dict):
+        regime_weights = {}
+
     regime_changed = []
 
     for regime in REGIMES:
         section = regime_weights.get(regime, {})
+        if not isinstance(section, dict):
+            section = {}
         for src in SOURCES:
             total = regime_total[regime][src]
             if total < MIN_SAMPLES:
                 continue
-            # start from current base or last regime value
             w_old = float(
-                section.get(src, weights.get(src, 1.0))
+                section.get(
+                    src, weights.get(src, 1.0)
+                )
             )
             upd = compute_update(
-                w_old, regime_hits[regime][src], total
+                w_old,
+                regime_hits[regime][src],
+                total,
             )
             if upd is None:
                 continue
@@ -217,19 +262,26 @@ def main():
         log.info("--- regime weights ---")
         for reg, src, wo, wn, n, hr in regime_changed:
             log.info(
-                "[%s] %s: %.4f -> %.4f (n=%d hit=%.2f)",
+                "[%s] %s: %.4f -> %.4f "
+                "(n=%d hit=%.2f)",
                 reg, src, wo, wn, n, hr,
             )
 
     if not base_changed and not regime_changed:
-        log.info("no updates (threshold not met)")
+        log.info(
+            "no updates "
+            "(all sources below MIN_SAMPLES=%d)",
+            MIN_SAMPLES,
+        )
         return
 
     weights["regime_weights"] = regime_weights
     weights["updated_at"] = datetime.now(
         timezone.utc
     ).isoformat()
+    weights["total_trades_used"] = counted
     save_json(WEIGHTS_FILE, weights)
+
     log.info("weights saved: %s", WEIGHTS_FILE.name)
     log.info("=" * 60)
 
