@@ -1,11 +1,11 @@
 # ============================================================
 # ARGUS-Trader - EXTERNAL MARKET [PRODUCTION]
 # ------------------------------------------------------------
-# v1: сбор DXY, SPX, Gold с Yahoo Finance (без ключа).
-#     Пишет в таблицу external_market.
-# ------------------------------------------------------------
-# Требования:
-#   pip install requests==2.32.3
+# v2: COALESCE on change_pct — prevents NULL overwrite.
+#     First point of window has no prev -> change=None.
+#     Old code did DO UPDATE SET change_pct = EXCLUDED,
+#     which nulled every point one hour after it appeared.
+# v1: collect DXY, SPX, Gold via Yahoo.
 # ============================================================
 
 import sys
@@ -36,7 +36,6 @@ HEADERS = {
     "User-Agent": "Mozilla/5.0 (X11; Linux x86_64)",
 }
 
-# symbol -> (yahoo_code, db_symbol)
 EXTERNAL = [
     ("DX-Y.NYB", "DXY"),
     ("^GSPC", "SPX"),
@@ -99,10 +98,40 @@ def fetch_yahoo(symbol_code):
     return out[-MAX_ROWS:]
 
 
-def compute_changes(rows):
-    """Добавляет change_pct между соседними точками."""
+def get_prev_close(db_symbol, first_ts):
+    """Fetch last close before first_ts from DB.
+
+    Used to compute change_pct for the very first
+    point of the Yahoo window (which has no prev).
+    """
+    try:
+        with get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT close FROM external_market "
+                    "WHERE symbol = %s "
+                    "AND timestamp < %s "
+                    "ORDER BY timestamp DESC LIMIT 1",
+                    (db_symbol, first_ts),
+                )
+                row = cur.fetchone()
+                if row and row[0]:
+                    return float(row[0])
+    except Exception as e:
+        log.warning(
+            "prev_close %s: %s", db_symbol, e,
+        )
+    return None
+
+
+def compute_changes(rows, prev_close=None):
+    """Compute change_pct between adjacent points.
+
+    For the first point, use prev_close from DB
+    if provided.
+    """
     out = []
-    prev = None
+    prev = prev_close
     for ts, close in rows:
         change = None
         if prev is not None and prev > 0:
@@ -116,7 +145,6 @@ def save_rows(db_symbol, rows):
     if not rows:
         return 0
 
-    added = 0
     sql = (
         "INSERT INTO external_market "
         "(symbol, timestamp, close, "
@@ -125,9 +153,13 @@ def save_rows(db_symbol, rows):
         "ON CONFLICT (symbol, timestamp) "
         "DO UPDATE SET "
         "close = EXCLUDED.close, "
-        "change_pct = EXCLUDED.change_pct"
+        "change_pct = COALESCE("
+        "  EXCLUDED.change_pct, "
+        "  external_market.change_pct"
+        ")"
     )
 
+    added = 0
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
@@ -146,32 +178,50 @@ def save_rows(db_symbol, rows):
                         if cur.rowcount and cur.rowcount > 0:
                             added += cur.rowcount
                     except Exception as e:
-                        log.warning("insert skip: %s", e)
+                        log.warning(
+                            "insert skip: %s", e,
+                        )
     except Exception as e:
         log.error("save %s: %s", db_symbol, e)
     return added
 
 
+def process_symbol(code, db_symbol):
+    log.info("%s (%s)", db_symbol, code)
+    rows = fetch_yahoo(code)
+    if not rows:
+        log.warning("  no data")
+        return 0
+
+    prev_close = None
+    if rows:
+        first_ts = rows[0][0]
+        prev_close = get_prev_close(
+            db_symbol, first_ts,
+        )
+        if prev_close is not None:
+            log.info(
+                "  prev_close from DB: %.4f",
+                prev_close,
+            )
+
+    rows = compute_changes(rows, prev_close)
+    added = save_rows(db_symbol, rows)
+    log.info(
+        "  fetched=%d saved=%d",
+        len(rows), added,
+    )
+    return added
+
+
 def main():
     log.info("=" * 60)
-    log.info("ARGUS-Trader EXTERNAL MARKET v1")
+    log.info("ARGUS-Trader EXTERNAL MARKET v2")
     log.info("=" * 60)
 
     total = 0
     for code, db_symbol in EXTERNAL:
-        log.info("%s (%s)", db_symbol, code)
-        rows = fetch_yahoo(code)
-        if not rows:
-            log.warning("  no data")
-            continue
-
-        rows = compute_changes(rows)
-        added = save_rows(db_symbol, rows)
-        total += added
-        log.info(
-            "  fetched=%d saved=%d",
-            len(rows), added,
-        )
+        total += process_symbol(code, db_symbol)
 
     log.info("=" * 60)
     log.info("DONE. Total saved: %d", total)
