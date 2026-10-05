@@ -1,20 +1,21 @@
 # ============================================================
-# ARGUS-Trader - DATASET v8.2 [PRODUCTION]
+# ARGUS-Trader - DATASET v10 [PRODUCTION]
 # ------------------------------------------------------------
-# v8.2: TARGET_COL = "next_change_pct" (real column).
-#       Disabled 3 empty features (oi_change_pct, ls_ratio,
-#       taker_ratio — 92% NULL, IC=0.0000 on audit).
-#       They stay in DB, just not fed to model.
-# v8.1: MOVE_THRESHOLD_PCT kept as dummy const.
-# v8.0: regression target = next_return.
-# v7.2: per-symbol time split. USE_CROSS optional.
+# v10: pulls ALL available tables from DB1+DB2.
+#      Feature buckets: internal, oi, ls, taker, macro,
+#      onchain, orderbook, events, anomaly, asia, cross.
+#      As-of joins with forward-fill. ~70 features.
+# v8.2: regression target, 30 features.
 # ============================================================
 
 import os
 import sys
+import json
 import logging
 from pathlib import Path
-from datetime import datetime, timezone, timedelta
+from datetime import (
+    datetime, timezone, timedelta,
+)
 
 import numpy as np
 
@@ -36,7 +37,9 @@ DB2_OK = False
 get_conn_db2 = None
 if (os.getenv("ARGUS_DB_URL_2") or "").strip():
     try:
-        from db2 import get_connection as get_conn_db2
+        from db2 import (
+            get_connection as get_conn_db2,
+        )
         _t = get_conn_db2()
         with _t as _c:
             with _c.cursor() as _cur:
@@ -57,12 +60,11 @@ USE_EXTERNAL = (
     os.getenv("USE_EXTERNAL", "0").strip() == "1"
 )
 USE_CROSS = (
-    os.getenv("USE_CROSS", "1").strip() == "1"
+    os.getenv("USE_CROSS", "0").strip() == "1"
 )
 
 HORIZON = int(os.getenv("HORIZON", "12"))
 
-# Dummy for export.py compat. Not used in target.
 MOVE_THRESHOLD_PCT = float(
     os.getenv("MOVE_THRESHOLD_PCT", "0.5")
 )
@@ -90,6 +92,22 @@ DB2_SYMBOLS = {
     if s.strip()
 }
 
+DATA_DIR = CRYPTO_ROOT / "data"
+
+# As-of max age (hours). Older -> NaN.
+MAX_AGE = {
+    "funding": 24,
+    "oi": 4,
+    "ls": 4,
+    "taker": 4,
+    "macro": 12,
+    "onchain": 72,
+    "orderbook": 4,
+    "asia": 2,
+    "events": 168,
+    "anomaly": 48,
+}
+
 
 def symbol_conn(symbol):
     if symbol in DB2_SYMBOLS and DB2_OK:
@@ -100,8 +118,9 @@ def symbol_conn(symbol):
     return get_connection()
 
 
-# v8.2: oi_change_pct, ls_ratio, taker_ratio disabled.
-# Re-enable when VPS accumulates 2000+ hours of LS/OI/taker.
+# ============================================================
+# Feature buckets
+# ============================================================
 INTERNAL_COLS = [
     "change_pct",
     "range_pct",
@@ -121,9 +140,6 @@ INTERNAL_COLS = [
     "day_of_week",
     "funding_rate",
     "funding_trend",
-    # "oi_change_pct",   # disabled: 92% NULL
-    # "ls_ratio",        # disabled: 92% NULL
-    # "taker_ratio",     # disabled: 92% NULL
     "ema9_dist_pct",
     "ema21_dist_pct",
     "ema50_dist_pct",
@@ -138,13 +154,74 @@ INTERNAL_COLS = [
     "session",
 ]
 
+OI_COLS = [
+    "oi_change_1h",
+    "oi_change_24h",
+]
+
+LS_COLS = [
+    "ls_ratio_asof",
+    "ls_change_1h",
+]
+
+TAKER_COLS = [
+    "taker_buy_pct",
+    "taker_change_1h",
+]
+
+MACRO_COLS = [
+    "us10y_level",
+    "us10y_change_1d",
+]
+
+ONCHAIN_COLS = [
+    "hashrate_log",
+    "hashrate_change_1d",
+]
+
+OB_COLS = [
+    "ob_bid_pct",
+    "ob_ask_pct",
+    "ob_spread_pct",
+]
+
+EVENT_COLS = [
+    "events_1h",
+    "events_24h",
+    "rsi_overbought_24h",
+]
+
+ANOMALY_COLS = [
+    "anomaly_24h",
+]
+
+ASIA_COLS = [
+    "asia_nikkei_6h",
+    "asia_shanghai_6h",
+    "asia_shanghai_12h",
+    "asia_hangseng_6h",
+    "asia_usdcny_6h",
+    "asia_usdcny_12h",
+    "asia_dax_6h",
+    "asia_stoxx50_6h",
+    "asia_ftse_6h",
+    "asia_eurusd_6h",
+    "asia_vix_1h",
+    "asia_nasdaq_1h",
+    "asia_us10y_6h",
+    "asia_usdjpy_6h",
+    "asia_kospi_6h",
+    "asia_taiex_6h",
+    "asia_impact_score",
+]
+
 EXTERNAL_COLS = [
     "dxy_change_pct",
     "spx_change_pct",
     "gold_change_pct",
 ]
 
-_CROSS_ALL = [
+CROSS_COLS = [
     "ref_change_1h",
     "ref_change_4h",
     "ref_change_24h",
@@ -152,37 +229,61 @@ _CROSS_ALL = [
     "ratio_zscore_24h",
     "lead_lag_corr_24h",
     "spread_pct",
-]
-
-CROSS_COLS = _CROSS_ALL if USE_CROSS else []
+] if USE_CROSS else []
 
 FEATURE_COLS = (
     INTERNAL_COLS
+    + OI_COLS
+    + LS_COLS
+    + TAKER_COLS
+    + MACRO_COLS
+    + ONCHAIN_COLS
+    + OB_COLS
+    + EVENT_COLS
+    + ANOMALY_COLS
+    + ASIA_COLS
     + (EXTERNAL_COLS if USE_EXTERNAL else [])
     + CROSS_COLS
 )
 
-TARGET_DIR = "next_direction"
 TARGET_RET = "next_return"
-# v8.2: real column in features_hourly
 TARGET_COL = "next_change_pct"
 
-EXT_MAX_AGE_H = 3
+
+# ============================================================
+# Generic DB fetch
+# ============================================================
+def _fetch(conn, sql, params=()):
+    try:
+        with conn.cursor() as cur:
+            cur.execute(sql, params)
+            rows = cur.fetchall()
+        out = []
+        for r in rows:
+            ts = r[0]
+            if ts is None:
+                continue
+            if ts.tzinfo is None:
+                ts = ts.replace(tzinfo=timezone.utc)
+            out.append((ts, r[1:]))
+        return out
+    except Exception as e:
+        log.warning("fetch: %s", e)
+        return []
 
 
 def fetch_features(symbol, limit=100000):
-    base_cols = ["symbol", "timestamp"] + INTERNAL_COLS
+    base_cols = ["timestamp"] + INTERNAL_COLS
     try:
         with symbol_conn(symbol) as conn:
-            with conn.cursor() as cur:
-                sql = (
-                    "SELECT " + ", ".join(base_cols)
-                    + " FROM features_hourly "
-                    + "WHERE symbol = %s "
-                    + "ORDER BY timestamp LIMIT %s"
-                )
-                cur.execute(sql, (symbol, limit))
-                return cur.fetchall()
+            return _fetch(
+                conn,
+                "SELECT " + ", ".join(base_cols)
+                + " FROM features_hourly "
+                + "WHERE symbol = %s "
+                + "ORDER BY timestamp LIMIT %s",
+                (symbol, limit),
+            )
     except Exception as e:
         log.warning("features %s: %s", symbol, e)
         return []
@@ -191,296 +292,500 @@ def fetch_features(symbol, limit=100000):
 def fetch_candles(symbol, limit=100000):
     try:
         with symbol_conn(symbol) as conn:
+            return _fetch(
+                conn,
+                "SELECT timestamp, open, high, low, close "
+                "FROM candles "
+                "WHERE symbol = %s "
+                "AND timeframe = '1h' "
+                "ORDER BY timestamp LIMIT %s",
+                (symbol, limit),
+               )
+    except Exception as e:
+        log.warning(" except Exceptioncandles %s: as %s", symbol, e)
+        return []
+
+ e
+def fetch_oi(symbol):
+    try:
+        with symbol_conn(symbol) as conn:
+            return _fetch(
+                conn,
+                "SELECT timestamp, oi, oi_value "
+                "FROM open_interest "
+                "WHERE symbol = %s "
+                "AND (oi IS NOT NULL OR oi_value IS NOT NULL) "
+                "ORDER BY timestamp",
+                (symbol,),
+            )
+    except Exception as e:
+        log.warning("oi %s: %s", symbol, e)
+        return []
+
+
+def fetch_ls(symbol):
+    try:
+        with symbol_conn(symbol) as conn:
+            return _fetch(
+                conn,
+                "SELECT timestamp, ls_ratio "
+                "FROM long_short_ratio "
+                "WHERE symbol = %s "
+                "AND ls_ratio IS NOT NULL "
+                "ORDER BY timestamp",
+                (symbol,),
+            )
+    except Exception as e:
+        log.warning("ls %s: %s", symbol, e)
+        return []
+
+
+def fetch_taker(symbol):
+    try:
+        with symbol_conn(symbol) as conn:
+            return _fetch(
+                conn,
+                "SELECT timestamp, buy_vol, sell_vol "
+                "FROM taker_flow "
+                "WHERE symbol = %s "
+                "AND buy_vol IS NOT NULL "
+                "AND sell_vol IS NOT NULL "
+                "ORDER BY timestamp",
+                (symbol,),
+            )
+    except Exception as e:
+        log.warning("taker %s: %s", symbol, e)
+        return []
+
+
+def fetch_macro():
+    try:
+        with get_connection() as conn:
+            return _fetch(
+                conn,
+                "SELECT timestamp, close "
+                "FROM macro_metrics "
+                "WHERE symbol = 'US10Y' "
+                "AND close IS NOT NULL "
+                "ORDER BY timestamp",
+            )
+:
+        log.warning("macro: %s", e)
+        return []
+
+
+def fetch_onchain():
+    try:
+        with get_connection() as conn:
+            return _fetch(
+                conn,
+                "SELECT timestamp, hashrate "
+                "FROM onchain_metrics "
+                "WHERE symbol = 'BTC' "
+                "AND hashrate IS NOT NULL "
+                "ORDER BY timestamp",
+            )
+    except Exception as e:
+        log.warning("onchain: %s", e)
+        return []
+
+
+def fetch_orderbook(symbol):
+    try:
+        with symbol_conn(symbol) as conn:
+            return _fetch(
+                conn,
+                "SELECT timestamp, bid_pct, ask_pct, "
+                "spread_pct FROM orderbook_snapshots "
+                "WHERE symbol = %s "
+                "AND bid_pct IS NOT NULL "
+                "ORDER BY timestamp",
+                (symbol,),
+            )
+    except Exception as e:
+        log.warning("orderbook %s: %s", symbol, e)
+        return []
+
+
+def fetch_events(symbol):
+    try:
+        with symbol_conn(symbol) as conn:
+            return _fetch(
+                conn,
+                "SELECT timestamp, event_type "
+                "FROM events "
+                "WHERE symbol = %s "
+                "ORDER BY timestamp",
+                (symbol,),
+            )
+    except Exception as e:
+        log.warning("events %s: %s", symbol, e)
+        return []
+
+
+def fetch_anomaly(symbol):
+    try:
+        with symbol_conn(symbol) as conn:
+            return _fetch(
+                conn,
+                "SELECT timestamp, anomaly_type "
+                "FROM anomaly_log "
+                "WHERE symbol = %s "
+                "ORDER BY timestamp",
+                (symbol,),
+            )
+    except Exception as e:
+        log.warning("anomaly %s: %s", symbol, e)
+        return []
+
+
+def fetch_asia_market():
+    if not DB2_OK:
+        return {}
+    try:
+        with get_conn_db2() as conn:
             with conn.cursor() as cur:
                 cur.execute(
-                    "SELECT timestamp, open, high, low, "
-                    "close FROM candles "
-                    "WHERE symbol = %s "
-                    "AND timeframe = '1h' "
-                    "ORDER BY timestamp LIMIT %s",
-                    (symbol, limit),
+                    "SELECT symbol, timestamp, change_pct "
+                    "FROM asia_market "
+                    "WHERE change_pct IS NOT NULL "
+                    "ORDER BY symbol, timestamp"
                 )
-                rows = cur.fetchall()
-                out = []
-                for r in rows:
-                    ts = r[0]
+                out = {}
+                for sym, ts, ch in cur.fetchall():
+                    if ts is None:
+                        continue
                     if ts.tzinfo is None:
-                        ts = ts.replace(tzinfo=timezone.utc)
-                    out.append({
-                        "ts": ts,
-                        "open": float(r[1]) if r[1] else None,
-                        "high": float(r[2]) if r[2] else None,
-                        "low": float(r[3]) if r[3] else None,
-                        "close": float(r[4]) if r[4] else None,
-                    })
+                        ts = ts.replace(
+                            tzinfo=timezone.utc
+                        )
+                    out.setdefault(sym, []).append(
+                        (ts, float(ch))
+                    )
                 return out
     except Exception as e:
-        log.warning("candles %s: %s", symbol, e)
-        return []
+        log.warning("asia_market: %s", e)
+        return {}
 
 
 def fetch_external(symbol):
     try:
         with get_connection() as conn:
-            with conn.cursor() as cur:
-                cur.execute(
-                    "SELECT timestamp, change_pct "
-                    "FROM external_market "
-                    "WHERE symbol = %s "
-                    "AND change_pct IS NOT NULL "
-                    "ORDER BY timestamp",
-                    (symbol,),
-                )
-                out = []
-                for r in cur.fetchall():
-                    ts = r[0]
-                    v = float(r[1]) if r[1] else None
-                    if ts and v is not None:
-                        if ts.tzinfo is None:
-                            ts = ts.replace(
-                                tzinfo=timezone.utc
-                            )
-                        out.append((ts, v))
-                return out
+            return _fetch(
+                conn,
+                "SELECT timestamp, change_pct "
+                "FROM external_market "
+                "WHERE symbol = %s "
+                "AND change_pct IS NOT NULL "
+                "ORDER BY timestamp",
+                (symbol,),
+            )
     except Exception as e:
         log.warning("external %s: %s", symbol, e)
         return []
 
 
+# ============================================================
+# As-of joins (forward fill, with max age)
+# ============================================================
+def asof(series, ts, max_age_h):
+    """Return last value at or before ts, else None."""
+    if not series:
+        return None
+    best = None
+    for s_ts, s_val in series:
+        if s_ts <= ts:
+            best = (s_ts, s_val)
+        else:
+            break
+    if best is None:
+        return None
+    if ts - best[0] > timedelta(hours=max_age_h):
+        return None
+    return best[1]
+
+
+def asof_shift(series, ts, shift_h, max_age_h):
+    return asof(series, ts - timedelta(hours=shift_h),
+                max_age_h)
+
+
+def asia_at(asia_list, ts, lag_hours):
+    if not asia_list:
+        return None
+    target = ts - timedelta(hours=lag_hours)
+    best_val = None
+    best_diff = None
+    for a_ts, a_val in asia_list:
+        diff = abs((a_ts - target).total_seconds())
+        if diff <= 1800:
+            if best_diff is None or diff < best_diff:
+                best_val = a_val
+                best_diff = diff
+    return best_val
+
+
+def asia_impact_score(asia, ts):
+    parts = []
+    sh = asia_at(asia.get("SHANGHAI", []), ts, 6)
+    if sh is not None:
+        parts.append(-sh)
+    for src in ["DAX", "NASDAQ", "NIKKEI"]:
+        v = asia_at(asia.get(src, []), ts, 6)
+        if v is not None:
+            parts.append(v)
+    v = asia_at(asia.get("VIX", []), ts, 1)
+    if v is not None:
+        parts.append(-v)
+    if not parts:
+        return None
+    return round(sum(parts), 4)
+
+
+# ============================================================
+# Feature construction
+# ============================================================
+def _safe(v):
+    if v is None:
+        return np.nan
+    try:
+        return float(v)
+    except Exception:
+        return np.nan
+
+
+def _build_oi_feats(oi_series, ts):
+    """oi_change_1h and oi_change_24h from as-of OI."""
+    now = asof(oi_series, ts, MAX_AGE["oi"])
+    prev1 = asof_shift(oi_series, ts, 1, MAX_AGE["oi"])
+    prev24 = asof_shift(oi_series, ts, 24, MAX_AGE["oi"])
+
+    c1 = np.nan
+    c24 = np.nan
+    if now is not None and prev1 is not None:
+        if prev1[0] > 0:
+            c1 = (now[0] - prev1[0]) / prev1[0] * 100
+    if now is not None and prev24 is not None:
+        if prev24[0] > 0:
+            c24 = (now[0] - prev24[0]) / prev24[0] * 100
+    return [_safe(c1), _safe(c24)]
+
+
+def _build_ls_feats(ls_series, ts):
+    now = asof(ls_series, ts, MAX_AGE["ls"])
+    prev1 = asof_shift(ls_series, ts, 1, MAX_AGE["ls"])
+    ch = np.nan
+    if now is not None and prev1 is not None:
+        ch = now[0] - prev1[0]
+    return [_safe(now[0]) if now else np.nan,
+            _safe(ch)]
+
+
+def _build_taker_feats(tk_series, ts):
+    now = asof(tk_series, ts, MAX_AGE["taker"])
+    prev1 = asof_shift(tk_series, ts, 1, MAX_AGE["taker"])
+    buy_pct = np.nan
+    ch = np.nan
+    if now is not None:
+        bv, sv = now
+        if bv + sv > 0:
+            buy_pct = bv / (bv + sv) * 100
+    if now is not None and prev1 is not None:
+        bv, sv = now
+        pbv, psv = prev1
+        if bv + sv > 0 and pbv + psv > 0:
+            cur = bv / (bv + sv)
+            prev = pbv / (pbv + psv)
+            ch = (cur - prev) * 100
+    return [_safe(buy_pct), _safe(ch)]
+
+
+def _build_macro_feats(series, ts):
+    now = asof(series, ts, MAX_AGE["macro"])
+    prev = asof_shift(series, ts, 24,
+                      MAX_AGE["macro"])
+    lvl = np.nan
+    ch = np.nan
+    if now is not None:
+        lvl = now[0]
+    if now is not None and prev is not None:
+        if prev[0] != 0:
+            ch = (now[0] - prev[0]) / abs(
+                prev[0]
+            ) * 100
+    return [_safe(lvl), _safe(ch)]
+
+
+def _build_onchain_feats(series, ts):
+    now = asof(series, ts, MAX_AGE["onchain"])
+    prev = asof_shift(series, ts, 24,
+                      MAX_AGE["onchain"])
+    log_hr = np.nan
+    ch = np.nan
+    if now is not None and now[0] > 0:
+        log_hr = float(np.log(now[0]))
+    if now is not None and prev is not None:
+        if prev[0] > 0:
+            ch = (now[0] - prev[0]) / prev[0] * 100
+    return [_safe(log_hr), _safe(ch)]
+
+
+def _build_ob_feats(series, ts):
+    now = asof(series, ts, MAX_AGE["orderbook"])
+    if now is None:
+        return [np.nan, np.nan, np.nan]
+    return [_safe(now[0]), _safe(now[1]),
+            _safe(now[2])]
+
+
+def _count_events(series, ts, hours):
+    if not series:
+        return 0
+    cutoff = ts - timedelta(hours=hours)
+    n = 0
+    for e_ts, _ in series:
+        if e_ts > cutoff and e_ts <= ts:
+            n += 1
+    return n
+
+
+def _count_events_type(series, ts, hours, etype):
+    if not series:
+        return 0
+    cutoff = ts - timedelta(hours=hours)
+    n = 0
+    for e_ts, et in series:
+        if e_ts > cutoff and e_ts <= ts and et == etype:
+            n += 1
+    return n
+
+
+def _build_event_feats(series, ts):
+    return [
+        _count_events(series, ts, 1),
+        _count_events(series, ts, 24),
+        _count_events_type(
+            series, ts, 24, "rsi_overbought"
+        ),
+    ]
+
+
+def _build_anomaly_feats(series, ts):
+    return [_count_events(series, ts, 24)]
+
+
+def _build_asia_feats(asia, ts):
+    return [
+        asia_at(asia.get("NIKKEI", []), ts, 6),
+        asia_at(asia.get("SHANGHAI", []), ts, 6),
+        asia_at(asia.get("SHANGHAI", []), ts, 12),
+        asia_at(asia.get("HANGSENG", []), ts, 6),
+        asia_at(asia.get("USDCNY", []), ts, 6),
+        asia_at(asia.get("USDCNY", []), ts, 12),
+        asia_at(asia.get("DAX", []), ts, 6),
+        asia_at(asia.get("SX5E", []), ts, 6),
+        asia_at(asia.get("FTSE", []), ts, 6),
+        asia_at(asia.get("EURUSD", []), ts, 6),
+        asia_at(asia.get("VIX", []), ts, 1),
+        asia_at(asia.get("NASDAQ", []), ts, 1),
+        asia_at(asia.get("US10Y", []), ts, 6),
+        asia_at(asia.get("USDJPY", []), ts, 6),
+        asia_at(asia.get("KOSPI", []), ts, 6),
+        asia_at(asia.get("TAIEX", []), ts, 6),
+        asia_impact_score(asia, ts),
+    ]
+
+
+def _build_external_feats(ext_dxy, ext_spx,
+                          ext_gold, ts):
+    v1 = asof(ext_dxy, ts, 3)
+    v2 = asof(ext_spx, ts, 3)
+    v3 = asof(ext_gold, ts, 3)
+    return [
+        _safe(v1[0]) if v1 else np.nan,
+        _safe(v2[0]) if v2 else np.nan,
+        _safe(v3[0]) if v3 else np.nan,
+    ]
+
+
+# ============================================================
+# Targets
+# ============================================================
 def build_targets(candles, horizon):
     out = {}
     n = len(candles)
     for i in range(n):
         if i + horizon >= n:
-            out[candles[i]["ts"]] = None
+            out[candles[i][0]] = None
             continue
-        c0 = candles[i]["close"]
-        c1 = candles[i + horizon]["close"]
+        c0 = candles[i][1][3]
+        c1 = candles[i + horizon][1][3]
         if not c0 or not c1 or c0 <= 0:
-            out[candles[i]["ts"]] = None
+            out[candles[i][0]] = None
             continue
         ret = (c1 - c0) / c0 * 100
-        out[candles[i]["ts"]] = ret
+        out[candles[i][0]] = ret
     return out
 
 
-def build_cross_full(
-    feat_maps, candle_maps, ref_symbol,
+# ============================================================
+# Build X, y
+# ============================================================
+def build_xy_all(
+    symbols_data, targets_map, asia,
+    ext_dxy, ext_spx, ext_gold,
 ):
-    if not CROSS_COLS:
-        return {s: {} for s in feat_maps}
-    ref_feat = feat_maps.get(ref_symbol) or {}
-    ref_close = candle_maps.get(ref_symbol) or {}
-
-    ref_ch = {
-        ts: f.get("change_pct")
-        for ts, f in ref_feat.items()
-    }
-    ref_ch4 = {
-        ts: f.get("change_4h")
-        for ts, f in ref_feat.items()
-    }
-    ref_ch24 = {
-        ts: f.get("change_24h")
-        for ts, f in ref_feat.items()
-    }
-
-    out = {}
-    for symbol, feats in feat_maps.items():
-        sym_close = candle_maps.get(symbol) or {}
-        common_ts = sorted(
-            set(feats.keys()) & set(ref_close.keys())
-        )
-
-        ratio = {}
-        for ts in common_ts:
-            sc = sym_close.get(ts)
-            rc = ref_close.get(ts)
-            if sc and rc and rc > 0:
-                ratio[ts] = sc / rc * 1000
-
-        ratio_ts = sorted(ratio.keys())
-        zscore = {}
-        for i in range(len(ratio_ts)):
-            if i < 24:
-                zscore[ratio_ts[i]] = np.nan
-                continue
-            window = [
-                ratio[ratio_ts[j]]
-                for j in range(i - 24, i)
-            ]
-            arr = np.array(window, dtype=float)
-            mu = arr.mean()
-            sd = arr.std()
-            if sd == 0:
-                zscore[ratio_ts[i]] = 0.0
-            else:
-                val = ratio[ratio_ts[i]]
-                zscore[ratio_ts[i]] = float(
-                    (val - mu) / sd
-                )
-
-        corr_ts = sorted(
-            set(feats.keys()) & set(ref_feat.keys())
-        )
-        corr = {}
-        window = 24
-        for i in range(len(corr_ts)):
-            if i < window - 1:
-                corr[corr_ts[i]] = np.nan
-                continue
-            xs, ys = [], []
-            for j in range(i - window + 1, i + 1):
-                t = corr_ts[j]
-                a = feats.get(t, {}).get("change_pct")
-                b = ref_feat.get(t, {}).get("change_pct")
-                if a is not None and b is not None:
-                    xs.append(a)
-                    ys.append(b)
-            if len(xs) < 5:
-                corr[corr_ts[i]] = np.nan
-                continue
-            A = np.array(xs, dtype=float)
-            B = np.array(ys, dtype=float)
-            if A.std() == 0 or B.std() == 0:
-                corr[corr_ts[i]] = np.nan
-                continue
-            cc = float(np.corrcoef(A, B)[0, 1])
-            corr[corr_ts[i]] = cc
-
-        cross_map = {}
-        for ts in feats:
-            if symbol == ref_symbol:
-                cross_map[ts] = {
-                    c: np.nan for c in CROSS_COLS
-                }
-                continue
-            own_4h = feats[ts].get("change_4h")
-            ref_4h = ref_ch4.get(ts)
-            spread = None
-            if own_4h is not None and ref_4h is not None:
-                spread = own_4h - ref_4h
-            cross_map[ts] = {
-                "ref_change_1h": (
-                    ref_ch.get(ts)
-                    if ref_ch.get(ts) is not None
-                    else np.nan
-                ),
-                "ref_change_4h": (
-                    ref_ch4.get(ts)
-                    if ref_ch4.get(ts) is not None
-                    else np.nan
-                ),
-                "ref_change_24h": (
-                    ref_ch24.get(ts)
-                    if ref_ch24.get(ts) is not None
-                    else np.nan
-                ),
-                "ratio": ratio.get(ts, np.nan),
-                "ratio_zscore_24h": zscore.get(
-                    ts, np.nan
-                ),
-                "lead_lag_corr_24h": corr.get(
-                    ts, np.nan
-                ),
-                "spread_pct": (
-                    spread if spread is not None
-                    else np.nan
-                ),
-            }
-        out[symbol] = cross_map
-    return out
-
-
-def ext_lookup(ext_list, ts,
-               max_age_h=EXT_MAX_AGE_H):
-    if not ext_list:
-        return None
-    if ts.tzinfo is None:
-        ts = ts.replace(tzinfo=timezone.utc)
-    result = None
-    for e_ts, e_val in ext_list:
-        if e_ts <= ts:
-            result = (e_ts, e_val)
-        else:
-            break
-    if result is None:
-        return None
-    if ts - result[0] > timedelta(hours=max_age_h):
-        return None
-    return result[1]
-
-
-def _get_feat_map(rows, base_cols):
-    idx = {c: i for i, c in enumerate(base_cols)}
-    out = {}
-    for r in rows:
-        ts = r[idx["timestamp"]]
-        if ts.tzinfo is None:
-            ts = ts.replace(tzinfo=timezone.utc)
-        feats = {}
-        for col in INTERNAL_COLS:
-            v = r[idx[col]]
-            if v is None:
-                feats[col] = np.nan
-            else:
-                try:
-                    feats[col] = float(v)
-                except Exception:
-                    feats[col] = np.nan
-        out[ts] = feats
-    return out
-
-
-def build_xy(
-    feat_maps, candle_maps, close_maps,
-    targets_map, ext_dxy, ext_spx, ext_gold,
-):
-    cross_maps = build_cross_full(
-        feat_maps, close_maps, REFERENCE,
-    )
-
     X, y_dir, y_ret = [], [], []
     ts_list, sym_list = [], []
 
     for symbol in SYMBOLS:
-        feats = feat_maps.get(symbol) or {}
+        d = symbols_data.get(symbol)
+        if not d:
+            continue
+        feats = d["feats"]
         targets = targets_map.get(symbol) or {}
-        cross = cross_maps.get(symbol) or {}
 
         for ts in sorted(feats.keys()):
             ret = targets.get(ts)
             if ret is None:
                 continue
-
-            direction = 1 if ret > 0 else 0
-
             row = []
-            f = feats[ts]
-
-            for col in INTERNAL_COLS:
-                row.append(f.get(col, np.nan))
-
+            for i, col in enumerate(INTERNAL_COLS):
+                row.append(
+                    d["feat_arrays"][i].get(ts, np.nan)
+                )
+            row.extend(_build_oi_feats(
+                d["oi"], ts,
+            ))
+            row.extend(_build_ls_feats(
+                d["ls"], ts,
+            ))
+            row.extend(_build_taker_feats(
+                d["taker"], ts,
+            ))
+            row.extend(_build_macro_feats(
+                d["macro"], ts,
+            ))
+            row.extend(_build_onchain_feats(
+                d["onchain"], ts,
+            ))
+            row.extend(_build_ob_feats(
+                d["ob"], ts,
+            ))
+            row.extend(_build_event_feats(
+                d["events"], ts,
+            ))
+            row.extend(_build_anomaly_feats(
+                d["anomaly"], ts,
+            ))
+            row.extend(_build_asia_feats(asia, ts))
             if USE_EXTERNAL:
-                v = ext_lookup(ext_dxy, ts)
-                row.append(
-                    v if v is not None else np.nan
-                )
-                v = ext_lookup(ext_spx, ts)
-                row.append(
-                    v if v is not None else np.nan
-                )
-                v = ext_lookup(ext_gold, ts)
-                row.append(
-                    v if v is not None else np.nan
-                )
-
-            cm = cross.get(ts, {})
-            for col in CROSS_COLS:
-                row.append(cm.get(col, np.nan))
-
+                row.extend(_build_external_feats(
+                    ext_dxy, ext_spx,
+                    ext_gold, ts,
+                ))
             X.append(row)
-            y_dir.append(direction)
+            y_dir.append(1 if ret > 0 else 0)
             y_ret.append(float(ret))
             ts_list.append(ts)
             sym_list.append(symbol)
@@ -520,8 +825,7 @@ def per_symbol_split(
     y = np.asarray(y)
     y_ret = np.asarray(y_ret)
 
-    train_idx = []
-    test_idx = []
+    train_idx, test_idx = [], []
 
     for sym in sorted(set(sym_list)):
         idxs = [
@@ -533,10 +837,6 @@ def per_symbol_split(
         )
         n = len(idxs_sorted)
         if n < 20:
-            log.warning(
-                "%s: too few rows (%d)",
-                sym, n,
-            )
             train_idx.extend(idxs_sorted)
             continue
         split = int(n * (1 - test_frac))
@@ -560,22 +860,31 @@ def per_symbol_split(
 
 def prepare(test_frac=0.2):
     log.info("=" * 60)
-    log.info("DATASET v8.2 (regression)")
+    log.info("DATASET v10 (all features)")
     log.info("SYMBOLS=%s", SYMBOLS)
-    log.info("REFERENCE=%s", REFERENCE)
-    log.info("USE_CROSS=%s", USE_CROSS)
+    log.info("HORIZON=%dh", HORIZON)
+    log.info("DB2_OK=%s", DB2_OK)
     log.info(
-        "HORIZON=%dh  TARGET=next_return", HORIZON,
-    )
-    log.info(
-        "DB2_SYMBOLS=%s (DB2_OK=%s)",
-        sorted(DB2_SYMBOLS), DB2_OK,
+        "features expected: %d", len(FEATURE_COLS),
     )
     log.info("=" * 60)
 
-    feat_maps = {}
-    candle_maps = {}
-    close_maps = {}
+    asia = fetch_asia_market()
+    log.info(
+        "asia_market: %d symbols", len(asia)
+    )
+
+    ext_dxy = fetch_external("DXY") if USE_EXTERNAL else []
+    ext_spx = fetch_external("SPX") if USE_EXTERNAL else []
+    ext_gold = fetch_external("GOLD") if USE_EXTERNAL else []
+
+    macro = fetch_macro()
+    log.info("macro points: %d", len(macro))
+
+    onchain = fetch_onchain()
+    log.info("onchain points: %d", len(onchain))
+
+    symbols_data = {}
     targets_map = {}
 
     for symbol in SYMBOLS:
@@ -586,11 +895,17 @@ def prepare(test_frac=0.2):
             )
             continue
 
-        base_cols = ["symbol", "timestamp"]
-        base_cols += INTERNAL_COLS
-        feat_maps[symbol] = _get_feat_map(
-            rows, base_cols
-        )
+        feats = {}
+        feat_arrays = [dict() for _ in INTERNAL_COLS]
+        for ts, vals in rows:
+            feats[ts] = True
+            for i, v in enumerate(vals):
+                if v is None:
+                    continue
+                try:
+                    feat_arrays[i][ts] = float(v)
+                except Exception:
+                    pass
 
         candles = fetch_candles(symbol)
         if not candles:
@@ -599,49 +914,68 @@ def prepare(test_frac=0.2):
             )
             continue
 
-        candle_maps[symbol] = candles
-        close_maps[symbol] = {
-            c["ts"]: c["close"] for c in candles
-            if c["close"]
-        }
         targets_map[symbol] = build_targets(
             candles, HORIZON,
         )
+
+        oi = fetch_oi(symbol)
+        ls = fetch_ls(symbol)
+        taker = fetch_taker(symbol)
+        ob = fetch_orderbook(symbol)
+        events = fetch_events(symbol)
+        anomaly = fetch_anomaly(symbol)
+
+        symbols_data[symbol] = {
+            "feats": feats,
+            "feat_arrays": feat_arrays,
+            "oi": [
+                (ts, (v[0], v[1])) for ts, v in oi
+            ],
+            "ls": [
+                (ts, (v[0],)) for ts, v in ls
+            ],
+            "taker": [
+                (ts, (v[0], v[1])) for ts, v in taker
+            ],
+            "macro": [
+                (ts, (v[0],)) for ts, v in macro
+            ],
+            "onchain": [
+                (ts, (v[0],)) for ts, v in onchain
+            ],
+            "ob": [
+                (ts, (v[0], v[1], v[2]))
+                for ts, v in ob
+            ],
+            "events": [
+                (ts, v[0]) for ts, v in events
+            ],
+            "anomaly": [
+                (ts, v[0]) for ts, v in anomaly
+            ],
+        }
+
         log.info(
-            "%s: features=%d candles=%d",
-            symbol, len(feat_maps[symbol]),
-            len(candles),
+            "%s: feat=%d candles=%d oi=%d "
+            "ls=%d taker=%d ob=%d ev=%d an=%d",
+            symbol, len(feats), len(candles),
+            len(oi), len(ls), len(taker),
+            len(ob), len(events), len(anomaly),
         )
 
-    if REFERENCE not in feat_maps:
-        log.error(
-            "REFERENCE %s has no data", REFERENCE,
-        )
+    if REFERENCE not in symbols_data:
+        log.error("REFERENCE %s missing", REFERENCE)
         return None
 
-    if USE_EXTERNAL:
-        ext_dxy = fetch_external("DXY")
-        ext_spx = fetch_external("SPX")
-        ext_gold = fetch_external("GOLD")
-        log.info(
-            "external: DXY=%d SPX=%d GOLD=%d",
-            len(ext_dxy), len(ext_spx),
-            len(ext_gold),
-        )
-    else:
-        ext_dxy = []
-        ext_spx = []
-        ext_gold = []
-
-    X, y_dir, y_ret, ts, sym = build_xy(
-        feat_maps, candle_maps, close_maps,
-        targets_map, ext_dxy, ext_spx, ext_gold,
+    X, y_dir, y_ret, ts, sym = build_xy_all(
+        symbols_data, targets_map, asia,
+        ext_dxy, ext_spx, ext_gold,
     )
 
-    log.info("samples: %d (no threshold)", len(X))
+    log.info("samples: %d", len(X))
 
     if len(X) < 100:
-        log.error("too few samples: %d", len(X))
+        log.error("too few samples")
         return None
 
     log.info("per-symbol time split:")
@@ -665,11 +999,6 @@ def prepare(test_frac=0.2):
         "split: train=%d test=%d features=%d",
         len(X_train), len(X_test),
         len(FEATURE_COLS),
-    )
-    log.info(
-        "balance train: up=%d down=%d",
-        balance["up_train"],
-        balance["down_train"],
     )
     log.info(
         "ret_train: mean=%.4f std=%.4f",
@@ -704,9 +1033,6 @@ def main():
         data["n_total"],
         data["n_train"], data["n_test"],
         len(data["feature_cols"]),
-    )
-    log.info(
-        "symbols in dataset: %s", data["symbols"]
     )
 
 
