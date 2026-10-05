@@ -1,9 +1,10 @@
 # ============================================================
-# ARGUS-Trader - EXPORT v3 [PRODUCTION]
+# ARGUS-Trader - EXPORT v4 [PRODUCTION]
 # ------------------------------------------------------------
-# v3: export only INTERNAL_COLS (cross-features are built
-#     on-the-fly in dataset.py, not stored in DB).
-# v2: экспорт только внутренних колонок features
+# v4: экспорт всех per-symbol моделей (lgb_{sym}.txt
+#     + meta_{sym}.json). Плюс совместимость:
+#     lgb_model.txt / model_meta.json = BTC.
+# v3: экспорт только INTERNAL_COLS.
 # ============================================================
 
 import sys
@@ -37,44 +38,70 @@ MODELS_DIR = SCRIPT_DIR / "models"
 EXPORT_DIR = SCRIPT_DIR / "export"
 EXPORT_DIR.mkdir(parents=True, exist_ok=True)
 
-
-def export_model():
-    src = MODELS_DIR / "lgb_model.txt"
-    if not src.exists():
-        log.warning("no model file")
-        return
-    dst = EXPORT_DIR / "lgb_model.txt"
-    shutil.copy2(src, dst)
-    log.info("model -> %s", dst.name)
+SYMBOLS_LIST = [
+    "BTCUSDT", "ETHUSDT",
+    "SOLUSDT", "BNBUSDT",
+]
 
 
-def export_meta():
-    src = MODELS_DIR / "model_meta.json"
-    if not src.exists():
-        log.warning("no meta file")
-        return
-    dst = EXPORT_DIR / "model_meta.json"
-    with open(src, "r", encoding="utf-8") as f:
-        meta = json.load(f)
-    meta["exported_at"] = datetime.now(
-        timezone.utc
-    ).isoformat()
-    with open(dst, "w", encoding="utf-8") as f:
-        json.dump(meta, f, ensure_ascii=False, indent=2)
-    log.info("meta -> %s", dst.name)
+def export_all_models():
+    """Копирует lgb_{sym}.txt + meta_{sym}.json."""
+    exported = 0
+    for sym in SYMBOLS_LIST:
+        src_m = MODELS_DIR / ("lgb_" + sym + ".txt")
+        src_mt = MODELS_DIR / ("meta_" + sym + ".json")
+        if not src_m.exists():
+            log.warning("%s: model missing", sym)
+            continue
+        dst_m = EXPORT_DIR / ("lgb_" + sym + ".txt")
+        shutil.copy2(src_m, dst_m)
+        if src_mt.exists():
+            with open(src_mt, "r", encoding="utf-8") as f:
+                meta = json.load(f)
+            meta["exported_at"] = datetime.now(
+                timezone.utc
+            ).isoformat()
+            dst_mt = EXPORT_DIR / (
+                "meta_" + sym + ".json"
+            )
+            with open(dst_mt, "w",
+                      encoding="utf-8") as f:
+                json.dump(meta, f,
+                          ensure_ascii=False, indent=2)
+        log.info("model -> %s", dst_m.name)
+        exported += 1
+
+    # Совместимость: lgb_model.txt = BTC
+    btc_m = MODELS_DIR / "lgb_BTCUSDT.txt"
+    btc_mt = MODELS_DIR / "meta_BTCUSDT.json"
+    if btc_m.exists():
+        shutil.copy2(
+            btc_m, EXPORT_DIR / "lgb_model.txt"
+        )
+        log.info("compat: lgb_model.txt <- BTC")
+    if btc_mt.exists():
+        with open(btc_mt, "r", encoding="utf-8") as f:
+            meta = json.load(f)
+        meta["exported_at"] = datetime.now(
+            timezone.utc
+        ).isoformat()
+        with open(
+            EXPORT_DIR / "model_meta.json",
+            "w", encoding="utf-8",
+        ) as f:
+            json.dump(meta, f,
+                      ensure_ascii=False, indent=2)
+        log.info("compat: model_meta.json <- BTC")
+    return exported
 
 
 def export_dataset_csv():
-    """Экспорт features_hourly + external CSV.
-    Только INTERNAL_COLS — cross-features на лету.
-    """
     cols1 = (
         ["symbol", "timestamp"]
         + INTERNAL_COLS
         + [TARGET_COL]
     )
     out1 = EXPORT_DIR / "features_hourly.csv"
-
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
@@ -97,7 +124,6 @@ def export_dataset_csv():
     except Exception as e:
         log.error("export features: %s", e)
 
-    # External
     out2 = EXPORT_DIR / "external_market.csv"
     try:
         with get_connection() as conn:
@@ -129,38 +155,32 @@ def export_dataset_csv():
 def export_readme():
     readme = EXPORT_DIR / "README.md"
     lines = [
-        "# ARGUS ML - Export v3",
+        "# ARGUS ML - Export v4",
         "",
-        "## Файлы",
-        "- `lgb_model.txt` - LightGBM модель",
-        "- `model_meta.json` - метрики + features",
+        "## Per-symbol модели",
+        "- `lgb_BTCUSDT.txt` + `meta_BTCUSDT.json`",
+        "- `lgb_ETHUSDT.txt` + `meta_ETHUSDT.json`",
+        "- `lgb_SOLUSDT.txt` + `meta_SOLUSDT.json`",
+        "- `lgb_BNBUSDT.txt` + `meta_BNBUSDT.json`",
+        "",
+        "## Совместимость",
+        "- `lgb_model.txt` = копия BTC-модели",
+        "- `model_meta.json` = копия meta BTC",
+        "",
+        "## Данные",
         "- `features_hourly.csv` - внутренние фичи",
         "- `external_market.csv` - DXY/SPX/GOLD",
-        "- `README.md`",
         "",
-        "## Модель",
+        "## Параметры",
         "- HORIZON: " + str(HORIZON) + "h",
         "- THRESHOLD: " + str(MOVE_THRESHOLD_PCT) + "%",
         "- REFERENCE: " + REFERENCE,
-        "- FEATURE_COLS (полный набор): "
-        + str(len(FEATURE_COLS)),
+        "- FEATURE_COLS: " + str(len(FEATURE_COLS)),
         "",
-        "## Как использовать",
+        "## Использование",
         "1. pip install lightgbm==4.5.0",
-        "2. model = lgb.Booster(model_file='lgb_model.txt')",
-        "",
-        "3. Внутренние фичи (" + str(len(INTERNAL_COLS)) + "):",
-        ", ".join(INTERNAL_COLS),
-        "",
-        "4. Кросс-фичи строятся на лету из candles",
-        "(см. crypto/learn/dataset.py build_cross_full)",
-        "",
-        "5. Target: " + TARGET_COL + " (0/1)",
-        "   threshold: " + str(MOVE_THRESHOLD_PCT) + "%",
-        "",
-        "## Заметка",
-        "features_hourly.csv содержит ТОЛЬКО внутренние фичи.",
-        "Cross-features BTC-relative строятся кодом.",
+        "2. model = lgb.Booster(",
+        "     model_file='lgb_BTCUSDT.txt')",
     ]
     with open(readme, "w", encoding="utf-8") as f:
         f.write("\n".join(lines))
@@ -169,7 +189,7 @@ def export_readme():
 
 def main():
     log.info("=" * 60)
-    log.info("ARGUS-Trader EXPORT v3")
+    log.info("ARGUS-Trader EXPORT v4")
     log.info(
         "FEATURE_COLS=%d INTERNAL=%d EXTERNAL=%d",
         len(FEATURE_COLS),
@@ -178,12 +198,11 @@ def main():
     )
     log.info("=" * 60)
 
-    export_model()
-    export_meta()
+    n = export_all_models()
     export_dataset_csv()
     export_readme()
 
-    log.info("done -> %s", EXPORT_DIR)
+    log.info("done: %d models -> %s", n, EXPORT_DIR)
 
 
 if __name__ == "__main__":
