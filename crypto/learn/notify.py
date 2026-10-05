@@ -1,14 +1,11 @@
 # ============================================================
-# ARGUS-Trader - NOTIFY v2 [PRODUCTION]
+# ARGUS-Trader - NOTIFY v3 [PRODUCTION]
 # ------------------------------------------------------------
-# v2: + sanity for conf in [0,1], prob_up in [0,1].
-#     + reads model_acc from signals json.
-#     + "Модель: acc=X" from meta instead of hardcoded
-#       "молодая, edge +0.05".
-#     + "Сумма" removed (notify is signal, not trade).
-#     + shows predicted_return_pct when present.
-#     + state reset when model_version changes.
-# v1: sends BUY/SELL [strong] to Telegram.
+# v3: get_last_close via symbol_conn — SOL/BNB from DB2.
+#     v2 called get_connection() -> price "?" for SOL/BNB.
+# v2: sanity for conf/prob_up in [0,1].
+#     model_acc from signals. predicted_return_pct line.
+#     state reset on model_version change.
 # ============================================================
 
 import os
@@ -24,7 +21,31 @@ CRYPTO_ROOT = SCRIPT_DIR.parent
 DATA_DIR = CRYPTO_ROOT / "data"
 sys.path.insert(0, str(CRYPTO_ROOT))
 
+for _p in CRYPTO_ROOT.rglob("db2.py"):
+    _d = str(_p.parent)
+    if "__pycache__" in _d:
+        continue
+    if _d not in sys.path:
+        sys.path.insert(0, _d)
+    break
+
 from db import get_connection
+
+DB2_OK = False
+get_conn_db2 = None
+if (os.getenv("ARGUS_DB_URL_2") or "").strip():
+    try:
+        from db2 import (
+            get_connection as get_conn_db2,
+        )
+        _t = get_conn_db2()
+        with _t as _c:
+            with _c.cursor() as _cur:
+                _cur.execute("SELECT 1")
+                _cur.fetchone()
+        DB2_OK = True
+    except Exception as e:
+        print("DB2 fail: " + str(e))
 
 logging.basicConfig(
     level=logging.INFO,
@@ -32,6 +53,15 @@ logging.basicConfig(
     datefmt="%H:%M:%S",
 )
 log = logging.getLogger("crypto.notify")
+
+DB2_SYMBOLS = {
+    s.strip().upper()
+    for s in (
+        os.getenv("DB2_SYMBOLS")
+        or "SOLUSDT,BNBUSDT"
+    ).split(",")
+    if s.strip()
+}
 
 SIGNALS_FILE = SCRIPT_DIR / "last_signals.json"
 STATE_FILE = SCRIPT_DIR / "notify_state.json"
@@ -48,6 +78,17 @@ CHAT_ID = (
 
 MIN_CONF = 0.30
 RESEND_HOURS = 6
+
+
+def symbol_conn(symbol):
+    if symbol in DB2_SYMBOLS and DB2_OK:
+        try:
+            return get_conn_db2()
+        except Exception as e:
+            log.warning(
+                "db2 conn %s: %s", symbol, e,
+            )
+    return get_connection()
 
 
 def load_json(path, default=None):
@@ -104,7 +145,7 @@ def send_tg(text):
 
 def get_last_close(symbol):
     try:
-        with get_connection() as conn:
+        with symbol_conn(symbol) as conn:
             with conn.cursor() as cur:
                 cur.execute(
                     "SELECT close FROM candles "
@@ -162,7 +203,6 @@ def fmt_signal(sig, price, levels, signals_data):
     conf = float(sig.get("confidence", 0) or 0)
     prob = float(sig.get("prob_up", 0.5) or 0.5)
 
-    # sanity: keep inside [0,1]
     if conf < 0:
         conf = 0.0
     if conf > 1:
@@ -239,16 +279,17 @@ def fmt_signal(sig, price, levels, signals_data):
 
 
 def _state_key(symbol, sig):
-    """State key includes model version.
-    On version change, anti-spam resets.
-    """
     v = sig.get("model_version") or "?"
     return symbol + "|" + str(v)
 
 
 def main():
     log.info("=" * 50)
-    log.info("ARGUS NOTIFY v2")
+    log.info("ARGUS NOTIFY v3")
+    log.info(
+        "DB2_SYMBOLS=%s (DB2_OK=%s)",
+        sorted(DB2_SYMBOLS), DB2_OK,
+    )
     log.info("=" * 50)
 
     if not BOT_TOKEN or not CHAT_ID:
@@ -290,7 +331,6 @@ def main():
             skipped_weak += 1
             continue
         if conf > 1.0:
-            # extra safety: polluted confidence
             log.warning(
                 "%s: bad conf=%.4f -> skip",
                 symbol, conf,
