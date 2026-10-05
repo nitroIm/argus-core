@@ -1,13 +1,10 @@
 # ============================================================
 # ARGUS-Trader - DATASET v7.2 [PRODUCTION]
 # ------------------------------------------------------------
-# v7.2: per-symbol time split. Каждая монета делится на
-#       train/test по своему времени, потом склеиваются.
-#       Масштабируется на любое число монет с разной историей.
-# v7.1: backwards-compat alias TARGET_COL for export.py.
-# v7: config-driven symbols + DB routing (DB1/DB2).
-#     Cross-features "each vs reference (BTC)".
-# v6: cross-features BTC<->ETH, regression target.
+# v7.2: per-symbol time split. Каждая монета делится отдельно.
+#       USE_CROSS env — cross vs REFERENCE опционален.
+# v7.1: backwards-compat TARGET_COL for export.py.
+# v7: config-driven symbols + DB routing.
 # ============================================================
 
 import os
@@ -22,7 +19,6 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 CRYPTO_ROOT = SCRIPT_DIR.parent
 sys.path.insert(0, str(CRYPTO_ROOT))
 
-# Auto-locate db2.py
 for _p in CRYPTO_ROOT.rglob("db2.py"):
     _d = str(_p.parent)
     if "__pycache__" in _d:
@@ -57,6 +53,9 @@ log = logging.getLogger("crypto.learn.dataset")
 
 USE_EXTERNAL = (
     os.getenv("USE_EXTERNAL", "0").strip() == "1"
+)
+USE_CROSS = (
+    os.getenv("USE_CROSS", "1").strip() == "1"
 )
 
 HORIZON = int(os.getenv("HORIZON", "4"))
@@ -139,7 +138,7 @@ EXTERNAL_COLS = [
     "gold_change_pct",
 ]
 
-CROSS_COLS = [
+_CROSS_ALL = [
     "ref_change_1h",
     "ref_change_4h",
     "ref_change_24h",
@@ -149,6 +148,8 @@ CROSS_COLS = [
     "spread_pct",
 ]
 
+CROSS_COLS = _CROSS_ALL if USE_CROSS else []
+
 FEATURE_COLS = (
     INTERNAL_COLS
     + (EXTERNAL_COLS if USE_EXTERNAL else [])
@@ -157,8 +158,6 @@ FEATURE_COLS = (
 
 TARGET_DIR = "next_direction"
 TARGET_RET = "next_return"
-
-# Backwards-compat for export.py and other legacy modules
 TARGET_COL = TARGET_DIR
 
 EXT_MAX_AGE_H = 3
@@ -261,6 +260,8 @@ def build_targets(candles, horizon):
 def build_cross_full(
     feat_maps, candle_maps, ref_symbol,
 ):
+    if not CROSS_COLS:
+        return {s: {} for s in feat_maps}
     ref_feat = feat_maps.get(ref_symbol) or {}
     ref_close = candle_maps.get(ref_symbol) or {}
 
@@ -278,10 +279,8 @@ def build_cross_full(
     }
 
     out = {}
-
     for symbol, feats in feat_maps.items():
         sym_close = candle_maps.get(symbol) or {}
-
         common_ts = sorted(
             set(feats.keys()) & set(ref_close.keys())
         )
@@ -306,12 +305,10 @@ def build_cross_full(
             arr = np.array(window, dtype=float)
             mu = arr.mean()
             sd = arr.std()
-            if sd == 0:
-                zscore[ratio_ts[i]] = 0.0
-            else:
-                zscore[ratio_ts[i]] = float(
-                    (ratio[ratio_ts[i]] - mu) / sd
-                )
+            zscore[ratio_ts[i]] = (
+                0.0 if sd == 0
+                else float((ratio[ratio_ts[i]] - mu) / sd)
+            )
 
         corr_ts = sorted(
             set(feats.keys()) & set(ref_feat.keys())
@@ -338,9 +335,7 @@ def build_cross_full(
             if A.std() == 0 or B.std() == 0:
                 corr[corr_ts[i]] = np.nan
                 continue
-            corr[corr_ts[i]] = float(
-                np.corrcoef(A, B)[0, 1]
-            )
+            corr[corr_ts[i]] = float(np.corrcoef(A, B)[0, 1])
 
         cross_map = {}
         for ts in feats:
@@ -371,20 +366,14 @@ def build_cross_full(
                     else np.nan
                 ),
                 "ratio": ratio.get(ts, np.nan),
-                "ratio_zscore_24h": zscore.get(
-                    ts, np.nan
-                ),
-                "lead_lag_corr_24h": corr.get(
-                    ts, np.nan
-                ),
+                "ratio_zscore_24h": zscore.get(ts, np.nan),
+                "lead_lag_corr_24h": corr.get(ts, np.nan),
                 "spread_pct": (
                     spread if spread is not None
                     else np.nan
                 ),
             }
-
         out[symbol] = cross_map
-
     return out
 
 
@@ -462,17 +451,11 @@ def build_xy(
 
             if USE_EXTERNAL:
                 v = ext_lookup(ext_dxy, ts)
-                row.append(
-                    v if v is not None else np.nan
-                )
+                row.append(v if v is not None else np.nan)
                 v = ext_lookup(ext_spx, ts)
-                row.append(
-                    v if v is not None else np.nan
-                )
+                row.append(v if v is not None else np.nan)
                 v = ext_lookup(ext_gold, ts)
-                row.append(
-                    v if v is not None else np.nan
-                )
+                row.append(v if v is not None else np.nan)
 
             cm = cross.get(ts, {})
             for col in CROSS_COLS:
@@ -514,11 +497,6 @@ def per_symbol_split(
     X, y, y_ret, ts_list, sym_list,
     test_frac=0.2,
 ):
-    """Split each symbol by its own time, then merge.
-
-    Масштабируется: новые монеты с любой историей —
-    каждая даёт свой train/test пропорционально.
-    """
     X = np.asarray(X)
     y = np.asarray(y)
     y_ret = np.asarray(y_ret)
@@ -531,9 +509,7 @@ def per_symbol_split(
             i for i, s in enumerate(sym_list)
             if s == sym
         ]
-        idxs_sorted = sorted(
-            idxs, key=lambda i: ts_list[i]
-        )
+        idxs_sorted = sorted(idxs, key=lambda i: ts_list[i])
         n = len(idxs_sorted)
         if n < 20:
             log.warning(
@@ -564,6 +540,7 @@ def prepare(test_frac=0.2):
     log.info("DATASET v7.2")
     log.info("SYMBOLS=%s", SYMBOLS)
     log.info("REFERENCE=%s", REFERENCE)
+    log.info("USE_CROSS=%s", USE_CROSS)
     log.info("HORIZON=%dh  THRESHOLD=%.2f%%",
              HORIZON, MOVE_THRESHOLD_PCT)
     log.info(
@@ -663,11 +640,6 @@ def prepare(test_frac=0.2):
         "balance train: up=%d down=%d",
         balance["up_train"],
         balance["down_train"],
-    )
-    log.info(
-        "ret train: mean=%.3f%% std=%.3f%%",
-        float(r_train.mean()) if len(r_train) else 0,
-        float(r_train.std()) if len(r_train) else 0,
     )
 
     return {
