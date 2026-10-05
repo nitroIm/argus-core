@@ -1,9 +1,9 @@
 # ============================================================
-# ARGUS - NEWS REPORT v6
+# ARGUS - NEWS REPORT v7
 # ------------------------------------------------------------
-# v6: SEND_HOURS_LOCAL in Kaliningrad time.
-#     System converts to UTC itself.
-# v5: hour filter, manual always sends.
+# v7: should_send_now — only by Kaliningrad hour.
+#     No manual override. No GITHUB_EVENT_NAME check.
+# v6: SEND_HOURS_LOCAL in Kaliningrad.
 # ============================================================
 
 import os
@@ -69,14 +69,8 @@ def now_local():
 
 
 def should_send_now():
-    """True if manual OR current local hour in SEND_HOURS_LOCAL."""
-    # Force override (для теста)
-    if os.getenv("FORCE_SEND", "").strip() == "1":
-        return True
-    # Ручной запуск всегда отправляет
-    if os.getenv("GITHUB_EVENT_NAME", "") == "workflow_dispatch":
-        return True
-    # Крон: проверяем локальный час
+    """True only if current Kaliningrad hour
+    in SEND_HOURS_LOCAL."""
     local = now_local()
     return local.hour in SEND_HOURS_LOCAL
 
@@ -293,7 +287,7 @@ def build_report(
 
     now = now_local()
     lines = []
-    lines.append("📰 <b>ARGUS — Новости</b> v6")
+    lines.append("📰 <b>ARGUS — Новости</b> v7")
     line = now.strftime("%d.%m %H:%M")
     line += " КЛГ"
     lines.append(line)
@@ -354,7 +348,7 @@ def build_report(
 
 
 def main():
-    log.info("news report v6")
+    log.info("news report v7")
     local = now_local()
     log.info(
         "local time: %s КЛГ (hour=%d, send_hours=%s)",
