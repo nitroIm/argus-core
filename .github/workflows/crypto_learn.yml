@@ -1,9 +1,9 @@
 # ============================================================
 # ARGUS - LEARN (ML training)
 # ------------------------------------------------------------
-# v3: HORIZON=12h (было 4h). Гипотеза: 4h направление
-#     слишком шумное, на 12h сигнал может быть сильнее.
-# v2: STEP "Run learn" — ARGUS_DB_URL_2, SYMBOLS, DB2_SYMBOLS.
+# v4: + Run xgb step (XGBoost parallel to LightGBM).
+# v3: HORIZON=12h.
+# v2: ARGUS_DB_URL_2, SYMBOLS, DB2_SYMBOLS.
 # v1: Train -> evaluate -> predict -> signals -> export.
 # ============================================================
 
@@ -56,6 +56,15 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python crypto/learn/runner.py
+
+      - name: Run xgb
+        env:
+          ARGUS_DB_URL: ${{ secrets.ARGUS_DB_URL }}
+          ARGUS_DB_URL_2: ${{ secrets.ARGUS_DB_URL_2 }}
+          SYMBOLS: BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT
+          DB2_SYMBOLS: SOLUSDT,BNBUSDT
+          HORIZON: '12'
+        run: python crypto/learn/train_xgb.py
 
       - name: Export for migration
         env:
