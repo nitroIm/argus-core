@@ -1,22 +1,22 @@
 {
-  "trained_at": "2026-10-05T22:40:27.335594+00:00",
+  "trained_at": "2026-10-05T22:40:41.143660+00:00",
   "version": "v13",
   "objective": "regression",
-  "symbol": "BTCUSDT",
+  "symbol": "ETHUSDT",
   "n_total": 8998,
   "n_train": 7198,
   "n_test": 1800,
   "n_val_inner": 1080,
-  "best_iteration": 12,
-  "ic_train": 0.39,
-  "ic_test": -0.1194,
-  "mae_train": 1.1639,
-  "mae_test": 0.8947,
-  "rmse_train": 1.6221,
-  "rmse_test": 1.3992,
-  "sign_acc_train": 0.52,
-  "sign_acc_test": 0.4517,
-  "num_trees": 12,
+  "best_iteration": 45,
+  "ic_train": 0.4059,
+  "ic_test": -0.1282,
+  "mae_train": 1.5871,
+  "mae_test": 1.1672,
+  "rmse_train": 2.2437,
+  "rmse_test": 1.9567,
+  "sign_acc_train": 0.5877,
+  "sign_acc_test": 0.4828,
+  "num_trees": 45,
   "features": [
     "change_pct",
     "range_pct",
@@ -86,45 +86,44 @@
   "top_features": [
     {
       "name": "change_3d",
-      "gain": 1784.19
+      "gain": 7350.65
     },
     {
       "name": "change_1d",
-      "gain": 1578.56
+      "gain": 6307.49
     },
     {
       "name": "funding_rate",
-      "gain": 849.53
+      "gain": 4950.93
     },
     {
       "name": "change_7d",
-      "gain": 758.68
+      "gain": 4024.67
     },
     {
       "name": "volatility_7d",
-      "gain": 537.63
-    },
-    {
-      "name": "volatility_24h",
-      "gain": 354.51
+      "gain": 2974.37
     },
     {
       "name": "day_of_week",
-      "gain": 185.81
+      "gain": 2741.75
     },
     {
-      "name": "dist_high_24h_pct",
-      "gain": 157.36
+      "name": "volatility_24h",
+      "gain": 1469.4
     },
     {
-      "name": "macd_signal",
-      "gain": 125.25
+      "name": "ema50_dist_pct",
+      "gain": 1257.11
     },
     {
-      "name": "bb_width_pct",
-      "gain": 117.79
+      "name": "dist_low_24h_pct",
+      "gain": 1120.81
+    },
+    {
+      "name": "bb_lower_dist",
+      "gain": 752.39
     }
   ],
-  "horizon": 12,
-  "exported_at": "2026-10-05T22:41:02.367820+00:00"
+  "horizon": 12
 }

@@ -1,22 +1,22 @@
 {
-  "trained_at": "2026-10-05T22:40:27.335594+00:00",
+  "trained_at": "2026-10-05T22:40:51.645590+00:00",
   "version": "v13",
   "objective": "regression",
-  "symbol": "BTCUSDT",
-  "n_total": 8998,
-  "n_train": 7198,
-  "n_test": 1800,
-  "n_val_inner": 1080,
-  "best_iteration": 12,
-  "ic_train": 0.39,
-  "ic_test": -0.1194,
-  "mae_train": 1.1639,
-  "mae_test": 0.8947,
-  "rmse_train": 1.6221,
-  "rmse_test": 1.3992,
-  "sign_acc_train": 0.52,
-  "sign_acc_test": 0.4517,
-  "num_trees": 12,
+  "symbol": "SOLUSDT",
+  "n_total": 5854,
+  "n_train": 4683,
+  "n_test": 1171,
+  "n_val_inner": 703,
+  "best_iteration": 60,
+  "ic_train": 0.5097,
+  "ic_test": 0.1376,
+  "mae_train": 1.5193,
+  "mae_test": 1.7344,
+  "rmse_train": 2.0966,
+  "rmse_test": 2.3526,
+  "sign_acc_train": 0.6073,
+  "sign_acc_test": 0.5098,
+  "num_trees": 60,
   "features": [
     "change_pct",
     "range_pct",
@@ -85,46 +85,45 @@
   ],
   "top_features": [
     {
-      "name": "change_3d",
-      "gain": 1784.19
-    },
-    {
-      "name": "change_1d",
-      "gain": 1578.56
-    },
-    {
-      "name": "funding_rate",
-      "gain": 849.53
-    },
-    {
-      "name": "change_7d",
-      "gain": 758.68
-    },
-    {
       "name": "volatility_7d",
-      "gain": 537.63
+      "gain": 9470.51
     },
     {
       "name": "volatility_24h",
-      "gain": 354.51
+      "gain": 4931.76
     },
     {
-      "name": "day_of_week",
-      "gain": 185.81
+      "name": "change_3d",
+      "gain": 4748.69
     },
     {
-      "name": "dist_high_24h_pct",
-      "gain": 157.36
+      "name": "change_1d",
+      "gain": 3211.12
     },
     {
       "name": "macd_signal",
-      "gain": 125.25
+      "gain": 2848.85
+    },
+    {
+      "name": "day_of_week",
+      "gain": 2469.78
     },
     {
       "name": "bb_width_pct",
-      "gain": 117.79
+      "gain": 1561.32
+    },
+    {
+      "name": "change_7d",
+      "gain": 1550.42
+    },
+    {
+      "name": "funding_rate",
+      "gain": 1425.71
+    },
+    {
+      "name": "bb_lower_dist",
+      "gain": 1120.83
     }
   ],
-  "horizon": 12,
-  "exported_at": "2026-10-05T22:41:02.367820+00:00"
+  "horizon": 12
 }

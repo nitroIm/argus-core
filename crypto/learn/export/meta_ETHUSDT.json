@@ -1,5 +1,5 @@
 {
-  "trained_at": "2026-10-05T22:11:18.576381+00:00",
+  "trained_at": "2026-10-05T22:40:41.143660+00:00",
   "version": "v13",
   "objective": "regression",
   "symbol": "ETHUSDT",
@@ -7,16 +7,16 @@
   "n_train": 7198,
   "n_test": 1800,
   "n_val_inner": 1080,
-  "best_iteration": 21,
-  "ic_train": 0.3709,
-  "ic_test": -0.1335,
-  "mae_train": 1.6142,
-  "mae_test": 1.1565,
-  "rmse_train": 2.2897,
-  "rmse_test": 1.9372,
-  "sign_acc_train": 0.559,
-  "sign_acc_test": 0.4433,
-  "num_trees": 21,
+  "best_iteration": 45,
+  "ic_train": 0.4059,
+  "ic_test": -0.1282,
+  "mae_train": 1.5871,
+  "mae_test": 1.1672,
+  "rmse_train": 2.2437,
+  "rmse_test": 1.9567,
+  "sign_acc_train": 0.5877,
+  "sign_acc_test": 0.4828,
+  "num_trees": 45,
   "features": [
     "change_pct",
     "range_pct",
@@ -47,50 +47,84 @@
     "dist_high_24h_pct",
     "dist_low_24h_pct",
     "consecutive_up",
-    "session"
+    "session",
+    "oi_change_1h",
+    "oi_change_24h",
+    "ls_ratio_asof",
+    "ls_change_1h",
+    "taker_buy_pct",
+    "taker_change_1h",
+    "us10y_level",
+    "us10y_change_1d",
+    "hashrate_log",
+    "hashrate_change_1d",
+    "ob_bid_pct",
+    "ob_ask_pct",
+    "ob_spread_pct",
+    "events_1h",
+    "events_24h",
+    "rsi_overbought_24h",
+    "anomaly_24h",
+    "asia_nikkei_6h",
+    "asia_shanghai_6h",
+    "asia_shanghai_12h",
+    "asia_hangseng_6h",
+    "asia_usdcny_6h",
+    "asia_usdcny_12h",
+    "asia_dax_6h",
+    "asia_stoxx50_6h",
+    "asia_ftse_6h",
+    "asia_eurusd_6h",
+    "asia_vix_1h",
+    "asia_nasdaq_1h",
+    "asia_us10y_6h",
+    "asia_usdjpy_6h",
+    "asia_kospi_6h",
+    "asia_taiex_6h",
+    "asia_impact_score"
   ],
   "top_features": [
     {
       "name": "change_3d",
-      "gain": 4106.81
+      "gain": 7350.65
     },
     {
       "name": "change_1d",
-      "gain": 3001.14
+      "gain": 6307.49
     },
     {
       "name": "funding_rate",
-      "gain": 2960.13
+      "gain": 4950.93
     },
     {
       "name": "change_7d",
-      "gain": 2658.21
+      "gain": 4024.67
     },
     {
       "name": "volatility_7d",
-      "gain": 1120.04
+      "gain": 2974.37
     },
     {
       "name": "day_of_week",
-      "gain": 1052.77
-    },
-    {
-      "name": "dist_low_24h_pct",
-      "gain": 920.35
-    },
-    {
-      "name": "ema50_dist_pct",
-      "gain": 700.44
-    },
-    {
-      "name": "macd_signal",
-      "gain": 494.0
+      "gain": 2741.75
     },
     {
       "name": "volatility_24h",
-      "gain": 414.12
+      "gain": 1469.4
+    },
+    {
+      "name": "ema50_dist_pct",
+      "gain": 1257.11
+    },
+    {
+      "name": "dist_low_24h_pct",
+      "gain": 1120.81
+    },
+    {
+      "name": "bb_lower_dist",
+      "gain": 752.39
     }
   ],
   "horizon": 12,
-  "exported_at": "2026-10-05T22:11:21.376280+00:00"
+  "exported_at": "2026-10-05T22:41:02.368669+00:00"
 }
