@@ -1,11 +1,11 @@
 # ============================================================
-# ARGUS-Trader — DETECT / ANOMALY v3
+# ARGUS-Trader — DETECT / ANOMALY v4
 # ------------------------------------------------------------
-# v3: symbol_conn — DB1 for BTC/ETH, DB2 for SOL/BNB.
-#     v2 called get_connection() -> SOL/BNB always empty.
-#     Needs env: ARGUS_DB_URL, ARGUS_DB_URL_2,
-#                SYMBOLS, DB2_SYMBOLS.
-# v2: short lines, 4 detectors.
+# v4: SYMBOLS from env (not config) — config has hardcoded
+#     [BTC,ETH], env {SOL,BNB} was ignored.
+#     log_anomaly writes to the right DB per symbol
+#     (was always DB1, explorer reads DB2 for SOL/BNB).
+# v3: symbol_conn — SOL/BNB candles from DB2.
 # ============================================================
 
 import os
@@ -28,12 +28,11 @@ for _p in CRYPTO_ROOT.rglob("db2.py"):
         sys.path.insert(0, _d)
     break
 
-from config import SYMBOLS
+from config import SYMBOLS as CONFIG_SYMBOLS
 from config import TELEGRAM_BOT_TOKEN
 from config import TELEGRAM_CHAT_ID
 from db import get_connection
 from db import close_connection
-from db import log_anomaly
 
 DB2_OK = False
 get_conn_db2 = None
@@ -58,6 +57,16 @@ logging.basicConfig(
 )
 log = logging.getLogger("crypto.anomaly")
 
+# v4: SYMBOLS from env, fallback to config.
+SYMBOLS = [
+    s.strip().upper()
+    for s in (
+        os.getenv("SYMBOLS")
+        or ",".join(CONFIG_SYMBOLS or [])
+    ).split(",")
+    if s.strip()
+]
+
 DB2_SYMBOLS = {
     s.strip().upper()
     for s in (
@@ -77,6 +86,10 @@ def symbol_conn(symbol):
                 "db2 conn %s: %s", symbol, e,
             )
     return get_connection()
+
+
+def _is_db2(symbol):
+    return symbol in DB2_SYMBOLS and DB2_OK
 
 
 PUMP_PCT = 5.0
@@ -111,6 +124,37 @@ def notify(text):
         )
     except Exception as e:
         log.warning("telegram: " + str(e))
+
+
+# v4: write anomaly to the right DB per symbol.
+def write_anomaly(symbol, ts, atype, sev, details):
+    import json as _json
+    details_json = _json.dumps(
+        details or {},
+        ensure_ascii=False,
+        default=str,
+    )
+    try:
+        with symbol_conn(symbol) as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "INSERT INTO anomaly_log "
+                    "(symbol, timestamp, anomaly_type, "
+                    "severity, details) "
+                    "VALUES (%s,%s,%s,%s,%s) "
+                    "RETURNING id",
+                    (
+                        symbol, ts, atype,
+                        sev, details_json,
+                    ),
+                )
+                row = cur.fetchone()
+                return row[0] if row else 0
+    except Exception as e:
+        log.error(
+            "write_anomaly %s: %s", symbol, e,
+        )
+        return 0
 
 
 def fetch_candles(symbol, hours=48):
@@ -337,12 +381,9 @@ def process_symbol(symbol):
 
     pd = detect_pump_dump(candles, avg_vol)
     if pd and not exists(symbol, "pump_dump"):
-        log_anomaly(
-            symbol=symbol,
-            timestamp=pd["timestamp"],
-            anomaly_type="pump_dump",
-            severity="high",
-            details=pd,
+        write_anomaly(
+            symbol, pd["timestamp"],
+            "pump_dump", "high", pd,
         )
         msg = "PUMP_AND_DUMP " + symbol
         msg += "\nup " + str(pd["change_pct"]) + "%"
@@ -356,12 +397,9 @@ def process_symbol(symbol):
     cross_data = fetch_cross(symbol, hours=1)
     ce = detect_cross(cross_data)
     if ce and not exists(symbol, "cross_exchange"):
-        log_anomaly(
-            symbol=symbol,
-            timestamp=ce["timestamp"],
-            anomaly_type="cross_exchange",
-            severity="medium",
-            details=ce,
+        write_anomaly(
+            symbol, ce["timestamp"],
+            "cross_exchange", "medium", ce,
         )
         msg = "CROSS_EXCHANGE " + symbol
         msg += "\ndiff " + str(ce["diff_pct"]) + "%"
@@ -371,12 +409,9 @@ def process_symbol(symbol):
 
     wt = detect_wash(candles, avg_vol)
     if wt and not exists(symbol, "wash_trading"):
-        log_anomaly(
-            symbol=symbol,
-            timestamp=wt["timestamp"],
-            anomaly_type="wash_trading",
-            severity="high",
-            details=wt,
+        write_anomaly(
+            symbol, wt["timestamp"],
+            "wash_trading", "high", wt,
         )
         msg = "WASH_TRADING " + symbol
         msg += (
@@ -388,12 +423,9 @@ def process_symbol(symbol):
 
     sh = detect_stop_hunt(candles)
     if sh and not exists(symbol, "stop_hunting"):
-        log_anomaly(
-            symbol=symbol,
-            timestamp=sh["timestamp"],
-            anomaly_type="stop_hunting",
-            severity="medium",
-            details=sh,
+        write_anomaly(
+            symbol, sh["timestamp"],
+            "stop_hunting", "medium", sh,
         )
         found += 1
         log.info("   stop_hunting FOUND")
@@ -404,7 +436,7 @@ def process_symbol(symbol):
 
 def main():
     log.info("=" * 60)
-    log.info("ANOMALY DETECTORS v3")
+    log.info("ANOMALY DETECTORS v4")
     log.info(
         "SYMBOLS=%s DB2_SYMBOLS=%s (DB2_OK=%s)",
         SYMBOLS, sorted(DB2_SYMBOLS), DB2_OK,
