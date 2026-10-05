@@ -1,0 +1,62 @@
+{
+  "computed_at": "2026-10-05T23:50:32.320239+00:00",
+  "algos": [
+    "lgb",
+    "xgb",
+    "cat"
+  ],
+  "symbols": {
+    "BTCUSDT": {
+      "ic": {
+        "lgb": -0.0136,
+        "xgb": -0.144,
+        "cat": -0.0176
+      },
+      "weights": {
+        "lgb": 0.3333,
+        "xgb": 0.3333,
+        "cat": 0.3333
+      },
+      "trade_allowed": false
+    },
+    "ETHUSDT": {
+      "ic": {
+        "lgb": -0.0084,
+        "xgb": -0.006,
+        "cat": 0.0052
+      },
+      "weights": {
+        "lgb": 0.0,
+        "xgb": 0.0,
+        "cat": 1.0
+      },
+      "trade_allowed": true
+    },
+    "SOLUSDT": {
+      "ic": {
+        "lgb": 0.018,
+        "xgb": 0.0152,
+        "cat": 0.0575
+      },
+      "weights": {
+        "lgb": 0.1985,
+        "xgb": 0.1676,
+        "cat": 0.634
+      },
+      "trade_allowed": true
+    },
+    "BNBUSDT": {
+      "ic": {
+        "lgb": 0.0139,
+        "xgb": 0.1132,
+        "cat": 0.0578
+      },
+      "weights": {
+        "lgb": 0.0752,
+        "xgb": 0.6122,
+        "cat": 0.3126
+      },
+      "trade_allowed": true
+    }
+  }
+}
