@@ -1,10 +1,8 @@
 # ============================================================
-# ARGUS-Trader - PREDICT v13
+# ARGUS-Trader - PREDICT v14
 # ------------------------------------------------------------
-# v13: per-symbol dynamic weights from
-#      models/ensemble_weights.json.
-#      Trade filter: if trade_allowed=False,
-#      emit WAIT with conf=0.
+# v14: 5-model weighted blend.
+#      lgb + xgb + cat + ridge + mlp.
 # ============================================================
 
 import os
@@ -17,6 +15,7 @@ from pathlib import Path
 from datetime import datetime, timezone
 
 import numpy as np
+import joblib
 import lightgbm as lgb
 import xgboost as xgb
 from catboost import CatBoostRegressor
@@ -73,7 +72,6 @@ def load_weights():
 
 
 def _sym_weights(wdata, sym):
-    """Returns (dict algo->w, trade_allowed)."""
     if not wdata:
         return {}, True
     entry = wdata.get("symbols", {}).get(sym)
@@ -84,40 +82,102 @@ def _sym_weights(wdata, sym):
     return w, allowed
 
 
-def load_lgb(sym):
+def _nan_safe_row(row):
+    arr = np.array([row], dtype=np.float32)
+    return np.nan_to_num(
+        arr,
+        nan=0.0,
+        posinf=0.0,
+        neginf=0.0,
+    )
+
+
+def predict_lgb(sym, X, expected):
     mf = MODELS_DIR / ("lgb_" + sym + ".txt")
     if not mf.exists():
         return None
     try:
-        return lgb.Booster(model_file=str(mf))
+        m = lgb.Booster(model_file=str(mf))
+        if m.num_feature() != expected:
+            return None
+        return float(m.predict(X)[0])
     except Exception as exc:
         log.warning("lgb %s: %s", sym, exc)
         return None
 
 
-def load_xgb(sym):
+def predict_xgb(sym, X, expected):
     mf = MODELS_DIR / ("xgb_" + sym + ".json")
     if not mf.exists():
         return None
     try:
         m = xgb.Booster()
         m.load_model(str(mf))
-        return m
+        if m.num_features() != expected:
+            return None
+        d = xgb.DMatrix(X)
+        bi = getattr(m, "best_iteration", None)
+        if bi is not None:
+            return float(m.predict(
+                d,
+                iteration_range=(0, bi + 1),
+            )[0])
+        return float(m.predict(d)[0])
     except Exception as exc:
         log.warning("xgb %s: %s", sym, exc)
         return None
 
 
-def load_cat(sym):
+def predict_cat(sym, X, expected):
     mf = MODELS_DIR / ("cat_" + sym + ".cbm")
     if not mf.exists():
         return None
     try:
         m = CatBoostRegressor()
         m.load_model(str(mf))
-        return m
+        if m.n_features_in_ != expected:
+            return None
+        return float(m.predict(X)[0])
     except Exception as exc:
         log.warning("cat %s: %s", sym, exc)
+        return None
+
+
+def predict_ridge(sym, X, expected):
+    mf = MODELS_DIR / (
+        "ridge_" + sym + ".joblib"
+    )
+    sf = MODELS_DIR / (
+        "scaler_ridge_" + sym + ".joblib"
+    )
+    if not mf.exists() or not sf.exists():
+        return None
+    try:
+        m = joblib.load(str(mf))
+        s = joblib.load(str(sf))
+        Xs = s.transform(X)
+        return float(m.predict(Xs)[0])
+    except Exception as exc:
+        log.warning("ridge %s: %s", sym, exc)
+        return None
+
+
+def predict_mlp(sym, X, expected):
+    mf = MODELS_DIR / (
+        "mlp_" + sym + ".joblib"
+    )
+    sf = MODELS_DIR / (
+        "scaler_mlp_" + sym + ".joblib"
+    )
+    if not mf.exists() or not sf.exists():
+        return None
+    try:
+        m = joblib.load(str(mf))
+        s = joblib.load(str(sf))
+        Xs = s.transform(X)
+        return float(m.predict(Xs)[0])
+    except Exception as exc:
+        log.warning("mlp %s: %s", sym, exc)
         return None
 
 
@@ -168,35 +228,9 @@ def _acc_from_meta(sym):
 
 def predict_one(symbol, wdata):
     expected = len(ds.FEATURE_COLS)
-
-    weights, allowed = _sym_weights(wdata, symbol)
-
-    lgb_m = load_lgb(symbol)
-    xgb_m = load_xgb(symbol)
-    cat_m = load_cat(symbol)
-
-    if lgb_m is not None and \
-            lgb_m.num_feature() != expected:
-        log.warning(
-            "%s: lgb nf mismatch -> skip", symbol
-        )
-        lgb_m = None
-    if xgb_m is not None:
-        try:
-            if xgb_m.num_features() != expected:
-                xgb_m = None
-        except Exception:
-            pass
-    if cat_m is not None:
-        try:
-            if cat_m.n_features_in_ != expected:
-                cat_m = None
-        except Exception:
-            pass
-
-    if not (lgb_m or xgb_m or cat_m):
-        log.warning("%s: no models", symbol)
-        return None
+    weights, allowed = _sym_weights(
+        wdata, symbol
+    )
 
     ds.SYMBOLS = [symbol]
     ds.REFERENCE = symbol
@@ -210,52 +244,34 @@ def predict_one(symbol, wdata):
         log.warning("%s: bad row", symbol)
         return None
 
-    X = np.array([row], dtype=np.float32)
+    X = _nan_safe_row(row)
 
     preds = {}
-    used = []
 
-    if lgb_m is not None:
-        try:
-            preds["lgb"] = float(
-                lgb_m.predict(X)[0]
-            )
-            used.append("lgb")
-        except Exception as exc:
-            log.warning("lgb pred %s: %s", symbol, exc)
+    p = predict_lgb(symbol, X, expected)
+    if p is not None:
+        preds["lgb"] = p
 
-    if xgb_m is not None:
-        try:
-            d = xgb.DMatrix(X)
-            bi = getattr(
-                xgb_m, "best_iteration", None
-            )
-            if bi is not None:
-                p = float(xgb_m.predict(
-                    d,
-                    iteration_range=(0, bi + 1),
-                )[0])
-            else:
-                p = float(xgb_m.predict(d)[0])
-            preds["xgb"] = p
-            used.append("xgb")
-        except Exception as exc:
-            log.warning("xgb pred %s: %s", symbol, exc)
+    p = predict_xgb(symbol, X, expected)
+    if p is not None:
+        preds["xgb"] = p
 
-    if cat_m is not None:
-        try:
-            preds["cat"] = float(
-                cat_m.predict(X)[0]
-            )
-            used.append("cat")
-        except Exception as exc:
-            log.warning("cat pred %s: %s", symbol, exc)
+    p = predict_cat(symbol, X, expected)
+    if p is not None:
+        preds["cat"] = p
+
+    p = predict_ridge(symbol, X, expected)
+    if p is not None:
+        preds["ridge"] = p
+
+    p = predict_mlp(symbol, X, expected)
+    if p is not None:
+        preds["mlp"] = p
 
     if not preds:
+        log.warning("%s: no models", symbol)
         return None
 
-    # Weights: use per-symbol if available,
-    # else equal.
     if weights:
         w_use = {
             k: weights.get(k, 0.0)
@@ -273,7 +289,6 @@ def predict_one(symbol, wdata):
         preds[k] * w_use[k] for k in preds
     ) / wsum
 
-    # Filter if not allowed
     if not allowed:
         pred_pct = 0.0
         conf = 0.0
@@ -302,28 +317,25 @@ def predict_one(symbol, wdata):
         ),
         "model_acc": acc,
         "objective": "regression",
-        "model_version": "v13-weighted",
-        "sources": used,
-        "blend": len(used) > 1,
+        "model_version": "v14-5models",
+        "sources": list(preds.keys()),
+        "blend": len(preds) > 1,
         "features_used": expected,
         "trade_allowed": allowed,
         "action_hint": action,
         "weights": {
             k: round(w_use.get(k, 0.0), 4)
-            for k in used
+            for k in preds
         },
     }
-    for k in ("lgb", "xgb", "cat"):
-        if k in preds:
-            out[k + "_pred"] = round(
-                preds[k], 4
-            )
+    for k, v in preds.items():
+        out[k + "_pred"] = round(v, 4)
     return out
 
 
 def main():
     log.info("=" * 60)
-    log.info("ARGUS-Trader PREDICT v13")
+    log.info("ARGUS-Trader PREDICT v14")
     log.info("SYMBOLS=%s", SYMBOLS_LIST)
     log.info("FEATURE_COLS=%d", len(ds.FEATURE_COLS))
     log.info("=" * 60)
@@ -345,7 +357,10 @@ def main():
             accs.append(a)
 
         extra = ""
-        for k in ("lgb", "xgb", "cat"):
+        for k in (
+            "lgb", "xgb", "cat",
+            "ridge", "mlp",
+        ):
             pk = k + "_pred"
             if pk in r:
                 extra += " %s=%.4f" % (k, r[pk])
@@ -369,9 +384,7 @@ def main():
 
     avg_acc = None
     if accs:
-        avg_acc = round(
-            sum(accs) / len(accs), 4
-        )
+        avg_acc = round(sum(accs) / len(accs), 4)
 
     out = {
         "predicted_at": datetime.now(
@@ -380,7 +393,7 @@ def main():
         "model_accuracy": avg_acc,
         "model_accuracy_avg": avg_acc,
         "feature_count": len(ds.FEATURE_COLS),
-        "mode": "weighted_blend",
+        "mode": "5model_blend",
         "weights_version": wdata.get(
             "computed_at"
         ),
