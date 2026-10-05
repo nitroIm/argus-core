@@ -1,19 +1,17 @@
 # ============================================================
 # ARGUS - ENRICH
 # ------------------------------------------------------------
+# v5: ВРЕМЕННО + FEATURES_BOOTSTRAP='1' — одноразовый пересчёт
+#     features_hourly на всю историю (~9000 строк).
+#     После одного прогона вернуть на v6 (без этой строки).
 # v4: + ARGUS_DB_URL_2, SYMBOLS, DB2_SYMBOLS.
-#     Без них runner.py видит только DB1 (BTC/ETH).
-#     С ними — 4 монеты, роутинг DB1/DB2.
 # v3: общая очередь с detect (argus-crypto-pipeline).
-# v2: коммит JSON в crypto/data/
 # ============================================================
 
 name: ARGUS Crypto Enrich
 
 on:
   workflow_dispatch:
-  # schedule:
-    # - cron: '15 * * * *'
 
 permissions:
   contents: write
@@ -55,6 +53,7 @@ jobs:
             ${{ secrets.ARGUS_DB_URL_2 }}
           SYMBOLS: BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT
           DB2_SYMBOLS: SOLUSDT,BNBUSDT
+          FEATURES_BOOTSTRAP: '1'
           TELEGRAM_BOT_TOKEN: >-
             ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: >-
