@@ -1,10 +1,13 @@
 # ============================================================
 # ARGUS-Trader - TRAIN [PRODUCTION]
 # ------------------------------------------------------------
+# v13: inner val split (15% of train) + early_stopping(30).
+#      NUM_ROUNDS 200 -> 1000. Prevents overfit on weak
+#      signal (audit showed max feature IC ~0.04).
 # v12: regression target (next_return). Metrics: MAE, RMSE,
 #      Spearman IC. No accuracy/confusion.
-# v11: PARAMS упрощены под per-symbol данные.
-# v10: per-symbol модели.
+# v11: PARAMS tuned for per-symbol.
+# v10: per-symbol models.
 # ============================================================
 
 import os
@@ -19,7 +22,6 @@ from datetime import datetime, timezone
 
 import numpy as np
 import lightgbm as lgb
-from scipy.stats import spearmanr
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 CRYPTO_ROOT = SCRIPT_DIR.parent
@@ -41,7 +43,9 @@ MODELS_DIR.mkdir(parents=True, exist_ok=True)
 PREV_DIR = MODELS_DIR / "prev"
 
 MIN_SAMPLES = 200
-NUM_ROUNDS = 200
+NUM_ROUNDS = 1000
+VAL_FRAC = 0.15
+EARLY_STOP = 30
 
 PARAMS = {
     "objective": "regression",
@@ -78,17 +82,22 @@ DB2_SET = {
     if s.strip()
 }
 
+
 def model_file(sym):
     return MODELS_DIR / ("lgb_" + sym + ".txt")
+
 
 def meta_file(sym):
     return MODELS_DIR / ("meta_" + sym + ".json")
 
+
 def prev_model_file(sym):
     return PREV_DIR / ("lgb_" + sym + ".txt")
 
+
 def prev_meta_file(sym):
     return PREV_DIR / ("meta_" + sym + ".json")
+
 
 def save_prev(sym):
     mf = model_file(sym)
@@ -103,15 +112,19 @@ def save_prev(sym):
     except Exception as e:
         log.warning("prev save %s: %s", sym, e)
 
+
 def _ic(y_true, y_pred):
     if len(y_true) < 10:
         return 0.0
     if np.std(y_true) == 0 or np.std(y_pred) == 0:
         return 0.0
-    rho, _ = spearmanr(y_true, y_pred)
-    if np.isnan(rho):
+    yt = y_true - y_true.mean()
+    yp = y_pred - y_pred.mean()
+    d = np.sqrt((yt * yt).sum() * (yp * yp).sum())
+    if d == 0:
         return 0.0
-    return float(rho)
+    return float((yt * yp).sum() / d)
+
 
 def train_one(symbol):
     log.info("-" * 60)
@@ -140,17 +153,41 @@ def train_one(symbol):
     r_train = data["r_train"]
     r_test = data["r_test"]
 
+    # Inner val split — tail of train (time-ordered).
+    n_tr = len(X_train)
+    cut = int(n_tr * (1 - VAL_FRAC))
+    X_tr = X_train[:cut]
+    r_tr = r_train[:cut]
+    X_va = X_train[cut:]
+    r_va = r_train[cut:]
+
     log.info(
-        "%s: train=%d test=%d",
-        symbol, len(X_train), len(X_test),
+        "%s: train=%d val=%d test=%d",
+        symbol, len(X_tr), len(X_va),
+        len(X_test),
     )
 
-    train_set = lgb.Dataset(X_train, label=r_train)
+    train_set = lgb.Dataset(X_tr, label=r_tr)
+    val_set = lgb.Dataset(
+        X_va, label=r_va, reference=train_set,
+    )
 
     model = lgb.train(
         PARAMS, train_set,
         num_boost_round=NUM_ROUNDS,
-        callbacks=[lgb.log_evaluation(50)],
+        valid_sets=[val_set],
+        callbacks=[
+            lgb.early_stopping(
+                EARLY_STOP, verbose=False,
+            ),
+            lgb.log_evaluation(100),
+        ],
+    )
+
+    best_iter = model.best_iteration or model.num_trees()
+    log.info(
+        "%s: best_iteration=%d (of %d)",
+        symbol, best_iter, NUM_ROUNDS,
     )
 
     p_train = model.predict(X_train).astype(np.float32)
@@ -158,12 +195,15 @@ def train_one(symbol):
 
     mae_tr = float(np.mean(np.abs(p_train - r_train)))
     mae_te = float(np.mean(np.abs(p_test - r_test)))
-    rmse_tr = float(np.sqrt(np.mean((p_train - r_train) ** 2)))
-    rmse_te = float(np.sqrt(np.mean((p_test - r_test) ** 2)))
+    rmse_tr = float(
+        np.sqrt(np.mean((p_train - r_train) ** 2))
+    )
+    rmse_te = float(
+        np.sqrt(np.mean((p_test - r_test) ** 2))
+    )
     ic_tr = _ic(r_train, p_train)
     ic_te = _ic(r_test, p_test)
 
-    # hit-rate по знаку (информативно, не метрика)
     sign_tr = float(
         np.mean(np.sign(p_train) == np.sign(r_train))
     )
@@ -207,12 +247,14 @@ def train_one(symbol):
         "trained_at": datetime.now(
             timezone.utc
         ).isoformat(),
-        "version": "v12",
+        "version": "v13",
         "objective": "regression",
         "symbol": symbol,
         "n_total": data["n_total"],
         "n_train": data["n_train"],
         "n_test": data["n_test"],
+        "n_val_inner": len(X_va),
+        "best_iteration": best_iter,
         "ic_train": round(ic_tr, 4),
         "ic_test": round(ic_te, 4),
         "mae_train": round(mae_tr, 4),
@@ -229,18 +271,30 @@ def train_one(symbol):
         ],
         "horizon": data["horizon"],
     }
-    with open(meta_file(symbol), "w", encoding="utf-8") as f:
-        json.dump(meta, f, ensure_ascii=False, indent=2)
+    with open(
+        meta_file(symbol), "w", encoding="utf-8",
+    ) as f:
+        json.dump(
+            meta, f,
+            ensure_ascii=False, indent=2,
+        )
 
     return meta
 
+
 def write_compat(symbols, metas):
-    ref = "BTCUSDT" if "BTCUSDT" in symbols else symbols[0]
+    ref = (
+        "BTCUSDT"
+        if "BTCUSDT" in symbols else symbols[0]
+    )
     src = model_file(ref)
     if src.exists():
-        shutil.copy2(src, MODELS_DIR / "lgb_model.txt")
+        shutil.copy2(
+            src, MODELS_DIR / "lgb_model.txt"
+        )
         log.info(
-            "compat: lgb_model.txt <- lgb_%s.txt", ref
+            "compat: lgb_model.txt <- lgb_%s.txt",
+            ref,
         )
     if metas.get(ref):
         with open(
@@ -252,10 +306,18 @@ def write_compat(symbols, metas):
                 ensure_ascii=False, indent=2,
             )
 
+
 def train():
     log.info("=" * 60)
-    log.info("ARGUS-Trader TRAIN v12 (per-symbol, regression)")
+    log.info(
+        "ARGUS-Trader TRAIN v13 "
+        "(per-symbol, regression, early stopping)"
+    )
     log.info("SYMBOLS=%s", SYMBOLS_LIST)
+    log.info(
+        "NUM_ROUNDS=%d EARLY_STOP=%d VAL_FRAC=%.2f",
+        NUM_ROUNDS, EARLY_STOP, VAL_FRAC,
+    )
     log.info("PARAMS: %s", PARAMS)
     log.info("=" * 60)
 
@@ -272,15 +334,19 @@ def train():
     log.info("TRAIN DONE")
     for sym, m in metas.items():
         log.info(
-            "  %s: IC=%.4f MAE=%.4f RMSE=%.4f",
+            "  %s: IC=%.4f MAE=%.4f best_iter=%d",
             sym, m["ic_test"],
-            m["mae_test"], m["rmse_test"],
+            m["mae_test"], m["best_iteration"],
         )
-    ic_avg = (
-        sum(m["ic_test"] for m in metas.values())
-        / len(metas)
-    ) if metas else 0.0
-    log.info("  AVG IC=%.4f (%d models)", ic_avg, len(metas))
+    if metas:
+        ic_avg = (
+            sum(m["ic_test"] for m in metas.values())
+            / len(metas)
+        )
+        log.info(
+            "  AVG IC=%.4f (%d models)",
+            ic_avg, len(metas),
+        )
     log.info("=" * 60)
 
     if metas:
@@ -292,12 +358,14 @@ def train():
 
     return metas
 
+
 def main():
     metas = train()
     if not metas:
         log.error("train failed")
         return
     log.info("DONE. %d models trained", len(metas))
+
 
 if __name__ == "__main__":
     main()
