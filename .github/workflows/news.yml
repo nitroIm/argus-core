@@ -1,7 +1,7 @@
 # ============================================================
 # ARGUS - NEWS
 # ------------------------------------------------------------
-# Каждый час: сбор новостей + отчёт (только в SEND_HOURS).
+# Каждый час: сбор + отчёт (только в SEND_HOURS_LOCAL).
 # cron-job.org дёргает каждый час.
 # ============================================================
 
@@ -53,7 +53,6 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          GITHUB_EVENT_NAME: ${{ github.event_name }}
         run: python crypto/report/news_report.py
 
       - name: Commit
