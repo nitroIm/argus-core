@@ -1,9 +1,11 @@
 # ============================================================
-# ARGUS-Trader - DATASET v13
+# ARGUS-Trader - DATASET v13.1
 # ------------------------------------------------------------
-# v13: + cross-asset features (BTC lags for alts).
-#      Reference BTC -> all others. BTC gets ETH as ref.
-# v12: change_3d, change_7d off, purge, day_of_week off.
+# v13.1: type-safe asof access. _extract() handles both
+#        float and tuple shapes returned by _fetch.
+#        Fixes 'float object is not subscriptable'.
+# v13: cross-asset (ref lags).
+# v12: change_3d/7d off.
 # ============================================================
 
 import os
@@ -56,11 +58,9 @@ log = logging.getLogger("crypto.learn.dataset")
 USE_EXTERNAL = (
     os.getenv("USE_EXTERNAL", "0").strip() == "1"
 )
-
 HORIZON = int(os.getenv("HORIZON", "12"))
 
 DEFAULT_SYMBOLS = ["BTCUSDT", "ETHUSDT"]
-
 SYMBOLS = [
     s.strip().upper()
     for s in (
@@ -129,7 +129,6 @@ CROSS_COLS = [
     "ref_change_1h",
     "ref_change_4h",
     "ref_change_24h",
-    "ref_change_1d",
 ]
 
 OI_COLS = ["oi_change_1h", "oi_change_24h"]
@@ -186,9 +185,7 @@ FEATURE_COLS = (
     + (EXTERNAL_COLS if USE_EXTERNAL else [])
 )
 
-TARGET_RET = "next_return"
 TARGET_COL = "next_change_pct"
-
 ASIA_TOL_SEC = 7200
 
 MAX_AGE = {
@@ -296,7 +293,6 @@ def fetch_candles(symbol, limit=100000):
 
 
 def fetch_closes(symbol, limit=100000):
-    """v13: lightweight close series for cross-asset."""
     cols = ["timestamp", "close"]
     sql = _sel(
         cols,
@@ -521,6 +517,43 @@ def asof_shift(series, ts, shift_h, max_age_h):
     )
 
 
+def _ext1(v):
+    """Extract first scalar from float or 1-tuple."""
+    if v is None:
+        return None
+    if isinstance(v, tuple):
+        if not v:
+            return None
+        return v[0]
+    return v
+
+
+def _ext2(v):
+    """Extract (a, b) from 2-tuple or (float, None)."""
+    if v is None:
+        return (None, None)
+    if isinstance(v, tuple):
+        if len(v) >= 2:
+            return (v[0], v[1])
+        if len(v) == 1:
+            return (v[0], None)
+        return (None, None)
+    return (v, None)
+
+
+def _ext3(v):
+    """Extract (a, b, c) from 3-tuple or (float, None, None)."""
+    if v is None:
+        return (None, None, None)
+    if isinstance(v, tuple):
+        n = len(v)
+        a = v[0] if n >= 1 else None
+        b = v[1] if n >= 2 else None
+        c = v[2] if n >= 3 else None
+        return (a, b, c)
+    return (v, None, None)
+
+
 def asia_at(asia_list, ts, lag_hours):
     if not asia_list:
         return None
@@ -565,132 +598,200 @@ def _safe(v):
 
 
 def _cross_feats(ref_closes, ts):
-    """v13: BTC (or ETH for BTC) change over lags."""
-    now = asof(ref_closes, ts, MAX_AGE["close"])
-    p1 = asof_shift(
+    now = _ext1(asof(
+        ref_closes, ts, MAX_AGE["close"]
+    ))
+    p1 = _ext1(asof_shift(
         ref_closes, ts, 1, MAX_AGE["close"]
-    )
-    p4 = asof_shift(
+    ))
+    p4 = _ext1(asof_shift(
         ref_closes, ts, 4, MAX_AGE["close"]
-    )
-    p24 = asof_shift(
+    ))
+    p24 = _ext1(asof_shift(
         ref_closes, ts, 24, MAX_AGE["close"]
-    )
-    p1d = asof_shift(
-        ref_closes, ts, 24, MAX_AGE["close"]
-    )
+    ))
 
     def chg(a, b):
         if a is None or b is None:
             return np.nan
-        if b[0] <= 0:
+        try:
+            af = float(a)
+            bf = float(b)
+            if bf <= 0:
+                return np.nan
+            return (af - bf) / bf * 100
+        except Exception:
             return np.nan
-        return (a[0] - b[0]) / b[0] * 100
 
     return [
         _safe(chg(now, p1)),
         _safe(chg(now, p4)),
         _safe(chg(now, p24)),
-        _safe(chg(now, p1d)),
     ]
 
 
 def _oi_feats(oi_series, ts):
-    now = asof(oi_series, ts, MAX_AGE["oi"])
-    p1 = asof_shift(
+    now_t = _ext2(asof(
+        oi_series, ts, MAX_AGE["oi"]
+    ))
+    p1_t = _ext2(asof_shift(
         oi_series, ts, 1, MAX_AGE["oi"]
-    )
-    p24 = asof_shift(
+    ))
+    p24_t = _ext2(asof_shift(
         oi_series, ts, 24, MAX_AGE["oi"]
-    )
+    ))
+
+    now_oi = now_t[0]
+    p1_oi = p1_t[0]
+    p24_oi = p24_t[0]
+
     c1 = np.nan
     c24 = np.nan
-    if now is not None and p1 is not None:
-        if p1[0] > 0:
-            c1 = (now[0] - p1[0]) / p1[0] * 100
-    if now is not None and p24 is not None:
-        if p24[0] > 0:
-            c24 = (
-                (now[0] - p24[0]) / p24[0] * 100
-            )
+
+    if now_oi is not None and p1_oi is not None:
+        try:
+            if float(p1_oi) > 0:
+                c1 = (
+                    float(now_oi) - float(p1_oi)
+                ) / float(p1_oi) * 100
+        except Exception:
+            pass
+    if now_oi is not None and p24_oi is not None:
+        try:
+            if float(p24_oi) > 0:
+                c24 = (
+                    float(now_oi) - float(p24_oi)
+                ) / float(p24_oi) * 100
+        except Exception:
+            pass
+
     return [_safe(c1), _safe(c24)]
 
 
 def _ls_feats(ls_series, ts):
-    now = asof(ls_series, ts, MAX_AGE["ls"])
-    p1 = asof_shift(
+    now_v = _ext1(asof(
+        ls_series, ts, MAX_AGE["ls"]
+    ))
+    p1_v = _ext1(asof_shift(
         ls_series, ts, 1, MAX_AGE["ls"]
-    )
+    ))
+
     ch = np.nan
-    if now is not None and p1 is not None:
-        ch = now[0] - p1[0]
-    v = now[0] if now else None
-    return [_safe(v), _safe(ch)]
+    if now_v is not None and p1_v is not None:
+        try:
+            ch = float(now_v) - float(p1_v)
+        except Exception:
+            ch = np.nan
+
+    return [_safe(now_v), _safe(ch)]
 
 
 def _taker_feats(tk_series, ts):
-    now = asof(tk_series, ts, MAX_AGE["taker"])
-    p1 = asof_shift(
+    now_t = _ext2(asof(
+        tk_series, ts, MAX_AGE["taker"]
+    ))
+    p1_t = _ext2(asof_shift(
         tk_series, ts, 1, MAX_AGE["taker"]
-    )
+    ))
+
+    bv, sv = now_t
+    pbv, psv = p1_t
+
     bp = np.nan
     ch = np.nan
-    if now is not None:
-        bv, sv = now
-        if bv + sv > 0:
-            bp = bv / (bv + sv) * 100
-    if now is not None and p1 is not None:
-        bv, sv = now
-        pbv, psv = p1
-        if bv + sv > 0 and pbv + psv > 0:
-            cur = bv / (bv + sv)
-            prev = pbv / (pbv + psv)
-            ch = (cur - prev) * 100
+
+    try:
+        if bv is not None and sv is not None:
+            bvf = float(bv)
+            svf = float(sv)
+            if bvf + svf > 0:
+                bp = bvf / (bvf + svf) * 100
+    except Exception:
+        pass
+
+    try:
+        if bv is not None and sv is not None \
+                and pbv is not None and psv is not None:
+            bvf = float(bv)
+            svf = float(sv)
+            pbvf = float(pbv)
+            psvf = float(psv)
+            if bvf + svf > 0 and pbvf + psvf > 0:
+                cur = bvf / (bvf + svf)
+                prev = pbvf / (pbvf + psvf)
+                ch = (cur - prev) * 100
+    except Exception:
+        pass
+
     return [_safe(bp), _safe(ch)]
 
 
 def _macro_feats(series, ts):
-    now = asof(series, ts, MAX_AGE["macro"])
-    p = asof_shift(
+    now_v = _ext1(asof(
+        series, ts, MAX_AGE["macro"]
+    ))
+    p_v = _ext1(asof_shift(
         series, ts, 24, MAX_AGE["macro"]
-    )
+    ))
+
     lvl = np.nan
     ch = np.nan
-    if now is not None:
-        lvl = now[0]
-    if now is not None and p is not None:
-        if p[0] != 0:
-            ch = (
-                (now[0] - p[0])
-                / abs(p[0])
-                * 100
-            )
+    if now_v is not None:
+        try:
+            lvl = float(now_v)
+        except Exception:
+            lvl = np.nan
+
+    if now_v is not None and p_v is not None:
+        try:
+            nf = float(now_v)
+            pf = float(p_v)
+            if pf != 0:
+                ch = (nf - pf) / abs(pf) * 100
+        except Exception:
+            ch = np.nan
+
     return [_safe(lvl), _safe(ch)]
 
 
 def _onchain_feats(series, ts):
-    now = asof(
+    now_v = _ext1(asof(
         series, ts, MAX_AGE["onchain"]
-    )
-    p = asof_shift(
+    ))
+    p_v = _ext1(asof_shift(
         series, ts, 24, MAX_AGE["onchain"]
-    )
+    ))
+
     lh = np.nan
     ch = np.nan
-    if now is not None and now[0] > 0:
-        lh = float(np.log(now[0]))
-    if now is not None and p is not None:
-        if p[0] > 0:
-            ch = (now[0] - p[0]) / p[0] * 100
+
+    try:
+        if now_v is not None and float(now_v) > 0:
+            lh = float(np.log(float(now_v)))
+    except Exception:
+        pass
+
+    try:
+        if now_v is not None and p_v is not None:
+            nf = float(now_v)
+            pf = float(p_v)
+            if pf > 0:
+                ch = (nf - pf) / pf * 100
+    except Exception:
+        pass
+
     return [_safe(lh), _safe(ch)]
 
 
 def _ob_feats(series, ts):
-    now = asof(series, ts, MAX_AGE["orderbook"])
-    if now is None:
-        return [np.nan, np.nan, np.nan]
-    return [_safe(now[0]), _safe(now[1]),
-            _safe(now[2])]
+    now_t = _ext3(asof(
+        series, ts, MAX_AGE["orderbook"]
+    ))
+    return [
+        _safe(now_t[0]),
+        _safe(now_t[1]),
+        _safe(now_t[2]),
+    ]
 
 
 def _count_events(series, ts, hours):
@@ -712,9 +813,7 @@ def _count_type(series, ts, hours, etype):
     for e_ts, e_data in series:
         if e_ts <= cutoff or e_ts > ts:
             continue
-        e_val = e_data
-        if isinstance(e_val, tuple):
-            e_val = e_val[0]
+        e_val = _ext1(e_data)
         if e_val == etype:
             n += 1
     return n
@@ -757,14 +856,10 @@ def _asia_feats(asia, ts):
 
 
 def _ext_feats(dxy, spx, gold, ts):
-    v1 = asof(dxy, ts, 3)
-    v2 = asof(spx, ts, 3)
-    v3 = asof(gold, ts, 3)
-    return [
-        _safe(v1[0]) if v1 else np.nan,
-        _safe(v2[0]) if v2 else np.nan,
-        _safe(v3[0]) if v3 else np.nan,
-    ]
+    v1 = _ext1(asof(dxy, ts, 3))
+    v2 = _ext1(asof(spx, ts, 3))
+    v3 = _ext1(asof(gold, ts, 3))
+    return [_safe(v1), _safe(v2), _safe(v3)]
 
 
 def build_targets(candles, horizon):
@@ -791,10 +886,7 @@ def _row_for(symbol, d, asia, ts,
     for i in range(len(INTERNAL_COLS)):
         v = d["fa"][i].get(ts)
         row.append(v if v is not None else np.nan)
-
-    # v13: cross-asset first after internal.
     row.extend(_cross_feats(cross_ref, ts))
-
     row.extend(_oi_feats(d["oi"], ts))
     row.extend(_ls_feats(d["ls"], ts))
     row.extend(_taker_feats(d["taker"], ts))
@@ -964,7 +1056,6 @@ def _load_symbol(symbol, cross_ref_symbol):
 
 
 def _cross_ref_for(symbol, available):
-    """Pick reference: BTC for all, ETH for BTC."""
     if symbol == REFERENCE:
         for alt in ("ETHUSDT", "SOLUSDT", "BNBUSDT"):
             if alt in available and alt != symbol:
@@ -977,7 +1068,7 @@ def _cross_ref_for(symbol, available):
 
 def prepare(test_frac=0.2):
     log.info("=" * 60)
-    log.info("DATASET v13")
+    log.info("DATASET v13.1")
     log.info("SYMBOLS=%s", SYMBOLS)
     log.info("REFERENCE=%s", REFERENCE)
     log.info("HORIZON=%dh", HORIZON)
