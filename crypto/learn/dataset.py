@@ -1,8 +1,9 @@
 # ============================================================
-# ARGUS-Trader - DATASET v7.2 [PRODUCTION]
+# ARGUS-Trader - DATASET v8.0 [PRODUCTION]
 # ------------------------------------------------------------
-# v7.2: per-symbol time split. Каждая монета делится отдельно.
-#       USE_CROSS env — cross vs REFERENCE опционален.
+# v8.0: regression target = next_return. No threshold.
+#       y_dir kept as sign for signals compat.
+# v7.2: per-symbol time split. USE_CROSS optional.
 # v7.1: backwards-compat TARGET_COL for export.py.
 # v7: config-driven symbols + DB routing.
 # ============================================================
@@ -50,7 +51,6 @@ logging.basicConfig(
 )
 log = logging.getLogger("crypto.learn.dataset")
 
-
 USE_EXTERNAL = (
     os.getenv("USE_EXTERNAL", "0").strip() == "1"
 )
@@ -58,10 +58,7 @@ USE_CROSS = (
     os.getenv("USE_CROSS", "1").strip() == "1"
 )
 
-HORIZON = int(os.getenv("HORIZON", "4"))
-MOVE_THRESHOLD_PCT = float(
-    os.getenv("MOVE_THRESHOLD_PCT", "0.5")
-)
+HORIZON = int(os.getenv("HORIZON", "12"))
 
 DEFAULT_SYMBOLS = ["BTCUSDT", "ETHUSDT"]
 
@@ -86,7 +83,6 @@ DB2_SYMBOLS = {
     if s.strip()
 }
 
-
 def symbol_conn(symbol):
     if symbol in DB2_SYMBOLS and DB2_OK:
         try:
@@ -94,7 +90,6 @@ def symbol_conn(symbol):
         except Exception as e:
             log.warning("db2 conn %s: %s", symbol, e)
     return get_connection()
-
 
 INTERNAL_COLS = [
     "change_pct",
@@ -158,10 +153,9 @@ FEATURE_COLS = (
 
 TARGET_DIR = "next_direction"
 TARGET_RET = "next_return"
-TARGET_COL = TARGET_DIR
+TARGET_COL = TARGET_RET
 
 EXT_MAX_AGE_H = 3
-
 
 def fetch_features(symbol, limit=100000):
     base_cols = ["symbol", "timestamp"] + INTERNAL_COLS
@@ -179,7 +173,6 @@ def fetch_features(symbol, limit=100000):
     except Exception as e:
         log.warning("features %s: %s", symbol, e)
         return []
-
 
 def fetch_candles(symbol, limit=100000):
     try:
@@ -211,7 +204,6 @@ def fetch_candles(symbol, limit=100000):
         log.warning("candles %s: %s", symbol, e)
         return []
 
-
 def fetch_external(symbol):
     try:
         with get_connection() as conn:
@@ -239,7 +231,6 @@ def fetch_external(symbol):
         log.warning("external %s: %s", symbol, e)
         return []
 
-
 def build_targets(candles, horizon):
     out = {}
     n = len(candles)
@@ -255,7 +246,6 @@ def build_targets(candles, horizon):
         ret = (c1 - c0) / c0 * 100
         out[candles[i]["ts"]] = ret
     return out
-
 
 def build_cross_full(
     feat_maps, candle_maps, ref_symbol,
@@ -307,13 +297,14 @@ def build_cross_full(
             sd = arr.std()
             zscore[ratio_ts[i]] = (
                 0.0 if sd == 0
-                else float((ratio[ratio_ts[i]] - mu) / sd)
+                else float((ratio[ratio_ts_h[i]] - mu) / sd)
             )
 
-        corr_ts = sorted(
-            set(feats.keys()) & set(ref_feat.keys())
+        corr_):
+ts = sorted(
+            set       (feats.keys()) & set(ref_feat.keys return())
         )
-        corr = {}
+        cor Noner = {}
         window = 24
         for i in range(len(corr_ts)):
             if i < window - 1:
@@ -376,7 +367,6 @@ def build_cross_full(
         out[symbol] = cross_map
     return out
 
-
 def ext_lookup(ext_list, ts, max_age_h=EXT_MAX_AGE_H):
     if not ext_list:
         return None
@@ -390,10 +380,8 @@ def ext_lookup(ext_list, ts, max_age_h=EXT_MAX_AGE_H):
             break
     if result is None:
         return None
-    if ts - result[0] > timedelta(hours=max_age_h):
-        return None
+    if ts - result[0] > timedelta(hours=max_age
     return result[1]
-
 
 def _get_feat_map(rows, base_cols):
     idx = {col: i for i, col in enumerate(base_cols)}
@@ -415,7 +403,6 @@ def _get_feat_map(rows, base_cols):
         out[ts] = feats
     return out
 
-
 def build_xy(
     feat_maps, candle_maps, close_maps,
     targets_map, ext_dxy, ext_spx, ext_gold,
@@ -436,12 +423,7 @@ def build_xy(
             if ret is None:
                 continue
 
-            if ret > MOVE_THRESHOLD_PCT:
-                direction = 1
-            elif ret < -MOVE_THRESHOLD_PCT:
-                direction = 0
-            else:
-                continue
+            direction = 1 if ret > 0 else 0
 
             row = []
             f = feats[ts]
@@ -492,7 +474,6 @@ def build_xy(
         sym_list,
     )
 
-
 def per_symbol_split(
     X, y, y_ret, ts_list, sym_list,
     test_frac=0.2,
@@ -534,15 +515,13 @@ def per_symbol_split(
         X[test_idx], y[test_idx], y_ret[test_idx],
     )
 
-
 def prepare(test_frac=0.2):
     log.info("=" * 60)
-    log.info("DATASET v7.2")
+    log.info("DATASET v8.0 (regression)")
     log.info("SYMBOLS=%s", SYMBOLS)
     log.info("REFERENCE=%s", REFERENCE)
     log.info("USE_CROSS=%s", USE_CROSS)
-    log.info("HORIZON=%dh  THRESHOLD=%.2f%%",
-             HORIZON, MOVE_THRESHOLD_PCT)
+    log.info("HORIZON=%dh  TARGET=next_return", HORIZON)
     log.info(
         "DB2_SYMBOLS=%s (DB2_OK=%s)",
         sorted(DB2_SYMBOLS), DB2_OK,
@@ -608,7 +587,7 @@ def prepare(test_frac=0.2):
         targets_map, ext_dxy, ext_spx, ext_gold,
     )
 
-    log.info("samples after threshold: %d", len(X))
+    log.info("samples: %d (no threshold)", len(X))
 
     if len(X) < 100:
         log.error("too few samples: %d", len(X))
@@ -623,12 +602,12 @@ def prepare(test_frac=0.2):
     )
 
     balance = {
-        "up_total": int(y_dir.sum()),
-        "down_total": int(len(y_dir) - y_dir.sum()),
         "up_train": int(y_train.sum()),
         "down_train": int(
             len(y_train) - y_train.sum()
         ),
+        "ret_mean": float(r_train.mean()),
+        "ret_std": float(r_train.std()),
     }
 
     log.info(
@@ -640,6 +619,10 @@ def prepare(test_frac=0.2):
         "balance train: up=%d down=%d",
         balance["up_train"],
         balance["down_train"],
+    )
+    log.info(
+        "ret_train: mean=%.4f std=%.4f",
+        balance["ret_mean"], balance["ret_std"],
     )
 
     return {
@@ -655,11 +638,9 @@ def prepare(test_frac=0.2):
         "balance": balance,
         "feature_cols": FEATURE_COLS,
         "horizon": HORIZON,
-        "threshold_pct": MOVE_THRESHOLD_PCT,
         "symbols": sorted(set(sym)),
         "reference": REFERENCE,
     }
-
 
 def main():
     data = prepare()
@@ -672,7 +653,6 @@ def main():
         len(data["feature_cols"]),
     )
     log.info("symbols in dataset: %s", data["symbols"])
-
 
 if __name__ == "__main__":
     main()
