@@ -1,9 +1,10 @@
 # ============================================================
-# ARGUS-Trader — ANOMALY DETECTORS v3
+# ARGUS-Trader — DETECT / ANOMALY v3
 # ------------------------------------------------------------
-# v3: symbol_conn — SOL/BNB candles from DB2.
-#     Previously always used DB1 -> empty for SOL/BNB.
-#     Same fix as features v8, simulator v9.5.
+# v3: symbol_conn — DB1 for BTC/ETH, DB2 for SOL/BNB.
+#     v2 called get_connection() -> SOL/BNB always empty.
+#     Needs env: ARGUS_DB_URL, ARGUS_DB_URL_2,
+#                SYMBOLS, DB2_SYMBOLS.
 # v2: short lines, 4 detectors.
 # ============================================================
 
@@ -404,6 +405,10 @@ def process_symbol(symbol):
 def main():
     log.info("=" * 60)
     log.info("ANOMALY DETECTORS v3")
+    log.info(
+        "SYMBOLS=%s DB2_SYMBOLS=%s (DB2_OK=%s)",
+        SYMBOLS, sorted(DB2_SYMBOLS), DB2_OK,
+    )
     log.info("=" * 60)
 
     total = 0
@@ -416,6 +421,14 @@ def main():
     log.info("=" * 60)
 
     close_connection()
+    if DB2_OK:
+        try:
+            from db2 import (
+                close_connection as db2c,
+            )
+            db2c()
+        except Exception:
+            pass
 
 
 if __name__ == "__main__":
