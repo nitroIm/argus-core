@@ -1,8 +1,9 @@
 # ============================================================
 # ARGUS - LEARN (ML training)
 # ------------------------------------------------------------
-# v5: + Run cat step (CatBoost).
-# v4: + Run xgb step (XGBoost).
+# v6: + Run weights (ensemble per-symbol weights).
+# v5: + Run cat (CatBoost).
+# v4: + Run xgb (XGBoost).
 # v3: HORIZON=12h.
 # v2: ARGUS_DB_URL_2, SYMBOLS, DB2_SYMBOLS.
 # ============================================================
@@ -22,7 +23,7 @@ concurrency:
 jobs:
   learn:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
 
     steps:
       - uses: actions/checkout@v4
@@ -37,7 +38,8 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/pip
-          key: pip-learn-${{ hashFiles('crypto/requirements.txt') }}
+          key: >-
+            pip-learn-${{ hashFiles('crypto/requirements.txt') }}
           restore-keys: pip-learn-
 
       - name: Install deps
@@ -53,8 +55,10 @@ jobs:
           DB2_SYMBOLS: SOLUSDT,BNBUSDT
           HORIZON: '12'
           MOVE_THRESHOLD_PCT: '0.5'
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_BOT_TOKEN: >-
+            ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: >-
+            ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python crypto/learn/runner.py
 
       - name: Run xgb
@@ -74,6 +78,11 @@ jobs:
           DB2_SYMBOLS: SOLUSDT,BNBUSDT
           HORIZON: '12'
         run: python crypto/learn/train_cat.py
+
+      - name: Run weights
+        env:
+          SYMBOLS: BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT
+        run: python crypto/learn/train_weights.py
 
       - name: Export for migration
         env:
