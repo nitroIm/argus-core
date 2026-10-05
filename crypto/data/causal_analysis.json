@@ -1,25 +1,18 @@
 {
-  "generated_at": "2026-10-05T01:16:17.249426+00:00",
+  "generated_at": "2026-10-05T02:16:24.815784+00:00",
   "symbols": {
     "BTCUSDT": {
       "symbol": "BTCUSDT",
       "total_events": 200,
-      "processed": 14,
-      "saved": 14,
+      "processed": 1,
+      "saved": 1,
       "summary_by_type": {
         "rsi_overbought": {
           "count": 1,
           "avg_funding": 0.0001,
           "avg_oi_change": null,
-          "avg_ls_ratio": 1.08,
-          "avg_change_24h": 1.8402
-        },
-        "ls_long_extreme": {
-          "count": 13,
-          "avg_funding": 0.0,
-          "avg_oi_change": -0.1544,
-          "avg_ls_ratio": 1.3754,
-          "avg_change_24h": -0.3458
+          "avg_ls_ratio": 1.07,
+          "avg_change_24h": 2.071
         }
       }
     },
@@ -29,26 +22,26 @@
       "processed": 3,
       "saved": 3,
       "summary_by_type": {
+        "volume_spike": {
+          "count": 1,
+          "avg_funding": 0.0001,
+          "avg_oi_change": null,
+          "avg_ls_ratio": 1.32,
+          "avg_change_24h": 1.1951
+        },
         "funding_spike_pos": {
           "count": 1,
           "avg_funding": 0.0001,
           "avg_oi_change": null,
-          "avg_ls_ratio": 1.34,
-          "avg_change_24h": 1.1204
+          "avg_ls_ratio": 1.32,
+          "avg_change_24h": 1.1951
         },
         "rsi_overbought": {
           "count": 1,
           "avg_funding": 0.0001,
           "avg_oi_change": null,
-          "avg_ls_ratio": 1.34,
-          "avg_change_24h": 1.1204
-        },
-        "rsi_oversold": {
-          "count": 1,
-          "avg_funding": 0.0001,
-          "avg_oi_change": -0.8952,
-          "avg_ls_ratio": 1.53,
-          "avg_change_24h": 0.3025
+          "avg_ls_ratio": 1.32,
+          "avg_change_24h": 1.1951
         }
       }
     }
