@@ -1,11 +1,11 @@
 {
-  "trained_at": "2026-10-05T00:45:45.290929+00:00",
+  "trained_at": "2026-10-05T07:53:28.265713+00:00",
   "version": "v5",
-  "n_total": 826,
-  "n_train": 660,
-  "n_test": 166,
-  "accuracy": 0.5843,
-  "num_trees": 1,
+  "n_total": 6600,
+  "n_train": 5280,
+  "n_test": 1320,
+  "accuracy": 0.522,
+  "num_trees": 17,
   "features": [
     "change_pct",
     "range_pct",
@@ -43,58 +43,58 @@
   ],
   "top_features": [
     {
-      "name": "lower_wick_pct",
-      "gain": 11.08
+      "name": "bb_lower_dist",
+      "gain": 138.42
+    },
+    {
+      "name": "hour_of_day",
+      "gain": 123.09
     },
     {
       "name": "change_4h",
-      "gain": 10.04
-    },
-    {
-      "name": "ema50_dist_pct",
-      "gain": 9.53
-    },
-    {
-      "name": "volatility_7d",
-      "gain": 5.85
-    },
-    {
-      "name": "ema21_dist_pct",
-      "gain": 5.26
-    },
-    {
-      "name": "change_7d",
-      "gain": 4.89
-    },
-    {
-      "name": "macd",
-      "gain": 2.45
+      "gain": 94.98
     },
     {
       "name": "change_pct",
-      "gain": 0.0
+      "gain": 93.6
     },
     {
-      "name": "range_pct",
-      "gain": 0.0
+      "name": "ema50_dist_pct",
+      "gain": 90.62
+    },
+    {
+      "name": "upper_wick_pct",
+      "gain": 86.53
+    },
+    {
+      "name": "bb_upper_dist",
+      "gain": 83.33
     },
     {
       "name": "body_pct",
-      "gain": 0.0
+      "gain": 82.74
+    },
+    {
+      "name": "change_7d",
+      "gain": 79.52
+    },
+    {
+      "name": "bb_width_pct",
+      "gain": 74.01
     }
   ],
   "balance": {
-    "up_total": 453,
-    "down_total": 373,
-    "up_train": 356,
-    "down_train": 304
+    "up_total": 3319,
+    "down_total": 3281,
+    "up_train": 2627,
+    "down_train": 2653
   },
   "symbol": null,
   "confusion": {
-    "tp": 97,
-    "tn": 0,
-    "fp": 69,
-    "fn": 0
+    "tp": 409,
+    "tn": 280,
+    "fp": 348,
+    "fn": 283
   },
-  "exported_at": "2026-10-05T07:45:50.959004+00:00"
+  "exported_at": "2026-10-05T08:22:13.292091+00:00"
 }
