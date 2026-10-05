@@ -1,8 +1,9 @@
 # ============================================================
-# ARGUS-Trader - DATASET v12
+# ARGUS-Trader - DATASET v13
 # ------------------------------------------------------------
-# v12: change_3d, change_7d disabled (momentum overfit).
-# v11: purge 12pts, day_of_week off, asia 2h window.
+# v13: + cross-asset features (BTC lags for alts).
+#      Reference BTC -> all others. BTC gets ETH as ref.
+# v12: change_3d, change_7d off, purge, day_of_week off.
 # ============================================================
 
 import os
@@ -94,7 +95,6 @@ def symbol_conn(symbol):
     return get_connection()
 
 
-# v12: change_3d, change_7d disabled.
 INTERNAL_COLS = [
     "change_pct",
     "range_pct",
@@ -123,6 +123,13 @@ INTERNAL_COLS = [
     "dist_low_24h_pct",
     "consecutive_up",
     "session",
+]
+
+CROSS_COLS = [
+    "ref_change_1h",
+    "ref_change_4h",
+    "ref_change_24h",
+    "ref_change_1d",
 ]
 
 OI_COLS = ["oi_change_1h", "oi_change_24h"]
@@ -166,6 +173,7 @@ EXTERNAL_COLS = [
 
 FEATURE_COLS = (
     INTERNAL_COLS
+    + CROSS_COLS
     + OI_COLS
     + LS_COLS
     + TAKER_COLS
@@ -193,6 +201,7 @@ MAX_AGE = {
     "orderbook": 4,
     "events": 168,
     "anomaly": 48,
+    "close": 3,
 }
 
 
@@ -283,6 +292,30 @@ def fetch_candles(symbol, limit=100000):
             return _fetch(conn, sql, (symbol, limit))
     except Exception as exc:
         log.warning("candles %s: %s", symbol, exc)
+        return []
+
+
+def fetch_closes(symbol, limit=100000):
+    """v13: lightweight close series for cross-asset."""
+    cols = ["timestamp", "close"]
+    sql = _sel(
+        cols,
+        "candles",
+        "symbol = %s AND timeframe = '1h' "
+        "ORDER BY timestamp LIMIT %s",
+    )
+    try:
+        with symbol_conn(symbol) as conn:
+            rows = _fetch(conn, sql, (symbol, limit))
+        out = []
+        for ts, vals in rows:
+            c = vals[0]
+            if c is None or c <= 0:
+                continue
+            out.append((ts, float(c)))
+        return out
+    except Exception as exc:
+        log.warning("closes %s: %s", symbol, exc)
         return []
 
 
@@ -531,6 +564,37 @@ def _safe(v):
         return np.nan
 
 
+def _cross_feats(ref_closes, ts):
+    """v13: BTC (or ETH for BTC) change over lags."""
+    now = asof(ref_closes, ts, MAX_AGE["close"])
+    p1 = asof_shift(
+        ref_closes, ts, 1, MAX_AGE["close"]
+    )
+    p4 = asof_shift(
+        ref_closes, ts, 4, MAX_AGE["close"]
+    )
+    p24 = asof_shift(
+        ref_closes, ts, 24, MAX_AGE["close"]
+    )
+    p1d = asof_shift(
+        ref_closes, ts, 24, MAX_AGE["close"]
+    )
+
+    def chg(a, b):
+        if a is None or b is None:
+            return np.nan
+        if b[0] <= 0:
+            return np.nan
+        return (a[0] - b[0]) / b[0] * 100
+
+    return [
+        _safe(chg(now, p1)),
+        _safe(chg(now, p4)),
+        _safe(chg(now, p24)),
+        _safe(chg(now, p1d)),
+    ]
+
+
 def _oi_feats(oi_series, ts):
     now = asof(oi_series, ts, MAX_AGE["oi"])
     p1 = asof_shift(
@@ -721,11 +785,16 @@ def build_targets(candles, horizon):
 
 
 def _row_for(symbol, d, asia, ts,
-             ext_dxy, ext_spx, ext_gold):
+             ext_dxy, ext_spx, ext_gold,
+             cross_ref):
     row = []
     for i in range(len(INTERNAL_COLS)):
         v = d["fa"][i].get(ts)
         row.append(v if v is not None else np.nan)
+
+    # v13: cross-asset first after internal.
+    row.extend(_cross_feats(cross_ref, ts))
+
     row.extend(_oi_feats(d["oi"], ts))
     row.extend(_ls_feats(d["ls"], ts))
     row.extend(_taker_feats(d["taker"], ts))
@@ -754,6 +823,7 @@ def build_xy_all(
         if not d:
             continue
         targets = targets_map.get(symbol) or {}
+        cross_ref = d.get("cross_ref") or []
 
         for ts in sorted(d["feats"]):
             ret = targets.get(ts)
@@ -762,6 +832,7 @@ def build_xy_all(
             row = _row_for(
                 symbol, d, asia, ts,
                 ext_dxy, ext_spx, ext_gold,
+                cross_ref,
             )
             X.append(row)
             y_dir.append(1 if ret > 0 else 0)
@@ -861,7 +932,7 @@ def _build_feat_arrays(rows):
     return feats, fa
 
 
-def _load_symbol(symbol):
+def _load_symbol(symbol, cross_ref_symbol):
     rows = fetch_features(symbol)
     if not rows:
         return None
@@ -873,6 +944,8 @@ def _load_symbol(symbol):
     candles = fetch_candles(symbol)
     if not candles:
         return None
+
+    cross_ref = fetch_closes(cross_ref_symbol)
 
     return {
         "feats": feats,
@@ -886,13 +959,27 @@ def _load_symbol(symbol):
         "events": fetch_events(symbol),
         "anom": fetch_anomaly(symbol),
         "candles": candles,
+        "cross_ref": cross_ref,
     }
+
+
+def _cross_ref_for(symbol, available):
+    """Pick reference: BTC for all, ETH for BTC."""
+    if symbol == REFERENCE:
+        for alt in ("ETHUSDT", "SOLUSDT", "BNBUSDT"):
+            if alt in available and alt != symbol:
+                return alt
+        return symbol
+    if REFERENCE in available:
+        return REFERENCE
+    return symbol
 
 
 def prepare(test_frac=0.2):
     log.info("=" * 60)
-    log.info("DATASET v12")
+    log.info("DATASET v13")
     log.info("SYMBOLS=%s", SYMBOLS)
+    log.info("REFERENCE=%s", REFERENCE)
     log.info("HORIZON=%dh", HORIZON)
     log.info("DB2_OK=%s", DB2_OK)
     log.info(
@@ -923,7 +1010,8 @@ def prepare(test_frac=0.2):
     targets_map = {}
 
     for symbol in SYMBOLS:
-        d = _load_symbol(symbol)
+        ref = _cross_ref_for(symbol, SYMBOLS)
+        d = _load_symbol(symbol, ref)
         if d is None:
             log.warning(
                 "%s: no data (skip)", symbol
@@ -936,12 +1024,13 @@ def prepare(test_frac=0.2):
         log.info(
             "%s: feat=%d candles=%d "
             "oi=%d ls=%d taker=%d "
-            "ob=%d ev=%d an=%d",
+            "ob=%d ev=%d an=%d ref=%s(%d)",
             symbol, len(d["feats"]),
             len(d["candles"]),
             len(d["oi"]), len(d["ls"]),
             len(d["taker"]), len(d["ob"]),
             len(d["events"]), len(d["anom"]),
+            ref, len(d["cross_ref"]),
         )
 
     if REFERENCE not in symbols_data:
@@ -1006,7 +1095,8 @@ def prepare(test_frac=0.2):
 
 
 def prepare_one(symbol):
-    d = _load_symbol(symbol)
+    ref = _cross_ref_for(symbol, SYMBOLS)
+    d = _load_symbol(symbol, ref)
     if d is None:
         return None, None
 
@@ -1020,6 +1110,7 @@ def prepare_one(symbol):
     row = _row_for(
         symbol, d, asia, latest_ts,
         [], [], [],
+        d.get("cross_ref") or [],
     )
     return latest_ts, row
 
