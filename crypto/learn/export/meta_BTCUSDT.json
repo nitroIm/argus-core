@@ -1,12 +1,12 @@
 {
-  "trained_at": "2026-10-05T15:40:34.680622+00:00",
+  "trained_at": "2026-10-05T15:50:23.463860+00:00",
   "version": "v11",
   "symbol": "BTCUSDT",
-  "n_total": 3753,
-  "n_train": 3002,
-  "n_test": 751,
-  "train_accuracy": 0.6912,
-  "accuracy": 0.494,
+  "n_total": 5722,
+  "n_train": 4577,
+  "n_test": 1145,
+  "train_accuracy": 0.7236,
+  "accuracy": 0.4987,
   "num_trees": 100,
   "features": [
     "change_pct",
@@ -46,52 +46,52 @@
   "top_features": [
     {
       "name": "change_3d",
-      "gain": 559.58
-    },
-    {
-      "name": "funding_rate",
-      "gain": 518.5
+      "gain": 2693.16
     },
     {
       "name": "change_1d",
-      "gain": 323.59
+      "gain": 695.43
+    },
+    {
+      "name": "funding_rate",
+      "gain": 656.75
     },
     {
       "name": "bb_width_pct",
-      "gain": 300.86
-    },
-    {
-      "name": "change_7d",
-      "gain": 257.76
-    },
-    {
-      "name": "volatility_7d",
-      "gain": 233.16
-    },
-    {
-      "name": "volatility_24h",
-      "gain": 200.88
+      "gain": 583.97
     },
     {
       "name": "dist_low_24h_pct",
-      "gain": 190.09
+      "gain": 581.18
     },
     {
-      "name": "ema50_dist_pct",
-      "gain": 189.97
+      "name": "change_7d",
+      "gain": 577.11
     },
     {
-      "name": "upper_wick_pct",
-      "gain": 188.08
+      "name": "volatility_7d",
+      "gain": 543.41
+    },
+    {
+      "name": "volatility_24h",
+      "gain": 419.4
+    },
+    {
+      "name": "macd_signal",
+      "gain": 304.86
+    },
+    {
+      "name": "day_of_week",
+      "gain": 293.02
     }
   ],
-  "horizon": 4,
+  "horizon": 12,
   "threshold_pct": 0.5,
   "confusion": {
-    "tp": 162,
-    "tn": 209,
-    "fp": 150,
-    "fn": 230
+    "tp": 331,
+    "tn": 240,
+    "fp": 270,
+    "fn": 304
   },
-  "exported_at": "2026-10-05T15:48:19.711753+00:00"
+  "exported_at": "2026-10-05T15:50:31.684612+00:00"
 }
