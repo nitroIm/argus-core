@@ -1,8 +1,13 @@
 # ============================================================
-# ARGUS-Trader - DATASET v10
+# ARGUS-Trader - DATASET v11
 # ------------------------------------------------------------
-# v10: 64 features from 13 tables (DB1 + DB2).
-#      Fixes: no long lines, no weird indents.
+# v11 fixes:
+#   - fetch_events/anomaly: unpack row to str
+#   - _count_type: handle both tuple and str
+#   - ASIA_TOL_SEC: 1800 -> 7200
+#   - purge HORIZON pts between train and test
+#   - drop day_of_week (overfit on weekday)
+#   - prepare_one() for predict
 # ============================================================
 
 import os
@@ -55,9 +60,6 @@ log = logging.getLogger("crypto.learn.dataset")
 USE_EXTERNAL = (
     os.getenv("USE_EXTERNAL", "0").strip() == "1"
 )
-USE_CROSS = (
-    os.getenv("USE_CROSS", "0").strip() == "1"
-)
 
 HORIZON = int(os.getenv("HORIZON", "12"))
 
@@ -85,8 +87,6 @@ DB2_SYMBOLS = {
     if s.strip()
 }
 
-DATA_DIR = CRYPTO_ROOT / "data"
-
 
 def symbol_conn(symbol):
     if symbol in DB2_SYMBOLS and DB2_OK:
@@ -99,6 +99,7 @@ def symbol_conn(symbol):
     return get_connection()
 
 
+# v11: day_of_week removed (weekday overfit).
 INTERNAL_COLS = [
     "change_pct",
     "range_pct",
@@ -115,7 +116,6 @@ INTERNAL_COLS = [
     "change_3d",
     "trend_up",
     "hour_of_day",
-    "day_of_week",
     "funding_rate",
     "funding_trend",
     "ema9_dist_pct",
@@ -132,46 +132,18 @@ INTERNAL_COLS = [
     "session",
 ]
 
-OI_COLS = [
-    "oi_change_1h",
-    "oi_change_24h",
-]
-
-LS_COLS = [
-    "ls_ratio_asof",
-    "ls_change_1h",
-]
-
-TAKER_COLS = [
-    "taker_buy_pct",
-    "taker_change_1h",
-]
-
-MACRO_COLS = [
-    "us10y_level",
-    "us10y_change_1d",
-]
-
-ONCHAIN_COLS = [
-    "hashrate_log",
-    "hashrate_change_1d",
-]
-
-OB_COLS = [
-    "ob_bid_pct",
-    "ob_ask_pct",
-    "ob_spread_pct",
-]
-
+OI_COLS = ["oi_change_1h", "oi_change_24h"]
+LS_COLS = ["ls_ratio_asof", "ls_change_1h"]
+TAKER_COLS = ["taker_buy_pct", "taker_change_1h"]
+MACRO_COLS = ["us10y_level", "us10y_change_1d"]
+ONCHAIN_COLS = ["hashrate_log", "hashrate_change_1d"]
+OB_COLS = ["ob_bid_pct", "ob_ask_pct", "ob_spread_pct"]
 EVENT_COLS = [
     "events_1h",
     "events_24h",
     "rsi_overbought_24h",
 ]
-
-ANOMALY_COLS = [
-    "anomaly_24h",
-]
+ANOMALY_COLS = ["anomaly_24h"]
 
 ASIA_COLS = [
     "asia_nikkei_6h",
@@ -199,18 +171,6 @@ EXTERNAL_COLS = [
     "gold_change_pct",
 ]
 
-_CROSS_ALL = [
-    "ref_change_1h",
-    "ref_change_4h",
-    "ref_change_24h",
-    "ratio",
-    "ratio_zscore_24h",
-    "lead_lag_corr_24h",
-    "spread_pct",
-]
-
-CROSS_COLS = _CROSS_ALL if USE_CROSS else []
-
 FEATURE_COLS = (
     INTERNAL_COLS
     + OI_COLS
@@ -223,11 +183,13 @@ FEATURE_COLS = (
     + ANOMALY_COLS
     + ASIA_COLS
     + (EXTERNAL_COLS if USE_EXTERNAL else [])
-    + CROSS_COLS
 )
 
 TARGET_RET = "next_return"
 TARGET_COL = "next_change_pct"
+
+# v11: asia match window 30min -> 2h.
+ASIA_TOL_SEC = 7200
 
 MAX_AGE = {
     "funding": 24,
@@ -237,7 +199,6 @@ MAX_AGE = {
     "macro": 12,
     "onchain": 72,
     "orderbook": 4,
-    "asia": 2,
     "events": 168,
     "anomaly": 48,
 }
@@ -264,7 +225,29 @@ def _fetch(conn, sql, params=()):
         return []
 
 
-def _sql_sel(cols, table, where):
+def _fetch_flat(conn, sql, params=()):
+    """v11: second element is a scalar, not tuple."""
+    try:
+        with conn.cursor() as cur:
+            cur.execute(sql, params)
+            rows = cur.fetchall()
+        out = []
+        for r in rows:
+            ts = r[0]
+            if ts is None:
+                continue
+            if ts.tzinfo is None:
+                ts = ts.replace(
+                    tzinfo=timezone.utc
+                )
+            out.append((ts, r[1]))
+        return out
+    except Exception as exc:
+        log.warning("fetch: %s", exc)
+        return []
+
+
+def _sel(cols, table, where):
     return (
         "SELECT "
         + ", ".join(cols)
@@ -277,7 +260,7 @@ def _sql_sel(cols, table, where):
 
 def fetch_features(symbol, limit=100000):
     cols = ["timestamp"] + INTERNAL_COLS
-    sql = _sql_sel(
+    sql = _sel(
         cols,
         "features_hourly",
         "symbol = %s ORDER BY timestamp LIMIT %s",
@@ -298,7 +281,7 @@ def fetch_candles(symbol, limit=100000):
         "low",
         "close",
     ]
-    sql = _sql_sel(
+    sql = _sel(
         cols,
         "candles",
         "symbol = %s AND timeframe = '1h' "
@@ -314,7 +297,7 @@ def fetch_candles(symbol, limit=100000):
 
 def fetch_oi(symbol):
     cols = ["timestamp", "oi", "oi_value"]
-    sql = _sql_sel(
+    sql = _sel(
         cols,
         "open_interest",
         "symbol = %s AND oi IS NOT NULL "
@@ -330,7 +313,7 @@ def fetch_oi(symbol):
 
 def fetch_ls(symbol):
     cols = ["timestamp", "ls_ratio"]
-    sql = _sql_sel(
+    sql = _sel(
         cols,
         "long_short_ratio",
         "symbol = %s AND ls_ratio IS NOT NULL "
@@ -346,7 +329,7 @@ def fetch_ls(symbol):
 
 def fetch_taker(symbol):
     cols = ["timestamp", "buy_vol", "sell_vol"]
-    sql = _sql_sel(
+    sql = _sel(
         cols,
         "taker_flow",
         "symbol = %s AND buy_vol IS NOT NULL "
@@ -362,7 +345,7 @@ def fetch_taker(symbol):
 
 def fetch_macro():
     cols = ["timestamp", "close"]
-    sql = _sql_sel(
+    sql = _sel(
         cols,
         "macro_metrics",
         "symbol = 'US10Y' AND close IS NOT NULL "
@@ -378,7 +361,7 @@ def fetch_macro():
 
 def fetch_onchain():
     cols = ["timestamp", "hashrate"]
-    sql = _sql_sel(
+    sql = _sel(
         cols,
         "onchain_metrics",
         "symbol = 'BTC' AND hashrate IS NOT NULL "
@@ -399,7 +382,7 @@ def fetch_orderbook(symbol):
         "ask_pct",
         "spread_pct",
     ]
-    sql = _sql_sel(
+    sql = _sel(
         cols,
         "orderbook_snapshots",
         "symbol = %s AND bid_pct IS NOT NULL "
@@ -414,30 +397,32 @@ def fetch_orderbook(symbol):
 
 
 def fetch_events(symbol):
+    """v11: returns (ts, event_type_str)."""
     cols = ["timestamp", "event_type"]
-    sql = _sql_sel(
+    sql = _sel(
         cols,
         "events",
         "symbol = %s ORDER BY timestamp",
     )
     try:
         with symbol_conn(symbol) as conn:
-            return _fetch(conn, sql, (symbol,))
+            return _fetch_flat(conn, sql, (symbol,))
     except Exception as exc:
         log.warning("events %s: %s", symbol, exc)
         return []
 
 
 def fetch_anomaly(symbol):
+    """v11: returns (ts, anomaly_type_str)."""
     cols = ["timestamp", "anomaly_type"]
-    sql = _sql_sel(
+    sql = _sel(
         cols,
         "anomaly_log",
         "symbol = %s ORDER BY timestamp",
     )
     try:
         with symbol_conn(symbol) as conn:
-            return _fetch(conn, sql, (symbol,))
+            return _fetch_flat(conn, sql, (symbol,))
     except Exception as exc:
         log.warning("anom %s: %s", symbol, exc)
         return []
@@ -474,7 +459,7 @@ def fetch_asia_market():
 
 def fetch_external(symbol):
     cols = ["timestamp", "change_pct"]
-    sql = _sql_sel(
+    sql = _sel(
         cols,
         "external_market",
         "symbol = %s AND change_pct IS NOT NULL "
@@ -515,6 +500,7 @@ def asof_shift(series, ts, shift_h, max_age_h):
 
 
 def asia_at(asia_list, ts, lag_hours):
+    """v11: match window is 2h, not 30min."""
     if not asia_list:
         return None
     target = ts - timedelta(hours=lag_hours)
@@ -524,7 +510,7 @@ def asia_at(asia_list, ts, lag_hours):
         diff = abs(
             (a_ts - target).total_seconds()
         )
-        if diff <= 1800:
+        if diff <= ASIA_TOL_SEC:
             if best_diff is None or diff < best_diff:
                 best_val = a_val
                 best_diff = diff
@@ -667,14 +653,19 @@ def _count_events(series, ts, hours):
 
 
 def _count_type(series, ts, hours, etype):
+    """v11: handle both str and tuple."""
     if not series:
         return 0
     cutoff = ts - timedelta(hours=hours)
     n = 0
-    for e_ts, et in series:
-        if e_ts > cutoff and e_ts <= ts:
-            if et == etype:
-                n += 1
+    for e_ts, e_data in series:
+        if e_ts <= cutoff or e_ts > ts:
+            continue
+        e_val = e_data
+        if isinstance(e_val, tuple):
+            e_val = e_val[0]
+        if e_val == etype:
+            n += 1
     return n
 
 
@@ -841,11 +832,21 @@ def per_symbol_split(
             train_idx.extend(idxs_sorted)
             continue
         split = int(n * (1 - test_frac))
-        train_idx.extend(idxs_sorted[:split])
+
+        # v11: purge last HORIZON points from train.
+        purge = min(HORIZON, split)
+        train_keep = split - purge
+        if train_keep < 20:
+            train_keep = split
+
+        train_idx.extend(
+            idxs_sorted[:train_keep]
+        )
         test_idx.extend(idxs_sorted[split:])
         log.info(
-            "  %s: train=%d test=%d",
-            sym, split, n - split,
+            "  %s: train=%d (purged %d) test=%d",
+            sym, train_keep, purge,
+            n - split,
         )
 
     train_idx.sort(key=lambda i: ts_list[i])
@@ -874,9 +875,37 @@ def _build_feat_arrays(rows):
     return feats, fa
 
 
+def _load_symbol(symbol):
+    rows = fetch_features(symbol)
+    if not rows:
+        return None
+
+    feats, fa = _build_feat_arrays(rows)
+    if not feats:
+        return None
+
+    candles = fetch_candles(symbol)
+    if not candles:
+        return None
+
+    return {
+        "feats": feats,
+        "fa": fa,
+        "oi": fetch_oi(symbol),
+        "ls": fetch_ls(symbol),
+        "taker": fetch_taker(symbol),
+        "macro": fetch_macro(),
+        "onchain": fetch_onchain(),
+        "ob": fetch_orderbook(symbol),
+        "events": fetch_events(symbol),
+        "anom": fetch_anomaly(symbol),
+        "candles": candles,
+    }
+
+
 def prepare(test_frac=0.2):
     log.info("=" * 60)
-    log.info("DATASET v10 (all features)")
+    log.info("DATASET v11")
     log.info("SYMBOLS=%s", SYMBOLS)
     log.info("HORIZON=%dh", HORIZON)
     log.info("DB2_OK=%s", DB2_OK)
@@ -904,63 +933,29 @@ def prepare(test_frac=0.2):
         if USE_EXTERNAL else []
     )
 
-    macro = fetch_macro()
-    log.info("macro points: %d", len(macro))
-
-    onchain = fetch_onchain()
-    log.info("onchain: %d", len(onchain))
-
     symbols_data = {}
     targets_map = {}
 
     for symbol in SYMBOLS:
-        rows = fetch_features(symbol)
-        if not rows:
+        d = _load_symbol(symbol)
+        if d is None:
             log.warning(
-                "%s: no features (skip)", symbol
+                "%s: no data (skip)", symbol
             )
             continue
-
-        feats, fa = _build_feat_arrays(rows)
-
-        candles = fetch_candles(symbol)
-        if not candles:
-            log.warning(
-                "%s: no candles (skip)", symbol
-            )
-            continue
-
+        symbols_data[symbol] = d
         targets_map[symbol] = build_targets(
-            candles, HORIZON,
+            d["candles"], HORIZON
         )
-
-        oi = fetch_oi(symbol)
-        ls = fetch_ls(symbol)
-        taker = fetch_taker(symbol)
-        ob = fetch_orderbook(symbol)
-        events = fetch_events(symbol)
-        anom = fetch_anomaly(symbol)
-
-        symbols_data[symbol] = {
-            "feats": feats,
-            "fa": fa,
-            "oi": oi,
-            "ls": ls,
-            "taker": taker,
-            "macro": macro,
-            "onchain": onchain,
-            "ob": ob,
-            "events": events,
-            "anom": anom,
-        }
-
         log.info(
             "%s: feat=%d candles=%d "
             "oi=%d ls=%d taker=%d "
             "ob=%d ev=%d an=%d",
-            symbol, len(feats), len(candles),
-            len(oi), len(ls), len(taker),
-            len(ob), len(events), len(anom),
+            symbol, len(d["feats"]),
+            len(d["candles"]),
+            len(d["oi"]), len(d["ls"]),
+            len(d["taker"]), len(d["ob"]),
+            len(d["events"]), len(d["anom"]),
         )
 
     if REFERENCE not in symbols_data:
@@ -1022,6 +1017,26 @@ def prepare(test_frac=0.2):
         "symbols": sorted(set(sym)),
         "reference": REFERENCE,
     }
+
+
+def prepare_one(symbol):
+    """v11: latest X row for predict. Same 64 features."""
+    d = _load_symbol(symbol)
+    if d is None:
+        return None, None
+
+    feats = d["feats"]
+    if not feats:
+        return None, None
+
+    latest_ts = max(feats.keys())
+    asia = fetch_asia_market()
+
+    row = _row_for(
+        symbol, d, asia, latest_ts,
+        [], [], [],
+    )
+    return latest_ts, row
 
 
 def main():
