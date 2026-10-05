@@ -1,19 +1,20 @@
 # ============================================================
 # ARGUS-Trader — DB
 # ------------------------------------------------------------
-# v4: drop dead conn on error -> next call reconnects.
-#     is_configured() guard, application_name.
-# v3: + переиспользование одного соединения на весь прогон.
-#     Глобальное соединение через _get_conn().
-#     Ускорение в 10-15 раз (одно соединение вместо 30).
-#     + close_connection() для явного закрытия в конце.
+# v5: reconnect fix — unconditional drop of _GLOBAL_CONN on
+#     error. psycopg3 keeps .closed==False on network break,
+#     only sets .broken==True, so old check failed.
+#     ping() also resets on failure.
+#     Drop emoji from logs (english only).
+# v4: drop dead conn on error, is_configured, app_name.
+# v3: global connection reuse.
 # ============================================================
 
 import json
 import logging
 from contextlib import contextmanager
 from datetime import datetime, timezone
-from typing import Optional, Iterable
+from typing import Optional
 
 from config import DB_URL
 
@@ -31,11 +32,19 @@ def is_configured() -> bool:
     return bool(DB_URL)
 
 
-def _get_conn():
-    """Возвращает глобальное соединение."""
+def _reset_conn():
     global _GLOBAL_CONN
-    if _GLOBAL_CONN is not None and not _GLOBAL_CONN.closed:
-        return _GLOBAL_CONN
+    _GLOBAL_CONN = None
+
+
+def _get_conn():
+    global _GLOBAL_CONN
+    if _GLOBAL_CONN is not None:
+        try:
+            if not _GLOBAL_CONN.closed:
+                return _GLOBAL_CONN
+        except Exception:
+            pass
     if not is_configured():
         raise RuntimeError("DB_URL is not set")
     import psycopg
@@ -44,23 +53,24 @@ def _get_conn():
         connect_timeout=15,
         application_name="argus-db1",
     )
-    log.info("🔌 Открыто соединение с Supabase")
+    log.info("DB1 connection opened")
     return _GLOBAL_CONN
 
 
 def close_connection():
-    """Явно закрывает глобальное соединение."""
     global _GLOBAL_CONN
-    if _GLOBAL_CONN is not None and not _GLOBAL_CONN.closed:
-        _GLOBAL_CONN.close()
-        log.info("🔌 Соединение закрыто")
+    if _GLOBAL_CONN is not None:
+        try:
+            if not _GLOBAL_CONN.closed:
+                _GLOBAL_CONN.close()
+                log.info("DB1 connection closed")
+        except Exception:
+            pass
     _GLOBAL_CONN = None
 
 
 @contextmanager
 def get_connection():
-    """Контекстный менеджер. Использует глобальное соединение."""
-    global _GLOBAL_CONN
     conn = _get_conn()
     try:
         yield conn
@@ -70,12 +80,8 @@ def get_connection():
             conn.rollback()
         except Exception:
             pass
-        # Drop dead conn so next call reconnects
-        try:
-            if conn.closed:
-                _GLOBAL_CONN = None
-        except Exception:
-            _GLOBAL_CONN = None
+        # Unconditional drop: broken conn is unsafe to reuse
+        _reset_conn()
         raise
 
 
@@ -87,11 +93,13 @@ def ping() -> bool:
                 cur.fetchone()
         return True
     except Exception as e:
-        log.error(f"Ping failed: {e}")
+        log.error("ping failed: %s", e)
+        _reset_conn()
         return False
 
 
-def execute(sql: str, params: tuple = None, fetch: bool = False):
+def execute(sql: str, params: tuple = None,
+            fetch: bool = False):
     with get_connection() as conn:
         with conn.cursor() as cur:
             cur.execute(sql, params or ())
@@ -112,24 +120,30 @@ def log_collect(
     started_at: Optional[datetime] = None,
 ) -> None:
     try:
-        started = started_at or datetime.now(timezone.utc)
+        started = started_at or datetime.now(
+            timezone.utc
+        )
         with get_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute(
                     """
                     INSERT INTO collect_log
-                        (job_name, metric, symbol, started_at, finished_at,
-                         records_added, source_used, fallback_count, status, error)
-                    VALUES (%s, %s, %s, %s, NOW(), %s, %s, %s, %s, %s)
+                        (job_name, metric, symbol,
+                         started_at, finished_at,
+                         records_added, source_used,
+                         fallback_count, status, error)
+                    VALUES (%s, %s, %s, %s, NOW(),
+                            %s, %s, %s, %s, %s)
                     """,
                     (
-                        job_name, metric, symbol, started,
-                        records_added, source_used, fallback_count,
+                        job_name, metric, symbol,
+                        started, records_added,
+                        source_used, fallback_count,
                         status, error,
                     ),
                 )
     except Exception as e:
-        log.error(f"Не удалось записать collect_log: {e}")
+        log.error("collect_log insert: %s", e)
 
 
 def log_rejected(
@@ -141,19 +155,29 @@ def log_rejected(
     source: Optional[str] = None,
 ) -> None:
     try:
-        raw_json = json.dumps(raw_data, ensure_ascii=False, default=str) if raw_data else None
+        raw_json = None
+        if raw_data:
+            raw_json = json.dumps(
+                raw_data,
+                ensure_ascii=False,
+                default=str,
+            )
         with get_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute(
                     """
                     INSERT INTO rejected_data
-                        (job_name, metric, symbol, raw_data, reason, source)
+                        (job_name, metric, symbol,
+                         raw_data, reason, source)
                     VALUES (%s, %s, %s, %s, %s, %s)
                     """,
-                    (job_name, metric, symbol, raw_json, reason, source),
+                    (
+                        job_name, metric, symbol,
+                        raw_json, reason, source,
+                    ),
                 )
     except Exception as e:
-        log.error(f"Не удалось записать rejected_data: {e}")
+        log.error("rejected_data insert: %s", e)
 
 
 def log_anomaly(
@@ -164,45 +188,55 @@ def log_anomaly(
     details: Optional[dict] = None,
 ) -> int:
     try:
+        details_json = json.dumps(
+            details or {},
+            ensure_ascii=False,
+            default=str,
+        )
         with get_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute(
                     """
                     INSERT INTO anomaly_log
-                        (symbol, timestamp, anomaly_type, severity, details)
+                        (symbol, timestamp,
+                         anomaly_type, severity,
+                         details)
                     VALUES (%s, %s, %s, %s, %s)
                     RETURNING id
                     """,
                     (
-                        symbol, timestamp, anomaly_type, severity,
-                        json.dumps(details or {}, ensure_ascii=False, default=str),
+                        symbol, timestamp,
+                        anomaly_type, severity,
+                        details_json,
                     ),
                 )
                 row = cur.fetchone()
                 return row[0] if row else 0
     except Exception as e:
-        log.error(f"Не удалось записать anomaly_log: {e}")
+        log.error("anomaly_log insert: %s", e)
         return 0
 
 
 if __name__ == "__main__":
-    print("🔌 ARGUS-Trader DB — тест соединения")
+    print("ARGUS DB1 - connection test")
     print("=" * 50)
     if not is_configured():
-        print("❌ ARGUS_DB_URL не задан")
+        print("FAIL: ARGUS_DB_URL not set")
         exit(1)
     if ping():
-        print("✅ Соединение работает")
+        print("OK: connection works")
         try:
             rows = execute(
-                "SELECT tablename FROM pg_tables WHERE schemaname = 'public' ORDER BY tablename",
+                "SELECT tablename FROM pg_tables "
+                "WHERE schemaname = 'public' "
+                "ORDER BY tablename",
                 fetch=True,
             )
-            print(f"📋 Таблиц в БД: {len(rows)}")
+            print("tables in DB1: %d" % len(rows))
         except Exception as e:
-            print(f"⚠️ {e}")
+            print("WARN: %s" % e)
     else:
-        print("❌ Соединение не работает")
+        print("FAIL: connection broken")
         exit(1)
     close_connection()
     print("=" * 50)
