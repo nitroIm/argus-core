@@ -1,11 +1,12 @@
 # ============================================================
 # ARGUS-Trader — CONFIG
 # ------------------------------------------------------------
-# v5: removed dead PRIORITY (unused, lives in collect/priority).
-#     removed SYMBOL_FORMATS (unused, exchanges.py handles it).
-#     removed COINGECKO_API_KEY (unused).
-# v4: RETENTION 90 -> 400. PRIORITY oi/taker fixed.
-# v3: + LIMITS incremental/backfill.
+# v6: PRIORITY, SYMBOL_FORMATS, COINGECKO_API_KEY restored
+#     (v5 removed them — unsafe without full repo grep).
+#     RETENTION 400 (train window ~378 days).
+# v5: RETENTION 90 -> 400, dead-code removal (reverted).
+# v4: PRIORITY oi/taker fixed in collect/priority (not here).
+# v3: LIMITS incremental/backfill.
 # ============================================================
 
 import os
@@ -24,10 +25,51 @@ DB_URL = (
 
 SYMBOLS = ["BTCUSDT", "ETHUSDT"]
 
+# Kept for compat. Real routing is in exchanges.py per-client.
+SYMBOL_FORMATS = {
+    "okx": {
+        "BTCUSDT": "BTC-USDT-SWAP",
+        "ETHUSDT": "ETH-USDT-SWAP",
+    },
+    "bitget": {
+        "BTCUSDT": "BTCUSDT",
+        "ETHUSDT": "ETHUSDT",
+    },
+    "gate": {
+        "BTCUSDT": "BTC_USDT",
+        "ETHUSDT": "ETH_USDT",
+    },
+    "kucoin": {
+        "BTCUSDT": "XBTUSDTM",
+        "ETHUSDT": "ETHUSDTM",
+    },
+    "mexc": {
+        "BTCUSDT": "BTCUSDT",
+        "ETHUSDT": "ETHUSDT",
+    },
+    "coingecko": {
+        "BTCUSDT": "bitcoin",
+        "ETHUSDT": "ethereum",
+    },
+}
+
 TIMEFRAMES = ["1h", "1d"]
 
-# Retention for raw tables. Must exceed train window.
-# Train uses ~378 days of candles. Give 400 days.
+# Kept for compat. Real priority lives in collect/priority.py.
+PRIORITY = {
+    "ohlcv": [
+        "okx", "bitget", "gate", "kucoin",
+    ],
+    "funding": [
+        "okx", "bitget", "gate", "kucuin",
+    ],
+    "oi": ["okx", "gate"],
+    "ls_ratio": ["okx", "bitget", "gate"],
+    "taker": ["okx"],
+    "spot_price": ["okx", "bitget", "coingecko"],
+}
+
+# Retention for raw tables. Must exceed train window (~378 days).
 RETENTION = {
     "raw_candles": 400,
     "raw_funding": 400,
@@ -44,6 +86,11 @@ EXCHANGE_ENDPOINTS = {
     "mexc": "https://api.mexc.com",
     "coingecko": "https://api.coingecko.com",
 }
+
+# Kept for compat.
+COINGECKO_API_KEY = (
+    os.getenv("COINGECKO_API_KEY") or ""
+).strip()
 
 VALIDATION = {
     "min_price": 1.0,
@@ -89,7 +136,7 @@ LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 
 
 if __name__ == "__main__":
-    print("ARGUS-Trader CONFIG v5")
+    print("ARGUS-Trader CONFIG v6")
     print("=" * 50)
     ok = "yes" if DB_URL else "no"
     print("DB_URL: %s" % ok)
