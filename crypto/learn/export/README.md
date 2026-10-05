@@ -17,7 +17,7 @@
 ## Config
 - HORIZON: 12h
 - REFERENCE: BTCUSDT
-- FEATURE_COLS: 61
+- FEATURE_COLS: 65
 - USE_CROSS: 0 (off)
 
 ## Usage
