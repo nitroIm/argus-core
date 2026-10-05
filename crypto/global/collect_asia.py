@@ -1,14 +1,11 @@
 # ============================================================
 # ARGUS-Trader — COLLECT ASIA + EUROPE + USA (узел global)
 # ------------------------------------------------------------
-# v5: batch insert per symbol, fallback to SAVEPOINT per row
-#     if batch fails. Fast path ~2min vs ~20min.
-# v4: RANGE=30d, MAX_ROWS=300 (align with patterns window).
-#     SAVEPOINT per row. log_run partial on failure.
-# v3: + USA (VIX, NASDAQ, US10Y) + Asia extra (USDJPY,
-#     KOSPI, TAIEX). Итого 14 рынков.
-# v2: + Европа (DAX, SX5E, FTSE, EURUSD).
-# v1: Азия (NIKKEI, SHANGHAI, HANGSENG, USDCNY).
+# v6: COALESCE on change_pct — prevents NULL overwrite.
+#     get_prev_close from DB for first row of window.
+#     Same fix as external.py v3, macro.py v2.
+# v5: batch insert per symbol, SAVEPOINT fallback.
+# v4: RANGE=30d, MAX_ROWS=300.
 # ============================================================
 
 import sys
@@ -80,7 +77,10 @@ SQL_TAIL = (
     " ON CONFLICT (symbol, timestamp) "
     "DO UPDATE SET "
     "close=EXCLUDED.close, "
-    "change_pct=EXCLUDED.change_pct"
+    "change_pct=COALESCE("
+    "  EXCLUDED.change_pct, "
+    "  asia_market.change_pct"
+    ")"
 )
 
 
@@ -93,7 +93,9 @@ def fetch_yahoo(code):
             timeout=15,
         )
         if r.status_code != 200:
-            log.warning("%s: HTTP %d", code, r.status_code)
+            log.warning(
+                "%s: HTTP %d", code, r.status_code,
+            )
             return []
         data = r.json()
     except Exception as e:
@@ -103,7 +105,9 @@ def fetch_yahoo(code):
     try:
         result = data["chart"]["result"][0]
         timestamps = result["timestamp"]
-        closes = result["indicators"]["quote"][0]["close"]
+        closes = result["indicators"][
+            "quote"
+        ][0]["close"]
     except Exception as e:
         log.error("%s: parse %s", code, e)
         return []
@@ -123,9 +127,34 @@ def fetch_yahoo(code):
     return out[-MAX_ROWS:]
 
 
-def compute_changes(rows):
+def get_prev_close(db_symbol, first_ts):
+    """Last close in DB before first_ts.
+    Used to compute change_pct for the very first
+    row of the Yahoo window (which has no prev).
+    """
+    try:
+        with get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT close FROM asia_market "
+                    "WHERE symbol = %s "
+                    "AND timestamp < %s "
+                    "ORDER BY timestamp DESC LIMIT 1",
+                    (db_symbol, first_ts),
+                )
+                row = cur.fetchone()
+                if row and row[0]:
+                    return float(row[0])
+    except Exception as e:
+        log.warning(
+            "prev_close %s: %s", db_symbol, e,
+        )
+    return None
+
+
+def compute_changes(rows, prev_close=None):
     out = []
-    prev = None
+    prev = prev_close
     for ts, close in rows:
         change = None
         if prev is not None and prev > 0:
@@ -136,14 +165,17 @@ def compute_changes(rows):
 
 
 def save_rows_batch(db_symbol, rows):
-    """One INSERT per batch. Returns (added, ok)."""
     if not rows:
         return 0, True
-    placeholders = ",".join(["(%s,%s,%s,%s,%s)"] * len(rows))
+    placeholders = ",".join(
+        ["(%s,%s,%s,%s,%s)"] * len(rows)
+    )
     sql = SQL_HEAD + placeholders + SQL_TAIL
     params = []
     for ts, close, change in rows:
-        params.extend([db_symbol, ts, close, change, "yahoo"])
+        params.extend([
+            db_symbol, ts, close, change, "yahoo",
+        ])
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
@@ -151,23 +183,30 @@ def save_rows_batch(db_symbol, rows):
                 n = cur.rowcount or 0
                 return n, True
     except Exception as e:
-        log.warning("batch failed %s: %s", db_symbol, e)
+        log.warning(
+            "batch failed %s: %s", db_symbol, e,
+        )
         return 0, False
 
 
 def save_rows_savepoint(db_symbol, rows):
-    """Slow path: SAVEPOINT per row."""
     if not rows:
         return 0
-    sql = SQL_HEAD + "(%s,%s,%s,%s,%s)" + SQL_TAIL
+    sql = (
+        SQL_HEAD + "(%s,%s,%s,%s,%s)" + SQL_TAIL
+    )
     added = 0
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
-                for i, (ts, close, change) in enumerate(rows):
+                for i, (ts, close, change) in (
+                    enumerate(rows)
+                ):
                     sp = "sp_row_" + str(i)
                     try:
-                        cur.execute("SAVEPOINT " + sp)
+                        cur.execute(
+                            "SAVEPOINT " + sp
+                        )
                         cur.execute(sql, (
                             db_symbol, ts, close,
                             change, "yahoo",
@@ -185,20 +224,24 @@ def save_rows_savepoint(db_symbol, rows):
                             )
                         except Exception:
                             pass
-                        log.warning("row %d skip: %s", i, e)
+                        log.warning(
+                            "row %d skip: %s", i, e,
+                        )
     except Exception as e:
         log.error("save %s: %s", db_symbol, e)
     return added
 
 
 def save_rows(db_symbol, rows):
-    """Try batch first, fallback to SAVEPOINT."""
     if not rows:
         return 0
     n, ok = save_rows_batch(db_symbol, rows)
     if ok:
         return n
-    log.info("  fallback to SAVEPOINT for %s", db_symbol)
+    log.info(
+        "  fallback to SAVEPOINT for %s",
+        db_symbol,
+    )
     return save_rows_savepoint(db_symbol, rows)
 
 
@@ -222,27 +265,50 @@ def log_run(job, status, n=0, err=None):
         log.warning("log_run: %s", e)
 
 
+def process_one(code, db_symbol):
+    rows = fetch_yahoo(code)
+    if not rows:
+        log.warning("  no data")
+        return 0, True
+
+    prev_close = get_prev_close(
+        db_symbol, rows[0][0],
+    )
+    if prev_close is not None:
+        log.info(
+            "  prev_close from DB: %.4f",
+            prev_close,
+        )
+
+    rows = compute_changes(rows, prev_close)
+    n = save_rows(db_symbol, rows)
+
+    filled = sum(
+        1 for _, _, c in rows if c is not None
+    )
+    log.info(
+        "  fetched=%d saved=%d with_change=%d",
+        len(rows), n, filled,
+    )
+    return n, False
+
+
 def fetch_group(name, lst):
     log.info("--- %s ---", name)
     total = 0
     failed = 0
     for code, db_symbol in lst:
         log.info("%s (%s)", db_symbol, code)
-        rows = fetch_yahoo(code)
-        if not rows:
-            log.warning("  no data")
-            failed += 1
-            continue
-        rows = compute_changes(rows)
-        n = save_rows(db_symbol, rows)
+        n, err = process_one(code, db_symbol)
         total += n
-        log.info("  fetched=%d saved=%d", len(rows), n)
+        if err:
+            failed += 1
     return total, failed
 
 
 def main():
     log.info("=" * 60)
-    log.info("ARGUS COLLECT ASIA+EU+USA — DB2 v5")
+    log.info("ARGUS COLLECT ASIA+EU+USA — DB2 v6")
     log.info("=" * 60)
 
     total = 0
