@@ -1,9 +1,8 @@
 # ============================================================
-# ARGUS-Trader - PREDICT v8
+# ARGUS-Trader - PREDICT v9
 # ------------------------------------------------------------
-# v8: drop _get_feat_map import (not in dataset v10).
-#     Inline feature map builder.
-# v7: regression-aware.
+# v9: use dataset.prepare_one — same 64 features as train.
+#     v8 built only 30 features -> LightGBM crash.
 # ============================================================
 
 import os
@@ -24,10 +23,6 @@ sys.path.insert(0, str(CRYPTO_ROOT))
 sys.path.insert(0, str(SCRIPT_DIR))
 
 import dataset as ds
-from dataset import (
-    INTERNAL_COLS,
-    fetch_features,
-)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -37,7 +32,6 @@ logging.basicConfig(
 log = logging.getLogger("crypto.learn.predict")
 
 MODELS_DIR = SCRIPT_DIR / "models"
-LOOKBACK = 500
 
 SCALE_PCT = 4.0
 PROB_MIN = 0.05
@@ -107,36 +101,12 @@ def _clip01(v):
     return v
 
 
-def _last_feat_row(symbol):
-    rows = fetch_features(symbol, limit=LOOKBACK)
-    if not rows:
-        return None, None
-
-    latest_ts = None
-    latest_vals = None
-    for ts, vals in rows:
-        if latest_ts is None or ts > latest_ts:
-            latest_ts = ts
-            latest_vals = vals
-
-    if latest_vals is None:
-        return None, None
-
-    row = []
-    for v in latest_vals[:len(INTERNAL_COLS)]:
-        if v is None:
-            row.append(np.nan)
-        else:
-            try:
-                row.append(float(v))
-            except Exception:
-                row.append(np.nan)
-    return latest_ts, row
-
-
 def _get_model_acc(meta):
-    for key in ("accuracy", "sign_acc_test",
-                "ic_test"):
+    for key in (
+        "accuracy",
+        "sign_acc_test",
+        "ic_test",
+    ):
         v = meta.get(key)
         if v is not None:
             return v
@@ -161,7 +131,7 @@ def predict_one(symbol):
         else set()
     )
 
-    ts, row = _last_feat_row(symbol)
+    ts, row = ds.prepare_one(symbol)
     if row is None:
         log.warning(
             "%s: no features", symbol
@@ -204,7 +174,7 @@ def predict_one(symbol):
 
 def main():
     log.info("=" * 60)
-    log.info("ARGUS-Trader PREDICT v8")
+    log.info("ARGUS-Trader PREDICT v9")
     log.info("SYMBOLS=%s", SYMBOLS_LIST)
     log.info("=" * 60)
 
