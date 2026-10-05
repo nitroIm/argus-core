@@ -1,5 +1,5 @@
 {
-  "predicted_at": "2026-10-05T12:39:20.501328+00:00",
+  "predicted_at": "2026-10-05T12:41:06.064206+00:00",
   "model_accuracy": 0.4762,
   "model_features": 40,
   "reference": "BTCUSDT",
@@ -17,20 +17,6 @@
       "prob_up": 0.4934,
       "direction": 0,
       "confidence": 0.0132
-    },
-    {
-      "symbol": "SOLUSDT",
-      "timestamp": "2026-02-24T08:00:00+00:00",
-      "prob_up": 0.4923,
-      "direction": 0,
-      "confidence": 0.0154
-    },
-    {
-      "symbol": "BNBUSDT",
-      "timestamp": "2026-02-24T08:00:00+00:00",
-      "prob_up": 0.4848,
-      "direction": 0,
-      "confidence": 0.0304
     }
   ]
 }
