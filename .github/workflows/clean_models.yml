@@ -1,0 +1,52 @@
+# ============================================================
+# ARGUS - Clean Models
+# ------------------------------------------------------------
+# One-click removal of stale model artifacts.
+# Deletes: lgb_*.txt, meta_*.json, model_meta.json.
+# Keeps: best_params.json, prev/.
+# Run before manual Crypto Learn to force fresh training.
+# ============================================================
+
+name: Clean Models
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  clean:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run clean
+        run: python crypto/learn/clean_models.py
+
+      - name: Commit deletions
+        run: |
+          git config user.name "ARGUS"
+          git config user.email "argus@github.com"
+          git add crypto/learn/models/ || true
+          if git diff --staged --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          git commit -m "clean: model artifacts [skip ci]"
+          for i in 1 2 3; do
+            git pull --rebase -X theirs \
+              --autostash origin main || true
+            if git push origin main; then
+              break
+            fi
+            sleep 5
+          done
