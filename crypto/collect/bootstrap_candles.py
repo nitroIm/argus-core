@@ -1,11 +1,10 @@
 # ============================================================
 # ARGUS-Trader — BOOTSTRAP CANDLES
 # ------------------------------------------------------------
-# v2: автопоиск db2.py через rglob (был ImportError:
-#     скрипт в crypto/collect, db2.py в crypto/global).
-#     Логика bootstrap не менялась с v1.
+# v3: + long_short_ratio (fetch_ls) и taker_flow (fetch_taker).
+#     OKX — единственный, у кого есть fetch_taker.
+# v2: автопоиск db2.py через rglob (был ImportError).
 # v1: разовая загрузка истории ДО MIN(timestamp) в БД.
-#     Существующие данные не трогаются.
 # ============================================================
 
 import os
@@ -89,6 +88,23 @@ SQL_OI = (
     "DO NOTHING"
 )
 
+SQL_LS = (
+    "INSERT INTO long_short_ratio "
+    "(symbol, timestamp, ls_ratio, long_pct, "
+    "short_pct, source) "
+    "VALUES (%s,%s,%s,%s,%s,%s) "
+    "ON CONFLICT (symbol, timestamp) "
+    "DO NOTHING"
+)
+
+SQL_TAKER = (
+    "INSERT INTO taker_flow "
+    "(symbol, timestamp, buy_vol, sell_vol, source) "
+    "VALUES (%s,%s,%s,%s,%s) "
+    "ON CONFLICT (symbol, timestamp) "
+    "DO NOTHING"
+)
+
 
 # ============================================================
 # DB HELPERS
@@ -156,7 +172,6 @@ def save_batch(symbol, sql, rows, fields):
 # ============================================================
 def try_fetch_ohlcv_range(symbol, timeframe,
                           start_ms, end_ms):
-    """Try sources in priority, first non-empty wins."""
     for src in SOURCES:
         client = CLIENTS.get(src)
         if not client:
@@ -198,6 +213,36 @@ def try_fetch_oi(symbol, limit=1000):
                 return src, rows
         except Exception as e:
             log.warning("[%s] %s oi: %s",
+                        src, symbol, e)
+    return None, []
+
+
+def try_fetch_ls(symbol, limit=1000):
+    for src in SOURCES:
+        client = CLIENTS.get(src)
+        if not client:
+            continue
+        try:
+            rows = client.fetch_ls(symbol, limit)
+            if rows:
+                return src, rows
+        except Exception as e:
+            log.warning("[%s] %s ls: %s",
+                        src, symbol, e)
+    return None, []
+
+
+def try_fetch_taker(symbol, limit=1000):
+    for src in SOURCES:
+        client = CLIENTS.get(src)
+        if not client:
+            continue
+        try:
+            rows = client.fetch_taker(symbol, limit)
+            if rows:
+                return src, rows
+        except Exception as e:
+            log.warning("[%s] %s taker: %s",
                         src, symbol, e)
     return None, []
 
@@ -319,6 +364,48 @@ def bootstrap_symbol(symbol):
     else:
         log.warning("  OI: no data")
 
+    time.sleep(1)
+
+    # --- LS ---
+    bound_ls = min_ts_in(symbol, "long_short_ratio")
+    if bound_ls is None:
+        bound_ls = now
+    src, rows = try_fetch_ls(symbol, limit=1000)
+    if rows:
+        rows = [
+            r for r in rows
+            if r["timestamp"] < bound_ls
+        ]
+        n = save_batch(symbol, SQL_LS, rows, [
+            "symbol", "timestamp", "ls_ratio",
+            "long_pct", "short_pct", "source",
+        ])
+        log.info("  LS [%s]: fetched=%d saved=%d",
+                 src, len(rows), n)
+    else:
+        log.warning("  LS: no data")
+
+    time.sleep(1)
+
+    # --- Taker ---
+    bound_tk = min_ts_in(symbol, "taker_flow")
+    if bound_tk is None:
+        bound_tk = now
+    src, rows = try_fetch_taker(symbol, limit=1000)
+    if rows:
+        rows = [
+            r for r in rows
+            if r["timestamp"] < bound_tk
+        ]
+        n = save_batch(symbol, SQL_TAKER, rows, [
+            "symbol", "timestamp", "buy_vol",
+            "sell_vol", "source",
+        ])
+        log.info("  Taker [%s]: fetched=%d saved=%d",
+                 src, len(rows), n)
+    else:
+        log.warning("  Taker: no data")
+
     log.info("")
 
 
@@ -327,7 +414,7 @@ def bootstrap_symbol(symbol):
 # ============================================================
 def main():
     log.info("=" * 60)
-    log.info("BOOTSTRAP CANDLES — разовая загрузка истории")
+    log.info("BOOTSTRAP CANDLES v3 — разовая загрузка истории")
     log.info("DAYS_BACK_1H=%d, DAYS_BACK_1D=%d",
              DAYS_BACK_1H, DAYS_BACK_1D)
     log.info("sources=%s", SOURCES)
