@@ -1,11 +1,12 @@
 # ============================================================
-# ARGUS-Trader - FEATURES v6
+# ARGUS-Trader - FEATURES v7
 # ------------------------------------------------------------
-# v6: batch INSERT in save_features. 86s -> ~3s.
-# v5: + EMA9/21/50 dist, MACD, Bollinger,
-#     + dist high/low 24h, consecutive, session
+# v7: BOOTSTRAP env — read up to 3500 candles (one-time).
+# v6: batch INSERT in save_features.
+# v5: + EMA9/21/50, MACD, BB, dist high/low, session.
 # ============================================================
 
+import os
 import sys
 import logging
 from datetime import datetime, timezone, timedelta
@@ -24,6 +25,11 @@ logging.basicConfig(
     datefmt="%H:%M:%S",
 )
 log = logging.getLogger("crypto.features")
+
+BOOTSTRAP = (
+    os.getenv("FEATURES_BOOTSTRAP", "").strip() == "1"
+)
+LIMIT = 3500 if BOOTSTRAP else 500
 
 LIMITS = {
     "change_pct": 50.0,
@@ -89,7 +95,7 @@ def ts_is_sane(ts):
     now = datetime.now(timezone.utc)
     if ts > now + timedelta(minutes=MAX_FUTURE_MIN):
         return False
-    if ts < now - timedelta(days=365):
+    if ts < now - timedelta(days=365 * 2):
         return False
     return True
 
@@ -255,7 +261,9 @@ def get_session(ts):
     return 2
 
 
-def fetch_candles(symbol, timeframe="1h", limit=500):
+def fetch_candles(symbol, timeframe="1h", limit=None):
+    if limit is None:
+        limit = LIMIT
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
@@ -285,7 +293,7 @@ def fetch_candles(symbol, timeframe="1h", limit=500):
         return []
 
 
-def fetch_daily_candles(symbol, limit=200):
+def fetch_daily_candles(symbol, limit=500):
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
@@ -588,48 +596,6 @@ def compute_daily_features(daily_list, ts):
     return out
 
 
-def _feature_row_tuple(symbol, f, now_utc):
-    return (
-        symbol, f["timestamp"],
-        f.get("change_pct"),
-        f.get("range_pct"),
-        f.get("body_pct"),
-        f.get("upper_wick_pct"),
-        f.get("lower_wick_pct"),
-        f.get("volume_ratio_24h"),
-        f.get("volatility_24h"),
-        f.get("volatility_7d"),
-        f.get("change_4h"),
-        f.get("change_24h"),
-        f.get("change_7d"),
-        f.get("change_1d"),
-        f.get("change_3d"),
-        f.get("trend_up"),
-        f.get("hour_of_day"),
-        f.get("day_of_week"),
-        f.get("funding_rate"),
-        f.get("funding_trend"),
-        f.get("oi_change_pct"),
-        f.get("ls_ratio"),
-        f.get("taker_ratio"),
-        f.get("ema9_dist_pct"),
-        f.get("ema21_dist_pct"),
-        f.get("ema50_dist_pct"),
-        f.get("macd"),
-        f.get("macd_signal"),
-        f.get("bb_upper_dist"),
-        f.get("bb_lower_dist"),
-        f.get("bb_width_pct"),
-        f.get("dist_high_24h_pct"),
-        f.get("dist_low_24h_pct"),
-        f.get("consecutive_up"),
-        f.get("session"),
-        f.get("next_change_pct"),
-        f.get("next_direction"),
-        now_utc,
-    )
-
-
 FEATURES_COLS = (
     "symbol, timestamp, "
     "change_pct, range_pct, body_pct, "
@@ -697,16 +663,54 @@ FEATURES_PLACEHOLDER = (
 )
 
 
+def _feature_row_tuple(symbol, f, now_utc):
+    return (
+        symbol, f["timestamp"],
+        f.get("change_pct"),
+        f.get("range_pct"),
+        f.get("body_pct"),
+        f.get("upper_wick_pct"),
+        f.get("lower_wick_pct"),
+        f.get("volume_ratio_24h"),
+        f.get("volatility_24h"),
+        f.get("volatility_7d"),
+        f.get("change_4h"),
+        f.get("change_24h"),
+        f.get("change_7d"),
+        f.get("change_1d"),
+        f.get("change_3d"),
+        f.get("trend_up"),
+        f.get("hour_of_day"),
+        f.get("day_of_week"),
+        f.get("funding_rate"),
+        f.get("funding_trend"),
+        f.get("oi_change_pct"),
+        f.get("ls_ratio"),
+        f.get("taker_ratio"),
+        f.get("ema9_dist_pct"),
+        f.get("ema21_dist_pct"),
+        f.get("ema50_dist_pct"),
+        f.get("macd"),
+        f.get("macd_signal"),
+        f.get("bb_upper_dist"),
+        f.get("bb_lower_dist"),
+        f.get("bb_width_pct"),
+        f.get("dist_high_24h_pct"),
+        f.get("dist_low_24h_pct"),
+        f.get("consecutive_up"),
+        f.get("session"),
+        f.get("next_change_pct"),
+        f.get("next_direction"),
+        now_utc,
+    )
+
+
 def save_features(symbol, features):
-    """Single batch INSERT. Fallback to SAVEPOINT per row."""
     if not features:
         return 0
 
     now_utc = datetime.now(timezone.utc)
-
-    # Split into chunks to avoid Postgres param limit (65535)
-    # 38 params per row -> max ~1500 rows per batch safely
-    CHUNK = 500
+    CHUNK = 200
     total_added = 0
 
     for start in range(0, len(features), CHUNK):
@@ -721,7 +725,9 @@ def save_features(symbol, features):
         )
         params = []
         for f in chunk:
-            params.extend(_feature_row_tuple(symbol, f, now_utc))
+            params.extend(
+                _feature_row_tuple(symbol, f, now_utc)
+            )
 
         try:
             with get_connection() as conn:
@@ -731,52 +737,16 @@ def save_features(symbol, features):
                     total_added += n
         except Exception as e:
             log.error(
-                "save_features chunk %d failed: %s, fallback",
-                start, e,
+                "chunk %d failed: %s", start, e,
             )
-            total_added += _save_features_single(symbol, chunk)
 
     return total_added
 
 
-def _save_features_single(symbol, features):
-    added = 0
-    now_utc = datetime.now(timezone.utc)
-    single_sql = (
-        "INSERT INTO features_hourly (" + FEATURES_COLS
-        + ") VALUES " + FEATURES_PLACEHOLDER
-        + FEATURES_CONFLICT
-    )
-    try:
-        with get_connection() as conn:
-            with conn.cursor() as cur:
-                for i, f in enumerate(features):
-                    sp = "sp_f_" + str(i)
-                    try:
-                        cur.execute("SAVEPOINT " + sp)
-                        cur.execute(
-                            single_sql,
-                            _feature_row_tuple(symbol, f, now_utc),
-                        )
-                        n = cur.rowcount or 0
-                        cur.execute("RELEASE SAVEPOINT " + sp)
-                        added += n
-                    except Exception as ex:
-                        try:
-                            cur.execute(
-                                "ROLLBACK TO SAVEPOINT " + sp
-                            )
-                        except Exception:
-                            pass
-                        log.warning(f"row {i} skip: {ex}")
-    except Exception as e:
-        log.error("_save_features_single: %s", e)
-    return added
-
-
 def process_symbol(symbol, timeframe="1h"):
-    log.info("%s - loading candles", symbol)
-    candles = fetch_candles(symbol, timeframe, limit=500)
+    log.info("%s - loading candles (limit=%d)",
+             symbol, LIMIT)
+    candles = fetch_candles(symbol, timeframe, limit=LIMIT)
     if not candles:
         log.warning("%s: no candles", symbol)
         return 0
@@ -955,7 +925,7 @@ def process_symbol(symbol, timeframe="1h"):
             f["next_change_pct"] = None
             f["next_direction"] = None
 
-    daily = fetch_daily_candles(symbol)
+    daily = fetch_daily_candles(symbol, limit=500)
     log.info("   daily points: %d", len(daily))
     filled_d1 = 0
     for f in base_features:
@@ -1065,7 +1035,8 @@ def process_symbol(symbol, timeframe="1h"):
 
 def main():
     log.info("=" * 60)
-    log.info("ARGUS-Trader FEATURES v6")
+    log.info("ARGUS-Trader FEATURES v7")
+    log.info("BOOTSTRAP=%s, LIMIT=%d", BOOTSTRAP, LIMIT)
     log.info("=" * 60)
 
     total = 0
