@@ -1,11 +1,11 @@
 {
-  "trained_at": "2026-10-04T00:45:42.237436+00:00",
+  "trained_at": "2026-10-05T00:45:45.290929+00:00",
   "version": "v5",
-  "n_total": 778,
-  "n_train": 622,
-  "n_test": 156,
-  "accuracy": 0.5577,
-  "num_trees": 4,
+  "n_total": 826,
+  "n_train": 660,
+  "n_test": 166,
+  "accuracy": 0.5843,
+  "num_trees": 1,
   "features": [
     "change_pct",
     "range_pct",
@@ -43,57 +43,57 @@
   ],
   "top_features": [
     {
-      "name": "upper_wick_pct",
-      "gain": 33.1
-    },
-    {
       "name": "lower_wick_pct",
-      "gain": 26.69
-    },
-    {
-      "name": "change_24h",
-      "gain": 18.16
-    },
-    {
-      "name": "dist_high_24h_pct",
-      "gain": 16.53
-    },
-    {
-      "name": "consecutive_up",
-      "gain": 14.71
-    },
-    {
-      "name": "body_pct",
-      "gain": 11.22
-    },
-    {
-      "name": "ls_ratio",
-      "gain": 11.13
+      "gain": 11.08
     },
     {
       "name": "change_4h",
-      "gain": 9.0
+      "gain": 10.04
     },
     {
       "name": "ema50_dist_pct",
-      "gain": 8.27
+      "gain": 9.53
     },
     {
-      "name": "bb_upper_dist",
-      "gain": 7.97
+      "name": "volatility_7d",
+      "gain": 5.85
+    },
+    {
+      "name": "ema21_dist_pct",
+      "gain": 5.26
+    },
+    {
+      "name": "change_7d",
+      "gain": 4.89
+    },
+    {
+      "name": "macd",
+      "gain": 2.45
+    },
+    {
+      "name": "change_pct",
+      "gain": 0.0
+    },
+    {
+      "name": "range_pct",
+      "gain": 0.0
+    },
+    {
+      "name": "body_pct",
+      "gain": 0.0
     }
   ],
   "balance": {
-    "up_total": 422,
-    "down_total": 356,
-    "up_train": 335,
-    "down_train": 287
+    "up_total": 453,
+    "down_total": 373,
+    "up_train": 356,
+    "down_train": 304
   },
   "symbol": null,
   "confusion": {
-    "tp": 57,
-    "tn": 30,
-    "fp": 39,
-    "fn": 30
+    "tp": 97,
+    "tn": 0,
+    "fp": 69,
+    "fn": 0
   }
 }
