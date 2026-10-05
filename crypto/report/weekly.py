@@ -1,10 +1,10 @@
 # ============================================================
-# ARGUS-Trader — НЕДЕЛЬНЫЙ ОТЧЁТ v7
+# ARGUS-Trader — НЕДЕЛЬНЫЙ ОТЧЁТ v8
 # ------------------------------------------------------------
-# v7: fix events timestamp (was created_at -> 0 rows).
-#     + DB2 candle counts (SOL/BNB).
-#     Kaliningrad time.
-# v6: + weekly portfolio, per-symbol, best/worst.
+# v8: read ic_test/mae_test/rmse_test for regression meta
+#     (train v13 no longer writes "accuracy").
+#     + show objective and horizon.
+# v7: fix events timestamp, DB2 candles, KLG time.
 # ============================================================
 
 import os
@@ -26,7 +26,6 @@ MODELS_DIR = LEARN_DIR / "models"
 
 sys.path.insert(0, str(CRYPTO_ROOT))
 
-# Auto-locate db2.py
 for _p in CRYPTO_ROOT.rglob("db2.py"):
     _d = str(_p.parent)
     if "__pycache__" in _d:
@@ -43,7 +42,9 @@ close_conn_db2 = None
 if (os.getenv("ARGUS_DB_URL_2") or "").strip():
     try:
         from db2 import get_connection as get_conn_db2
-        from db2 import close_connection as close_conn_db2
+        from db2 import (
+            close_connection as close_conn_db2,
+        )
         _t = get_conn_db2()
         with _t as _c:
             with _c.cursor() as _cur:
@@ -102,9 +103,6 @@ def _signed_usd(v):
     return sign + "$" + format(abs(v), ".2f")
 
 
-# ============================================================
-# TELEGRAM
-# ============================================================
 def send_message(text):
     if not BOT_TOKEN or not CHAT_ID:
         print("no token")
@@ -158,21 +156,20 @@ def send_photo(path, caption=""):
         return False
 
 
-# ============================================================
-# PORTFOLIO WEEK
-# ============================================================
 def load_trades():
     return load_json(STATE_DIR / "trades.json", [])
 
 
 def load_portfolio():
-    return load_json(STATE_DIR / "portfolio.json", {})
+    return load_json(
+        STATE_DIR / "portfolio.json", {}
+    )
 
 
 def trades_in_week():
-    cutoff = datetime.now(timezone.utc) - timedelta(
-        days=7
-    )
+    cutoff = datetime.now(
+        timezone.utc
+    ) - timedelta(days=7)
     out = []
     for t in load_trades():
         if not isinstance(t, dict):
@@ -219,7 +216,8 @@ def fmt_week_portfolio():
         t for t in week_t if t.get("pnl_usd", 0) > 0
     ]
     week_losses = [
-        t for t in week_t if t.get("pnl_usd", 0) <= 0
+        t for t in week_t
+        if t.get("pnl_usd", 0) <= 0
     ]
     week_pnl = sum(
         float(t.get("pnl_usd", 0)) for t in week_t
@@ -264,14 +262,15 @@ def fmt_week_portfolio():
             + " (" + str(reason) + ")"
         )
 
-    # Per symbol
     by_sym = {}
     for t in week_t:
         sym = str(t.get("symbol", "?")).replace(
             "USDT", ""
         )
         if sym not in by_sym:
-            by_sym[sym] = {"n": 0, "wins": 0, "pnl": 0.0}
+            by_sym[sym] = {
+                "n": 0, "wins": 0, "pnl": 0.0,
+            }
         by_sym[sym]["n"] += 1
         by_sym[sym]["pnl"] += float(
             t.get("pnl_usd", 0)
@@ -289,16 +288,47 @@ def fmt_week_portfolio():
             wr = d["wins"] / d["n"] * 100
             line = "    " + sym + ": "
             line += str(d["n"]) + " сд"
-            line += " (" + format(wr, ".0f") + "% WR)"
+            line += (
+                " (" + format(wr, ".0f") + "% WR)"
+            )
             line += " " + _signed_usd(d["pnl"])
             lines.append(line)
 
     return lines
 
 
-# ============================================================
-# MODEL
-# ============================================================
+def _fmt_metric_block(meta):
+    """Pick metric based on objective."""
+    obj = str(
+        meta.get("objective") or ""
+    ).strip().lower()
+
+    if obj == "regression":
+        ic = meta.get("ic_test")
+        mae = meta.get("mae_test")
+        best = meta.get("best_iteration")
+        parts = []
+        if ic is not None:
+            parts.append(
+                "IC " + format(ic, "+.4f")
+            )
+        if mae is not None:
+            parts.append(
+                "MAE " + format(mae, ".3f")
+            )
+        if best is not None:
+            parts.append(
+                "iter " + str(best)
+            )
+        return " | ".join(parts) if parts else "?"
+
+    # legacy binary
+    acc = meta.get("accuracy")
+    if acc is not None:
+        return "Accuracy " + format(acc, ".4f")
+    return "?"
+
+
 def fmt_model_block():
     lines = ["🧠 <b>Модель</b>"]
     meta = load_json(
@@ -308,18 +338,25 @@ def fmt_model_block():
         lines.append("  нет мета")
         return lines
 
-    acc = meta.get("accuracy")
-    trained = meta.get("trained_at")
+    version = meta.get("version", "?")
+    obj = meta.get("objective", "?")
+    horizon = meta.get("horizon")
     n_feat = len(meta.get("features", []))
 
-    line = "  Accuracy: "
-    if acc is not None:
-        line += format(acc, ".4f")
-    else:
-        line += "?"
-    line += " | фич " + str(n_feat)
-    lines.append(line)
+    head = "  " + str(version)
+    head += " (" + str(obj)
+    if horizon is not None:
+        head += ", " + str(horizon) + "h"
+    head += ")"
+    lines.append(head)
 
+    metric_line = _fmt_metric_block(meta)
+    lines.append(
+        "  " + metric_line
+        + " | фич " + str(n_feat)
+    )
+
+    trained = meta.get("trained_at")
     if trained:
         try:
             dt = datetime.fromisoformat(trained)
@@ -338,7 +375,8 @@ def fmt_model_block():
     top = meta.get("top_features", [])[:3]
     if top:
         parts = [
-            t["name"] + " " + format(t["gain"], ".0f")
+            t["name"] + " "
+            + format(t["gain"], ".0f")
             for t in top
         ]
         lines.append(
@@ -347,9 +385,6 @@ def fmt_model_block():
     return lines
 
 
-# ============================================================
-# DATA STATS (with DB2)
-# ============================================================
 def _candles_in(conn, symbol):
     try:
         with conn.cursor() as cur:
@@ -375,7 +410,6 @@ def fetch_stats():
         "anomaly_week": 0,
     }
 
-    # DB1: BTC/ETH
     try:
         with get_connection() as conn:
             for sym in ["BTCUSDT", "ETHUSDT"]:
@@ -398,7 +432,6 @@ def fetch_stats():
                 except Exception:
                     pass
 
-            # Events week — by timestamp, not created_at
             try:
                 with conn.cursor() as cur:
                     cur.execute(
@@ -443,7 +476,6 @@ def fetch_stats():
     except Exception as e:
         print("stats DB1: " + str(e))
 
-    # DB2: SOL/BNB
     if DB2_OK:
         try:
             with get_conn_db2() as conn:
@@ -464,7 +496,10 @@ def fmt_data_block(stats):
 
     c = stats["candles"]
     parts = []
-    for sym in ["BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT"]:
+    for sym in [
+        "BTCUSDT", "ETHUSDT",
+        "SOLUSDT", "BNBUSDT",
+    ]:
         n = c.get(sym, -1)
         name = sym.replace("USDT", "")
         if n < 0:
@@ -491,12 +526,11 @@ def fmt_data_block(stats):
     return lines
 
 
-# ============================================================
-# LEVELS + CORR
-# ============================================================
 def fmt_levels_block():
     lines = []
-    levels = load_json(DATA_DIR / "levels_analysis.json", {})
+    levels = load_json(
+        DATA_DIR / "levels_analysis.json", {}
+    )
     if not levels or not levels.get("symbols"):
         return lines
 
@@ -513,22 +547,26 @@ def fmt_levels_block():
             s = sup[0]
             lines.append(
                 "    🛡 " + fmt_price(s["price"])
-                + " (-" + format(s["distance_pct"], ".2f")
-                + "%)"
+                + " (-" + format(
+                    s["distance_pct"], ".2f"
+                ) + "%)"
             )
         if res:
             r = res[0]
             lines.append(
                 "    ⚔️ " + fmt_price(r["price"])
-                + " (+" + format(r["distance_pct"], ".2f")
-                + "%)"
+                + " (+" + format(
+                    r["distance_pct"], ".2f"
+                ) + "%)"
             )
     return lines
 
 
 def fmt_corr_block():
     lines = []
-    corr = load_json(DATA_DIR / "correlations.json", {})
+    corr = load_json(
+        DATA_DIR / "correlations.json", {}
+    )
     if not corr or not corr.get("symbols"):
         return lines
 
@@ -557,22 +595,21 @@ def fmt_corr_block():
             r["confidence"] * 100, ".0f"
         ) + "%"
         line += " N=" + str(r["samples"])
-        line += " e=" + format(r.get("edge", 0), ".2f")
+        line += " e=" + format(
+            r.get("edge", 0), ".2f"
+        )
         line += ")"
         lines.append(line)
     return lines
 
 
-# ============================================================
-# CHARTS
-# ============================================================
 def fetch_candles_for_chart(symbol, limit=100):
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute(
-                    "SELECT timestamp, open, high, low, "
-                    "close, volume FROM candles "
+                    "SELECT timestamp, open, high, "
+                    "low, close, volume FROM candles "
                     "WHERE symbol = %s "
                     "AND timeframe = '1h' "
                     "ORDER BY timestamp DESC LIMIT %s",
@@ -608,15 +645,17 @@ def build_candle_caption(symbol, candles, sup, res):
         s = sup[0]
         lines.append(
             "🛡 " + fmt_price(s["price"])
-            + " (-" + format(s["distance_pct"], ".2f")
-            + "%)"
+            + " (-" + format(
+                s["distance_pct"], ".2f"
+            ) + "%)"
         )
     if res:
         r = res[0]
         lines.append(
             "⚔️ " + fmt_price(r["price"])
-            + " (+" + format(r["distance_pct"], ".2f")
-            + "%)"
+            + " (+" + format(
+                r["distance_pct"], ".2f"
+            ) + "%)"
         )
     return "\n".join(lines)
 
@@ -628,7 +667,8 @@ def build_pattern_caption(symbol, data):
     down = data.get("down_count", 0)
     ratio = data.get("up_ratio", 0) * 100
     lines.append(
-        f"⬆️ {up} | ⬇️ {down} ({ratio:.0f}% up)"
+        f"⬆️ {up} | ⬇️ {down} "
+        f"({ratio:.0f}% up)"
     )
     top = data.get("ngrams_top", [])[:1]
     if top:
@@ -646,8 +686,12 @@ def build_markov_caption(symbol, mk):
     lines = [f"🧠 <b>{name} — Markov</b>"]
     p11 = mk.get("p_1_given_1", 0)
     p10 = mk.get("p_1_given_0", 0)
-    lines.append(f"P(1|1) = {p11:.2f} (после роста)")
-    lines.append(f"P(1|0) = {p10:.2f} (после падения)")
+    lines.append(
+        f"P(1|1) = {p11:.2f} (после роста)"
+    )
+    lines.append(
+        f"P(1|0) = {p10:.2f} (после падения)"
+    )
     if p10 > 0.55:
         lines.append("📌 Mean reversion")
     elif p10 < 0.45:
@@ -657,15 +701,12 @@ def build_markov_caption(symbol, mk):
     return "\n".join(lines)
 
 
-# ============================================================
-# MAIN
-# ============================================================
 def main():
-    print("weekly v7")
+    print("weekly v8")
 
     now = now_local()
     lines = []
-    lines.append("📅 <b>ARGUS — неделя</b> v7")
+    lines.append("📅 <b>ARGUS — неделя</b> v8")
     line = now.strftime("%d.%m.%Y %H:%M")
     line += " КЛГ"
     lines.append(line)
@@ -713,18 +754,30 @@ def main():
                 pass
         return
 
-    patterns = load_json(DATA_DIR / "patterns_analysis.json")
-    levels = load_json(DATA_DIR / "levels_analysis.json")
+    patterns = load_json(
+        DATA_DIR / "patterns_analysis.json"
+    )
+    levels = load_json(
+        DATA_DIR / "levels_analysis.json"
+    )
 
     for symbol in ["BTCUSDT", "ETHUSDT"]:
         print("--- " + symbol)
-        candles = fetch_candles_for_chart(symbol, limit=100)
+        candles = fetch_candles_for_chart(
+            symbol, limit=100
+        )
         if candles:
-            sym_lvl = levels.get("symbols", {}).get(symbol, {})
+            sym_lvl = levels.get(
+                "symbols", {}
+            ).get(symbol, {})
             path = plot_candles(
                 symbol, candles,
-                supports=sym_lvl.get("supports", []),
-                resistances=sym_lvl.get("resistances", []),
+                supports=sym_lvl.get(
+                    "supports", []
+                ),
+                resistances=sym_lvl.get(
+                    "resistances", []
+                ),
             )
             if path:
                 cap = build_candle_caption(
@@ -734,19 +787,25 @@ def main():
                 )
                 send_photo(path, cap)
 
-        sym_p = patterns.get("symbols", {}).get(symbol, {})
+        sym_p = patterns.get(
+            "symbols", {}
+        ).get(symbol, {})
         binary = sym_p.get("binary_string", "")
         if binary:
             path = plot_pattern(symbol, binary)
             if path:
-                cap = build_pattern_caption(symbol, sym_p)
+                cap = build_pattern_caption(
+                    symbol, sym_p
+                )
                 send_photo(path, cap)
 
         mk = sym_p.get("markov", {})
         if mk:
             path = plot_markov(symbol, mk)
             if path:
-                cap = build_markov_caption(symbol, mk)
+                cap = build_markov_caption(
+                    symbol, mk
+                )
                 send_photo(path, cap)
 
     close_connection()
