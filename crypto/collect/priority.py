@@ -1,30 +1,24 @@
 # ============================================================
-# ARGUS-Trader — PRIORITY
+# ARGUS-Trader - PRIORITY
 # ------------------------------------------------------------
-# Таблица приоритетов: какая метрика с каких бирж берётся.
-# Каждая метрика — независимая fallback-цепочка.
-# ------------------------------------------------------------
-# v1: начальная версия
-# v2: fix импортов (sys.path для запуска из любой папки)
+# v3: removed methods not present in exchanges.py:
+#     - bitget.fetch_oi (no method)
+#     - gate.fetch_taker (no method)
+#     These caused silent skip + wasted attempts.
+# v2: fix imports (sys.path for launch from any dir).
+# v1: initial.
 # ============================================================
 
 import sys
 import logging
 from pathlib import Path
 
-# --- Путь к crypto/ (для импорта config) ---
-SCRIPT_DIR = Path(__file__).resolve().parent          # crypto/collect/
-CRYPTO_ROOT = SCRIPT_DIR.parent                        # crypto/
+SCRIPT_DIR = Path(__file__).resolve().parent
+CRYPTO_ROOT = SCRIPT_DIR.parent
 sys.path.insert(0, str(CRYPTO_ROOT))
 
 log = logging.getLogger("crypto.priority")
 
-
-# ============================================================
-# ПРИОРИТЕТЫ ПО МЕТРИКАМ
-# ============================================================
-# Формат: metric_name → [(exchange, method_name), ...]
-# Порядок важен: первый — основной источник.
 
 PRIORITY = {
     "ohlcv": [
@@ -40,9 +34,8 @@ PRIORITY = {
         ("kucoin", "fetch_funding"),
     ],
     "oi": [
-        ("okx",    "fetch_oi"),
-        ("bitget", "fetch_oi"),
-        ("gate",   "fetch_oi"),
+        ("okx",  "fetch_oi"),
+        ("gate", "fetch_oi"),
     ],
     "ls_ratio": [
         ("okx",    "fetch_ls"),
@@ -50,37 +43,31 @@ PRIORITY = {
         ("gate",   "fetch_ls"),
     ],
     "taker": [
-        ("okx",    "fetch_taker"),
-        ("gate",   "fetch_taker"),
+        ("okx", "fetch_taker"),
     ],
 }
 
 
-# ============================================================
-# ХЕЛПЕРЫ
-# ============================================================
 def get_priority(metric: str) -> list:
-    """Возвращает приоритетный список бирж для метрики."""
     return PRIORITY.get(metric, [])
 
 
 def supported_metrics() -> list:
-    """Возвращает список поддерживаемых метрик."""
     return list(PRIORITY.keys())
 
 
 def get_metrics_table() -> str:
-    """Возвращает текстовую таблицу приоритетов для логов."""
-    lines = ["📋 PRIORITY TABLE", "=" * 60]
+    lines = ["PRIORITY TABLE", "=" * 60]
     for metric, sources in PRIORITY.items():
-        chain = " → ".join(name for name, _ in sources)
-        lines.append(f"  {metric:12} : {chain}")
+        chain = " -> ".join(
+            name for name, _ in sources
+        )
+        lines.append(
+            "  %-12s : %s" % (metric, chain)
+        )
     lines.append("=" * 60)
     return "\n".join(lines)
 
 
-# ============================================================
-# ТЕСТ
-# ============================================================
 if __name__ == "__main__":
     print(get_metrics_table())
