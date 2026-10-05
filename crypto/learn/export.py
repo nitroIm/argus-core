@@ -1,11 +1,14 @@
 # ============================================================
-# ARGUS-Trader - EXPORT v4 [PRODUCTION]
+# ARGUS-Trader - EXPORT v5 [PRODUCTION]
 # ------------------------------------------------------------
-# v4: экспорт всех per-symbol моделей (lgb_{sym}.txt
-#     + meta_{sym}.json). Плюс совместимость:
-#     lgb_model.txt / model_meta.json = BTC.
-# v3: экспорт только INTERNAL_COLS.
+# v5: USE_CROSS=0 in env — same as train.py.
+#     Without it dataset.py defaults USE_CROSS=1 and
+#     FEATURE_COLS in meta goes to 37 while model has 30.
+# v4: export all per-symbol models + compat.
 # ============================================================
+
+import os
+os.environ.setdefault("USE_CROSS", "0")
 
 import sys
 import csv
@@ -45,18 +48,23 @@ SYMBOLS_LIST = [
 
 
 def export_all_models():
-    """Копирует lgb_{sym}.txt + meta_{sym}.json."""
     exported = 0
     for sym in SYMBOLS_LIST:
         src_m = MODELS_DIR / ("lgb_" + sym + ".txt")
-        src_mt = MODELS_DIR / ("meta_" + sym + ".json")
+        src_mt = MODELS_DIR / (
+            "meta_" + sym + ".json"
+        )
         if not src_m.exists():
             log.warning("%s: model missing", sym)
             continue
-        dst_m = EXPORT_DIR / ("lgb_" + sym + ".txt")
+        dst_m = EXPORT_DIR / (
+            "lgb_" + sym + ".txt"
+        )
         shutil.copy2(src_m, dst_m)
         if src_mt.exists():
-            with open(src_mt, "r", encoding="utf-8") as f:
+            with open(
+                src_mt, "r", encoding="utf-8"
+            ) as f:
                 meta = json.load(f)
             meta["exported_at"] = datetime.now(
                 timezone.utc
@@ -64,14 +72,17 @@ def export_all_models():
             dst_mt = EXPORT_DIR / (
                 "meta_" + sym + ".json"
             )
-            with open(dst_mt, "w",
-                      encoding="utf-8") as f:
-                json.dump(meta, f,
-                          ensure_ascii=False, indent=2)
+            with open(
+                dst_mt, "w", encoding="utf-8"
+            ) as f:
+                json.dump(
+                    meta, f,
+                    ensure_ascii=False,
+                    indent=2,
+                )
         log.info("model -> %s", dst_m.name)
         exported += 1
 
-    # Совместимость: lgb_model.txt = BTC
     btc_m = MODELS_DIR / "lgb_BTCUSDT.txt"
     btc_mt = MODELS_DIR / "meta_BTCUSDT.json"
     if btc_m.exists():
@@ -80,7 +91,9 @@ def export_all_models():
         )
         log.info("compat: lgb_model.txt <- BTC")
     if btc_mt.exists():
-        with open(btc_mt, "r", encoding="utf-8") as f:
+        with open(
+            btc_mt, "r", encoding="utf-8"
+        ) as f:
             meta = json.load(f)
         meta["exported_at"] = datetime.now(
             timezone.utc
@@ -89,9 +102,14 @@ def export_all_models():
             EXPORT_DIR / "model_meta.json",
             "w", encoding="utf-8",
         ) as f:
-            json.dump(meta, f,
-                      ensure_ascii=False, indent=2)
-        log.info("compat: model_meta.json <- BTC")
+            json.dump(
+                meta, f,
+                ensure_ascii=False,
+                indent=2,
+            )
+        log.info(
+            "compat: model_meta.json <- BTC"
+        )
     return exported
 
 
@@ -111,8 +129,10 @@ def export_dataset_csv():
                     + "ORDER BY timestamp"
                 )
                 rows = cur.fetchall()
-        with open(out1, "w", encoding="utf-8",
-                  newline="") as f:
+        with open(
+            out1, "w", encoding="utf-8",
+            newline="",
+        ) as f:
             w = csv.writer(f)
             w.writerow(cols1)
             for r in rows:
@@ -135,8 +155,10 @@ def export_dataset_csv():
                     "ORDER BY symbol, timestamp"
                 )
                 rows = cur.fetchall()
-        with open(out2, "w", encoding="utf-8",
-                  newline="") as f:
+        with open(
+            out2, "w", encoding="utf-8",
+            newline="",
+        ) as f:
             w = csv.writer(f)
             w.writerow([
                 "symbol", "timestamp",
@@ -155,29 +177,29 @@ def export_dataset_csv():
 def export_readme():
     readme = EXPORT_DIR / "README.md"
     lines = [
-        "# ARGUS ML - Export v4",
+        "# ARGUS ML - Export v5",
         "",
-        "## Per-symbol модели",
+        "## Per-symbol models",
         "- `lgb_BTCUSDT.txt` + `meta_BTCUSDT.json`",
         "- `lgb_ETHUSDT.txt` + `meta_ETHUSDT.json`",
         "- `lgb_SOLUSDT.txt` + `meta_SOLUSDT.json`",
         "- `lgb_BNBUSDT.txt` + `meta_BNBUSDT.json`",
         "",
-        "## Совместимость",
-        "- `lgb_model.txt` = копия BTC-модели",
-        "- `model_meta.json` = копия meta BTC",
+        "## Compat",
+        "- `lgb_model.txt` = copy of BTC",
+        "- `model_meta.json` = copy of BTC meta",
         "",
-        "## Данные",
-        "- `features_hourly.csv` - внутренние фичи",
+        "## Data",
+        "- `features_hourly.csv` - INTERNAL + target",
         "- `external_market.csv` - DXY/SPX/GOLD",
         "",
-        "## Параметры",
+        "## Config",
         "- HORIZON: " + str(HORIZON) + "h",
-        "- THRESHOLD: " + str(MOVE_THRESHOLD_PCT) + "%",
         "- REFERENCE: " + REFERENCE,
         "- FEATURE_COLS: " + str(len(FEATURE_COLS)),
+        "- USE_CROSS: 0 (off)",
         "",
-        "## Использование",
+        "## Usage",
         "1. pip install lightgbm==4.5.0",
         "2. model = lgb.Booster(",
         "     model_file='lgb_BTCUSDT.txt')",
@@ -189,7 +211,7 @@ def export_readme():
 
 def main():
     log.info("=" * 60)
-    log.info("ARGUS-Trader EXPORT v4")
+    log.info("ARGUS-Trader EXPORT v5")
     log.info(
         "FEATURE_COLS=%d INTERNAL=%d EXTERNAL=%d",
         len(FEATURE_COLS),
@@ -202,7 +224,9 @@ def main():
     export_dataset_csv()
     export_readme()
 
-    log.info("done: %d models -> %s", n, EXPORT_DIR)
+    log.info(
+        "done: %d models -> %s", n, EXPORT_DIR
+    )
 
 
 if __name__ == "__main__":
