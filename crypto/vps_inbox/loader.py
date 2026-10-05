@@ -1,9 +1,14 @@
 # ============================================================
 # ARGUS - VPS INBOX LOADER
 # ------------------------------------------------------------
-# Читает CSV из crypto/vps_inbox, грузит в БД.
-# После загрузки файлы удаляются с диска.
-# Роутинг: BTC/ETH -> DB1, SOL/BNB -> DB2.
+# v2: batch chunking — split into 500-row chunks.
+#     Postgres hard limit is 65535 params per query.
+#     Large CSV (10k+ rows) previously failed whole batch.
+#     Now: chunk by CHUNK_SIZE, commit per chunk.
+#     File deleted only if ALL chunks loaded ok.
+# v1: reads CSV from crypto/vps_inbox, loads to DB,
+#     deletes files after. Routes BTC/ETH -> DB1,
+#     SOL/BNB -> DB2.
 # ============================================================
 
 import csv
@@ -47,6 +52,10 @@ log = logging.getLogger("vps.loader")
 
 DB2_SYMBOLS = {"SOLUSDT", "BNBUSDT"}
 
+# Postgres limit is 65535 params per query.
+# LS has 6 params/row -> 500*6=3000, safe.
+CHUNK_SIZE = 500
+
 TYPES = [
     {
         "name": "funding",
@@ -61,7 +70,10 @@ TYPES = [
         "dir": "open_interest",
         "table": "open_interest",
         "cols": ["timestamp", "oi", "oi_value"],
-        "ins": "symbol, timestamp, oi, oi_value, source",
+        "ins": (
+            "symbol, timestamp, oi, "
+            "oi_value, source"
+        ),
         "ph": "(%s,%s,%s,%s,%s)",
     },
     {
@@ -118,7 +130,9 @@ def table_exists(symbol, table):
 def read_csv(path):
     rows = []
     try:
-        with open(path, "r", encoding="utf-8") as f:
+        with open(
+            path, "r", encoding="utf-8"
+        ) as f:
             reader = csv.DictReader(f)
             for r in reader:
                 rows.append(r)
@@ -135,13 +149,10 @@ def symbol_from_filename(fname):
     return base.split("_", 1)[0]
 
 
-def load_csv(symbol, t, rows):
-    if not rows:
-        return 0, "empty"
-    if not table_exists(symbol, t["table"]):
-        return 0, "no table"
-    n = len(rows)
-    placeholders = ",".join([t["ph"]] * n)
+def _build_chunk_sql(t, chunk_size):
+    placeholders = ",".join(
+        [t["ph"]] * chunk_size
+    )
     sql = (
         "INSERT INTO " + t["table"]
         + " (" + t["ins"] + ")"
@@ -149,19 +160,48 @@ def load_csv(symbol, t, rows):
         + " ON CONFLICT (symbol, timestamp)"
         + " DO NOTHING"
     )
-    params = []
-    for r in rows:
-        params.append(symbol)
-        for c in t["cols"]:
-            params.append(r.get(c))
-        params.append("binance")
-    try:
-        with symbol_conn(symbol) as conn:
-            with conn.cursor() as cur:
-                cur.execute(sql, tuple(params))
-                return cur.rowcount or 0, "ok"
-    except Exception as e:
-        return 0, "err " + str(e)[:80]
+    return sql
+
+
+def load_csv(symbol, t, rows):
+    """Chunked insert. Returns (loaded, status)."""
+    if not rows:
+        return 0, "empty"
+    if not table_exists(symbol, t["table"]):
+        return 0, "no table"
+
+    total = len(rows)
+    loaded = 0
+    failed_chunks = 0
+
+    for start in range(0, total, CHUNK_SIZE):
+        chunk = rows[start:start + CHUNK_SIZE]
+        sql = _build_chunk_sql(t, len(chunk))
+        params = []
+        for r in chunk:
+            params.append(symbol)
+            for c in t["cols"]:
+                params.append(r.get(c))
+            params.append("binance")
+        try:
+            with symbol_conn(symbol) as conn:
+                with conn.cursor() as cur:
+                    cur.execute(sql, tuple(params))
+                    loaded += cur.rowcount or 0
+        except Exception as e:
+            failed_chunks += 1
+            log.warning(
+                "chunk %d-%d fail: %s",
+                start, start + len(chunk),
+                str(e)[:80],
+            )
+
+    if failed_chunks == 0:
+        return loaded, "ok"
+    return loaded, (
+        "partial " + str(failed_chunks) + "/"
+        + str((total + CHUNK_SIZE - 1) // CHUNK_SIZE)
+    )
 
 
 def process_type(t):
@@ -187,7 +227,8 @@ def process_type(t):
             result["errors"].append(fp.name)
             continue
         n, status = load_csv(sym, t, rows)
-        if status != "ok":
+        if not status.startswith("ok") and \
+           not status.startswith("partial"):
             result["errors"].append(
                 fp.name + ": " + status
             )
@@ -195,8 +236,8 @@ def process_type(t):
         result["loaded"] += n
         result["deleted"].append(fp.name)
         log.info(
-            "%s %s: %d",
-            t["name"], fp.name, n,
+            "%s %s: %d (%s)",
+            t["name"], fp.name, n, status,
         )
     return result
 
@@ -211,21 +252,28 @@ def delete_files(t, names):
                 fp.unlink()
                 removed += 1
             except Exception as e:
-                log.warning("rm %s: %s", fp.name, e)
+                log.warning(
+                    "rm %s: %s", fp.name, e
+                )
     return removed
 
 
 def main():
     log.info("=" * 60)
-    log.info("VPS INBOX LOADER")
+    log.info("VPS INBOX LOADER v2")
     log.info("DIR: %s", SCRIPT_DIR)
     log.info("DB2_OK: %s", DB2_OK)
+    log.info("CHUNK_SIZE: %d", CHUNK_SIZE)
     log.info("=" * 60)
+
     summary = []
     for t in TYPES:
         r = process_type(t)
-        r["removed"] = delete_files(t, r["deleted"])
+        r["removed"] = delete_files(
+            t, r["deleted"]
+        )
         summary.append(r)
+
     log.info("=" * 60)
     log.info("SUMMARY")
     for r in summary:
@@ -237,10 +285,13 @@ def main():
         for e in r["errors"]:
             log.warning("    err: %s", e)
     log.info("=" * 60)
+
     close_connection()
     if DB2_OK:
         try:
-            from db2 import close_connection as db2c
+            from db2 import (
+                close_connection as db2c,
+            )
             db2c()
         except Exception:
             pass
