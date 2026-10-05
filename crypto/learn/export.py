@@ -1,8 +1,9 @@
 # ============================================================
-# ARGUS-Trader - EXPORT v2 [PRODUCTION]
+# ARGUS-Trader - EXPORT v3 [PRODUCTION]
 # ------------------------------------------------------------
+# v3: export only INTERNAL_COLS (cross-features are built
+#     on-the-fly in dataset.py, not stored in DB).
 # v2: экспорт только внутренних колонок features
-# v1: базовый экспорт
 # ============================================================
 
 import sys
@@ -20,7 +21,9 @@ sys.path.insert(0, str(SCRIPT_DIR))
 
 from db import get_connection
 from dataset import (
-    FEATURE_COLS, EXTERNAL_COLS, TARGET_COL,
+    FEATURE_COLS, INTERNAL_COLS,
+    EXTERNAL_COLS, TARGET_COL,
+    HORIZON, MOVE_THRESHOLD_PCT, REFERENCE,
 )
 
 logging.basicConfig(
@@ -62,15 +65,12 @@ def export_meta():
 
 
 def export_dataset_csv():
-    """Экспорт features_hourly + external CSV."""
-    # 1. Внутренние колонки из features_hourly
-    internal = [
-        c for c in FEATURE_COLS
-        if c not in EXTERNAL_COLS
-    ]
+    """Экспорт features_hourly + external CSV.
+    Только INTERNAL_COLS — cross-features на лету.
+    """
     cols1 = (
         ["symbol", "timestamp"]
-        + internal
+        + INTERNAL_COLS
         + [TARGET_COL]
     )
     out1 = EXPORT_DIR / "features_hourly.csv"
@@ -97,7 +97,7 @@ def export_dataset_csv():
     except Exception as e:
         log.error("export features: %s", e)
 
-    # 2. External отдельно
+    # External
     out2 = EXPORT_DIR / "external_market.csv"
     try:
         with get_connection() as conn:
@@ -129,26 +129,38 @@ def export_dataset_csv():
 def export_readme():
     readme = EXPORT_DIR / "README.md"
     lines = [
-        "# ARGUS ML - Export v2",
+        "# ARGUS ML - Export v3",
         "",
         "## Файлы",
         "- `lgb_model.txt` - LightGBM модель",
         "- `model_meta.json` - метрики + features",
-        "- `features_hourly.csv` - основные данные",
+        "- `features_hourly.csv` - внутренние фичи",
         "- `external_market.csv` - DXY/SPX/GOLD",
         "- `README.md`",
+        "",
+        "## Модель",
+        "- HORIZON: " + str(HORIZON) + "h",
+        "- THRESHOLD: " + str(MOVE_THRESHOLD_PCT) + "%",
+        "- REFERENCE: " + REFERENCE,
+        "- FEATURE_COLS (полный набор): "
+        + str(len(FEATURE_COLS)),
         "",
         "## Как использовать",
         "1. pip install lightgbm==4.5.0",
         "2. model = lgb.Booster(model_file='lgb_model.txt')",
-        "3. Объединить features + external по timestamp",
-        "4. Признаки (25, порядок важен):",
-        ", ".join(FEATURE_COLS),
+        "",
+        "3. Внутренние фичи (" + str(len(INTERNAL_COLS)) + "):",
+        ", ".join(INTERNAL_COLS),
+        "",
+        "4. Кросс-фичи строятся на лету из candles",
+        "(см. crypto/learn/dataset.py build_cross_full)",
         "",
         "5. Target: " + TARGET_COL + " (0/1)",
+        "   threshold: " + str(MOVE_THRESHOLD_PCT) + "%",
         "",
         "## Заметка",
-        "Модель переносима. Обе таблицы обязательны.",
+        "features_hourly.csv содержит ТОЛЬКО внутренние фичи.",
+        "Cross-features BTC-relative строятся кодом.",
     ]
     with open(readme, "w", encoding="utf-8") as f:
         f.write("\n".join(lines))
@@ -157,7 +169,13 @@ def export_readme():
 
 def main():
     log.info("=" * 60)
-    log.info("ARGUS-Trader EXPORT v2")
+    log.info("ARGUS-Trader EXPORT v3")
+    log.info(
+        "FEATURE_COLS=%d INTERNAL=%d EXTERNAL=%d",
+        len(FEATURE_COLS),
+        len(INTERNAL_COLS),
+        len(EXTERNAL_COLS),
+    )
     log.info("=" * 60)
 
     export_model()
