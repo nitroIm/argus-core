@@ -83,6 +83,7 @@ DB2_SYMBOLS = {
     if s.strip()
 }
 
+
 def symbol_conn(symbol):
     if symbol in DB2_SYMBOLS and DB2_OK:
         try:
@@ -90,6 +91,7 @@ def symbol_conn(symbol):
         except Exception as e:
             log.warning("db2 conn %s: %s", symbol, e)
     return get_connection()
+
 
 INTERNAL_COLS = [
     "change_pct",
@@ -157,6 +159,7 @@ TARGET_COL = TARGET_RET
 
 EXT_MAX_AGE_H = 3
 
+
 def fetch_features(symbol, limit=100000):
     base_cols = ["symbol", "timestamp"] + INTERNAL_COLS
     try:
@@ -173,6 +176,7 @@ def fetch_features(symbol, limit=100000):
     except Exception as e:
         log.warning("features %s: %s", symbol, e)
         return []
+
 
 def fetch_candles(symbol, limit=100000):
     try:
@@ -204,6 +208,7 @@ def fetch_candles(symbol, limit=100000):
         log.warning("candles %s: %s", symbol, e)
         return []
 
+
 def fetch_external(symbol):
     try:
         with get_connection() as conn:
@@ -231,6 +236,7 @@ def fetch_external(symbol):
         log.warning("external %s: %s", symbol, e)
         return []
 
+
 def build_targets(candles, horizon):
     out = {}
     n = len(candles)
@@ -246,6 +252,7 @@ def build_targets(candles, horizon):
         ret = (c1 - c0) / c0 * 100
         out[candles[i]["ts"]] = ret
     return out
+
 
 def build_cross_full(
     feat_maps, candle_maps, ref_symbol,
@@ -297,14 +304,13 @@ def build_cross_full(
             sd = arr.std()
             zscore[ratio_ts[i]] = (
                 0.0 if sd == 0
-                else float((ratio[ratio_ts_h[i]] - mu) / sd)
+                else float((ratio[ratio_ts[i]] - mu) / sd)
             )
 
-        corr_):
-ts = sorted(
-            set       (feats.keys()) & set(ref_feat.keys return())
+        corr_ts = sorted(
+            set(feats.keys()) & set(ref_feat.keys())
         )
-        cor Noner = {}
+        corr = {}
         window = 24
         for i in range(len(corr_ts)):
             if i < window - 1:
@@ -367,6 +373,7 @@ ts = sorted(
         out[symbol] = cross_map
     return out
 
+
 def ext_lookup(ext_list, ts, max_age_h=EXT_MAX_AGE_H):
     if not ext_list:
         return None
@@ -380,8 +387,10 @@ def ext_lookup(ext_list, ts, max_age_h=EXT_MAX_AGE_H):
             break
     if result is None:
         return None
-    if ts - result[0] > timedelta(hours=max_age
+    if ts - result[0] > timedelta(hours=max_age_h):
+        return None
     return result[1]
+
 
 def _get_feat_map(rows, base_cols):
     idx = {col: i for i, col in enumerate(base_cols)}
@@ -402,6 +411,7 @@ def _get_feat_map(rows, base_cols):
                     feats[col] = np.nan
         out[ts] = feats
     return out
+
 
 def build_xy(
     feat_maps, candle_maps, close_maps,
@@ -474,6 +484,7 @@ def build_xy(
         sym_list,
     )
 
+
 def per_symbol_split(
     X, y, y_ret, ts_list, sym_list,
     test_frac=0.2,
@@ -514,6 +525,7 @@ def per_symbol_split(
         X[train_idx], y[train_idx], y_ret[train_idx],
         X[test_idx], y[test_idx], y_ret[test_idx],
     )
+
 
 def prepare(test_frac=0.2):
     log.info("=" * 60)
@@ -642,6 +654,7 @@ def prepare(test_frac=0.2):
         "reference": REFERENCE,
     }
 
+
 def main():
     data = prepare()
     if data is None:
@@ -653,6 +666,7 @@ def main():
         len(data["feature_cols"]),
     )
     log.info("symbols in dataset: %s", data["symbols"])
+
 
 if __name__ == "__main__":
     main()
