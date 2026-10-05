@@ -1,12 +1,16 @@
 # ============================================================
 # ARGUS-Trader - TRAIN [PRODUCTION]
 # ------------------------------------------------------------
-# v9: best_params отключён (устарел на новых данных).
-#     Упрощённая модель: num_leaves=8, max_depth=3, lr=0.03.
-#     Больше регуляризации.
-# v8: убран early_stopping, 100 фикс. итераций.
-# v7: убран is_unbalance.
+# v10: per-symbol модели. Каждая монета учится отдельно,
+#      своя lgb_{sym}.txt и meta_{sym}.json.
+#      lgb_model.txt / model_meta.json = копия BTC (compat).
+#      USE_CROSS=0 — без cross vs REFERENCE.
+# v9: best_params отключён, простая модель.
+# v8: убран early_stopping.
 # ============================================================
+
+import os
+os.environ.setdefault("USE_CROSS", "0")
 
 import sys
 import json
@@ -23,7 +27,7 @@ CRYPTO_ROOT = SCRIPT_DIR.parent
 sys.path.insert(0, str(CRYPTO_ROOT))
 sys.path.insert(0, str(SCRIPT_DIR))
 
-from dataset import prepare
+import dataset as ds
 
 logging.basicConfig(
     level=logging.INFO,
@@ -35,60 +39,98 @@ log = logging.getLogger("crypto.learn.train")
 MODELS_DIR = SCRIPT_DIR / "models"
 MODELS_DIR.mkdir(parents=True, exist_ok=True)
 
-MODEL_FILE = MODELS_DIR / "lgb_model.txt"
-META_FILE = MODELS_DIR / "model_meta.json"
-
 PREV_DIR = MODELS_DIR / "prev"
-PREV_MODEL = PREV_DIR / "lgb_model.txt"
-PREV_META = PREV_DIR / "model_meta.json"
 
 MIN_SAMPLES = 200
 NUM_ROUNDS = 100
 
-# Простая модель для 11k samples × 40 фич.
-# Не грузим best_params — он устарел.
 PARAMS = {
     "objective": "binary",
     "metric": "binary_logloss",
     "boosting_type": "gbdt",
-    "num_leaves": 8,
-    "max_depth": 3,
-    "learning_rate": 0.03,
-    "feature_fraction": 0.5,
-    "bagging_fraction": 0.6,
+    "num_leaves": 15,
+    "max_depth": 5,
+    "learning_rate": 0.05,
+    "feature_fraction": 0.6,
+    "bagging_fraction": 0.7,
     "bagging_freq": 5,
-    "min_data_in_leaf": 80,
-    "lambda_l1": 1.0,
-    "lambda_l2": 1.0,
+    "min_data_in_leaf": 40,
+    "lambda_l1": 0.5,
+    "lambda_l2": 0.5,
     "verbose": -1,
     "seed": 42,
 }
 
+SYMBOLS_LIST = [
+    s.strip().upper()
+    for s in (
+        os.getenv("SYMBOLS")
+        or "BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT"
+    ).split(",")
+    if s.strip()
+]
 
-def save_prev():
-    if not MODEL_FILE.exists():
-        log.info("prev: no current model")
+DB2_SET = {
+    s.strip().upper()
+    for s in (
+        os.getenv("DB2_SYMBOLS")
+        or "SOLUSDT,BNBUSDT"
+    ).split(",")
+    if s.strip()
+}
+
+
+def model_file(sym):
+    return MODELS_DIR / ("lgb_" + sym + ".txt")
+
+
+def meta_file(sym):
+    return MODELS_DIR / ("meta_" + sym + ".json")
+
+
+def prev_model_file(sym):
+    return PREV_DIR / ("lgb_" + sym + ".txt")
+
+
+def prev_meta_file(sym):
+    return PREV_DIR / ("meta_" + sym + ".json")
+
+
+def save_prev(sym):
+    mf = model_file(sym)
+    if not mf.exists():
         return
     PREV_DIR.mkdir(parents=True, exist_ok=True)
     try:
-        shutil.copy2(MODEL_FILE, PREV_MODEL)
-        if META_FILE.exists():
-            shutil.copy2(META_FILE, PREV_META)
-        log.info("prev: current moved to prev/")
+        shutil.copy2(mf, prev_model_file(sym))
+        mfa = meta_file(sym)
+        if mfa.exists():
+            shutil.copy2(mfa, prev_meta_file(sym))
     except Exception as e:
-        log.warning("prev save: %s", e)
+        log.warning("prev save %s: %s", sym, e)
 
 
-def train():
-    log.info("=" * 60)
-    log.info("ARGUS-Trader TRAIN v9")
-    log.info("=" * 60)
-    log.info("PARAMS: %s", PARAMS)
+def train_one(symbol):
+    log.info("-" * 60)
+    log.info("TRAIN %s", symbol)
+    log.info("-" * 60)
 
-    data = prepare()
+    ds.SYMBOLS = [symbol]
+    ds.REFERENCE = symbol
+    ds.DB2_SYMBOLS = (
+        {symbol} if symbol in DB2_SET else set()
+    )
+
+    data = ds.prepare()
     if data is None:
-        log.error("no data")
+        log.error("%s: no data", symbol)
         return None
+
+    if data["n_train"] < MIN_SAMPLES:
+        log.warning(
+            "%s: not enough samples: %d < %d",
+            symbol, data["n_train"], MIN_SAMPLES,
+        )
 
     X_train = data["X_train"]
     y_train = data["y_train"]
@@ -96,58 +138,36 @@ def train():
     y_test = data["y_test"]
 
     log.info(
-        "train=%d test=%d",
-        len(X_train), len(X_test),
-    )
-    log.info(
-        "train balance: up=%d down=%d (up %.1f%%)",
-        int(y_train.sum()),
-        int(len(y_train) - y_train.sum()),
-        y_train.mean() * 100,
-    )
-    log.info(
-        "test balance:  up=%d down=%d (up %.1f%%)",
-        int(y_test.sum()),
-        int(len(y_test) - y_test.sum()),
-        y_test.mean() * 100,
+        "%s: train=%d test=%d",
+        symbol, len(X_train), len(X_test),
     )
 
     train_set = lgb.Dataset(X_train, label=y_train)
 
-    log.info("training (%d rounds)...", NUM_ROUNDS)
     model = lgb.train(
         PARAMS, train_set,
         num_boost_round=NUM_ROUNDS,
         callbacks=[lgb.log_evaluation(50)],
     )
 
-    # --- train diag ---
-    y_train_prob = model.predict(X_train)
-    y_train_pred = (y_train_prob > 0.5).astype(int)
-    train_acc = float((y_train_pred == y_train).mean())
+    y_tr = (model.predict(X_train) > 0.5).astype(int)
+    tr_acc = float((y_tr == y_train).mean())
+
+    y_te = (model.predict(X_test) > 0.5).astype(int)
+    te_acc = float((y_te == y_test).mean())
+
+    tp = int(((y_test == 1) & (y_te == 1)).sum())
+    tn = int(((y_test == 0) & (y_te == 0)).sum())
+    fp = int(((y_test == 0) & (y_te == 1)).sum())
+    fn = int(((y_test == 1) & (y_te == 0)).sum())
+
     log.info(
-        "train: acc=%.4f pred_up=%.1f%%",
-        train_acc, y_train_pred.mean() * 100,
+        "%s: train_acc=%.4f test_acc=%.4f",
+        symbol, tr_acc, te_acc,
     )
-
-    # --- test diag ---
-    y_pred_prob = model.predict(X_test)
-    y_pred = (y_pred_prob > 0.5).astype(int)
-    acc = float((y_pred == y_test).mean())
-
-    pred_up = int(y_pred.sum())
     log.info(
-        "test:  acc=%.4f pred_up=%.1f%%",
-        acc, pred_up / len(y_pred) * 100,
-    )
-
-    tp = int(((y_test == 1) & (y_pred == 1)).sum())
-    tn = int(((y_test == 0) & (y_pred == 0)).sum())
-    fp = int(((y_test == 0) & (y_pred == 1)).sum())
-    fn = int(((y_test == 1) & (y_pred == 0)).sum())
-    log.info(
-        "confusion: TP=%d TN=%d FP=%d FN=%d",
-        tp, tn, fp, fn,
+        "%s: TP=%d TN=%d FP=%d FN=%d",
+        symbol, tp, tn, fp, fn,
     )
 
     importance = model.feature_importance(
@@ -158,42 +178,34 @@ def train():
         zip(feat_names, importance),
         key=lambda x: -x[1],
     )
-    log.info("top features:")
-    for name, score in pairs[:10]:
+    log.info("%s: top features:", symbol)
+    for name, score in pairs[:5]:
         log.info("  %s: %.2f", name, score)
 
-    save_prev()
-    model.save_model(str(MODEL_FILE))
-    log.info("saved model: %s", MODEL_FILE.name)
+    save_prev(symbol)
+    model.save_model(str(model_file(symbol)))
+    log.info(
+        "%s: saved %s",
+        symbol, model_file(symbol).name,
+    )
 
     meta = {
         "trained_at": datetime.now(
             timezone.utc
         ).isoformat(),
-        "version": "v9",
+        "version": "v10",
+        "symbol": symbol,
         "n_total": data["n_total"],
         "n_train": data["n_train"],
         "n_test": data["n_test"],
-        "accuracy": round(acc, 4),
-        "train_accuracy": round(train_acc, 4),
+        "train_accuracy": round(tr_acc, 4),
+        "accuracy": round(te_acc, 4),
         "num_trees": model.num_trees(),
         "features": feat_names,
         "top_features": [
             {"name": n, "gain": round(float(s), 2)}
             for n, s in pairs[:10]
         ],
-        "balance": data["balance"],
-        "train_up_pct": round(
-            float(y_train.mean()) * 100, 2
-        ),
-        "test_up_pct": round(
-            float(y_test.mean()) * 100, 2
-        ),
-        "pred_up_pct": round(
-            pred_up / len(y_pred) * 100, 2
-        ),
-        "symbols": data["symbols"],
-        "reference": data["reference"],
         "horizon": data["horizon"],
         "threshold_pct": data["threshold_pct"],
         "confusion": {
@@ -201,25 +213,73 @@ def train():
             "fp": fp, "fn": fn,
         },
     }
-    with open(META_FILE, "w", encoding="utf-8") as f:
+    with open(meta_file(symbol), "w", encoding="utf-8") as f:
         json.dump(meta, f, ensure_ascii=False, indent=2)
-    log.info("saved meta: %s", META_FILE.name)
 
     return meta
 
 
+def write_compat(symbols, metas):
+    """lgb_model.txt + model_meta.json = BTC."""
+    ref = "BTCUSDT" if "BTCUSDT" in symbols else symbols[0]
+    src = model_file(ref)
+    if src.exists():
+        shutil.copy2(src, MODELS_DIR / "lgb_model.txt")
+        log.info(
+            "compat: lgb_model.txt <- lgb_%s.txt", ref
+        )
+    if metas.get(ref):
+        with open(
+            MODELS_DIR / "model_meta.json",
+            "w", encoding="utf-8",
+        ) as f:
+            json.dump(
+                metas[ref], f,
+                ensure_ascii=False, indent=2,
+            )
+
+
+def train():
+    log.info("=" * 60)
+    log.info("ARGUS-Trader TRAIN v10 (per-symbol)")
+    log.info("SYMBOLS=%s", SYMBOLS_LIST)
+    log.info("=" * 60)
+
+    metas = {}
+    for sym in SYMBOLS_LIST:
+        try:
+            m = train_one(sym)
+            if m:
+                metas[sym] = m
+        except Exception as e:
+            log.error("%s: %s", sym, e)
+
+    log.info("=" * 60)
+    log.info("TRAIN DONE")
+    for sym, m in metas.items():
+        log.info(
+            "  %s: test=%.4f train=%.4f",
+            sym, m["accuracy"],
+            m["train_accuracy"],
+        )
+    log.info("=" * 60)
+
+    if metas:
+        write_compat(list(metas.keys()), metas)
+
+    ds.SYMBOLS = ["BTCUSDT", "ETHUSDT"]
+    ds.REFERENCE = "BTCUSDT"
+    ds.DB2_SYMBOLS = DB2_SET
+
+    return metas
+
+
 def main():
-    meta = train()
-    if meta is None:
+    metas = train()
+    if not metas:
         log.error("train failed")
         return
-    log.info("=" * 60)
-    log.info(
-        "DONE. train=%.4f test=%.4f trees=%d",
-        meta["train_accuracy"], meta["accuracy"],
-        meta["num_trees"],
-    )
-    log.info("=" * 60)
+    log.info("DONE. %d models trained", len(metas))
 
 
 if __name__ == "__main__":
