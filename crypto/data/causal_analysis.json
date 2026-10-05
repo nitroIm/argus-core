@@ -1,20 +1,12 @@
 {
-  "generated_at": "2026-10-05T21:22:28.124691+00:00",
+  "generated_at": "2026-10-05T22:17:06.535437+00:00",
   "symbols": {
     "BTCUSDT": {
       "symbol": "BTCUSDT",
       "total_events": 200,
-      "processed": 1,
-      "saved": 1,
-      "summary_by_type": {
-        "volume_spike": {
-          "count": 1,
-          "avg_funding": 0.0,
-          "avg_oi_change": -1.4223,
-          "avg_ls_ratio": 1.2,
-          "avg_change_24h": 0.2256
-        }
-      }
+      "processed": 0,
+      "saved": 0,
+      "summary_by_type": {}
     },
     "ETHUSDT": {
       "symbol": "ETHUSDT",
@@ -25,9 +17,9 @@
         "volume_spike": {
           "count": 1,
           "avg_funding": 0.0,
-          "avg_oi_change": 2.3541,
+          "avg_oi_change": 2.4033,
           "avg_ls_ratio": 1.46,
-          "avg_change_24h": 0.2707
+          "avg_change_24h": 0.3135
         }
       }
     },
@@ -45,18 +37,18 @@
       "saved": 3,
       "summary_by_type": {
         "funding_spike_pos": {
+          "count": 1,
+          "avg_funding": 0.0001,
+          "avg_oi_change": null,
+          "avg_ls_ratio": 2.31,
+          "avg_change_24h": -0.7697
+        },
+        "ls_long_extreme": {
           "count": 2,
           "avg_funding": 0.0001,
           "avg_oi_change": null,
-          "avg_ls_ratio": 2.27,
-          "avg_change_24h": -0.3857
-        },
-        "ls_short_extreme": {
-          "count": 1,
-          "avg_funding": -0.0001,
-          "avg_oi_change": null,
-          "avg_ls_ratio": 1.7731,
-          "avg_change_24h": 0.7115
+          "avg_ls_ratio": 2.29,
+          "avg_change_24h": -0.6312
         }
       }
     }
