@@ -1,11 +1,12 @@
 # ============================================================
 # ARGUS-Trader — COLLECT SOL/BNB (узел global)
 # ------------------------------------------------------------
-# v4: + long_short_ratio (fetch_ls) и taker_flow (fetch_taker).
-#     OKX — единственный, у кого оба метода.
-# v3: SAVEPOINT per row (isolate bad rows).
-# v2: fix OI — OKX rubik отдаёт всю историю (720),
-#     игнорируем limit. Обрезаем до LIMIT после получения.
+# v5: COALESCE on oi_value — OKX returns None for oi_value,
+#     old DO UPDATE nulled it. Same fix as external.py v3.
+#     SOURCES split per metric (removed bitget.fetch_oi,
+#     removed gate.fetch_taker — methods do not exist).
+# v4: + LS + taker.
+# v3: SAVEPOINT per row.
 # ============================================================
 
 import sys
@@ -31,7 +32,12 @@ log = logging.getLogger("global.sol_bnb")
 SYMBOLS = ["SOLUSDT", "BNBUSDT"]
 TF = "1h"
 LIMIT = 5
-SOURCES = ["okx", "bitget", "gate"]
+
+SOURCES_OHLCV = ["okx", "bitget", "gate"]
+SOURCES_FUNDING = ["okx", "bitget", "gate"]
+SOURCES_OI = ["okx", "gate"]
+SOURCES_LS = ["okx", "bitget", "gate"]
+SOURCES_TAKER = ["okx"]
 
 SQL_CANDLES = (
     "INSERT INTO candles "
@@ -60,7 +66,11 @@ SQL_OI = (
     "VALUES (%s,%s,%s,%s,%s) "
     "ON CONFLICT (symbol, timestamp) "
     "DO UPDATE SET "
-    "oi=EXCLUDED.oi, oi_value=EXCLUDED.oi_value, "
+    "oi=EXCLUDED.oi, "
+    "oi_value=COALESCE("
+    "  EXCLUDED.oi_value, "
+    "  open_interest.oi_value"
+    "), "
     "source=EXCLUDED.source"
 )
 
@@ -90,7 +100,6 @@ SQL_TAKER = (
 
 
 def save(sql, rows, fields):
-    """Insert rows. One bad row does not abort the batch."""
     if not rows:
         return 0
     added = 0
@@ -126,9 +135,8 @@ def save(sql, rows, fields):
     return added
 
 
-def try_sources(symbol, fn):
-    """Перебирает источники, возвращает (name, rows)."""
-    for name in SOURCES:
+def try_sources(symbol, sources, fn):
+    for name in sources:
         c = CLIENTS.get(name)
         if not c:
             continue
@@ -142,7 +150,6 @@ def try_sources(symbol, fn):
 
 
 def fresh_only(rows, limit):
-    """Сортирует по timestamp DESC, берёт limit."""
     if not rows:
         return []
     try:
@@ -180,10 +187,10 @@ def log_run(job, status, n=0, err=None):
 def collect_symbol(symbol):
     log.info("%s — start", symbol)
     total = 0
-    failed = False
+    failed = []
 
     name, rows = try_sources(
-        symbol,
+        symbol, SOURCES_OHLCV,
         lambda c: c.fetch_ohlcv(symbol, TF, LIMIT),
     )
     if rows:
@@ -197,10 +204,10 @@ def collect_symbol(symbol):
         total += n
     else:
         log.warning("  candles: no data")
-        failed = True
+        failed.append("candles")
 
     name, rows = try_sources(
-        symbol,
+        symbol, SOURCES_FUNDING,
         lambda c: c.fetch_funding(symbol, LIMIT),
     )
     if rows:
@@ -212,10 +219,10 @@ def collect_symbol(symbol):
         total += n
     else:
         log.warning("  funding: no data")
-        failed = True
+        failed.append("funding")
 
     name, rows = try_sources(
-        symbol,
+        symbol, SOURCES_OI,
         lambda c: c.fetch_oi(symbol, LIMIT),
     )
     if rows:
@@ -232,10 +239,10 @@ def collect_symbol(symbol):
         total += n
     else:
         log.warning("  oi: no data")
-        failed = True
+        failed.append("oi")
 
     name, rows = try_sources(
-        symbol,
+        symbol, SOURCES_LS,
         lambda c: c.fetch_ls(symbol, LIMIT),
     )
     if rows:
@@ -252,9 +259,10 @@ def collect_symbol(symbol):
         total += n
     else:
         log.warning("  ls: no data")
+        failed.append("ls")
 
     name, rows = try_sources(
-        symbol,
+        symbol, SOURCES_TAKER,
         lambda c: c.fetch_taker(symbol, LIMIT),
     )
     if rows:
@@ -271,34 +279,40 @@ def collect_symbol(symbol):
         total += n
     else:
         log.warning("  taker: no data")
+        failed.append("taker")
 
     return total, failed
 
 
 def main():
     log.info("=" * 60)
-    log.info("ARGUS COLLECT SOL/BNB — DB2 v4")
+    log.info("ARGUS COLLECT SOL/BNB — DB2 v5")
     log.info("=" * 60)
 
     total = 0
-    any_failed = False
+    all_failed = []
     for sym in SYMBOLS:
         try:
             n, failed = collect_symbol(sym)
             total += n
-            if failed:
-                any_failed = True
+            for f in failed:
+                all_failed.append(sym + "/" + f)
         except Exception as e:
             log.error("%s: %s", sym, e)
-            any_failed = True
+            all_failed.append(sym + "/exception")
         log.info("")
 
     log.info("=" * 60)
     log.info("DONE. Total saved: %d", total)
     log.info("=" * 60)
 
-    status = "partial" if any_failed else "ok"
-    log_run("collect_sol_bnb", status, total)
+    if all_failed:
+        status = "partial"
+        err = "failed: " + ", ".join(all_failed)
+    else:
+        status = "ok"
+        err = None
+    log_run("collect_sol_bnb", status, total, err)
     close_connection()
 
 
