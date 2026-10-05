@@ -1,12 +1,11 @@
 # ============================================================
 # ARGUS-Trader — COLLECT SOL/BNB (узел global)
 # ------------------------------------------------------------
+# v4: + long_short_ratio (fetch_ls) и taker_flow (fetch_taker).
+#     OKX — единственный, у кого оба метода.
 # v3: SAVEPOINT per row (isolate bad rows).
-#     Row-level errors no longer abort the whole batch.
 # v2: fix OI — OKX rubik отдаёт всю историю (720),
-#     игнорируем limit. Обрезаем до LIMIT после
-#     получения, отсортировав по timestamp.
-# v1: OHLCV + funding + OI для SOLUSDT и BNBUSDT.
+#     игнорируем limit. Обрезаем до LIMIT после получения.
 # ============================================================
 
 import sys
@@ -62,6 +61,30 @@ SQL_OI = (
     "ON CONFLICT (symbol, timestamp) "
     "DO UPDATE SET "
     "oi=EXCLUDED.oi, oi_value=EXCLUDED.oi_value, "
+    "source=EXCLUDED.source"
+)
+
+SQL_LS = (
+    "INSERT INTO long_short_ratio "
+    "(symbol, timestamp, ls_ratio, long_pct, "
+    "short_pct, source) "
+    "VALUES (%s,%s,%s,%s,%s,%s) "
+    "ON CONFLICT (symbol, timestamp) "
+    "DO UPDATE SET "
+    "ls_ratio=EXCLUDED.ls_ratio, "
+    "long_pct=EXCLUDED.long_pct, "
+    "short_pct=EXCLUDED.short_pct, "
+    "source=EXCLUDED.source"
+)
+
+SQL_TAKER = (
+    "INSERT INTO taker_flow "
+    "(symbol, timestamp, buy_vol, sell_vol, source) "
+    "VALUES (%s,%s,%s,%s,%s) "
+    "ON CONFLICT (symbol, timestamp) "
+    "DO UPDATE SET "
+    "buy_vol=EXCLUDED.buy_vol, "
+    "sell_vol=EXCLUDED.sell_vol, "
     "source=EXCLUDED.source"
 )
 
@@ -211,12 +234,50 @@ def collect_symbol(symbol):
         log.warning("  oi: no data")
         failed = True
 
+    name, rows = try_sources(
+        symbol,
+        lambda c: c.fetch_ls(symbol, LIMIT),
+    )
+    if rows:
+        before = len(rows)
+        rows = fresh_only(rows, LIMIT)
+        n = save(SQL_LS, rows, [
+            "symbol", "timestamp", "ls_ratio",
+            "long_pct", "short_pct", "source",
+        ])
+        log.info(
+            "  ls[%s]: %d (from %d)",
+            name, n, before,
+        )
+        total += n
+    else:
+        log.warning("  ls: no data")
+
+    name, rows = try_sources(
+        symbol,
+        lambda c: c.fetch_taker(symbol, LIMIT),
+    )
+    if rows:
+        before = len(rows)
+        rows = fresh_only(rows, LIMIT)
+        n = save(SQL_TAKER, rows, [
+            "symbol", "timestamp", "buy_vol",
+            "sell_vol", "source",
+        ])
+        log.info(
+            "  taker[%s]: %d (from %d)",
+            name, n, before,
+        )
+        total += n
+    else:
+        log.warning("  taker: no data")
+
     return total, failed
 
 
 def main():
     log.info("=" * 60)
-    log.info("ARGUS COLLECT SOL/BNB — DB2 v3")
+    log.info("ARGUS COLLECT SOL/BNB — DB2 v4")
     log.info("=" * 60)
 
     total = 0
