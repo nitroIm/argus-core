@@ -1,13 +1,14 @@
 # ============================================================
 # ARGUS-Trader — BOOTSTRAP CANDLES
 # ------------------------------------------------------------
-# РАЗОВЫЙ скрипт: загружает историю свечей ДО текущего
-# MIN(timestamp) в БД. Существующие данные не трогаются.
-#
-# После bootstrap — recurring collectors досыпают новые
-# свечи как обычно. Bootstrap больше не запускается.
+# v2: автопоиск db2.py через rglob (был ImportError:
+#     скрипт в crypto/collect, db2.py в crypto/global).
+#     Логика bootstrap не менялась с v1.
+# v1: разовая загрузка истории ДО MIN(timestamp) в БД.
+#     Существующие данные не трогаются.
 # ============================================================
 
+import os
 import sys
 import time
 import logging
@@ -19,16 +20,28 @@ CRYPTO_ROOT = SCRIPT_DIR.parent
 sys.path.insert(0, str(CRYPTO_ROOT))
 sys.path.insert(0, str(SCRIPT_DIR))
 
+# Auto-locate db2.py (same trick as dataset.py v7.1)
+for _p in CRYPTO_ROOT.rglob("db2.py"):
+    _d = str(_p.parent)
+    if "__pycache__" in _d:
+        continue
+    if _d not in sys.path:
+        sys.path.insert(0, _d)
+    break
+
 from collect.exchanges import CLIENTS
 from db import get_connection, close_connection
 
-try:
-    from db2 import get_connection as get_conn_db2
-    from db2 import close_connection as close_conn_db2
-    DB2_OK = True
-except Exception as e:
-    print("db2 fail: " + str(e))
-    DB2_OK = False
+DB2_OK = False
+get_conn_db2 = None
+close_conn_db2 = None
+if (os.getenv("ARGUS_DB_URL_2") or "").strip():
+    try:
+        from db2 import get_connection as get_conn_db2
+        from db2 import close_connection as close_conn_db2
+        DB2_OK = True
+    except Exception as e:
+        print("db2 fail: " + str(e))
 
 logging.basicConfig(
     level=logging.INFO,
@@ -41,12 +54,11 @@ log = logging.getLogger("bootstrap")
 # ============================================================
 # НАСТРОЙКИ
 # ============================================================
-DAYS_BACK_1H = 120       # 120 дней истории 1h
-DAYS_BACK_1D = 365       # 365 дней истории 1d
+DAYS_BACK_1H = 120
+DAYS_BACK_1D = 365
 DAYS_BACK_FUNDING = 120
 DAYS_BACK_OI = 120
 
-# Источники по приоритету (первый успешный)
 SOURCES = ["gate", "okx", "bitget"]
 
 SYMBOLS_DB1 = ["BTCUSDT", "ETHUSDT"]
@@ -272,10 +284,8 @@ def bootstrap_symbol(symbol):
     bound_f = min_ts_in(symbol, "funding_rates")
     if bound_f is None:
         bound_f = now
-    cutoff_f = bound_f - timedelta(days=DAYS_BACK_FUNDING)
     src, rows = try_fetch_funding(symbol, limit=1000)
     if rows:
-        # Только до bound_f (не пересекаем существующие)
         rows = [
             r for r in rows
             if r["timestamp"] < bound_f
@@ -321,6 +331,7 @@ def main():
     log.info("DAYS_BACK_1H=%d, DAYS_BACK_1D=%d",
              DAYS_BACK_1H, DAYS_BACK_1D)
     log.info("sources=%s", SOURCES)
+    log.info("DB2_OK=%s", DB2_OK)
     log.info("=" * 60)
 
     for sym in SYMBOLS_DB1:
@@ -335,13 +346,17 @@ def main():
                 bootstrap_symbol(sym)
             except Exception as e:
                 log.error("%s: %s", sym, e)
+    else:
+        log.warning(
+            "DB2 not available — skip SOL/BNB"
+        )
 
     log.info("=" * 60)
     log.info("BOOTSTRAP DONE")
     log.info("=" * 60)
 
     close_connection()
-    if DB2_OK:
+    if DB2_OK and close_conn_db2:
         try:
             close_conn_db2()
         except Exception:
