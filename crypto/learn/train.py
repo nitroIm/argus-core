@@ -1,11 +1,11 @@
 # ============================================================
 # ARGUS-Trader - TRAIN [PRODUCTION]
 # ------------------------------------------------------------
-# v8: убран early_stopping (best_iteration=1 ломал модель).
-#     Фиксированно NUM_ROUNDS=100.
-#     + диагностика предсказаний на train (не только test).
-# v7: убран is_unbalance=True.
-# v6: fix prepare() call.
+# v9: best_params отключён (устарел на новых данных).
+#     Упрощённая модель: num_leaves=8, max_depth=3, lr=0.03.
+#     Больше регуляризации.
+# v8: убран early_stopping, 100 фикс. итераций.
+# v7: убран is_unbalance.
 # ============================================================
 
 import sys
@@ -42,52 +42,27 @@ PREV_DIR = MODELS_DIR / "prev"
 PREV_MODEL = PREV_DIR / "lgb_model.txt"
 PREV_META = PREV_DIR / "model_meta.json"
 
-BEST_PARAMS_FILE = MODELS_DIR / "best_params.json"
-
 MIN_SAMPLES = 200
 NUM_ROUNDS = 100
 
+# Простая модель для 11k samples × 40 фич.
+# Не грузим best_params — он устарел.
 PARAMS = {
     "objective": "binary",
     "metric": "binary_logloss",
     "boosting_type": "gbdt",
-    "num_leaves": 15,
-    "max_depth": 4,
-    "learning_rate": 0.05,
-    "feature_fraction": 0.6,
-    "bagging_fraction": 0.7,
+    "num_leaves": 8,
+    "max_depth": 3,
+    "learning_rate": 0.03,
+    "feature_fraction": 0.5,
+    "bagging_fraction": 0.6,
     "bagging_freq": 5,
-    "min_data_in_leaf": 40,
-    "lambda_l1": 0.5,
-    "lambda_l2": 0.5,
+    "min_data_in_leaf": 80,
+    "lambda_l1": 1.0,
+    "lambda_l2": 1.0,
     "verbose": -1,
     "seed": 42,
 }
-
-
-def load_best_params():
-    if not BEST_PARAMS_FILE.exists():
-        log.info("no best_params, using defaults")
-        return False
-    try:
-        with open(BEST_PARAMS_FILE, "r",
-                  encoding="utf-8") as f:
-            bp = json.load(f)
-        best = bp.get("best", {})
-        cfg = best.get("params", {})
-        if not cfg:
-            log.warning("empty best_params")
-            return False
-        PARAMS.update(cfg)
-        log.info(
-            "loaded best_params: %s "
-            "(edge=%+.4f from autotune)",
-            cfg, best.get("edge", 0),
-        )
-        return True
-    except Exception as e:
-        log.warning("best_params load: %s", e)
-        return False
 
 
 def save_prev():
@@ -106,10 +81,9 @@ def save_prev():
 
 def train():
     log.info("=" * 60)
-    log.info("ARGUS-Trader TRAIN v8")
+    log.info("ARGUS-Trader TRAIN v9")
     log.info("=" * 60)
-
-    load_best_params()
+    log.info("PARAMS: %s", PARAMS)
 
     data = prepare()
     if data is None:
@@ -140,8 +114,7 @@ def train():
 
     train_set = lgb.Dataset(X_train, label=y_train)
 
-    log.info("training (%d rounds, no early stop)...",
-             NUM_ROUNDS)
+    log.info("training (%d rounds)...", NUM_ROUNDS)
     model = lgb.train(
         PARAMS, train_set,
         num_boost_round=NUM_ROUNDS,
@@ -152,10 +125,9 @@ def train():
     y_train_prob = model.predict(X_train)
     y_train_pred = (y_train_prob > 0.5).astype(int)
     train_acc = float((y_train_pred == y_train).mean())
-    train_up = int(y_train_pred.sum())
     log.info(
         "train: acc=%.4f pred_up=%.1f%%",
-        train_acc, train_up / len(y_train_pred) * 100,
+        train_acc, y_train_pred.mean() * 100,
     )
 
     # --- test diag ---
@@ -164,11 +136,9 @@ def train():
     acc = float((y_pred == y_test).mean())
 
     pred_up = int(y_pred.sum())
-    pred_dn = int(len(y_pred) - pred_up)
     log.info(
-        "test:  acc=%.4f pred_up=%.1f%% pred_down=%.1f%%",
+        "test:  acc=%.4f pred_up=%.1f%%",
         acc, pred_up / len(y_pred) * 100,
-        pred_dn / len(y_pred) * 100,
     )
 
     tp = int(((y_test == 1) & (y_pred == 1)).sum())
@@ -200,7 +170,7 @@ def train():
         "trained_at": datetime.now(
             timezone.utc
         ).isoformat(),
-        "version": "v8",
+        "version": "v9",
         "n_total": data["n_total"],
         "n_train": data["n_train"],
         "n_test": data["n_test"],
