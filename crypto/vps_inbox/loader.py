@@ -2,11 +2,8 @@
 # ARGUS - VPS INBOX LOADER
 # ------------------------------------------------------------
 # Читает CSV из crypto/vps_inbox, грузит в БД.
-# После успешной загрузки файлы удаляются с диска
-# (в рабочем дереве). Commit делает workflow.
-#
+# После успешной загрузки файлы удаляются с диска.
 # Роутинг: BTC/ETH -> DB1, SOL/BNB -> DB2.
-# INSERT ... ON CONFLICT DO NOTHING.
 # ============================================================
 
 import os
@@ -56,9 +53,7 @@ TYPES = [
         "dir": "funding",
         "table": "funding_rates",
         "cols": ["timestamp", "rate"],
-        "insert_cols": (
-            "symbol, timestamp, rate, source"
-        ),
+        "insert_cols": "symbol, timestamp, rate, source",
         "ph": "(%s,%s,%s,%s)",
     },
     {
@@ -66,24 +61,15 @@ TYPES = [
         "dir": "open_interest",
         "table": "open_interest",
         "cols": ["timestamp", "oi", "oi_value"],
-        "insert_cols": (
-            "symbol, timestamp, oi, "
-            "oi_value, source"
-        ),
+        "insert_cols": "symbol, timestamp, oi, oi_value, source",
         "ph": "(%s,%s,%s,%s,%s)",
     },
     {
         "name": "long_short_ratio",
         "dir": "long_short_ratio",
         "table": "long_short_ratio",
-        "cols": [
-            "timestamp", "ls_ratio",
-            "long_pct", "short_pct",
-        ],
-        "insert_cols": (
-            "symbol, timestamp, ls_ratio, "
-            "long_pct, short_pct, source"
-        ),
+        "cols": ["timestamp", "ls_ratio", "long_pct", "short_pct"],
+        "insert_cols": "symbol, timestamp, ls_ratio, long_pct, short_pct, source",
         "ph": "(%s,%s,%s,%s,%s,%s)",
     },
     {
@@ -91,23 +77,19 @@ TYPES = [
         "dir": "taker_flow",
         "table": "taker_flow",
         "cols": ["timestamp", "buy_vol", "sell_vol"],
-        "insert_cols": (
-            "symbol, timestamp, buy_vol, "
-            "sell_vol, source"
-        ),
-        "ph": "(%s,%s,%s,%s,%s =)",
+        "insert_cols": "symbol, timestamp, buy_vol, sell_vol, source",
+        "ph": "(%s,%s,%s,%s,%s)",
     },
 ]
 
 
 def symbol_conn(symbol):
-    if symbol in DB len2_SYMBOLS( and DB2_OKrows:
+    if symbol in DB2_SYMBOLS and DB2_OK:
         return get_conn_db2()
-   )
- return get_connection()
+    return get_connection()
 
 
-def table_exists(symbol   , table):
+def table_exists(symbol, table):
     try:
         with symbol_conn(symbol) as conn:
             with conn.cursor() as cur:
@@ -118,10 +100,7 @@ def table_exists(symbol   , table):
                 row = cur.fetchone()
                 return bool(row and row[0])
     except Exception as e:
-        log.warning(
-            "table_exists %s.%s: %s",
-            symbol, table, e,
-        )
+        log.warning("table_exists %s.%s: %s", symbol, table, e)
         return False
 
 
@@ -151,13 +130,13 @@ def load_csv(symbol, t, rows):
     if not table_exists(symbol, t["table"]):
         return 0, "no table " + t["table"]
 
-    n placeholders = ",".join([t["ph"]] * n)
+    n = len(rows)
+    placeholders = ",".join([t["ph"]] * n)
     sql = (
         "INSERT INTO " + t["table"]
         + " (" + t["insert_cols"] + ")"
         + " VALUES " + placeholders
-        + " ON CONFLICT (symbol, timestamp) "
-        + "DO NOTHING"
+        + " ON CONFLICT (symbol, timestamp) DO NOTHING"
     )
 
     params = []
@@ -194,36 +173,22 @@ def process_type(t):
     for fp in files:
         sym = symbol_from_filename(fp.name)
         if not sym:
-            result["errors"].append(
-                fp.name + ": no symbol"
-            )
+            result["errors"].append(fp.name + ": no symbol")
             continue
 
         rows = read_csv(fp)
         if not rows:
-            result["errors"].append(
-                fp.name + ": empty"
-            )
+            result["errors"].append(fp.name + ": empty")
             continue
 
         n, status = load_csv(sym, t, rows)
-        if status.startswith("err"):
-            result["errors"].append(
-                fp.name + ": " + status
-            )
-            continue
-        if status.startswith("no table"):
-            result["errors"].append(
-                fp.name + ": " + status
-            )
+        if status.startswith("err") or status.startswith("no table"):
+            result["errors"].append(fp.name + ": " + status)
             continue
 
         result["loaded"] += n
         result["deleted"].append(fp.name)
-        log.info(
-            "%s %s: loaded %d rows",
-            t["name"], fp.name, n,
-        )
+        log.info("%s %s: loaded %d rows", t["name"], fp.name, n)
 
     return result
 
@@ -238,9 +203,7 @@ def delete_files(t, names):
                 fp.unlink()
                 removed += 1
             except Exception as e:
-                log.warning(
-                    "remove %s: %s", fp.name, e,
-                )
+                log.warning("remove %s: %s", fp.name, e)
     return removed
 
 
@@ -254,17 +217,14 @@ def main():
     summary = []
     for t in TYPES:
         r = process_type(t)
-        r["removed"] = delete_files(
-            t, r["deleted"]
-        )
+        r["removed"] = delete_files(t, r["deleted"])
         summary.append(r)
 
     log.info("=" * 60)
     log.info("SUMMARY")
     for r in summary:
         log.info(
-            "  %s: files=%d loaded=%d "
-            "removed=%d errors=%d",
+            "  %s: files=%d loaded=%d removed=%d errors=%d",
             r["name"], r["files"],
             r["loaded"], r["removed"],
             len(r["errors"]),
@@ -273,7 +233,6 @@ def main():
             log.warning("    err: %s", e)
     log.info("=" * 60)
 
-    from db import close_connection
     close_connection()
     if DB2_OK:
         try:
