@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-05T11:16:16.641287+00:00",
+  "generated_at": "2026-10-05T11:46:29.461933+00:00",
   "symbols": {
     "BTCUSDT": {
       "symbol": "BTCUSDT",
@@ -26,7 +26,7 @@
         "samples": 720,
         "rise_1h_pct": 0.3847,
         "rise_4h_pct": 0.7331,
-        "volume_ratio": 2.1105,
+        "volume_ratio": 2.107,
         "funding_pct": 0.009658,
         "oi_pct": 0.8402,
         "ls_high": 1.6415,
@@ -40,14 +40,14 @@
           "type": "volume_spike",
           "change_pct": 0.1336,
           "magnitude": 5.306,
-          "threshold": 2.1105
+          "threshold": 2.107
         },
         {
           "timestamp": "2026-10-05 04:00:00+00:00",
           "type": "volume_spike",
           "change_pct": 0.013,
           "magnitude": 4.02,
-          "threshold": 2.1105
+          "threshold": 2.107
         },
         {
           "timestamp": "2026-10-05 04:00:00+00:00",
@@ -96,7 +96,7 @@
           "type": "volume_spike",
           "change_pct": -0.1896,
           "magnitude": 4.489,
-          "threshold": 2.1105
+          "threshold": 2.107
         },
         {
           "timestamp": "2026-10-05 00:00:00+00:00",
@@ -110,7 +110,7 @@
           "type": "volume_spike",
           "change_pct": 0.0213,
           "magnitude": 3.449,
-          "threshold": 2.1105
+          "threshold": 2.107
         },
         {
           "timestamp": "2026-10-04 23:00:00+00:00",
@@ -124,7 +124,7 @@
           "type": "volume_spike",
           "change_pct": 0.202,
           "magnitude": 2.152,
-          "threshold": 2.1105
+          "threshold": 2.107
         },
         {
           "timestamp": "2026-10-04 22:00:00+00:00",
@@ -138,7 +138,7 @@
           "type": "volume_spike",
           "change_pct": -0.054,
           "magnitude": 4.42,
-          "threshold": 2.1105
+          "threshold": 2.107
         },
         {
           "timestamp": "2026-10-04 21:00:00+00:00",
@@ -202,7 +202,7 @@
         "samples": 720,
         "rise_1h_pct": 0.5162,
         "rise_4h_pct": 1.0479,
-        "volume_ratio": 2.0504,
+        "volume_ratio": 2.0496,
         "funding_pct": 0.008115,
         "oi_pct": 1.3216,
         "ls_high": 1.6315,
@@ -223,7 +223,7 @@
           "type": "volume_spike",
           "change_pct": 0.112,
           "magnitude": 3.218,
-          "threshold": 2.0504
+          "threshold": 2.0496
         },
         {
           "timestamp": "2026-10-05 06:00:00+00:00",
@@ -244,7 +244,7 @@
           "type": "volume_spike",
           "change_pct": 0.0262,
           "magnitude": 2.421,
-          "threshold": 2.0504
+          "threshold": 2.0496
         },
         {
           "timestamp": "2026-10-05 04:00:00+00:00",
@@ -272,7 +272,7 @@
           "type": "volume_spike",
           "change_pct": 0.0679,
           "magnitude": 3.369,
-          "threshold": 2.0504
+          "threshold": 2.0496
         },
         {
           "timestamp": "2026-10-05 02:00:00+00:00",
@@ -307,7 +307,7 @@
           "type": "volume_spike",
           "change_pct": -0.1398,
           "magnitude": 5.491,
-          "threshold": 2.0504
+          "threshold": 2.0496
         },
         {
           "timestamp": "2026-10-05 00:00:00+00:00",
@@ -328,7 +328,7 @@
           "type": "volume_spike",
           "change_pct": 0.0403,
           "magnitude": 2.831,
-          "threshold": 2.0504
+          "threshold": 2.0496
         },
         {
           "timestamp": "2026-10-04 23:00:00+00:00",
@@ -349,7 +349,7 @@
           "type": "volume_spike",
           "change_pct": -0.0747,
           "magnitude": 5.51,
-          "threshold": 2.0504
+          "threshold": 2.0496
         }
       ]
     }
