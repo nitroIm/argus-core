@@ -1,11 +1,9 @@
 # ============================================================
-# ARGUS-Trader — RUNNER (оркестратор enrich)
+# ARGUS-Trader — RUNNER (enrich orchestrator)
 # ------------------------------------------------------------
-# Запускает всю цепочку enrich последовательно:
-#   features → patterns → levels → events → causal
-# Один workflow — все данные связаны через общий workspace.
-# ------------------------------------------------------------
-# v1: начальная версия
+# v2: english logs, no emoji.
+# v1: chains features -> patterns -> levels -> events
+#     -> causal -> correlate.
 # ============================================================
 
 import sys
@@ -36,38 +34,46 @@ STEPS = [
 ]
 
 
-
 def run_step(name, module_name):
     log.info("")
     log.info("=" * 60)
-    log.info(f"▶️  STEP: {name}")
+    log.info("STEP: %s", name)
     log.info("=" * 60)
 
     started = time.time()
     try:
-        # Динамический импорт
-        module = __import__(module_name, fromlist=["main"])
+        module = __import__(
+            module_name, fromlist=["main"],
+        )
         module.main()
         elapsed = round(time.time() - started, 1)
-        log.info(f"✅ {name} за {elapsed}с")
+        log.info("OK %s in %.1fs", name, elapsed)
         return True, elapsed, None
     except Exception as e:
         elapsed = round(time.time() - started, 1)
-        log.error(f"❌ {name} упал за {elapsed}с: {e}")
+        log.error(
+            "FAIL %s in %.1fs: %s",
+            name, elapsed, e,
+        )
         log.error(traceback.format_exc())
         return False, elapsed, str(e)
 
 
 def main():
-    log.info("🚀 ARGUS-Trader ENRICH RUNNER")
-    log.info(f"Время: {datetime.now(timezone.utc).isoformat()}")
+    log.info("ARGUS-Trader ENRICH RUNNER")
+    log.info(
+        "time: %s",
+        datetime.now(timezone.utc).isoformat(),
+    )
     log.info("")
 
     results = []
     failed = 0
 
     for name, module_name in STEPS:
-        success, elapsed, error = run_step(name, module_name)
+        success, elapsed, error = run_step(
+            name, module_name,
+        )
         results.append({
             "step": name,
             "success": success,
@@ -76,25 +82,32 @@ def main():
         })
         if not success:
             failed += 1
-            log.error(f"⛔ Останавливаюсь — {name} провалился")
+            log.error(
+                "stopping — %s failed", name,
+            )
             break
 
     log.info("")
     log.info("=" * 60)
-    log.info("📊 РЕЗУЛЬТАТЫ")
+    log.info("RESULTS")
     log.info("=" * 60)
     for r in results:
-        status = "✅" if r["success"] else "❌"
-        log.info(f"  {status} {r['step']:10} за {r['elapsed']:>6.1f}с")
+        status = "OK" if r["success"] else "FAIL"
+        log.info(
+            "  %s %-10s %6.1fs",
+            status, r["step"], r["elapsed"],
+        )
         if r["error"]:
-            log.info(f"     ошибка: {r['error'][:100]}")
+            log.info(
+                "     err: %s", r["error"][:100]
+            )
 
     total_time = sum(r["elapsed"] for r in results)
     log.info("")
-    log.info(f"Всего шагов: {len(results)}")
-    log.info(f"Успешных: {len(results) - failed}")
-    log.info(f"Провалено: {failed}")
-    log.info(f"Общее время: {total_time:.1f}с")
+    log.info("steps total: %d", len(results))
+    log.info("ok: %d", len(results) - failed)
+    log.info("failed: %d", failed)
+    log.info("time: %.1fs", total_time)
     log.info("=" * 60)
 
     if failed > 0:
