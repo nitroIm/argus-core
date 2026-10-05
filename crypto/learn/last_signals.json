@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-05T12:41:06.277076+00:00",
+  "generated_at": "2026-10-05T12:45:47.941556+00:00",
   "model_accuracy": 0.4762,
   "signals": [
     {
@@ -15,6 +15,20 @@
       "strength": "weak",
       "prob_up": 0.4934,
       "confidence": 0.0132
+    },
+    {
+      "symbol": "SOLUSDT",
+      "action": "WAIT",
+      "strength": "weak",
+      "prob_up": 0.4923,
+      "confidence": 0.0154
+    },
+    {
+      "symbol": "BNBUSDT",
+      "action": "WAIT",
+      "strength": "weak",
+      "prob_up": 0.4848,
+      "confidence": 0.0304
     }
   ]
 }
