@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-05T17:18:04.573608+00:00",
+  "generated_at": "2026-10-05T18:17:28.290770+00:00",
   "symbols": {
     "BTCUSDT": {
       "symbol": "BTCUSDT",
@@ -11,39 +11,24 @@
     "ETHUSDT": {
       "symbol": "ETHUSDT",
       "total_events": 200,
-      "processed": 2,
-      "saved": 2,
+      "processed": 1,
+      "saved": 1,
       "summary_by_type": {
-        "rsi_oversold": {
-          "count": 1,
-          "avg_funding": 0.0,
-          "avg_oi_change": 2.3426,
-          "avg_ls_ratio": 1.43,
-          "avg_change_24h": -0.2779
-        },
         "rsi_overbought": {
           "count": 1,
           "avg_funding": 0.0001,
-          "avg_oi_change": -2.1785,
-          "avg_ls_ratio": 1.13,
-          "avg_change_24h": 2.1928
+          "avg_oi_change": -99.8703,
+          "avg_ls_ratio": 1.1,
+          "avg_change_24h": 1.3004
         }
       }
     },
     "SOLUSDT": {
       "symbol": "SOLUSDT",
       "total_events": 200,
-      "processed": 1,
-      "saved": 1,
-      "summary_by_type": {
-        "rsi_oversold": {
-          "count": 1,
-          "avg_funding": -0.0,
-          "avg_oi_change": null,
-          "avg_ls_ratio": 1.77,
-          "avg_change_24h": -1.7668
-        }
-      }
+      "processed": 0,
+      "saved": 0,
+      "summary_by_type": {}
     },
     "BNBUSDT": {
       "symbol": "BNBUSDT",
@@ -55,8 +40,8 @@
           "count": 1,
           "avg_funding": 0.0001,
           "avg_oi_change": null,
-          "avg_ls_ratio": 2.24,
-          "avg_change_24h": -0.1269
+          "avg_ls_ratio": 2.26,
+          "avg_change_24h": -0.1903
         }
       }
     }
