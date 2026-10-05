@@ -1,22 +1,22 @@
 {
-  "trained_at": "2026-10-05T23:22:58.533279+00:00",
+  "trained_at": "2026-10-05T23:22:29.876939+00:00",
   "version": "v13",
   "objective": "regression",
-  "symbol": "SOLUSDT",
-  "n_total": 5855,
-  "n_train": 4672,
-  "n_test": 1171,
-  "n_val_inner": 701,
-  "best_iteration": 1,
-  "ic_train": 0.2499,
-  "ic_test": 0.018,
-  "mae_train": 1.62,
-  "mae_test": 1.736,
-  "rmse_train": 2.2643,
-  "rmse_test": 2.3774,
-  "sign_acc_train": 0.5201,
-  "sign_acc_test": 0.4432,
-  "num_trees": 1,
+  "symbol": "BTCUSDT",
+  "n_total": 8999,
+  "n_train": 7187,
+  "n_test": 1800,
+  "n_val_inner": 1079,
+  "best_iteration": 25,
+  "ic_train": 0.3409,
+  "ic_test": -0.0136,
+  "mae_train": 1.1609,
+  "mae_test": 0.8945,
+  "rmse_train": 1.6127,
+  "rmse_test": 1.3966,
+  "sign_acc_train": 0.5321,
+  "sign_acc_test": 0.4528,
+  "num_trees": 25,
   "features": [
     "change_pct",
     "range_pct",
@@ -82,46 +82,45 @@
   ],
   "top_features": [
     {
-      "name": "volatility_7d",
-      "gain": 582.13
+      "name": "change_1d",
+      "gain": 3285.4
     },
     {
-      "name": "change_1d",
-      "gain": 355.11
+      "name": "volatility_7d",
+      "gain": 2017.08
+    },
+    {
+      "name": "funding_rate",
+      "gain": 1574.02
+    },
+    {
+      "name": "macd_signal",
+      "gain": 496.05
+    },
+    {
+      "name": "bb_width_pct",
+      "gain": 449.99
     },
     {
       "name": "volatility_24h",
-      "gain": 130.38
+      "gain": 434.93
     },
     {
-      "name": "volume_ratio_24h",
-      "gain": 61.37
+      "name": "ema50_dist_pct",
+      "gain": 311.61
     },
     {
-      "name": "change_pct",
-      "gain": 0.0
-    },
-    {
-      "name": "range_pct",
-      "gain": 0.0
-    },
-    {
-      "name": "body_pct",
-      "gain": 0.0
-    },
-    {
-      "name": "upper_wick_pct",
-      "gain": 0.0
-    },
-    {
-      "name": "lower_wick_pct",
-      "gain": 0.0
+      "name": "dist_low_24h_pct",
+      "gain": 177.77
     },
     {
       "name": "change_4h",
-      "gain": 0.0
+      "gain": 155.4
+    },
+    {
+      "name": "macd",
+      "gain": 153.39
     }
   ],
-  "horizon": 12,
-  "exported_at": "2026-10-05T23:24:11.294444+00:00"
+  "horizon": 12
 }

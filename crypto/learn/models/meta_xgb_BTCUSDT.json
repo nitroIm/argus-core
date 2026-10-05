@@ -1,22 +1,17 @@
 {
-  "trained_at": "2026-10-05T23:22:58.533279+00:00",
-  "version": "v13",
+  "trained_at": "2026-10-05T23:23:30.432720+00:00",
+  "version": "v1-xgb",
   "objective": "regression",
-  "symbol": "SOLUSDT",
-  "n_total": 5855,
-  "n_train": 4672,
-  "n_test": 1171,
-  "n_val_inner": 701,
-  "best_iteration": 1,
-  "ic_train": 0.2499,
-  "ic_test": 0.018,
-  "mae_train": 1.62,
-  "mae_test": 1.736,
-  "rmse_train": 2.2643,
-  "rmse_test": 2.3774,
-  "sign_acc_train": 0.5201,
-  "sign_acc_test": 0.4432,
-  "num_trees": 1,
+  "algorithm": "xgboost",
+  "symbol": "BTCUSDT",
+  "n_total": 8999,
+  "n_train": 7187,
+  "n_test": 1800,
+  "best_iteration": 15,
+  "ic_train": 0.3673,
+  "ic_test": -0.144,
+  "mae_test": 0.8984,
+  "rmse_test": 1.4027,
   "features": [
     "change_pct",
     "range_pct",
@@ -82,46 +77,45 @@
   ],
   "top_features": [
     {
-      "name": "volatility_7d",
-      "gain": 582.13
+      "name": "f10",
+      "gain": 132.06
     },
     {
-      "name": "change_1d",
-      "gain": 355.11
+      "name": "f19",
+      "gain": 90.54
     },
     {
-      "name": "volatility_24h",
-      "gain": 130.38
+      "name": "f7",
+      "gain": 90.08
     },
     {
-      "name": "volume_ratio_24h",
-      "gain": 61.37
+      "name": "f9",
+      "gain": 82.79
     },
     {
-      "name": "change_pct",
-      "gain": 0.0
+      "name": "f17",
+      "gain": 79.57
     },
     {
-      "name": "range_pct",
-      "gain": 0.0
+      "name": "f6",
+      "gain": 72.8
     },
     {
-      "name": "body_pct",
-      "gain": 0.0
+      "name": "f13",
+      "gain": 72.15
     },
     {
-      "name": "upper_wick_pct",
-      "gain": 0.0
+      "name": "f18",
+      "gain": 66.21
     },
     {
-      "name": "lower_wick_pct",
-      "gain": 0.0
+      "name": "f20",
+      "gain": 61.22
     },
     {
-      "name": "change_4h",
-      "gain": 0.0
+      "name": "f26",
+      "gain": 54.25
     }
   ],
-  "horizon": 12,
-  "exported_at": "2026-10-05T23:24:11.294444+00:00"
+  "horizon": 12
 }
