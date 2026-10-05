@@ -1,8 +1,10 @@
 # ============================================================
-# ARGUS-Trader - MACRO COLLECTOR [PRODUCTION]
+# ARGUS-Trader - MACRO COLLECTOR v2 [PRODUCTION]
 # ------------------------------------------------------------
-# 10Y Treasury Yield (^TNX) с Yahoo Finance.
-# Без ключа, раз в час.
+# v2: COALESCE on change_pct — prevents NULL overwrite.
+#     get_prev_close from DB for first row of window.
+#     Same fix as external.py v3.
+# v1: 10Y Treasury Yield (^TNX) via Yahoo.
 # ============================================================
 
 import sys
@@ -24,24 +26,37 @@ logging.basicConfig(
 )
 log = logging.getLogger("crypto.macro")
 
-YAHOO = "https://query1.finance.yahoo.com/v8/finance/chart/{sym}"
-HEADERS = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64)"}
+YAHOO = (
+    "https://query1.finance.yahoo.com"
+    "/v8/finance/chart/{sym}"
+)
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64)"
+}
 
-# symbol -> (yahoo_code, db_symbol)
 MACRO = [
     ("^TNX", "US10Y"),
 ]
 
+INTERVAL = "1h"
+RANGE = "2d"
+MAX_ROWS = 48
 
-def fetch_yahoo(code, interval="1h", rng="2d"):
+
+def fetch_yahoo(code, interval=INTERVAL, rng=RANGE):
     try:
         r = requests.get(
             YAHOO.format(sym=code),
-            params={"interval": interval, "range": rng},
+            params={
+                "interval": interval,
+                "range": rng,
+            },
             headers=HEADERS, timeout=15,
         )
         if r.status_code != 200:
-            log.warning("%s: HTTP %d", code, r.status_code)
+            log.warning(
+                "%s: HTTP %d", code, r.status_code,
+            )
             return []
         data = r.json()
     except Exception as e:
@@ -51,7 +66,9 @@ def fetch_yahoo(code, interval="1h", rng="2d"):
     try:
         result = data["chart"]["result"][0]
         tss = result["timestamp"]
-        closes = result["indicators"]["quote"][0]["close"]
+        closes = result["indicators"][
+            "quote"
+        ][0]["close"]
     except Exception as e:
         log.error("%s parse: %s", code, e)
         return []
@@ -61,16 +78,39 @@ def fetch_yahoo(code, interval="1h", rng="2d"):
         if c is None:
             continue
         try:
-            dt = datetime.fromtimestamp(ts, tz=timezone.utc)
+            dt = datetime.fromtimestamp(
+                ts, tz=timezone.utc,
+            )
             out.append((dt, float(c)))
         except Exception:
             continue
-    return out[-48:]
+    return out[-MAX_ROWS:]
 
 
-def compute_changes(rows):
+def get_prev_close(db_symbol, first_ts):
+    try:
+        with get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT close FROM macro_metrics "
+                    "WHERE symbol = %s "
+                    "AND timestamp < %s "
+                    "ORDER BY timestamp DESC LIMIT 1",
+                    (db_symbol, first_ts),
+                )
+                row = cur.fetchone()
+                if row and row[0]:
+                    return float(row[0])
+    except Exception as e:
+        log.warning(
+            "prev_close %s: %s", db_symbol, e,
+        )
+    return None
+
+
+def compute_changes(rows, prev_close=None):
     out = []
-    prev = None
+    prev = prev_close
     for ts, c in rows:
         ch = None
         if prev is not None and prev > 0:
@@ -85,11 +125,16 @@ def save_rows(db_symbol, rows):
         return 0
     sql = (
         "INSERT INTO macro_metrics "
-        "(symbol, timestamp, close, change_pct, source) "
+        "(symbol, timestamp, close, "
+        "change_pct, source) "
         "VALUES (%s, %s, %s, %s, %s) "
-        "ON CONFLICT (symbol, timestamp) DO UPDATE SET "
+        "ON CONFLICT (symbol, timestamp) "
+        "DO UPDATE SET "
         "close = EXCLUDED.close, "
-        "change_pct = EXCLUDED.change_pct"
+        "change_pct = COALESCE("
+        "  EXCLUDED.change_pct, "
+        "  macro_metrics.change_pct"
+        ")"
     )
     added = 0
     try:
@@ -101,7 +146,8 @@ def save_rows(db_symbol, rows):
                             db_symbol, ts, c, ch,
                             "yahoo",
                         ))
-                        if cur.rowcount and cur.rowcount > 0:
+                        if cur.rowcount and \
+                                cur.rowcount > 0:
                             added += cur.rowcount
                     except Exception as e:
                         log.warning("skip: %s", e)
@@ -117,7 +163,11 @@ def collect_macro():
         if not rows:
             log.warning("%s: no data", sym)
             continue
-        rows = compute_changes(rows)
+
+        prev_close = get_prev_close(
+            sym, rows[0][0],
+        )
+        rows = compute_changes(rows, prev_close)
         added = save_rows(sym, rows)
         total += added
         log.info(
