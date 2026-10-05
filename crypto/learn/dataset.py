@@ -1,12 +1,10 @@
 # ============================================================
-# ARGUS-Trader - DATASET v6 [PRODUCTION]
+# ARGUS-Trader - DATASET v7 [PRODUCTION]
 # ------------------------------------------------------------
-# v6: + cross-features BTC<->ETH (ratio, lead, spread,
-#     rolling correlation). One dataset for the whole brain.
-#     + regression target (next_return) parallel to
-#     classification (next_direction).
-#     + HORIZON config (1/4/12/24).
-# v5: + 12 features (EMA, MACD, BB, session).
+# v7: config-driven symbols + DB routing (DB1/DB2).
+#     Cross-features "each vs reference (BTC)" — auto for
+#     any new symbol. Graceful skip if symbol has no data.
+# v6: cross-features BTC<->ETH, regression target.
 # ============================================================
 
 import os
@@ -21,7 +19,30 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 CRYPTO_ROOT = SCRIPT_DIR.parent
 sys.path.insert(0, str(CRYPTO_ROOT))
 
+# Auto-locate db2.py
+for _p in CRYPTO_ROOT.rglob("db2.py"):
+    _d = str(_p.parent)
+    if "__pycache__" in _d:
+        continue
+    if _d not in sys.path:
+        sys.path.insert(0, _d)
+    break
+
 from db import get_connection
+
+DB2_OK = False
+get_conn_db2 = None
+if (os.getenv("ARGUS_DB_URL_2") or "").strip():
+    try:
+        from db2 import get_connection as get_conn_db2
+        _t = get_conn_db2()
+        with _t as _c:
+            with _c.cursor() as _cur:
+                _cur.execute("SELECT 1")
+                _cur.fetchone()
+        DB2_OK = True
+    except Exception as e:
+        print("DB2 fail: " + str(e))
 
 logging.basicConfig(
     level=logging.INFO,
@@ -30,24 +51,62 @@ logging.basicConfig(
 )
 log = logging.getLogger("crypto.learn.dataset")
 
+
 # ============================================================
-# CONFIG — можно переопределить через env
+# CONFIG — расширяется одной строкой
 # ============================================================
 USE_EXTERNAL = (
     os.getenv("USE_EXTERNAL", "0").strip() == "1"
 )
 
-# Горизонт предсказания (часы)
-# 1 — шумно, 4 — баланс, 12/24 — тренд
 HORIZON = int(os.getenv("HORIZON", "4"))
-
-# Порог "значимого движения" для classification
-# next_return > 0.5% → up, < -0.5% → down,
-# между → отбрасываем (не шумит)
 MOVE_THRESHOLD_PCT = float(
     os.getenv("MOVE_THRESHOLD_PCT", "0.5")
 )
 
+# Список монет для обучения.
+# Чтобы добавить новую — дописать в этот список.
+# Данные для SOL/BNB лежат в DB2 (см. DB2_SYMBOLS).
+DEFAULT_SYMBOLS = ["BTCUSDT", "ETHUSDT"]
+
+SYMBOLS = [
+    s.strip().upper()
+    for s in (
+        os.getenv("SYMBOLS")
+        or ",".join(DEFAULT_SYMBOLS)
+    ).split(",")
+    if s.strip()
+]
+
+# Опорная монета для кросс-фич
+REFERENCE = (os.getenv("REFERENCE") or "BTCUSDT").strip().upper()
+
+# Символы, чьи candles/features лежат в DB2
+DB2_SYMBOLS = {
+    s.strip().upper()
+    for s in (
+        os.getenv("DB2_SYMBOLS") or "SOLUSDT,BNBUSDT"
+    ).split(",")
+    if s.strip()
+}
+
+
+# ============================================================
+# DB ROUTING
+# ============================================================
+def symbol_conn(symbol):
+    """DB2 for SOL/BNB, DB1 for the rest."""
+    if symbol in DB2_SYMBOLS and DB2_OK:
+        try:
+            return get_conn_db2()
+        except Exception as e:
+            log.warning("db2 conn %s: %s", symbol, e)
+    return get_connection()
+
+
+# ============================================================
+# INTERNAL / CROSS FEATURES
+# ============================================================
 INTERNAL_COLS = [
     "change_pct",
     "range_pct",
@@ -90,15 +149,15 @@ EXTERNAL_COLS = [
     "gold_change_pct",
 ]
 
-# Кросс-фичи BTC<->ETH
+# Cross-features: "each symbol vs reference"
 CROSS_COLS = [
-    "other_change_1h",     # как дёрнулась вторая монета
-    "other_change_4h",
-    "other_change_24h",
-    "eth_btc_ratio",       # ETH/BTC * 1000
-    "ratio_zscore_24h",    # насколько ratio выше нормы
-    "lead_lag_corr_24h",   # rolling корреляция 24h
-    "spread_pct",          # разница движений за 4h
+    "ref_change_1h",
+    "ref_change_4h",
+    "ref_change_24h",
+    "ratio",
+    "ratio_zscore_24h",
+    "lead_lag_corr_24h",
+    "spread_pct",
 ]
 
 FEATURE_COLS = (
@@ -114,34 +173,29 @@ EXT_MAX_AGE_H = 3
 
 
 # ============================================================
-# FETCH BASE FEATURES (per symbol)
+# FETCH
 # ============================================================
 def fetch_features(symbol, limit=100000):
-    base_cols = (
-        ["symbol", "timestamp"]
-        + INTERNAL_COLS
-    )
+    base_cols = ["symbol", "timestamp"] + INTERNAL_COLS
     try:
-        with get_connection() as conn:
+        with symbol_conn(symbol) as conn:
             with conn.cursor() as cur:
                 sql = (
                     "SELECT " + ", ".join(base_cols)
                     + " FROM features_hourly "
                     + "WHERE symbol = %s "
-                    + "ORDER BY timestamp "
-                    + "LIMIT %s"
+                    + "ORDER BY timestamp LIMIT %s"
                 )
                 cur.execute(sql, (symbol, limit))
-                return cur.fetchall(), base_cols
+                return cur.fetchall()
     except Exception as e:
-        log.error("fetch_features %s: %s", symbol, e)
-        return [], []
+        log.warning("features %s: %s", symbol, e)
+        return []
 
 
 def fetch_candles(symbol, limit=100000):
-    """1h свечи — для расчёта горизонтных таргетов."""
     try:
-        with get_connection() as conn:
+        with symbol_conn(symbol) as conn:
             with conn.cursor() as cur:
                 cur.execute(
                     "SELECT timestamp, open, high, low, "
@@ -166,7 +220,7 @@ def fetch_candles(symbol, limit=100000):
                     })
                 return out
     except Exception as e:
-        log.error("fetch_candles %s: %s", symbol, e)
+        log.warning("candles %s: %s", symbol, e)
         return []
 
 
@@ -194,16 +248,14 @@ def fetch_external(symbol):
                         out.append((ts, v))
                 return out
     except Exception as e:
-        log.error("fetch_external %s: %s", symbol, e)
+        log.warning("external %s: %s", symbol, e)
         return []
 
 
 # ============================================================
-# BUILD HORIZON TARGETS
+# TARGETS
 # ============================================================
 def build_targets(candles, horizon):
-    """For each candle index, compute return over next
-    `horizon` hours. Also direction (with threshold)."""
     out = {}
     n = len(candles)
     for i in range(n):
@@ -221,117 +273,185 @@ def build_targets(candles, horizon):
 
 
 # ============================================================
-# CROSS FEATURES
+# CROSS FEATURES (vs REFERENCE)
 # ============================================================
-def build_cross_features(
-    btc_feats, eth_feats,
-    btc_candles, eth_candles,
-):
-    """Строит кросс-признаки для BTC и ETH.
-    Возвращает dict[ts] -> dict[cross_cols] для BTC и для ETH.
+def build_cross_map(feat_maps, ref_symbol):
+    """Cross-features for every symbol vs reference.
+
+    Returns dict[symbol] -> dict[ts] -> dict[cross_cols]
     """
-    # --- ratio (ETH/BTC * 1000) ---
-    btc_close = {c["ts"]: c["close"] for c in btc_candles}
-    eth_close = {c["ts"]: c["close"] for c in eth_candles}
-    ratio = {}
-    common_ts = sorted(set(btc_close) & set(eth_close))
-    for ts in common_ts:
-        bc = btc_close[ts]
-        ec = eth_close[ts]
-        if bc and ec and bc > 0:
-            ratio[ts] = ec / bc * 1000
+    ref_feat = feat_maps.get(ref_symbol) or {}
+    if not ref_feat:
+        return {}
 
-    # --- rolling correlation 24h ---
-    def rolling_corr(ts_list, btc_map, eth_map, window=24):
-        out = {}
-        for i in range(len(ts_list)):
-            if i < window - 1:
-                out[ts_list[i]] = None
-                continue
-            xs = []
-            ys = []
-            for j in range(i - window + 1, i + 1):
-                t = ts_list[j]
-                bc = btc_map.get(t)
-                ec = eth_map.get(t)
-                if bc and ec:
-                    xs.append(bc)
-                    ys.append(ec)
-            if len(xs) < 5:
-                out[ts_list[i]] = None
-                continue
-            a = np.array(xs, dtype=float)
-            b = np.array(ys, dtype=float)
-            if a.std() == 0 or b.std() == 0:
-                out[ts_list[i]] = None
-                continue
-            out[ts_list[i]] = float(np.corrcoef(a, b)[0, 1])
-        return out
+    ref_ch = {
+        ts: f["change_pct"] for ts, f in ref_feat.items()
+    }
+    ref_ch4 = {
+        ts: f["change_4h"] for ts, f in ref_feat.items()
+    }
+    ref_ch24 = {
+        ts: f["change_24h"] for ts, f in ref_feat.items()
+    }
 
-    # Используем change_pct с features для correlation
-    btc_ch = {ts: feats for ts, feats in btc_feats}
-    eth_ch = {ts: feats for ts, feats in eth_feats}
+    out = {}
+    for symbol, feats in feat_maps.items():
+        if not feats:
+            continue
+        if symbol == ref_symbol:
+            # Reference имеет пустые кросс-фичи
+            out[symbol] = {
+                ts: {c: np.nan for c in CROSS_COLS}
+                for ts in feats
+            }
+            continue
 
-    corr_ts = sorted(set(btc_ch) & set(eth_ch))
-    corr_map = {}
-    window = 24
-    for i in range(len(corr_ts)):
-        if i < window - 1:
-            corr_map[corr_ts[i]] = None
-            continue
-        xs, ys = [], []
-        for j in range(i - window + 1, i + 1):
-            t = corr_ts[j]
-            bc = btc_ch.get(t)
-            ec = eth_ch.get(t)
-            if bc is not None and ec is not None:
-                xs.append(bc)
-                ys.append(ec)
-        if len(xs) < 5:
-            corr_map[corr_ts[i]] = None
-            continue
-        a = np.array(xs, dtype=float)
-        b = np.array(ys, dtype=float)
-        if a.std() == 0 or b.std() == 0:
-            corr_map[corr_ts[i]] = None
-            continue
-        corr_map[corr_ts[i]] = float(
-            np.corrcoef(a, b)[0, 1]
+        # Ratio = (price / ref_price) * 1000
+        sym_candles = None  # заполним ниже
+        # Для ratio нужны свечи символа и reference — их передадим отдельно
+        out[symbol] = {}
+
+    return out
+
+
+def build_cross_full(
+    feat_maps, candle_maps, ref_symbol,
+):
+    """Cross-features for every symbol vs reference.
+
+    feat_maps: symbol -> {ts: {col: val}}
+    candle_maps: symbol -> {ts: close}
+    """
+    ref_feat = feat_maps.get(ref_symbol) or {}
+    ref_close = candle_maps.get(ref_symbol) or {}
+
+    ref_ch = {
+        ts: f.get("change_pct")
+        for ts, f in ref_feat.items()
+    }
+    ref_ch4 = {
+        ts: f.get("change_4h")
+        for ts, f in ref_feat.items()
+    }
+    ref_ch24 = {
+        ts: f.get("change_24h")
+        for ts, f in ref_feat.items()
+    }
+
+    out = {}
+
+    for symbol, feats in feat_maps.items():
+        sym_close = candle_maps.get(symbol) or {}
+
+        # common timestamps для symbol и ref
+        common_ts = sorted(
+            set(feats.keys()) & set(ref_close.keys())
         )
 
-    # --- zscore ratio 24h ---
-    ratio_ts = sorted(ratio.keys())
-    zscore = {}
-    for i in range(len(ratio_ts)):
-        if i < 24:
-            zscore[ratio_ts[i]] = None
-            continue
-        window_vals = [
-            ratio[ratio_ts[j]]
-            for j in range(i - 24, i)
-        ]
-        arr = np.array(window_vals, dtype=float)
-        mu = arr.mean()
-        sd = arr.std()
-        if sd == 0:
-            zscore[ratio_ts[i]] = 0.0
-        else:
-            zscore[ratio_ts[i]] = float(
-                (ratio[ratio_ts[i]] - mu) / sd
+        # --- ratio ---
+        ratio = {}
+        for ts in common_ts:
+            sc = sym_close.get(ts)
+            rc = ref_close.get(ts)
+            if sc and rc and rc > 0:
+                ratio[ts] = sc / rc * 1000
+
+        # --- zscore 24h ---
+        ratio_ts = sorted(ratio.keys())
+        zscore = {}
+        for i in range(len(ratio_ts)):
+            if i < 24:
+                zscore[ratio_ts[i]] = np.nan
+                continue
+            window = [
+                ratio[ratio_ts[j]]
+                for j in range(i - 24, i)
+            ]
+            arr = np.array(window, dtype=float)
+            mu = arr.mean()
+            sd = arr.std()
+            if sd == 0:
+                zscore[ratio_ts[i]] = 0.0
+            else:
+                zscore[ratio_ts[i]] = float(
+                    (ratio[ratio_ts[i]] - mu) / sd
+                )
+
+        # --- rolling correlation 24h (change_pct) ---
+        corr_ts = sorted(
+            set(feats.keys()) & set(ref_feat.keys())
+        )
+        corr = {}
+        window = 24
+        for i in range(len(corr_ts)):
+            if i < window - 1:
+                corr[corr_ts[i]] = np.nan
+                continue
+            xs, ys = [], []
+            for j in range(i - window + 1, i + 1):
+                t = corr_ts[j]
+                a = feats.get(t, {}).get("change_pct")
+                b = ref_feat.get(t, {}).get("change_pct")
+                if a is not None and b is not None:
+                    xs.append(a)
+                    ys.append(b)
+            if len(xs) < 5:
+                corr[corr_ts[i]] = np.nan
+                continue
+            A = np.array(xs, dtype=float)
+            B = np.array(ys, dtype=float)
+            if A.std() == 0 or B.std() == 0:
+                corr[corr_ts[i]] = np.nan
+                continue
+            corr[corr_ts[i]] = float(
+                np.corrcoef(A, B)[0, 1]
             )
 
-    return {
-        "btc": {
-            "ratio": ratio,
-            "zscore": zscore,
-            "corr": corr_map,
-        },
-        "eth": {
-            "ratio": ratio,
-            "zscore": zscore,
-            "corr": corr_map,
-        },
-    }
+        # --- spread 4h ---
+        cross_map = {}
+        for ts in feats:
+            if symbol == ref_symbol:
+                cross_map[ts] = {
+                    c: np.nan for c in CROSS_COLS
+                }
+                continue
+            own_4h = feats[ts].get("change_4h")
+            ref_4h = ref_ch4.get(ts)
+            spread = None
+            if own_4h is not None and ref_4h is not None:
+                spread = own_4h - ref_4h
+            cross_map[ts] = {
+                "ref_change_1h": (
+                    ref_ch.get(ts)
+                    if ref_ch.get(ts) is not None
+                    else np.nan
+                ),
+                "ref_change_4h": (
+                    ref_ch4.get(ts)
+                    if ref_ch4.get(ts) is not None
+                    else np.nan
+                ),
+                "ref_change_24h": (
+                    ref_ch24.get(ts)
+                    if ref_ch24.get(ts) is not None
+                    else np.nan
+                ),
+                "ratio": ratio.get(ts, np.nan),
+                "ratio_zscore_24h": zscore.get(
+                    ts, np.nan
+                ),
+                "lead_lag_corr_24h": corr.get(
+                    ts, np.nan
+                ),
+                "spread_pct": (
+                    spread if spread is not None
+                    else np.nan
+                ),
+            }
+
+        out[symbol] = cross_map
+
+    return out
 
 
 # ============================================================
@@ -356,13 +476,10 @@ def ext_lookup(ext_list, ts, max_age_h=EXT_MAX_AGE_H):
 
 
 # ============================================================
-# BUILD X, y
+# BUILD X/y
 # ============================================================
 def _get_feat_map(rows, base_cols):
-    """ts -> dict внутренних признаков."""
-    idx = {}
-    for i, col in enumerate(base_cols):
-        idx[col] = i
+    idx = {col: i for i, col in enumerate(base_cols)}
     out = {}
     for r in rows:
         ts = r[idx["timestamp"]]
@@ -383,92 +500,55 @@ def _get_feat_map(rows, base_cols):
 
 
 def build_xy(
-    btc_rows, eth_rows, btc_base, eth_base,
-    btc_candles, eth_candles,
-    ext_dxy, ext_spx, ext_gold,
+    feat_maps, candle_maps, close_maps,
+    targets_map, ext_dxy, ext_spx, ext_gold,
 ):
-    """Строит единый X/y для обеих монет + кросс-фичи."""
-    btc_feat = _get_feat_map(btc_rows, btc_base)
-    eth_feat = _get_feat_map(eth_rows, eth_base)
-
-    # Кросс фичи
-    btc_ch_simple = {
-        ts: f["change_pct"] for ts, f in btc_feat.items()
-    }
-    eth_ch_simple = {
-        ts: f["change_pct"] for ts, f in eth_feat.items()
-    }
-    cross = build_cross_features(
-        btc_ch_simple, eth_ch_simple,
-        btc_candles, eth_candles,
+    cross_maps = build_cross_full(
+        feat_maps, close_maps, REFERENCE,
     )
-
-    btc_targets = build_targets(btc_candles, HORIZON)
-    eth_targets = build_targets(eth_candles, HORIZON)
 
     X, y_dir, y_ret, ts_list, sym_list = [], [], [], [], []
 
-    def add_rows(feat_map, targets, symbol,
-                 other_feat_map, cross_data):
-        for ts in sorted(feat_map.keys()):
+    for symbol in SYMBOLS:
+        feats = feat_maps.get(symbol) or {}
+        targets = targets_map.get(symbol) or {}
+        cross = cross_maps.get(symbol) or {}
+
+        for ts in sorted(feats.keys()):
             ret = targets.get(ts)
             if ret is None:
                 continue
 
-            # Direction with threshold
             if ret > MOVE_THRESHOLD_PCT:
                 direction = 1
             elif ret < -MOVE_THRESHOLD_PCT:
                 direction = 0
             else:
-                # слишком шумно — пропускаем
                 continue
 
-            feats = feat_map[ts]
             row = []
+            f = feats[ts]
 
-            # Internal
             for col in INTERNAL_COLS:
-                row.append(feats.get(col, np.nan))
+                row.append(f.get(col, np.nan))
 
-            # External
             if USE_EXTERNAL:
+                v = ext_lookup(ext_dxy, ts)
                 row.append(
-                    ext_lookup(ext_dxy, ts)
-                    if ext_lookup(ext_dxy, ts) is not None
-                    else np.nan
+                    v if v is not None else np.nan
                 )
+                v = ext_lookup(ext_spx, ts)
                 row.append(
-                    ext_lookup(ext_spx, ts)
-                    if ext_lookup(ext_spx, ts) is not None
-                    else np.nan
+                    v if v is not None else np.nan
                 )
+                v = ext_lookup(ext_gold, ts)
                 row.append(
-                    ext_lookup(ext_gold, ts)
-                    if ext_lookup(ext_gold, ts) is not None
-                    else np.nan
+                    v if v is not None else np.nan
                 )
 
-            # Cross
-            other = other_feat_map.get(ts)
-            if other is None:
-                row.extend([np.nan] * len(CROSS_COLS))
-            else:
-                row.append(other.get("change_pct", np.nan))
-                row.append(other.get("change_4h", np.nan))
-                row.append(other.get("change_24h", np.nan))
-                row.append(cross_data["ratio"].get(ts, np.nan))
-                row.append(cross_data["zscore"].get(ts, np.nan))
-                row.append(cross_data["corr"].get(ts, np.nan))
-                # spread
-                spread = None
-                oc = other.get("change_4h")
-                sc = feats.get("change_4h")
-                if oc is not None and sc is not None:
-                    spread = sc - oc
-                row.append(
-                    spread if spread is not None else np.nan
-                )
+            cm = cross.get(ts, {})
+            for col in CROSS_COLS:
+                row.append(cm.get(col, np.nan))
 
             X.append(row)
             y_dir.append(direction)
@@ -476,16 +556,15 @@ def build_xy(
             ts_list.append(ts)
             sym_list.append(symbol)
 
-    add_rows(
-        btc_feat, btc_targets, "BTCUSDT",
-        eth_feat, cross["btc"],
-    )
-    add_rows(
-        eth_feat, eth_targets, "ETHUSDT",
-        btc_feat, cross["eth"],
-    )
+    if not X:
+        return (
+            np.array([], dtype=np.float32),
+            np.array([], dtype=np.int32),
+            np.array([], dtype=np.float32),
+            [], [],
+        )
 
-    # Сортировка по времени (модель не должна видеть будущее)
+    # sort by time — модель не должна видеть будущее
     order = sorted(
         range(len(ts_list)), key=lambda i: ts_list[i]
     )
@@ -522,25 +601,59 @@ def time_split(X, y, test_frac=0.2):
 # PREPARE
 # ============================================================
 def prepare(test_frac=0.2):
-    btc_rows, btc_base = fetch_features("BTCUSDT")
-    eth_rows, eth_base = fetch_features("ETHUSDT")
-
+    log.info("=" * 60)
+    log.info("DATASET v7")
     log.info(
-        "rows: BTC=%d ETH=%d (HORIZON=%dh, threshold=%.2f%%)",
-        len(btc_rows), len(eth_rows),
-        HORIZON, MOVE_THRESHOLD_PCT,
+        "SYMBOLS=%s", SYMBOLS,
     )
+    log.info("REFERENCE=%s", REFERENCE)
+    log.info("HORIZON=%dh  THRESHOLD=%.2f%%",
+             HORIZON, MOVE_THRESHOLD_PCT)
+    log.info(
+        "DB2_SYMBOLS=%s (DB2_OK=%s)",
+        sorted(DB2_SYMBOLS), DB2_OK,
+    )
+    log.info("=" * 60)
 
-    if not btc_rows or not eth_rows:
-        log.error("empty rows")
+    feat_maps = {}
+    candle_maps = {}
+    close_maps = {}
+    targets_map = {}
+
+    for symbol in SYMBOLS:
+        rows = fetch_features(symbol)
+        if not rows:
+            log.warning("%s: no features (skip)", symbol)
+            continue
+
+        base_cols = ["symbol", "timestamp"] + INTERNAL_COLS
+        feat_maps[symbol] = _get_feat_map(rows, base_cols)
+
+        candles = fetch_candles(symbol)
+        if not candles:
+            log.warning("%s: no candles (skip)", symbol)
+            continue
+
+        candle_maps[symbol] = candles
+        close_maps[symbol] = {
+            c["ts"]: c["close"] for c in candles
+            if c["close"]
+        }
+        targets_map[symbol] = build_targets(
+            candles, HORIZON,
+        )
+        log.info(
+            "%s: features=%d candles=%d",
+            symbol, len(feat_maps[symbol]),
+            len(candles),
+        )
+
+    if REFERENCE not in feat_maps:
+        log.error(
+            "REFERENCE %s has no data — abort",
+            REFERENCE,
+        )
         return None
-
-    btc_candles = fetch_candles("BTCUSDT")
-    eth_candles = fetch_candles("ETHUSDT")
-    log.info(
-        "candles: BTC=%d ETH=%d",
-        len(btc_candles), len(eth_candles),
-    )
 
     if USE_EXTERNAL:
         ext_dxy = fetch_external("DXY")
@@ -557,14 +670,11 @@ def prepare(test_frac=0.2):
         ext_gold = []
 
     X, y_dir, y_ret, ts, sym = build_xy(
-        btc_rows, eth_rows, btc_base, eth_base,
-        btc_candles, eth_candles,
-        ext_dxy, ext_spx, ext_gold,
+        feat_maps, candle_maps, close_maps,
+        targets_map, ext_dxy, ext_spx, ext_gold,
     )
 
-    log.info(
-        "samples after threshold: %d", len(X),
-    )
+    log.info("samples after threshold: %d", len(X))
 
     if len(X) < 100:
         log.error("too few samples: %d", len(X))
@@ -575,10 +685,9 @@ def prepare(test_frac=0.2):
         X_test, y_test,
     ) = time_split(X, y_dir, test_frac)
 
-    (
-        _, r_train,
-        _, r_test,
-    ) = time_split(X, y_ret, test_frac)
+    _, r_train, _, r_test = time_split(
+        X, y_ret, test_frac,
+    )
 
     balance = {
         "up_total": int(y_dir.sum()),
@@ -600,7 +709,7 @@ def prepare(test_frac=0.2):
         balance["down_train"],
     )
     log.info(
-        "ret stats train: mean=%.3f%% std=%.3f%%",
+        "ret train: mean=%.3f%% std=%.3f%%",
         float(r_train.mean()) if len(r_train) else 0,
         float(r_train.std()) if len(r_train) else 0,
     )
@@ -620,6 +729,7 @@ def prepare(test_frac=0.2):
         "horizon": HORIZON,
         "threshold_pct": MOVE_THRESHOLD_PCT,
         "symbols": sorted(set(sym)),
+        "reference": REFERENCE,
     }
 
 
@@ -627,25 +737,16 @@ def prepare(test_frac=0.2):
 # MAIN (test)
 # ============================================================
 def main():
-    log.info("=" * 60)
-    log.info("ARGUS-Trader DATASET v6")
-    log.info("HORIZON=%dh  THRESHOLD=%.2f%%",
-             HORIZON, MOVE_THRESHOLD_PCT)
-    log.info("=" * 60)
     data = prepare()
     if data is None:
         return
     log.info(
-        "total=%d train=%d test=%d",
+        "total=%d train=%d test=%d features=%d",
         data["n_total"],
         data["n_train"], data["n_test"],
+        len(data["feature_cols"]),
     )
-    log.info("features: %d", len(data["feature_cols"]))
-    log.info(
-        "ret_test: mean=%.3f%% std=%.3f%%",
-        float(data["r_test"].mean()),
-        float(data["r_test"].std()),
-    )
+    log.info("symbols in dataset: %s", data["symbols"])
 
 
 if __name__ == "__main__":
