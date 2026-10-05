@@ -1,12 +1,9 @@
 # ============================================================
-# ARGUS - BOT HOST v3.5
+# ARGUS - BOT HOST v3.6
 # ------------------------------------------------------------
+# v3.6: + команда /fetch_funding (Binance -> vps_inbox).
 # v3.5: fix approve -> approved_download идёт в argus-core.
-#       (было "books", стало "core")
 # v3.4: два репозитория.
-#       GITHUB_REPO       -> argus-core
-#       GITHUB_REPO_BOOKS -> personal-books
-#       personal_* идут в books.
 # ============================================================
 
 import os
@@ -31,6 +28,23 @@ try:
     load_dotenv()
 except ImportError:
     print("WARN: python-dotenv not installed")
+
+# ---- vps_inbox import (crypto/vps_inbox) -------------------
+_BOT_DIR = os.path.dirname(
+    os.path.abspath(__file__)
+)
+sys.path.insert(
+    0,
+    os.path.join(_BOT_DIR, "crypto", "vps_inbox"),
+)
+
+try:
+    import vps_funding
+    VPS_FUNDING_OK = True
+except Exception as e:
+    print("WARN: vps_funding not loaded: " + str(e))
+    vps_funding = None
+    VPS_FUNDING_OK = False
 
 
 BOT_TOKEN = (os.getenv("BOT_TOKEN") or "").strip()
@@ -70,6 +84,9 @@ logger = logging.getLogger(__name__)
 logger.info("BOT_TOKEN: " + str(len(BOT_TOKEN)))
 logger.info("REPO: " + GITHUB_REPO)
 logger.info("REPO_BOOKS: " + (GITHUB_REPO_BOOKS or "-"))
+logger.info(
+    "VPS_FUNDING_OK: " + str(VPS_FUNDING_OK)
+)
 
 
 WORKFLOWS = {
@@ -444,6 +461,12 @@ def kb_crypto():
         ],
         [
             InlineKeyboardButton(
+                text="📥 Funding bootstrap",
+                callback_data="vps:funding",
+            ),
+        ],
+        [
+            InlineKeyboardButton(
                 text="◀️ Назад",
                 callback_data="menu:main",
             ),
@@ -683,6 +706,45 @@ async def cmd_charts(message: types.Message):
     await message.answer(
         "📊 Графики", reply_markup=kb_charts(),
     )
+
+
+@dp.message(Command("fetch_funding"))
+async def cmd_fetch_funding(
+    message: types.Message,
+):
+    if not VPS_FUNDING_OK:
+        await message.answer(
+            "❌ vps_funding не загружен. "
+            "Проверь crypto/vps_inbox/vps_funding.py"
+        )
+        return
+
+    await message.answer(
+        "🪙 Funding bootstrap\n"
+        "Binance -> GitHub vps_inbox.\n"
+        "~1 минута."
+    )
+
+    loop = asyncio.get_event_loop()
+
+    def _run():
+        return vps_funding.bootstrap(
+            repo=GITHUB_REPO,
+            pat=GITHUB_PAT,
+        )
+
+    try:
+        results = await loop.run_in_executor(
+            None, _run,
+        )
+    except Exception as e:
+        await message.answer("❌ " + str(e))
+        return
+
+    text = vps_funding.summary_text(results)
+    if len(text) > 4000:
+        text = text[:3950] + "\n..."
+    await message.answer(text)
 
 
 # ------------------------------------------------------------
@@ -986,6 +1048,44 @@ async def cb_report(cb: CallbackQuery):
     )
 
 
+@dp.callback_query(F.data == "vps:funding")
+async def cb_vps_funding(cb: CallbackQuery):
+    if not VPS_FUNDING_OK:
+        await cb.answer(
+            "vps_funding не загружен",
+            show_alert=True,
+        )
+        return
+    await cb.answer("Старт...")
+    await cb.message.edit_text(
+        "🪙 Funding bootstrap\n"
+        "Binance -> GitHub vps_inbox.\n"
+        "~1 минута."
+    )
+    loop = asyncio.get_event_loop()
+
+    def _run():
+        return vps_funding.bootstrap(
+            repo=GITHUB_REPO,
+            pat=GITHUB_PAT,
+        )
+
+    try:
+        results = await loop.run_in_executor(
+            None, _run,
+        )
+    except Exception as e:
+        await cb.message.edit_text("❌ " + str(e))
+        return
+
+    text = vps_funding.summary_text(results)
+    if len(text) > 4000:
+        text = text[:3950] + "\n..."
+    await cb.message.edit_text(
+        text, reply_markup=kb_crypto(),
+    )
+
+
 # ------------------------------------------------------------
 # PERSONAL DOWNLOAD -> dispatch (books)
 # ------------------------------------------------------------
@@ -1144,7 +1244,7 @@ async def cb_reject(cb: CallbackQuery):
 # RUN
 # ------------------------------------------------------------
 async def main():
-    logger.info("ARGUS Bot Host v3.5 started")
+    logger.info("ARGUS Bot Host v3.6 started")
     await dp.start_polling(bot)
 
 
