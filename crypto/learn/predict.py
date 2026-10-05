@@ -1,9 +1,8 @@
 # ============================================================
-# ARGUS-Trader - PREDICT v5 [PRODUCTION]
+# ARGUS-Trader - PREDICT v6 [PRODUCTION]
 # ------------------------------------------------------------
-# v5: per-symbol. Каждая монета читает свою lgb_{sym}.txt
-#     и meta_{sym}.json. USE_CROSS=0 — как в train.
-# v4: cross-features on-the-fly.
+# v6: model_accuracy в top-level JSON (для signals.py).
+# v5: per-symbol модели. USE_CROSS=0 — как в train.
 # ============================================================
 
 import os
@@ -119,25 +118,36 @@ def predict_one(symbol):
 
 def main():
     log.info("=" * 60)
-    log.info("ARGUS-Trader PREDICT v5 (per-symbol)")
+    log.info("ARGUS-Trader PREDICT v6 (per-symbol)")
     log.info("SYMBOLS=%s", SYMBOLS_LIST)
     log.info("=" * 60)
 
     results = []
+    accs = []
     for sym in SYMBOLS_LIST:
         r = predict_one(sym)
         if r:
             results.append(r)
+            if r.get("model_acc") is not None:
+                accs.append(r["model_acc"])
             log.info(
                 "%s: prob_up=%.4f dir=%d conf=%.4f",
                 r["symbol"], r["prob_up"],
                 r["direction"], r["confidence"],
             )
 
+    avg_acc = (
+        round(sum(accs) / len(accs), 4)
+        if accs else None
+    )
+
     out = {
         "predicted_at": datetime.now(
             timezone.utc
         ).isoformat(),
+        "model_accuracy": avg_acc,
+        "model_accuracy_avg": avg_acc,
+        "symbols": SYMBOLS_LIST,
         "predictions": results,
     }
 
