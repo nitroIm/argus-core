@@ -1,9 +1,9 @@
 # ============================================================
-# ARGUS-Trader - TRAIN MLP v1
+# ARGUS-Trader - TRAIN MLP v2
 # ------------------------------------------------------------
+# v2: winsorize y to +-20. alpha=0.01 (was 0.001).
+#     Logs clipped count. Fixes RMSE=23320 explosion.
 # v1: Multi-layer perceptron per-symbol.
-#     First real neural network in the ensemble.
-#     Saves mlp_{sym}.joblib + scaler_mlp_{sym}.joblib.
 # ============================================================
 
 import os
@@ -39,8 +39,9 @@ MODELS_DIR.mkdir(parents=True, exist_ok=True)
 
 HIDDEN = (64, 32)
 MAX_ITER = 500
-ALPHA = 0.001
+ALPHA = 0.01
 LR = 0.001
+Y_CLIP = 20.0
 
 SYMBOLS_LIST = [
     s.strip().upper()
@@ -88,6 +89,10 @@ def _nan_safe(X):
     )
 
 
+def _clip_y(y):
+    return np.clip(y, -Y_CLIP, Y_CLIP)
+
+
 def train_one(symbol):
     log.info("-" * 60)
     log.info("TRAIN MLP %s", symbol)
@@ -110,10 +115,16 @@ def train_one(symbol):
     r_train = data["r_train"]
     r_test = data["r_test"]
 
-    log.info(
-        "%s: train=%d test=%d",
-        symbol, len(X_train), len(X_test),
+    n_clipped = int(
+        (np.abs(r_train) > Y_CLIP).sum()
     )
+    log.info(
+        "%s: train=%d test=%d clipped=%d",
+        symbol, len(X_train), len(X_test),
+        n_clipped,
+    )
+
+    r_train_c = _clip_y(r_train)
 
     scaler = StandardScaler()
     X_tr = scaler.fit_transform(X_train)
@@ -133,11 +144,16 @@ def train_one(symbol):
         verbose=False,
     )
 
-    model.fit(X_tr, r_train)
+    model.fit(X_tr, r_train_c)
+
+    try:
+        n_iter = int(model.n_iter_)
+    except Exception:
+        n_iter = 0
 
     log.info(
         "%s: mlp iterations=%d",
-        symbol, model.n_iter_,
+        symbol, n_iter,
     )
 
     p_train = model.predict(X_tr).astype(np.float32)
@@ -172,14 +188,16 @@ def train_one(symbol):
         "trained_at": datetime.now(
             timezone.utc
         ).isoformat(),
-        "version": "v1-mlp",
+        "version": "v2-mlp",
         "objective": "regression",
         "algorithm": "mlp",
         "symbol": symbol,
         "hidden": list(HIDDEN),
         "alpha": ALPHA,
         "lr": LR,
-        "iterations": int(model.n_iter_),
+        "y_clip": Y_CLIP,
+        "n_clipped": n_clipped,
+        "iterations": n_iter,
         "n_total": data["n_total"],
         "n_train": data["n_train"],
         "n_test": data["n_test"],
@@ -207,10 +225,12 @@ def train_one(symbol):
 
 def train():
     log.info("=" * 60)
-    log.info("ARGUS-Trader TRAIN MLP v1")
+    log.info("ARGUS-Trader TRAIN MLP v2")
     log.info("SYMBOLS=%s", SYMBOLS_LIST)
-    log.info("HIDDEN=%s MAX_ITER=%d",
-             HIDDEN, MAX_ITER)
+    log.info(
+        "HIDDEN=%s MAX_ITER=%d Y_CLIP=+-%.1f",
+        HIDDEN, MAX_ITER, Y_CLIP,
+    )
     log.info("=" * 60)
 
     metas = {}
@@ -226,8 +246,9 @@ def train():
     log.info("MLP TRAIN DONE")
     for sym, m in metas.items():
         log.info(
-            "  %s: IC=%.4f iter=%d",
-            sym, m["ic_test"], m["iterations"],
+            "  %s: IC=%.4f RMSE=%.4f iter=%d",
+            sym, m["ic_test"],
+            m["rmse_test"], m["iterations"],
         )
     if metas:
         avg = sum(
