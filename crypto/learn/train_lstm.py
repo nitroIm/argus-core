@@ -1,9 +1,9 @@
 # ============================================================
-# ARGUS-Trader - TRAIN LSTM v1
+# ARGUS-Trader - TRAIN LSTM v2
 # ------------------------------------------------------------
+# v2: winsorize y to +-20. DROPOUT 0.4. WD 0.001.
+#     Logs clipped count. Reduces train/test IC gap.
 # v1: LSTM on 50-bar sequences. Per-symbol.
-#     Strong regularization for 9k samples.
-#     Saves lstm_{sym}.pt + scaler_lstm_{sym}.joblib.
 # ============================================================
 
 import os
@@ -41,13 +41,14 @@ MODELS_DIR.mkdir(parents=True, exist_ok=True)
 SEQ_LEN = 50
 HIDDEN = 32
 LAYERS = 2
-DROPOUT = 0.3
+DROPOUT = 0.4
 
 EPOCHS = 60
 BATCH = 64
 LR = 0.001
-WD = 0.0001
-PATIENCE = 8
+WD = 0.001
+PATIENCE = 10
+Y_CLIP = 20.0
 
 SYMBOLS_LIST = [
     s.strip().upper()
@@ -116,6 +117,10 @@ def _nan_safe(X):
         posinf=0.0,
         neginf=0.0,
     )
+
+
+def _clip_y(y):
+    return np.clip(y, -Y_CLIP, Y_CLIP)
 
 
 def _sequences(X, y, seq_len):
@@ -225,6 +230,12 @@ def train_one(symbol):
     r_train = data["r_train"]
     r_test = data["r_test"]
 
+    n_clipped = int(
+        (np.abs(r_train) > Y_CLIP).sum()
+    )
+    r_train_c = _clip_y(r_train)
+    r_test_c = _clip_y(r_test)
+
     scaler = StandardScaler()
     X_tr_s = scaler.fit_transform(X_train)
     X_te_s = scaler.transform(X_test)
@@ -233,9 +244,9 @@ def train_one(symbol):
     cut = int(n_tr * 0.85)
 
     X_tr = X_tr_s[:cut]
-    y_tr = r_train[:cut]
+    y_tr = r_train_c[:cut]
     X_va = X_tr_s[cut:]
-    y_va = r_train[cut:]
+    y_va = r_train_c[cut:]
 
     Xtr_s, ytr_s = _sequences(
         X_tr, y_tr, SEQ_LEN
@@ -244,7 +255,7 @@ def train_one(symbol):
         X_va, y_va, SEQ_LEN
     )
     Xte_s, yte_s = _sequences(
-        X_te_s, r_test, SEQ_LEN
+        X_te_s, r_test_c, SEQ_LEN
     )
 
     if Xtr_s is None or Xte_s is None:
@@ -252,10 +263,11 @@ def train_one(symbol):
         return None
 
     log.info(
-        "%s: tr=%s va=%s te=%s feat=%d",
+        "%s: tr=%s va=%s te=%s feat=%d clipped=%d",
         symbol,
         Xtr_s.shape, Xva_s.shape,
         Xte_s.shape, Xtr_s.shape[2],
+        n_clipped,
     )
 
     torch.manual_seed(42)
@@ -316,7 +328,7 @@ def train_one(symbol):
         "trained_at": datetime.now(
             timezone.utc
         ).isoformat(),
-        "version": "v1-lstm",
+        "version": "v2-lstm",
         "objective": "regression",
         "algorithm": "lstm",
         "symbol": symbol,
@@ -324,6 +336,8 @@ def train_one(symbol):
         "hidden": HIDDEN,
         "layers": LAYERS,
         "dropout": DROPOUT,
+        "y_clip": Y_CLIP,
+        "n_clipped": n_clipped,
         "n_train": data["n_train"],
         "n_test": data["n_test"],
         "n_seq_train": int(Xtr_s.shape[0]),
@@ -352,15 +366,19 @@ def train_one(symbol):
 
 def train():
     log.info("=" * 60)
-    log.info("ARGUS-Trader TRAIN LSTM v1")
+    log.info("ARGUS-Trader TRAIN LSTM v2")
     log.info("SYMBOLS=%s", SYMBOLS_LIST)
     log.info(
         "SEQ_LEN=%d HIDDEN=%d LAYERS=%d DROP=%.1f",
         SEQ_LEN, HIDDEN, LAYERS, DROPOUT,
     )
     log.info(
-        "EPOCHS=%d BATCH=%d LR=%.4f PATIENCE=%d",
-        EPOCHS, BATCH, LR, PATIENCE,
+        "EPOCHS=%d BATCH=%d LR=%.4f WD=%.4f",
+        EPOCHS, BATCH, LR, WD,
+    )
+    log.info(
+        "PATIENCE=%d Y_CLIP=+-%.1f",
+        PATIENCE, Y_CLIP,
     )
     log.info("=" * 60)
 
@@ -377,8 +395,10 @@ def train():
     log.info("LSTM TRAIN DONE")
     for sym, m in metas.items():
         log.info(
-            "  %s: IC=%.4f seq_tr=%d",
-            sym, m["ic_test"], m["n_seq_train"],
+            "  %s: IC=%.4f RMSE=%.4f seq_tr=%d",
+            sym, m["ic_test"],
+            m["rmse_test"],
+            m["n_seq_train"],
         )
     if metas:
         avg = sum(
