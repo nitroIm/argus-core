@@ -1,17 +1,17 @@
 {
-  "trained_at": "2026-10-06T11:47:14.999607+00:00",
+  "trained_at": "2026-10-06T12:47:02.932850+00:00",
   "version": "v1-xgb",
   "objective": "regression",
   "algorithm": "xgboost",
   "symbol": "ETHUSDT",
-  "n_total": 9011,
-  "n_train": 7196,
+  "n_total": 9012,
+  "n_train": 7197,
   "n_test": 1803,
   "best_iteration": 48,
-  "ic_train": 0.4661,
-  "ic_test": -0.0022,
-  "mae_test": 1.132,
-  "rmse_test": 1.9071,
+  "ic_train": 0.4611,
+  "ic_test": 0.021,
+  "mae_test": 1.1315,
+  "rmse_test": 1.9028,
   "features": [
     "change_pct",
     "range_pct",
@@ -77,44 +77,44 @@
   ],
   "top_features": [
     {
-      "name": "f23",
-      "gain": 161.41
-    },
-    {
       "name": "f10",
-      "gain": 161.2
+      "gain": 160.26
     },
     {
       "name": "f18",
-      "gain": 153.07
+      "gain": 146.28
     },
     {
-      "name": "f9",
-      "gain": 143.88
+      "name": "f23",
+      "gain": 141.99
     },
     {
       "name": "f19",
-      "gain": 130.41
+      "gain": 129.0
     },
     {
       "name": "f7",
-      "gain": 127.61
+      "gain": 128.53
+    },
+    {
+      "name": "f9",
+      "gain": 126.26
     },
     {
       "name": "f13",
-      "gain": 123.44
-    },
-    {
-      "name": "f16",
-      "gain": 122.33
+      "gain": 123.88
     },
     {
       "name": "f17",
-      "gain": 120.55
+      "gain": 114.38
+    },
+    {
+      "name": "f16",
+      "gain": 111.71
     },
     {
       "name": "f6",
-      "gain": 106.88
+      "gain": 105.44
     }
   ],
   "horizon": 12
