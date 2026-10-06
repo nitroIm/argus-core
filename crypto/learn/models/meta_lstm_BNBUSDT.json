@@ -1,5 +1,5 @@
 {
-  "trained_at": "2026-10-06T13:51:20.452401+00:00",
+  "trained_at": "2026-10-06T14:49:01.699714+00:00",
   "version": "v1-lstm",
   "objective": "regression",
   "algorithm": "lstm",
@@ -13,9 +13,9 @@
   "n_seq_train": 3931,
   "n_seq_test": 1125,
   "ic_train": 0.3722,
-  "ic_test": -0.2101,
-  "mae_test": 1.1948,
-  "rmse_test": 1.6622,
+  "ic_test": -0.2098,
+  "mae_test": 1.1953,
+  "rmse_test": 1.6623,
   "features": [
     "change_pct",
     "range_pct",

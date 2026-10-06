@@ -1,5 +1,5 @@
 {
-  "trained_at": "2026-10-06T13:49:25.679707+00:00",
+  "trained_at": "2026-10-06T14:48:01.487641+00:00",
   "version": "v1-ridge",
   "objective": "regression",
   "algorithm": "ridge",
@@ -78,31 +78,31 @@
   "top_features": [
     {
       "name": "ema21_dist_pct",
-      "coef": -3.8616
+      "coef": -3.8625
     },
     {
       "name": "macd",
-      "coef": 3.0745
+      "coef": 3.0755
     },
     {
       "name": "bb_width_pct",
-      "coef": -3.0666
+      "coef": -3.0664
     },
     {
       "name": "ema9_dist_pct",
-      "coef": 2.8975
+      "coef": 2.8981
     },
     {
       "name": "bb_lower_dist",
-      "coef": 2.6281
+      "coef": 2.6278
     },
     {
       "name": "bb_upper_dist",
-      "coef": -2.4799
+      "coef": -2.4798
     },
     {
       "name": "ema50_dist_pct",
-      "coef": -2.1951
+      "coef": -2.195
     },
     {
       "name": "dist_high_24h_pct",
@@ -114,7 +114,7 @@
     },
     {
       "name": "macd_signal",
-      "coef": 0.294
+      "coef": 0.2935
     }
   ],
   "horizon": 12
