@@ -1,17 +1,17 @@
 {
-  "trained_at": "2026-10-06T07:47:51.424568+00:00",
+  "trained_at": "2026-10-06T08:47:15.121625+00:00",
   "version": "v1-xgb",
   "objective": "regression",
   "algorithm": "xgboost",
   "symbol": "BNBUSDT",
-  "n_total": 5863,
-  "n_train": 4678,
+  "n_total": 5864,
+  "n_train": 4679,
   "n_test": 1173,
-  "best_iteration": 92,
-  "ic_train": 0.5647,
-  "ic_test": 0.0959,
-  "mae_test": 1.1245,
-  "rmse_test": 1.566,
+  "best_iteration": 134,
+  "ic_train": 0.605,
+  "ic_test": 0.1059,
+  "mae_test": 1.1261,
+  "rmse_test": 1.565,
   "features": [
     "change_pct",
     "range_pct",
@@ -78,43 +78,43 @@
   "top_features": [
     {
       "name": "f19",
-      "gain": 79.63
-    },
-    {
-      "name": "f11",
-      "gain": 76.3
+      "gain": 70.28
     },
     {
       "name": "f6",
-      "gain": 75.88
+      "gain": 65.73
     },
     {
       "name": "f10",
-      "gain": 67.44
+      "gain": 58.93
     },
     {
       "name": "f9",
-      "gain": 62.64
+      "gain": 57.35
     },
     {
       "name": "f7",
-      "gain": 60.28
+      "gain": 54.45
+    },
+    {
+      "name": "f11",
+      "gain": 53.03
     },
     {
       "name": "f25",
-      "gain": 58.72
-    },
-    {
-      "name": "f22",
-      "gain": 52.5
+      "gain": 49.04
     },
     {
       "name": "f18",
-      "gain": 51.34
+      "gain": 47.41
+    },
+    {
+      "name": "f24",
+      "gain": 46.11
     },
     {
       "name": "f17",
-      "gain": 49.15
+      "gain": 44.15
     }
   ],
   "horizon": 12

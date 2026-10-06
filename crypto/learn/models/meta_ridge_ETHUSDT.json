@@ -1,17 +1,17 @@
 {
-  "trained_at": "2026-10-06T07:49:21.128863+00:00",
+  "trained_at": "2026-10-06T08:48:49.939189+00:00",
   "version": "v1-ridge",
   "objective": "regression",
   "algorithm": "ridge",
   "symbol": "ETHUSDT",
   "alpha": 1.0,
-  "n_total": 9007,
-  "n_train": 7193,
+  "n_total": 9008,
+  "n_train": 7194,
   "n_test": 1802,
-  "ic_train": 0.1675,
-  "ic_test": -0.0096,
-  "mae_test": 1.1892,
-  "rmse_test": 2.0014,
+  "ic_train": 0.1676,
+  "ic_test": -0.0086,
+  "mae_test": 1.1926,
+  "rmse_test": 2.0117,
   "features": [
     "change_pct",
     "range_pct",
@@ -78,43 +78,43 @@
   "top_features": [
     {
       "name": "ema21_dist_pct",
-      "coef": 3.0485
+      "coef": 3.1425
     },
     {
       "name": "ema50_dist_pct",
-      "coef": -1.6567
-    },
-    {
-      "name": "macd",
-      "coef": -0.9719
-    },
-    {
-      "name": "macd_signal",
-      "coef": 0.9603
+      "coef": -1.6686
     },
     {
       "name": "ema9_dist_pct",
-      "coef": -0.9433
+      "coef": -0.9638
+    },
+    {
+      "name": "macd",
+      "coef": -0.9527
+    },
+    {
+      "name": "macd_signal",
+      "coef": 0.9432
     },
     {
       "name": "bb_width_pct",
-      "coef": 0.8412
+      "coef": 0.8906
     },
     {
       "name": "bb_lower_dist",
-      "coef": -0.8059
+      "coef": -0.8732
     },
     {
       "name": "bb_upper_dist",
-      "coef": 0.4302
+      "coef": 0.4303
     },
     {
       "name": "volatility_24h",
-      "coef": -0.2769
+      "coef": -0.2773
     },
     {
       "name": "dist_high_24h_pct",
-      "coef": -0.2287
+      "coef": -0.2314
     }
   ],
   "horizon": 12

@@ -1,15 +1,15 @@
 {
-  "trained_at": "2026-10-06T07:47:13.407223+00:00",
+  "trained_at": "2026-10-06T08:46:35.718191+00:00",
   "version": "v1-xgb",
   "objective": "regression",
   "algorithm": "xgboost",
   "symbol": "BTCUSDT",
-  "n_total": 9007,
-  "n_train": 7193,
+  "n_total": 9008,
+  "n_train": 7194,
   "n_test": 1802,
   "best_iteration": 3,
-  "ic_train": 0.3407,
-  "ic_test": -0.0712,
+  "ic_train": 0.3408,
+  "ic_test": -0.0704,
   "mae_test": 0.8949,
   "rmse_test": 1.3969,
   "features": [
@@ -78,27 +78,27 @@
   "top_features": [
     {
       "name": "f10",
-      "gain": 146.62
-    },
-    {
-      "name": "f19",
-      "gain": 96.72
+      "gain": 143.32
     },
     {
       "name": "f7",
-      "gain": 94.75
+      "gain": 100.87
     },
     {
-      "name": "f9",
-      "gain": 90.17
+      "name": "f19",
+      "gain": 96.37
     },
     {
       "name": "f6",
-      "gain": 83.1
+      "gain": 82.86
     },
     {
       "name": "f17",
-      "gain": 82.01
+      "gain": 81.6
+    },
+    {
+      "name": "f9",
+      "gain": 81.59
     },
     {
       "name": "f13",
@@ -106,15 +106,15 @@
     },
     {
       "name": "f23",
-      "gain": 63.42
+      "gain": 61.79
     },
     {
       "name": "f21",
-      "gain": 55.85
+      "gain": 55.73
     },
     {
       "name": "f26",
-      "gain": 55.52
+      "gain": 55.34
     }
   ],
   "horizon": 12
