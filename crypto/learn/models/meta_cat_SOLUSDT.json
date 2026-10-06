@@ -1,17 +1,17 @@
 {
-  "trained_at": "2026-10-06T05:48:06.792938+00:00",
+  "trained_at": "2026-10-06T06:48:20.918832+00:00",
   "version": "v1-cat",
   "objective": "regression",
   "algorithm": "catboost",
   "symbol": "SOLUSDT",
-  "n_total": 5861,
-  "n_train": 4676,
+  "n_total": 5862,
+  "n_train": 4677,
   "n_test": 1173,
-  "best_iteration": 23,
-  "ic_train": 0.3789,
-  "ic_test": 0.0747,
-  "mae_test": 1.7315,
-  "rmse_test": 2.3697,
+  "best_iteration": 8,
+  "ic_train": 0.3615,
+  "ic_test": 0.0589,
+  "mae_test": 1.7339,
+  "rmse_test": 2.3751,
   "features": [
     "change_pct",
     "range_pct",
@@ -78,43 +78,43 @@
   "top_features": [
     {
       "name": "change_1d",
-      "gain": 33.5291
+      "gain": 36.0811
     },
     {
       "name": "macd_signal",
-      "gain": 18.9031
+      "gain": 23.673
     },
     {
       "name": "funding_rate",
-      "gain": 11.417
+      "gain": 12.1045
     },
     {
       "name": "volatility_7d",
-      "gain": 11.3384
+      "gain": 9.3827
     },
     {
       "name": "macd",
-      "gain": 8.2542
+      "gain": 6.329
     },
     {
-      "name": "bb_width_pct",
-      "gain": 2.9379
+      "name": "bb_upper_dist",
+      "gain": 3.7184
     },
     {
-      "name": "session",
-      "gain": 2.0172
+      "name": "dist_high_24h_pct",
+      "gain": 3.2934
     },
     {
       "name": "bb_lower_dist",
-      "gain": 1.9884
+      "gain": 2.409
     },
     {
-      "name": "change_24h",
-      "gain": 1.7581
+      "name": "funding_trend",
+      "gain": 1.2748
     },
     {
-      "name": "hour_of_day",
-      "gain": 1.6434
+      "name": "volume_ratio_24h",
+      "gain": 1.2569
     }
   ],
   "horizon": 12
