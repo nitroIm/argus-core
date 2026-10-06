@@ -1,9 +1,8 @@
 # ============================================================
 # ARGUS — CRYPTO GLOBAL (DB2)
 # ------------------------------------------------------------
+# v2: collect_asia -> global_market (21 рынок).
 # v1: collect_sol_bnb, collect_asia, asia_patterns, notify_asia.
-#     Запуск вручную, task=all по умолчанию.
-#     Enrich НЕ входит — он отдельно (crypto_enrich.yml).
 # ============================================================
 
 name: Crypto Global (DB2)
@@ -12,7 +11,7 @@ on:
   workflow_dispatch:
     inputs:
       task:
-        description: 'all | collect_sol_bnb | collect_asia | asia_patterns | notify_asia'
+        description: 'all | collect_sol_bnb | global_market | asia_patterns | notify_asia'
         required: true
         default: 'all'
 
@@ -44,8 +43,8 @@ jobs:
           if [ "$TASK" = "collect_sol_bnb" ] || [ "$TASK" = "all" ]; then
             python crypto/global/collect_sol_bnb.py
           fi
-          if [ "$TASK" = "collect_asia" ] || [ "$TASK" = "all" ]; then
-            python crypto/global/collect_asia.py
+          if [ "$TASK" = "global_market" ] || [ "$TASK" = "all" ]; then
+            python crypto/global/global_market.py
           fi
           if [ "$TASK" = "asia_patterns" ] || [ "$TASK" = "all" ]; then
             python crypto/global/asia_patterns.py
