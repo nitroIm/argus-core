@@ -1,6 +1,9 @@
 # ============================================================
-# ARGUS-Trader - DATASET v12
+# ARGUS-Trader - DATASET v13
 # ------------------------------------------------------------
+# v13: market_type='futures' in fetch_candles.
+#      asia_market -> global_market.
+#      macro_metrics -> global_market (US10Y, DB2).
 # v12: change_3d, change_7d off (momentum overfit).
 # v11: purge 12pts, day_of_week off, asia 2h window.
 # ============================================================
@@ -275,6 +278,7 @@ def fetch_candles(symbol, limit=100000):
         cols,
         "candles",
         "symbol = %s AND timeframe = '1h' "
+        "AND market_type = 'futures' "
         "ORDER BY timestamp LIMIT %s",
     )
     try:
@@ -334,15 +338,18 @@ def fetch_taker(symbol):
 
 
 def fetch_macro():
+    """US10Y from global_market in DB2."""
+    if not DB2_OK:
+        return []
     cols = ["timestamp", "close"]
     sql = _sel(
         cols,
-        "macro_metrics",
+        "global_market",
         "symbol = 'US10Y' AND close IS NOT NULL "
         "ORDER BY timestamp",
     )
     try:
-        with get_connection() as conn:
+        with get_conn_db2() as conn:
             return _fetch(conn, sql)
     except Exception as exc:
         log.warning("macro: %s", exc)
@@ -417,6 +424,7 @@ def fetch_anomaly(symbol):
 
 
 def fetch_asia_market():
+    """All markets from global_market in DB2."""
     if not DB2_OK:
         return {}
     try:
@@ -424,7 +432,7 @@ def fetch_asia_market():
             with conn.cursor() as cur:
                 cur.execute(
                     "SELECT symbol, timestamp, "
-                    "change_pct FROM asia_market "
+                    "change_pct FROM global_market "
                     "WHERE change_pct IS NOT NULL "
                     "ORDER BY symbol, timestamp"
                 )
@@ -441,20 +449,23 @@ def fetch_asia_market():
                     ).append((ts, float(ch)))
                 return out
     except Exception as exc:
-        log.warning("asia: %s", exc)
+        log.warning("global_market: %s", exc)
         return {}
 
 
 def fetch_external(symbol):
+    """Legacy. USE_EXTERNAL=0 -> not called."""
+    if not DB2_OK:
+        return []
     cols = ["timestamp", "change_pct"]
     sql = _sel(
         cols,
-        "external_market",
+        "global_market",
         "symbol = %s AND change_pct IS NOT NULL "
         "ORDER BY timestamp",
     )
     try:
-        with get_connection() as conn:
+        with get_conn_db2() as conn:
             return _fetch(conn, sql, (symbol,))
     except Exception as exc:
         log.warning("ext %s: %s", symbol, exc)
@@ -890,7 +901,7 @@ def _load_symbol(symbol):
 
 def prepare(test_frac=0.2):
     log.info("=" * 60)
-    log.info("DATASET v12")
+    log.info("DATASET v13")
     log.info("SYMBOLS=%s", SYMBOLS)
     log.info("HORIZON=%dh", HORIZON)
     log.info("DB2_OK=%s", DB2_OK)
@@ -902,7 +913,7 @@ def prepare(test_frac=0.2):
 
     asia = fetch_asia_market()
     log.info(
-        "asia_market: %d symbols", len(asia)
+        "global_market: %d symbols", len(asia)
     )
 
     ext_dxy = (
