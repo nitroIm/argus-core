@@ -1,17 +1,17 @@
 {
-  "trained_at": "2026-10-06T00:00:25.855817+00:00",
-  "version": "v1-xgb",
+  "trained_at": "2026-10-06T00:02:22.866392+00:00",
+  "version": "v1-ridge",
   "objective": "regression",
-  "algorithm": "xgboost",
+  "algorithm": "ridge",
   "symbol": "SOLUSDT",
+  "alpha": 1.0,
   "n_total": 5855,
   "n_train": 4672,
   "n_test": 1171,
-  "best_iteration": 19,
-  "ic_train": 0.4125,
-  "ic_test": 0.0152,
-  "mae_test": 1.7362,
-  "rmse_test": 2.3718,
+  "ic_train": 0.2307,
+  "ic_test": 0.0282,
+  "mae_test": 1.7997,
+  "rmse_test": 2.4338,
   "features": [
     "change_pct",
     "range_pct",
@@ -77,44 +77,44 @@
   ],
   "top_features": [
     {
-      "name": "f19",
-      "gain": 256.29
+      "name": "ema21_dist_pct",
+      "coef": 3.1965
     },
     {
-      "name": "f9",
-      "gain": 254.95
+      "name": "ema50_dist_pct",
+      "coef": -1.7841
     },
     {
-      "name": "f18",
-      "gain": 244.07
+      "name": "bb_width_pct",
+      "coef": 1.0835
     },
     {
-      "name": "f24",
-      "gain": 217.49
+      "name": "bb_lower_dist",
+      "coef": -1.031
     },
     {
-      "name": "f10",
-      "gain": 213.46
+      "name": "macd",
+      "coef": -1.0165
     },
     {
-      "name": "f11",
-      "gain": 211.47
+      "name": "macd_signal",
+      "coef": 0.9922
     },
     {
-      "name": "f23",
-      "gain": 198.39
+      "name": "ema9_dist_pct",
+      "coef": -0.9317
     },
     {
-      "name": "f7",
-      "gain": 192.57
+      "name": "change_24h",
+      "coef": -0.6295
     },
     {
-      "name": "f20",
-      "gain": 184.95
+      "name": "dist_low_24h_pct",
+      "coef": 0.442
     },
     {
-      "name": "f12",
-      "gain": 173.69
+      "name": "dist_high_24h_pct",
+      "coef": 0.3397
     }
   ],
   "horizon": 12

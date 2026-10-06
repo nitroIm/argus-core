@@ -1,17 +1,23 @@
 {
-  "trained_at": "2026-10-06T00:00:25.855817+00:00",
-  "version": "v1-xgb",
+  "trained_at": "2026-10-06T00:02:56.358076+00:00",
+  "version": "v1-mlp",
   "objective": "regression",
-  "algorithm": "xgboost",
-  "symbol": "SOLUSDT",
-  "n_total": 5855,
-  "n_train": 4672,
-  "n_test": 1171,
-  "best_iteration": 19,
-  "ic_train": 0.4125,
-  "ic_test": 0.0152,
-  "mae_test": 1.7362,
-  "rmse_test": 2.3718,
+  "algorithm": "mlp",
+  "symbol": "BTCUSDT",
+  "hidden": [
+    64,
+    32
+  ],
+  "alpha": 0.001,
+  "lr": 0.001,
+  "iterations": 106,
+  "n_total": 9000,
+  "n_train": 7188,
+  "n_test": 1800,
+  "ic_train": 0.7474,
+  "ic_test": -0.1158,
+  "mae_test": 1.2945,
+  "rmse_test": 1.8396,
   "features": [
     "change_pct",
     "range_pct",
@@ -74,48 +80,6 @@
     "asia_kospi_6h",
     "asia_taiex_6h",
     "asia_impact_score"
-  ],
-  "top_features": [
-    {
-      "name": "f19",
-      "gain": 256.29
-    },
-    {
-      "name": "f9",
-      "gain": 254.95
-    },
-    {
-      "name": "f18",
-      "gain": 244.07
-    },
-    {
-      "name": "f24",
-      "gain": 217.49
-    },
-    {
-      "name": "f10",
-      "gain": 213.46
-    },
-    {
-      "name": "f11",
-      "gain": 211.47
-    },
-    {
-      "name": "f23",
-      "gain": 198.39
-    },
-    {
-      "name": "f7",
-      "gain": 192.57
-    },
-    {
-      "name": "f20",
-      "gain": 184.95
-    },
-    {
-      "name": "f12",
-      "gain": 173.69
-    }
   ],
   "horizon": 12
 }

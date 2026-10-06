@@ -1,21 +1,27 @@
 {
-  "computed_at": "2026-10-05T23:50:32.320239+00:00",
+  "computed_at": "2026-10-06T00:03:45.854188+00:00",
   "algos": [
     "lgb",
     "xgb",
-    "cat"
+    "cat",
+    "ridge",
+    "mlp"
   ],
   "symbols": {
     "BTCUSDT": {
       "ic": {
         "lgb": -0.0136,
         "xgb": -0.144,
-        "cat": -0.0176
+        "cat": -0.0176,
+        "ridge": -0.1912,
+        "mlp": -0.1158
       },
       "weights": {
-        "lgb": 0.3333,
-        "xgb": 0.3333,
-        "cat": 0.3333
+        "lgb": 0.2,
+        "xgb": 0.2,
+        "cat": 0.2,
+        "ridge": 0.2,
+        "mlp": 0.2
       },
       "trade_allowed": false
     },
@@ -23,12 +29,16 @@
       "ic": {
         "lgb": -0.0084,
         "xgb": -0.006,
-        "cat": 0.0052
+        "cat": 0.0052,
+        "ridge": -0.0279,
+        "mlp": 0.0232
       },
       "weights": {
         "lgb": 0.0,
         "xgb": 0.0,
-        "cat": 1.0
+        "cat": 0.1831,
+        "ridge": 0.0,
+        "mlp": 0.8169
       },
       "trade_allowed": true
     },
@@ -36,12 +46,16 @@
       "ic": {
         "lgb": 0.018,
         "xgb": 0.0152,
-        "cat": 0.0575
+        "cat": 0.0575,
+        "ridge": 0.0282,
+        "mlp": 0.0607
       },
       "weights": {
-        "lgb": 0.1985,
-        "xgb": 0.1676,
-        "cat": 0.634
+        "lgb": 0.1002,
+        "xgb": 0.0846,
+        "cat": 0.3202,
+        "ridge": 0.157,
+        "mlp": 0.338
       },
       "trade_allowed": true
     },
@@ -49,12 +63,16 @@
       "ic": {
         "lgb": 0.0139,
         "xgb": 0.1132,
-        "cat": 0.0578
+        "cat": 0.0578,
+        "ridge": -0.0067,
+        "mlp": -0.1029
       },
       "weights": {
         "lgb": 0.0752,
         "xgb": 0.6122,
-        "cat": 0.3126
+        "cat": 0.3126,
+        "ridge": 0.0,
+        "mlp": 0.0
       },
       "trade_allowed": true
     }
