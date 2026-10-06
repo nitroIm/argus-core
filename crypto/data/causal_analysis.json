@@ -1,61 +1,69 @@
 {
-  "generated_at": "2026-10-06T06:18:15.481246+00:00",
+  "generated_at": "2026-10-06T07:17:22.062866+00:00",
   "symbols": {
     "BTCUSDT": {
       "symbol": "BTCUSDT",
       "total_events": 200,
-      "processed": 0,
+      "processed": 2,
       "saved": 0,
-      "summary_by_type": {}
+      "summary_by_type": {
+        "oi_spike": {
+          "count": 2,
+          "avg_funding": 0.0,
+          "avg_oi_change": 1646358.8142,
+          "avg_ls_ratio": 1.165,
+          "avg_change_24h": 0.6787
+        }
+      }
     },
     "ETHUSDT": {
       "symbol": "ETHUSDT",
       "total_events": 200,
-      "processed": 0,
-      "saved": 0,
-      "summary_by_type": {}
+      "processed": 2,
+      "saved": 2,
+      "summary_by_type": {
+        "oi_spike": {
+          "count": 2,
+          "avg_funding": 0.0001,
+          "avg_oi_change": 41360.1552,
+          "avg_ls_ratio": 1.4,
+          "avg_change_24h": 0.4548
+        }
+      }
     },
     "SOLUSDT": {
       "symbol": "SOLUSDT",
       "total_events": 200,
-      "processed": 1,
-      "saved": 1,
-      "summary_by_type": {
-        "rsi_oversold": {
-          "count": 1,
-          "avg_funding": 0.0,
-          "avg_oi_change": null,
-          "avg_ls_ratio": 1.71,
-          "avg_change_24h": -0.5316
-        }
-      }
+      "processed": 0,
+      "saved": 0,
+      "summary_by_type": {}
     },
     "BNBUSDT": {
       "symbol": "BNBUSDT",
       "total_events": 200,
-      "processed": 4,
-      "saved": 4,
+      "processed": 3,
+      "saved": 3,
       "summary_by_type": {
         "funding_spike_pos": {
           "count": 1,
           "avg_funding": 0.0001,
           "avg_oi_change": null,
-          "avg_ls_ratio": 2.36,
-          "avg_change_24h": -1.4522
+          "avg_ls_ratio": 2.35,
+          "avg_change_24h": -1.9395
         },
         "ls_long_extreme": {
           "count": 1,
           "avg_funding": 0.0001,
           "avg_oi_change": null,
-          "avg_ls_ratio": 2.36,
-          "avg_change_24h": -1.4522
+          "avg_ls_ratio": 2.35,
+          "avg_change_24h": -1.9395
         },
         "rsi_oversold": {
-          "count": 2,
+          "count": 1,
           "avg_funding": 0.0001,
           "avg_oi_change": null,
           "avg_ls_ratio": 2.35,
-          "avg_change_24h": -1.2519
+          "avg_change_24h": -1.9395
         }
       }
     }
