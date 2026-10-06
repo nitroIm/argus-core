@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-10-06T09:05:35.506785+00:00",
+  "generated_at": "2026-10-06T10:05:37.989993+00:00",
   "total_news": 127,
-  "avg_sentiment": -0.065,
+  "avg_sentiment": -0.054,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
   "bullish_count": 13,
-  "bearish_count": 21,
-  "neutral_count": 93,
+  "bearish_count": 22,
+  "neutral_count": 92,
   "fake_count": 0,
-  "cross_confirmed": 6,
-  "single_source": 101,
+  "cross_confirmed": 5,
+  "single_source": 102,
   "by_source": {
     "Cointelegraph": {
       "total": 24,
@@ -33,7 +33,7 @@
     "CryptoPotato": {
       "total": 25,
       "bull": 6,
-      "bear": 3
+      "bear": 4
     },
     "Bitcoinist": {
       "total": 8,
@@ -48,6 +48,22 @@
   },
   "top_bullish": [
     {
+      "title": "Solana Foundation targets settlement in seconds with DvP launch",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-10-06T09:11:26+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-06T10:05:36.710007+00:00",
+      "effective_weight": 1.95,
+      "title_original": "Solana Foundation targets settlement in seconds with DvP launch",
+      "cross_check": 1
+    },
+    {
       "title": "Bitcoin price fails to break higher after best weekly close in eight months",
       "source": "Cointelegraph",
       "source_weight": 1.3,
@@ -58,7 +74,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-06T09:05:34.330023+00:00",
+      "collected_at": "2026-10-06T10:05:36.710790+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin price fails to break higher after best weekly close in eight months",
       "cross_check": 2
@@ -74,7 +90,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-06T09:05:34.680655+00:00",
+      "collected_at": "2026-10-06T10:05:37.163707+00:00",
       "effective_weight": 1.0,
       "title_original": "Changer+ Launches Stablecoin-First Self-Custodial Wallet to Make Stablecoins Easier to Use",
       "cross_check": 1
@@ -90,7 +106,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-06T09:05:35.389594+00:00",
+      "collected_at": "2026-10-06T10:05:37.871725+00:00",
       "effective_weight": 0.96,
       "title_original": "Goldman Sachs сохранил прогноз роста дата-центров в США",
       "cross_check": 1
@@ -106,44 +122,28 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-06T09:05:34.359986+00:00",
+      "collected_at": "2026-10-06T10:05:36.788388+00:00",
       "effective_weight": 0.88,
       "title_original": "Solana Debuts Institutional Settlement Standard With J.P. Morgan Input",
-      "cross_check": 1
-    },
-    {
-      "title": "SEC Clears 3x Leveraged Bitcoin and Ethereum Funds for Trading",
-      "source": "Decrypt",
-      "source_weight": 1.1,
-      "lang": "en",
-      "pub_date": "2026-10-05T18:12:28+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 2.0,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-06T09:05:34.360358+00:00",
-      "effective_weight": 0.88,
-      "title_original": "SEC Clears 3x Leveraged Bitcoin and Ethereum Funds for Trading",
       "cross_check": 1
     }
   ],
   "top_bearish": [
     {
-      "title": "China’s crypto ban Is failing to stop a $176 billion P2P economy",
-      "source": "CryptoSlate",
+      "title": "Pi Network’s PI Token Remains Below Key Resistance, Bitcoin (BTC) Returns to $86K: Market Watch",
+      "source": "CryptoPotato",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-10-06T08:50:31+00:00",
+      "pub_date": "2026-10-06T09:09:41+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 3.5,
+      "bear_weight": 1.0,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-06T09:05:34.588651+00:00",
+      "collected_at": "2026-10-06T10:05:37.163515+00:00",
       "effective_weight": 1.5,
-      "title_original": "China’s crypto ban Is failing to stop a $176 billion P2P economy",
-      "cross_check": 1
+      "title_original": "Pi Network’s PI Token Remains Below Key Resistance, Bitcoin (BTC) Returns to $86K: Market Watch",
+      "cross_check": 2
     },
     {
       "title": "Rain seeks US trust bank charter days after OCC sued over crypto charters",
@@ -154,10 +154,10 @@
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 1.5,
-      "freshness": 1.0,
+      "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-06T09:05:34.328931+00:00",
-      "effective_weight": 1.3,
+      "collected_at": "2026-10-06T10:05:36.710292+00:00",
+      "effective_weight": 1.04,
       "title_original": "Rain seeks US trust bank charter days after OCC sued over crypto charters",
       "cross_check": 2
     },
@@ -172,7 +172,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-06T09:05:34.329517+00:00",
+      "collected_at": "2026-10-06T10:05:36.710552+00:00",
       "effective_weight": 1.04,
       "title_original": "Modern Treasury seeks US trust bank charter for digital asset custody",
       "cross_check": 2
@@ -188,7 +188,7 @@
       "bear_weight": 3.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-06T09:05:34.330377+00:00",
+      "collected_at": "2026-10-06T10:05:36.710983+00:00",
       "effective_weight": 1.04,
       "title_original": "Too big to pause: Could an AI slowdown crash the economy?",
       "cross_check": 1
@@ -204,7 +204,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-06T09:05:34.530942+00:00",
+      "collected_at": "2026-10-06T10:05:36.983714+00:00",
       "effective_weight": 1.0,
       "title_original": "ZachXBT Infiltrates Crypto Syndicate Tied to $1.5B Bybit Hack",
       "cross_check": 2
