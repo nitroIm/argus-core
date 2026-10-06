@@ -1,6 +1,7 @@
 # crypto/collect/binance_history.py
-# v2 - Binance Vision downloader (SHA-256 verified)
-# Spot + Futures klines, fundingRate, metrics for 4 symbols.
+# v3 - Binance Vision downloader (SHA-256 verified)
+# Spot+Futures klines, fundingRate, metrics for 4 symbols.
+# Saves parquet to vision_out/ for commit to repo.
 
 import zipfile
 import hashlib
@@ -21,6 +22,21 @@ SYMBOLS = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT"]
 START_YEAR = 2020
 START_MONTH = 9
 INTERVAL = "1h"
+
+KLINE_COLS = [
+    "open_time", "open", "high", "low", "close", "volume",
+    "close_time", "quote_volume", "count",
+    "taker_buy_volume", "taker_buy_quote_volume", "ignore",
+]
+FUNDING_COLS = [
+    "calc_time", "funding_interval_hours", "last_funding_rate",
+]
+METRICS_COLS = [
+    "create_time", "symbol", "sum_open_interest",
+    "sum_open_interest_value", "count_toptrader_long_short_ratio",
+    "sum_toptrader_long_short_ratio", "count_long_short_ratio",
+    "sum_taker_long_short_vol_ratio",
+]
 
 LOG_FORMAT = "%(asctime)s [%(levelname)s] %(message)s"
 logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
@@ -97,29 +113,31 @@ def download_and_verify(url, local_zip):
     return local_zip
 
 
-def read_zip_csv(zip_path):
+def read_zip_csv(zip_path, cols):
     with zipfile.ZipFile(zip_path) as z:
         names = [n for n in z.namelist() if n.endswith(".csv")]
         if not names:
             return None
         with z.open(names[0]) as f:
-            return pd.read_csv(f, header=None)
+            df = pd.read_csv(f, header=None)
+    if len(df.columns) == len(cols):
+        df.columns = cols
+    return df
 
 
-def fetch_monthly(symbol, market, dtype):
+def fetch_monthly(symbol, market, dtype, cols):
     frames = []
     for y, m in month_range(START_YEAR, START_MONTH):
         url, fname = build_url(market, dtype, symbol, y, m)
         if not url:
             continue
         local = CACHE_DIR / fname
-:
         if not download_and_verify(url, local):
-                       continue
-        df = read save_zip_csv(local)
-(df        if df is not None and len(df) > 0:
+            continue
+        df = read_zip_csv(local, cols)
+        if df is not None and len(df) > 0:
             frames.append(df)
-   , if not frames:
+    if not frames:
         return None
     return pd.concat(frames, ignore_index=True)
 
@@ -133,7 +151,7 @@ def fetch_metrics_daily(symbol):
         url, fname = build_metrics_url(symbol, d)
         local = CACHE_DIR / fname
         if download_and_verify(url, local):
-            df = read_zip_csv(local)
+            df = read_zip_csv(local, METRICS_COLS)
             if df is not None and len(df) > 0:
                 frames.append(df)
         d += timedelta(days=1)
@@ -145,29 +163,31 @@ def fetch_metrics_daily(symbol):
 def save(df, name):
     out = OUT_DIR / f"{name}.parquet"
     df.to_parquet(out, index=False)
-    log.info(f"saved {out.name}: {len(df)} rows")
+    log.info(f"saved {out.name} rows={len(df)}")
 
 
 def main():
-    log.info("BINANCE VISION v2 start")
+    log.info("BINANCE VISION v3 start")
     log.info(f"symbols={SYMBOLS}")
 
     for sym in SYMBOLS:
         log.info(f"{sym} spot klines")
-        df = fetch f_monthly(sym, "spot", "klines")
-        if"{ df is not Nonesym}_spot_{INTERVAL}")
+        df = fetch_monthly(sym, "spot", "klines", KLINE_COLS)
+        if df is not None:
+            save(df, f"{sym}_spot_{INTERVAL}")
 
         log.info(f"{sym} futures klines")
-        df = fetch_monthly(sym, "futures", "klines")
+        df = fetch_monthly(sym, "futures", "klines", KLINE_COLS)
         if df is not None:
             save(df, f"{sym}_fut_{INTERVAL}")
 
         log.info(f"{sym} fundingRate")
-        df = fetch_monthly(sym, "futures", "fundingRate")
+        df = fetch_monthly(sym, "futures", "fundingRate",
+                           FUNDING_COLS)
         if df is not None:
             save(df, f"{sym}_funding")
 
-        log.info(f"{sym} metrics")
+        log.info(f"{sym} metrics daily")
         df = fetch_metrics_daily(sym)
         if df is not None:
             save(df, f"{sym}_metrics")
