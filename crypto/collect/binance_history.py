@@ -1,7 +1,6 @@
 # crypto/collect/binance_history.py
-# v3 - Binance Vision downloader (SHA-256 verified)
-# Spot+Futures klines, fundingRate, metrics for 4 symbols.
-# Saves parquet to vision_out/ for commit to repo.
+# v4 - fix cache collision (spot vs futures) and skip
+# header row in funding/metrics CSVs.
 
 import zipfile
 import hashlib
@@ -33,8 +32,10 @@ FUNDING_COLS = [
 ]
 METRICS_COLS = [
     "create_time", "symbol", "sum_open_interest",
-    "sum_open_interest_value", "count_toptrader_long_short_ratio",
-    "sum_toptrader_long_short_ratio", "count_long_short_ratio",
+    "sum_open_interest_value",
+    "count_toptrader_long_short_ratio",
+    "sum_toptrader_long_short_ratio",
+    "count_long_short_ratio",
     "sum_taker_long_short_vol_ratio",
 ]
 
@@ -77,6 +78,10 @@ def build_metrics_url(symbol, d):
     return f"{BASE}/{path}/{fname}", fname
 
 
+def cache_path(market, fname):
+    return CACHE_DIR / f"{market}_{fname}"
+
+
 def download_and_verify(url, local_zip):
     checksum_url = url + ".CHECKSUM"
     try:
@@ -115,11 +120,17 @@ def download_and_verify(url, local_zip):
 
 def read_zip_csv(zip_path, cols):
     with zipfile.ZipFile(zip_path) as z:
-        names = [n for n in z.namelist() if n.endswith(".csv")]
+        names = [n for n in z.namelist()
+                 if n.endswith(".csv")]
         if not names:
             return None
         with z.open(names[0]) as f:
-            df = pd.read_csv(f, header=None)
+            df = pd.read_csv(f, header=None,
+                             dtype=str)
+    if len(df) > 0 and len(cols) > 0:
+        first = df.iloc[0].tolist()
+        if first and first[0] == cols[0]:
+            df = df.iloc[1:].reset_index(drop=True)
     if len(df.columns) == len(cols):
         df.columns = cols
     return df
@@ -131,7 +142,7 @@ def fetch_monthly(symbol, market, dtype, cols):
         url, fname = build_url(market, dtype, symbol, y, m)
         if not url:
             continue
-        local = CACHE_DIR / fname
+        local = cache_path(market, fname)
         if not download_and_verify(url, local):
             continue
         df = read_zip_csv(local, cols)
@@ -149,7 +160,7 @@ def fetch_metrics_daily(symbol):
     d = start
     while d < now:
         url, fname = build_metrics_url(symbol, d)
-        local = CACHE_DIR / fname
+        local = cache_path("futures", fname)
         if download_and_verify(url, local):
             df = read_zip_csv(local, METRICS_COLS)
             if df is not None and len(df) > 0:
@@ -167,7 +178,7 @@ def save(df, name):
 
 
 def main():
-    log.info("BINANCE VISION v3 start")
+    log.info("BINANCE VISION v4 start")
     log.info(f"symbols={SYMBOLS}")
 
     for sym in SYMBOLS:
@@ -177,7 +188,8 @@ def main():
             save(df, f"{sym}_spot_{INTERVAL}")
 
         log.info(f"{sym} futures klines")
-        df = fetch_monthly(sym, "futures", "klines", KLINE_COLS)
+        df = fetch_monthly(sym, "futures", "klines",
+                           KLINE_COLS)
         if df is not None:
             save(df, f"{sym}_fut_{INTERVAL}")
 
