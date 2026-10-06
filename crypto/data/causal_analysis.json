@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-06T10:17:47.663470+00:00",
+  "generated_at": "2026-10-06T11:17:34.506909+00:00",
   "symbols": {
     "BTCUSDT": {
       "symbol": "BTCUSDT",
@@ -26,15 +26,22 @@
     "SOLUSDT": {
       "symbol": "SOLUSDT",
       "total_events": 200,
-      "processed": 1,
-      "saved": 1,
+      "processed": 2,
+      "saved": 2,
       "summary_by_type": {
-        "volume_spike": {
+        "ls_short_extreme": {
           "count": 1,
           "avg_funding": 0.0,
           "avg_oi_change": null,
-          "avg_ls_ratio": 1.73,
-          "avg_change_24h": -0.4791
+          "avg_ls_ratio": 1.4849,
+          "avg_change_24h": 0.2424
+        },
+        "ls_long_extreme": {
+          "count": 1,
+          "avg_funding": 0.0,
+          "avg_oi_change": -1.3611,
+          "avg_ls_ratio": 1.8482,
+          "avg_change_24h": -0.3863
         }
       }
     },
@@ -49,7 +56,7 @@
           "avg_funding": 0.0001,
           "avg_oi_change": null,
           "avg_ls_ratio": 2.38,
-          "avg_change_24h": -0.5462
+          "avg_change_24h": -0.7724
         }
       }
     }
