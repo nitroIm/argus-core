@@ -1,8 +1,7 @@
 # ============================================================
-# ARGUS-Trader - PREDICT v14
+# ARGUS-Trader - PREDICT v15
 # ------------------------------------------------------------
-# v14: 5-model weighted blend.
-#      lgb + xgb + cat + ridge + mlp.
+# v15: 6-model blend. + lstm.
 # ============================================================
 
 import os
@@ -19,6 +18,7 @@ import joblib
 import lightgbm as lgb
 import xgboost as xgb
 from catboost import CatBoostRegressor
+import torch
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 CRYPTO_ROOT = SCRIPT_DIR.parent
@@ -59,6 +59,29 @@ DB2_SET = {
 }
 
 
+class LSTMModel(torch.nn.Module):
+    def __init__(self, n_feat, hidden, layers, dropout):
+        super().__init__()
+        self.lstm = torch.nn.LSTM(
+            n_feat,
+            hidden,
+            num_layers=layers,
+            batch_first=True,
+            dropout=dropout,
+        )
+        self.head = torch.nn.Sequential(
+            torch.nn.Dropout(dropout),
+            torch.nn.Linear(hidden, 16),
+            torch.nn.ReLU(),
+            torch.nn.Linear(16, 1),
+        )
+
+    def forward(self, x):
+        out, _ = self.lstm(x)
+        last = out[:, -1, :]
+        return self.head(last).squeeze(-1)
+
+
 def load_weights():
     p = MODELS_DIR / "ensemble_weights.json"
     if not p.exists():
@@ -90,6 +113,30 @@ def _nan_safe_row(row):
         posinf=0.0,
         neginf=0.0,
     )
+
+
+def _prepare_seq(symbol, seq_len):
+    d = ds._load_symbol(symbol)
+    if d is None:
+        return None, None
+    feats = d["feats"]
+    if len(feats) < seq_len:
+        return None, None
+
+    ts_sorted = sorted(feats.keys())
+    ts_last = ts_sorted[-1]
+    ts_seq = ts_sorted[-seq_len:]
+
+    asia = ds.fetch_asia_market()
+
+    rows = []
+    for ts in ts_seq:
+        row = ds._row_for(
+            symbol, d, asia, ts,
+            [], [], [],
+        )
+        rows.append(row)
+    return ts_last, rows
 
 
 def predict_lgb(sym, X, expected):
@@ -181,6 +228,57 @@ def predict_mlp(sym, X, expected):
         return None
 
 
+def predict_lstm(sym, expected):
+    mf = MODELS_DIR / ("lstm_" + sym + ".pt")
+    sf = MODELS_DIR / (
+        "scaler_lstm_" + sym + ".joblib"
+    )
+    if not mf.exists() or not sf.exists():
+        return None
+    try:
+        payload = torch.load(
+            str(mf), map_location="cpu"
+        )
+        seq_len = int(payload.get("seq_len", 50))
+        hidden = int(payload.get("hidden", 32))
+        layers = int(payload.get("layers", 2))
+        dropout = float(payload.get("dropout", 0.3))
+        n_feat = int(payload.get("n_feat", expected))
+
+        if n_feat != expected:
+            return None
+
+        ts_last, rows = _prepare_seq(sym, seq_len)
+        if rows is None:
+            return None
+
+        arr = np.asarray(rows, dtype=np.float32)
+        arr = np.nan_to_num(
+            arr,
+            nan=0.0,
+            posinf=0.0,
+            neginf=0.0,
+        )
+
+        scaler = joblib.load(str(sf))
+        arr = scaler.transform(arr)
+
+        seq = arr.reshape(1, seq_len, expected)
+        xb = torch.from_numpy(seq)
+
+        model = LSTMModel(
+            expected, hidden, layers, dropout
+        )
+        model.load_state_dict(payload["state"])
+        model.eval()
+        with torch.no_grad():
+            p = float(model(xb).numpy()[0])
+        return p
+    except Exception as exc:
+        log.warning("lstm %s: %s", sym, exc)
+        return None
+
+
 def _map_ret_to_prob(p):
     x = 0.5 + float(p) / SCALE_PCT
     if x < PROB_MIN:
@@ -268,6 +366,10 @@ def predict_one(symbol, wdata):
     if p is not None:
         preds["mlp"] = p
 
+    p = predict_lstm(symbol, expected)
+    if p is not None:
+        preds["lstm"] = p
+
     if not preds:
         log.warning("%s: no models", symbol)
         return None
@@ -317,7 +419,7 @@ def predict_one(symbol, wdata):
         ),
         "model_acc": acc,
         "objective": "regression",
-        "model_version": "v14-5models",
+        "model_version": "v15-6models",
         "sources": list(preds.keys()),
         "blend": len(preds) > 1,
         "features_used": expected,
@@ -335,7 +437,7 @@ def predict_one(symbol, wdata):
 
 def main():
     log.info("=" * 60)
-    log.info("ARGUS-Trader PREDICT v14")
+    log.info("ARGUS-Trader PREDICT v15")
     log.info("SYMBOLS=%s", SYMBOLS_LIST)
     log.info("FEATURE_COLS=%d", len(ds.FEATURE_COLS))
     log.info("=" * 60)
@@ -359,7 +461,7 @@ def main():
         extra = ""
         for k in (
             "lgb", "xgb", "cat",
-            "ridge", "mlp",
+            "ridge", "mlp", "lstm",
         ):
             pk = k + "_pred"
             if pk in r:
@@ -393,7 +495,7 @@ def main():
         "model_accuracy": avg_acc,
         "model_accuracy_avg": avg_acc,
         "feature_count": len(ds.FEATURE_COLS),
-        "mode": "5model_blend",
+        "mode": "6model_blend",
         "weights_version": wdata.get(
             "computed_at"
         ),
