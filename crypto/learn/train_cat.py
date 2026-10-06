@@ -1,6 +1,8 @@
 # ============================================================
-# ARGUS-Trader - TRAIN CAT v1
+# ARGUS-Trader - TRAIN CAT v2
 # ------------------------------------------------------------
+# v2: winsorize y to +-20. Logs clipped count.
+#     Fixes best_iter=2 underfitting from target outliers.
 # v1: CatBoost per-symbol.
 # ============================================================
 
@@ -46,6 +48,7 @@ MODELS_DIR.mkdir(
 NUM_ROUNDS = 1000
 EARLY_STOP = 30
 VAL_FRAC = 0.15
+Y_CLIP = 20.0
 
 
 def _sym_list():
@@ -105,6 +108,10 @@ def _mae(a, b):
     return float(np.mean(np.abs(a - b)))
 
 
+def _clip_y(y):
+    return np.clip(y, -Y_CLIP, Y_CLIP)
+
+
 def train_one(symbol):
     log.info("-" * 60)
     log.info("TRAIN CAT %s", symbol)
@@ -135,12 +142,19 @@ def train_one(symbol):
     X_va = X_train[cut:]
     r_va = r_train[cut:]
 
+    n_clipped = int(
+        (np.abs(r_tr) > Y_CLIP).sum()
+    )
+    r_tr_c = _clip_y(r_tr)
+    r_va_c = _clip_y(r_va)
+
     log.info(
-        "%s: train=%d val=%d test=%d",
+        "%s: train=%d val=%d test=%d clipped=%d",
         symbol,
         len(X_tr),
         len(X_va),
         len(X_test),
+        n_clipped,
     )
 
     model = CatBoostRegressor(
@@ -158,8 +172,8 @@ def train_one(symbol):
 
     model.fit(
         X_tr,
-        r_tr,
-        eval_set=(X_va, r_va),
+        r_tr_c,
+        eval_set=(X_va, r_va_c),
         use_best_model=True,
     )
 
@@ -218,10 +232,12 @@ def train_one(symbol):
 
     meta = {
         "trained_at": trained_at,
-        "version": "v1-cat",
+        "version": "v2-cat",
         "objective": "regression",
         "algorithm": "catboost",
         "symbol": symbol,
+        "y_clip": Y_CLIP,
+        "n_clipped": n_clipped,
         "n_total": data["n_total"],
         "n_train": data["n_train"],
         "n_test": data["n_test"],
@@ -260,13 +276,13 @@ def train_one(symbol):
 
 def train():
     log.info("=" * 60)
-    log.info("ARGUS-Trader TRAIN CAT v1")
+    log.info("ARGUS-Trader TRAIN CAT v2")
     log.info(
         "SYMBOLS=%s", SYMBOLS_LIST
     )
     log.info(
-        "NUM_ROUNDS=%d EARLY_STOP=%d",
-        NUM_ROUNDS, EARLY_STOP,
+        "NUM_ROUNDS=%d EARLY_STOP=%d Y_CLIP=+-%.1f",
+        NUM_ROUNDS, EARLY_STOP, Y_CLIP,
     )
     log.info("=" * 60)
 
@@ -284,9 +300,10 @@ def train():
 
     for sym, m in metas.items():
         log.info(
-            "  %s: IC=%.4f best_iter=%d",
+            "  %s: IC=%.4f RMSE=%.4f best_iter=%d",
             sym,
             m["ic_test"],
+            m["rmse_test"],
             m["best_iteration"],
         )
 
