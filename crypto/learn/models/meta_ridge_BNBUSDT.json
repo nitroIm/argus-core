@@ -1,17 +1,19 @@
 {
-  "trained_at": "2026-10-06T18:47:44.983785+00:00",
-  "version": "v1-ridge",
+  "trained_at": "2026-10-06T22:29:09.684162+00:00",
+  "version": "v2-ridge",
   "objective": "regression",
   "algorithm": "ridge",
   "symbol": "BNBUSDT",
-  "alpha": 1.0,
-  "n_total": 53431,
-  "n_train": 42732,
+  "alpha": 100.0,
+  "y_clip": 20.0,
+  "n_clipped": 75,
+  "n_total": 53434,
+  "n_train": 42735,
   "n_test": 10687,
-  "ic_train": 0.1458,
-  "ic_test": 0.0055,
-  "mae_test": 1.4101,
-  "rmse_test": 3.1216,
+  "ic_train": 0.1443,
+  "ic_test": 0.0059,
+  "mae_test": 1.4022,
+  "rmse_test": 3.0978,
   "features": [
     "change_pct",
     "range_pct",
@@ -78,43 +80,43 @@
   "top_features": [
     {
       "name": "ema50_dist_pct",
-      "coef": 0.5405
-    },
-    {
-      "name": "body_pct",
-      "coef": -0.3804
+      "coef": 0.4549
     },
     {
       "name": "change_24h",
-      "coef": -0.3759
-    },
-    {
-      "name": "lower_wick_pct",
-      "coef": -0.313
-    },
-    {
-      "name": "upper_wick_pct",
-      "coef": -0.2879
+      "coef": -0.3886
     },
     {
       "name": "range_pct",
-      "coef": 0.2587
-    },
-    {
-      "name": "macd",
-      "coef": -0.2426
-    },
-    {
-      "name": "ema21_dist_pct",
-      "coef": 0.2289
+      "coef": 0.2223
     },
     {
       "name": "change_pct",
-      "coef": -0.2034
+      "coef": -0.2053
+    },
+    {
+      "name": "ema21_dist_pct",
+      "coef": 0.1945
+    },
+    {
+      "name": "macd",
+      "coef": -0.1886
+    },
+    {
+      "name": "bb_width_pct",
+      "coef": 0.1635
+    },
+    {
+      "name": "ls_ratio_asof",
+      "coef": -0.123
     },
     {
       "name": "dist_low_24h_pct",
-      "coef": -0.1721
+      "coef": -0.1227
+    },
+    {
+      "name": "macd_signal",
+      "coef": -0.1076
     }
   ],
   "horizon": 12

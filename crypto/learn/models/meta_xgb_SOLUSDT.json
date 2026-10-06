@@ -1,17 +1,19 @@
 {
-  "trained_at": "2026-10-06T17:55:06.151468+00:00",
-  "version": "v1-xgb",
+  "trained_at": "2026-10-06T21:37:24.910571+00:00",
+  "version": "v2-xgb",
   "objective": "regression",
   "algorithm": "xgboost",
   "symbol": "SOLUSDT",
-  "n_total": 52991,
-  "n_train": 42380,
+  "y_clip": 20.0,
+  "n_clipped": 191,
+  "n_total": 52994,
+  "n_train": 42383,
   "n_test": 10599,
-  "best_iteration": 25,
-  "ic_train": 0.3028,
-  "ic_test": -0.0105,
-  "mae_test": 1.8225,
-  "rmse_test": 2.5335,
+  "best_iteration": 28,
+  "ic_train": 0.2969,
+  "ic_test": 0.0517,
+  "mae_test": 1.8202,
+  "rmse_test": 2.5276,
   "features": [
     "change_pct",
     "range_pct",
@@ -77,44 +79,44 @@
   ],
   "top_features": [
     {
-      "name": "f24",
-      "gain": 3847.13
-    },
-    {
-      "name": "f16",
-      "gain": 2921.61
+      "name": "f7",
+      "gain": 1676.1
     },
     {
       "name": "f6",
-      "gain": 2239.36
-    },
-    {
-      "name": "f5",
-      "gain": 2200.27
-    },
-    {
-      "name": "f7",
-      "gain": 2086.43
-    },
-    {
-      "name": "f27",
-      "gain": 1981.35
-    },
-    {
-      "name": "f28",
-      "gain": 1974.39
-    },
-    {
-      "name": "f29",
-      "gain": 1939.72
-    },
-    {
-      "name": "f15",
-      "gain": 1846.11
+      "gain": 1496.16
     },
     {
       "name": "f22",
-      "gain": 1818.09
+      "gain": 1378.16
+    },
+    {
+      "name": "f29",
+      "gain": 1312.37
+    },
+    {
+      "name": "f16",
+      "gain": 1242.87
+    },
+    {
+      "name": "f24",
+      "gain": 1206.32
+    },
+    {
+      "name": "f19",
+      "gain": 1191.73
+    },
+    {
+      "name": "f23",
+      "gain": 1159.81
+    },
+    {
+      "name": "f1",
+      "gain": 1094.46
+    },
+    {
+      "name": "f18",
+      "gain": 1066.92
     }
   ],
   "horizon": 12

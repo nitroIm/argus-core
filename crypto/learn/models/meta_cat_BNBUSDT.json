@@ -1,17 +1,19 @@
 {
-  "trained_at": "2026-10-06T18:24:06.300526+00:00",
-  "version": "v1-cat",
+  "trained_at": "2026-10-06T22:06:03.334688+00:00",
+  "version": "v2-cat",
   "objective": "regression",
   "algorithm": "catboost",
   "symbol": "BNBUSDT",
-  "n_total": 53430,
-  "n_train": 42732,
-  "n_test": 10686,
-  "best_iteration": 155,
-  "ic_train": 0.4195,
-  "ic_test": 0.0331,
-  "mae_test": 1.2701,
-  "rmse_test": 1.8461,
+  "y_clip": 20.0,
+  "n_clipped": 74,
+  "n_total": 53434,
+  "n_train": 42735,
+  "n_test": 10687,
+  "best_iteration": 133,
+  "ic_train": 0.4135,
+  "ic_test": 0.0308,
+  "mae_test": 1.2684,
+  "rmse_test": 1.8453,
   "features": [
     "change_pct",
     "range_pct",
@@ -78,43 +80,43 @@
   "top_features": [
     {
       "name": "volatility_7d",
-      "gain": 21.7208
-    },
-    {
-      "name": "ema50_dist_pct",
-      "gain": 20.6027
+      "gain": 19.6358
     },
     {
       "name": "funding_rate",
-      "gain": 12.6639
-    },
-    {
-      "name": "bb_width_pct",
-      "gain": 7.4619
-    },
-    {
-      "name": "macd_signal",
-      "gain": 7.1133
+      "gain": 12.937
     },
     {
       "name": "volatility_24h",
-      "gain": 6.6945
+      "gain": 10.2874
     },
     {
-      "name": "bb_lower_dist",
-      "gain": 3.5954
+      "name": "ema50_dist_pct",
+      "gain": 10.2014
+    },
+    {
+      "name": "bb_width_pct",
+      "gain": 9.1637
+    },
+    {
+      "name": "macd_signal",
+      "gain": 8.6243
     },
     {
       "name": "change_24h",
-      "gain": 3.5891
+      "gain": 6.4429
+    },
+    {
+      "name": "bb_lower_dist",
+      "gain": 5.0474
     },
     {
       "name": "ema21_dist_pct",
-      "gain": 2.218
+      "gain": 3.5686
     },
     {
-      "name": "dist_high_24h_pct",
-      "gain": 2.078
+      "name": "ls_ratio_asof",
+      "gain": 2.1497
     }
   ],
   "horizon": 12

@@ -1,17 +1,19 @@
 {
-  "trained_at": "2026-10-06T18:31:45.505385+00:00",
-  "version": "v1-ridge",
+  "trained_at": "2026-10-06T22:13:30.372189+00:00",
+  "version": "v2-ridge",
   "objective": "regression",
   "algorithm": "ridge",
   "symbol": "BTCUSDT",
-  "alpha": 1.0,
-  "n_total": 53429,
-  "n_train": 42731,
-  "n_test": 10686,
-  "ic_train": 0.142,
-  "ic_test": -0.0095,
-  "mae_test": 20.6989,
-  "rmse_test": 370.3221,
+  "alpha": 100.0,
+  "y_clip": 20.0,
+  "n_clipped": 0,
+  "n_total": 53433,
+  "n_train": 42734,
+  "n_test": 10687,
+  "ic_train": 0.1418,
+  "ic_test": -0.01,
+  "mae_test": 20.9885,
+  "rmse_test": 364.1889,
   "features": [
     "change_pct",
     "range_pct",
@@ -78,43 +80,43 @@
   "top_features": [
     {
       "name": "macd",
-      "coef": -0.4352
-    },
-    {
-      "name": "body_pct",
-      "coef": -0.4343
-    },
-    {
-      "name": "lower_wick_pct",
-      "coef": -0.3919
-    },
-    {
-      "name": "upper_wick_pct",
-      "coef": -0.3519
+      "coef": -0.3658
     },
     {
       "name": "bb_lower_dist",
-      "coef": 0.3018
-    },
-    {
-      "name": "ema9_dist_pct",
-      "coef": -0.2805
+      "coef": 0.2908
     },
     {
       "name": "bb_upper_dist",
-      "coef": 0.2626
+      "coef": 0.2536
     },
     {
       "name": "dist_low_24h_pct",
-      "coef": -0.2453
+      "coef": -0.2393
     },
     {
-      "name": "ema21_dist_pct",
-      "coef": 0.224
+      "name": "ema9_dist_pct",
+      "coef": -0.2174
     },
     {
       "name": "ls_ratio_asof",
-      "coef": -0.2172
+      "coef": -0.216
+    },
+    {
+      "name": "change_24h",
+      "coef": -0.1598
+    },
+    {
+      "name": "bb_width_pct",
+      "coef": 0.1367
+    },
+    {
+      "name": "macd_signal",
+      "coef": 0.128
+    },
+    {
+      "name": "ema50_dist_pct",
+      "coef": 0.1279
     }
   ],
   "horizon": 12
