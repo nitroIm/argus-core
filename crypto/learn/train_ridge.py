@@ -1,8 +1,9 @@
 # ============================================================
-# ARGUS-Trader - TRAIN RIDGE v1
+# ARGUS-Trader - TRAIN RIDGE v2
 # ------------------------------------------------------------
+# v2: winsorize y to +-20. alpha=100 (was 1.0).
+#     Fixes RMSE=370 explosion from target outliers.
 # v1: Ridge regression per-symbol. Linear baseline.
-#     Saves ridge_{sym}.joblib + meta_ridge_{sym}.json.
 # ============================================================
 
 import os
@@ -36,7 +37,8 @@ log = logging.getLogger("crypto.learn.train_ridge")
 MODELS_DIR = SCRIPT_DIR / "models"
 MODELS_DIR.mkdir(parents=True, exist_ok=True)
 
-ALPHA = 1.0
+ALPHA = 100.0
+Y_CLIP = 20.0
 
 SYMBOLS_LIST = [
     s.strip().upper()
@@ -76,7 +78,6 @@ def _ic(y_true, y_pred):
 
 
 def _nan_safe(X):
-    """Replace NaN/inf with 0. Ridge needs finite."""
     X = np.nan_to_num(
         X,
         nan=0.0,
@@ -84,6 +85,10 @@ def _nan_safe(X):
         neginf=0.0,
     )
     return X
+
+
+def _clip_y(y):
+    return np.clip(y, -Y_CLIP, Y_CLIP)
 
 
 def train_one(symbol):
@@ -108,10 +113,16 @@ def train_one(symbol):
     r_train = data["r_train"]
     r_test = data["r_test"]
 
-    log.info(
-        "%s: train=%d test=%d",
-        symbol, len(X_train), len(X_test),
+    n_clipped = int(
+        (np.abs(r_train) > Y_CLIP).sum()
     )
+    log.info(
+        "%s: train=%d test=%d clipped=%d",
+        symbol, len(X_train), len(X_test),
+        n_clipped,
+    )
+
+    r_train_c = _clip_y(r_train)
 
     scaler = StandardScaler()
     X_tr = scaler.fit_transform(X_train)
@@ -122,7 +133,7 @@ def train_one(symbol):
         fit_intercept=True,
         random_state=42,
     )
-    model.fit(X_tr, r_train)
+    model.fit(X_tr, r_train_c)
 
     p_train = model.predict(X_tr).astype(np.float32)
     p_test = model.predict(X_te).astype(np.float32)
@@ -166,11 +177,13 @@ def train_one(symbol):
         "trained_at": datetime.now(
             timezone.utc
         ).isoformat(),
-        "version": "v1-ridge",
+        "version": "v2-ridge",
         "objective": "regression",
         "algorithm": "ridge",
         "symbol": symbol,
         "alpha": ALPHA,
+        "y_clip": Y_CLIP,
+        "n_clipped": n_clipped,
         "n_total": data["n_total"],
         "n_train": data["n_train"],
         "n_test": data["n_test"],
@@ -202,9 +215,12 @@ def train_one(symbol):
 
 def train():
     log.info("=" * 60)
-    log.info("ARGUS-Trader TRAIN RIDGE v1")
+    log.info("ARGUS-Trader TRAIN RIDGE v2")
     log.info("SYMBOLS=%s", SYMBOLS_LIST)
-    log.info("ALPHA=%.2f", ALPHA)
+    log.info(
+        "ALPHA=%.2f Y_CLIP=+-%.1f",
+        ALPHA, Y_CLIP,
+    )
     log.info("=" * 60)
 
     metas = {}
@@ -220,8 +236,9 @@ def train():
     log.info("RIDGE TRAIN DONE")
     for sym, m in metas.items():
         log.info(
-            "  %s: IC=%.4f MAE=%.4f",
-            sym, m["ic_test"], m["mae_test"],
+            "  %s: IC=%.4f MAE=%.4f RMSE=%.4f",
+            sym, m["ic_test"],
+            m["mae_test"], m["rmse_test"],
         )
     if metas:
         avg = sum(
