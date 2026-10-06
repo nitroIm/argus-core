@@ -1,11 +1,9 @@
 # ============================================================
-# ARGUS-Trader — COLLECT ASIA + EUROPE + USA (узел global)
+# ARGUS-Trader — GLOBAL MARKET (узел global, DB2)
 # ------------------------------------------------------------
-# v6: COALESCE on change_pct — prevents NULL overwrite.
-#     get_prev_close from DB for first row of window.
-#     Same fix as external.py v3, macro.py v2.
-# v5: batch insert per symbol, SAVEPOINT fallback.
-# v4: RANGE=30d, MAX_ROWS=300.
+# v1: объединение collect_asia.py v6 + external.py v3.
+#     21 рынок: Азия + Европа + США + макро.
+#     Таблица global_market в DB2.
 # ============================================================
 
 import sys
@@ -26,7 +24,7 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(message)s",
     datefmt="%H:%M:%S",
 )
-log = logging.getLogger("global.collect")
+log = logging.getLogger("global.market")
 
 YAHOO_URL = (
     "https://query1.finance.yahoo.com"
@@ -37,30 +35,33 @@ HEADERS = {
     "User-Agent": "Mozilla/5.0 (X11; Linux x86_64)",
 }
 
-ASIA = [
+MARKETS = [
+    # Азия
     ("^N225",     "NIKKEI"),
     ("000001.SS", "SHANGHAI"),
     ("^HSI",      "HANGSENG"),
     ("CNY=X",     "USDCNY"),
-]
-
-EUROPE = [
+    # Азия-доп
+    ("JPY=X",     "USDJPY"),
+    ("^KS11",     "KOSPI"),
+    ("^TWII",     "TAIEX"),
+    # Европа
     ("^GDAXI",    "DAX"),
     ("^STOXX50E", "SX5E"),
     ("^FTSE",     "FTSE"),
     ("EURUSD=X",  "EURUSD"),
-]
-
-USA = [
+    # США
     ("^VIX",      "VIX"),
     ("^IXIC",     "NASDAQ"),
     ("^TNX",      "US10Y"),
-]
-
-ASIA_EXTRA = [
-    ("JPY=X",     "USDJPY"),
-    ("^KS11",     "KOSPI"),
-    ("^TWII",     "TAIEX"),
+    ("^UST2Y",    "US2Y"),
+    ("^TYX",      "US30Y"),
+    # Макро
+    ("DX-Y.NYB",  "DXY"),
+    ("^GSPC",     "SPX"),
+    ("GC=F",      "GOLD"),
+    ("BZ=F",      "BRENT"),
+    ("HG=F",      "COPPER"),
 ]
 
 INTERVAL = "1h"
@@ -68,7 +69,7 @@ RANGE = "30d"
 MAX_ROWS = 300
 
 SQL_HEAD = (
-    "INSERT INTO asia_market "
+    "INSERT INTO global_market "
     "(symbol, timestamp, close, change_pct, source) "
     "VALUES "
 )
@@ -79,7 +80,7 @@ SQL_TAIL = (
     "close=EXCLUDED.close, "
     "change_pct=COALESCE("
     "  EXCLUDED.change_pct, "
-    "  asia_market.change_pct"
+    "  global_market.change_pct"
     ")"
 )
 
@@ -128,15 +129,12 @@ def fetch_yahoo(code):
 
 
 def get_prev_close(db_symbol, first_ts):
-    """Last close in DB before first_ts.
-    Used to compute change_pct for the very first
-    row of the Yahoo window (which has no prev).
-    """
+    """Last close in DB before first_ts."""
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute(
-                    "SELECT close FROM asia_market "
+                    "SELECT close FROM global_market "
                     "WHERE symbol = %s "
                     "AND timestamp < %s "
                     "ORDER BY timestamp DESC LIMIT 1",
@@ -192,9 +190,7 @@ def save_rows_batch(db_symbol, rows):
 def save_rows_savepoint(db_symbol, rows):
     if not rows:
         return 0
-    sql = (
-        SQL_HEAD + "(%s,%s,%s,%s,%s)" + SQL_TAIL
-    )
+    sql = SQL_HEAD + "(%s,%s,%s,%s,%s)" + SQL_TAIL
     added = 0
     try:
         with get_connection() as conn:
@@ -293,49 +289,26 @@ def process_one(code, db_symbol):
     return n, False
 
 
-def fetch_group(name, lst):
-    log.info("--- %s ---", name)
+def main():
+    log.info("=" * 60)
+    log.info("ARGUS GLOBAL MARKET — DB2 v1")
+    log.info("=" * 60)
+
     total = 0
     failed = 0
-    for code, db_symbol in lst:
+    for code, db_symbol in MARKETS:
         log.info("%s (%s)", db_symbol, code)
         n, err = process_one(code, db_symbol)
         total += n
         if err:
             failed += 1
-    return total, failed
-
-
-def main():
-    log.info("=" * 60)
-    log.info("ARGUS COLLECT ASIA+EU+USA — DB2 v6")
-    log.info("=" * 60)
-
-    total = 0
-    failed = 0
-
-    n, f = fetch_group("ASIA", ASIA)
-    total += n
-    failed += f
-
-    n, f = fetch_group("EUROPE", EUROPE)
-    total += n
-    failed += f
-
-    n, f = fetch_group("USA", USA)
-    total += n
-    failed += f
-
-    n, f = fetch_group("ASIA_EXTRA", ASIA_EXTRA)
-    total += n
-    failed += f
 
     log.info("=" * 60)
     log.info("DONE. Total saved: %d", total)
     log.info("=" * 60)
 
     status = "partial" if failed > 0 else "ok"
-    log_run("collect_asia", status, total)
+    log_run("global_market", status, total)
     close_connection()
 
 
