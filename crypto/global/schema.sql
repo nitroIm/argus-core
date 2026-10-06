@@ -1,14 +1,13 @@
 -- ============================================================
--- ARGUS-Trader — SCHEMA DB2 (argus-global-data)
+-- ARGUS-Trader — SCHEMA DB2 (nitroIm's Project)
 -- ------------------------------------------------------------
--- v2: + features_hourly (38 cols, синхрон с features.py v7),
---     price_patterns, events, causal_links, predictions,
---     ml_models. Зеркало DB1 для будущего совместного learn.
---     Типы новых колонок — по аналогии с DB1 v2 (проверить).
--- v1: SOL/BNB + Asia markets. Изолирован от основной.
+-- v3: зеркало DB1 для крипто-таблиц.
+--     + orderbook_snapshots (зеркало DB1).
+--     Некрипто — только Asia (asia_market, asia_market_daily,
+--     asia_alerts, asia_patterns, impact_vectors).
 -- ============================================================
 
--- RAW: SOL/BNB свечи
+-- RAW: свечи
 CREATE TABLE IF NOT EXISTS candles (
     symbol       TEXT NOT NULL,
     timeframe    TEXT NOT NULL,
@@ -22,10 +21,22 @@ CREATE TABLE IF NOT EXISTS candles (
     inserted_at  TIMESTAMPTZ DEFAULT NOW(),
     PRIMARY KEY (symbol, timeframe, timestamp)
 );
-CREATE INDEX IF NOT EXISTS idx_candles_ts
+CREATE INDEX IF NOT EXISTS idx_candles_symbol_ts
     ON candles (symbol, timestamp DESC);
 
--- RAW: SOL/BNB funding
+CREATE TABLE IF NOT EXISTS candles_daily (
+    symbol       TEXT NOT NULL,
+    timestamp    TIMESTAMPTZ NOT NULL,
+    open         NUMERIC(20, 8),
+    high         NUMERIC(20, 8),
+    low          NUMERIC(20, 8),
+    close        NUMERIC(20, 8),
+    volume       NUMERIC(20, 8),
+    source       TEXT,
+    inserted_at  TIMESTAMPTZ DEFAULT NOW(),
+    PRIMARY KEY (symbol, timestamp)
+);
+
 CREATE TABLE IF NOT EXISTS funding_rates (
     symbol       TEXT NOT NULL,
     timestamp    TIMESTAMPTZ NOT NULL,
@@ -34,10 +45,7 @@ CREATE TABLE IF NOT EXISTS funding_rates (
     inserted_at  TIMESTAMPTZ DEFAULT NOW(),
     PRIMARY KEY (symbol, timestamp)
 );
-CREATE INDEX IF NOT EXISTS idx_funding_ts
-    ON funding_rates (symbol, timestamp DESC);
 
--- RAW: SOL/BNB open interest
 CREATE TABLE IF NOT EXISTS open_interest (
     symbol       TEXT NOT NULL,
     timestamp    TIMESTAMPTZ NOT NULL,
@@ -47,10 +55,53 @@ CREATE TABLE IF NOT EXISTS open_interest (
     inserted_at  TIMESTAMPTZ DEFAULT NOW(),
     PRIMARY KEY (symbol, timestamp)
 );
-CREATE INDEX IF NOT EXISTS idx_oi_ts
-    ON open_interest (symbol, timestamp DESC);
 
--- ASIA: Nikkei, Shanghai, HangSeng, USD/CNY
+CREATE TABLE IF NOT EXISTS long_short_ratio (
+    symbol       TEXT NOT NULL,
+    timestamp    TIMESTAMPTZ NOT NULL,
+    ls_ratio     NUMERIC(20, 6),
+    long_pct     NUMERIC(10, 4),
+    short_pct    NUMERIC(10, 4),
+    source       TEXT,
+    inserted_at  TIMESTAMPTZ DEFAULT NOW(),
+    PRIMARY KEY (symbol, timestamp)
+);
+
+CREATE TABLE IF NOT EXISTS taker_flow (
+    symbol       TEXT NOT NULL,
+    timestamp    TIMESTAMPTZ NOT NULL,
+    buy_vol      NUMERIC(20, 4),
+    sell_vol     NUMERIC(20, 4),
+    source       TEXT,
+    inserted_at  TIMESTAMPTZ DEFAULT NOW(),
+    PRIMARY KEY (symbol, timestamp)
+);
+
+CREATE TABLE IF NOT EXISTS liquidations (
+    symbol       TEXT NOT NULL,
+    timestamp    TIMESTAMPTZ NOT NULL,
+    side         TEXT,
+    price        NUMERIC(20, 8),
+    quantity     NUMERIC(20, 8),
+    source       TEXT,
+    inserted_at  TIMESTAMPTZ DEFAULT NOW(),
+    PRIMARY KEY (symbol, timestamp, side, price, quantity)
+);
+
+CREATE TABLE IF NOT EXISTS orderbook_snapshots (
+    symbol       TEXT NOT NULL,
+    timestamp    TIMESTAMPTZ NOT NULL,
+    bid_vol      DOUBLE PRECISION,
+    ask_vol      DOUBLE PRECISION,
+    bid_pct      DOUBLE PRECISION,
+    ask_pct      DOUBLE PRECISION,
+    spread_pct   DOUBLE PRECISION,
+    source       TEXT,
+    inserted_at  TIMESTAMPTZ DEFAULT NOW(),
+    PRIMARY KEY (symbol, timestamp)
+);
+
+-- ASIA (только DB2)
 CREATE TABLE IF NOT EXISTS asia_market (
     symbol       TEXT NOT NULL,
     timestamp    TIMESTAMPTZ NOT NULL,
@@ -63,7 +114,16 @@ CREATE TABLE IF NOT EXISTS asia_market (
 CREATE INDEX IF NOT EXISTS idx_asia_ts
     ON asia_market (symbol, timestamp DESC);
 
--- ASIA: лог алертов (>2%)
+CREATE TABLE IF NOT EXISTS asia_market_daily (
+    symbol       TEXT NOT NULL,
+    timestamp    TIMESTAMPTZ NOT NULL,
+    close        NUMERIC(20, 6),
+    change_pct   NUMERIC(10, 4),
+    source       TEXT,
+    inserted_at  TIMESTAMPTZ DEFAULT NOW(),
+    PRIMARY KEY (symbol, timestamp)
+);
+
 CREATE TABLE IF NOT EXISTS asia_alerts (
     id           SERIAL PRIMARY KEY,
     symbol       TEXT NOT NULL,
@@ -75,7 +135,33 @@ CREATE TABLE IF NOT EXISTS asia_alerts (
 CREATE INDEX IF NOT EXISTS idx_alerts_ts
     ON asia_alerts (sent_at DESC);
 
--- AUDIT: журнал сбора
+CREATE TABLE IF NOT EXISTS impact_vectors (
+    id              SERIAL PRIMARY KEY,
+    source_symbol   TEXT,
+    target_symbol   TEXT,
+    lag_hours       INTEGER,
+    corr            NUMERIC,
+    impact_pct      NUMERIC,
+    samples         INTEGER,
+    window_days     INTEGER,
+    computed_at     TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS asia_patterns (
+    id              SERIAL PRIMARY KEY,
+    source_symbol   TEXT,
+    target_symbol   TEXT,
+    condition_pct   NUMERIC,
+    direction       TEXT,
+    lag_hours       INTEGER,
+    samples         INTEGER,
+    hit_rate        NUMERIC,
+    avg_impact_pct  NUMERIC,
+    window_days     INTEGER,
+    computed_at     TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- AUDIT
 CREATE TABLE IF NOT EXISTS collect_log (
     id             SERIAL PRIMARY KEY,
     job_name       TEXT NOT NULL,
@@ -85,13 +171,61 @@ CREATE TABLE IF NOT EXISTS collect_log (
     finished_at    TIMESTAMPTZ,
     records_added  INTEGER DEFAULT 0,
     source_used    TEXT,
+    fallback_count INTEGER DEFAULT 0,
     status         TEXT,
     error          TEXT
 );
-CREATE INDEX IF NOT EXISTS idx_glog_started
+CREATE INDEX IF NOT EXISTS idx_collect_log_started
     ON collect_log (started_at DESC);
 
--- PRODUCTION: признаки (синхрон с features.py v7)
+CREATE TABLE IF NOT EXISTS rejected_data (
+    id             SERIAL PRIMARY KEY,
+    job_name       TEXT,
+    metric         TEXT,
+    symbol         TEXT,
+    raw_data       JSONB,
+    reason         TEXT,
+    source         TEXT,
+    rejected_at    TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_rejected_at
+    ON rejected_data (rejected_at DESC);
+
+CREATE TABLE IF NOT EXISTS cross_check (
+    symbol           TEXT NOT NULL,
+    timestamp        TIMESTAMPTZ NOT NULL,
+    source_primary   TEXT NOT NULL,
+    source_secondary TEXT NOT NULL,
+    price_primary    NUMERIC(20, 8),
+    price_secondary  NUMERIC(20, 8),
+    diff_pct         NUMERIC(10, 4),
+    is_anomaly       BOOLEAN DEFAULT FALSE,
+    checked_at       TIMESTAMPTZ DEFAULT NOW(),
+    PRIMARY KEY (symbol, timestamp, source_primary, source_secondary)
+);
+
+CREATE TABLE IF NOT EXISTS anomaly_log (
+    id             SERIAL PRIMARY KEY,
+    symbol         TEXT,
+    timestamp      TIMESTAMPTZ,
+    anomaly_type   TEXT,
+    severity       TEXT,
+    details        JSONB,
+    notified       BOOLEAN DEFAULT FALSE,
+    created_at     TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_anomaly_ts
+    ON anomaly_log (timestamp DESC);
+
+CREATE TABLE IF NOT EXISTS retention_log (
+    id             SERIAL PRIMARY KEY,
+    table_name     TEXT NOT NULL,
+    rows_deleted   INTEGER,
+    older_than     TIMESTAMPTZ,
+    executed_at    TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- PRODUCTION: фичи
 CREATE TABLE IF NOT EXISTS features_hourly (
     symbol            TEXT NOT NULL,
     timestamp         TIMESTAMPTZ NOT NULL,
@@ -136,7 +270,6 @@ CREATE TABLE IF NOT EXISTS features_hourly (
 CREATE INDEX IF NOT EXISTS idx_feat_symbol_ts
     ON features_hourly (symbol, timestamp DESC);
 
--- PRODUCTION: паттерны
 CREATE TABLE IF NOT EXISTS price_patterns (
     symbol       TEXT NOT NULL,
     timestamp    TIMESTAMPTZ NOT NULL,
@@ -148,7 +281,6 @@ CREATE TABLE IF NOT EXISTS price_patterns (
     PRIMARY KEY (symbol, timestamp)
 );
 
--- PRODUCTION: события
 CREATE TABLE IF NOT EXISTS events (
     id              SERIAL PRIMARY KEY,
     symbol          TEXT NOT NULL,
@@ -162,10 +294,8 @@ CREATE TABLE IF NOT EXISTS events (
 CREATE INDEX IF NOT EXISTS idx_events_symbol_ts
     ON events (symbol, timestamp DESC);
 
--- PRODUCTION: причинные связи
 CREATE TABLE IF NOT EXISTS causal_links (
-    event_id        INTEGER
-                    REFERENCES events(id) ON DELETE CASCADE,
+    event_id        INTEGER REFERENCES events(id) ON DELETE CASCADE,
     hours_before    INTEGER NOT NULL,
     funding_rate    NUMERIC(20, 10),
     oi_change_pct   NUMERIC(10, 4),
@@ -178,7 +308,6 @@ CREATE TABLE IF NOT EXISTS causal_links (
     PRIMARY KEY (event_id, hours_before)
 );
 
--- PRODUCTION: предсказания
 CREATE TABLE IF NOT EXISTS predictions (
     id              SERIAL PRIMARY KEY,
     symbol          TEXT NOT NULL,
@@ -190,10 +319,9 @@ CREATE TABLE IF NOT EXISTS predictions (
     was_correct     BOOLEAN,
     created_at      TIMESTAMPTZ DEFAULT NOW()
 );
-CREATE INDEX IF NOT EXISTS idx_pred_symbol_ts
+CREATE INDEX IF NOT EXISTS idx_predictions_symbol_ts
     ON predictions (symbol, timestamp DESC);
 
--- PRODUCTION: реестр ML-моделей
 CREATE TABLE IF NOT EXISTS ml_models (
     id              SERIAL PRIMARY KEY,
     version         TEXT UNIQUE,
