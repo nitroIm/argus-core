@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-06T08:17:35.947422+00:00",
+  "generated_at": "2026-10-06T09:18:22.828177+00:00",
   "symbols": {
     "BTCUSDT": {
       "symbol": "BTCUSDT",
@@ -33,22 +33,15 @@
     "BNBUSDT": {
       "symbol": "BNBUSDT",
       "total_events": 200,
-      "processed": 2,
-      "saved": 2,
+      "processed": 1,
+      "saved": 1,
       "summary_by_type": {
         "ls_long_extreme": {
           "count": 1,
           "avg_funding": 0.0001,
           "avg_oi_change": null,
-          "avg_ls_ratio": 2.36,
-          "avg_change_24h": -1.5664
-        },
-        "rsi_oversold": {
-          "count": 1,
-          "avg_funding": 0.0001,
-          "avg_oi_change": null,
-          "avg_ls_ratio": 2.36,
-          "avg_change_24h": -1.5664
+          "avg_ls_ratio": 2.37,
+          "avg_change_24h": -0.7103
         }
       }
     }
