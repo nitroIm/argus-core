@@ -1,10 +1,11 @@
 # ============================================================
 # ARGUS-Trader - CLEAN MODELS
 # ------------------------------------------------------------
-# v1: removes model artifacts before retrain.
-#     Deletes: lgb_*.txt, meta_*.json, model_meta.json.
+# v2: + xgb, cat, ridge, mlp, lstm artifacts.
+#     + scaler_*.joblib, ensemble_weights.json.
+#     + last_predictions.json, last_signals.json.
 #     Keeps: best_params.json, prev/ directory.
-#     Use before manual Learn run to force fresh cycle.
+# v1: removes lgb + meta before retrain.
 # ============================================================
 
 import sys
@@ -13,17 +14,40 @@ from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 MODELS_DIR = SCRIPT_DIR / "models"
+LEARN_DIR = SCRIPT_DIR
 
 KEEP_FILES = {"best_params.json"}
 KEEP_DIRS = {"prev"}
 
 PATTERNS = [
+    # lgb
     "lgb_*.txt",
+    # xgb
+    "xgb_*.json",
+    # cat
+    "cat_*.cbm",
+    # ridge + scaler
+    "ridge_*.joblib",
+    "scaler_ridge_*.joblib",
+    # mlp + scaler
+    "mlp_*.joblib",
+    "scaler_mlp_*.joblib",
+    # lstm + scaler
+    "lstm_*.pt",
+    "scaler_lstm_*.joblib",
+    # meta
     "meta_*.json",
 ]
 
 EXTRA_FILES = [
     "model_meta.json",
+    "ensemble_weights.json",
+]
+
+# один уровень выше (в crypto/learn/)
+EXTRA_OUTSIDE = [
+    "last_predictions.json",
+    "last_signals.json",
 ]
 
 logging.basicConfig(
@@ -36,12 +60,17 @@ log = logging.getLogger("crypto.learn.clean")
 
 def collect_targets():
     targets = set()
-    for pat in PATTERNS:
-        for fp in MODELS_DIR.glob(pat):
+    if MODELS_DIR.exists():
+        for pat in PATTERNS:
+            for fp in MODELS_DIR.glob(pat):
+                if fp.is_file():
+                    targets.add(fp)
+        for name in EXTRA_FILES:
+            fp = MODELS_DIR / name
             if fp.is_file():
                 targets.add(fp)
-    for name in EXTRA_FILES:
-        fp = MODELS_DIR / name
+    for name in EXTRA_OUTSIDE:
+        fp = LEARN_DIR / name
         if fp.is_file():
             targets.add(fp)
     return sorted(targets)
@@ -49,7 +78,7 @@ def collect_targets():
 
 def main():
     log.info("=" * 60)
-    log.info("ARGUS CLEAN MODELS")
+    log.info("ARGUS CLEAN MODELS v2")
     log.info("DIR: %s", MODELS_DIR)
     log.info("=" * 60)
 
@@ -57,7 +86,6 @@ def main():
         log.error("models dir missing: %s", MODELS_DIR)
         sys.exit(1)
 
-    # safety: verify keep list exists
     for name in KEEP_FILES:
         fp = MODELS_DIR / name
         if fp.exists():
