@@ -1,317 +1,510 @@
-# argus-core
-ARGUS — Autonomous Research &amp; Generative Unified System. Самообучающаяся система: читает книги, собирает данные с бирж, находит паттерны, делает прогнозы. Растёт сама — модуль за модулем.
-Сделал. Один общий файл, всё лишнее отсечено, дубли убраны.
+Ниже — единый README. Вставляется в новый чат, всё подхватывается. Лишнее отсечено, дубликаты убраны.
 
 ```markdown
-# 🦉 ARGUS — GUIDE (v3.1, краткий)
+# 🦉 ARGUS — MASTER README
 
 Autonomous Research & Generative Unified System
+Обновлено: 2026-10-06
 
 ═══════════════════════════════════════════
-1. АРХИТЕКТУРА
+1. МИССИЯ
 ═══════════════════════════════════════════
 
-Три слоя:
-- Бот-хост (VPS Wispbyte) — aiogram 3.x
-- Скрипты (GitHub Actions) — тяжёлое
-- Данные (GitHub + Supabase)
+Самообучающаяся система: читает книги,
+собирает данные с бирж, находит паттерны,
+предсказывает цену. Растёт модуль за модулем.
 
-Файлы:
+Принципы:
+  • Качество > скорость
+  • Данные не теряются никогда
+  • Один донор = 95%, fallback по метрике
+  • Дубликаты → PRIMARY KEY
+  • Битые данные → rejected_data
+  • knowledge.json НИКОГДА не удалять
 
-bot_host.py            # Telegram-бот (пульт)
+═══════════════════════════════════════════
+2. РЕПОЗИТОРИИ И БАЗЫ
+═══════════════════════════════════════════
 
-scripts/
-  ingest.py            # PDF → чанки → knowledge
-  train_embeddings.py  # fine-tune e5-small
-  build_index.py       # FAISS
-  search.py            # семантический поиск
-  ask.py               # RAG /ask
-  reranker.py          # Cross-Encoder
-  translate.py         # EN→RU
-  collector.py         # скачать PDF по URL
-  sources/base.py      # адаптеры источников
-  logger.py            # logs/argus.jsonl
-  observer.py          # пробелы в знаниях
-  analyzer.py          # оценка состояния
-  proposer.py          # план действий
-  actor.py             # исполнитель
-  brain.py             # дирижёр
-  guardian.py          # контроль качества
-  explorer.py          # реактивный поиск
-  scout.py             # плановый поиск
+Репозитории (публичные):
+  nitroIm/argus-core
+  nitroIm/personal-books
 
-crypto/                # отдельный контур (не трогаем)
-  collect.py, enrich.py, detect.py
+Два независимых крипто-контура (БД):
+  DB1  ARGUS_DB_URL    → BTCUSDT, ETHUSDT
+  DB2  ARGUS_DB_URL_2  → SOLUSDT, BNBUSDT
+                        + Asia/Europe (некрипто)
 
-.github/workflows/     # см. §4
+Крипто-таблицы зеркальны в DB1/DB2
+(одинаковые колонки, разные монеты).
+
+Некрипто — только в одной базе:
+  DB1: macro_metrics, onchain_metrics,
+       external_market, fear_greed,
+       market_context
+  DB2: asia_market, asia_market_daily,
+       asia_alerts, asia_patterns,
+       impact_vectors
+
+Внешние узлы:
+  VPS Wispbyte  — bot_host.py, aiogram 3.x
+  GitHub Actions — тяжёлое (train, collect)
+  cron-job.org  — все расписания
+  Supabase      — 2 проекта (DB1, DB2)
+
+Часовой пояс отчётов: Europe/Kaliningrad.
+
+═══════════════════════════════════════════
+3. КОНТУР BOOKS (RAG + бот)
+═══════════════════════════════════════════
+
+Назначение: читает книги, отвечает /ask,
+наполняет гайды для крипто-симулятора.
+
+Пайплайн:
+  books/*.pdf
+    → ingest.py v7.7 → knowledge.json
+    → train_embeddings.py v3.4
+    → build_index.py v3.4 → faiss.index
+    → search.py / ask.py → Telegram
+
+Автономия (поиск новых книг):
+  explorer.py v5 → scout_candidates.json
+    → proposer.py v3.3 → TG (5 карточек)
+    → approve:<sid>
+    → approved_download.yml → approve_handler v8
+    → collector.py + sources/base v4
+    → books/ → следующий /train
+
+Ключевые файлы:
+  bot_host.py               aiogram, VPS
+  scripts/ingest.py         v7.7
+  scripts/train_embeddings.py v3.4
+  scripts/build_index.py    v3.4
+  scripts/search.py         v9 (keyword + FAISS)
+  scripts/ask.py            RAG
+  scripts/finetune.py       v1.2 (не запускается)
+  scripts/explorer.py       v5 (7 источников)
+  scripts/proposer.py       v3.3
+  scripts/approve_handler.py v8
+  scripts/sources/base.py   v4
 
 Данные:
-  data/knowledge.json         # НИКОГДА не удалять
-  data/chunks_for_index.json  # метаданные
-  data/pending_cards.json     # кандидаты
-  data/scout_candidates.json  # найденные
-  models/argus-embeddings/    # fine-tuned e5
-  faiss.index                 # векторный индекс
-  books/                      # очередь PDF
+  data/knowledge.json         НЕ удалять
+  data/chunks_for_index.json  метаданные
+  data/pending_cards.json     кандидаты
+  data/scout_candidates.json  найденные
+  faiss.index                 13 МБ
+  models/argus-embeddings/    e5-small
+  books/                      очередь PDF
+
+Состояние:
+  Книг: 53
+  Чанков: 8862
+  Гайдов: 19 (01…19)
+  FAISS: IndexFlatIP, avg_score
+
+Гайды:
+  01_rsi, 02_macd, 03_bollinger,
+  04_atr, 05_volume, 06_candles,
+  07_risk, 08_psychology,
+  09_trend, 10_sr, 11_orderflow,
+  12_crypto, 13_exchange,
+  14_fibonacci, 15_patterns,
+  16_divergence, 17_money_management,
+  18_mexc, 19_binance
+
+Источники скачивания:
+  ✅ arXiv, Zenodo, Crossref,
+     OpenAlex, DOAJ
+  ⏳ Semantic Scholar (429)
+  ⏳ CORE (нужен ключ)
+
+Что работает:
+  ✅ /ask находит гайды первым
+  ✅ Категории исправлены (misc → trading)
+  ✅ Дубль TG-ответов убран
+  ✅ Скачивание PDF → books/ → commit
+
+Что не закрыто:
+  ⏳ Перевод EN→RU (нужны torch,
+     transformers, sentencepiece,
+     sacremoses в search.yml)
+  ⏳ Fine-tuning e5-small — при 20+
+     книгах (сейчас 373 пары, мало)
 
 ═══════════════════════════════════════════
-2. ПОТОК ДАННЫХ
+4. КОНТУР CRYPTO (ML + симулятор)
 ═══════════════════════════════════════════
 
-RAG:
-  books/*.pdf
-    → ingest.py → knowledge.json
-    → train_embeddings.py
-    → build_index.py → faiss.index
-    → ask.py → Telegram
+Назначение: собирает часовые данные
+по 4 монетам, обучает 6 моделей,
+предсказывает return %, торгует
+в симуляторе MEXC.
 
-Автономия:
-  запрос → logger
-    → observer → analyzer → proposer
-    → actor → explorer/scout
-    → scout_candidates.json
+Пайплайн (каждый час):
+  collect → enrich → detect → notify
+  обучение — раз в сутки (24h)
+  симулятор — раз в час (:05)
 
-Поиск книг:
-  explorer.py → scout_candidates.json
-    → proposer.py → pending_cards.json
-    → карточка в TG (approve:<sid>)
-    → approved_download.yml
-    → collector.py → books/
-    → следующий /train подхватит
+ML-контур (crypto/learn/):
+  dataset.py    v12  (61 фича, purge 12)
+  train.py      v13  (early stopping)
+  predict.py    v15  (regression-aware)
+  signals.py    v2
+  notify.py     v3
+  runner.py     v5   (REGRESSION_VERSIONS)
+  export.py     v6
+  audit.py      v1
+  clean_models.py v1
+  train_xgb.py  v1
+  train_cat.py  v1
+  train_ridge.py v1
+  train_mlp.py  v1
+  train_lstm.py v1
+  train_weights.py v3 (per-symbol)
 
-═══════════════════════════════════════════
-3. КОМАНДЫ И КНОПКИ БОТА
-═══════════════════════════════════════════
+6 моделей: lgb, xgb, cat, ridge, mlp, lstm.
+Все предсказывают return % (регрессия).
+Веса per-symbol в ensemble_weights.json.
 
-/start   — приветствие
-/help    — справка
-/ask Q   — вопрос по книгам (30-60с)
-/stats   — книг и чанков
-/train   — полный цикл обучения
-/find T  — поиск книг (personal)
-/findnext— следующие 5
-/crypto  — меню крипто
-/status  — состояние системы
+Артефакты моделей:
+  lgb_{sym}.txt, xgb_{sym}.json,
+  cat_{sym}.cbm, ridge_{sym}.joblib,
+  mlp_{sym}.joblib, lstm_{sym}.pt,
+  scaler_*_{sym}.joblib,
+  meta_{algo}_{sym}.json,
+  ensemble_weights.json
 
-Кнопки:
-  approve:<sid>   — скачать кандидата
-  reject:<sid>    — отклонить
-  personal_dl:<i> — скачать personal PDF
-  personal_reject:<i>
-  personal_next:<i>
-  book:audio:<n>  — озвучить
-  book:del:<n>    — удалить
-  confirm:train
-  action:collect / enrich / detect
-  report:week
-  charts:show:<n>
+Данные в БД (крипто, зеркально):
+  candles (1h, 1d), candles_daily
+  funding_rates
+  open_interest
+  long_short_ratio
+  taker_flow
+  liquidations
+  orderbook_snapshots
+  features_hourly (38 колонок)
+  price_patterns
+  events
+  causal_links
+  predictions
+  ml_models
+  collect_log, rejected_data,
+  cross_check, anomaly_log,
+  retention_log
 
-Callback формат = approve:<sid> ДВОЕТОЧИЕ (не _).
-short_id = md5(url)[:16].
+Внешние рынки (DB2, некрипто):
+  asia_market          — 14 рынков
+  asia_market_daily
+  asia_alerts
+  asia_patterns        — 68 правил
+  impact_vectors       — 180+ пар
 
-═══════════════════════════════════════════
-4. GITHUB ACTIONS
-═══════════════════════════════════════════
+14 рынков:
+  NIKKEI, SHANGHAI, HANGSENG, USDCNY,
+  DAX, SX5E, FTSE, EURUSD,
+  VIX, NASDAQ, US10Y,
+  USDJPY, KOSPI, TAIEX
 
-Ручной запуск: Actions → Run workflow.
+Симулятор (crypto/mexc/simulator_01/):
+  runner.py v9  (внутри explorer)
+  state/portfolio.json
+  state/positions.json
+  state/trades.json
+  state/weights.json
 
-Workflow             | Что делает
----------------------|---------------------------
-ARGUS Train Model    | ingest→train→build
-ARGUS Search         | ручной поиск
-ARGUS Guardian       | тест/снимок/откат
-ARGUS Benchmark      | точность на эталоне
-ARGUS Explorer       | поиск новых книг
-ARGUS Actor          | выполнить предложения
-ARGUS Analyzer       | анализ логов
-ARGUS Proposer       | план действий
-ARGUS Reporter       | недельный отчёт
-ARGUS Collect Data   | цены BTC/ETH
-ARGUS Content Post   | черновик поста
-Check Token          | проверка GH_PAT
+  Баланс: $39.84
+  Сделок: 13 (6W/7L)
+  Все LONG — SHORT не работает
 
-Cron (UTC!):
-  Brain        */30 * * * *
-  Collect Data 0 * * * *
-  Benchmark    0 5 * * 0     (Вс)
-  Reporter     0 9 * * 1     (Пн)
+Explorer внутри симулятора (10 источников):
+  ml, news, events, causal, levels,
+  patterns, correlations, db2_patterns,
+  db2_vectors, anomaly
 
-Правила cron GH:
-  - Ветка main/master
-  - 60 дней без коммитов → стоп
-  - Задержка 1-5 мин возможна
+Collectors (crypto/collect/):
+  pipeline.py v10
+  external.py v3
+  macro.py v2
+  spot_prices.py v4
+  priority.py v3
+  binance_history.py v3 (Binance Vision)
+  verify_history_binance.py v2
 
-═══════════════════════════════════════════
-5. КРИТИЧНЫЕ ПРАВИЛА
-═══════════════════════════════════════════
+Enrich (crypto/enrich/):
+  features.py v9
+  runner.py v2
+  patterns.py, levels.py,
+  events.py, causal.py, correlate.py
 
-1. Секреты: GH_PAT (Actions), GITHUB_PAT (Python)
-2. Пути: pathlib, SCRIPT_DIR.parent
-3. Время: datetime.now(timezone.utc)
-   utcnow() — ЗАПРЕЩЁН
-4. chunks_for_index.json:
-   [{"id","source","book","text"}, ...]
-5. FAISS: IndexFlatIP + normalize=True
-   Метрика: avg_score (не distance)
-6. E5:
-   - базовая: query: / passage:
-   - fine-tuned (models/): БЕЗ префиксов
-7. TG API: requests.post(json=...),
-   не get(params=). Резать по 4000 с
-   проверкой HTML.
-8. Git в Actions:
-   git add <файлы>, git diff --staged,
-   git pull --rebase перед push
-9. knowledge.json НИКОГДА не удалять
-10. sources/ лежит в scripts/sources/
-    (3 уровня вверх до корня репо)
-11. Строки в коде ≤55 символов
-12. Логи на английском
+Detect (crypto/detect/):
+  anomaly.py v4
 
-═══════════════════════════════════════════
-6. КЛЮЧЕВЫЕ ФАКТЫ
-═══════════════════════════════════════════
-
-| Что                  | Значение         |
-|----------------------|------------------|
-| Метаданные чанков    | chunks_for_index |
-| Формат               | список dict      |
-| Знания (накопит.)    | knowledge.json   |
-| Модель               | e5-small, 384d   |
-| Префикс fine-tuned   | НЕТ              |
-| Префикс базовой E5   | query:/passage:  |
-| Callback             | approve:<sid>    |
-| short_id             | md5(url)[:16]    |
-| Боевой /ask          | scripts/ask.py   |
-| Локальный train      | scripts/train.py |
-| sources/             | scripts/sources/ |
+Infrastructure:
+  db.py  v5  (reconnect)
+  db2.py v3  (reconnect)
+  config.py v6
 
 ═══════════════════════════════════════════
-7. ЧТО РАБОТАЕТ / ЧТО ОСТАЛОСЬ
+5. WORKFLOWS (GitHub Actions)
 ═══════════════════════════════════════════
 
-✅ Инкрементальный train
-✅ knowledge.json не теряет данные
-✅ Explorer (arXiv, Zenodo, Crossref)
-✅ Карточки в TG с ✅/❌
-✅ Скачивание PDF → books/ → commit
-✅ /ask с fine-tuned моделью
-✅ Reranker срабатывает
-✅ Защита от пустых/битых JSON
+Крипто:
+  crypto_learn.yml       v8   (6 моделей)
+  crypto_notify.yml      v3   (torch CPU)
+  crypto_detect.yml      v3
+  crypto_enrich.yml      v5b
+  crypto_collect.yml     v3
+  crypto_global.yml      v1
+  feature_audit.yml      v1
+  binance_vision.yml     v1
+  binance_history.yml    v1
+  clean_models.yml       v1
+  external_once.yml      v1
+  simulator_01.yml
 
-⏳ Semantic Scholar 429 — не критично
-⏳ total_books считает старое
-⏳ FAISS → IVFFlat при >100k чанков
-⏳ SQL-миграция (см. §9)
-⏳ Personal Books: второй бот
-
-═══════════════════════════════════════════
-8. ДИАГНОСТИКА
-═══════════════════════════════════════════
-
-Проблема                 → Фикс
--------------------------|------------------------
-Бот не отвечает /ask     → Actions: упал job?
-                           faiss.index есть?
-/train обрывается        → timeout-minutes: 120
-JSONDecodeError в ask    → chunks_for_index битый,
-                           запусти /train
-KeyError 'id' в train    → fallback md5 в v3.4
-Смена модели mismatch    → build_index пересоберёт
-Proposer "Всего: 0"      → v3.1 читает scout_
-                           candidates.json
-Кнопки TG не работают    → формат approve:<sid>
-PDF не скачался          → base.py 3 уровня вверх
-Git push 403             → убрать secrets.GH_PAT
-                           из checkout, добавить
-                           permissions: contents:write
-Error 400 TG             → safe_truncate_html + json=
+Books:
+  ingest.yml
+  ask.yml
+  search.yml
+  approved_download.yml
+  explorer.yml
+  proposer.yml
+  benchmark.yml
+  finetune.yml (не запускается)
 
 ═══════════════════════════════════════════
-9. SQL / SUPABASE (заготовка)
+6. CRON-JOB.ORG
 ═══════════════════════════════════════════
 
-Статус: не используется, для масштабирования.
+  Collect       0 * * * *
+  Simulator     5 * * * *
+  Global        10 * * * *
+  Enrich        15 * * * *
+  External      20 * * * *
+  Detect        30 * * * *
+  Notify        45 * * * *
+  News          0 6 * * *
+  Morning       0 7 * * *
+  Evening       0 18 * * *
+  Learn         45 1 * * *
 
-Параметры:
-  Платформа: Supabase Free
-  Проект: Argus_db
-  Регион: eu-west-1 (Ирландия)
-  PG: 17.6
-  Подключение: Session Pooler (IPv4!)
-  Расширение pgvector: НЕ установлено
-  Secret: ARGUS_DB_URL
-
-Формат:
-postgresql://postgres.<ref>:<pass>@
-aws-1-eu-west-1.pooler.supabase.com:5432
-/postgres
-
-⚠️ Только Session/Transaction pooler.
-   Direct = IPv6 → Actions не подключится.
-
-Дорожная карта:
-- Фаза 1: регистрация (готово)
-- Фаза 2: logger → БД (при >20 МБ JSON)
-- Фаза 3: brain/observer/analyzer → БД
-- Фаза 4: knowledge + FAISS → pgvector
-  (при >20k чанков)
-
-Первая миграция:
-  CREATE EXTENSION vector;
-  CREATE TABLE books, chunks, logs;
-  переписать logger.py на INSERT
+Все задачи: POST + Bearer GH_PAT,
+Body: {"ref":"main"}.
 
 ═══════════════════════════════════════════
-10. ЧЕК-ЛИСТ ПЕРЕД РАБОТОЙ
+7. СЕКРЕТЫ (GitHub Secrets)
 ═══════════════════════════════════════════
 
-- GH_PAT в Settings → Secrets
-- data/knowledge.json существует
-- models/argus-embeddings/ существует
-- faiss.index и chunks_for_index.json есть
-- Ветка main/master
-- books/ с .gitkeep (для git add -f)
+  ARGUS_DB_URL         DB1
+  ARGUS_DB_URL_2       DB2
+  GH_PAT
+  MEXC_API_KEY, MEXC_API_SECRET
+  TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
+  TG_CHANNEL_ID
+  OPENROUTER_AP*
+  VK_GROUP_ID, VK_TOKEN
+  + CORE_API_KEY (получить)
 
 ═══════════════════════════════════════════
-11. ПРОМПТ ДЛЯ НОВОГО ЧАТА
+8. СХЕМА БД — DB1 (23 таблицы)
 ═══════════════════════════════════════════
 
-Скопируй в новый чат:
+Крипто:
+  candles (symbol, timeframe, timestamp)
+  candles_daily (symbol, timestamp)
+  funding_rates (symbol, timestamp)
+  open_interest (symbol, timestamp)
+  long_short_ratio (symbol, timestamp)
+  taker_flow (symbol, timestamp)
+  liquidations (symbol, ts, side, price, qty)
+  orderbook_snapshots (symbol, timestamp)
 
----
-Привет! Разрабатываем ARGUS — автономный
-ИИ-агент (книги + крипто + personal books).
+Некрипто (только DB1):
+  market_context (timestamp)
+  external_market (symbol, timestamp)
+  macro_metrics (symbol, timestamp)
+  fear_greed (timestamp)
+  onchain_metrics (symbol, timestamp)
 
-Архитектура:
-  aiogram 3.x (bot_host на VPS) +
-  GitHub Actions (тяжёлые скрипты) +
-  FAISS + sentence-transformers.
+Derived:
+  features_hourly (38 колонок, PK sym+ts)
+  price_patterns
+  events
+  causal_links
+
+ML:
+  predictions
+  ml_models
+
+Audit:
+  collect_log, rejected_data,
+  cross_check, anomaly_log,
+  retention_log
+
+═══════════════════════════════════════════
+9. СХЕМА БД — DB2
+═══════════════════════════════════════════
+
+Крипто — зеркало DB1 (те же 8 таблиц
+candles…orderbook_snapshots + features/
+patterns/events/causal/predictions/
+ml_models + audit).
+
+Некрипто (только DB2):
+  asia_market (symbol, timestamp)
+  asia_market_daily (symbol, timestamp)
+  asia_alerts (id SERIAL)
+  impact_vectors (id SERIAL)
+  asia_patterns (id SERIAL)
+
+═══════════════════════════════════════════
+10. КРИТИЧНЫЕ ПРАВИЛА
+═══════════════════════════════════════════
+
+1.  Строки в коде ≤55 символов
+2.  Файлы даются ЦЕЛИКОМ
+3.  Логи на английском
+4.  datetime.now(timezone.utc),
+    utcnow() ЗАПРЕЩЁН
+5.  pathlib от SCRIPT_DIR.parent
+6.  Не выдумывать имена колонок —
+    проверять information_schema
+7.  knowledge.json НЕ удалять
+8.  DB1/DB2 не смешивать
+9.  SQL UPDATE/DELETE — только
+    по явному запросу
+10. Все batch-запросы где можно
+11. Cron — только cron-job.org
+12. Не трогать данные в БД без
+    явного разрешения
+13. train.py делает prev/ перед
+    перезаписью
+14. USE_EXTERNAL=False
+    (DXY/SPX/GOLD шумят)
+15. Asia/Europe в ML пока НЕ
+    включаем — только алерты
+
+═══════════════════════════════════════════
+11. СИСТЕМА ВЕСОВ
+═══════════════════════════════════════════
+
+ensemble_weights.json (per-symbol):
+  BTC  — cat=1.00
+  ETH  — все отрицательные,
+         allowed=False
+  SOL  — lstm=0.41, cat=0.26,
+         mlp=0.16, ridge=0.08,
+         lgb=0.05, xgb=0.04
+  BNB  — cat=0.52, xgb=0.42,
+         lgb=0.06
+
+learn_weights.py (для explorer):
+  w_new = w_old × (1 + 0.2 ×
+          (hit_rate − 0.5))
+  Границы [0.3, 2.0], N >= 5
+  Пишет state/weights.json
+
+═══════════════════════════════════════════
+12. ЧТО РАБОТАЕТ / ЧТО НЕТ
+═══════════════════════════════════════════
+
+Работает:
+  ✅ 6 моделей учатся (~10 мин)
+  ✅ Веса пересчитываются per-symbol
+  ✅ BTC/SOL/BNB торгуются
+  ✅ DB1/DB2 разделение везде
+  ✅ Books /ask находит гайды
+  ✅ Explorer + 10 источников
+  ✅ Симулятор LONG
+  ✅ Азиатские алерты в TG
+
+Не работает / в работе:
+  ⏳ ETHUSDT в блоке (все 6 отриц.)
+  ⏳ SHORT в симуляторе
+  ⏳ learn.py — веса голосов
+  ⏳ context.py — модуль DB2
+  ⏳ books_reader.py — RAG для
+    симулятора
+  ⏳ Orderbook SOL/BNB (нет
+    сборщика)
+  ⏳ Binance Vision — качается
+  ⏳ Перевод EN→RU в Books
+
+═══════════════════════════════════════════
+13. ОТКРЫТЫЕ ЗАДАЧИ
+═══════════════════════════════════════════
+
+СРОЧНО:
+  1. Дождаться Binance Vision
+  2. Загрузчик parquet → БД
+     (ON CONFLICT DO NOTHING)
+  3. Пересборка features_hourly
+  4. Переобучение моделей
+  5. Починить crypto_detect.yml
+     (Line 58: 'run' defined twice)
+
+БЛИЖАЙШЕЕ:
+  6. SHORT в симуляторе
+  7. learn.py — веса explorer
+  8. context.py — модуль DB2
+
+СРЕДНЕЕ:
+  9. Multi-timeframe (4h/15m)
+  10. Cross-asset в features
+  11. Order book imbalance
+  12. Regime detection
+
+ДАЛЕКО:
+  13. LSTM/Transformer
+  14. VPS + Binance/Bybit
+  15. Автономия (brain)
+
+═══════════════════════════════════════════
+14. ПРОМПТ ДЛЯ НОВОГО ЧАТА
+═══════════════════════════════════════════
+
+Привет! Продолжаем ARGUS.
 
 Репо:
   nitroIm/argus-core (публичный)
   nitroIm/personal-books (публичный)
 
+Два контура:
+1. BOOKS — бот + RAG (53 книги,
+   8862 чанка, 19 гайдов, FAISS 13 МБ)
+2. CRYPTO — 6 моделей ML + симулятор MEXC
+
+БД:
+  DB1: BTC/ETH + macro/onchain/fear/
+       external/market_context
+  DB2: SOL/BNB + Asia/Europe
+  Крипто-таблицы зеркальны.
+
+Модели: lgb/xgb/cat/ridge/mlp/lstm.
+Все — регрессия return %.
+ensemble_weights.json per-symbol.
+
+Симулятор MEXC v9: $39.84, 13 сделок,
+только LONG. Explorer 10 источников.
+
 КРИТИЧНЫЕ ПРАВИЛА:
-1. Секреты: GH_PAT (Actions),
-   GITHUB_PAT (Python).
-2. pathlib, SCRIPT_DIR.parent.
-3. datetime.now(timezone.utc).
-4. chunks_for_index.json =
-   [{id,source,book,text}].
-5. FAISS IndexFlatIP + normalize.
-   avg_score (не distance).
-6. E5 fine-tuned БЕЗ префиксов,
-   базовая с query:/passage:.
-7. TG: requests.post(json=),
-   резка 4000 с HTML-проверкой.
-8. git add конкретные файлы,
-   pull --rebase перед push.
-9. Строки в коде ≤55.
-10. Файлы давать ЦЕЛИКОМ.
-11. Логи на английском.
+1. Строки ≤55
+2. Файлы целиком
+3. Логи на английском
+4. datetime.now(timezone.utc)
+5. pathlib от SCRIPT_DIR.parent
+6. Не выдумывать колонки
+7. knowledge.json не удалять
+8. DB1/DB2 не смешивать
+9. SQL UPDATE/DELETE только
+   по запросу
+10. USE_EXTERNAL=False
+11. Asia/Europe в ML не включаем
+12. Cron только cron-job.org
 
-Текущее состояние: ядро готово.
-Следующая задача: [ВСТАВЬ СЮДА]
----
+ТЕКУЩАЯ ЗАДАЧА: [ВСТАВИТЬ]
+```
 
+Готово. Вставляй в новый чат — подхватит всё.
