@@ -1,8 +1,9 @@
 # ============================================================
 # ARGUS-Trader — GLOBAL MARKET (узел global, DB2)
 # ------------------------------------------------------------
+# v2: US2Y убран — Yahoo не имеет тикера ^UST2Y (404).
 # v1: объединение collect_asia.py v6 + external.py v3.
-#     21 рынок: Азия + Европа + США + макро.
+#     20 рынков: Азия + Европа + США + макро.
 #     Таблица global_market в DB2.
 # ============================================================
 
@@ -54,7 +55,6 @@ MARKETS = [
     ("^VIX",      "VIX"),
     ("^IXIC",     "NASDAQ"),
     ("^TNX",      "US10Y"),
-    ("^UST2Y",    "US2Y"),
     ("^TYX",      "US30Y"),
     # Макро
     ("DX-Y.NYB",  "DXY"),
@@ -291,7 +291,7 @@ def process_one(code, db_symbol):
 
 def main():
     log.info("=" * 60)
-    log.info("ARGUS GLOBAL MARKET — DB2 v1")
+    log.info("ARGUS GLOBAL MARKET — DB2 v2")
     log.info("=" * 60)
 
     total = 0
