@@ -1,22 +1,22 @@
 {
-  "trained_at": "2026-10-05T23:40:21.316778+00:00",
+  "trained_at": "2026-10-06T17:20:53.232897+00:00",
   "version": "v13",
   "objective": "regression",
   "symbol": "BTCUSDT",
-  "n_total": 8999,
-  "n_train": 7187,
-  "n_test": 1800,
-  "n_val_inner": 1079,
-  "best_iteration": 25,
-  "ic_train": 0.3409,
-  "ic_test": -0.0136,
-  "mae_train": 1.1609,
-  "mae_test": 0.8945,
-  "rmse_train": 1.6127,
-  "rmse_test": 1.3966,
-  "sign_acc_train": 0.5321,
-  "sign_acc_test": 0.4528,
-  "num_trees": 25,
+  "n_total": 53426,
+  "n_train": 42728,
+  "n_test": 10686,
+  "n_val_inner": 6410,
+  "best_iteration": 122,
+  "ic_train": 0.2625,
+  "ic_test": 0.0428,
+  "mae_train": 1.4595,
+  "mae_test": 1.0762,
+  "rmse_train": 2.1671,
+  "rmse_test": 1.5355,
+  "sign_acc_train": 0.54,
+  "sign_acc_test": 0.5018,
+  "num_trees": 122,
   "features": [
     "change_pct",
     "range_pct",
@@ -82,46 +82,46 @@
   ],
   "top_features": [
     {
-      "name": "change_1d",
-      "gain": 3285.4
-    },
-    {
-      "name": "volatility_7d",
-      "gain": 2017.08
+      "name": "ls_ratio_asof",
+      "gain": 19595.92
     },
     {
       "name": "funding_rate",
-      "gain": 1574.02
+      "gain": 16769.26
+    },
+    {
+      "name": "volatility_7d",
+      "gain": 14224.15
     },
     {
       "name": "macd_signal",
-      "gain": 496.05
-    },
-    {
-      "name": "bb_width_pct",
-      "gain": 449.99
-    },
-    {
-      "name": "volatility_24h",
-      "gain": 434.93
+      "gain": 12599.48
     },
     {
       "name": "ema50_dist_pct",
-      "gain": 311.61
+      "gain": 7622.97
     },
     {
-      "name": "dist_low_24h_pct",
-      "gain": 177.77
-    },
-    {
-      "name": "change_4h",
-      "gain": 155.4
+      "name": "volatility_24h",
+      "gain": 6057.62
     },
     {
       "name": "macd",
-      "gain": 153.39
+      "gain": 4872.2
+    },
+    {
+      "name": "bb_width_pct",
+      "gain": 4851.6
+    },
+    {
+      "name": "ema21_dist_pct",
+      "gain": 4841.61
+    },
+    {
+      "name": "change_24h",
+      "gain": 4723.88
     }
   ],
   "horizon": 12,
-  "exported_at": "2026-10-06T16:04:25.557503+00:00"
+  "exported_at": "2026-10-06T19:39:24.503138+00:00"
 }

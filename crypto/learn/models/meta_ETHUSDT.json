@@ -1,0 +1,126 @@
+{
+  "trained_at": "2026-10-06T17:26:11.898127+00:00",
+  "version": "v13",
+  "objective": "regression",
+  "symbol": "ETHUSDT",
+  "n_total": 53426,
+  "n_train": 42728,
+  "n_test": 10686,
+  "n_val_inner": 6410,
+  "best_iteration": 92,
+  "ic_train": 0.2256,
+  "ic_test": -0.0152,
+  "mae_train": 1.9424,
+  "mae_test": 1.5586,
+  "rmse_train": 2.8558,
+  "rmse_test": 2.2644,
+  "sign_acc_train": 0.531,
+  "sign_acc_test": 0.5017,
+  "num_trees": 92,
+  "features": [
+    "change_pct",
+    "range_pct",
+    "body_pct",
+    "upper_wick_pct",
+    "lower_wick_pct",
+    "volume_ratio_24h",
+    "volatility_24h",
+    "volatility_7d",
+    "change_4h",
+    "change_24h",
+    "change_1d",
+    "trend_up",
+    "hour_of_day",
+    "funding_rate",
+    "funding_trend",
+    "ema9_dist_pct",
+    "ema21_dist_pct",
+    "ema50_dist_pct",
+    "macd",
+    "macd_signal",
+    "bb_upper_dist",
+    "bb_lower_dist",
+    "bb_width_pct",
+    "dist_high_24h_pct",
+    "dist_low_24h_pct",
+    "consecutive_up",
+    "session",
+    "oi_change_1h",
+    "oi_change_24h",
+    "ls_ratio_asof",
+    "ls_change_1h",
+    "taker_buy_pct",
+    "taker_change_1h",
+    "us10y_level",
+    "us10y_change_1d",
+    "hashrate_log",
+    "hashrate_change_1d",
+    "ob_bid_pct",
+    "ob_ask_pct",
+    "ob_spread_pct",
+    "events_1h",
+    "events_24h",
+    "rsi_overbought_24h",
+    "anomaly_24h",
+    "asia_nikkei_6h",
+    "asia_shanghai_6h",
+    "asia_shanghai_12h",
+    "asia_hangseng_6h",
+    "asia_usdcny_6h",
+    "asia_usdcny_12h",
+    "asia_dax_6h",
+    "asia_stoxx50_6h",
+    "asia_ftse_6h",
+    "asia_eurusd_6h",
+    "asia_vix_1h",
+    "asia_nasdaq_1h",
+    "asia_us10y_6h",
+    "asia_usdjpy_6h",
+    "asia_kospi_6h",
+    "asia_taiex_6h",
+    "asia_impact_score"
+  ],
+  "top_features": [
+    {
+      "name": "volatility_7d",
+      "gain": 21769.11
+    },
+    {
+      "name": "volatility_24h",
+      "gain": 17818.58
+    },
+    {
+      "name": "bb_width_pct",
+      "gain": 13158.97
+    },
+    {
+      "name": "ema50_dist_pct",
+      "gain": 12814.6
+    },
+    {
+      "name": "ls_ratio_asof",
+      "gain": 11611.96
+    },
+    {
+      "name": "macd_signal",
+      "gain": 9528.12
+    },
+    {
+      "name": "dist_high_24h_pct",
+      "gain": 9411.48
+    },
+    {
+      "name": "funding_rate",
+      "gain": 9019.66
+    },
+    {
+      "name": "bb_lower_dist",
+      "gain": 6457.11
+    },
+    {
+      "name": "macd",
+      "gain": 5250.79
+    }
+  ],
+  "horizon": 12
+}

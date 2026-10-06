@@ -1,22 +1,22 @@
 {
-  "trained_at": "2026-10-05T23:40:55.469657+00:00",
+  "trained_at": "2026-10-06T17:36:46.294516+00:00",
   "version": "v13",
   "objective": "regression",
   "symbol": "BNBUSDT",
-  "n_total": 5855,
-  "n_train": 4672,
-  "n_test": 1171,
-  "n_val_inner": 701,
-  "best_iteration": 49,
-  "ic_train": 0.4021,
-  "ic_test": 0.0139,
-  "mae_train": 1.0564,
-  "mae_test": 1.1348,
-  "rmse_train": 1.4978,
-  "rmse_test": 1.5818,
-  "sign_acc_train": 0.6188,
-  "sign_acc_test": 0.4868,
-  "num_trees": 49,
+  "n_total": 53428,
+  "n_train": 42730,
+  "n_test": 10686,
+  "n_val_inner": 6410,
+  "best_iteration": 165,
+  "ic_train": 0.3455,
+  "ic_test": 0.0515,
+  "mae_train": 1.8197,
+  "mae_test": 1.267,
+  "rmse_train": 2.8509,
+  "rmse_test": 1.8377,
+  "sign_acc_train": 0.5379,
+  "sign_acc_test": 0.5011,
+  "num_trees": 165,
   "features": [
     "change_pct",
     "range_pct",
@@ -82,46 +82,46 @@
   ],
   "top_features": [
     {
-      "name": "volatility_7d",
-      "gain": 2951.69
-    },
-    {
-      "name": "change_1d",
-      "gain": 2312.76
-    },
-    {
-      "name": "volatility_24h",
-      "gain": 1541.66
+      "name": "funding_rate",
+      "gain": 68928.37
     },
     {
       "name": "bb_width_pct",
-      "gain": 1049.58
+      "gain": 63665.05
     },
     {
-      "name": "macd_signal",
-      "gain": 923.0
+      "name": "volatility_7d",
+      "gain": 54593.46
+    },
+    {
+      "name": "volatility_24h",
+      "gain": 45819.75
     },
     {
       "name": "ema50_dist_pct",
-      "gain": 903.72
-    },
-    {
-      "name": "funding_rate",
-      "gain": 540.92
-    },
-    {
-      "name": "macd",
-      "gain": 452.78
+      "gain": 43549.64
     },
     {
       "name": "bb_lower_dist",
-      "gain": 384.83
+      "gain": 29113.74
     },
     {
-      "name": "dist_high_24h_pct",
-      "gain": 329.68
+      "name": "macd_signal",
+      "gain": 27769.91
+    },
+    {
+      "name": "change_24h",
+      "gain": 26396.46
+    },
+    {
+      "name": "macd",
+      "gain": 20508.86
+    },
+    {
+      "name": "ema21_dist_pct",
+      "gain": 19807.04
     }
   ],
   "horizon": 12,
-  "exported_at": "2026-10-06T16:04:25.556688+00:00"
+  "exported_at": "2026-10-06T19:39:24.502227+00:00"
 }
