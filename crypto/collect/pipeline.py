@@ -1,6 +1,9 @@
 # ============================================================
-# ARGUS-Trader — PIPELINE (main collector) v10
+# ARGUS-Trader — PIPELINE (main collector) v11
 # ------------------------------------------------------------
+# v11: candles PK changed to (symbol, market_type,
+#      timeframe, timestamp). All pipeline sources
+#      are futures -> market_type='futures' literal.
 # v10: + per-metric try/except — one failure does not
 #      abort whole pipeline.
 #      + source_used aggregated (not hardcoded "okx").
@@ -81,12 +84,14 @@ def notify(text: str):
 SQL = {
     "ohlcv": """
         INSERT INTO candles
-            (symbol, timeframe, timestamp,
+            (symbol, market_type, timeframe, timestamp,
              open, high, low, close, volume, source)
-        VALUES (%(symbol)s, %(timeframe)s, %(timestamp)s,
-                %(open)s, %(high)s, %(low)s,
-                %(close)s, %(volume)s, %(source)s)
-        ON CONFLICT (symbol, timeframe, timestamp)
+        VALUES (%(symbol)s, 'futures', %(timeframe)s,
+                %(timestamp)s, %(open)s, %(high)s,
+                %(low)s, %(close)s, %(volume)s,
+                %(source)s)
+        ON CONFLICT (symbol, market_type,
+                     timeframe, timestamp)
         DO NOTHING
     """,
     "funding": """
@@ -483,7 +488,6 @@ def run_cycle(mode: str = "incremental"):
                 sources_used.add(r["source"])
             results.append(r)
 
-    # --- Context ---
     try:
         ctx = fetch_context_cached()
         if ctx:
@@ -496,7 +500,6 @@ def run_cycle(mode: str = "incremental"):
     except Exception as e:
         log.error("Context: %s", e)
 
-    # --- Fear & Greed ---
     n, err = _run_wrapper(
         "FearGreed", collect_feargreed,
     )
@@ -504,7 +507,6 @@ def run_cycle(mode: str = "incremental"):
     if err is None and n > 0:
         sources_used.add("alternative.me")
 
-    # --- Orderbook ---
     n, err = _run_wrapper(
         "Orderbook", collect_orderbook,
     )
@@ -512,7 +514,6 @@ def run_cycle(mode: str = "incremental"):
     if err is None and n > 0:
         sources_used.add("mexc")
 
-    # --- Onchain ---
     n, err = _run_wrapper(
         "Onchain", collect_onchain,
     )
@@ -520,7 +521,6 @@ def run_cycle(mode: str = "incremental"):
     if err is None and n > 0:
         sources_used.add("mempool.space")
 
-    # --- Macro ---
     n, err = _run_wrapper(
         "Macro", collect_macro,
     )
@@ -528,7 +528,6 @@ def run_cycle(mode: str = "incremental"):
     if err is None and n > 0:
         sources_used.add("yahoo")
 
-    # --- Cross-check ---
     for symbol in SYMBOLS:
         cc = cross_check_price(symbol)
         if cc:
@@ -545,7 +544,6 @@ def run_cycle(mode: str = "incremental"):
                 cc["diff_pct"],
             )
 
-    # --- Summary ---
     elapsed = (
         datetime.now(timezone.utc) - started_at
     ).total_seconds()
