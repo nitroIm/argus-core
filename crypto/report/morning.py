@@ -1,8 +1,7 @@
 # ============================================================
 # ARGUS - УТРЕННИЙ ОТЧЁТ v13
 # ------------------------------------------------------------
-# v13: external block = ONLY active forecasts
-#      (event + lag > now). Shows current price + target.
+# v13: external block = ONLY active forecasts.
 # v12: external markets block.
 # v11: Kaliningrad time, DB2.
 # ============================================================
@@ -137,7 +136,6 @@ MARKET_LABELS = {
     "TAIEX":    "TAIEX TW",
 }
 
-# Look back N hours for events
 EVENT_LOOKBACK_H = 12
 MIN_RULE_SAMPLES = 15
 MIN_RULE_HIT = 0.58
@@ -272,11 +270,11 @@ def fmt_portfolio_block():
 
     line = "  $" + format(balance, ".2f")
     line += " | PnL " + _signed_usd(pnl)
-    line += " (" + _signed_pct(pnl_pct)l + ")"
+    line += " (" + _signed_pct(pnl_pct) + ")"
     lines.append(line)
 
-_us    line =d "  Сделок " + str(total)
-    line", += " ("  + str(w0ins) + "W/"
+    line = "  Сделок " + str(total)
+    line += " (" + str(wins) + "W/"
     line += str(losses) + "L WR "
     line += format(wr, ".1f") + "%)"
     lines.append(line)
@@ -327,7 +325,9 @@ _us    line =d "  Сделок " + str(total)
     if len(recent) >= 2:
         st = sorted(
             recent,
-            key=lambda x: float(x.get("pn)),
+            key=lambda x: float(
+                x.get("pnl_usd", 0)
+            ),
             reverse=True,
         )
         for label, t in [
@@ -401,8 +401,12 @@ def fmt_system_block():
 
     try:
         with get_connection() as conn:
-            n_feat = _count_in(conn, "features_hourly")
-            ts_feat = _max_ts_in(conn, "features_hourly")
+            n_feat = _count_in(
+                conn, "features_hourly"
+            )
+            ts_feat = _max_ts_in(
+                conn, "features_hourly"
+            )
             age = None
             if ts_feat:
                 age = int(
@@ -414,10 +418,14 @@ def fmt_system_block():
                 + " (" + fmt_age(age) + ")"
             )
             lines.append(
-                "  Events " + str(_count_in(conn, "events"))
+                "  Events " + str(
+                    _count_in(conn, "events")
+                )
             )
             lines.append(
-                "  Causal " + str(_count_in(conn, "causal_links"))
+                "  Causal " + str(
+                    _count_in(conn, "causal_links")
+                )
             )
             try:
                 with conn.cursor() as cur:
@@ -427,7 +435,9 @@ def fmt_system_block():
                         "NOW() - INTERVAL '24 hours'"
                     )
                     n_an = cur.fetchone()[0] or 0
-                lines.append("  Anomaly 24ч " + str(n_an))
+                lines.append(
+                    "  Anomaly 24ч " + str(n_an)
+                )
             except Exception:
                 pass
     except Exception as e:
@@ -473,7 +483,9 @@ def fmt_model_block():
         LEARN_DIR / "last_signals.json", {}
     )
     for s in signals.get("signals", []):
-        sym = s.get("symbol", "?").replace("USDT", "")
+        sym = s.get("symbol", "?").replace(
+            "USDT", ""
+        )
         action = s.get("action", "?")
         prob = s.get("prob_up", 0.5)
         lines.append(
@@ -513,7 +525,7 @@ def fmt_files_block():
 
 
 # ============================================================
-# EXTERNAL MARKETS — только активные прогнозы
+# EXTERNAL MARKETS
 # ============================================================
 def _fetch_last_price(symbol):
     try:
@@ -550,20 +562,21 @@ def _fetch_last_price(symbol):
 
 
 def _fetch_active_forecasts():
-    """Only forecasts where event_ts + lag > now."""
     if not DB2_OK:
         return []
 
     now = datetime.now(timezone.utc)
-    cutoff = now - timedelta(hours=EVENT_LOOKBACK_H)
+    cutoff = now - timedelta(
+        hours=EVENT_LOOKBACK_H
+    )
 
     out = []
     try:
         with get_conn_db2() as conn:
             with conn.cursor() as cur:
-                # recent market moves
                 cur.execute(
-                    "SELECT symbol, timestamp, change_pct "
+                    "SELECT symbol, timestamp, "
+                    "change_pct "
                     "FROM asia_market "
                     "WHERE timestamp > %s "
                     "AND ABS(change_pct) > 0.5 "
@@ -579,7 +592,6 @@ def _fetch_active_forecasts():
                     )
                     abs_chg = abs(chg)
 
-                    # event_ts -> aware
                     if ev_ts.tzinfo is None:
                         ev_ts_utc = ev_ts.replace(
                             tzinfo=timezone.utc
@@ -606,14 +618,15 @@ def _fetch_active_forecasts():
                     )
                     rules = cur.fetchall()
 
-                    # Filter: only ACTIVE (event + lag > now)
                     active = []
-                    for (tgt, cond, lag, n, hit, avg) in rules:
-                        forecast_ts = ev_ts_utc + timedelta(
-                            hours=int(lag)
+                    for (tgt, cond, lag, n, hit,
+                         avg) in rules:
+                        forecast_ts = (
+                            ev_ts_utc + timedelta(
+                                hours=int(lag)
+                            )
                         )
                         if forecast_ts <= now:
-                            # already passed - skip
                             continue
                         active.append({
                             "target": tgt,
@@ -649,26 +662,34 @@ def fmt_external_block():
 
     if not active_list:
         lines.append("  Активных прогнозов нет")
-        lines.append("  (нет движений рынков с непройденным lag)")
+        lines.append(
+            "  (нет движений с непройденным lag)"
+        )
         return lines
 
     now = datetime.now(timezone.utc)
 
     for a in active_list[:6]:
-        label = MARKET_LABELS.get(a["src"], a["src"])
+        label = MARKET_LABELS.get(
+            a["src"], a["src"]
+        )
         sign = "+" if a["change"] > 0 else ""
         arrow = "↑" if a["change"] > 0 else "↓"
         ago_h = int(
-            (now - a["ev_ts"]).total_seconds() / 3600
+            (now - a["ev_ts"]).total_seconds()
+            / 3600
         )
         ago_m = int(
             ((now - a["ev_ts"]).total_seconds()
              % 3600) / 60
         )
 
-        line = "  " + arrow + " <b>" + label + "</b> "
-        line += sign + format(a["change"], ".2f") + "%"
-        line += " в " + _to_local(a["ev_ts"]) + " КЛГ"
+        line = "  " + arrow + " <b>" + label
+        line += "</b> "
+        line += sign + format(a["change"], ".2f")
+        line += "%"
+        line += " в " + _to_local(a["ev_ts"])
+        line += " КЛГ"
         line += " (" + str(ago_h) + "ч"
         if ago_m > 0:
             line += " " + str(ago_m) + "м"
@@ -676,11 +697,16 @@ def fmt_external_block():
         lines.append(line)
 
         for f in a["active"]:
-            tgt_s = f["target"].replace("USDT", "")
+            tgt_s = f["target"].replace(
+                "USDT", ""
+            )
             price = _fetch_last_price(f["target"])
             avg_f = f["avg"]
             d_sign = "+" if avg_f > 0 else ""
-            d_word = "↑ вверх" if avg_f > 0 else "↓ вниз"
+            d_word = (
+                "↑ вверх" if avg_f > 0
+                else "↓ вниз"
+            )
 
             line = "     <b>" + tgt_s + "</b> "
             line += d_word + " " + d_sign
@@ -692,16 +718,19 @@ def fmt_external_block():
                     1 + avg_f / 100
                 )
                 line = "       " + fmt_price(price)
-                line += " → " + fmt_price(forecast_price)
+                line += " → "
+                line += fmt_price(forecast_price)
                 lines.append(line)
 
             line = "       когда: "
-            line += _to_local(f["forecast_ts"]) + " КЛГ"
+            line += _to_local(f["forecast_ts"])
+            line += " КЛГ"
             line += " (+" + str(f["lag"]) + "ч)"
             lines.append(line)
 
             line = "       точность: "
-            line += format(f["hit"] * 100, ".0f") + "%"
+            line += format(f["hit"] * 100, ".0f")
+            line += "%"
             line += " (N=" + str(f["n"]) + ")"
             lines.append(line)
 
@@ -765,7 +794,9 @@ def send_message(text):
                 url, json=payload, timeout=20,
             )
             if r.status_code != 200:
-                print("send err " + str(r.status_code))
+                print(
+                    "send err " + str(r.status_code)
+                )
                 ok_all = False
         except Exception as e:
             print("send: " + str(e))
@@ -830,9 +861,10 @@ def fetch_candles(symbol, limit=200):
         with candles_conn(symbol) as conn:
             with conn.cursor() as cur:
                 cur.execute(
-                    "SELECT timestamp, open, high, low, "
-                    "close, volume FROM candles "
-                    "WHERE symbol=%s AND timeframe='1h' "
+                    "SELECT timestamp, open, high, "
+                    "low, close, volume FROM candles "
+                    "WHERE symbol=%s AND "
+                    "timeframe='1h' "
                     "ORDER BY timestamp DESC LIMIT %s",
                     (symbol, limit),
                 )
@@ -860,13 +892,17 @@ def fetch_funding(symbol, limit=50):
                 cur.execute(
                     "SELECT timestamp, rate "
                     "FROM funding_rates "
-                    "WHERE symbol=%s AND rate IS NOT NULL "
+                    "WHERE symbol=%s AND "
+                    "rate IS NOT NULL "
                     "ORDER BY timestamp DESC LIMIT %s",
                     (symbol, limit),
                 )
                 rows = list(reversed(cur.fetchall()))
                 return [
-                    {"timestamp": r[0], "rate": float(r[1])}
+                    {
+                        "timestamp": r[0],
+                        "rate": float(r[1]),
+                    }
                     for r in rows
                 ]
     except Exception:
@@ -880,13 +916,17 @@ def fetch_oi(symbol, limit=100):
                 cur.execute(
                     "SELECT timestamp, oi "
                     "FROM open_interest "
-                    "WHERE symbol=%s AND oi IS NOT NULL "
+                    "WHERE symbol=%s AND "
+                    "oi IS NOT NULL "
                     "ORDER BY timestamp DESC LIMIT %s",
                     (symbol, limit),
                 )
                 rows = list(reversed(cur.fetchall()))
                 return [
-                    {"timestamp": r[0], "oi": float(r[1])}
+                    {
+                        "timestamp": r[0],
+                        "oi": float(r[1]),
+                    }
                     for r in rows
                 ]
     except Exception:
@@ -915,7 +955,9 @@ def build_report_text():
     now = now_local()
     lines = []
     lines.append("☀️ <b>ARGUS — утро</b> v13")
-    lines.append(now.strftime("%d.%m.%Y %H:%M") + " КЛГ")
+    lines.append(
+        now.strftime("%d.%m.%Y %H:%M") + " КЛГ"
+    )
     lines.append("")
 
     lines.extend(fmt_portfolio_block())
@@ -934,13 +976,14 @@ def build_report_text():
     lines.append("─" * 20)
     lines.append("")
 
-    # EXTERNAL — only active forecasts
     lines.extend(fmt_external_block())
     lines.append("")
     lines.append("─" * 20)
     lines.append("")
 
-    levels = load_json(DATA_DIR / "levels_analysis.json")
+    levels = load_json(
+        DATA_DIR / "levels_analysis.json"
+    )
     patterns = load_json(
         DATA_DIR / "patterns_analysis.json"
     )
@@ -949,8 +992,8 @@ def build_report_text():
         candles = fetch_candles(symbol, 200)
         if not candles:
             lines.append(
-                "⚠️ <b>" + name + "</b> [" + db
-                + "]: нет свечей"
+                "⚠️ <b>" + name + "</b> ["
+                + db + "]: нет свечей"
             )
             lines.append("")
             continue
@@ -962,29 +1005,36 @@ def build_report_text():
             prev = candles[-25]["close"]
             if prev:
                 change_24h = (
-                    (price_close - prev) / prev * 100
+                    (price_close - prev)
+                    / prev * 100
                 )
 
-        line = "💰 <b>" + name + "</b> [" + db + "]: "
+        line = "💰 <b>" + name + "</b> ["
+        line += db + "]: "
         if spot:
             line += fmt_price(spot) + " (spot)"
         else:
             line += fmt_price(price_close)
-        line += " | " + format(change_24h, "+.2f") + "% 24ч"
+        line += " | "
+        line += format(change_24h, "+.2f")
+        line += "% 24ч"
         lines.append(line)
 
-        sym_p = patterns.get("symbols", {}).get(
-            symbol, {}
-        )
+        sym_p = patterns.get(
+            "symbols", {}
+        ).get(symbol, {})
         regime = sym_p.get("regime", {})
         if regime:
             reg = fmt_regime(regime)
-            allowed = regime.get("trade_allowed", True)
+            allowed = regime.get(
+                "trade_allowed", True
+            )
             mark = "✅" if allowed else "⛔"
             up = regime.get("up_ratio")
             line = "  " + mark + " " + reg
             if up is not None:
-                line += " (up " + format(up, ".2f") + ")"
+                line += " (up "
+                line += format(up, ".2f") + ")"
             lines.append(line)
 
         atr = compute_atr(candles, 14)
@@ -1008,27 +1058,40 @@ def build_report_text():
 
         funding_data = fetch_funding(symbol, 50)
         if funding_data:
-            cur_f = funding_data[-1]["rate"] * 100
+            cur_f = (
+                funding_data[-1]["rate"] * 100
+            )
             lines.append(
-                "  funding " + format(cur_f, "+.4f") + "%"
+                "  funding "
+                + format(cur_f, "+.4f") + "%"
             )
 
         if EXPLORER_OK:
             try:
                 r = explorer_mod.analyze(symbol)
-                direction = r.get("direction", "NONE")
+                direction = r.get(
+                    "direction", "NONE"
+                )
                 score = r.get("score", 0)
                 if direction == "NONE":
                     line = "  🎯 NONE"
                     reg = r.get("regime", {})
-                    if not reg.get("trade_allowed", True):
+                    if not reg.get(
+                        "trade_allowed", True
+                    ):
                         line += " (вето)"
-                    line += " score " + format(score, ".3f")
+                    line += " score "
+                    line += format(score, ".3f")
                     lines.append(line)
                 else:
-                    em = "📈" if direction == "LONG" else "📉"
-                    line = "  " + em + " " + direction
-                    line += " score " + format(score, ".3f")
+                    if direction == "LONG":
+                        em = "📈"
+                    else:
+                        em = "📉"
+                    line = "  " + em + " "
+                    line += direction
+                    line += " score "
+                    line += format(score, ".3f")
                     lines.append(line)
             except Exception as e:
                 print("explorer: " + str(e))
@@ -1046,7 +1109,9 @@ def main():
     print("len: " + str(len(text)))
     send_message(text)
 
-    levels = load_json(DATA_DIR / "levels_analysis.json")
+    levels = load_json(
+        DATA_DIR / "levels_analysis.json"
+    )
     patterns = load_json(
         DATA_DIR / "patterns_analysis.json"
     )
@@ -1060,11 +1125,13 @@ def main():
         if not candles:
             continue
 
-        sym_lvl = levels.get("symbols", {}).get(
-            symbol, {}
-        )
+        sym_lvl = levels.get(
+            "symbols", {}
+        ).get(symbol, {})
         sup = sym_lvl.get("supports", [])
-        res = sym_lvl.get("resistances", [])
+        res = sym_lvl.get(
+            "resistances", []
+        )
 
         path = TMP_DIR / (prefix + "_candles.png")
         plot_candles(
@@ -1075,13 +1142,17 @@ def main():
         photos.append((str(path), ""))
 
         path = TMP_DIR / (prefix + "_rsi.png")
-        if plot_rsi(symbol, candles,
-                    output_path=str(path)):
+        if plot_rsi(
+            symbol, candles,
+            output_path=str(path),
+        ):
             photos.append((str(path), ""))
 
         funding_data = fetch_funding(symbol, 50)
         if funding_data:
-            path = TMP_DIR / (prefix + "_funding.png")
+            path = TMP_DIR / (
+                prefix + "_funding.png"
+            )
             if plot_funding(
                 symbol, funding_data,
                 output_path=str(path),
@@ -1097,12 +1168,14 @@ def main():
             ):
                 photos.append((str(path), ""))
 
-        sym_p = patterns.get("symbols", {}).get(
-            symbol, {}
-        )
+        sym_p = patterns.get(
+            "symbols", {}
+        ).get(symbol, {})
         binary = sym_p.get("binary_string", "")
         if binary:
-            path = TMP_DIR / (prefix + "_pattern.png")
+            path = TMP_DIR / (
+                prefix + "_pattern.png"
+            )
             if plot_pattern(
                 symbol, binary,
                 output_path=str(path),
