@@ -1,17 +1,21 @@
 {
-  "trained_at": "2026-10-06T00:15:06.273109+00:00",
-  "version": "v1-xgb",
+  "trained_at": "2026-10-06T00:19:36.619006+00:00",
+  "version": "v1-lstm",
   "objective": "regression",
-  "algorithm": "xgboost",
-  "symbol": "SOLUSDT",
-  "n_total": 5856,
+  "algorithm": "lstm",
+  "symbol": "BNBUSDT",
+  "seq_len": 50,
+  "hidden": 32,
+  "layers": 2,
+  "dropout": 0.3,
   "n_train": 4672,
   "n_test": 1172,
-  "best_iteration": 19,
-  "ic_train": 0.4125,
-  "ic_test": 0.0152,
-  "mae_test": 1.735,
-  "rmse_test": 2.3708,
+  "n_seq_train": 3922,
+  "n_seq_test": 1123,
+  "ic_train": 0.2389,
+  "ic_test": -0.1907,
+  "mae_test": 1.142,
+  "rmse_test": 1.5853,
   "features": [
     "change_pct",
     "range_pct",
@@ -74,48 +78,6 @@
     "asia_kospi_6h",
     "asia_taiex_6h",
     "asia_impact_score"
-  ],
-  "top_features": [
-    {
-      "name": "f19",
-      "gain": 256.29
-    },
-    {
-      "name": "f9",
-      "gain": 254.95
-    },
-    {
-      "name": "f18",
-      "gain": 244.07
-    },
-    {
-      "name": "f24",
-      "gain": 217.49
-    },
-    {
-      "name": "f10",
-      "gain": 213.46
-    },
-    {
-      "name": "f11",
-      "gain": 211.47
-    },
-    {
-      "name": "f23",
-      "gain": 198.39
-    },
-    {
-      "name": "f7",
-      "gain": 192.57
-    },
-    {
-      "name": "f20",
-      "gain": 184.95
-    },
-    {
-      "name": "f12",
-      "gain": 173.69
-    }
   ],
   "horizon": 12
 }

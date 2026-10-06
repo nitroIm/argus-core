@@ -1,46 +1,51 @@
 {
-  "computed_at": "2026-10-06T00:03:45.854188+00:00",
+  "computed_at": "2026-10-06T00:19:37.098395+00:00",
   "algos": [
     "lgb",
     "xgb",
     "cat",
     "ridge",
-    "mlp"
+    "mlp",
+    "lstm"
   ],
   "symbols": {
     "BTCUSDT": {
       "ic": {
         "lgb": -0.0136,
-        "xgb": -0.144,
-        "cat": -0.0176,
-        "ridge": -0.1912,
-        "mlp": -0.1158
-      },
-      "weights": {
-        "lgb": 0.2,
-        "xgb": 0.2,
-        "cat": 0.2,
-        "ridge": 0.2,
-        "mlp": 0.2
-      },
-      "trade_allowed": false
-    },
-    "ETHUSDT": {
-      "ic": {
-        "lgb": -0.0084,
-        "xgb": -0.006,
-        "cat": 0.0052,
-        "ridge": -0.0279,
-        "mlp": 0.0232
+        "xgb": -0.143,
+        "cat": 0.0038,
+        "ridge": -0.1911,
+        "mlp": -0.1185,
+        "lstm": -0.045
       },
       "weights": {
         "lgb": 0.0,
         "xgb": 0.0,
-        "cat": 0.1831,
+        "cat": 1.0,
         "ridge": 0.0,
-        "mlp": 0.8169
+        "mlp": 0.0,
+        "lstm": 0.0
       },
       "trade_allowed": true
+    },
+    "ETHUSDT": {
+      "ic": {
+        "lgb": -0.0084,
+        "xgb": -0.0014,
+        "cat": -0.0221,
+        "ridge": -0.0279,
+        "mlp": -0.0506,
+        "lstm": -0.0112
+      },
+      "weights": {
+        "lgb": 0.1667,
+        "xgb": 0.1667,
+        "cat": 0.1667,
+        "ridge": 0.1667,
+        "mlp": 0.1667,
+        "lstm": 0.1667
+      },
+      "trade_allowed": false
     },
     "SOLUSDT": {
       "ic": {
@@ -48,31 +53,35 @@
         "xgb": 0.0152,
         "cat": 0.0575,
         "ridge": 0.0282,
-        "mlp": 0.0607
+        "mlp": 0.0607,
+        "lstm": 0.0745
       },
       "weights": {
-        "lgb": 0.1002,
-        "xgb": 0.0846,
-        "cat": 0.3202,
-        "ridge": 0.157,
-        "mlp": 0.338
+        "lgb": 0.0708,
+        "xgb": 0.0598,
+        "cat": 0.2263,
+        "ridge": 0.111,
+        "mlp": 0.2389,
+        "lstm": 0.2932
       },
       "trade_allowed": true
     },
     "BNBUSDT": {
       "ic": {
         "lgb": 0.0139,
-        "xgb": 0.1132,
-        "cat": 0.0578,
-        "ridge": -0.0067,
-        "mlp": -0.1029
+        "xgb": 0.113,
+        "cat": 0.0576,
+        "ridge": -0.0065,
+        "mlp": -0.103,
+        "lstm": -0.1907
       },
       "weights": {
-        "lgb": 0.0752,
-        "xgb": 0.6122,
-        "cat": 0.3126,
+        "lgb": 0.0753,
+        "xgb": 0.6125,
+        "cat": 0.3122,
         "ridge": 0.0,
-        "mlp": 0.0
+        "mlp": 0.0,
+        "lstm": 0.0
       },
       "trade_allowed": true
     }
