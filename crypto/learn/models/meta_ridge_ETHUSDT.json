@@ -1,5 +1,5 @@
 {
-  "trained_at": "2026-10-06T00:16:45.355856+00:00",
+  "trained_at": "2026-10-06T00:49:03.259621+00:00",
   "version": "v1-ridge",
   "objective": "regression",
   "algorithm": "ridge",
@@ -8,10 +8,10 @@
   "n_total": 9000,
   "n_train": 7188,
   "n_test": 1800,
-  "ic_train": 0.1662,
-  "ic_test": -0.0279,
-  "mae_test": 1.1671,
-  "rmse_test": 1.9537,
+  "ic_train": 0.166,
+  "ic_test": -0.0256,
+  "mae_test": 1.1673,
+  "rmse_test": 1.9544,
   "features": [
     "change_pct",
     "range_pct",
@@ -78,43 +78,43 @@
   "top_features": [
     {
       "name": "ema21_dist_pct",
-      "coef": 2.0318
+      "coef": 2.1937
     },
     {
       "name": "ema50_dist_pct",
-      "coef": -1.4897
+      "coef": -1.5153
     },
     {
       "name": "macd",
-      "coef": -1.1067
+      "coef": -1.1111
     },
     {
       "name": "macd_signal",
-      "coef": 1.0642
+      "coef": 1.0723
     },
     {
       "name": "ema9_dist_pct",
-      "coef": -0.7289
+      "coef": -0.776
     },
     {
       "name": "bb_upper_dist",
-      "coef": 0.4282
+      "coef": 0.4303
     },
     {
       "name": "bb_width_pct",
-      "coef": 0.3288
+      "coef": 0.3944
     },
     {
       "name": "change_1d",
-      "coef": 0.2572
+      "coef": 0.2548
     },
     {
       "name": "volatility_24h",
-      "coef": -0.255
+      "coef": -0.2536
     },
     {
-      "name": "dist_high_24h_pct",
-      "coef": -0.1918
+      "name": "bb_lower_dist",
+      "coef": -0.1909
     }
   ],
   "horizon": 12
