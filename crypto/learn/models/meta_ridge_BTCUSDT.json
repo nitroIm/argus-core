@@ -1,17 +1,17 @@
 {
-  "trained_at": "2026-10-06T02:48:29.696235+00:00",
+  "trained_at": "2026-10-06T03:48:41.649729+00:00",
   "version": "v1-ridge",
   "objective": "regression",
   "algorithm": "ridge",
   "symbol": "BTCUSDT",
   "alpha": 1.0,
-  "n_total": 9002,
-  "n_train": 7189,
+  "n_total": 9003,
+  "n_train": 7190,
   "n_test": 1801,
-  "ic_train": 0.1327,
-  "ic_test": -0.1941,
-  "mae_test": 0.9362,
-  "rmse_test": 1.4656,
+  "ic_train": 0.1321,
+  "ic_test": -0.1884,
+  "mae_test": 0.9331,
+  "rmse_test": 1.4631,
   "features": [
     "change_pct",
     "range_pct",
@@ -78,43 +78,43 @@
   "top_features": [
     {
       "name": "bb_width_pct",
-      "coef": -3.4334
+      "coef": -3.4229
     },
     {
       "name": "bb_upper_dist",
-      "coef": -2.663
+      "coef": -2.6277
     },
     {
       "name": "bb_lower_dist",
-      "coef": 2.5459
+      "coef": 2.5597
     },
     {
       "name": "ema50_dist_pct",
-      "coef": -0.949
+      "coef": -0.9491
     },
     {
       "name": "ema21_dist_pct",
-      "coef": 0.9311
+      "coef": 0.8718
     },
     {
       "name": "macd_signal",
-      "coef": 0.7258
+      "coef": 0.7428
     },
     {
       "name": "macd",
-      "coef": -0.4723
-    },
-    {
-      "name": "ema9_dist_pct",
-      "coef": -0.1947
+      "coef": -0.4882
     },
     {
       "name": "dist_high_24h_pct",
-      "coef": -0.1844
+      "coef": -0.1865
+    },
+    {
+      "name": "ema9_dist_pct",
+      "coef": -0.1808
     },
     {
       "name": "volatility_24h",
-      "coef": -0.1267
+      "coef": -0.1228
     }
   ],
   "horizon": 12
