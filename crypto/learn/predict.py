@@ -1,6 +1,10 @@
 # ============================================================
-# ARGUS-Trader - PREDICT v15
+# ARGUS-Trader - PREDICT v16
 # ------------------------------------------------------------
+# v16: sanity filter on model outputs.
+#      Skips models with |pred| > MAX_ABS_PCT.
+#      Fixes +27000% bug from broken mlp/ridge.
+#      Also clamps final blend to +-MAX_ABS_PCT.
 # v15: 6-model blend. + lstm.
 # ============================================================
 
@@ -39,6 +43,7 @@ MODELS_DIR = SCRIPT_DIR / "models"
 SCALE_PCT = 4.0
 PROB_MIN = 0.05
 PROB_MAX = 0.95
+MAX_ABS_PCT = 15.0
 
 SYMBOLS_LIST = [
     s.strip().upper()
@@ -113,6 +118,21 @@ def _nan_safe_row(row):
         posinf=0.0,
         neginf=0.0,
     )
+
+
+def _sane(p):
+    """Check model output is finite and within sane range."""
+    if p is None:
+        return False
+    try:
+        v = float(p)
+    except Exception:
+        return False
+    if not np.isfinite(v):
+        return False
+    if abs(v) > MAX_ABS_PCT:
+        return False
+    return True
 
 
 def _prepare_seq(symbol, seq_len):
@@ -306,7 +326,10 @@ def _clip01(v):
 
 
 def _acc_from_meta(sym):
-    p = MODELS_DIR / ("meta_" + sym + ".json")
+    """Read ic_test from lgb meta (current model)."""
+    p = MODELS_DIR / ("meta_lgb_" + sym + ".json")
+    if not p.exists():
+        p = MODELS_DIR / ("meta_" + sym + ".json")
     if not p.exists():
         return None
     try:
@@ -345,33 +368,29 @@ def predict_one(symbol, wdata):
     X = _nan_safe_row(row)
 
     preds = {}
+    skipped = []
 
-    p = predict_lgb(symbol, X, expected)
-    if p is not None:
-        preds["lgb"] = p
+    def _try(name, val):
+        if val is None:
+            return
+        if not _sane(val):
+            skipped.append(name)
+            log.warning(
+                "%s: %s insane value %.2f, skip",
+                symbol, name, float(val),
+            )
+            return
+        preds[name] = float(val)
 
-    p = predict_xgb(symbol, X, expected)
-    if p is not None:
-        preds["xgb"] = p
-
-    p = predict_cat(symbol, X, expected)
-    if p is not None:
-        preds["cat"] = p
-
-    p = predict_ridge(symbol, X, expected)
-    if p is not None:
-        preds["ridge"] = p
-
-    p = predict_mlp(symbol, X, expected)
-    if p is not None:
-        preds["mlp"] = p
-
-    p = predict_lstm(symbol, expected)
-    if p is not None:
-        preds["lstm"] = p
+    _try("lgb", predict_lgb(symbol, X, expected))
+    _try("xgb", predict_xgb(symbol, X, expected))
+    _try("cat", predict_cat(symbol, X, expected))
+    _try("ridge", predict_ridge(symbol, X, expected))
+    _try("mlp", predict_mlp(symbol, X, expected))
+    _try("lstm", predict_lstm(symbol, expected))
 
     if not preds:
-        log.warning("%s: no models", symbol)
+        log.warning("%s: no valid models", symbol)
         return None
 
     if weights:
@@ -390,6 +409,11 @@ def predict_one(symbol, wdata):
     pred_pct = sum(
         preds[k] * w_use[k] for k in preds
     ) / wsum
+
+    if pred_pct > MAX_ABS_PCT:
+        pred_pct = MAX_ABS_PCT
+    elif pred_pct < -MAX_ABS_PCT:
+        pred_pct = -MAX_ABS_PCT
 
     if not allowed:
         pred_pct = 0.0
@@ -419,8 +443,9 @@ def predict_one(symbol, wdata):
         ),
         "model_acc": acc,
         "objective": "regression",
-        "model_version": "v15-6models",
+        "model_version": "v16-6models-sane",
         "sources": list(preds.keys()),
+        "skipped": skipped,
         "blend": len(preds) > 1,
         "features_used": expected,
         "trade_allowed": allowed,
@@ -437,9 +462,10 @@ def predict_one(symbol, wdata):
 
 def main():
     log.info("=" * 60)
-    log.info("ARGUS-Trader PREDICT v15")
+    log.info("ARGUS-Trader PREDICT v16")
     log.info("SYMBOLS=%s", SYMBOLS_LIST)
     log.info("FEATURE_COLS=%d", len(ds.FEATURE_COLS))
+    log.info("MAX_ABS_PCT=%.1f", MAX_ABS_PCT)
     log.info("=" * 60)
 
     wdata = load_weights()
@@ -471,9 +497,13 @@ def main():
         for k, v in r.get("weights", {}).items():
             wstr += " %s=%.2f" % (k, v)
 
+        sk = ""
+        if r.get("skipped"):
+            sk = " SKIP=" + ",".join(r["skipped"])
+
         log.info(
             "%s: ret=%.4f%% dir=%d conf=%.4f "
-            "[%s] allowed=%s |%s |%s",
+            "[%s] allowed=%s |%s |%s%s",
             r["symbol"],
             r["predicted_return_pct"],
             r["direction"],
@@ -482,6 +512,7 @@ def main():
             r["trade_allowed"],
             extra,
             wstr,
+            sk,
         )
 
     avg_acc = None
@@ -495,7 +526,7 @@ def main():
         "model_accuracy": avg_acc,
         "model_accuracy_avg": avg_acc,
         "feature_count": len(ds.FEATURE_COLS),
-        "mode": "6model_blend",
+        "mode": "6model_blend_sane",
         "weights_version": wdata.get(
             "computed_at"
         ),
