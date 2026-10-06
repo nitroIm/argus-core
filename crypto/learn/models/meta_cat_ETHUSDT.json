@@ -1,17 +1,17 @@
 {
-  "trained_at": "2026-10-06T09:47:53.619038+00:00",
+  "trained_at": "2026-10-06T10:48:07.093470+00:00",
   "version": "v1-cat",
   "objective": "regression",
   "algorithm": "catboost",
   "symbol": "ETHUSDT",
-  "n_total": 9009,
-  "n_train": 7195,
+  "n_total": 9010,
+  "n_train": 7196,
   "n_test": 1802,
-  "best_iteration": 89,
-  "ic_train": 0.4909,
-  "ic_test": -0.0114,
-  "mae_test": 1.1512,
-  "rmse_test": 1.9204,
+  "best_iteration": 103,
+  "ic_train": 0.5118,
+  "ic_test": -0.0008,
+  "mae_test": 1.1505,
+  "rmse_test": 1.9182,
   "features": [
     "change_pct",
     "range_pct",
@@ -78,43 +78,43 @@
   "top_features": [
     {
       "name": "change_1d",
-      "gain": 36.4398
+      "gain": 35.8604
     },
     {
       "name": "volatility_7d",
-      "gain": 17.1807
+      "gain": 16.2963
     },
     {
       "name": "funding_rate",
-      "gain": 12.7574
+      "gain": 12.5995
     },
     {
       "name": "ema50_dist_pct",
-      "gain": 6.1827
-    },
-    {
-      "name": "macd_signal",
-      "gain": 3.9092
-    },
-    {
-      "name": "volatility_24h",
-      "gain": 3.4176
-    },
-    {
-      "name": "dist_low_24h_pct",
-      "gain": 3.2994
+      "gain": 5.2084
     },
     {
       "name": "macd",
-      "gain": 2.4902
+      "gain": 4.5545
     },
     {
-      "name": "dist_high_24h_pct",
-      "gain": 2.3895
+      "name": "macd_signal",
+      "gain": 4.234
+    },
+    {
+      "name": "volatility_24h",
+      "gain": 3.7915
+    },
+    {
+      "name": "bb_lower_dist",
+      "gain": 2.8149
+    },
+    {
+      "name": "dist_low_24h_pct",
+      "gain": 2.7297
     },
     {
       "name": "funding_trend",
-      "gain": 2.3591
+      "gain": 1.9851
     }
   ],
   "horizon": 12
