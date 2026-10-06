@@ -1,13 +1,13 @@
 # ============================================================
-# ARGUS-Trader - FEATURES v9
+# ARGUS-Trader - FEATURES v10
 # ------------------------------------------------------------
-# v9: BOOTSTRAP LIMIT 3500 -> 9000 (полная история candles).
+# v10: BOOTSTRAP backfill support.
+#      - ts_is_sane window 2y -> 10y
+#      - LIMIT 9000 -> 60000
+#      - fetch_candles: market_type='futures' filter
+#      - fetch_daily_candles: market_type='futures' filter
+# v9: BOOTSTRAP LIMIT 3500 -> 9000.
 # v8: DB routing via symbol_conn (DB1: BTC/ETH, DB2: SOL/BNB).
-#     SYMBOLS from env, fallback to config.SYMBOLS.
-#     Автопоиск db2.py (как в dataset.py v7.1).
-# v7: BOOTSTRAP env — read up to 3500 candles (one-time).
-# v6: batch INSERT in save_features.
-# v5: + EMA9/21/50, MACD, BB, dist high/low, session.
 # ============================================================
 
 import os
@@ -20,7 +20,6 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 CRYPTO_ROOT = SCRIPT_DIR.parent
 sys.path.insert(0, str(CRYPTO_ROOT))
 
-# Auto-locate db2.py (same trick as dataset.py v7.1)
 for _p in CRYPTO_ROOT.rglob("db2.py"):
     _d = str(_p.parent)
     if "__pycache__" in _d:
@@ -58,7 +57,7 @@ log = logging.getLogger("crypto.features")
 BOOTSTRAP = (
     os.getenv("FEATURES_BOOTSTRAP", "").strip() == "1"
 )
-LIMIT = 9000 if BOOTSTRAP else 500
+LIMIT = 60000 if BOOTSTRAP else 500
 
 DEFAULT_SYMBOLS = (
     list(CONFIG_SYMBOLS) if CONFIG_SYMBOLS
@@ -153,7 +152,7 @@ def ts_is_sane(ts):
     now = datetime.now(timezone.utc)
     if ts > now + timedelta(minutes=MAX_FUTURE_MIN):
         return False
-    if ts < now - timedelta(days=365 * 2):
+    if ts < now - timedelta(days=365 * 10):
         return False
     return True
 
@@ -330,6 +329,7 @@ def fetch_candles(symbol, timeframe="1h", limit=None):
                     "close, volume FROM candles "
                     "WHERE symbol = %s "
                     "AND timeframe = %s "
+                    "AND market_type = 'futures' "
                     "ORDER BY timestamp DESC LIMIT %s",
                     (symbol, timeframe, limit),
                 )
@@ -359,6 +359,7 @@ def fetch_daily_candles(symbol, limit=500):
                     "SELECT timestamp, close FROM candles "
                     "WHERE symbol = %s "
                     "AND timeframe = '1d' "
+                    "AND market_type = 'futures' "
                     "ORDER BY timestamp DESC LIMIT %s",
                     (symbol, limit),
                 )
@@ -1093,7 +1094,7 @@ def process_symbol(symbol, timeframe="1h"):
 
 def main():
     log.info("=" * 60)
-    log.info("ARGUS-Trader FEATURES v9")
+    log.info("ARGUS-Trader FEATURES v10")
     log.info("BOOTSTRAP=%s, LIMIT=%d", BOOTSTRAP, LIMIT)
     log.info(
         "SYMBOLS=%s DB2_SYMBOLS=%s (DB2_OK=%s)",
