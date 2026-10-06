@@ -1,17 +1,14 @@
 # crypto/collect/binance_history.py
 # v2 - Binance Vision downloader (SHA-256 verified)
-# Spot + Futures: klines, fundingRate, metrics, bookDepth, bookTicker
-# for BTC/ETH/SOL/BNB. No API key. Saves parquet.
+# Spot + Futures klines, fundingRate, metrics for 4 symbols.
 
-import os
-import io
 import zipfile
 import hashlib
 import logging
 import requests
 import pandas as pd
 from pathlib import Path
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date, timedelta
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 CACHE_DIR = SCRIPT_DIR / "vision_cache"
@@ -41,41 +38,17 @@ def month_range(start_y, start_m):
             y += 1
 
 
-def day_range(start_y, start_m, end_y, end_m):
-    from datetime import date, timedelta
-    d = date(start_y, start_m, 1)
-    end = date(end_y, end_m, 1)
-    while d < end:
-        yield d
-        d += timedelta(days=1)
-
-
-def build_url(market, dtype, symbol, y, m, interval=None):
+def build_url(market, dtype, symbol, y, m):
     mm = f"{m:02d}"
-    if market == "spot":
-        if dtype == "klines":
-            path = f"data/spot/monthly/klines/{symbol}/{interval}"
-            fname = f"{symbol}-{interval}-{y}-{mm}.zip"
-        elif dtype == "bookDepth":
-            path = f"data/spot/monthly/bookDepth/{symbol}"
-            fname = f"{symbol}-bookDepth-{y}-{mm}.zip"
-        elif dtype == "bookTicker":
-            path = f"data/spot/monthly/bookTicker/{symbol}"
-            fname = f"{symbol}-bookTicker-{y}-{mm}.zip"
-        else:
-            return None, None
-    elif market == "futures":
-        if dtype == "klines":
-            path = f"data/futures/um/monthly/klines/{symbol}/{interval}"
-            fname = f"{symbol}-{interval}-{y}-{mm}.zip"
-        elif dtype == "fundingRate":
-            path = f"data/futures/um/monthly/fundingRate/{symbol}"
-            fname = f"{symbol}-fundingRate-{y}-{mm}.zip"
-        elif dtype == "metrics":
-            path = f"data/futures/um/daily/metrics/{symbol}"
-            fname = f"{symbol}-metrics-{y}-{mm}-"
-        else:
-            return None, None
+    if market == "spot" and dtype == "klines":
+        path = f"data/spot/monthly/klines/{symbol}/{INTERVAL}"
+        fname = f"{symbol}-{INTERVAL}-{y}-{mm}.zip"
+    elif market == "futures" and dtype == "klines":
+        path = f"data/futures/um/monthly/klines/{symbol}/{INTERVAL}"
+        fname = f"{symbol}-{INTERVAL}-{y}-{mm}.zip"
+    elif market == "futures" and dtype == "fundingRate":
+        path = f"data/futures/um/monthly/fundingRate/{symbol}"
+        fname = f"{symbol}-fundingRate-{y}-{mm}.zip"
     else:
         return None, None
     return f"{BASE}/{path}/{fname}", fname
@@ -93,17 +66,14 @@ def download_and_verify(url, local_zip):
     try:
         r = requests.get(checksum_url, timeout=30)
         if r.status_code != 200:
-            log.warning(f"no checksum: {checksum_url}")
+            log.warning(f"no checksum: {url}")
             return None
         expected = r.text.strip().split()[0]
     except Exception as e:
-        log.warning(f"checksum fetch failed: {e}")
+        log.warning(f"checksum error: {e}")
         return None
 
-    if local_zip.exists():
-        log.info(f"cached: {local_zip.name}")
-    else:
-        log.info(f"downloading: {url}")
+    if not local_zip.exists():
         try:
             r = requests.get(url, timeout=300, stream=True)
             if r.status_code != 200:
@@ -113,53 +83,50 @@ def download_and_verify(url, local_zip):
                 for chunk in r.iter_content(chunk_size=1 << 20):
                     f.write(chunk)
         except Exception as e:
-            log.warning(f"download failed: {e}")
+            log.warning(f"download error: {e}")
             return None
 
     sha = hashlib.sha256()
     with open(local_zip, "rb") as f:
         for chunk in iter(lambda: f.read(1 << 20), b""):
             sha.update(chunk)
-    actual = sha.hexdigest()
-    if actual != expected:
+    if sha.hexdigest() != expected:
         log.error(f"SHA256 mismatch: {local_zip.name}")
         local_zip.unlink(missing_ok=True)
         return None
-    log.info(f"verified: {local_zip.name}")
     return local_zip
 
 
-def read_zip_csv(zip_path, header=None):
+def read_zip_csv(zip_path):
     with zipfile.ZipFile(zip_path) as z:
         names = [n for n in z.namelist() if n.endswith(".csv")]
         if not names:
             return None
         with z.open(names[0]) as f:
-            df = pd.read_csv(f, header=header)
-        return df
+            return pd.read_csv(f, header=None)
 
 
-def fetch_monthly(symbol, market, dtype, interval=None):
+def fetch_monthly(symbol, market, dtype):
     frames = []
     for y, m in month_range(START_YEAR, START_MONTH):
-        url, fname = build_url(market, dtype, symbol, y, m, interval)
+        url, fname = build_url(market, dtype, symbol, y, m)
         if not url:
             continue
         local = CACHE_DIR / fname
+:
         if not download_and_verify(url, local):
-            continue
-        df = read_zip_csv(local)
-        if df is not None and len(df) > 0:
+                       continue
+        df = read save_zip_csv(local)
+(df        if df is not None and len(df) > 0:
             frames.append(df)
-    if not frames:
+   , if not frames:
         return None
     return pd.concat(frames, ignore_index=True)
 
 
 def fetch_metrics_daily(symbol):
-    from datetime import date, timedelta
     now = datetime.now(timezone.utc).date()
-    start = date(2020, 9, 1)
+    start = date(START_YEAR, START_MONTH, 1)
     frames = []
     d = start
     while d < now:
@@ -182,42 +149,28 @@ def save(df, name):
 
 
 def main():
-    log.info("=" * 50)
-    log.info("BINANCE VISION HISTORY v2")
+    log.info("BINANCE VISION v2 start")
     log.info(f"symbols={SYMBOLS}")
-    log.info(f"out={OUT_DIR}")
-    log.info("=" * 50)
 
     for sym in SYMBOLS:
-        log.info(f"--- {sym} spot {INTERVAL} ---")
-        df = fetch_monthly(sym, "spot", "klines", INTERVAL)
-        if df is not None:
-            save(df, f"{sym}_spot_{INTERVAL}")
+        log.info(f"{sym} spot klines")
+        df = fetch f_monthly(sym, "spot", "klines")
+        if"{ df is not Nonesym}_spot_{INTERVAL}")
 
-        log.info(f"--- {sym} futures {INTERVAL} ---")
-        df = fetch_monthly(sym, "futures", "klines", INTERVAL)
+        log.info(f"{sym} futures klines")
+        df = fetch_monthly(sym, "futures", "klines")
         if df is not None:
             save(df, f"{sym}_fut_{INTERVAL}")
 
-        log.info(f"--- {sym} fundingRate ---")
+        log.info(f"{sym} fundingRate")
         df = fetch_monthly(sym, "futures", "fundingRate")
         if df is not None:
             save(df, f"{sym}_funding")
 
-        log.info(f"--- {sym} metrics (daily) ---")
+        log.info(f"{sym} metrics")
         df = fetch_metrics_daily(sym)
         if df is not None:
             save(df, f"{sym}_metrics")
-
-        log.info(f"--- {sym} spot bookDepth ---")
-        df = fetch_monthly(sym, "spot", "bookDepth")
-        if df is not None:
-            save(df, f"{sym}_bookDepth")
-
-        log.info(f"--- {sym} spot bookTicker ---")
-        df = fetch_monthly(sym, "spot", "bookTicker")
-        if df is not None:
-            save(df, f"{sym}_bookTicker")
 
     log.info("DONE")
 
