@@ -1,24 +1,24 @@
 {
-  "generated_at": "2026-10-06T10:05:37.989993+00:00",
+  "generated_at": "2026-10-06T11:05:41.320265+00:00",
   "total_news": 127,
-  "avg_sentiment": -0.054,
+  "avg_sentiment": -0.058,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
-  "bullish_count": 13,
-  "bearish_count": 22,
-  "neutral_count": 92,
+  "bullish_count": 14,
+  "bearish_count": 23,
+  "neutral_count": 90,
   "fake_count": 0,
-  "cross_confirmed": 5,
+  "cross_confirmed": 3,
   "single_source": 102,
   "by_source": {
     "Cointelegraph": {
       "total": 24,
       "bull": 2,
-      "bear": 5
+      "bear": 4
     },
     "Decrypt": {
       "total": 25,
       "bull": 4,
-      "bear": 4
+      "bear": 5
     },
     "Bitcoin.com": {
       "total": 10,
@@ -33,7 +33,7 @@
     "CryptoPotato": {
       "total": 25,
       "bull": 6,
-      "bear": 4
+      "bear": 5
     },
     "Bitcoinist": {
       "total": 8,
@@ -42,11 +42,27 @@
     },
     "ForkLog": {
       "total": 25,
-      "bull": 1,
+      "bull": 2,
       "bear": 2
     }
   },
   "top_bullish": [
+    {
+      "title": "Биткоин встретил годовщину ATH на 32% ниже рекорда",
+      "source": "ForkLog",
+      "source_weight": 1.2,
+      "lang": "ru",
+      "pub_date": "2026-10-06T10:16:57+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-06T11:05:41.199059+00:00",
+      "effective_weight": 1.8,
+      "title_original": "Биткоин встретил годовщину ATH на 32% ниже рекорда",
+      "cross_check": 1
+    },
     {
       "title": "Solana Foundation targets settlement in seconds with DvP launch",
       "source": "Cointelegraph",
@@ -56,10 +72,10 @@
       "sentiment": 1.0,
       "bull_weight": 1.0,
       "bear_weight": 0.0,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-06T10:05:36.710007+00:00",
-      "effective_weight": 1.95,
+      "collected_at": "2026-10-06T11:05:39.453902+00:00",
+      "effective_weight": 1.3,
       "title_original": "Solana Foundation targets settlement in seconds with DvP launch",
       "cross_check": 1
     },
@@ -74,7 +90,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-06T10:05:36.710790+00:00",
+      "collected_at": "2026-10-06T11:05:39.455427+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin price fails to break higher after best weekly close in eight months",
       "cross_check": 2
@@ -90,7 +106,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-06T10:05:37.163707+00:00",
+      "collected_at": "2026-10-06T11:05:40.305382+00:00",
       "effective_weight": 1.0,
       "title_original": "Changer+ Launches Stablecoin-First Self-Custodial Wallet to Make Stablecoins Easier to Use",
       "cross_check": 1
@@ -106,43 +122,43 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-06T10:05:37.871725+00:00",
+      "collected_at": "2026-10-06T11:05:41.199664+00:00",
       "effective_weight": 0.96,
       "title_original": "Goldman Sachs сохранил прогноз роста дата-центров в США",
-      "cross_check": 1
-    },
-    {
-      "title": "Solana Debuts Institutional Settlement Standard With J.P. Morgan Input",
-      "source": "Decrypt",
-      "source_weight": 1.1,
-      "lang": "en",
-      "pub_date": "2026-10-06T02:01:03+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-06T10:05:36.788388+00:00",
-      "effective_weight": 0.88,
-      "title_original": "Solana Debuts Institutional Settlement Standard With J.P. Morgan Input",
       "cross_check": 1
     }
   ],
   "top_bearish": [
     {
-      "title": "Pi Network’s PI Token Remains Below Key Resistance, Bitcoin (BTC) Returns to $86K: Market Watch",
+      "title": "Crypto 'Godfather' Gets Six Years for Hiring Sheriff's Deputies, $37M Meta Fraud",
+      "source": "Decrypt",
+      "source_weight": 1.1,
+      "lang": "en",
+      "pub_date": "2026-10-06T10:36:57+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-06T11:05:39.555283+00:00",
+      "effective_weight": 1.65,
+      "title_original": "Crypto 'Godfather' Gets Six Years for Hiring Sheriff's Deputies, $37M Meta Fraud",
+      "cross_check": 1
+    },
+    {
+      "title": "How ZachXBT Infiltrated a Crypto Laundering Network Handling Bybit and Other Stolen Funds",
       "source": "CryptoPotato",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-10-06T09:09:41+00:00",
+      "pub_date": "2026-10-06T10:33:02+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 1.0,
+      "bear_weight": 1.8,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-06T10:05:37.163515+00:00",
+      "collected_at": "2026-10-06T11:05:40.305154+00:00",
       "effective_weight": 1.5,
-      "title_original": "Pi Network’s PI Token Remains Below Key Resistance, Bitcoin (BTC) Returns to $86K: Market Watch",
+      "title_original": "How ZachXBT Infiltrated a Crypto Laundering Network Handling Bybit and Other Stolen Funds",
       "cross_check": 2
     },
     {
@@ -156,7 +172,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-06T10:05:36.710292+00:00",
+      "collected_at": "2026-10-06T11:05:39.454472+00:00",
       "effective_weight": 1.04,
       "title_original": "Rain seeks US trust bank charter days after OCC sued over crypto charters",
       "cross_check": 2
@@ -172,7 +188,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-06T10:05:36.710552+00:00",
+      "collected_at": "2026-10-06T11:05:39.455033+00:00",
       "effective_weight": 1.04,
       "title_original": "Modern Treasury seeks US trust bank charter for digital asset custody",
       "cross_check": 2
@@ -188,26 +204,10 @@
       "bear_weight": 3.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-06T10:05:36.710983+00:00",
+      "collected_at": "2026-10-06T11:05:39.455843+00:00",
       "effective_weight": 1.04,
       "title_original": "Too big to pause: Could an AI slowdown crash the economy?",
       "cross_check": 1
-    },
-    {
-      "title": "ZachXBT Infiltrates Crypto Syndicate Tied to $1.5B Bybit Hack",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-06T07:30:58+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-06T10:05:36.983714+00:00",
-      "effective_weight": 1.0,
-      "title_original": "ZachXBT Infiltrates Crypto Syndicate Tied to $1.5B Bybit Hack",
-      "cross_check": 2
     }
   ]
 }
