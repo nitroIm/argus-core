@@ -1,9 +1,9 @@
 # crypto/collect/binance_history.py
-# v6 - accept files without checksum (current month),
-#      fix metrics last-day skip, strip UTF-8 BOM,
-#      strict column-count validation.
-# Downloads spot+futures klines, fundingRate, metrics
-# for BTC/ETH/SOL/BNB. Saves parquet to vision_out/.
+# v7 - guard empty/corrupt CSV and ZIP, drop
+#      bad cache. Downloads spot+futures
+#      klines, fundingRate, metrics for
+#      BTC/ETH/SOL/BNB. Saves parquet to
+#      vision_out/.
 
 import io
 import zipfile
@@ -12,7 +12,9 @@ import logging
 import requests
 import pandas as pd
 from pathlib import Path
-from datetime import datetime, timezone, date, timedelta
+from datetime import (
+    datetime, timezone, date, timedelta,
+)
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 CACHE_DIR = SCRIPT_DIR / "vision_cache"
@@ -21,18 +23,21 @@ CACHE_DIR.mkdir(parents=True, exist_ok=True)
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 BASE = "https://data.binance.vision"
-SYMBOLS = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT"]
+SYMBOLS = ["BTCUSDT", "ETHUSDT",
+           "SOLUSDT", "BNBUSDT"]
 START_YEAR = 2020
 START_MONTH = 9
 INTERVAL = "1h"
 
 KLINE_COLS = [
-    "open_time", "open", "high", "low", "close", "volume",
-    "close_time", "quote_volume", "count",
-    "taker_buy_volume", "taker_buy_quote_volume", "ignore",
+    "open_time", "open", "high", "low",
+    "close", "volume", "close_time",
+    "quote_volume", "count", "taker_buy_volume",
+    "taker_buy_quote_volume", "ignore",
 ]
 FUNDING_COLS = [
-    "calc_time", "funding_interval_hours", "last_funding_rate",
+    "calc_time", "funding_interval_hours",
+    "last_funding_rate",
 ]
 METRICS_COLS = [
     "create_time", "symbol", "sum_open_interest",
@@ -44,7 +49,8 @@ METRICS_COLS = [
 ]
 
 LOG_FORMAT = "%(asctime)s [%(levelname)s] %(message)s"
-logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
+logging.basicConfig(level=logging.INFO,
+                    format=LOG_FORMAT)
 log = logging.getLogger("vision")
 
 
@@ -62,13 +68,23 @@ def month_range(start_y, start_m):
 def build_url(market, dtype, symbol, y, m):
     mm = f"{m:02d}"
     if market == "spot" and dtype == "klines":
-        path = f"data/spot/monthly/klines/{symbol}/{INTERVAL}"
+        path = (
+            f"data/spot/monthly/klines/"
+            f"{symbol}/{INTERVAL}"
+        )
         fname = f"{symbol}-{INTERVAL}-{y}-{mm}.zip"
     elif market == "futures" and dtype == "klines":
-        path = f"data/futures/um/monthly/klines/{symbol}/{INTERVAL}"
+        path = (
+            f"data/futures/um/monthly/klines/"
+            f"{symbol}/{INTERVAL}"
+        )
         fname = f"{symbol}-{INTERVAL}-{y}-{mm}.zip"
-    elif market == "futures" and dtype == "fundingRate":
-        path = f"data/futures/um/monthly/fundingRate/{symbol}"
+    elif (market == "futures"
+          and dtype == "fundingRate"):
+        path = (
+            f"data/futures/um/monthly/"
+            f"fundingRate/{symbol}"
+        )
         fname = f"{symbol}-fundingRate-{y}-{mm}.zip"
     else:
         return None, None
@@ -77,7 +93,9 @@ def build_url(market, dtype, symbol, y, m):
 
 def build_metrics_url(symbol, d):
     ds = d.strftime("%Y-%m-%d")
-    path = f"data/futures/um/daily/metrics/{symbol}"
+    path = (
+        f"data/futures/um/daily/metrics/{symbol}"
+    )
     fname = f"{symbol}-metrics-{ds}.zip"
     return f"{BASE}/{path}/{fname}", fname
 
@@ -88,79 +106,135 @@ def cache_path(market, fname):
 
 def fetch_checksum(url):
     try:
-        r = requests.get(url + ".CHECKSUM", timeout=30)
+        r = requests.get(
+            url + ".CHECKSUM", timeout=30
+        )
         if r.status_code == 200:
-            return r.text.strip().split()[0]
+            txt = r.text.strip()
+            if txt:
+                return txt.split()[0]
     except Exception as e:
-        log.warning(f"checksum fetch error: {e}")
+        log.warning(f"checksum error: {e}")
     return None
 
 
 def download_and_verify(url, local_zip):
     expected = fetch_checksum(url)
     if expected is None:
-        log.warning(f"no checksum, accept as-is: {url}")
+        log.warning(f"no checksum: {url}")
 
     if not local_zip.exists():
         try:
-            r = requests.get(url, timeout=300, stream=True)
+            r = requests.get(
+                url, timeout=300, stream=True
+            )
             if r.status_code != 200:
-                log.warning(f"HTTP {r.status_code}: {url}")
+                log.warning(
+                    f"HTTP {r.status_code}: {url}"
+                )
                 return None
             with open(local_zip, "wb") as f:
-                for chunk in r.iter_content(chunk_size=1 << 20):
+                for chunk in r.iter_content(
+                    chunk_size=1 << 20
+                ):
                     f.write(chunk)
         except Exception as e:
             log.warning(f"download error: {e}")
             return None
 
+    if not zipfile.is_zipfile(local_zip):
+        log.warning(f"not zip: {local_zip.name}")
+        local_zip.unlink(missing_ok=True)
+        return None
+
     if expected is not None:
         sha = hashlib.sha256()
         with open(local_zip, "rb") as f:
-            for chunk in iter(lambda: f.read(1 << 20), b""):
+            for chunk in iter(
+                lambda: f.read(1 << 20), b""
+            ):
                 sha.update(chunk)
         if sha.hexdigest() != expected:
-            log.error(f"SHA256 mismatch: {local_zip.name}")
+            log.error(
+                f"SHA256 mismatch: {local_zip.name}"
+            )
             local_zip.unlink(missing_ok=True)
             return None
     return local_zip
 
 
 def read_zip_csv(zip_path, cols):
-    with zipfile.ZipFile(zip_path) as z:
-        names = [n for n in z.namelist()
-                 if n.endswith(".csv")]
-        if not names:
-            return None
-        with z.open(names[0]) as f:
-            raw = f.read().decode("utf-8-sig",
-                                  errors="replace")
+    try:
+        with zipfile.ZipFile(zip_path) as z:
+            names = [
+                n for n in z.namelist()
+                if n.endswith(".csv")
+            ]
+            if not names:
+                return None
+            with z.open(names[0]) as f:
+                raw = f.read().decode(
+                    "utf-8-sig", errors="replace"
+                )
+    except zipfile.BadZipFile:
+        log.warning(f"bad zip: {zip_path.name}")
+        return None
+
+    if not raw.strip():
+        log.warning(f"empty csv: {zip_path.name}")
+        return None
+
     lines = raw.splitlines()
     skip = 0
     if lines and lines[0].startswith(cols[0]):
         skip = 1
     buf = io.StringIO("\n".join(lines))
-    df = pd.read_csv(buf, header=None, skiprows=skip)
+    try:
+        df = pd.read_csv(
+            buf, header=None, skiprows=skip
+        )
+    except Exception as e:
+        log.warning(
+            f"parse {zip_path.name}: {e}"
+        )
+        return None
+
     if len(df.columns) != len(cols):
-        log.warning(f"{zip_path.name}: expected "
-                    f"{len(cols)} cols, got "
-                    f"{len(df.columns)}")
+        log.warning(
+            f"{zip_path.name}: cols="
+            f"{len(df.columns)} expected="
+            f"{len(cols)}"
+        )
         return None
     df.columns = cols
+    if cols[0] in ("open_time", "calc_time"):
+        df[cols[0]] = (
+            pd.to_numeric(
+                df[cols[0]], errors="coerce"
+            ).astype("int64")
+        )
     return df
 
 
 def fetch_monthly(symbol, market, dtype, cols):
     frames = []
-    for y, m in month_range(START_YEAR, START_MONTH):
-        url, fname = build_url(market, dtype, symbol, y, m)
+    for y, m in month_range(
+        START_YEAR, START_MONTH
+    ):
+        url, fname = build_url(
+            market, dtype, symbol, y, m
+        )
         if not url:
             continue
         local = cache_path(market, fname)
         if not download_and_verify(url, local):
             continue
         df = read_zip_csv(local, cols)
-        if df is not None and len(df) > 0:
+        if df is None:
+            log.warning(f"drop: {local.name}")
+            local.unlink(missing_ok=True)
+            continue
+        if len(df) > 0:
             frames.append(df)
     if not frames:
         return None
@@ -177,7 +251,10 @@ def fetch_metrics_daily(symbol):
         local = cache_path("futures", fname)
         if download_and_verify(url, local):
             df = read_zip_csv(local, METRICS_COLS)
-            if df is not None and len(df) > 0:
+            if df is None:
+                log.warning(f"drop: {local.name}")
+                local.unlink(missing_ok=True)
+            elif len(df) > 0:
                 frames.append(df)
         d += timedelta(days=1)
     if not frames:
@@ -192,24 +269,29 @@ def save(df, name):
 
 
 def main():
-    log.info("BINANCE VISION v6 start")
+    log.info("BINANCE VISION v7 start")
     log.info(f"symbols={SYMBOLS}")
 
     for sym in SYMBOLS:
         log.info(f"{sym} spot klines")
-        df = fetch_monthly(sym, "spot", "klines", KLINE_COLS)
+        df = fetch_monthly(
+            sym, "spot", "klines", KLINE_COLS
+        )
         if df is not None:
             save(df, f"{sym}_spot_{INTERVAL}")
 
         log.info(f"{sym} futures klines")
-        df = fetch_monthly(sym, "futures", "klines",
-                           KLINE_COLS)
+        df = fetch_monthly(
+            sym, "futures", "klines", KLINE_COLS
+        )
         if df is not None:
             save(df, f"{sym}_fut_{INTERVAL}")
 
         log.info(f"{sym} fundingRate")
-        df = fetch_monthly(sym, "futures", "fundingRate",
-                           FUNDING_COLS)
+        df = fetch_monthly(
+            sym, "futures", "fundingRate",
+            FUNDING_COLS,
+        )
         if df is not None:
             save(df, f"{sym}_funding")
 
