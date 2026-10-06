@@ -1,12 +1,14 @@
 -- ============================================================
--- ARGUS-Trader — СХЕМА БД
--- v2: fix — causal_links имел два PRIMARY KEY
+-- ARGUS-Trader — SCHEMA DB1 (Argus_db)
+-- ------------------------------------------------------------
+-- v3: features_hourly расширен до 35 колонок (зеркало DB2).
+--     + candles_daily (зеркало DB2).
+--     Крипто-таблицы зеркальны DB2.
+--     Некрипто (macro/onchain/external/fear_greed/
+--     market_context) — только здесь.
 -- ============================================================
 
--- ============================================================
--- RAW: СЫРЬЁ (retention 90 дней)
--- ============================================================
-
+-- RAW: свечи
 CREATE TABLE IF NOT EXISTS candles (
     symbol       TEXT NOT NULL,
     timeframe    TEXT NOT NULL,
@@ -23,6 +25,19 @@ CREATE TABLE IF NOT EXISTS candles (
 CREATE INDEX IF NOT EXISTS idx_candles_symbol_ts
     ON candles (symbol, timestamp DESC);
 
+CREATE TABLE IF NOT EXISTS candles_daily (
+    symbol       TEXT NOT NULL,
+    timestamp    TIMESTAMPTZ NOT NULL,
+    open         NUMERIC(20, 8),
+    high         NUMERIC(20, 8),
+    low          NUMERIC(20, 8),
+    close        NUMERIC(20, 8),
+    volume       NUMERIC(20, 8),
+    source       TEXT,
+    inserted_at  TIMESTAMPTZ DEFAULT NOW(),
+    PRIMARY KEY (symbol, timestamp)
+);
+
 CREATE TABLE IF NOT EXISTS funding_rates (
     symbol       TEXT NOT NULL,
     timestamp    TIMESTAMPTZ NOT NULL,
@@ -31,8 +46,6 @@ CREATE TABLE IF NOT EXISTS funding_rates (
     inserted_at  TIMESTAMPTZ DEFAULT NOW(),
     PRIMARY KEY (symbol, timestamp)
 );
-CREATE INDEX IF NOT EXISTS idx_funding_symbol_ts
-    ON funding_rates (symbol, timestamp DESC);
 
 CREATE TABLE IF NOT EXISTS open_interest (
     symbol       TEXT NOT NULL,
@@ -76,10 +89,20 @@ CREATE TABLE IF NOT EXISTS liquidations (
     PRIMARY KEY (symbol, timestamp, side, price, quantity)
 );
 
--- ============================================================
--- CONTEXT: КОНТЕКСТ РЫНКА (CoinGecko)
--- ============================================================
+CREATE TABLE IF NOT EXISTS orderbook_snapshots (
+    symbol       TEXT NOT NULL,
+    timestamp    TIMESTAMPTZ NOT NULL,
+    bid_vol      DOUBLE PRECISION,
+    ask_vol      DOUBLE PRECISION,
+    bid_pct      DOUBLE PRECISION,
+    ask_pct      DOUBLE PRECISION,
+    spread_pct   DOUBLE PRECISION,
+    source       TEXT,
+    inserted_at  TIMESTAMPTZ DEFAULT NOW(),
+    PRIMARY KEY (symbol, timestamp)
+);
 
+-- CONTEXT: некрипто (только DB1)
 CREATE TABLE IF NOT EXISTS market_context (
     timestamp        TIMESTAMPTZ PRIMARY KEY,
     btc_mcap         NUMERIC(30, 2),
@@ -93,10 +116,45 @@ CREATE TABLE IF NOT EXISTS market_context (
     inserted_at      TIMESTAMPTZ DEFAULT NOW()
 );
 
--- ============================================================
--- AUDIT: СЛУЖЕБНЫЕ
--- ============================================================
+CREATE TABLE IF NOT EXISTS external_market (
+    symbol       TEXT NOT NULL,
+    timestamp    TIMESTAMPTZ NOT NULL,
+    close        DOUBLE PRECISION,
+    change_pct   DOUBLE PRECISION,
+    source       TEXT,
+    inserted_at  TIMESTAMPTZ DEFAULT NOW(),
+    PRIMARY KEY (symbol, timestamp)
+);
 
+CREATE TABLE IF NOT EXISTS macro_metrics (
+    symbol       TEXT NOT NULL,
+    timestamp    TIMESTAMPTZ NOT NULL,
+    close        DOUBLE PRECISION,
+    change_pct   DOUBLE PRECISION,
+    source       TEXT,
+    inserted_at  TIMESTAMPTZ DEFAULT NOW(),
+    PRIMARY KEY (symbol, timestamp)
+);
+
+CREATE TABLE IF NOT EXISTS fear_greed (
+    timestamp       TIMESTAMPTZ PRIMARY KEY,
+    value           INTEGER,
+    classification  TEXT,
+    source          TEXT,
+    inserted_at     TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS onchain_metrics (
+    symbol       TEXT NOT NULL,
+    timestamp    TIMESTAMPTZ NOT NULL,
+    hashrate     DOUBLE PRECISION,
+    difficulty   DOUBLE PRECISION,
+    source       TEXT,
+    inserted_at  TIMESTAMPTZ DEFAULT NOW(),
+    PRIMARY KEY (symbol, timestamp)
+);
+
+-- AUDIT
 CREATE TABLE IF NOT EXISTS collect_log (
     id             SERIAL PRIMARY KEY,
     job_name       TEXT NOT NULL,
@@ -138,8 +196,6 @@ CREATE TABLE IF NOT EXISTS cross_check (
     checked_at       TIMESTAMPTZ DEFAULT NOW(),
     PRIMARY KEY (symbol, timestamp, source_primary, source_secondary)
 );
-CREATE INDEX IF NOT EXISTS idx_cross_check_anomaly
-    ON cross_check (symbol, timestamp DESC) WHERE is_anomaly = TRUE;
 
 CREATE TABLE IF NOT EXISTS anomaly_log (
     id             SERIAL PRIMARY KEY,
@@ -162,35 +218,49 @@ CREATE TABLE IF NOT EXISTS retention_log (
     executed_at    TIMESTAMPTZ DEFAULT NOW()
 );
 
--- ============================================================
--- PRODUCTION: ПРИЗНАКИ, ПАТТЕРНЫ, СОБЫТИЯ, ML
--- ============================================================
-
+-- PRODUCTION: фичи
 CREATE TABLE IF NOT EXISTS features_hourly (
-    symbol           TEXT NOT NULL,
-    timestamp        TIMESTAMPTZ NOT NULL,
-    change_pct       NUMERIC(10, 4),
-    range_pct        NUMERIC(10, 4),
-    body_pct         NUMERIC(10, 4),
-    upper_wick_pct   NUMERIC(10, 4),
-    lower_wick_pct   NUMERIC(10, 4),
-    volume_ratio_24h NUMERIC(10, 4),
-    volatility_24h   NUMERIC(10, 4),
-    volatility_7d    NUMERIC(10, 4),
-    change_4h        NUMERIC(10, 4),
-    change_24h       NUMERIC(10, 4),
-    change_7d        NUMERIC(10, 4),
-    funding_rate     NUMERIC(20, 10),
-    funding_trend    NUMERIC(20, 10),
-    oi_change_pct    NUMERIC(10, 4),
-    ls_ratio         NUMERIC(20, 6),
-    taker_ratio      NUMERIC(10, 4),
-    next_change_pct  NUMERIC(10, 4),
-    next_direction   SMALLINT,
-    computed_at      TIMESTAMPTZ DEFAULT NOW(),
+    symbol            TEXT NOT NULL,
+    timestamp         TIMESTAMPTZ NOT NULL,
+    change_pct        NUMERIC(10, 4),
+    range_pct         NUMERIC(10, 4),
+    body_pct          NUMERIC(10, 4),
+    upper_wick_pct    NUMERIC(10, 4),
+    lower_wick_pct    NUMERIC(10, 4),
+    volume_ratio_24h  NUMERIC(10, 4),
+    volatility_24h    NUMERIC(10, 4),
+    volatility_7d     NUMERIC(10, 4),
+    change_4h         NUMERIC(10, 4),
+    change_24h        NUMERIC(10, 4),
+    change_7d         NUMERIC(10, 4),
+    change_1d         NUMERIC(10, 4),
+    change_3d         NUMERIC(10, 4),
+    trend_up          SMALLINT,
+    hour_of_day       SMALLINT,
+    day_of_week       SMALLINT,
+    funding_rate      NUMERIC(20, 10),
+    funding_trend     NUMERIC(20, 10),
+    oi_change_pct     NUMERIC(10, 4),
+    ls_ratio          NUMERIC(20, 6),
+    taker_ratio       NUMERIC(10, 4),
+    ema9_dist_pct     NUMERIC(10, 4),
+    ema21_dist_pct    NUMERIC(10, 4),
+    ema50_dist_pct    NUMERIC(10, 4),
+    macd              NUMERIC(20, 8),
+    macd_signal       NUMERIC(20, 8),
+    bb_upper_dist     NUMERIC(10, 4),
+    bb_lower_dist     NUMERIC(10, 4),
+    bb_width_pct      NUMERIC(10, 4),
+    dist_high_24h_pct NUMERIC(10, 4),
+    dist_low_24h_pct  NUMERIC(10, 4),
+    consecutive_up    SMALLINT,
+    session           SMALLINT,
+    next_change_pct   NUMERIC(10, 4),
+    next_direction    SMALLINT,
+    computed_at       TIMESTAMPTZ DEFAULT NOW(),
     PRIMARY KEY (symbol, timestamp)
 );
-CREATE INDEX IF NOT EXISTS idx_features_symbol_ts
+CREATE INDEX IF NOT EXISTS idx_feat_symbol_ts
     ON features_hourly (symbol, timestamp DESC);
 
 CREATE TABLE IF NOT EXISTS price_patterns (
@@ -217,7 +287,6 @@ CREATE TABLE IF NOT EXISTS events (
 CREATE INDEX IF NOT EXISTS idx_events_symbol_ts
     ON events (symbol, timestamp DESC);
 
--- FIX: убрал id SERIAL PRIMARY KEY (оставлен только составной ключ)
 CREATE TABLE IF NOT EXISTS causal_links (
     event_id        INTEGER REFERENCES events(id) ON DELETE CASCADE,
     hours_before    INTEGER NOT NULL,
