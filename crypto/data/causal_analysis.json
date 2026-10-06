@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-06T05:17:18.638142+00:00",
+  "generated_at": "2026-10-06T06:18:15.481246+00:00",
   "symbols": {
     "BTCUSDT": {
       "symbol": "BTCUSDT",
@@ -18,29 +18,44 @@
     "SOLUSDT": {
       "symbol": "SOLUSDT",
       "total_events": 200,
-      "processed": 0,
-      "saved": 0,
-      "summary_by_type": {}
+      "processed": 1,
+      "saved": 1,
+      "summary_by_type": {
+        "rsi_oversold": {
+          "count": 1,
+          "avg_funding": 0.0,
+          "avg_oi_change": null,
+          "avg_ls_ratio": 1.71,
+          "avg_change_24h": -0.5316
+        }
+      }
     },
     "BNBUSDT": {
       "symbol": "BNBUSDT",
       "total_events": 200,
-      "processed": 2,
-      "saved": 2,
+      "processed": 4,
+      "saved": 4,
       "summary_by_type": {
         "funding_spike_pos": {
           "count": 1,
           "avg_funding": 0.0001,
           "avg_oi_change": null,
-          "avg_ls_ratio": 2.34,
-          "avg_change_24h": -1.0517
+          "avg_ls_ratio": 2.36,
+          "avg_change_24h": -1.4522
         },
         "ls_long_extreme": {
           "count": 1,
           "avg_funding": 0.0001,
           "avg_oi_change": null,
-          "avg_ls_ratio": 2.34,
-          "avg_change_24h": -1.0517
+          "avg_ls_ratio": 2.36,
+          "avg_change_24h": -1.4522
+        },
+        "rsi_oversold": {
+          "count": 2,
+          "avg_funding": 0.0001,
+          "avg_oi_change": null,
+          "avg_ls_ratio": 2.35,
+          "avg_change_24h": -1.2519
         }
       }
     }
