@@ -1,9 +1,9 @@
 # ============================================================
-# ARGUS-Trader - TRAIN XGB v1
+# ARGUS-Trader - TRAIN XGB v2
 # ------------------------------------------------------------
+# v2: winsorize y to +-20 for consistency with other models.
+#     Logs clipped count. No functional change to tree logic.
 # v1: XGBoost per-symbol. Same dataset as LightGBM.
-#     Saves lgb_{sym}.json -> models/xgb_{sym}.json
-#     Does NOT touch LightGBM models.
 # ============================================================
 
 import os
@@ -38,6 +38,7 @@ MODELS_DIR.mkdir(parents=True, exist_ok=True)
 NUM_ROUNDS = 1000
 EARLY_STOP = 30
 VAL_FRAC = 0.15
+Y_CLIP = 20.0
 
 PARAMS = {
     "objective": "reg:squarederror",
@@ -86,6 +87,10 @@ def _ic(y_true, y_pred):
     return float((yt * yp).sum() / d)
 
 
+def _clip_y(y):
+    return np.clip(y, -Y_CLIP, Y_CLIP)
+
+
 def train_one(symbol):
     log.info("-" * 60)
     log.info("TRAIN XGB %s", symbol)
@@ -114,13 +119,20 @@ def train_one(symbol):
     X_va = X_train[cut:]
     r_va = r_train[cut:]
 
+    n_clipped = int(
+        (np.abs(r_tr) > Y_CLIP).sum()
+    )
+    r_tr_c = _clip_y(r_tr)
+    r_va_c = _clip_y(r_va)
+
     log.info(
-        "%s: train=%d val=%d test=%d",
-        symbol, len(X_tr), len(X_va), len(X_test),
+        "%s: train=%d val=%d test=%d clipped=%d",
+        symbol, len(X_tr), len(X_va),
+        len(X_test), n_clipped,
     )
 
-    dtrain = xgb.DMatrix(X_tr, label=r_tr)
-    dval = xgb.DMatrix(X_va, label=r_va)
+    dtrain = xgb.DMatrix(X_tr, label=r_tr_c)
+    dval = xgb.DMatrix(X_va, label=r_va_c)
     dtest = xgb.DMatrix(X_test, label=r_test)
 
     evals = [(dval, "val")]
@@ -164,7 +176,9 @@ def train_one(symbol):
         symbol, ic_tr,
     )
 
-    imp_dict = model.get_score(importance_type="gain")
+    imp_dict = model.get_score(
+        importance_type="gain"
+    )
     pairs = sorted(
         imp_dict.items(),
         key=lambda x: -x[1],
@@ -183,10 +197,12 @@ def train_one(symbol):
         "trained_at": datetime.now(
             timezone.utc
         ).isoformat(),
-        "version": "v1-xgb",
+        "version": "v2-xgb",
         "objective": "regression",
         "algorithm": "xgboost",
         "symbol": symbol,
+        "y_clip": Y_CLIP,
+        "n_clipped": n_clipped,
         "n_total": data["n_total"],
         "n_train": data["n_train"],
         "n_test": data["n_test"],
@@ -214,11 +230,11 @@ def train_one(symbol):
 
 def train():
     log.info("=" * 60)
-    log.info("ARGUS-Trader TRAIN XGB v1")
+    log.info("ARGUS-Trader TRAIN XGB v2")
     log.info("SYMBOLS=%s", SYMBOLS_LIST)
     log.info(
-        "NUM_ROUNDS=%d EARLY_STOP=%d",
-        NUM_ROUNDS, EARLY_STOP,
+        "NUM_ROUNDS=%d EARLY_STOP=%d Y_CLIP=+-%.1f",
+        NUM_ROUNDS, EARLY_STOP, Y_CLIP,
     )
     log.info("PARAMS: %s", PARAMS)
     log.info("=" * 60)
@@ -236,15 +252,19 @@ def train():
     log.info("XGB TRAIN DONE")
     for sym, m in metas.items():
         log.info(
-            "  %s: IC=%.4f best_iter=%d",
+            "  %s: IC=%.4f RMSE=%.4f best_iter=%d",
             sym, m["ic_test"],
+            m["rmse_test"],
             m["best_iteration"],
         )
     if metas:
         avg = sum(
             m["ic_test"] for m in metas.values()
         ) / len(metas)
-        log.info("  AVG IC=%.4f (%d models)", avg, len(metas))
+        log.info(
+            "  AVG IC=%.4f (%d models)",
+            avg, len(metas),
+        )
     log.info("=" * 60)
 
     ds.SYMBOLS = ["BTCUSDT", "ETHUSDT"]
