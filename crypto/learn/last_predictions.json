@@ -1,9 +1,9 @@
 {
-  "predicted_at": "2026-10-06T19:43:11.357591+00:00",
+  "predicted_at": "2026-10-06T20:00:16.345821+00:00",
   "model_accuracy": 0.0335,
   "model_accuracy_avg": 0.0335,
   "feature_count": 61,
-  "mode": "6model_blend",
+  "mode": "6model_blend_sane",
   "weights_version": "2026-10-06T19:39:24.347160+00:00",
   "symbols": [
     "BTCUSDT",
@@ -15,19 +15,21 @@
     {
       "symbol": "BTCUSDT",
       "timestamp": "2026-10-06T13:00:00+00:00",
-      "prob_up": 0.95,
+      "prob_up": 0.5595,
       "direction": 1,
-      "confidence": 1.0,
-      "predicted_return_pct": 27339.4064,
+      "confidence": 0.0595,
+      "predicted_return_pct": 0.2381,
       "model_acc": 0.0428,
       "objective": "regression",
-      "model_version": "v15-6models",
+      "model_version": "v16-6models-sane",
       "sources": [
         "lgb",
         "xgb",
-        "ridge",
-        "mlp",
         "lstm"
+      ],
+      "skipped": [
+        "ridge",
+        "mlp"
       ],
       "blend": true,
       "features_used": 61,
@@ -36,32 +38,30 @@
       "weights": {
         "lgb": 0.3126,
         "xgb": 0.3514,
-        "ridge": 0.0,
-        "mlp": 0.0636,
         "lstm": 0.0307
       },
       "lgb_pred": 0.2691,
       "xgb_pred": 0.1306,
-      "ridge_pred": -4653.1235,
-      "mlp_pred": 325963.9375,
       "lstm_pred": 1.1535
     },
     {
       "symbol": "ETHUSDT",
       "timestamp": "2026-10-06T13:00:00+00:00",
-      "prob_up": 0.05,
-      "direction": 0,
-      "confidence": 1.0,
-      "predicted_return_pct": -682.2131,
+      "prob_up": 0.8768,
+      "direction": 1,
+      "confidence": 0.3768,
+      "predicted_return_pct": 1.5071,
       "model_acc": -0.0152,
       "objective": "regression",
-      "model_version": "v15-6models",
+      "model_version": "v16-6models-sane",
       "sources": [
         "lgb",
         "xgb",
-        "ridge",
-        "mlp",
         "lstm"
+      ],
+      "skipped": [
+        "ridge",
+        "mlp"
       ],
       "blend": true,
       "features_used": 61,
@@ -70,14 +70,10 @@
       "weights": {
         "lgb": 0.0,
         "xgb": 0.0116,
-        "ridge": 0.0,
-        "mlp": 0.0365,
         "lstm": 0.5207
       },
       "lgb_pred": 0.0693,
       "xgb_pred": 0.0857,
-      "ridge_pred": 643.343,
-      "mlp_pred": -10653.2891,
       "lstm_pred": 1.5387
     },
     {
@@ -89,7 +85,7 @@
       "predicted_return_pct": 0.1229,
       "model_acc": 0.055,
       "objective": "regression",
-      "model_version": "v15-6models",
+      "model_version": "v16-6models-sane",
       "sources": [
         "lgb",
         "xgb",
@@ -97,6 +93,7 @@
         "mlp",
         "lstm"
       ],
+      "skipped": [],
       "blend": true,
       "features_used": 61,
       "trade_allowed": true,
@@ -123,7 +120,7 @@
       "predicted_return_pct": 0.0489,
       "model_acc": 0.0515,
       "objective": "regression",
-      "model_version": "v15-6models",
+      "model_version": "v16-6models-sane",
       "sources": [
         "lgb",
         "xgb",
@@ -131,6 +128,7 @@
         "mlp",
         "lstm"
       ],
+      "skipped": [],
       "blend": true,
       "features_used": 61,
       "trade_allowed": true,

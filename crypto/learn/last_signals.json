@@ -1,26 +1,26 @@
 {
-  "generated_at": "2026-10-06T19:43:11.768482+00:00",
+  "generated_at": "2026-10-06T20:00:16.898232+00:00",
   "model_accuracy": 0.0335,
   "signals": [
     {
       "symbol": "BTCUSDT",
-      "action": "BUY",
-      "strength": "strong",
-      "prob_up": 0.95,
-      "confidence": 1.0,
+      "action": "WAIT",
+      "strength": "weak",
+      "prob_up": 0.5595,
+      "confidence": 0.0595,
       "objective": "regression",
-      "model_version": "v15-6models",
-      "predicted_return_pct": 27339.4064
+      "model_version": "v16-6models-sane",
+      "predicted_return_pct": 0.2381
     },
     {
       "symbol": "ETHUSDT",
-      "action": "SELL",
-      "strength": "strong",
-      "prob_up": 0.05,
-      "confidence": 1.0,
+      "action": "BUY",
+      "strength": "normal",
+      "prob_up": 0.8768,
+      "confidence": 0.3768,
       "objective": "regression",
-      "model_version": "v15-6models",
-      "predicted_return_pct": -682.2131
+      "model_version": "v16-6models-sane",
+      "predicted_return_pct": 1.5071
     },
     {
       "symbol": "SOLUSDT",
@@ -29,7 +29,7 @@
       "prob_up": 0.5307,
       "confidence": 0.0307,
       "objective": "regression",
-      "model_version": "v15-6models",
+      "model_version": "v16-6models-sane",
       "predicted_return_pct": 0.1229
     },
     {
@@ -39,7 +39,7 @@
       "prob_up": 0.5122,
       "confidence": 0.0122,
       "objective": "regression",
-      "model_version": "v15-6models",
+      "model_version": "v16-6models-sane",
       "predicted_return_pct": 0.0489
     }
   ]
