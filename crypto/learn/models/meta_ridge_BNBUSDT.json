@@ -1,17 +1,17 @@
 {
-  "trained_at": "2026-10-06T04:49:45.120973+00:00",
+  "trained_at": "2026-10-06T05:49:19.274585+00:00",
   "version": "v1-ridge",
   "objective": "regression",
   "algorithm": "ridge",
   "symbol": "BNBUSDT",
   "alpha": 1.0,
-  "n_total": 5860,
+  "n_total": 5861,
   "n_train": 4676,
-  "n_test": 1172,
+  "n_test": 1173,
   "ic_train": 0.313,
-  "ic_test": -0.0035,
-  "mae_test": 1.2814,
-  "rmse_test": 1.7075,
+  "ic_test": -0.003,
+  "mae_test": 1.2804,
+  "rmse_test": 1.7068,
   "features": [
     "change_pct",
     "range_pct",
@@ -78,27 +78,27 @@
   "top_features": [
     {
       "name": "ema21_dist_pct",
-      "coef": -3.8619
-    },
-    {
-      "name": "macd",
-      "coef": 3.0674
+      "coef": -3.8621
     },
     {
       "name": "bb_width_pct",
-      "coef": -3.0661
+      "coef": -3.0689
+    },
+    {
+      "name": "macd",
+      "coef": 3.0676
     },
     {
       "name": "ema9_dist_pct",
-      "coef": 2.8974
+      "coef": 2.8976
     },
     {
       "name": "bb_lower_dist",
-      "coef": 2.6306
+      "coef": 2.6326
     },
     {
       "name": "bb_upper_dist",
-      "coef": -2.478
+      "coef": -2.4802
     },
     {
       "name": "ema50_dist_pct",
