@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-10-06T08:05:36.411987+00:00",
+  "generated_at": "2026-10-06T09:05:35.506785+00:00",
   "total_news": 127,
-  "avg_sentiment": -0.045,
+  "avg_sentiment": -0.065,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
-  "bullish_count": 16,
-  "bearish_count": 20,
-  "neutral_count": 91,
+  "bullish_count": 13,
+  "bearish_count": 21,
+  "neutral_count": 93,
   "fake_count": 0,
-  "cross_confirmed": 10,
-  "single_source": 104,
+  "cross_confirmed": 6,
+  "single_source": 101,
   "by_source": {
     "Cointelegraph": {
       "total": 24,
@@ -22,13 +22,13 @@
     },
     "Bitcoin.com": {
       "total": 10,
-      "bull": 1,
+      "bull": 0,
       "bear": 4
     },
     "CryptoSlate": {
       "total": 10,
-      "bull": 1,
-      "bear": 1
+      "bull": 0,
+      "bear": 2
     },
     "CryptoPotato": {
       "total": 25,
@@ -42,7 +42,7 @@
     },
     "ForkLog": {
       "total": 25,
-      "bull": 2,
+      "bull": 1,
       "bear": 2
     }
   },
@@ -58,10 +58,10 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-06T08:05:34.678805+00:00",
+      "collected_at": "2026-10-06T09:05:34.330023+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin price fails to break higher after best weekly close in eight months",
-      "cross_check": 3
+      "cross_check": 2
     },
     {
       "title": "Changer+ Launches Stablecoin-First Self-Custodial Wallet to Make Stablecoins Easier to Use",
@@ -74,7 +74,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-06T08:05:35.490532+00:00",
+      "collected_at": "2026-10-06T09:05:34.680655+00:00",
       "effective_weight": 1.0,
       "title_original": "Changer+ Launches Stablecoin-First Self-Custodial Wallet to Make Stablecoins Easier to Use",
       "cross_check": 1
@@ -90,7 +90,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-06T08:05:36.319733+00:00",
+      "collected_at": "2026-10-06T09:05:35.389594+00:00",
       "effective_weight": 0.96,
       "title_original": "Goldman Sachs сохранил прогноз роста дата-центров в США",
       "cross_check": 1
@@ -106,7 +106,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-06T08:05:34.719941+00:00",
+      "collected_at": "2026-10-06T09:05:34.359986+00:00",
       "effective_weight": 0.88,
       "title_original": "Solana Debuts Institutional Settlement Standard With J.P. Morgan Input",
       "cross_check": 1
@@ -122,7 +122,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-06T08:05:34.720227+00:00",
+      "collected_at": "2026-10-06T09:05:34.360358+00:00",
       "effective_weight": 0.88,
       "title_original": "SEC Clears 3x Leveraged Bitcoin and Ethereum Funds for Trading",
       "cross_check": 1
@@ -130,20 +130,20 @@
   ],
   "top_bearish": [
     {
-      "title": "ZachXBT Infiltrates Crypto Syndicate Tied to $1.5B Bybit Hack",
-      "source": "Bitcoin.com",
+      "title": "China’s crypto ban Is failing to stop a $176 billion P2P economy",
+      "source": "CryptoSlate",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-10-06T07:30:58+00:00",
+      "pub_date": "2026-10-06T08:50:31+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 1.5,
+      "bear_weight": 3.5,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-06T08:05:35.163270+00:00",
+      "collected_at": "2026-10-06T09:05:34.588651+00:00",
       "effective_weight": 1.5,
-      "title_original": "ZachXBT Infiltrates Crypto Syndicate Tied to $1.5B Bybit Hack",
-      "cross_check": 2
+      "title_original": "China’s crypto ban Is failing to stop a $176 billion P2P economy",
+      "cross_check": 1
     },
     {
       "title": "Rain seeks US trust bank charter days after OCC sued over crypto charters",
@@ -156,7 +156,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-06T08:05:34.678437+00:00",
+      "collected_at": "2026-10-06T09:05:34.328931+00:00",
       "effective_weight": 1.3,
       "title_original": "Rain seeks US trust bank charter days after OCC sued over crypto charters",
       "cross_check": 2
@@ -172,7 +172,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-06T08:05:34.678639+00:00",
+      "collected_at": "2026-10-06T09:05:34.329517+00:00",
       "effective_weight": 1.04,
       "title_original": "Modern Treasury seeks US trust bank charter for digital asset custody",
       "cross_check": 2
@@ -188,26 +188,26 @@
       "bear_weight": 3.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-06T08:05:34.678943+00:00",
+      "collected_at": "2026-10-06T09:05:34.330377+00:00",
       "effective_weight": 1.04,
       "title_original": "Too big to pause: Could an AI slowdown crash the economy?",
       "cross_check": 1
     },
     {
-      "title": "Kraken parent adds 24/7 dollar settlement with Singapore Gulf Bank",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
+      "title": "ZachXBT Infiltrates Crypto Syndicate Tied to $1.5B Bybit Hack",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-10-05T08:56:10+00:00",
+      "pub_date": "2026-10-06T07:30:58+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 1.5,
-      "freshness": 0.8,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-06T08:05:34.679073+00:00",
-      "effective_weight": 1.04,
-      "title_original": "Kraken parent adds 24/7 dollar settlement with Singapore Gulf Bank",
-      "cross_check": 3
+      "collected_at": "2026-10-06T09:05:34.530942+00:00",
+      "effective_weight": 1.0,
+      "title_original": "ZachXBT Infiltrates Crypto Syndicate Tied to $1.5B Bybit Hack",
+      "cross_check": 2
     }
   ]
 }
