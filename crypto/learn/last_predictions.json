@@ -1,10 +1,10 @@
 {
-  "predicted_at": "2026-10-06T11:42:27.779415+00:00",
+  "predicted_at": "2026-10-06T12:42:16.553173+00:00",
   "model_accuracy": 0.0025,
   "model_accuracy_avg": 0.0025,
   "feature_count": 61,
   "mode": "6model_blend",
-  "weights_version": "2026-10-06T10:51:53.406578+00:00",
+  "weights_version": "2026-10-06T11:51:33.720266+00:00",
   "symbols": [
     "BTCUSDT",
     "ETHUSDT",
@@ -14,11 +14,11 @@
   "predictions": [
     {
       "symbol": "BTCUSDT",
-      "timestamp": "2026-10-06T11:00:00+00:00",
-      "prob_up": 0.5305,
-      "direction": 1,
-      "confidence": 0.0305,
-      "predicted_return_pct": 0.1219,
+      "timestamp": "2026-10-06T12:00:00+00:00",
+      "prob_up": 0.4884,
+      "direction": 0,
+      "confidence": 0.0116,
+      "predicted_return_pct": -0.0464,
       "model_acc": -0.0136,
       "objective": "regression",
       "model_version": "v15-6models",
@@ -41,18 +41,18 @@
         "lstm": 1.0
       },
       "lgb_pred": -0.0769,
-      "xgb_pred": -0.0957,
-      "ridge_pred": -0.0119,
-      "mlp_pred": 0.6944,
-      "lstm_pred": 0.0994
+      "xgb_pred": -0.0794,
+      "ridge_pred": -0.063,
+      "mlp_pred": -0.1119,
+      "lstm_pred": 0.099
     },
     {
       "symbol": "ETHUSDT",
-      "timestamp": "2026-10-06T11:00:00+00:00",
-      "prob_up": 0.5261,
+      "timestamp": "2026-10-06T12:00:00+00:00",
+      "prob_up": 0.5531,
       "direction": 1,
-      "confidence": 0.0261,
-      "predicted_return_pct": 0.1043,
+      "confidence": 0.0531,
+      "predicted_return_pct": 0.2124,
       "model_acc": -0.0084,
       "objective": "regression",
       "model_version": "v15-6models",
@@ -69,24 +69,24 @@
       "action_hint": "OK",
       "weights": {
         "lgb": 0.0,
-        "xgb": 0.4828,
+        "xgb": 0.0,
         "ridge": 0.0,
         "mlp": 0.0,
-        "lstm": 0.5172
+        "lstm": 0.1475
       },
       "lgb_pred": -0.0944,
-      "xgb_pred": -0.0135,
-      "ridge_pred": -0.0711,
-      "mlp_pred": -0.1162,
-      "lstm_pred": 0.2142
+      "xgb_pred": -0.0326,
+      "ridge_pred": -0.0389,
+      "mlp_pred": 1.5171,
+      "lstm_pred": 0.2124
     },
     {
       "symbol": "SOLUSDT",
-      "timestamp": "2026-10-06T11:00:00+00:00",
-      "prob_up": 0.53,
-      "direction": 1,
-      "confidence": 0.03,
-      "predicted_return_pct": 0.1202,
+      "timestamp": "2026-10-06T12:00:00+00:00",
+      "prob_up": 0.492,
+      "direction": 0,
+      "confidence": 0.008,
+      "predicted_return_pct": -0.0321,
       "model_acc": 0.018,
       "objective": "regression",
       "model_version": "v15-6models",
@@ -102,25 +102,25 @@
       "trade_allowed": true,
       "action_hint": "OK",
       "weights": {
-        "lgb": 0.0434,
-        "xgb": 0.0398,
-        "ridge": 0.0704,
-        "mlp": 0.2246,
-        "lstm": 0.4145
+        "lgb": 0.0445,
+        "xgb": 0.041,
+        "ridge": 0.0717,
+        "mlp": 0.2013,
+        "lstm": 0.4285
       },
       "lgb_pred": -0.0454,
       "xgb_pred": -0.0396,
-      "ridge_pred": -0.1091,
-      "mlp_pred": 0.4941,
-      "lstm_pred": -0.0108
+      "ridge_pred": -0.0992,
+      "mlp_pred": -0.0505,
+      "lstm_pred": -0.0101
     },
     {
       "symbol": "BNBUSDT",
-      "timestamp": "2026-10-06T11:00:00+00:00",
-      "prob_up": 0.4925,
+      "timestamp": "2026-10-06T12:00:00+00:00",
+      "prob_up": 0.4969,
       "direction": 0,
-      "confidence": 0.0075,
-      "predicted_return_pct": -0.0299,
+      "confidence": 0.0031,
+      "predicted_return_pct": -0.0124,
       "model_acc": 0.0139,
       "objective": "regression",
       "model_version": "v15-6models",
@@ -136,17 +136,17 @@
       "trade_allowed": true,
       "action_hint": "OK",
       "weights": {
-        "lgb": 0.057,
-        "xgb": 0.4395,
-        "ridge": 0.0082,
+        "lgb": 0.0568,
+        "xgb": 0.4379,
+        "ridge": 0.0114,
         "mlp": 0.0,
         "lstm": 0.0
       },
-      "lgb_pred": -0.0568,
-      "xgb_pred": -0.0159,
-      "ridge_pred": -0.5984,
-      "mlp_pred": -0.1663,
-      "lstm_pred": 0.2598
+      "lgb_pred": -0.0492,
+      "xgb_pred": 0.0043,
+      "ridge_pred": -0.4724,
+      "mlp_pred": -0.8724,
+      "lstm_pred": 0.2647
     }
   ]
 }
