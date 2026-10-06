@@ -1,16 +1,16 @@
 {
-  "trained_at": "2026-10-06T01:47:31.283470+00:00",
+  "trained_at": "2026-10-06T02:47:33.084317+00:00",
   "version": "v1-cat",
   "objective": "regression",
   "algorithm": "catboost",
   "symbol": "BTCUSDT",
-  "n_total": 9001,
-  "n_train": 7188,
+  "n_total": 9002,
+  "n_train": 7189,
   "n_test": 1801,
   "best_iteration": 0,
-  "ic_train": 0.2329,
-  "ic_test": 0.0039,
-  "mae_test": 0.8957,
+  "ic_train": 0.2333,
+  "ic_test": 0.0049,
+  "mae_test": 0.8959,
   "rmse_test": 1.3974,
   "features": [
     "change_pct",
@@ -78,15 +78,15 @@
   "top_features": [
     {
       "name": "change_1d",
-      "gain": 55.9951
+      "gain": 56.8967
     },
     {
       "name": "funding_rate",
-      "gain": 25.8107
+      "gain": 25.2555
     },
     {
       "name": "volatility_24h",
-      "gain": 18.1942
+      "gain": 17.8477
     },
     {
       "name": "change_pct",
