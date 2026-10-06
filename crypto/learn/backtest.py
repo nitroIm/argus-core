@@ -1,7 +1,9 @@
 # ============================================================
-# ARGUS-Trader - BACKTEST v2
+# ARGUS-Trader - BACKTEST v3
 # ------------------------------------------------------------
-# v2: nan_to_num for ridge/mlp. Cat mismatch log.
+# v3: remove cat n_features_in_ check. CatBoost does not
+#     restore that attribute on load_model -> false negative.
+# v2: nan_to_num for ridge/mlp/cat.
 # v1: initial.
 # ============================================================
 
@@ -154,17 +156,18 @@ def predict_cat(sym, X):
     try:
         m = CatBoostRegressor()
         m.load_model(str(mf))
-        n_expected = m.n_features_in_
-        if n_expected != X.shape[1]:
+        Xc = _clean(X)
+        try:
+            p = m.predict(Xc)
+            return p.astype(np.float32)
+        except Exception as pe:
             log.warning(
-                "cat %s: expects %d got %d",
-                sym, n_expected, X.shape[1],
+                "cat %s predict: %s",
+                sym, pe,
             )
             return None
-        Xc = _clean(X)
-        return m.predict(Xc).astype(np.float32)
     except Exception as exc:
-        log.warning("cat %s: %s", sym, exc)
+        log.warning("cat %s load: %s", sym, exc)
         return None
 
 
@@ -402,7 +405,7 @@ def compute_metrics(trades, years):
 
 def main():
     log.info("=" * 60)
-    log.info("ARGUS-Trader BACKTEST v2")
+    log.info("ARGUS-Trader BACKTEST v3")
     log.info("SYMBOLS=%s", SYMBOLS_LIST)
     log.info(
         "THRESHOLD=%.2f%% NOTIONAL=$%.2f",
