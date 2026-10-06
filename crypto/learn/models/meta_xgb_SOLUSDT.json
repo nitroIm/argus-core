@@ -1,16 +1,16 @@
 {
-  "trained_at": "2026-10-06T03:47:07.890427+00:00",
+  "trained_at": "2026-10-06T04:47:16.981577+00:00",
   "version": "v1-xgb",
   "objective": "regression",
   "algorithm": "xgboost",
   "symbol": "SOLUSDT",
-  "n_total": 5859,
-  "n_train": 4675,
+  "n_total": 5860,
+  "n_train": 4676,
   "n_test": 1172,
   "best_iteration": 19,
-  "ic_train": 0.4125,
-  "ic_test": 0.0152,
-  "mae_test": 1.7356,
+  "ic_train": 0.4126,
+  "ic_test": 0.0149,
+  "mae_test": 1.7357,
   "rmse_test": 2.3709,
   "features": [
     "change_pct",
@@ -77,44 +77,44 @@
   ],
   "top_features": [
     {
-      "name": "f9",
-      "gain": 264.88
+      "name": "f19",
+      "gain": 256.06
     },
     {
-      "name": "f19",
-      "gain": 255.75
+      "name": "f9",
+      "gain": 241.98
     },
     {
       "name": "f18",
-      "gain": 244.42
+      "gain": 229.38
     },
     {
       "name": "f24",
-      "gain": 218.21
+      "gain": 218.34
     },
     {
       "name": "f11",
-      "gain": 215.17
+      "gain": 215.29
     },
     {
       "name": "f10",
-      "gain": 213.84
-    },
-    {
-      "name": "f23",
-      "gain": 204.78
+      "gain": 213.88
     },
     {
       "name": "f7",
-      "gain": 198.99
+      "gain": 198.52
+    },
+    {
+      "name": "f23",
+      "gain": 192.0
     },
     {
       "name": "f20",
-      "gain": 185.0
+      "gain": 185.13
     },
     {
-      "name": "f12",
-      "gain": 175.06
+      "name": "f17",
+      "gain": 184.35
     }
   ],
   "horizon": 12
