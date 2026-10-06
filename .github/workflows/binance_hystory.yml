@@ -15,11 +15,11 @@ jobs:
         with:
           python-version: '3.11'
       - run: pip install requests pandas pyarrow numpy
-      - name: Download history
+      - name: Download
         run: python crypto/collect/binance_history.py
-      - name: Verify history
-        run: python crypto/collect/verify_history.py
-      - name: Commit parquet to repo
+      - name: Verify
+        run: python crypto/collect/verify_history_binance.py
+      - name: Commit
         run: |
           git config user.name "ARGUS"
           git config user.email "argus@github.com"
@@ -36,6 +36,5 @@ jobs:
               echo "Push OK"
               break
             fi
-            echo "Retry $i"
             sleep 5
           done
