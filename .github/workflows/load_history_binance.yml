@@ -1,0 +1,21 @@
+name: Load History Binance
+
+on:
+  workflow_dispatch:
+
+jobs:
+  load:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install deps
+        run: pip install pandas pyarrow "psycopg[binary]" numpy
+      - name: Load
+        env:
+          ARGUS_DB_URL: ${{ secrets.ARGUS_DB_URL }}
+          ARGUS_DB_URL_2: ${{ secrets.ARGUS_DB_URL_2 }}
+        run: python crypto/collect/load_history_binance.py
