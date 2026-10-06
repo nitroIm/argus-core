@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-06T02:17:27.118000+00:00",
+  "generated_at": "2026-10-06T03:17:43.963961+00:00",
   "min_samples": 10,
   "min_edge": 0.15,
   "symbols": {
@@ -30,7 +30,7 @@
     },
     "SOLUSDT": {
       "symbol": "SOLUSDT",
-      "total_events": 255,
+      "total_events": 256,
       "base_rate": 0.4444,
       "rules_found": 1,
       "rules": [
@@ -48,7 +48,7 @@
     },
     "BNBUSDT": {
       "symbol": "BNBUSDT",
-      "total_events": 269,
+      "total_events": 272,
       "base_rate": 0.5909,
       "rules_found": 0,
       "rules": []
