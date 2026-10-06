@@ -1,9 +1,8 @@
 # ============================================================
 # ARGUS - Notify (hourly signals)
 # ------------------------------------------------------------
-# v2: + ARGUS_DB_URL_2 in Predict env (SOL/BNB from DB2).
-#     Previously SOL/BNB silently fell back to DB1
-#     (empty) and were skipped in predictions.
+# v3: + install torch CPU (needed by predict.py v15 LSTM).
+# v2: + ARGUS_DB_URL_2, SYMBOLS, DB2_SYMBOLS.
 # v1: initial.
 # Cron-job.org: 45 * * * *
 # ============================================================
@@ -23,7 +22,7 @@ concurrency:
 jobs:
   notify:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
 
     steps:
       - uses: actions/checkout@v4
@@ -34,16 +33,22 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Install torch (CPU)
+        run: |
+          python -m pip install --upgrade pip
+          pip install torch==2.5.1 \
+            --index-url https://download.pytorch.org/whl/cpu
+
       - name: Cache pip
         uses: actions/cache@v4
         with:
           path: ~/.cache/pip
-          key: pip-learn-${{ hashFiles('crypto/requirements.txt') }}
+          key: >-
+            pip-learn-${{ hashFiles('crypto/requirements.txt') }}
           restore-keys: pip-learn-
 
       - name: Install deps
         run: |
-          python -m pip install --upgrade pip
           pip install -r crypto/requirements.txt
 
       - name: Predict
