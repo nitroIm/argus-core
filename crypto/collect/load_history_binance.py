@@ -1,9 +1,11 @@
 # ============================================================
 # ARGUS — LOAD BINANCE VISION HISTORY
 # ------------------------------------------------------------
-# v1: one-shot backfill from 16 parquet files in
-#     crypto/collect/vision_out/. Routes BTC/ETH -> DB1,
-#     SOL/BNB -> DB2. ON CONFLICT DO NOTHING everywhere.
+# v2: preflight check of 16 parquet files.
+#     commit after each batch (idle timeout guard).
+# v1: one-shot backfill from crypto/collect/vision_out/.
+#     Routes BTC/ETH -> DB1, SOL/BNB -> DB2.
+#     ON CONFLICT DO NOTHING everywhere.
 #     Handles ms/us timestamp mix in klines.
 # ============================================================
 
@@ -30,8 +32,18 @@ log = logging.getLogger("load_history")
 VISION_DIR = SCRIPT_DIR / "vision_out"
 DB1_SYMBOLS = ["BTCUSDT", "ETHUSDT"]
 DB2_SYMBOLS = ["SOLUSDT", "BNBUSDT"]
+ALL_SYMBOLS = DB1_SYMBOLS + DB2_SYMBOLS
 SOURCE = "binance_vision"
 BATCH = 500
+
+EXPECTED = []
+for sym in ALL_SYMBOLS:
+    EXPECTED += [
+        f"{sym}_spot_1h.parquet",
+        f"{sym}_fut_1h.parquet",
+        f"{sym}_funding.parquet",
+        f"{sym}_metrics.parquet",
+    ]
 
 SQL_CANDLES = """
     INSERT INTO candles
@@ -63,6 +75,26 @@ SQL_LS = """
     VALUES (%s,%s,%s,%s,%s,%s)
     ON CONFLICT (symbol, timestamp) DO NOTHING
 """
+
+
+def preflight():
+    log.info("preflight: checking %d files",
+             len(EXPECTED))
+    missing = []
+    for name in EXPECTED:
+        p = VISION_DIR / name
+        if not p.exists():
+            missing.append(name)
+            log.warning(f"  MISSING: {name}")
+        else:
+            size = p.stat().st_size
+            log.info(f"  OK: {name} ({size:,} bytes)")
+    if missing:
+        log.error(f"missing {len(missing)} files, "
+                  f"abort")
+        return False
+    log.info("preflight: all 16 present")
+    return True
 
 
 def read_parquet(name):
@@ -104,11 +136,16 @@ def insert_batch(conn, sql, rows, label):
             try:
                 cur.executemany(sql, chunk)
                 added += cur.rowcount or 0
+                conn.commit()
             except Exception as e:
                 log.warning(
                     f"{label} batch {i}: "
                     f"{str(e)[:80]}"
                 )
+                try:
+                    conn.rollback()
+                except Exception:
+                    pass
     log.info(
         f"{label}: attempted={total} added={added}"
     )
@@ -211,11 +248,14 @@ def load_symbol(conn, sym):
 
 def main():
     log.info("=" * 60)
-    log.info("LOAD BINANCE VISION HISTORY v1")
+    log.info("LOAD BINANCE VISION HISTORY v2")
     log.info(f"vision_dir={VISION_DIR}")
     log.info(f"db1={DB1_SYMBOLS}")
     log.info(f"db2={DB2_SYMBOLS}")
     log.info("=" * 60)
+
+    if not preflight():
+        sys.exit(1)
 
     log.info("--- DB1 ---")
     with db1_conn() as c1:
