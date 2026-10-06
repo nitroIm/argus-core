@@ -1,14 +1,8 @@
 # ============================================================
-# ARGUS-Trader - BACKTEST v1
+# ARGUS-Trader - BACKTEST v2
 # ------------------------------------------------------------
-# Evaluate ML ensemble on test split (out-of-sample).
-# Reads models from crypto/learn/models/.
-# Blends with weights from ensemble_weights.json.
-# Applies fee + funding. Reports PnL, Sharpe, DD.
-# ------------------------------------------------------------
-# Notes:
-#   - LSTM omitted (needs seq prep). Add in v2.
-#   - Needs ts_test/sym_test in dataset.prepare().
+# v2: nan_to_num for ridge/mlp. Cat mismatch log.
+# v1: initial.
 # ============================================================
 
 import os
@@ -101,6 +95,15 @@ def _sym_weights(wdata, sym):
     return w, allowed
 
 
+def _clean(X):
+    return np.nan_to_num(
+        X,
+        nan=0.0,
+        posinf=0.0,
+        neginf=0.0,
+    )
+
+
 def predict_lgb(sym, X):
     mf = MODELS_DIR / ("lgb_" + sym + ".txt")
     if not mf.exists():
@@ -108,7 +111,10 @@ def predict_lgb(sym, X):
     try:
         m = lgb.Booster(model_file=str(mf))
         if m.num_feature() != X.shape[1]:
-            log.warning("lgb %s: feat mismatch", sym)
+            log.warning(
+                "lgb %s: expects %d got %d",
+                sym, m.num_feature(), X.shape[1],
+            )
             return None
         return m.predict(X).astype(np.float32)
     except Exception as exc:
@@ -124,7 +130,10 @@ def predict_xgb(sym, X):
         m = xgb.Booster()
         m.load_model(str(mf))
         if m.num_features() != X.shape[1]:
-            log.warning("xgb %s: feat mismatch", sym)
+            log.warning(
+                "xgb %s: expects %d got %d",
+                sym, m.num_features(), X.shape[1],
+            )
             return None
         d = xgb.DMatrix(X)
         bi = getattr(m, "best_iteration", None)
@@ -145,10 +154,15 @@ def predict_cat(sym, X):
     try:
         m = CatBoostRegressor()
         m.load_model(str(mf))
-        if m.n_features_in_ != X.shape[1]:
-            log.warning("cat %s: feat mismatch", sym)
+        n_expected = m.n_features_in_
+        if n_expected != X.shape[1]:
+            log.warning(
+                "cat %s: expects %d got %d",
+                sym, n_expected, X.shape[1],
+            )
             return None
-        return m.predict(X).astype(np.float32)
+        Xc = _clean(X)
+        return m.predict(Xc).astype(np.float32)
     except Exception as exc:
         log.warning("cat %s: %s", sym, exc)
         return None
@@ -156,13 +170,16 @@ def predict_cat(sym, X):
 
 def predict_ridge(sym, X):
     mf = MODELS_DIR / ("ridge_" + sym + ".joblib")
-    sf = MODELS_DIR / ("scaler_ridge_" + sym + ".joblib")
+    sf = MODELS_DIR / (
+        "scaler_ridge_" + sym + ".joblib"
+    )
     if not mf.exists() or not sf.exists():
         return None
     try:
         m = joblib.load(str(mf))
         s = joblib.load(str(sf))
-        Xs = s.transform(X)
+        Xs = _clean(X)
+        Xs = s.transform(Xs)
         return m.predict(Xs).astype(np.float32)
     except Exception as exc:
         log.warning("ridge %s: %s", sym, exc)
@@ -171,13 +188,16 @@ def predict_ridge(sym, X):
 
 def predict_mlp(sym, X):
     mf = MODELS_DIR / ("mlp_" + sym + ".joblib")
-    sf = MODELS_DIR / ("scaler_mlp_" + sym + ".joblib")
+    sf = MODELS_DIR / (
+        "scaler_mlp_" + sym + ".joblib"
+    )
     if not mf.exists() or not sf.exists():
         return None
     try:
         m = joblib.load(str(mf))
         s = joblib.load(str(sf))
-        Xs = s.transform(X)
+        Xs = _clean(X)
+        Xs = s.transform(Xs)
         return m.predict(Xs).astype(np.float32)
     except Exception as exc:
         log.warning("mlp %s: %s", sym, exc)
@@ -185,7 +205,6 @@ def predict_mlp(sym, X):
 
 
 def blend_symbol(sym, X, weights):
-    """Blend 5 models with sanity filter."""
     preds = {}
     for name, fn in [
         ("lgb", predict_lgb),
@@ -383,7 +402,7 @@ def compute_metrics(trades, years):
 
 def main():
     log.info("=" * 60)
-    log.info("ARGUS-Trader BACKTEST v1")
+    log.info("ARGUS-Trader BACKTEST v2")
     log.info("SYMBOLS=%s", SYMBOLS_LIST)
     log.info(
         "THRESHOLD=%.2f%% NOTIONAL=$%.2f",
@@ -412,9 +431,6 @@ def main():
     if ts_test is None or sym_test is None:
         log.error(
             "dataset.py missing ts_test/sym_test."
-        )
-        log.error(
-            "Apply the 3 patches described above."
         )
         return
 
