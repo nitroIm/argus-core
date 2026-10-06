@@ -1,46 +1,46 @@
 {
-  "generated_at": "2026-10-06T10:42:10.212340+00:00",
+  "generated_at": "2026-10-06T11:42:28.358993+00:00",
   "model_accuracy": 0.0025,
   "signals": [
     {
       "symbol": "BTCUSDT",
       "action": "WAIT",
       "strength": "weak",
-      "prob_up": 0.5099,
-      "confidence": 0.0099,
+      "prob_up": 0.5305,
+      "confidence": 0.0305,
       "objective": "regression",
       "model_version": "v15-6models",
-      "predicted_return_pct": 0.0396
+      "predicted_return_pct": 0.1219
     },
     {
       "symbol": "ETHUSDT",
       "action": "WAIT",
       "strength": "weak",
-      "prob_up": 0.5429,
-      "confidence": 0.0429,
+      "prob_up": 0.5261,
+      "confidence": 0.0261,
       "objective": "regression",
       "model_version": "v15-6models",
-      "predicted_return_pct": 0.1715
+      "predicted_return_pct": 0.1043
     },
     {
       "symbol": "SOLUSDT",
       "action": "WAIT",
       "strength": "weak",
-      "prob_up": 0.5266,
-      "confidence": 0.0266,
+      "prob_up": 0.53,
+      "confidence": 0.03,
       "objective": "regression",
       "model_version": "v15-6models",
-      "predicted_return_pct": 0.1063
+      "predicted_return_pct": 0.1202
     },
     {
       "symbol": "BNBUSDT",
       "action": "WAIT",
       "strength": "weak",
-      "prob_up": 0.4974,
-      "confidence": 0.0026,
+      "prob_up": 0.4925,
+      "confidence": 0.0075,
       "objective": "regression",
       "model_version": "v15-6models",
-      "predicted_return_pct": -0.0103
+      "predicted_return_pct": -0.0299
     }
   ]
 }
