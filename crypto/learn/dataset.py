@@ -1,6 +1,8 @@
 # ============================================================
-# ARGUS-Trader - DATASET v13
+# ARGUS-Trader - DATASET v13.1
 # ------------------------------------------------------------
+# v13.1: expose ts_test/sym_test in prepare().
+#        Needed by backtest v1.
 # v13: market_type='futures' in fetch_candles.
 #      asia_market -> global_market.
 #      macro_metrics -> global_market (US10Y, DB2).
@@ -853,6 +855,10 @@ def per_symbol_split(
         y_ret[train_idx],
         X[test_idx], y[test_idx],
         y_ret[test_idx],
+        [ts_list[i] for i in train_idx],
+        [ts_list[i] for i in test_idx],
+        [sym_list[i] for i in train_idx],
+        [sym_list[i] for i in test_idx],
     )
 
 
@@ -901,7 +907,7 @@ def _load_symbol(symbol):
 
 def prepare(test_frac=0.2):
     log.info("=" * 60)
-    log.info("DATASET v13")
+    log.info("DATASET v13.1")
     log.info("SYMBOLS=%s", SYMBOLS)
     log.info("HORIZON=%dh", HORIZON)
     log.info("DB2_OK=%s", DB2_OK)
@@ -973,6 +979,8 @@ def prepare(test_frac=0.2):
     (
         X_train, y_train, r_train,
         X_test, y_test, r_test,
+        ts_train, ts_test,
+        sym_train, sym_test,
     ) = per_symbol_split(
         X, y_dir, y_ret, ts, sym, test_frac,
     )
@@ -1012,6 +1020,8 @@ def prepare(test_frac=0.2):
         "horizon": HORIZON,
         "symbols": sorted(set(sym)),
         "reference": REFERENCE,
+        "ts_test": ts_test,
+        "sym_test": sym_test,
     }
 
 
