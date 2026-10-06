@@ -1,8 +1,8 @@
 # ============================================================
-# ARGUS-Trader - ENSEMBLE WEIGHTS v2
+# ARGUS-Trader - ENSEMBLE WEIGHTS v3
 # ------------------------------------------------------------
-# v2: + ridge, mlp. 5 algos total.
-# v1: per-symbol weights from ic_test.
+# v3: + lstm. 6 algos total.
+# v2: + ridge, mlp. 5 algos.
 # ============================================================
 
 import os
@@ -25,7 +25,7 @@ log = logging.getLogger(
     "crypto.learn.train_weights"
 )
 
-ALGOS = ["lgb", "xgb", "cat", "ridge", "mlp"]
+ALGOS = ["lgb", "xgb", "cat", "ridge", "mlp", "lstm"]
 
 SYMBOLS_LIST = [
     s.strip().upper()
@@ -105,7 +105,7 @@ def compute_weights(sym):
 
 def main():
     log.info("=" * 60)
-    log.info("ENSEMBLE WEIGHTS v2")
+    log.info("ENSEMBLE WEIGHTS v3")
     log.info("ALGOS=%s", ALGOS)
     log.info("SYMBOLS=%s", SYMBOLS_LIST)
     log.info("=" * 60)
