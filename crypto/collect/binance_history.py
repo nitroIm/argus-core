@@ -1,7 +1,10 @@
 # crypto/collect/binance_history.py
-# v4 - fix cache collision (spot vs futures) and skip
-# header row in funding/metrics CSVs.
+# v5 - fix numeric types (no dtype=str), fix header drop,
+#      fix cache collision spot/futures.
+# Downloads spot+futures klines, fundingRate, metrics
+# for BTC/ETH/SOL/BNB. Saves parquet to vision_out/.
 
+import io
 import zipfile
 import hashlib
 import logging
@@ -125,12 +128,14 @@ def read_zip_csv(zip_path, cols):
         if not names:
             return None
         with z.open(names[0]) as f:
-            df = pd.read_csv(f, header=None,
-                             dtype=str)
-    if len(df) > 0 and len(cols) > 0:
-        first = df.iloc[0].tolist()
-        if first and first[0] == cols[0]:
-            df = df.iloc[1:].reset_index(drop=True)
+            raw = f.read().decode("utf-8",
+                                  errors="replace")
+    lines = raw.splitlines()
+    skip = 0
+    if lines and lines[0].startswith(cols[0]):
+        skip = 1
+    buf = io.StringIO("\n".join(lines))
+    df = pd.read_csv(buf, header=None, skiprows=skip)
     if len(df.columns) == len(cols):
         df.columns = cols
     return df
@@ -178,7 +183,7 @@ def save(df, name):
 
 
 def main():
-    log.info("BINANCE VISION v4 start")
+    log.info("BINANCE VISION v5 start")
     log.info(f"symbols={SYMBOLS}")
 
     for sym in SYMBOLS:
