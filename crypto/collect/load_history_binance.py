@@ -1,6 +1,7 @@
 # ============================================================
 # ARGUS — LOAD BINANCE VISION HISTORY
 # ------------------------------------------------------------
+# v3: fix db2 import — rglob search in CRYPTO_ROOT.
 # v2: preflight check of 16 parquet files.
 #     commit after each batch (idle timeout guard).
 # v1: one-shot backfill from crypto/collect/vision_out/.
@@ -18,6 +19,15 @@ from pathlib import Path
 SCRIPT_DIR = Path(__file__).resolve().parent
 CRYPTO_ROOT = SCRIPT_DIR.parent
 sys.path.insert(0, str(CRYPTO_ROOT))
+
+# db2.py может лежать в crypto/global/ — ищем где угодно
+for _p in CRYPTO_ROOT.rglob("db2.py"):
+    _d = str(_p.parent)
+    if "__pycache__" in _d:
+        continue
+    if _d not in sys.path:
+        sys.path.insert(0, _d)
+    break
 
 from db import get_connection as db1_conn
 from db2 import get_connection as db2_conn
@@ -248,7 +258,7 @@ def load_symbol(conn, sym):
 
 def main():
     log.info("=" * 60)
-    log.info("LOAD BINANCE VISION HISTORY v2")
+    log.info("LOAD BINANCE VISION HISTORY v3")
     log.info(f"vision_dir={VISION_DIR}")
     log.info(f"db1={DB1_SYMBOLS}")
     log.info(f"db2={DB2_SYMBOLS}")
