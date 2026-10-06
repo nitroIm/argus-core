@@ -1,17 +1,17 @@
 {
-  "trained_at": "2026-10-06T08:48:14.289111+00:00",
+  "trained_at": "2026-10-06T09:48:14.675335+00:00",
   "version": "v1-cat",
   "objective": "regression",
   "algorithm": "catboost",
   "symbol": "BNBUSDT",
-  "n_total": 5864,
-  "n_train": 4679,
+  "n_total": 5865,
+  "n_train": 4680,
   "n_test": 1173,
-  "best_iteration": 118,
-  "ic_train": 0.5677,
-  "ic_test": 0.0924,
-  "mae_test": 1.1321,
-  "rmse_test": 1.5687,
+  "best_iteration": 102,
+  "ic_train": 0.5559,
+  "ic_test": 0.1206,
+  "mae_test": 1.125,
+  "rmse_test": 1.5587,
   "features": [
     "change_pct",
     "range_pct",
@@ -78,43 +78,43 @@
   "top_features": [
     {
       "name": "volatility_7d",
-      "gain": 18.5822
+      "gain": 19.4348
     },
     {
       "name": "macd_signal",
-      "gain": 15.7368
+      "gain": 16.0934
     },
     {
       "name": "change_1d",
-      "gain": 14.0184
+      "gain": 13.6616
     },
     {
       "name": "volatility_24h",
-      "gain": 11.0184
+      "gain": 10.6879
     },
     {
       "name": "macd",
-      "gain": 6.4461
-    },
-    {
-      "name": "funding_rate",
-      "gain": 4.1792
-    },
-    {
-      "name": "dist_low_24h_pct",
-      "gain": 3.4605
-    },
-    {
-      "name": "trend_up",
-      "gain": 3.3767
-    },
-    {
-      "name": "change_24h",
-      "gain": 3.1807
+      "gain": 6.2808
     },
     {
       "name": "ema50_dist_pct",
-      "gain": 3.0376
+      "gain": 4.3816
+    },
+    {
+      "name": "funding_rate",
+      "gain": 4.0268
+    },
+    {
+      "name": "trend_up",
+      "gain": 3.4085
+    },
+    {
+      "name": "dist_low_24h_pct",
+      "gain": 3.3539
+    },
+    {
+      "name": "consecutive_up",
+      "gain": 2.5439
     }
   ],
   "horizon": 12
