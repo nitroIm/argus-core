@@ -1,6 +1,7 @@
 # crypto/collect/binance_history.py
-# v5 - fix numeric types (no dtype=str), fix header drop,
-#      fix cache collision spot/futures.
+# v6 - accept files without checksum (current month),
+#      fix metrics last-day skip, strip UTF-8 BOM,
+#      strict column-count validation.
 # Downloads spot+futures klines, fundingRate, metrics
 # for BTC/ETH/SOL/BNB. Saves parquet to vision_out/.
 
@@ -85,17 +86,20 @@ def cache_path(market, fname):
     return CACHE_DIR / f"{market}_{fname}"
 
 
-def download_and_verify(url, local_zip):
-    checksum_url = url + ".CHECKSUM"
+def fetch_checksum(url):
     try:
-        r = requests.get(checksum_url, timeout=30)
-        if r.status_code != 200:
-            log.warning(f"no checksum: {url}")
-            return None
-        expected = r.text.strip().split()[0]
+        r = requests.get(url + ".CHECKSUM", timeout=30)
+        if r.status_code == 200:
+            return r.text.strip().split()[0]
     except Exception as e:
-        log.warning(f"checksum error: {e}")
-        return None
+        log.warning(f"checksum fetch error: {e}")
+    return None
+
+
+def download_and_verify(url, local_zip):
+    expected = fetch_checksum(url)
+    if expected is None:
+        log.warning(f"no checksum, accept as-is: {url}")
 
     if not local_zip.exists():
         try:
@@ -110,14 +114,15 @@ def download_and_verify(url, local_zip):
             log.warning(f"download error: {e}")
             return None
 
-    sha = hashlib.sha256()
-    with open(local_zip, "rb") as f:
-        for chunk in iter(lambda: f.read(1 << 20), b""):
-            sha.update(chunk)
-    if sha.hexdigest() != expected:
-        log.error(f"SHA256 mismatch: {local_zip.name}")
-        local_zip.unlink(missing_ok=True)
-        return None
+    if expected is not None:
+        sha = hashlib.sha256()
+        with open(local_zip, "rb") as f:
+            for chunk in iter(lambda: f.read(1 << 20), b""):
+                sha.update(chunk)
+        if sha.hexdigest() != expected:
+            log.error(f"SHA256 mismatch: {local_zip.name}")
+            local_zip.unlink(missing_ok=True)
+            return None
     return local_zip
 
 
@@ -128,7 +133,7 @@ def read_zip_csv(zip_path, cols):
         if not names:
             return None
         with z.open(names[0]) as f:
-            raw = f.read().decode("utf-8",
+            raw = f.read().decode("utf-8-sig",
                                   errors="replace")
     lines = raw.splitlines()
     skip = 0
@@ -136,8 +141,12 @@ def read_zip_csv(zip_path, cols):
         skip = 1
     buf = io.StringIO("\n".join(lines))
     df = pd.read_csv(buf, header=None, skiprows=skip)
-    if len(df.columns) == len(cols):
-        df.columns = cols
+    if len(df.columns) != len(cols):
+        log.warning(f"{zip_path.name}: expected "
+                    f"{len(cols)} cols, got "
+                    f"{len(df.columns)}")
+        return None
+    df.columns = cols
     return df
 
 
@@ -163,7 +172,7 @@ def fetch_metrics_daily(symbol):
     start = date(START_YEAR, START_MONTH, 1)
     frames = []
     d = start
-    while d < now:
+    while d <= now:
         url, fname = build_metrics_url(symbol, d)
         local = cache_path("futures", fname)
         if download_and_verify(url, local):
@@ -183,7 +192,7 @@ def save(df, name):
 
 
 def main():
-    log.info("BINANCE VISION v5 start")
+    log.info("BINANCE VISION v6 start")
     log.info(f"symbols={SYMBOLS}")
 
     for sym in SYMBOLS:
