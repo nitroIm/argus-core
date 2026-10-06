@@ -1,17 +1,17 @@
 {
-  "trained_at": "2026-10-06T06:49:27.537452+00:00",
+  "trained_at": "2026-10-06T07:18:28.046982+00:00",
   "version": "v1-ridge",
   "objective": "regression",
   "algorithm": "ridge",
   "symbol": "SOLUSDT",
   "alpha": 1.0,
-  "n_total": 5862,
-  "n_train": 4677,
+  "n_total": 5863,
+  "n_train": 4678,
   "n_test": 1173,
   "ic_train": 0.2308,
-  "ic_test": 0.0291,
-  "mae_test": 1.7975,
-  "rmse_test": 2.4318,
+  "ic_test": 0.0292,
+  "mae_test": 1.7974,
+  "rmse_test": 2.4317,
   "features": [
     "change_pct",
     "range_pct",
@@ -86,23 +86,23 @@
     },
     {
       "name": "bb_width_pct",
-      "coef": 1.0842
+      "coef": 1.0841
     },
     {
       "name": "bb_lower_dist",
-      "coef": -1.0319
+      "coef": -1.0318
     },
     {
       "name": "macd",
-      "coef": -1.0151
+      "coef": -1.0153
     },
     {
       "name": "macd_signal",
-      "coef": 0.9896
+      "coef": 0.9898
     },
     {
       "name": "ema9_dist_pct",
-      "coef": -0.9337
+      "coef": -0.9336
     },
     {
       "name": "change_24h",
