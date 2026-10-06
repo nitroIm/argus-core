@@ -1,11 +1,15 @@
 # ============================================================
 # ARGUS-Trader — RUNNER (enrich orchestrator)
 # ------------------------------------------------------------
+# v3: FEATURES_BOOTSTRAP=1 -> run only features.
+#     Skips patterns/levels/events/causal/correlate
+#     (не нужны для ML, экономим ~60 мин на backfill).
 # v2: english logs, no emoji.
 # v1: chains features -> patterns -> levels -> events
 #     -> causal -> correlate.
 # ============================================================
 
+import os
 import sys
 import time
 import logging
@@ -24,13 +28,21 @@ logging.basicConfig(
 )
 log = logging.getLogger("crypto.runner")
 
-STEPS = [
+BOOTSTRAP = (
+    os.getenv("FEATURES_BOOTSTRAP", "").strip() == "1"
+)
+
+STEPS_ALL = [
     ("features", "enrich.features"),
     ("patterns", "enrich.patterns"),
     ("levels", "enrich.levels"),
     ("events", "enrich.events"),
     ("causal", "enrich.causal"),
     ("correlate", "enrich.correlate"),
+]
+
+STEPS_BOOTSTRAP = [
+    ("features", "enrich.features"),
 ]
 
 
@@ -60,17 +72,24 @@ def run_step(name, module_name):
 
 
 def main():
-    log.info("ARGUS-Trader ENRICH RUNNER")
+    steps = STEPS_BOOTSTRAP if BOOTSTRAP else STEPS_ALL
+    log.info("ARGUS-Trader ENRICH RUNNER v3")
     log.info(
         "time: %s",
         datetime.now(timezone.utc).isoformat(),
     )
+    log.info(
+        "mode: %s",
+        "BOOTSTRAP (features only)"
+        if BOOTSTRAP else "FULL",
+    )
+    log.info("steps: %d", len(steps))
     log.info("")
 
     results = []
     failed = 0
 
-    for name, module_name in STEPS:
+    for name, module_name in steps:
         success, elapsed, error = run_step(
             name, module_name,
         )
