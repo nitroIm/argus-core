@@ -1,7 +1,9 @@
 # ============================================================
 # ARGUS — CRYPTO GLOBAL (DB2)
 # ------------------------------------------------------------
-# v2: collect_asia -> global_market (21 рынок).
+# v2: collect_asia -> global_market,
+#     asia_patterns -> global_patterns,
+#     notify_asia -> notify_global.
 # v1: collect_sol_bnb, collect_asia, asia_patterns, notify_asia.
 # ============================================================
 
@@ -11,7 +13,7 @@ on:
   workflow_dispatch:
     inputs:
       task:
-        description: 'all | collect_sol_bnb | global_market | asia_patterns | notify_asia'
+        description: 'all | collect_sol_bnb | global_market | global_patterns | notify_global'
         required: true
         default: 'all'
 
@@ -46,9 +48,9 @@ jobs:
           if [ "$TASK" = "global_market" ] || [ "$TASK" = "all" ]; then
             python crypto/global/global_market.py
           fi
-          if [ "$TASK" = "asia_patterns" ] || [ "$TASK" = "all" ]; then
-            python crypto/global/asia_patterns.py
+          if [ "$TASK" = "global_patterns" ] || [ "$TASK" = "all" ]; then
+            python crypto/global/global_patterns.py
           fi
-          if [ "$TASK" = "notify_asia" ] || [ "$TASK" = "all" ]; then
-            python crypto/global/notify_asia.py
+          if [ "$TASK" = "notify_global" ] || [ "$TASK" = "all" ]; then
+            python crypto/global/notify_global.py
           fi
