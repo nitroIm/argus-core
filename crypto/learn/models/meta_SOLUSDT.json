@@ -1,0 +1,123 @@
+{
+  "trained_at": "2026-10-07T08:14:18.351100+00:00",
+  "version": "v13",
+  "objective": "regression",
+  "symbol": "SOLUSDT",
+  "n_total": 53001,
+  "n_train": 42388,
+  "n_test": 10601,
+  "n_val_inner": 6359,
+  "best_iteration": 67,
+  "ic_train": 0.2556,
+  "ic_test": 0.0435,
+  "mae_train": 3.0154,
+  "mae_test": 1.8179,
+  "rmse_train": 4.435,
+  "rmse_test": 2.526,
+  "sign_acc_train": 0.51,
+  "sign_acc_test": 0.4897,
+  "num_trees": 67,
+  "features": [
+    "change_pct",
+    "range_pct",
+    "body_pct",
+    "upper_wick_pct",
+    "lower_wick_pct",
+    "volume_ratio_24h",
+    "volatility_24h",
+    "volatility_7d",
+    "change_4h",
+    "change_24h",
+    "change_1d",
+    "trend_up",
+    "hour_of_day",
+    "funding_rate",
+    "funding_trend",
+    "ema9_dist_pct",
+    "ema21_dist_pct",
+    "ema50_dist_pct",
+    "macd",
+    "macd_signal",
+    "bb_upper_dist",
+    "bb_lower_dist",
+    "bb_width_pct",
+    "dist_high_24h_pct",
+    "dist_low_24h_pct",
+    "consecutive_up",
+    "session",
+    "oi_change_pct",
+    "ls_ratio",
+    "taker_ratio",
+    "us10y_level",
+    "us10y_change_1d",
+    "hashrate_log",
+    "hashrate_change_1d",
+    "ob_bid_pct",
+    "ob_ask_pct",
+    "ob_spread_pct",
+    "events_1h",
+    "events_24h",
+    "rsi_overbought_24h",
+    "anomaly_24h",
+    "asia_nikkei_6h",
+    "asia_shanghai_6h",
+    "asia_shanghai_12h",
+    "asia_hangseng_6h",
+    "asia_usdcny_6h",
+    "asia_usdcny_12h",
+    "asia_dax_6h",
+    "asia_stoxx50_6h",
+    "asia_ftse_6h",
+    "asia_eurusd_6h",
+    "asia_vix_1h",
+    "asia_nasdaq_1h",
+    "asia_us10y_6h",
+    "asia_usdjpy_6h",
+    "asia_kospi_6h",
+    "asia_taiex_6h",
+    "asia_impact_score"
+  ],
+  "top_features": [
+    {
+      "name": "volatility_24h",
+      "gain": 105913.58
+    },
+    {
+      "name": "volatility_7d",
+      "gain": 71943.57
+    },
+    {
+      "name": "funding_rate",
+      "gain": 43345.59
+    },
+    {
+      "name": "ls_ratio",
+      "gain": 39020.34
+    },
+    {
+      "name": "macd_signal",
+      "gain": 22183.92
+    },
+    {
+      "name": "macd",
+      "gain": 19730.77
+    },
+    {
+      "name": "bb_width_pct",
+      "gain": 15226.98
+    },
+    {
+      "name": "ema50_dist_pct",
+      "gain": 14435.21
+    },
+    {
+      "name": "change_24h",
+      "gain": 13928.5
+    },
+    {
+      "name": "dist_high_24h_pct",
+      "gain": 10672.03
+    }
+  ],
+  "horizon": 12
+}

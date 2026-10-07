@@ -1,22 +1,22 @@
 {
-  "trained_at": "2026-10-06T17:20:53.232897+00:00",
+  "trained_at": "2026-10-07T08:12:49.820747+00:00",
   "version": "v13",
   "objective": "regression",
   "symbol": "BTCUSDT",
-  "n_total": 53426,
-  "n_train": 42728,
-  "n_test": 10686,
-  "n_val_inner": 6410,
-  "best_iteration": 122,
-  "ic_train": 0.2625,
-  "ic_test": 0.0428,
-  "mae_train": 1.4595,
-  "mae_test": 1.0762,
-  "rmse_train": 2.1671,
-  "rmse_test": 1.5355,
-  "sign_acc_train": 0.54,
-  "sign_acc_test": 0.5018,
-  "num_trees": 122,
+  "n_total": 53438,
+  "n_train": 42738,
+  "n_test": 10688,
+  "n_val_inner": 6411,
+  "best_iteration": 123,
+  "ic_train": 0.2642,
+  "ic_test": 0.0522,
+  "mae_train": 1.4597,
+  "mae_test": 1.0752,
+  "rmse_train": 2.1657,
+  "rmse_test": 1.5322,
+  "sign_acc_train": 0.5409,
+  "sign_acc_test": 0.489,
+  "num_trees": 123,
   "features": [
     "change_pct",
     "range_pct",
@@ -45,12 +45,9 @@
     "dist_low_24h_pct",
     "consecutive_up",
     "session",
-    "oi_change_1h",
-    "oi_change_24h",
-    "ls_ratio_asof",
-    "ls_change_1h",
-    "taker_buy_pct",
-    "taker_change_1h",
+    "oi_change_pct",
+    "ls_ratio",
+    "taker_ratio",
     "us10y_level",
     "us10y_change_1d",
     "hashrate_log",
@@ -82,46 +79,46 @@
   ],
   "top_features": [
     {
-      "name": "ls_ratio_asof",
-      "gain": 19595.92
+      "name": "ls_ratio",
+      "gain": 21479.86
     },
     {
       "name": "funding_rate",
-      "gain": 16769.26
+      "gain": 16532.79
     },
     {
       "name": "volatility_7d",
-      "gain": 14224.15
+      "gain": 13884.36
     },
     {
       "name": "macd_signal",
-      "gain": 12599.48
-    },
-    {
-      "name": "ema50_dist_pct",
-      "gain": 7622.97
+      "gain": 11660.01
     },
     {
       "name": "volatility_24h",
-      "gain": 6057.62
+      "gain": 8878.49
     },
     {
-      "name": "macd",
-      "gain": 4872.2
+      "name": "ema50_dist_pct",
+      "gain": 8375.07
     },
     {
       "name": "bb_width_pct",
-      "gain": 4851.6
+      "gain": 6385.27
     },
     {
-      "name": "ema21_dist_pct",
-      "gain": 4841.61
+      "name": "macd",
+      "gain": 5969.2
     },
     {
       "name": "change_24h",
-      "gain": 4723.88
+      "gain": 5397.38
+    },
+    {
+      "name": "ema21_dist_pct",
+      "gain": 3855.59
     }
   ],
   "horizon": 12,
-  "exported_at": "2026-10-06T23:19:45.136930+00:00"
+  "exported_at": "2026-10-07T08:32:02.886716+00:00"
 }
