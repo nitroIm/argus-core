@@ -2,6 +2,15 @@ name: Crypto Backtest
 
 on:
   workflow_dispatch:
+    inputs:
+      threshold:
+        description: 'Threshold %'
+        required: true
+        default: '1.5'
+      notional:
+        description: 'Notional $'
+        required: true
+        default: '20'
 
 jobs:
   backtest:
@@ -30,6 +39,8 @@ jobs:
           HORIZON: '12'
           USE_CROSS: '0'
           USE_EXTERNAL: '0'
+          BT_THRESHOLD_PCT: ${{ inputs.threshold }}
+          BT_NOTIONAL: ${{ inputs.notional }}
         run: python crypto/learn/backtest.py
 
       - name: Upload results
