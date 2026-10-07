@@ -1,10 +1,10 @@
 # ============================================================
-# ARGUS-Trader - BACKTEST v3
+# ARGUS-Trader - BACKTEST v4
 # ------------------------------------------------------------
-# v3: remove cat n_features_in_ check. CatBoost does not
-#     restore that attribute on load_model -> false negative.
+# v4: add LSTM to blend (seq-based, per-symbol).
+#     Matches live ensemble 6/6.
+# v3: remove cat n_features_in_ check.
 # v2: nan_to_num for ridge/mlp/cat.
-# v1: initial.
 # ============================================================
 
 import os
@@ -21,6 +21,7 @@ import joblib
 import lightgbm as lgb
 import xgboost as xgb
 from catboost import CatBoostRegressor
+import torch
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 CRYPTO_ROOT = SCRIPT_DIR.parent
@@ -78,6 +79,28 @@ DB2_SET = {
 }
 
 
+class LSTMModel(torch.nn.Module):
+    def __init__(self, n_feat, hidden, layers, dropout):
+        super().__init__()
+        self.lstm = torch.nn.LSTM(
+            n_feat, hidden,
+            num_layers=layers,
+            batch_first=True,
+            dropout=dropout,
+        )
+        self.head = torch.nn.Sequential(
+            torch.nn.Dropout(dropout),
+            torch.nn.Linear(hidden, 16),
+            torch.nn.ReLU(),
+            torch.nn.Linear(16, 1),
+        )
+
+    def forward(self, x):
+        out, _ = self.lstm(x)
+        last = out[:, -1, :]
+        return self.head(last).squeeze(-1)
+
+
 def load_weights():
     p = MODELS_DIR / "ensemble_weights.json"
     if not p.exists():
@@ -99,10 +122,7 @@ def _sym_weights(wdata, sym):
 
 def _clean(X):
     return np.nan_to_num(
-        X,
-        nan=0.0,
-        posinf=0.0,
-        neginf=0.0,
+        X, nan=0.0, posinf=0.0, neginf=0.0,
     )
 
 
@@ -157,17 +177,9 @@ def predict_cat(sym, X):
         m = CatBoostRegressor()
         m.load_model(str(mf))
         Xc = _clean(X)
-        try:
-            p = m.predict(Xc)
-            return p.astype(np.float32)
-        except Exception as pe:
-            log.warning(
-                "cat %s predict: %s",
-                sym, pe,
-            )
-            return None
+        return m.predict(Xc).astype(np.float32)
     except Exception as exc:
-        log.warning("cat %s load: %s", sym, exc)
+        log.warning("cat %s: %s", sym, exc)
         return None
 
 
@@ -207,6 +219,77 @@ def predict_mlp(sym, X):
         return None
 
 
+def predict_lstm(sym, X):
+    """LSTM on sequences from X. NaN for first seq-1."""
+    mf = MODELS_DIR / ("lstm_" + sym + ".pt")
+    sf = MODELS_DIR / (
+        "scaler_lstm_" + sym + ".joblib"
+    )
+    if not mf.exists() or not sf.exists():
+        return None
+    try:
+        payload = torch.load(
+            str(mf), map_location="cpu",
+        )
+        seq_len = int(payload.get("seq_len", 50))
+        hidden = int(payload.get("hidden", 32))
+        layers = int(payload.get("layers", 2))
+        dropout = float(payload.get("dropout", 0.3))
+        n_feat = int(payload.get("n_feat", X.shape[1]))
+
+        if n_feat != X.shape[1]:
+            log.warning(
+                "lstm %s: expects %d got %d",
+                sym, n_feat, X.shape[1],
+            )
+            return None
+
+        scaler = joblib.load(str(sf))
+        Xs = scaler.transform(X)
+        Xs = np.nan_to_num(
+            Xs, nan=0.0,
+            posinf=0.0, neginf=0.0,
+        ).astype(np.float32)
+
+        n = Xs.shape[0]
+        if n < seq_len + 10:
+            return None
+
+        n_out = n - seq_len + 1
+        seqs = np.zeros(
+            (n_out, seq_len, n_feat),
+            dtype=np.float32,
+        )
+        for i in range(n_out):
+            seqs[i] = Xs[i:i + seq_len]
+
+        model = LSTMModel(
+            n_feat, hidden, layers, dropout,
+        )
+        model.load_state_dict(payload["state"])
+        model.eval()
+
+        preds = np.full(
+            n, np.nan, dtype=np.float32,
+        )
+        out_chunks = []
+        batch = 256
+        with torch.no_grad():
+            for j in range(0, n_out, batch):
+                xb = torch.from_numpy(
+                    seqs[j:j + batch]
+                )
+                out_chunks.append(
+                    model(xb).numpy()
+                )
+        out = np.concatenate(out_chunks)
+        preds[seq_len - 1:] = out.astype(np.float32)
+        return preds
+    except Exception as exc:
+        log.warning("lstm %s: %s", sym, exc)
+        return None
+
+
 def blend_symbol(sym, X, weights):
     preds = {}
     for name, fn in [
@@ -215,6 +298,7 @@ def blend_symbol(sym, X, weights):
         ("cat", predict_cat),
         ("ridge", predict_ridge),
         ("mlp", predict_mlp),
+        ("lstm", predict_lstm),
     ]:
         p = fn(sym, X)
         if p is not None:
@@ -319,7 +403,8 @@ def run_symbol_backtest(
             "net_pct": round(net_pct, 4),
             "notional": POSITION_NOTIONAL,
             "pnl_usd": round(
-                POSITION_NOTIONAL * net_pct / 100.0,
+                POSITION_NOTIONAL
+                * net_pct / 100.0,
                 4,
             ),
         })
@@ -368,9 +453,7 @@ def compute_metrics(trades, years):
     sharpe = 0.0
     if std_pct > 0 and years > 0:
         tpy = n / years
-        sharpe = (
-            mean_pct / std_pct * np.sqrt(tpy)
-        )
+        sharpe = mean_pct / std_pct * np.sqrt(tpy)
 
     downside = pcts[pcts < 0]
     sortino = 0.0
@@ -378,9 +461,7 @@ def compute_metrics(trades, years):
         dstd = float(downside.std(ddof=1))
         if dstd > 0:
             tpy = n / years
-            sortino = (
-                mean_pct / dstd * np.sqrt(tpy)
-            )
+            sortino = mean_pct / dstd * np.sqrt(tpy)
 
     cum = np.cumsum(pnls) + INITIAL_BALANCE
     peak = np.maximum.accumulate(cum)
@@ -405,7 +486,7 @@ def compute_metrics(trades, years):
 
 def main():
     log.info("=" * 60)
-    log.info("ARGUS-Trader BACKTEST v3")
+    log.info("ARGUS-Trader BACKTEST v4")
     log.info("SYMBOLS=%s", SYMBOLS_LIST)
     log.info(
         "THRESHOLD=%.2f%% NOTIONAL=$%.2f",
@@ -432,9 +513,7 @@ def main():
     sym_test = data.get("sym_test")
 
     if ts_test is None or sym_test is None:
-        log.error(
-            "dataset.py missing ts_test/sym_test."
-        )
+        log.error("dataset missing ts/sym")
         return
 
     log.info(
@@ -525,6 +604,10 @@ def main():
             "funding_rate": FUNDING_RATE,
             "test_frac": TEST_FRAC,
             "symbols": SYMBOLS_LIST,
+            "models": [
+                "lgb", "xgb", "cat",
+                "ridge", "mlp", "lstm",
+            ],
         },
         "test_years": round(years, 3),
         "total": total_m,
@@ -533,10 +616,7 @@ def main():
     }
     out_path = SCRIPT_DIR / "backtest_results.json"
     with open(out_path, "w", encoding="utf-8") as f:
-        json.dump(
-            out, f,
-            ensure_ascii=False, indent=2,
-        )
+        json.dump(out, f, ensure_ascii=False, indent=2)
     log.info("saved: %s", out_path.name)
 
 
