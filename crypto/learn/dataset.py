@@ -1,13 +1,13 @@
 # ============================================================
-# ARGUS-Trader - DATASET v13.1
+# ARGUS-Trader - DATASET v14
 # ------------------------------------------------------------
+# v14: _finalize_X - impute NaN (median) + clip test to
+#      train quantiles (0.1%/99.9%). Fixes Ridge/MLP
+#      RMSE explosion. All models now get clean X.
 # v13.1: expose ts_test/sym_test in prepare().
-#        Needed by backtest v1.
-# v13: market_type='futures' in fetch_candles.
-#      asia_market -> global_market.
-#      macro_metrics -> global_market (US10Y, DB2).
-# v12: change_3d, change_7d off (momentum overfit).
-# v11: purge 12pts, day_of_week off, asia 2h window.
+# v13: market_type='futures'. asia->global_market.
+# v12: change_3d/7d off.
+# v11: purge 12pts.
 # ============================================================
 
 import os
@@ -340,7 +340,6 @@ def fetch_taker(symbol):
 
 
 def fetch_macro():
-    """US10Y from global_market in DB2."""
     if not DB2_OK:
         return []
     cols = ["timestamp", "close"]
@@ -426,7 +425,6 @@ def fetch_anomaly(symbol):
 
 
 def fetch_asia_market():
-    """All markets from global_market in DB2."""
     if not DB2_OK:
         return {}
     try:
@@ -456,7 +454,6 @@ def fetch_asia_market():
 
 
 def fetch_external(symbol):
-    """Legacy. USE_EXTERNAL=0 -> not called."""
     if not DB2_OK:
         return []
     cols = ["timestamp", "change_pct"]
@@ -862,6 +859,46 @@ def per_symbol_split(
     )
 
 
+def _finalize_X(X_train, X_test):
+    """Impute NaN + clip test to train range."""
+    X_train = np.asarray(
+        X_train, dtype=np.float64
+    ).copy()
+    X_test = np.asarray(
+        X_test, dtype=np.float64
+    ).copy()
+
+    X_train[~np.isfinite(X_train)] = np.nan
+    X_test[~np.isfinite(X_test)] = np.nan
+
+    med = np.nanmedian(X_train, axis=0)
+    med = np.where(np.isfinite(med), med, 0.0)
+
+    m = np.isnan(X_train)
+    if m.any():
+        X_train[m] = np.take(
+            med, np.where(m)[1]
+        )
+    m = np.isnan(X_test)
+    if m.any():
+        X_test[m] = np.take(
+            med, np.where(m)[1]
+        )
+
+    lo = np.nanquantile(
+        X_train, 0.001, axis=0
+    )
+    hi = np.nanquantile(
+        X_train, 0.999, axis=0
+    )
+    X_test = np.clip(X_test, lo, hi)
+
+    return (
+        X_train.astype(np.float32),
+        X_test.astype(np.float32),
+    )
+
+
 def _build_feat_arrays(rows):
     feats = {}
     fa = [dict() for _ in INTERNAL_COLS]
@@ -907,7 +944,7 @@ def _load_symbol(symbol):
 
 def prepare(test_frac=0.2):
     log.info("=" * 60)
-    log.info("DATASET v13.1")
+    log.info("DATASET v14")
     log.info("SYMBOLS=%s", SYMBOLS)
     log.info("HORIZON=%dh", HORIZON)
     log.info("DB2_OK=%s", DB2_OK)
@@ -961,7 +998,9 @@ def prepare(test_frac=0.2):
         )
 
     if REFERENCE not in symbols_data:
-        log.error("REFERENCE %s missing", REFERENCE)
+        log.error(
+            "REFERENCE %s missing", REFERENCE
+        )
         return None
 
     X, y_dir, y_ret, ts, sym = build_xy_all(
@@ -983,6 +1022,17 @@ def prepare(test_frac=0.2):
         sym_train, sym_test,
     ) = per_symbol_split(
         X, y_dir, y_ret, ts, sym, test_frac,
+    )
+
+    X_train, X_test = _finalize_X(
+        X_train, X_test
+    )
+
+    nan_tr = int(np.isnan(X_train).sum())
+    nan_te = int(np.isnan(X_test).sum())
+    log.info(
+        "finalize: nan_train=%d nan_test=%d",
+        nan_tr, nan_te,
     )
 
     balance = {
