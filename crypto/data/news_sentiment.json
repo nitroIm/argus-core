@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-10-07T19:05:38.386654+00:00",
+  "generated_at": "2026-10-07T20:07:17.778916+00:00",
   "total_news": 128,
-  "avg_sentiment": -0.059,
+  "avg_sentiment": -0.068,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
-  "bullish_count": 20,
-  "bearish_count": 24,
+  "bullish_count": 19,
+  "bearish_count": 25,
   "neutral_count": 84,
   "fake_count": 0,
-  "cross_confirmed": 10,
-  "single_source": 103,
+  "cross_confirmed": 13,
+  "single_source": 104,
   "by_source": {
     "Cointelegraph": {
       "total": 25,
@@ -17,13 +17,13 @@
     },
     "Decrypt": {
       "total": 25,
-      "bull": 5,
-      "bear": 5
+      "bull": 4,
+      "bear": 7
     },
     "Bitcoin.com": {
       "total": 10,
       "bull": 2,
-      "bear": 3
+      "bear": 2
     },
     "CryptoSlate": {
       "total": 10,
@@ -48,6 +48,22 @@
   },
   "top_bullish": [
     {
+      "title": "XRP ETFs now hold $1.7 billion but took in just $4M last week",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-07T19:40:35+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-07T20:07:16.029387+00:00",
+      "effective_weight": 1.5,
+      "title_original": "XRP ETFs now hold $1.7 billion but took in just $4M last week",
+      "cross_check": 1
+    },
+    {
       "title": "Kalshi’s 15-min gold markets overtake Ether just weeks after launch",
       "source": "Cointelegraph",
       "source_weight": 1.3,
@@ -58,7 +74,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-07T19:05:36.970920+00:00",
+      "collected_at": "2026-10-07T20:07:15.539328+00:00",
       "effective_weight": 1.04,
       "title_original": "Kalshi’s 15-min gold markets overtake Ether just weeks after launch",
       "cross_check": 1
@@ -74,7 +90,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-07T19:05:36.971133+00:00",
+      "collected_at": "2026-10-07T20:07:15.539562+00:00",
       "effective_weight": 1.04,
       "title_original": "Winklevoss-backed Zcash ETF files with SEC for Nasdaq listing",
       "cross_check": 1
@@ -90,7 +106,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-07T19:05:37.198044+00:00",
+      "collected_at": "2026-10-07T20:07:15.802382+00:00",
       "effective_weight": 1.0,
       "title_original": "Quantum-Safe Quantus Launches QTC Token Trading via Near Intents",
       "cross_check": 1
@@ -106,43 +122,43 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-07T19:05:37.198098+00:00",
+      "collected_at": "2026-10-07T20:07:15.802436+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitcoin Price Erases October Gains: Why $81,300 Is Now the Critical Level",
       "cross_check": 2
-    },
-    {
-      "title": "Bitcoin price has risen 84% since January 2024 while Treasury yields climbed",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-07T16:35:21+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-07T19:05:37.345762+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Bitcoin price has risen 84% since January 2024 while Treasury yields climbed",
-      "cross_check": 1
     }
   ],
   "top_bearish": [
     {
-      "title": "Ethereum falls 6%, leaving $1.35 billion in long bets at risk of liquidation",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
+      "title": "Tether Signs Deal With Kazakhstan's Central Bank to Explore a Stablecoin and Tokenized Assets",
+      "source": "Decrypt",
+      "source_weight": 1.1,
       "lang": "en",
-      "pub_date": "2026-10-07T18:40:43+00:00",
+      "pub_date": "2026-10-07T19:46:04+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 2.2,
+      "bear_weight": 1.5,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-07T19:05:37.345630+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Ethereum falls 6%, leaving $1.35 billion in long bets at risk of liquidation",
+      "collected_at": "2026-10-07T20:07:15.637544+00:00",
+      "effective_weight": 1.65,
+      "title_original": "Tether Signs Deal With Kazakhstan's Central Bank to Explore a Stablecoin and Tokenized Assets",
+      "cross_check": 3
+    },
+    {
+      "title": "Hackers Used AI Agents to Raid a Megachurch's Database, Exposing 850,000 Members",
+      "source": "Decrypt",
+      "source_weight": 1.1,
+      "lang": "en",
+      "pub_date": "2026-10-07T19:10:31+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-07T20:07:15.637605+00:00",
+      "effective_weight": 1.65,
+      "title_original": "Hackers Used AI Agents to Raid a Megachurch's Database, Exposing 850,000 Members",
       "cross_check": 1
     },
     {
@@ -156,10 +172,10 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-07T19:05:36.970138+00:00",
+      "collected_at": "2026-10-07T20:07:15.538499+00:00",
       "effective_weight": 1.3,
       "title_original": "Tether, Kazakhstan cenbank mull tenge stablecoin and asset tokenization",
-      "cross_check": 2
+      "cross_check": 3
     },
     {
       "title": "House Finance panel chair says regulator actions on crypto ‘fall short’ of CLARITY bill",
@@ -172,7 +188,7 @@
       "bear_weight": 1.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-07T19:05:36.970208+00:00",
+      "collected_at": "2026-10-07T20:07:15.538572+00:00",
       "effective_weight": 1.3,
       "title_original": "House Finance panel chair says regulator actions on crypto ‘fall short’ of CLARITY bill",
       "cross_check": 1
@@ -188,26 +204,10 @@
       "bear_weight": 2.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-07T19:05:36.970320+00:00",
+      "collected_at": "2026-10-07T20:07:15.538683+00:00",
       "effective_weight": 1.3,
       "title_original": "Bitcoin price drops to $82.7K October low as bond sell-off resumes on Iran nerves",
       "cross_check": 2
-    },
-    {
-      "title": "В США вынесли первый приговор за мошенничество с ИИ-музыкой",
-      "source": "ForkLog",
-      "source_weight": 1.2,
-      "lang": "ru",
-      "pub_date": "2026-10-07T15:50:56+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-07T19:05:38.262858+00:00",
-      "effective_weight": 1.2,
-      "title_original": "В США вынесли первый приговор за мошенничество с ИИ-музыкой",
-      "cross_check": 1
     }
   ]
 }
