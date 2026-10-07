@@ -1,13 +1,13 @@
 # ============================================================
-# ARGUS-Trader - DATASET v14
+# ARGUS-Trader - DATASET v15
 # ------------------------------------------------------------
-# v14: _finalize_X - impute NaN (median) + clip test to
-#      train quantiles (0.1%/99.9%). Fixes Ridge/MLP
-#      RMSE explosion. All models now get clean X.
+# v15: read oi_change_pct/ls_ratio/taker_ratio directly from
+#      features_hourly. Remove _oi_feats/_ls_feats/_taker_feats
+#      (they recomputed and produced NaN).
+#      Add _finalize_X (impute NaN + clip test to train).
+# v14: _finalize_X stub (rolled into v15).
 # v13.1: expose ts_test/sym_test in prepare().
 # v13: market_type='futures'. asia->global_market.
-# v12: change_3d/7d off.
-# v11: purge 12pts.
 # ============================================================
 
 import os
@@ -127,11 +127,11 @@ INTERNAL_COLS = [
     "dist_low_24h_pct",
     "consecutive_up",
     "session",
+    "oi_change_pct",
+    "ls_ratio",
+    "taker_ratio",
 ]
 
-OI_COLS = ["oi_change_1h", "oi_change_24h"]
-LS_COLS = ["ls_ratio_asof", "ls_change_1h"]
-TAKER_COLS = ["taker_buy_pct", "taker_change_1h"]
 MACRO_COLS = ["us10y_level", "us10y_change_1d"]
 ONCHAIN_COLS = ["hashrate_log", "hashrate_change_1d"]
 OB_COLS = ["ob_bid_pct", "ob_ask_pct", "ob_spread_pct"]
@@ -170,9 +170,6 @@ EXTERNAL_COLS = [
 
 FEATURE_COLS = (
     INTERNAL_COLS
-    + OI_COLS
-    + LS_COLS
-    + TAKER_COLS
     + MACRO_COLS
     + ONCHAIN_COLS
     + OB_COLS
@@ -188,10 +185,6 @@ TARGET_COL = "next_change_pct"
 ASIA_TOL_SEC = 7200
 
 MAX_AGE = {
-    "funding": 24,
-    "oi": 4,
-    "ls": 4,
-    "taker": 4,
     "macro": 12,
     "onchain": 72,
     "orderbook": 4,
@@ -288,54 +281,6 @@ def fetch_candles(symbol, limit=100000):
             return _fetch(conn, sql, (symbol, limit))
     except Exception as exc:
         log.warning("candles %s: %s", symbol, exc)
-        return []
-
-
-def fetch_oi(symbol):
-    cols = ["timestamp", "oi", "oi_value"]
-    sql = _sel(
-        cols,
-        "open_interest",
-        "symbol = %s AND oi IS NOT NULL "
-        "ORDER BY timestamp",
-    )
-    try:
-        with symbol_conn(symbol) as conn:
-            return _fetch(conn, sql, (symbol,))
-    except Exception as exc:
-        log.warning("oi %s: %s", symbol, exc)
-        return []
-
-
-def fetch_ls(symbol):
-    cols = ["timestamp", "ls_ratio"]
-    sql = _sel(
-        cols,
-        "long_short_ratio",
-        "symbol = %s AND ls_ratio IS NOT NULL "
-        "ORDER BY timestamp",
-    )
-    try:
-        with symbol_conn(symbol) as conn:
-            return _fetch(conn, sql, (symbol,))
-    except Exception as exc:
-        log.warning("ls %s: %s", symbol, exc)
-        return []
-
-
-def fetch_taker(symbol):
-    cols = ["timestamp", "buy_vol", "sell_vol"]
-    sql = _sel(
-        cols,
-        "taker_flow",
-        "symbol = %s AND buy_vol IS NOT NULL "
-        "ORDER BY timestamp",
-    )
-    try:
-        with symbol_conn(symbol) as conn:
-            return _fetch(conn, sql, (symbol,))
-    except Exception as exc:
-        log.warning("taker %s: %s", symbol, exc)
         return []
 
 
@@ -540,60 +485,6 @@ def _safe(v):
         return np.nan
 
 
-def _oi_feats(oi_series, ts):
-    now = asof(oi_series, ts, MAX_AGE["oi"])
-    p1 = asof_shift(
-        oi_series, ts, 1, MAX_AGE["oi"]
-    )
-    p24 = asof_shift(
-        oi_series, ts, 24, MAX_AGE["oi"]
-    )
-    c1 = np.nan
-    c24 = np.nan
-    if now is not None and p1 is not None:
-        if p1[0] > 0:
-            c1 = (now[0] - p1[0]) / p1[0] * 100
-    if now is not None and p24 is not None:
-        if p24[0] > 0:
-            c24 = (
-                (now[0] - p24[0]) / p24[0] * 100
-            )
-    return [_safe(c1), _safe(c24)]
-
-
-def _ls_feats(ls_series, ts):
-    now = asof(ls_series, ts, MAX_AGE["ls"])
-    p1 = asof_shift(
-        ls_series, ts, 1, MAX_AGE["ls"]
-    )
-    ch = np.nan
-    if now is not None and p1 is not None:
-        ch = now[0] - p1[0]
-    v = now[0] if now else None
-    return [_safe(v), _safe(ch)]
-
-
-def _taker_feats(tk_series, ts):
-    now = asof(tk_series, ts, MAX_AGE["taker"])
-    p1 = asof_shift(
-        tk_series, ts, 1, MAX_AGE["taker"]
-    )
-    bp = np.nan
-    ch = np.nan
-    if now is not None:
-        bv, sv = now
-        if bv + sv > 0:
-            bp = bv / (bv + sv) * 100
-    if now is not None and p1 is not None:
-        bv, sv = now
-        pbv, psv = p1
-        if bv + sv > 0 and pbv + psv > 0:
-            cur = bv / (bv + sv)
-            prev = pbv / (pbv + psv)
-            ch = (cur - prev) * 100
-    return [_safe(bp), _safe(ch)]
-
-
 def _macro_feats(series, ts):
     now = asof(series, ts, MAX_AGE["macro"])
     p = asof_shift(
@@ -735,9 +626,6 @@ def _row_for(symbol, d, asia, ts,
     for i in range(len(INTERNAL_COLS)):
         v = d["fa"][i].get(ts)
         row.append(v if v is not None else np.nan)
-    row.extend(_oi_feats(d["oi"], ts))
-    row.extend(_ls_feats(d["ls"], ts))
-    row.extend(_taker_feats(d["taker"], ts))
     row.extend(_macro_feats(d["macro"], ts))
     row.extend(_onchain_feats(d["onchain"], ts))
     row.extend(_ob_feats(d["ob"], ts))
@@ -860,7 +748,7 @@ def per_symbol_split(
 
 
 def _finalize_X(X_train, X_test):
-    """Impute NaN + clip test to train range."""
+    """Impute NaN (median) + clip test to train range."""
     X_train = np.asarray(
         X_train, dtype=np.float64
     ).copy()
@@ -930,9 +818,6 @@ def _load_symbol(symbol):
     return {
         "feats": feats,
         "fa": fa,
-        "oi": fetch_oi(symbol),
-        "ls": fetch_ls(symbol),
-        "taker": fetch_taker(symbol),
         "macro": fetch_macro(),
         "onchain": fetch_onchain(),
         "ob": fetch_orderbook(symbol),
@@ -944,7 +829,7 @@ def _load_symbol(symbol):
 
 def prepare(test_frac=0.2):
     log.info("=" * 60)
-    log.info("DATASET v14")
+    log.info("DATASET v15")
     log.info("SYMBOLS=%s", SYMBOLS)
     log.info("HORIZON=%dh", HORIZON)
     log.info("DB2_OK=%s", DB2_OK)
@@ -988,12 +873,10 @@ def prepare(test_frac=0.2):
         )
         log.info(
             "%s: feat=%d candles=%d "
-            "oi=%d ls=%d taker=%d "
             "ob=%d ev=%d an=%d",
             symbol, len(d["feats"]),
             len(d["candles"]),
-            len(d["oi"]), len(d["ls"]),
-            len(d["taker"]), len(d["ob"]),
+            len(d["ob"]),
             len(d["events"]), len(d["anom"]),
         )
 
