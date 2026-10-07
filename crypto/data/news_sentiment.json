@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-10-07T03:05:39.030172+00:00",
+  "generated_at": "2026-10-07T04:05:41.170819+00:00",
   "total_news": 128,
-  "avg_sentiment": 0.055,
+  "avg_sentiment": 0.045,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
   "bullish_count": 21,
-  "bearish_count": 13,
-  "neutral_count": 94,
+  "bearish_count": 14,
+  "neutral_count": 93,
   "fake_count": 0,
   "cross_confirmed": 0,
   "single_source": 102,
@@ -23,7 +23,7 @@
     "Bitcoin.com": {
       "total": 10,
       "bull": 1,
-      "bear": 0
+      "bear": 1
     },
     "CryptoSlate": {
       "total": 10,
@@ -58,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-07T03:05:37.455229+00:00",
+      "collected_at": "2026-10-07T04:05:39.375184+00:00",
       "effective_weight": 1.04,
       "title_original": "Winklevoss-backed Zcash ETF files with SEC for Nasdaq listing",
       "cross_check": 1
@@ -74,7 +74,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-07T03:05:37.455570+00:00",
+      "collected_at": "2026-10-07T04:05:39.375531+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin grinds toward $87K as US equities hit new record highs",
       "cross_check": 1
@@ -90,7 +90,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-07T03:05:37.455614+00:00",
+      "collected_at": "2026-10-07T04:05:39.375580+00:00",
       "effective_weight": 1.04,
       "title_original": "Securitize stock jumps 8% amid South Korea tokenization push",
       "cross_check": 1
@@ -106,7 +106,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-07T03:05:37.455744+00:00",
+      "collected_at": "2026-10-07T04:05:39.375749+00:00",
       "effective_weight": 1.04,
       "title_original": "Ethereum’s Glamsterdam upgrade launches on Sepolia testnet",
       "cross_check": 2
@@ -122,7 +122,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-07T03:05:37.455912+00:00",
+      "collected_at": "2026-10-07T04:05:39.375933+00:00",
       "effective_weight": 1.04,
       "title_original": "Paxos’ $3B USDG stablecoin launches on Arbitrum",
       "cross_check": 1
@@ -130,19 +130,19 @@
   ],
   "top_bearish": [
     {
-      "title": "SEC drops to 2 members, and 1 hidden rule shifts crypto power",
-      "source": "CryptoSlate",
+      "title": "So-Called Crypto ‘Godfather’ Gets 78 Months as $37M Meta Fraud Unravels",
+      "source": "Bitcoin.com",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-10-07T02:20:47+00:00",
+      "pub_date": "2026-10-07T03:45:12+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 1.0,
+      "bear_weight": 1.5,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-07T03:05:37.866826+00:00",
+      "collected_at": "2026-10-07T04:05:39.700476+00:00",
       "effective_weight": 1.5,
-      "title_original": "SEC drops to 2 members, and 1 hidden rule shifts crypto power",
+      "title_original": "So-Called Crypto ‘Godfather’ Gets 78 Months as $37M Meta Fraud Unravels",
       "cross_check": 2
     },
     {
@@ -156,7 +156,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-07T03:05:37.455325+00:00",
+      "collected_at": "2026-10-07T04:05:39.375292+00:00",
       "effective_weight": 1.04,
       "title_original": "UK names 6 banks to lead first digitally native government bond",
       "cross_check": 1
@@ -172,10 +172,26 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-07T03:05:37.455399+00:00",
+      "collected_at": "2026-10-07T04:05:39.375364+00:00",
       "effective_weight": 1.04,
       "title_original": "Russia’s digital ruble accounts top 220K in first month, nearly 4X central bank forecast",
       "cross_check": 1
+    },
+    {
+      "title": "SEC drops to 2 members, and 1 hidden rule shifts crypto power",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-07T02:20:47+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.0,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-07T04:05:39.880824+00:00",
+      "effective_weight": 1.0,
+      "title_original": "SEC drops to 2 members, and 1 hidden rule shifts crypto power",
+      "cross_check": 2
     },
     {
       "title": "Tether Hit With Lawsuit Over $2.76 Million Stablecoin Freeze",
@@ -188,25 +204,9 @@
       "bear_weight": 1.2,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-07T03:05:37.552049+00:00",
+      "collected_at": "2026-10-07T04:05:39.469650+00:00",
       "effective_weight": 0.88,
       "title_original": "Tether Hit With Lawsuit Over $2.76 Million Stablecoin Freeze",
-      "cross_check": 1
-    },
-    {
-      "title": "Mistral AI Drops 'Le Chonk': A Massive AI Model Named After a Cat Meme",
-      "source": "Decrypt",
-      "source_weight": 1.1,
-      "lang": "en",
-      "pub_date": "2026-10-06T17:22:54+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-07T03:05:37.552188+00:00",
-      "effective_weight": 0.88,
-      "title_original": "Mistral AI Drops 'Le Chonk': A Massive AI Model Named After a Cat Meme",
       "cross_check": 1
     }
   ]
