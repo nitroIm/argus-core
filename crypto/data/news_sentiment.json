@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-10-08T06:05:40.603782+00:00",
+  "generated_at": "2026-10-08T07:05:42.452261+00:00",
   "total_news": 128,
-  "avg_sentiment": 0.005,
+  "avg_sentiment": -0.01,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
   "bullish_count": 23,
-  "bearish_count": 20,
-  "neutral_count": 85,
+  "bearish_count": 21,
+  "neutral_count": 84,
   "fake_count": 0,
   "cross_confirmed": 7,
   "single_source": 102,
@@ -43,7 +43,7 @@
     "ForkLog": {
       "total": 25,
       "bull": 1,
-      "bear": 2
+      "bear": 3
     }
   },
   "top_bullish": [
@@ -58,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-08T06:05:39.218482+00:00",
+      "collected_at": "2026-10-08T07:05:40.522814+00:00",
       "effective_weight": 1.3,
       "title_original": "Crypto must cement adoption to withstand US policy shifts: Canton CEO",
       "cross_check": 1
@@ -74,25 +74,9 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-08T06:05:39.461713+00:00",
+      "collected_at": "2026-10-08T07:05:40.862267+00:00",
       "effective_weight": 1.0,
       "title_original": "Peter Brandt Favors Monero Over XRP Despite Bullish Price Targets",
-      "cross_check": 1
-    },
-    {
-      "title": "XRP Whale Transfers off Binance Reach Highest Level in 7 Months",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-08T00:40:05+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-08T06:05:39.461822+00:00",
-      "effective_weight": 1.0,
-      "title_original": "XRP Whale Transfers off Binance Reach Highest Level in 7 Months",
       "cross_check": 1
     },
     {
@@ -106,7 +90,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-08T06:05:39.631016+00:00",
+      "collected_at": "2026-10-08T07:05:41.237788+00:00",
       "effective_weight": 1.0,
       "title_original": "XRP Nears Key Breakout as Analyst Eyes $2 Target: But Here’s the Catch",
       "cross_check": 1
@@ -122,28 +106,44 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-08T06:05:40.480314+00:00",
+      "collected_at": "2026-10-08T07:05:42.335744+00:00",
       "effective_weight": 0.96,
       "title_original": "Фонд Winklevoss Zcash ETF подал документы на запуск спотового Zcash-ETF",
       "cross_check": 1
+    },
+    {
+      "title": "Anthropic Launches Haiku 5.5: Its Cheapest and Fastest Claude Model Yet",
+      "source": "Decrypt",
+      "source_weight": 1.1,
+      "lang": "en",
+      "pub_date": "2026-10-07T20:46:03+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-08T07:05:40.637830+00:00",
+      "effective_weight": 0.88,
+      "title_original": "Anthropic Launches Haiku 5.5: Its Cheapest and Fastest Claude Model Yet",
+      "cross_check": 2
     }
   ],
   "top_bearish": [
     {
-      "title": "Tether Signs MoU With Kazakhstan’s Central Bank to Explore a Tenge Stablecoin",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-08T05:31:04+00:00",
+      "title": "Джастин Дрейк допустил взлом ECDSA с помощью ИИ раньше появления квантовых компьютеров",
+      "source": "ForkLog",
+      "source_weight": 1.2,
+      "lang": "ru",
+      "pub_date": "2026-10-08T06:10:32+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 1.5,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-08T06:05:39.630952+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Tether Signs MoU With Kazakhstan’s Central Bank to Explore a Tenge Stablecoin",
-      "cross_check": 3
+      "collected_at": "2026-10-08T07:05:42.334876+00:00",
+      "effective_weight": 1.8,
+      "title_original": "Джастин Дрейк допустил взлом ECDSA с помощью ИИ раньше появления квантовых компьютеров",
+      "cross_check": 1
     },
     {
       "title": "Tether, Kazakhstan cenbank mull tenge stablecoin and asset tokenization",
@@ -156,7 +156,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-08T06:05:39.218794+00:00",
+      "collected_at": "2026-10-08T07:05:40.523122+00:00",
       "effective_weight": 1.04,
       "title_original": "Tether, Kazakhstan cenbank mull tenge stablecoin and asset tokenization",
       "cross_check": 3
@@ -172,7 +172,7 @@
       "bear_weight": 1.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-08T06:05:39.218861+00:00",
+      "collected_at": "2026-10-08T07:05:40.523225+00:00",
       "effective_weight": 1.04,
       "title_original": "House Finance panel chair says regulator actions on crypto ‘fall short’ of CLARITY bill",
       "cross_check": 2
@@ -188,7 +188,7 @@
       "bear_weight": 2.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-08T06:05:39.218973+00:00",
+      "collected_at": "2026-10-08T07:05:40.523355+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin price drops to $82.7K October low as bond sell-off resumes on Iran nerves",
       "cross_check": 1
@@ -204,7 +204,7 @@
       "bear_weight": 2.2,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-08T06:05:39.219276+00:00",
+      "collected_at": "2026-10-08T07:05:40.523664+00:00",
       "effective_weight": 1.04,
       "title_original": "Crypto liquidations hit $550M as Bitcoin price dips below $84K",
       "cross_check": 3
