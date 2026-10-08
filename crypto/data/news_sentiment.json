@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-10-07T23:05:39.275636+00:00",
+  "generated_at": "2026-10-08T00:05:43.869222+00:00",
   "total_news": 128,
-  "avg_sentiment": -0.022,
+  "avg_sentiment": -0.009,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
-  "bullish_count": 21,
-  "bearish_count": 23,
+  "bullish_count": 22,
+  "bearish_count": 22,
   "neutral_count": 84,
   "fake_count": 0,
   "cross_confirmed": 10,
-  "single_source": 103,
+  "single_source": 99,
   "by_source": {
     "Cointelegraph": {
       "total": 25,
@@ -22,8 +22,8 @@
     },
     "Bitcoin.com": {
       "total": 10,
-      "bull": 2,
-      "bear": 1
+      "bull": 3,
+      "bear": 0
     },
     "CryptoSlate": {
       "total": 10,
@@ -48,19 +48,19 @@
   },
   "top_bullish": [
     {
-      "title": "BitGo And HashKey Expand Asia Partnership Across Staking, Custody And Tokenization",
-      "source": "Bitcoinist",
-      "source_weight": 0.9,
+      "title": "Grayscale XRP ETF Adds In-Kind Transactions and New Custodian",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-10-07T23:00:00+00:00",
+      "pub_date": "2026-10-07T23:45:01+00:00",
       "sentiment": 1.0,
       "bull_weight": 1.2,
       "bear_weight": 0.0,
       "freshness": 1.5,
-      "fake_score": 0.1,
-      "collected_at": "2026-10-07T23:05:38.342532+00:00",
-      "effective_weight": 1.215,
-      "title_original": "BitGo And HashKey Expand Asia Partnership Across Staking, Custody And Tokenization",
+      "fake_score": 0.0,
+      "collected_at": "2026-10-08T00:05:41.877301+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Grayscale XRP ETF Adds In-Kind Transactions and New Custodian",
       "cross_check": 1
     },
     {
@@ -74,7 +74,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-07T23:05:37.711533+00:00",
+      "collected_at": "2026-10-08T00:05:41.649259+00:00",
       "effective_weight": 1.1,
       "title_original": "Anthropic Launches Haiku 5.5: Its Cheapest and Fastest Claude Model Yet",
       "cross_check": 1
@@ -90,42 +90,42 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-07T23:05:37.590228+00:00",
+      "collected_at": "2026-10-08T00:05:41.565703+00:00",
       "effective_weight": 1.04,
       "title_original": "Kalshi’s 15-min gold markets overtake Ether just weeks after launch",
       "cross_check": 2
     },
     {
-      "title": "Quantum-Safe Quantus Launches QTC Token Trading via Near Intents",
-      "source": "Bitcoin.com",
+      "title": "XRP ETFs now hold $1.7 billion but took in just $4M last week",
+      "source": "CryptoSlate",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-10-07T17:55:38+00:00",
+      "pub_date": "2026-10-07T19:40:35+00:00",
       "sentiment": 1.0,
-      "bull_weight": 1.0,
+      "bull_weight": 1.2,
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-07T23:05:37.899980+00:00",
+      "collected_at": "2026-10-08T00:05:42.097997+00:00",
       "effective_weight": 1.0,
-      "title_original": "Quantum-Safe Quantus Launches QTC Token Trading via Near Intents",
+      "title_original": "XRP ETFs now hold $1.7 billion but took in just $4M last week",
       "cross_check": 1
     },
     {
-      "title": "Bitcoin Price Erases October Gains: Why $81,300 Is Now the Critical Level",
-      "source": "Bitcoin.com",
+      "title": "Bitcoin Struggles to Break Higher as ETF Demand Weakens: Bitfinex Alpha",
+      "source": "CryptoPotato",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-10-07T17:09:30+00:00",
+      "pub_date": "2026-10-07T20:11:16+00:00",
       "sentiment": 1.0,
-      "bull_weight": 1.0,
+      "bull_weight": 2.2,
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-07T23:05:37.900009+00:00",
+      "collected_at": "2026-10-08T00:05:42.643960+00:00",
       "effective_weight": 1.0,
-      "title_original": "Bitcoin Price Erases October Gains: Why $81,300 Is Now the Critical Level",
-      "cross_check": 2
+      "title_original": "Bitcoin Struggles to Break Higher as ETF Demand Weakens: Bitfinex Alpha",
+      "cross_check": 1
     }
   ],
   "top_bearish": [
@@ -140,7 +140,7 @@
       "bear_weight": 1.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-07T23:05:37.711582+00:00",
+      "collected_at": "2026-10-08T00:05:41.649316+00:00",
       "effective_weight": 1.1,
       "title_original": "SEC and CFTC Crypto Rules 'Fall Short' of Clarity, Says Rep. French Hill",
       "cross_check": 3
@@ -156,7 +156,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-07T23:05:37.711632+00:00",
+      "collected_at": "2026-10-08T00:05:41.649374+00:00",
       "effective_weight": 1.1,
       "title_original": "Tether Signs Deal With Kazakhstan's Central Bank to Explore a Stablecoin and Tokenized Assets",
       "cross_check": 3
@@ -172,7 +172,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-07T23:05:37.711697+00:00",
+      "collected_at": "2026-10-08T00:05:41.649427+00:00",
       "effective_weight": 1.1,
       "title_original": "Hackers Used AI Agents to Raid a Megachurch's Database, Exposing 850,000 Members",
       "cross_check": 1
@@ -188,7 +188,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-07T23:05:37.589819+00:00",
+      "collected_at": "2026-10-08T00:05:41.564910+00:00",
       "effective_weight": 1.04,
       "title_original": "Tether, Kazakhstan cenbank mull tenge stablecoin and asset tokenization",
       "cross_check": 3
@@ -204,7 +204,7 @@
       "bear_weight": 1.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-07T23:05:37.589855+00:00",
+      "collected_at": "2026-10-08T00:05:41.564977+00:00",
       "effective_weight": 1.04,
       "title_original": "House Finance panel chair says regulator actions on crypto ‘fall short’ of CLARITY bill",
       "cross_check": 2
