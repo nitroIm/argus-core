@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-10-08T18:05:43.215367+00:00",
+  "generated_at": "2026-10-08T19:05:45.607767+00:00",
   "total_news": 128,
-  "avg_sentiment": 0.037,
+  "avg_sentiment": 0.039,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
-  "bullish_count": 28,
+  "bullish_count": 27,
   "bearish_count": 23,
-  "neutral_count": 77,
+  "neutral_count": 78,
   "fake_count": 0,
-  "cross_confirmed": 27,
-  "single_source": 91,
+  "cross_confirmed": 28,
+  "single_source": 86,
   "by_source": {
     "Cointelegraph": {
       "total": 25,
@@ -27,7 +27,7 @@
     },
     "CryptoSlate": {
       "total": 10,
-      "bull": 3,
+      "bull": 2,
       "bear": 1
     },
     "CryptoPotato": {
@@ -48,20 +48,20 @@
   },
   "top_bullish": [
     {
-      "title": "Bitcoin ETFs Suffer Worst Loss Since June as Uptober Turns Red",
-      "source": "Decrypt",
-      "source_weight": 1.1,
+      "title": "THORChain Launches Native Zcash Swaps",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-10-08T17:46:05+00:00",
+      "pub_date": "2026-10-08T18:39:01+00:00",
       "sentiment": 1.0,
-      "bull_weight": 1.2,
+      "bull_weight": 1.0,
       "bear_weight": 0.0,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-08T18:05:41.419865+00:00",
-      "effective_weight": 1.65,
-      "title_original": "Bitcoin ETFs Suffer Worst Loss Since June as Uptober Turns Red",
-      "cross_check": 4
+      "collected_at": "2026-10-08T19:05:44.354637+00:00",
+      "effective_weight": 1.5,
+      "title_original": "THORChain Launches Native Zcash Swaps",
+      "cross_check": 1
     },
     {
       "title": "Crypto lending rises again… but have they solved the risks?",
@@ -74,26 +74,26 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-08T18:05:41.261652+00:00",
+      "collected_at": "2026-10-08T19:05:43.190239+00:00",
       "effective_weight": 1.3,
       "title_original": "Crypto lending rises again… but have they solved the risks?",
       "cross_check": 1
     },
     {
-      "title": "В США ожидают рекордного роста энергопотребления из-за ИИ",
-      "source": "ForkLog",
-      "source_weight": 1.2,
-      "lang": "ru",
-      "pub_date": "2026-10-08T13:00:00+00:00",
+      "title": "Bitcoin ETFs Suffer Worst Loss Since June as Uptober Turns Red",
+      "source": "Decrypt",
+      "source_weight": 1.1,
+      "lang": "en",
+      "pub_date": "2026-10-08T17:46:05+00:00",
       "sentiment": 1.0,
-      "bull_weight": 2.2,
+      "bull_weight": 1.2,
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-08T18:05:43.086559+00:00",
-      "effective_weight": 1.2,
-      "title_original": "В США ожидают рекордного роста энергопотребления из-за ИИ",
-      "cross_check": 1
+      "collected_at": "2026-10-08T19:05:43.334370+00:00",
+      "effective_weight": 1.1,
+      "title_original": "Bitcoin ETFs Suffer Worst Loss Since June as Uptober Turns Red",
+      "cross_check": 4
     },
     {
       "title": "From Uptober to Spooky Szn? Bitcoin Cuts September Gains in Half",
@@ -106,7 +106,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-08T18:05:41.420059+00:00",
+      "collected_at": "2026-10-08T19:05:43.334492+00:00",
       "effective_weight": 1.1,
       "title_original": "From Uptober to Spooky Szn? Bitcoin Cuts September Gains in Half",
       "cross_check": 1
@@ -122,7 +122,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-08T18:05:41.261814+00:00",
+      "collected_at": "2026-10-08T19:05:43.190327+00:00",
       "effective_weight": 1.04,
       "title_original": "Sui’s Hashi to launch with $500M in Bitcoin finance commitments",
       "cross_check": 1
@@ -130,52 +130,20 @@
   ],
   "top_bearish": [
     {
-      "title": "Bitcoin Price Drops Below $81K as Crypto Liquidations Top $1.1 Billion",
+      "title": "Hunter Biden Blasts Market Makers Over LAPTOP’s 99% Price Crash",
       "source": "Bitcoin.com",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-10-08T17:44:48+00:00",
+      "pub_date": "2026-10-08T18:45:44+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 3.2,
+      "bear_weight": 2.0,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-08T18:05:41.646633+00:00",
+      "collected_at": "2026-10-08T19:05:43.774743+00:00",
       "effective_weight": 1.5,
-      "title_original": "Bitcoin Price Drops Below $81K as Crypto Liquidations Top $1.1 Billion",
-      "cross_check": 5
-    },
-    {
-      "title": "Bitcoin’s slide below $81,000 exposes why a Fed pause may not save the crypto market",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-08T17:30:25+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.0,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-08T18:05:41.835690+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Bitcoin’s slide below $81,000 exposes why a Fed pause may not save the crypto market",
-      "cross_check": 4
-    },
-    {
-      "title": "Ethereum Price Analysis: ETH Crashes 10% Weekly – How Low Can It Go?",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-08T17:43:24+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 3.0,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-08T18:05:41.999156+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Ethereum Price Analysis: ETH Crashes 10% Weekly – How Low Can It Go?",
-      "cross_check": 1
+      "title_original": "Hunter Biden Blasts Market Makers Over LAPTOP’s 99% Price Crash",
+      "cross_check": 2
     },
     {
       "title": "US Government Moves $1 Billion in Bitcoin Seized From Bitfinex Hacker",
@@ -188,9 +156,25 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-08T18:05:41.420003+00:00",
+      "collected_at": "2026-10-08T19:05:43.334458+00:00",
       "effective_weight": 1.1,
       "title_original": "US Government Moves $1 Billion in Bitcoin Seized From Bitfinex Hacker",
+      "cross_check": 6
+    },
+    {
+      "title": "Bitcoin Price Drops Below $81K as Crypto Liquidations Top $1.1 Billion",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-08T17:44:48+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 3.2,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-08T19:05:43.774823+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Bitcoin Price Drops Below $81K as Crypto Liquidations Top $1.1 Billion",
       "cross_check": 5
     },
     {
@@ -204,10 +188,26 @@
       "bear_weight": 1.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-08T18:05:41.646747+00:00",
+      "collected_at": "2026-10-08T19:05:43.774893+00:00",
       "effective_weight": 1.0,
       "title_original": "Zcash Dives 16%, Falling Harder Than Bitcoin Amid Market Sell-Off",
       "cross_check": 2
+    },
+    {
+      "title": "From Bitcoin Mining to Global Banking, Bhutan Eyes Abu Dhabi",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-08T14:17:16+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-08T19:05:43.775030+00:00",
+      "effective_weight": 1.0,
+      "title_original": "From Bitcoin Mining to Global Banking, Bhutan Eyes Abu Dhabi",
+      "cross_check": 1
     }
   ]
 }
