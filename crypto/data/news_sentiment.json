@@ -1,19 +1,19 @@
 {
-  "generated_at": "2026-10-08T19:05:45.607767+00:00",
+  "generated_at": "2026-10-08T20:05:39.907953+00:00",
   "total_news": 128,
-  "avg_sentiment": 0.039,
+  "avg_sentiment": 0.068,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
   "bullish_count": 27,
-  "bearish_count": 23,
-  "neutral_count": 78,
+  "bearish_count": 21,
+  "neutral_count": 80,
   "fake_count": 0,
-  "cross_confirmed": 28,
-  "single_source": 86,
+  "cross_confirmed": 24,
+  "single_source": 87,
   "by_source": {
     "Cointelegraph": {
       "total": 25,
-      "bull": 6,
-      "bear": 2
+      "bull": 7,
+      "bear": 0
     },
     "Decrypt": {
       "total": 25,
@@ -37,7 +37,7 @@
     },
     "Bitcoinist": {
       "total": 8,
-      "bull": 4,
+      "bull": 3,
       "bear": 1
     },
     "ForkLog": {
@@ -48,35 +48,35 @@
   },
   "top_bullish": [
     {
-      "title": "THORChain Launches Native Zcash Swaps",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
+      "title": "Securitize stock jumps over 10% after launching tokenized US equities on Solana",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
       "lang": "en",
-      "pub_date": "2026-10-08T18:39:01+00:00",
+      "pub_date": "2026-10-08T19:31:38+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 2.0,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-08T20:05:38.504919+00:00",
+      "effective_weight": 1.95,
+      "title_original": "Securitize stock jumps over 10% after launching tokenized US equities on Solana",
+      "cross_check": 2
+    },
+    {
+      "title": "NFL Sides With States Against Kalshi in Supreme Court Prediction Market Fight",
+      "source": "Decrypt",
+      "source_weight": 1.1,
+      "lang": "en",
+      "pub_date": "2026-10-08T19:31:03+00:00",
       "sentiment": 1.0,
       "bull_weight": 1.0,
       "bear_weight": 0.0,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-08T19:05:44.354637+00:00",
-      "effective_weight": 1.5,
-      "title_original": "THORChain Launches Native Zcash Swaps",
-      "cross_check": 1
-    },
-    {
-      "title": "Crypto lending rises again… but have they solved the risks?",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-10-08T13:30:00+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 2.0,
-      "bear_weight": 0.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-08T19:05:43.190239+00:00",
-      "effective_weight": 1.3,
-      "title_original": "Crypto lending rises again… but have they solved the risks?",
+      "collected_at": "2026-10-08T20:05:38.540455+00:00",
+      "effective_weight": 1.65,
+      "title_original": "NFL Sides With States Against Kalshi in Supreme Court Prediction Market Fight",
       "cross_check": 1
     },
     {
@@ -90,7 +90,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-08T19:05:43.334370+00:00",
+      "collected_at": "2026-10-08T20:05:38.540565+00:00",
       "effective_weight": 1.1,
       "title_original": "Bitcoin ETFs Suffer Worst Loss Since June as Uptober Turns Red",
       "cross_check": 4
@@ -106,44 +106,44 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-08T19:05:43.334492+00:00",
+      "collected_at": "2026-10-08T20:05:38.540685+00:00",
       "effective_weight": 1.1,
       "title_original": "From Uptober to Spooky Szn? Bitcoin Cuts September Gains in Half",
       "cross_check": 1
     },
     {
-      "title": "Sui’s Hashi to launch with $500M in Bitcoin finance commitments",
+      "title": "Crypto lending rises again… but have they solved the risks?",
       "source": "Cointelegraph",
       "source_weight": 1.3,
       "lang": "en",
-      "pub_date": "2026-10-08T12:03:28+00:00",
+      "pub_date": "2026-10-08T13:30:00+00:00",
       "sentiment": 1.0,
-      "bull_weight": 1.0,
+      "bull_weight": 2.0,
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-08T19:05:43.190327+00:00",
+      "collected_at": "2026-10-08T20:05:38.505283+00:00",
       "effective_weight": 1.04,
-      "title_original": "Sui’s Hashi to launch with $500M in Bitcoin finance commitments",
+      "title_original": "Crypto lending rises again… but have they solved the risks?",
       "cross_check": 1
     }
   ],
   "top_bearish": [
     {
-      "title": "Hunter Biden Blasts Market Makers Over LAPTOP’s 99% Price Crash",
+      "title": "Banking Giant Standard Chartered Expands Crypto Custody to Singapore",
       "source": "Bitcoin.com",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-10-08T18:45:44+00:00",
+      "pub_date": "2026-10-08T19:15:46+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 2.0,
+      "bear_weight": 1.5,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-08T19:05:43.774743+00:00",
+      "collected_at": "2026-10-08T20:05:38.692378+00:00",
       "effective_weight": 1.5,
-      "title_original": "Hunter Biden Blasts Market Makers Over LAPTOP’s 99% Price Crash",
-      "cross_check": 2
+      "title_original": "Banking Giant Standard Chartered Expands Crypto Custody to Singapore",
+      "cross_check": 3
     },
     {
       "title": "US Government Moves $1 Billion in Bitcoin Seized From Bitfinex Hacker",
@@ -156,10 +156,26 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-08T19:05:43.334458+00:00",
+      "collected_at": "2026-10-08T20:05:38.540651+00:00",
       "effective_weight": 1.1,
       "title_original": "US Government Moves $1 Billion in Bitcoin Seized From Bitfinex Hacker",
       "cross_check": 6
+    },
+    {
+      "title": "Hunter Biden Blasts Market Makers Over LAPTOP’s 99% Price Crash",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-08T18:45:44+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 2.0,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-08T20:05:38.692427+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Hunter Biden Blasts Market Makers Over LAPTOP’s 99% Price Crash",
+      "cross_check": 2
     },
     {
       "title": "Bitcoin Price Drops Below $81K as Crypto Liquidations Top $1.1 Billion",
@@ -172,7 +188,7 @@
       "bear_weight": 3.2,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-08T19:05:43.774823+00:00",
+      "collected_at": "2026-10-08T20:05:38.692501+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitcoin Price Drops Below $81K as Crypto Liquidations Top $1.1 Billion",
       "cross_check": 5
@@ -188,26 +204,10 @@
       "bear_weight": 1.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-08T19:05:43.774893+00:00",
+      "collected_at": "2026-10-08T20:05:38.692573+00:00",
       "effective_weight": 1.0,
       "title_original": "Zcash Dives 16%, Falling Harder Than Bitcoin Amid Market Sell-Off",
       "cross_check": 2
-    },
-    {
-      "title": "From Bitcoin Mining to Global Banking, Bhutan Eyes Abu Dhabi",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-08T14:17:16+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-08T19:05:43.775030+00:00",
-      "effective_weight": 1.0,
-      "title_original": "From Bitcoin Mining to Global Banking, Bhutan Eyes Abu Dhabi",
-      "cross_check": 1
     }
   ]
 }
