@@ -1,8 +1,8 @@
 # ============================================================
-# ARGUS-Trader - EXPORT v7
+# ARGUS-Trader - EXPORT v8
 # ------------------------------------------------------------
-# v7: remove external_market block (table dropped).
-# v6: drop MOVE_THRESHOLD_PCT import.
+# v8: remove EXTERNAL_COLS import (dropped in dataset v17).
+# v7: remove external_market block.
 # ============================================================
 
 import os
@@ -24,8 +24,7 @@ sys.path.insert(0, str(SCRIPT_DIR))
 from db import get_connection
 from dataset import (
     FEATURE_COLS, INTERNAL_COLS,
-    EXTERNAL_COLS, TARGET_COL,
-    HORIZON, REFERENCE,
+    TARGET_COL, HORIZON, REFERENCE,
 )
 
 logging.basicConfig(
@@ -148,7 +147,7 @@ def export_dataset_csv():
 def export_readme():
     readme = EXPORT_DIR / "README.md"
     lines = [
-        "# ARGUS ML - Export v7",
+        "# ARGUS ML - Export v8",
         "",
         "## Per-symbol models",
         "- lgb_BTCUSDT.txt + meta_BTCUSDT.json",
@@ -183,7 +182,7 @@ def export_readme():
 
 def main():
     log.info("=" * 60)
-    log.info("ARGUS-Trader EXPORT v7")
+    log.info("ARGUS-Trader EXPORT v8")
     log.info(
         "FEATURE_COLS=%d INTERNAL=%d",
         len(FEATURE_COLS),
