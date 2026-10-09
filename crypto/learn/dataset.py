@@ -1,13 +1,11 @@
 # ============================================================
-# ARGUS-Trader - DATASET v15
+# ARGUS-Trader - DATASET v16
 # ------------------------------------------------------------
-# v15: read oi_change_pct/ls_ratio/taker_ratio directly from
-#      features_hourly. Remove _oi_feats/_ls_feats/_taker_feats
-#      (they recomputed and produced NaN).
+# v16: fetch_orderbook silent for DB2 (no log warning).
+#      _fetch accepts silent flag.
+# v15: read oi_change_pct/ls_ratio/taker_ratio from features_hourly.
 #      Add _finalize_X (impute NaN + clip test to train).
-# v14: _finalize_X stub (rolled into v15).
 # v13.1: expose ts_test/sym_test in prepare().
-# v13: market_type='futures'. asia->global_market.
 # ============================================================
 
 import os
@@ -193,7 +191,7 @@ MAX_AGE = {
 }
 
 
-def _fetch(conn, sql, params=()):
+def _fetch(conn, sql, params=(), silent=False):
     try:
         with conn.cursor() as cur:
             cur.execute(sql, params)
@@ -210,7 +208,8 @@ def _fetch(conn, sql, params=()):
             out.append((ts, r[1:]))
         return out
     except Exception as exc:
-        log.warning("fetch: %s", exc)
+        if not silent:
+            log.warning("fetch: %s", exc)
         return []
 
 
@@ -333,9 +332,10 @@ def fetch_orderbook(symbol):
     )
     try:
         with symbol_conn(symbol) as conn:
-            return _fetch(conn, sql, (symbol,))
-    except Exception as exc:
-        log.warning("ob %s: %s", symbol, exc)
+            return _fetch(
+                conn, sql, (symbol,), silent=True,
+            )
+    except Exception:
         return []
 
 
@@ -396,24 +396,6 @@ def fetch_asia_market():
     except Exception as exc:
         log.warning("global_market: %s", exc)
         return {}
-
-
-def fetch_external(symbol):
-    if not DB2_OK:
-        return []
-    cols = ["timestamp", "change_pct"]
-    sql = _sel(
-        cols,
-        "global_market",
-        "symbol = %s AND change_pct IS NOT NULL "
-        "ORDER BY timestamp",
-    )
-    try:
-        with get_conn_db2() as conn:
-            return _fetch(conn, sql, (symbol,))
-    except Exception as exc:
-        log.warning("ext %s: %s", symbol, exc)
-        return []
 
 
 def asof(series, ts, max_age_h):
@@ -748,7 +730,6 @@ def per_symbol_split(
 
 
 def _finalize_X(X_train, X_test):
-    """Impute NaN (median) + clip test to train range."""
     X_train = np.asarray(
         X_train, dtype=np.float64
     ).copy()
@@ -829,7 +810,7 @@ def _load_symbol(symbol):
 
 def prepare(test_frac=0.2):
     log.info("=" * 60)
-    log.info("DATASET v15")
+    log.info("DATASET v16")
     log.info("SYMBOLS=%s", SYMBOLS)
     log.info("HORIZON=%dh", HORIZON)
     log.info("DB2_OK=%s", DB2_OK)
@@ -844,18 +825,9 @@ def prepare(test_frac=0.2):
         "global_market: %d symbols", len(asia)
     )
 
-    ext_dxy = (
-        fetch_external("DXY")
-        if USE_EXTERNAL else []
-    )
-    ext_spx = (
-        fetch_external("SPX")
-        if USE_EXTERNAL else []
-    )
-    ext_gold = (
-        fetch_external("GOLD")
-        if USE_EXTERNAL else []
-    )
+    ext_dxy = []
+    ext_spx = []
+    ext_gold = []
 
     symbols_data = {}
     targets_map = {}
