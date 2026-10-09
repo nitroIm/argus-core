@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-09T19:05:55.450430+00:00",
+  "generated_at": "2026-10-09T20:05:41.150305+00:00",
   "total_news": 128,
   "avg_sentiment": -0.007,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
@@ -7,8 +7,8 @@
   "bearish_count": 19,
   "neutral_count": 91,
   "fake_count": 0,
-  "cross_confirmed": 7,
-  "single_source": 105,
+  "cross_confirmed": 6,
+  "single_source": 106,
   "by_source": {
     "Cointelegraph": {
       "total": 25,
@@ -48,35 +48,19 @@
   },
   "top_bullish": [
     {
-      "title": "These 5 Bitcoin Indicators Have Turned Bullish for the First Time Since 2025: Report",
-      "source": "CryptoPotato",
+      "title": "Brazil Seizes Record Crypto Funds From Self-Custody Wallets",
+      "source": "Bitcoin.com",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-10-09T18:06:56+00:00",
+      "pub_date": "2026-10-09T19:05:58+00:00",
       "sentiment": 1.0,
       "bull_weight": 1.2,
       "bear_weight": 0.0,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-09T19:05:54.217004+00:00",
+      "collected_at": "2026-10-09T20:05:39.040582+00:00",
       "effective_weight": 1.5,
-      "title_original": "These 5 Bitcoin Indicators Have Turned Bullish for the First Time Since 2025: Report",
-      "cross_check": 1
-    },
-    {
-      "title": "BTQ займется постквантовой защитой инфраструктуры MoonPay Korea",
-      "source": "ForkLog",
-      "source_weight": 1.2,
-      "lang": "ru",
-      "pub_date": "2026-10-09T13:40:00+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 2.0,
-      "bear_weight": 0.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-09T19:05:55.323576+00:00",
-      "effective_weight": 1.2,
-      "title_original": "BTQ займется постквантовой защитой инфраструктуры MoonPay Korea",
+      "title_original": "Brazil Seizes Record Crypto Funds From Self-Custody Wallets",
       "cross_check": 1
     },
     {
@@ -90,7 +74,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-09T19:05:53.862412+00:00",
+      "collected_at": "2026-10-09T20:05:38.816421+00:00",
       "effective_weight": 1.1,
       "title_original": "Ethereum L2 Starknet Jumps 20% After Saying It Wants to Become an L1",
       "cross_check": 1
@@ -106,7 +90,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-09T19:05:53.575839+00:00",
+      "collected_at": "2026-10-09T20:05:38.716088+00:00",
       "effective_weight": 1.04,
       "title_original": "Thailand finalizes rules paving way for Bitcoin, Ether ETFs",
       "cross_check": 2
@@ -122,29 +106,29 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-09T19:05:53.575953+00:00",
+      "collected_at": "2026-10-09T20:05:38.716202+00:00",
       "effective_weight": 1.04,
       "title_original": "China’s P2P stablecoin wallets surge 43x, Korea’s $450B crypto economy: Asia Express",
+      "cross_check": 1
+    },
+    {
+      "title": "These 5 Bitcoin Indicators Have Turned Bullish for the First Time Since 2025: Report",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-09T18:06:56+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-09T20:05:39.925542+00:00",
+      "effective_weight": 1.0,
+      "title_original": "These 5 Bitcoin Indicators Have Turned Bullish for the First Time Since 2025: Report",
       "cross_check": 1
     }
   ],
   "top_bearish": [
-    {
-      "title": "Hoskinson says Vitalik’s AI warning could delay the internet’s quantum defenses",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-09T19:00:27+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.2,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-09T19:05:54.088747+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Hoskinson says Vitalik’s AI warning could delay the internet’s quantum defenses",
-      "cross_check": 2
-    },
     {
       "title": "Бессент: США конфискуют связанную с Ираном криптовалюту на $1 млрд",
       "source": "ForkLog",
@@ -156,7 +140,7 @@
       "bear_weight": 1.2,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-09T19:05:55.323415+00:00",
+      "collected_at": "2026-10-09T20:05:41.023662+00:00",
       "effective_weight": 1.2,
       "title_original": "Бессент: США конфискуют связанную с Ираном криптовалюту на $1 млрд",
       "cross_check": 1
@@ -172,7 +156,7 @@
       "bear_weight": 1.2,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-09T19:05:55.323471+00:00",
+      "collected_at": "2026-10-09T20:05:41.023716+00:00",
       "effective_weight": 1.2,
       "title_original": "В TD Cowen предупредили о рисках для акционеров Strategy",
       "cross_check": 1
@@ -188,26 +172,42 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-09T19:05:53.862514+00:00",
+      "collected_at": "2026-10-09T20:05:38.816525+00:00",
       "effective_weight": 1.1,
       "title_original": "New York AG Secures Up to $35M and Industry Ban From Ex-Celsius CEO Alex Mashinsky",
       "cross_check": 2
     },
     {
-      "title": "Bitcoin Bleeds in Uptober—How Low Can It Go? Experts Weigh In",
-      "source": "Decrypt",
-      "source_weight": 1.1,
+      "title": "Bitcoin speculators move 55K BTC to exchanges amid $1.1B liquidations",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
       "lang": "en",
-      "pub_date": "2026-10-09T13:20:12+00:00",
+      "pub_date": "2026-10-09T09:50:01+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 1.0,
+      "bear_weight": 1.2,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-09T20:05:38.715855+00:00",
+      "effective_weight": 1.04,
+      "title_original": "Bitcoin speculators move 55K BTC to exchanges amid $1.1B liquidations",
+      "cross_check": 1
+    },
+    {
+      "title": "Bitcoin Price Bounces Back to $83K as Crypto Market Liquidations Cool",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-09T17:41:33+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.2,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-09T19:05:53.862623+00:00",
-      "effective_weight": 1.1,
-      "title_original": "Bitcoin Bleeds in Uptober—How Low Can It Go? Experts Weigh In",
-      "cross_check": 1
+      "collected_at": "2026-10-09T20:05:39.040680+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Bitcoin Price Bounces Back to $83K as Crypto Market Liquidations Cool",
+      "cross_check": 2
     }
   ]
 }
