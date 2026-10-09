@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-10-09T18:05:43.969244+00:00",
+  "generated_at": "2026-10-09T19:05:55.450430+00:00",
   "total_news": 128,
-  "avg_sentiment": -0.016,
+  "avg_sentiment": -0.007,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
-  "bullish_count": 17,
-  "bearish_count": 20,
+  "bullish_count": 18,
+  "bearish_count": 19,
   "neutral_count": 91,
   "fake_count": 0,
-  "cross_confirmed": 5,
-  "single_source": 107,
+  "cross_confirmed": 7,
+  "single_source": 105,
   "by_source": {
     "Cointelegraph": {
       "total": 25,
@@ -18,7 +18,7 @@
     "Decrypt": {
       "total": 25,
       "bull": 4,
-      "bear": 5
+      "bear": 4
     },
     "Bitcoin.com": {
       "total": 10,
@@ -28,12 +28,12 @@
     "CryptoSlate": {
       "total": 10,
       "bull": 0,
-      "bear": 0
+      "bear": 1
     },
     "CryptoPotato": {
       "total": 25,
-      "bull": 5,
-      "bear": 8
+      "bull": 6,
+      "bear": 7
     },
     "Bitcoinist": {
       "total": 8,
@@ -48,6 +48,22 @@
   },
   "top_bullish": [
     {
+      "title": "These 5 Bitcoin Indicators Have Turned Bullish for the First Time Since 2025: Report",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-09T18:06:56+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-09T19:05:54.217004+00:00",
+      "effective_weight": 1.5,
+      "title_original": "These 5 Bitcoin Indicators Have Turned Bullish for the First Time Since 2025: Report",
+      "cross_check": 1
+    },
+    {
       "title": "BTQ займется постквантовой защитой инфраструктуры MoonPay Korea",
       "source": "ForkLog",
       "source_weight": 1.2,
@@ -58,7 +74,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-09T18:05:43.873049+00:00",
+      "collected_at": "2026-10-09T19:05:55.323576+00:00",
       "effective_weight": 1.2,
       "title_original": "BTQ займется постквантовой защитой инфраструктуры MoonPay Korea",
       "cross_check": 1
@@ -74,7 +90,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-09T18:05:41.906087+00:00",
+      "collected_at": "2026-10-09T19:05:53.862412+00:00",
       "effective_weight": 1.1,
       "title_original": "Ethereum L2 Starknet Jumps 20% After Saying It Wants to Become an L1",
       "cross_check": 1
@@ -90,7 +106,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-09T18:05:41.747869+00:00",
+      "collected_at": "2026-10-09T19:05:53.575839+00:00",
       "effective_weight": 1.04,
       "title_original": "Thailand finalizes rules paving way for Bitcoin, Ether ETFs",
       "cross_check": 2
@@ -106,43 +122,27 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-09T18:05:41.747951+00:00",
+      "collected_at": "2026-10-09T19:05:53.575953+00:00",
       "effective_weight": 1.04,
       "title_original": "China’s P2P stablecoin wallets surge 43x, Korea’s $450B crypto economy: Asia Express",
       "cross_check": 1
-    },
-    {
-      "title": "Securitize stock jumps over 10% after launching tokenized US equities on Solana",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-10-08T19:31:38+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 2.0,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-09T18:05:41.747992+00:00",
-      "effective_weight": 1.04,
-      "title_original": "Securitize stock jumps over 10% after launching tokenized US equities on Solana",
-      "cross_check": 2
     }
   ],
   "top_bearish": [
     {
-      "title": "Bitcoin Price Bounces Back to $83K as Crypto Market Liquidations Cool",
-      "source": "Bitcoin.com",
+      "title": "Hoskinson says Vitalik’s AI warning could delay the internet’s quantum defenses",
+      "source": "CryptoSlate",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-10-09T17:41:33+00:00",
+      "pub_date": "2026-10-09T19:00:27+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 1.2,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-09T18:05:42.198058+00:00",
+      "collected_at": "2026-10-09T19:05:54.088747+00:00",
       "effective_weight": 1.5,
-      "title_original": "Bitcoin Price Bounces Back to $83K as Crypto Market Liquidations Cool",
+      "title_original": "Hoskinson says Vitalik’s AI warning could delay the internet’s quantum defenses",
       "cross_check": 2
     },
     {
@@ -156,7 +156,7 @@
       "bear_weight": 1.2,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-09T18:05:43.872937+00:00",
+      "collected_at": "2026-10-09T19:05:55.323415+00:00",
       "effective_weight": 1.2,
       "title_original": "Бессент: США конфискуют связанную с Ираном криптовалюту на $1 млрд",
       "cross_check": 1
@@ -172,7 +172,7 @@
       "bear_weight": 1.2,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-09T18:05:43.872976+00:00",
+      "collected_at": "2026-10-09T19:05:55.323471+00:00",
       "effective_weight": 1.2,
       "title_original": "В TD Cowen предупредили о рисках для акционеров Strategy",
       "cross_check": 1
@@ -188,7 +188,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-09T18:05:41.906163+00:00",
+      "collected_at": "2026-10-09T19:05:53.862514+00:00",
       "effective_weight": 1.1,
       "title_original": "New York AG Secures Up to $35M and Industry Ban From Ex-Celsius CEO Alex Mashinsky",
       "cross_check": 2
@@ -204,7 +204,7 @@
       "bear_weight": 1.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-09T18:05:41.906242+00:00",
+      "collected_at": "2026-10-09T19:05:53.862623+00:00",
       "effective_weight": 1.1,
       "title_original": "Bitcoin Bleeds in Uptober—How Low Can It Go? Experts Weigh In",
       "cross_check": 1
