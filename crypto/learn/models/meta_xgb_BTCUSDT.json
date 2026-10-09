@@ -1,0 +1,92 @@
+{
+  "trained_at": "2026-10-09T18:17:45.747898+00:00",
+  "version": "v2-xgb",
+  "objective": "regression",
+  "algorithm": "xgboost",
+  "symbol": "BTCUSDT",
+  "y_clip": 20.0,
+  "n_clipped": 0,
+  "n_total": 53438,
+  "n_train": 42738,
+  "n_test": 10688,
+  "best_iteration": 15,
+  "ic_train": 0.2069,
+  "ic_test": 0.0302,
+  "mae_test": 1.0646,
+  "rmse_test": 1.5281,
+  "features": [
+    "change_pct",
+    "range_pct",
+    "body_pct",
+    "upper_wick_pct",
+    "lower_wick_pct",
+    "volume_ratio_24h",
+    "volatility_24h",
+    "volatility_7d",
+    "change_4h",
+    "change_24h",
+    "change_1d",
+    "trend_up",
+    "hour_of_day",
+    "funding_rate",
+    "funding_trend",
+    "ema9_dist_pct",
+    "ema21_dist_pct",
+    "ema50_dist_pct",
+    "macd",
+    "macd_signal",
+    "bb_upper_dist",
+    "bb_lower_dist",
+    "bb_width_pct",
+    "dist_high_24h_pct",
+    "dist_low_24h_pct",
+    "consecutive_up",
+    "session",
+    "oi_change_pct",
+    "ls_ratio",
+    "taker_ratio"
+  ],
+  "top_features": [
+    {
+      "name": "f28",
+      "gain": 340.78
+    },
+    {
+      "name": "f13",
+      "gain": 304.83
+    },
+    {
+      "name": "f9",
+      "gain": 294.55
+    },
+    {
+      "name": "f19",
+      "gain": 287.21
+    },
+    {
+      "name": "f18",
+      "gain": 272.15
+    },
+    {
+      "name": "f17",
+      "gain": 271.9
+    },
+    {
+      "name": "f6",
+      "gain": 257.48
+    },
+    {
+      "name": "f7",
+      "gain": 243.23
+    },
+    {
+      "name": "f23",
+      "gain": 215.83
+    },
+    {
+      "name": "f12",
+      "gain": 206.93
+    }
+  ],
+  "horizon": 12
+}

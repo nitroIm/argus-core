@@ -1,6 +1,6 @@
 {
-  "trained_at": "2026-10-09T17:32:21.434729+00:00",
-  "version": "v13",
+  "trained_at": "2026-10-09T18:17:20.738548+00:00",
+  "version": "v14",
   "objective": "regression",
   "symbol": "BTCUSDT",
   "n_total": 53438,
@@ -92,5 +92,24 @@
     }
   ],
   "horizon": 12,
-  "exported_at": "2026-10-09T17:39:39.764507+00:00"
+  "params_used": {
+    "objective": "regression",
+    "metric": "rmse",
+    "boosting_type": "gbdt",
+    "num_leaves": 8,
+    "max_depth": 3,
+    "learning_rate": 0.03,
+    "feature_fraction": 0.5,
+    "bagging_fraction": 0.6,
+    "bagging_freq": 5,
+    "min_data_in_leaf": 80,
+    "lambda_l1": 1.0,
+    "lambda_l2": 1.0,
+    "verbose": -1,
+    "seed": 42
+  },
+  "num_rounds": 1000,
+  "early_stop": 30,
+  "override": false,
+  "exported_at": "2026-10-09T18:24:02.431714+00:00"
 }

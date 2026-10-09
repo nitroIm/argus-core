@@ -1,22 +1,22 @@
 {
-  "trained_at": "2026-10-09T17:32:30.885654+00:00",
-  "version": "v13",
+  "trained_at": "2026-10-09T18:17:31.833111+00:00",
+  "version": "v14",
   "objective": "regression",
   "symbol": "SOLUSDT",
   "n_total": 53001,
   "n_train": 42388,
   "n_test": 10601,
   "n_val_inner": 6359,
-  "best_iteration": 67,
-  "ic_train": 0.2556,
-  "ic_test": 0.0435,
-  "mae_train": 3.0154,
-  "mae_test": 1.8179,
-  "rmse_train": 4.435,
-  "rmse_test": 2.526,
-  "sign_acc_train": 0.51,
-  "sign_acc_test": 0.4897,
-  "num_trees": 67,
+  "best_iteration": 58,
+  "ic_train": 0.1816,
+  "ic_test": 0.0343,
+  "mae_train": 3.0362,
+  "mae_test": 1.821,
+  "rmse_train": 4.4917,
+  "rmse_test": 2.5291,
+  "sign_acc_train": 0.5001,
+  "sign_acc_test": 0.4925,
+  "num_trees": 58,
   "features": [
     "change_pct",
     "range_pct",
@@ -52,45 +52,64 @@
   "top_features": [
     {
       "name": "volatility_24h",
-      "gain": 105913.58
-    },
-    {
-      "name": "volatility_7d",
-      "gain": 71943.57
-    },
-    {
-      "name": "funding_rate",
-      "gain": 43345.59
+      "gain": 87680.23
     },
     {
       "name": "ls_ratio",
-      "gain": 39020.34
+      "gain": 31068.43
+    },
+    {
+      "name": "funding_rate",
+      "gain": 27663.19
+    },
+    {
+      "name": "volatility_7d",
+      "gain": 22338.3
+    },
+    {
+      "name": "range_pct",
+      "gain": 21829.25
     },
     {
       "name": "macd_signal",
-      "gain": 22183.92
-    },
-    {
-      "name": "macd",
-      "gain": 19730.77
+      "gain": 11742.86
     },
     {
       "name": "bb_width_pct",
-      "gain": 15226.98
-    },
-    {
-      "name": "ema50_dist_pct",
-      "gain": 14435.21
-    },
-    {
-      "name": "change_24h",
-      "gain": 13928.5
+      "gain": 11132.99
     },
     {
       "name": "dist_high_24h_pct",
-      "gain": 10672.03
+      "gain": 6412.86
+    },
+    {
+      "name": "ema50_dist_pct",
+      "gain": 6165.19
+    },
+    {
+      "name": "change_24h",
+      "gain": 3894.39
     }
   ],
   "horizon": 12,
-  "exported_at": "2026-10-09T17:39:39.762940+00:00"
+  "params_used": {
+    "objective": "regression",
+    "metric": "rmse",
+    "boosting_type": "gbdt",
+    "num_leaves": 4,
+    "max_depth": 2,
+    "learning_rate": 0.02,
+    "feature_fraction": 0.4,
+    "bagging_fraction": 0.6,
+    "bagging_freq": 5,
+    "min_data_in_leaf": 150,
+    "lambda_l1": 2.0,
+    "lambda_l2": 2.0,
+    "verbose": -1,
+    "seed": 42
+  },
+  "num_rounds": 500,
+  "early_stop": 20,
+  "override": true,
+  "exported_at": "2026-10-09T18:24:02.429865+00:00"
 }
