@@ -1,11 +1,11 @@
 # ============================================================
-# ARGUS-Trader - DATASET v16
+# ARGUS-Trader - DATASET v17
 # ------------------------------------------------------------
-# v16: fetch_orderbook silent for DB2 (no log warning).
-#      _fetch accepts silent flag.
-# v15: read oi_change_pct/ls_ratio/taker_ratio from features_hourly.
-#      Add _finalize_X (impute NaN + clip test to train).
-# v13.1: expose ts_test/sym_test in prepare().
+# v17: FEATURE_COLS = INTERNAL_COLS only (30 cols).
+#      Removed: MACRO/ONCHAIN/OB/EVENT/ANOMALY/ASIA/EXTERNAL.
+#      Reason: those sources don't cover train period
+#      (2020-2025). All are fresh (Aug-Oct 2026).
+# v16: fetch_orderbook silent for DB2.
 # ============================================================
 
 import os
@@ -54,10 +54,6 @@ logging.basicConfig(
     datefmt="%H:%M:%S",
 )
 log = logging.getLogger("crypto.learn.dataset")
-
-USE_EXTERNAL = (
-    os.getenv("USE_EXTERNAL", "0").strip() == "1"
-)
 
 HORIZON = int(os.getenv("HORIZON", "12"))
 
@@ -130,68 +126,13 @@ INTERNAL_COLS = [
     "taker_ratio",
 ]
 
-MACRO_COLS = ["us10y_level", "us10y_change_1d"]
-ONCHAIN_COLS = ["hashrate_log", "hashrate_change_1d"]
-OB_COLS = ["ob_bid_pct", "ob_ask_pct", "ob_spread_pct"]
-EVENT_COLS = [
-    "events_1h",
-    "events_24h",
-    "rsi_overbought_24h",
-]
-ANOMALY_COLS = ["anomaly_24h"]
-
-ASIA_COLS = [
-    "asia_nikkei_6h",
-    "asia_shanghai_6h",
-    "asia_shanghai_12h",
-    "asia_hangseng_6h",
-    "asia_usdcny_6h",
-    "asia_usdcny_12h",
-    "asia_dax_6h",
-    "asia_stoxx50_6h",
-    "asia_ftse_6h",
-    "asia_eurusd_6h",
-    "asia_vix_1h",
-    "asia_nasdaq_1h",
-    "asia_us10y_6h",
-    "asia_usdjpy_6h",
-    "asia_kospi_6h",
-    "asia_taiex_6h",
-    "asia_impact_score",
-]
-
-EXTERNAL_COLS = [
-    "dxy_change_pct",
-    "spx_change_pct",
-    "gold_change_pct",
-]
-
-FEATURE_COLS = (
-    INTERNAL_COLS
-    + MACRO_COLS
-    + ONCHAIN_COLS
-    + OB_COLS
-    + EVENT_COLS
-    + ANOMALY_COLS
-    + ASIA_COLS
-    + (EXTERNAL_COLS if USE_EXTERNAL else [])
-)
+FEATURE_COLS = list(INTERNAL_COLS)
 
 TARGET_RET = "next_return"
 TARGET_COL = "next_change_pct"
 
-ASIA_TOL_SEC = 7200
 
-MAX_AGE = {
-    "macro": 12,
-    "onchain": 72,
-    "orderbook": 4,
-    "events": 168,
-    "anomaly": 48,
-}
-
-
-def _fetch(conn, sql, params=(), silent=False):
+def _fetch(conn, sql, params=()):
     try:
         with conn.cursor() as cur:
             cur.execute(sql, params)
@@ -206,28 +147,6 @@ def _fetch(conn, sql, params=(), silent=False):
                     tzinfo=timezone.utc
                 )
             out.append((ts, r[1:]))
-        return out
-    except Exception as exc:
-        if not silent:
-            log.warning("fetch: %s", exc)
-        return []
-
-
-def _fetch_flat(conn, sql, params=()):
-    try:
-        with conn.cursor() as cur:
-            cur.execute(sql, params)
-            rows = cur.fetchall()
-        out = []
-        for r in rows:
-            ts = r[0]
-            if ts is None:
-                continue
-            if ts.tzinfo is None:
-                ts = ts.replace(
-                    tzinfo=timezone.utc
-                )
-            out.append((ts, r[1]))
         return out
     except Exception as exc:
         log.warning("fetch: %s", exc)
@@ -283,308 +202,6 @@ def fetch_candles(symbol, limit=100000):
         return []
 
 
-def fetch_macro():
-    if not DB2_OK:
-        return []
-    cols = ["timestamp", "close"]
-    sql = _sel(
-        cols,
-        "global_market",
-        "symbol = 'US10Y' AND close IS NOT NULL "
-        "ORDER BY timestamp",
-    )
-    try:
-        with get_conn_db2() as conn:
-            return _fetch(conn, sql)
-    except Exception as exc:
-        log.warning("macro: %s", exc)
-        return []
-
-
-def fetch_onchain():
-    cols = ["timestamp", "hashrate"]
-    sql = _sel(
-        cols,
-        "onchain_metrics",
-        "symbol = 'BTC' AND hashrate IS NOT NULL "
-        "ORDER BY timestamp",
-    )
-    try:
-        with get_connection() as conn:
-            return _fetch(conn, sql)
-    except Exception as exc:
-        log.warning("onchain: %s", exc)
-        return []
-
-
-def fetch_orderbook(symbol):
-    cols = [
-        "timestamp",
-        "bid_pct",
-        "ask_pct",
-        "spread_pct",
-    ]
-    sql = _sel(
-        cols,
-        "orderbook_snapshots",
-        "symbol = %s AND bid_pct IS NOT NULL "
-        "ORDER BY timestamp",
-    )
-    try:
-        with symbol_conn(symbol) as conn:
-            return _fetch(
-                conn, sql, (symbol,), silent=True,
-            )
-    except Exception:
-        return []
-
-
-def fetch_events(symbol):
-    cols = ["timestamp", "event_type"]
-    sql = _sel(
-        cols,
-        "events",
-        "symbol = %s ORDER BY timestamp",
-    )
-    try:
-        with symbol_conn(symbol) as conn:
-            return _fetch_flat(conn, sql, (symbol,))
-    except Exception as exc:
-        log.warning("events %s: %s", symbol, exc)
-        return []
-
-
-def fetch_anomaly(symbol):
-    cols = ["timestamp", "anomaly_type"]
-    sql = _sel(
-        cols,
-        "anomaly_log",
-        "symbol = %s ORDER BY timestamp",
-    )
-    try:
-        with symbol_conn(symbol) as conn:
-            return _fetch_flat(conn, sql, (symbol,))
-    except Exception as exc:
-        log.warning("anom %s: %s", symbol, exc)
-        return []
-
-
-def fetch_asia_market():
-    if not DB2_OK:
-        return {}
-    try:
-        with get_conn_db2() as conn:
-            with conn.cursor() as cur:
-                cur.execute(
-                    "SELECT symbol, timestamp, "
-                    "change_pct FROM global_market "
-                    "WHERE change_pct IS NOT NULL "
-                    "ORDER BY symbol, timestamp"
-                )
-                out = {}
-                for sym, ts, ch in cur.fetchall():
-                    if ts is None:
-                        continue
-                    if ts.tzinfo is None:
-                        ts = ts.replace(
-                            tzinfo=timezone.utc
-                        )
-                    out.setdefault(
-                        sym, []
-                    ).append((ts, float(ch)))
-                return out
-    except Exception as exc:
-        log.warning("global_market: %s", exc)
-        return {}
-
-
-def asof(series, ts, max_age_h):
-    if not series:
-        return None
-    best = None
-    for s_ts, s_val in series:
-        if s_ts <= ts:
-            best = (s_ts, s_val)
-        else:
-            break
-    if best is None:
-        return None
-    if ts - best[0] > timedelta(
-        hours=max_age_h
-    ):
-        return None
-    return best[1]
-
-
-def asof_shift(series, ts, shift_h, max_age_h):
-    return asof(
-        series,
-        ts - timedelta(hours=shift_h),
-        max_age_h,
-    )
-
-
-def asia_at(asia_list, ts, lag_hours):
-    if not asia_list:
-        return None
-    target = ts - timedelta(hours=lag_hours)
-    best_val = None
-    best_diff = None
-    for a_ts, a_val in asia_list:
-        diff = abs(
-            (a_ts - target).total_seconds()
-        )
-        if diff <= ASIA_TOL_SEC:
-            if best_diff is None or diff < best_diff:
-                best_val = a_val
-                best_diff = diff
-    return best_val
-
-
-def asia_impact_score(asia, ts):
-    parts = []
-    sh = asia_at(asia.get("SHANGHAI", []), ts, 6)
-    if sh is not None:
-        parts.append(-sh)
-    for src in ["DAX", "NASDAQ", "NIKKEI"]:
-        v = asia_at(asia.get(src, []), ts, 6)
-        if v is not None:
-            parts.append(v)
-    v = asia_at(asia.get("VIX", []), ts, 1)
-    if v is not None:
-        parts.append(-v)
-    if not parts:
-        return None
-    return round(sum(parts), 4)
-
-
-def _safe(v):
-    if v is None:
-        return np.nan
-    try:
-        return float(v)
-    except Exception:
-        return np.nan
-
-
-def _macro_feats(series, ts):
-    now = asof(series, ts, MAX_AGE["macro"])
-    p = asof_shift(
-        series, ts, 24, MAX_AGE["macro"]
-    )
-    lvl = np.nan
-    ch = np.nan
-    if now is not None:
-        lvl = now[0]
-    if now is not None and p is not None:
-        if p[0] != 0:
-            ch = (
-                (now[0] - p[0])
-                / abs(p[0])
-                * 100
-            )
-    return [_safe(lvl), _safe(ch)]
-
-
-def _onchain_feats(series, ts):
-    now = asof(
-        series, ts, MAX_AGE["onchain"]
-    )
-    p = asof_shift(
-        series, ts, 24, MAX_AGE["onchain"]
-    )
-    lh = np.nan
-    ch = np.nan
-    if now is not None and now[0] > 0:
-        lh = float(np.log(now[0]))
-    if now is not None and p is not None:
-        if p[0] > 0:
-            ch = (now[0] - p[0]) / p[0] * 100
-    return [_safe(lh), _safe(ch)]
-
-
-def _ob_feats(series, ts):
-    now = asof(series, ts, MAX_AGE["orderbook"])
-    if now is None:
-        return [np.nan, np.nan, np.nan]
-    return [_safe(now[0]), _safe(now[1]),
-            _safe(now[2])]
-
-
-def _count_events(series, ts, hours):
-    if not series:
-        return 0
-    cutoff = ts - timedelta(hours=hours)
-    n = 0
-    for e_ts, _ in series:
-        if e_ts > cutoff and e_ts <= ts:
-            n += 1
-    return n
-
-
-def _count_type(series, ts, hours, etype):
-    if not series:
-        return 0
-    cutoff = ts - timedelta(hours=hours)
-    n = 0
-    for e_ts, e_data in series:
-        if e_ts <= cutoff or e_ts > ts:
-            continue
-        e_val = e_data
-        if isinstance(e_val, tuple):
-            e_val = e_val[0]
-        if e_val == etype:
-            n += 1
-    return n
-
-
-def _event_feats(series, ts):
-    return [
-        _count_events(series, ts, 1),
-        _count_events(series, ts, 24),
-        _count_type(
-            series, ts, 24, "rsi_overbought"
-        ),
-    ]
-
-
-def _anom_feats(series, ts):
-    return [_count_events(series, ts, 24)]
-
-
-def _asia_feats(asia, ts):
-    return [
-        asia_at(asia.get("NIKKEI", []), ts, 6),
-        asia_at(asia.get("SHANGHAI", []), ts, 6),
-        asia_at(asia.get("SHANGHAI", []), ts, 12),
-        asia_at(asia.get("HANGSENG", []), ts, 6),
-        asia_at(asia.get("USDCNY", []), ts, 6),
-        asia_at(asia.get("USDCNY", []), ts, 12),
-        asia_at(asia.get("DAX", []), ts, 6),
-        asia_at(asia.get("SX5E", []), ts, 6),
-        asia_at(asia.get("FTSE", []), ts, 6),
-        asia_at(asia.get("EURUSD", []), ts, 6),
-        asia_at(asia.get("VIX", []), ts, 1),
-        asia_at(asia.get("NASDAQ", []), ts, 1),
-        asia_at(asia.get("US10Y", []), ts, 6),
-        asia_at(asia.get("USDJPY", []), ts, 6),
-        asia_at(asia.get("KOSPI", []), ts, 6),
-        asia_at(asia.get("TAIEX", []), ts, 6),
-        asia_impact_score(asia, ts),
-    ]
-
-
-def _ext_feats(dxy, spx, gold, ts):
-    v1 = asof(dxy, ts, 3)
-    v2 = asof(spx, ts, 3)
-    v3 = asof(gold, ts, 3)
-    return [
-        _safe(v1[0]) if v1 else np.nan,
-        _safe(v2[0]) if v2 else np.nan,
-        _safe(v3[0]) if v3 else np.nan,
-    ]
-
-
 def build_targets(candles, horizon):
     out = {}
     n = len(candles)
@@ -602,29 +219,15 @@ def build_targets(candles, horizon):
     return out
 
 
-def _row_for(symbol, d, asia, ts,
-             ext_dxy, ext_spx, ext_gold):
+def _row_for(d, ts):
     row = []
     for i in range(len(INTERNAL_COLS)):
         v = d["fa"][i].get(ts)
         row.append(v if v is not None else np.nan)
-    row.extend(_macro_feats(d["macro"], ts))
-    row.extend(_onchain_feats(d["onchain"], ts))
-    row.extend(_ob_feats(d["ob"], ts))
-    row.extend(_event_feats(d["events"], ts))
-    row.extend(_anom_feats(d["anom"], ts))
-    row.extend(_asia_feats(asia, ts))
-    if USE_EXTERNAL:
-        row.extend(_ext_feats(
-            ext_dxy, ext_spx, ext_gold, ts
-        ))
     return row
 
 
-def build_xy_all(
-    symbols_data, targets_map, asia,
-    ext_dxy, ext_spx, ext_gold,
-):
+def build_xy_all(symbols_data, targets_map):
     X, y_dir, y_ret = [], [], []
     ts_list, sym_list = [], []
 
@@ -638,10 +241,7 @@ def build_xy_all(
             ret = targets.get(ts)
             if ret is None:
                 continue
-            row = _row_for(
-                symbol, d, asia, ts,
-                ext_dxy, ext_spx, ext_gold,
-            )
+            row = _row_for(d, ts)
             X.append(row)
             y_dir.append(1 if ret > 0 else 0)
             y_ret.append(float(ret))
@@ -799,18 +399,13 @@ def _load_symbol(symbol):
     return {
         "feats": feats,
         "fa": fa,
-        "macro": fetch_macro(),
-        "onchain": fetch_onchain(),
-        "ob": fetch_orderbook(symbol),
-        "events": fetch_events(symbol),
-        "anom": fetch_anomaly(symbol),
         "candles": candles,
     }
 
 
 def prepare(test_frac=0.2):
     log.info("=" * 60)
-    log.info("DATASET v16")
+    log.info("DATASET v17")
     log.info("SYMBOLS=%s", SYMBOLS)
     log.info("HORIZON=%dh", HORIZON)
     log.info("DB2_OK=%s", DB2_OK)
@@ -819,15 +414,6 @@ def prepare(test_frac=0.2):
         len(FEATURE_COLS),
     )
     log.info("=" * 60)
-
-    asia = fetch_asia_market()
-    log.info(
-        "global_market: %d symbols", len(asia)
-    )
-
-    ext_dxy = []
-    ext_spx = []
-    ext_gold = []
 
     symbols_data = {}
     targets_map = {}
@@ -844,12 +430,9 @@ def prepare(test_frac=0.2):
             d["candles"], HORIZON
         )
         log.info(
-            "%s: feat=%d candles=%d "
-            "ob=%d ev=%d an=%d",
+            "%s: feat=%d candles=%d",
             symbol, len(d["feats"]),
             len(d["candles"]),
-            len(d["ob"]),
-            len(d["events"]), len(d["anom"]),
         )
 
     if REFERENCE not in symbols_data:
@@ -859,8 +442,7 @@ def prepare(test_frac=0.2):
         return None
 
     X, y_dir, y_ret, ts, sym = build_xy_all(
-        symbols_data, targets_map, asia,
-        ext_dxy, ext_spx, ext_gold,
+        symbols_data, targets_map,
     )
 
     log.info("samples: %d", len(X))
@@ -940,12 +522,7 @@ def prepare_one(symbol):
         return None, None
 
     latest_ts = max(feats.keys())
-    asia = fetch_asia_market()
-
-    row = _row_for(
-        symbol, d, asia, latest_ts,
-        [], [], [],
-    )
+    row = _row_for(d, latest_ts)
     return latest_ts, row
 
 
