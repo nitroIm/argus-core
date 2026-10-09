@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-10-09T06:05:49.453300+00:00",
+  "generated_at": "2026-10-09T07:05:38.643914+00:00",
   "total_news": 128,
-  "avg_sentiment": 0.077,
+  "avg_sentiment": 0.083,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
   "bullish_count": 25,
   "bearish_count": 18,
@@ -58,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-09T06:05:47.565987+00:00",
+      "collected_at": "2026-10-09T07:05:37.061381+00:00",
       "effective_weight": 1.3,
       "title_original": "Thailand finalizes rules paving way for Bitcoin, Ether ETFs",
       "cross_check": 1
@@ -74,7 +74,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-09T06:05:47.566147+00:00",
+      "collected_at": "2026-10-09T07:05:37.061444+00:00",
       "effective_weight": 1.04,
       "title_original": "China’s P2P stablecoin wallets surge 43x, Korea’s $450B crypto economy: Asia Express",
       "cross_check": 1
@@ -90,7 +90,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-09T06:05:47.566206+00:00",
+      "collected_at": "2026-10-09T07:05:37.061472+00:00",
       "effective_weight": 1.04,
       "title_original": "Securitize stock jumps over 10% after launching tokenized US equities on Solana",
       "cross_check": 2
@@ -106,7 +106,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-09T06:05:47.566598+00:00",
+      "collected_at": "2026-10-09T07:05:37.061663+00:00",
       "effective_weight": 1.04,
       "title_original": "Crypto lending rises again… but have they solved the risks?",
       "cross_check": 1
@@ -122,7 +122,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-09T06:05:47.566697+00:00",
+      "collected_at": "2026-10-09T07:05:37.061711+00:00",
       "effective_weight": 1.04,
       "title_original": "Sui’s Hashi to launch with $500M in Bitcoin finance commitments",
       "cross_check": 1
@@ -140,25 +140,9 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-09T06:05:47.888367+00:00",
+      "collected_at": "2026-10-09T07:05:37.336673+00:00",
       "effective_weight": 1.0,
       "title_original": "Ohio Returns $15,300 Lost at Crypto ATM in Fake Microsoft Scam",
-      "cross_check": 1
-    },
-    {
-      "title": "Джастин Дрейк допустил взлом ECDSA с помощью ИИ раньше появления квантовых компьютеров",
-      "source": "ForkLog",
-      "source_weight": 1.2,
-      "lang": "ru",
-      "pub_date": "2026-10-08T06:10:32+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-09T06:05:49.328710+00:00",
-      "effective_weight": 0.96,
-      "title_original": "Джастин Дрейк допустил взлом ECDSA с помощью ИИ раньше появления квантовых компьютеров",
       "cross_check": 1
     },
     {
@@ -172,7 +156,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-09T06:05:47.655947+00:00",
+      "collected_at": "2026-10-09T07:05:37.158828+00:00",
       "effective_weight": 0.88,
       "title_original": "US Government Moves $1 Billion in Bitcoin Seized From Bitfinex Hacker",
       "cross_check": 3
@@ -188,7 +172,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-09T06:05:47.656297+00:00",
+      "collected_at": "2026-10-09T07:05:37.158996+00:00",
       "effective_weight": 0.88,
       "title_original": "Uranium Finance Hacker Who Bought Pokémon and Magic Cards Convicted Over $50M Theft",
       "cross_check": 1
@@ -204,9 +188,25 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-09T06:05:47.888515+00:00",
+      "collected_at": "2026-10-09T07:05:37.336755+00:00",
       "effective_weight": 0.8,
       "title_original": "Satoshi’s Abandoned Poker Experiment Returns With a Bitcoin Twist",
+      "cross_check": 1
+    },
+    {
+      "title": "PumpFun is making millions from a market where 81% of memecoins crashed 90%",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-08T22:00:06+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 2.0,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-09T07:05:37.469693+00:00",
+      "effective_weight": 0.8,
+      "title_original": "PumpFun is making millions from a market where 81% of memecoins crashed 90%",
       "cross_check": 1
     }
   ]
