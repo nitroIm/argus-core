@@ -1,11 +1,11 @@
 # ============================================================
 # ARGUS-Trader - TRAIN [PRODUCTION]
 # ------------------------------------------------------------
+# v14: per-symbol overrides. ETH/SOL get simpler models
+#      (overfit fix: IC_train 0.26 -> IC_test 0.015).
 # v13: inner val split (15% of train) + early_stopping(30).
-#      NUM_ROUNDS 200 -> 1000. Prevents overfit on weak
-#      signal (audit showed max feature IC ~0.04).
-# v12: regression target (next_return). Metrics: MAE, RMSE,
-#      Spearman IC. No accuracy/confusion.
+#      NUM_ROUNDS 200 -> 1000.
+# v12: regression target (next_return).
 # v11: PARAMS tuned for per-symbol.
 # v10: per-symbol models.
 # ============================================================
@@ -47,7 +47,7 @@ NUM_ROUNDS = 1000
 VAL_FRAC = 0.15
 EARLY_STOP = 30
 
-PARAMS = {
+PARAMS_BASE = {
     "objective": "regression",
     "metric": "rmse",
     "boosting_type": "gbdt",
@@ -62,6 +62,34 @@ PARAMS = {
     "lambda_l2": 1.0,
     "verbose": -1,
     "seed": 42,
+}
+
+# v14: simpler models for ETH/SOL (overfit fix).
+# ETH: IC_train=0.26 IC_test=0.015 sign_acc=0.498
+# SOL: mixed results, same fix applied.
+SYMBOL_OVERRIDES = {
+    "ETHUSDT": {
+        "num_leaves": 4,
+        "max_depth": 2,
+        "learning_rate": 0.02,
+        "feature_fraction": 0.4,
+        "min_data_in_leaf": 150,
+        "lambda_l1": 2.0,
+        "lambda_l2": 2.0,
+        "num_rounds": 500,
+        "early_stop": 20,
+    },
+    "SOLUSDT": {
+        "num_leaves": 4,
+        "max_depth": 2,
+        "learning_rate": 0.02,
+        "feature_fraction": 0.4,
+        "min_data_in_leaf": 150,
+        "lambda_l1": 2.0,
+        "lambda_l2": 2.0,
+        "num_rounds": 500,
+        "early_stop": 20,
+    },
 }
 
 SYMBOLS_LIST = [
@@ -81,6 +109,25 @@ DB2_SET = {
     ).split(",")
     if s.strip()
 }
+
+
+def params_for(symbol):
+    """Merge base params with per-symbol override."""
+    p = dict(PARAMS_BASE)
+    rounds = NUM_ROUNDS
+    early = EARLY_STOP
+
+    ov = SYMBOL_OVERRIDES.get(symbol)
+    if ov:
+        for k, v in ov.items():
+            if k == "num_rounds":
+                rounds = v
+            elif k == "early_stop":
+                early = v
+            else:
+                p[k] = v
+
+    return p, rounds, early
 
 
 def model_file(sym):
@@ -153,7 +200,6 @@ def train_one(symbol):
     r_train = data["r_train"]
     r_test = data["r_test"]
 
-    # Inner val split — tail of train (time-ordered).
     n_tr = len(X_train)
     cut = int(n_tr * (1 - VAL_FRAC))
     X_tr = X_train[:cut]
@@ -167,18 +213,25 @@ def train_one(symbol):
         len(X_test),
     )
 
+    params, num_rounds, early_stop = params_for(symbol)
+    override = symbol in SYMBOL_OVERRIDES
+    log.info(
+        "%s: params override=%s rounds=%d early=%d",
+        symbol, override, num_rounds, early_stop,
+    )
+
     train_set = lgb.Dataset(X_tr, label=r_tr)
     val_set = lgb.Dataset(
         X_va, label=r_va, reference=train_set,
     )
 
     model = lgb.train(
-        PARAMS, train_set,
-        num_boost_round=NUM_ROUNDS,
+        params, train_set,
+        num_boost_round=num_rounds,
         valid_sets=[val_set],
         callbacks=[
             lgb.early_stopping(
-                EARLY_STOP, verbose=False,
+                early_stop, verbose=False,
             ),
             lgb.log_evaluation(100),
         ],
@@ -187,7 +240,7 @@ def train_one(symbol):
     best_iter = model.best_iteration or model.num_trees()
     log.info(
         "%s: best_iteration=%d (of %d)",
-        symbol, best_iter, NUM_ROUNDS,
+        symbol, best_iter, num_rounds,
     )
 
     p_train = model.predict(X_train).astype(np.float32)
@@ -247,7 +300,7 @@ def train_one(symbol):
         "trained_at": datetime.now(
             timezone.utc
         ).isoformat(),
-        "version": "v13",
+        "version": "v14",
         "objective": "regression",
         "symbol": symbol,
         "n_total": data["n_total"],
@@ -270,6 +323,10 @@ def train_one(symbol):
             for n, s in pairs[:10]
         ],
         "horizon": data["horizon"],
+        "params_used": params,
+        "num_rounds": num_rounds,
+        "early_stop": early_stop,
+        "override": override,
     }
     with open(
         meta_file(symbol), "w", encoding="utf-8",
@@ -310,15 +367,18 @@ def write_compat(symbols, metas):
 def train():
     log.info("=" * 60)
     log.info(
-        "ARGUS-Trader TRAIN v13 "
-        "(per-symbol, regression, early stopping)"
+        "ARGUS-Trader TRAIN v14 "
+        "(per-symbol params, regression)"
     )
     log.info("SYMBOLS=%s", SYMBOLS_LIST)
     log.info(
-        "NUM_ROUNDS=%d EARLY_STOP=%d VAL_FRAC=%.2f",
+        "BASE: rounds=%d early=%d val=%.2f",
         NUM_ROUNDS, EARLY_STOP, VAL_FRAC,
     )
-    log.info("PARAMS: %s", PARAMS)
+    log.info(
+        "OVERRIDES: %s",
+        list(SYMBOL_OVERRIDES.keys()),
+    )
     log.info("=" * 60)
 
     metas = {}
