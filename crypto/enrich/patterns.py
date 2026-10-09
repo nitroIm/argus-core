@@ -1,14 +1,9 @@
 # ============================================================
-# ARGUS-Trader — PATTERNS v3
+# ARGUS-Trader - PATTERNS v4
 # ------------------------------------------------------------
-# v3: DB routing via symbol_conn (DB1: BTC/ETH, DB2: SOL/BNB).
-#     SYMBOLS from env, fallback to config.SYMBOLS.
-#     Автопоиск db2.py (как в features.py v8).
-#     Логика расчёта не менялась с v2.2.
-# v2.2: batch INSERT in save_patterns. No double fetch.
-# v2.1: fix fetch_features — merge features_hourly + candles.
-# v2: + regime detection (trend_up / trend_down / flat /
-#     chop / volatile).
+# v4: market_type='futures' in fetch_candles.
+#     English logs (no emoji).
+# v3: DB routing via symbol_conn.
 # ============================================================
 
 import os
@@ -24,7 +19,6 @@ CRYPTO_ROOT = SCRIPT_DIR.parent
 DATA_DIR = CRYPTO_ROOT / "data"
 sys.path.insert(0, str(CRYPTO_ROOT))
 
-# Auto-locate db2.py (same trick as features.py v8)
 for _p in CRYPTO_ROOT.rglob("db2.py"):
     _d = str(_p.parent)
     if "__pycache__" in _d:
@@ -96,7 +90,6 @@ def symbol_conn(symbol):
 
 
 def fetch_features(symbol, limit=500):
-    """Merge features_hourly + candles by timestamp."""
     try:
         with symbol_conn(symbol) as conn:
             with conn.cursor() as cur:
@@ -114,6 +107,7 @@ def fetch_features(symbol, limit=500):
                     "SELECT timestamp, close, high, low "
                     "FROM candles WHERE symbol = %s "
                     "AND timeframe = '1h' "
+                    "AND market_type = 'futures' "
                     "ORDER BY timestamp DESC LIMIT %s",
                     (symbol, limit),
                 )
@@ -145,7 +139,7 @@ def fetch_features(symbol, limit=500):
             })
         return result
     except Exception as e:
-        log.error(f"fetch_features: {e}")
+        log.error("fetch_features: %s", e)
         return []
 
 
@@ -283,7 +277,7 @@ def detect_regime(features):
     if vol_ratio is not None and vol_ratio > VOLATILE_RATIO:
         return {
             "label": "volatile",
-            "reason": f"ATR short/long={vol_ratio:.2f}",
+            "reason": "ATR short/long=%.2f" % vol_ratio,
             "trade_allowed": False,
             "preferred_direction": "none",
             **base,
@@ -292,7 +286,8 @@ def detect_regime(features):
     if up_ratio >= 0.6 and max_up >= 4 and switch_rate < 0.4:
         return {
             "label": "trend_up",
-            "reason": f"up_ratio={up_ratio:.2f}, streak={max_up}",
+            "reason": "up_ratio=%.2f streak=%d" % (
+                up_ratio, max_up),
             "trade_allowed": True,
             "preferred_direction": "LONG",
             **base,
@@ -301,7 +296,8 @@ def detect_regime(features):
     if up_ratio <= 0.4 and max_down >= 4 and switch_rate < 0.4:
         return {
             "label": "trend_down",
-            "reason": f"up_ratio={up_ratio:.2f}, streak={max_down}",
+            "reason": "up_ratio=%.2f streak=%d" % (
+                up_ratio, max_down),
             "trade_allowed": True,
             "preferred_direction": "SHORT",
             **base,
@@ -310,7 +306,7 @@ def detect_regime(features):
     if switch_rate > 0.5:
         return {
             "label": "chop",
-            "reason": f"switch_rate={switch_rate:.3f}",
+            "reason": "switch_rate=%.3f" % switch_rate,
             "trade_allowed": False,
             "preferred_direction": "none",
             **base,
@@ -318,7 +314,8 @@ def detect_regime(features):
 
     return {
         "label": "flat",
-        "reason": f"up_ratio={up_ratio:.2f}, streak={max(max_up, max_down)}",
+        "reason": "up_ratio=%.2f streak=%d" % (
+            up_ratio, max(max_up, max_down)),
         "trade_allowed": False,
         "preferred_direction": "none",
         **base,
@@ -326,13 +323,13 @@ def detect_regime(features):
 
 
 def analyze_symbol(symbol):
-    log.info(f"📊 {symbol} — анализ паттернов")
+    log.info("%s -- patterns analysis", symbol)
     features = fetch_features(symbol, limit=500)
     if not features:
-        log.warning(f"{symbol}: features нет")
+        log.warning("%s: no features", symbol)
         return None
 
-    log.info(f"   Свечей: {len(features)}")
+    log.info("   candles=%d", len(features))
 
     full_str = build_binary_string(features, "change_pct")
     ngrams_4 = count_ngrams(full_str, 4)
@@ -363,12 +360,11 @@ def analyze_symbol(symbol):
         "last_24h": full_str[-24:] if len(full_str) >= 24 else full_str,
         "last_168h": full_str[-168:] if len(full_str) >= 168 else full_str,
         "regime": regime,
-        "_features": features,  # cached, stripped before JSON dump
+        "_features": features,
     }
 
 
 def save_patterns(symbol, analysis):
-    """Single batch INSERT for all rows of one symbol."""
     if not analysis:
         return 0
 
@@ -401,7 +397,8 @@ def save_patterns(symbol, analysis):
         "pattern_24h, pattern_7d) VALUES "
     )
     placeholders = ",".join(["(%s,%s,%s,%s,%s,%s)"] * len(rows))
-    sql = sql_head + placeholders + " ON CONFLICT (symbol, timestamp) DO NOTHING"
+    sql = sql_head + placeholders + \
+        " ON CONFLICT (symbol, timestamp) DO NOTHING"
 
     params = []
     for r in rows:
@@ -413,7 +410,7 @@ def save_patterns(symbol, analysis):
                 cur.execute(sql, tuple(params))
                 return cur.rowcount or 0
     except Exception as e:
-        log.error(f"save_patterns batch failed: {e}, fallback single")
+        log.error("save_patterns batch failed: %s", e)
         return _save_patterns_single(symbol, rows)
 
 
@@ -444,15 +441,15 @@ def _save_patterns_single(symbol, rows):
                             )
                         except Exception:
                             pass
-                        log.warning(f"row {i} skip: {ex}")
+                        log.warning("row %d skip: %s", i, ex)
     except Exception as e:
-        log.error(f"_save_patterns_single: {e}")
+        log.error("_save_patterns_single: %s", e)
     return added
 
 
 def main():
     log.info("=" * 60)
-    log.info("🧩 ARGUS-Trader PATTERNS v3")
+    log.info("ARGUS-Trader PATTERNS v4")
     log.info(
         "SYMBOLS=%s DB2_SYMBOLS=%s (DB2_OK=%s)",
         SYMBOLS, sorted(DB2_SYMBOLS), DB2_OK,
@@ -470,36 +467,46 @@ def main():
         saved = save_patterns(symbol, analysis)
         total_saved += saved
 
-        log.info(f"   Up/Down: {analysis['up_count']}/"
-                 f"{analysis['down_count']} "
-                 f"({analysis['up_ratio'] * 100:.1f}% up)")
-        log.info(f"   Серия вверх: {analysis['max_streak_up']} | "
-                 f"Серия вниз: {analysis['max_streak_down']}")
+        log.info(
+            "   up/down: %d/%d (%.1f%% up)",
+            analysis["up_count"],
+            analysis["down_count"],
+            analysis["up_ratio"] * 100,
+        )
+        log.info(
+            "   max streak up=%d down=%d",
+            analysis["max_streak_up"],
+            analysis["max_streak_down"],
+        )
 
         rg = analysis["regime"]
-        log.info(f"   🎯 REGIME: {rg['label']} — {rg['reason']}")
-        log.info(f"      trade_allowed={rg['trade_allowed']}, "
-                 f"direction={rg['preferred_direction']}, "
-                 f"up_ratio={rg.get('up_ratio')}, "
-                 f"switch_rate={rg.get('switch_rate')}, "
-                 f"vol_ratio={rg.get('vol_ratio')}")
+        log.info(
+            "   REGIME: %s -- %s",
+            rg["label"], rg["reason"],
+        )
+        log.info(
+            "      trade_allowed=%s dir=%s",
+            rg["trade_allowed"],
+            rg["preferred_direction"],
+        )
 
-        # Remove cached features before storing in JSON
         analysis.pop("_features", None)
         all_analysis[symbol] = analysis
 
     try:
         with open(ANALYSIS_FILE, "w", encoding="utf-8") as f:
             json.dump({
-                "generated_at": datetime.now(timezone.utc).isoformat(),
+                "generated_at": datetime.now(
+                    timezone.utc
+                ).isoformat(),
                 "symbols": all_analysis,
             }, f, ensure_ascii=False, indent=2, default=str)
-        log.info(f"💾 {ANALYSIS_FILE.name} сохранён")
+        log.info("%s saved", ANALYSIS_FILE.name)
     except Exception as e:
-        log.error(f"save analysis: {e}")
+        log.error("save analysis: %s", e)
 
     log.info("=" * 60)
-    log.info(f"✅ PATTERNS DONE. Сохранено: {total_saved}")
+    log.info("PATTERNS DONE. saved=%d", total_saved)
     log.info("=" * 60)
 
     close_connection()
