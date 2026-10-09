@@ -1,4 +1,4 @@
-# ARGUS ML - Export v6
+# ARGUS ML - Export v7
 
 ## Per-symbol models
 - lgb_BTCUSDT.txt + meta_BTCUSDT.json
@@ -12,7 +12,6 @@
 
 ## Data
 - features_hourly.csv - 30 internal cols
-- external_market.csv - DXY/SPX/GOLD
 
 ## Config
 - HORIZON: 12h
