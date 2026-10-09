@@ -1,10 +1,10 @@
 {
-  "predicted_at": "2026-10-09T17:42:08.003766+00:00",
-  "model_accuracy": 0.0339,
-  "model_accuracy_avg": 0.0339,
+  "predicted_at": "2026-10-09T18:42:08.409999+00:00",
+  "model_accuracy": 0.0338,
+  "model_accuracy_avg": 0.0338,
   "feature_count": 30,
   "mode": "6model_blend_sane",
-  "weights_version": "2026-10-09T17:39:39.671750+00:00",
+  "weights_version": "2026-10-09T18:24:02.277943+00:00",
   "symbols": [
     "BTCUSDT",
     "ETHUSDT",
@@ -34,24 +34,24 @@
       "trade_allowed": true,
       "action_hint": "OK",
       "weights": {
-        "lgb": 0.3167,
-        "xgb": 0.1833,
-        "ridge": 0.1602,
+        "lgb": 0.4006,
+        "xgb": 0.2318,
+        "ridge": 0.2026,
         "mlp": 0.0
       },
       "lgb_pred": 0.1593,
       "xgb_pred": 0.0909,
       "ridge_pred": 0.0804,
-      "mlp_pred": 0.7136
+      "mlp_pred": 0.0538
     },
     {
       "symbol": "ETHUSDT",
       "timestamp": "2026-10-06T13:00:00+00:00",
-      "prob_up": 0.5205,
+      "prob_up": 0.5094,
       "direction": 1,
-      "confidence": 0.0205,
-      "predicted_return_pct": 0.082,
-      "model_acc": 0.0155,
+      "confidence": 0.0094,
+      "predicted_return_pct": 0.0376,
+      "model_acc": 0.0244,
       "objective": "regression",
       "model_version": "v16-6models-sane",
       "sources": [
@@ -66,24 +66,24 @@
       "trade_allowed": true,
       "action_hint": "OK",
       "weights": {
-        "lgb": 0.2263,
-        "xgb": 0.3109,
+        "lgb": 0.3466,
+        "xgb": 0.3026,
         "ridge": 0.0,
-        "mlp": 0.1504
+        "mlp": 0.0469
       },
-      "lgb_pred": 0.0747,
+      "lgb_pred": 0.0596,
       "xgb_pred": 0.0662,
       "ridge_pred": -0.0542,
-      "mlp_pred": 0.1255
+      "mlp_pred": -0.309
     },
     {
       "symbol": "SOLUSDT",
       "timestamp": "2026-10-06T15:00:00+00:00",
-      "prob_up": 0.5257,
+      "prob_up": 0.5875,
       "direction": 1,
-      "confidence": 0.0257,
-      "predicted_return_pct": 0.1028,
-      "model_acc": 0.0435,
+      "confidence": 0.0875,
+      "predicted_return_pct": 0.3501,
+      "model_acc": 0.0343,
       "objective": "regression",
       "model_version": "v16-6models-sane",
       "sources": [
@@ -98,23 +98,23 @@
       "trade_allowed": true,
       "action_hint": "OK",
       "weights": {
-        "lgb": 0.2659,
-        "xgb": 0.302,
-        "ridge": 0.0251,
-        "mlp": 0.0318
+        "lgb": 0.1957,
+        "xgb": 0.2818,
+        "ridge": 0.0234,
+        "mlp": 0.1489
       },
-      "lgb_pred": 0.0891,
+      "lgb_pred": 0.1567,
       "xgb_pred": 0.0432,
       "ridge_pred": 0.089,
-      "mlp_pred": 0.7935
+      "mlp_pred": 1.2261
     },
     {
       "symbol": "BNBUSDT",
       "timestamp": "2026-10-06T15:00:00+00:00",
-      "prob_up": 0.5244,
-      "direction": 1,
-      "confidence": 0.0244,
-      "predicted_return_pct": 0.0976,
+      "prob_up": 0.4803,
+      "direction": 0,
+      "confidence": 0.0197,
+      "predicted_return_pct": -0.0788,
       "model_acc": 0.0242,
       "objective": "regression",
       "model_version": "v16-6models-sane",
@@ -130,15 +130,15 @@
       "trade_allowed": true,
       "action_hint": "OK",
       "weights": {
-        "lgb": 0.1597,
-        "xgb": 0.2158,
+        "lgb": 0.1672,
+        "xgb": 0.226,
         "ridge": 0.0,
-        "mlp": 0.2119
+        "mlp": 0.1748
       },
       "lgb_pred": 0.0385,
       "xgb_pred": 0.0505,
       "ridge_pred": 0.131,
-      "mlp_pred": 0.1901
+      "mlp_pred": -0.3582
     }
   ]
 }
