@@ -1,18 +1,18 @@
 {
-  "generated_at": "2026-10-09T17:05:40.013031+00:00",
+  "generated_at": "2026-10-09T18:05:43.969244+00:00",
   "total_news": 128,
-  "avg_sentiment": -0.01,
+  "avg_sentiment": -0.016,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
   "bullish_count": 17,
-  "bearish_count": 19,
-  "neutral_count": 92,
+  "bearish_count": 20,
+  "neutral_count": 91,
   "fake_count": 0,
   "cross_confirmed": 5,
-  "single_source": 109,
+  "single_source": 107,
   "by_source": {
     "Cointelegraph": {
       "total": 25,
-      "bull": 4,
+      "bull": 3,
       "bear": 1
     },
     "Decrypt": {
@@ -23,7 +23,7 @@
     "Bitcoin.com": {
       "total": 10,
       "bull": 1,
-      "bear": 1
+      "bear": 2
     },
     "CryptoSlate": {
       "total": 10,
@@ -32,7 +32,7 @@
     },
     "CryptoPotato": {
       "total": 25,
-      "bull": 4,
+      "bull": 5,
       "bear": 8
     },
     "Bitcoinist": {
@@ -48,22 +48,6 @@
   },
   "top_bullish": [
     {
-      "title": "Ethereum L2 Starknet Jumps 20% After Saying It Wants to Become an L1",
-      "source": "Decrypt",
-      "source_weight": 1.1,
-      "lang": "en",
-      "pub_date": "2026-10-09T16:36:03+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-09T17:05:37.658908+00:00",
-      "effective_weight": 1.65,
-      "title_original": "Ethereum L2 Starknet Jumps 20% After Saying It Wants to Become an L1",
-      "cross_check": 1
-    },
-    {
       "title": "BTQ займется постквантовой защитой инфраструктуры MoonPay Korea",
       "source": "ForkLog",
       "source_weight": 1.2,
@@ -74,9 +58,25 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-09T17:05:39.940963+00:00",
+      "collected_at": "2026-10-09T18:05:43.873049+00:00",
       "effective_weight": 1.2,
       "title_original": "BTQ займется постквантовой защитой инфраструктуры MoonPay Korea",
+      "cross_check": 1
+    },
+    {
+      "title": "Ethereum L2 Starknet Jumps 20% After Saying It Wants to Become an L1",
+      "source": "Decrypt",
+      "source_weight": 1.1,
+      "lang": "en",
+      "pub_date": "2026-10-09T16:36:03+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-09T18:05:41.906087+00:00",
+      "effective_weight": 1.1,
+      "title_original": "Ethereum L2 Starknet Jumps 20% After Saying It Wants to Become an L1",
       "cross_check": 1
     },
     {
@@ -90,7 +90,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-09T17:05:37.534467+00:00",
+      "collected_at": "2026-10-09T18:05:41.747869+00:00",
       "effective_weight": 1.04,
       "title_original": "Thailand finalizes rules paving way for Bitcoin, Ether ETFs",
       "cross_check": 2
@@ -106,7 +106,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-09T17:05:37.534525+00:00",
+      "collected_at": "2026-10-09T18:05:41.747951+00:00",
       "effective_weight": 1.04,
       "title_original": "China’s P2P stablecoin wallets surge 43x, Korea’s $450B crypto economy: Asia Express",
       "cross_check": 1
@@ -122,7 +122,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-09T17:05:37.534552+00:00",
+      "collected_at": "2026-10-09T18:05:41.747992+00:00",
       "effective_weight": 1.04,
       "title_original": "Securitize stock jumps over 10% after launching tokenized US equities on Solana",
       "cross_check": 2
@@ -130,35 +130,19 @@
   ],
   "top_bearish": [
     {
-      "title": "New York AG Secures Up to $35M and Industry Ban From Ex-Celsius CEO Alex Mashinsky",
-      "source": "Decrypt",
-      "source_weight": 1.1,
-      "lang": "en",
-      "pub_date": "2026-10-09T16:07:07+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-09T17:05:37.658972+00:00",
-      "effective_weight": 1.65,
-      "title_original": "New York AG Secures Up to $35M and Industry Ban From Ex-Celsius CEO Alex Mashinsky",
-      "cross_check": 2
-    },
-    {
-      "title": "Celsius Founder Alex Mashinsky Gets Lifetime Ban From New York AG",
+      "title": "Bitcoin Price Bounces Back to $83K as Crypto Market Liquidations Cool",
       "source": "Bitcoin.com",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-10-09T16:55:24+00:00",
+      "pub_date": "2026-10-09T17:41:33+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 1.5,
+      "bear_weight": 1.2,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-09T17:05:37.905802+00:00",
+      "collected_at": "2026-10-09T18:05:42.198058+00:00",
       "effective_weight": 1.5,
-      "title_original": "Celsius Founder Alex Mashinsky Gets Lifetime Ban From New York AG",
+      "title_original": "Bitcoin Price Bounces Back to $83K as Crypto Market Liquidations Cool",
       "cross_check": 2
     },
     {
@@ -172,7 +156,7 @@
       "bear_weight": 1.2,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-09T17:05:39.940880+00:00",
+      "collected_at": "2026-10-09T18:05:43.872937+00:00",
       "effective_weight": 1.2,
       "title_original": "Бессент: США конфискуют связанную с Ираном криптовалюту на $1 млрд",
       "cross_check": 1
@@ -188,10 +172,26 @@
       "bear_weight": 1.2,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-09T17:05:39.940909+00:00",
+      "collected_at": "2026-10-09T18:05:43.872976+00:00",
       "effective_weight": 1.2,
       "title_original": "В TD Cowen предупредили о рисках для акционеров Strategy",
       "cross_check": 1
+    },
+    {
+      "title": "New York AG Secures Up to $35M and Industry Ban From Ex-Celsius CEO Alex Mashinsky",
+      "source": "Decrypt",
+      "source_weight": 1.1,
+      "lang": "en",
+      "pub_date": "2026-10-09T16:07:07+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-09T18:05:41.906163+00:00",
+      "effective_weight": 1.1,
+      "title_original": "New York AG Secures Up to $35M and Industry Ban From Ex-Celsius CEO Alex Mashinsky",
+      "cross_check": 2
     },
     {
       "title": "Bitcoin Bleeds in Uptober—How Low Can It Go? Experts Weigh In",
@@ -204,7 +204,7 @@
       "bear_weight": 1.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-09T17:05:37.659045+00:00",
+      "collected_at": "2026-10-09T18:05:41.906242+00:00",
       "effective_weight": 1.1,
       "title_original": "Bitcoin Bleeds in Uptober—How Low Can It Go? Experts Weigh In",
       "cross_check": 1
