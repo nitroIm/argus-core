@@ -1,8 +1,8 @@
 # ============================================================
-# ARGUS-Trader - BACKTEST v4
+# ARGUS-Trader - BACKTEST v5
 # ------------------------------------------------------------
+# v5: torch.load weights_only=False (silence warning).
 # v4: add LSTM to blend (seq-based, per-symbol).
-#     Matches live ensemble 6/6.
 # v3: remove cat n_features_in_ check.
 # v2: nan_to_num for ridge/mlp/cat.
 # ============================================================
@@ -220,7 +220,6 @@ def predict_mlp(sym, X):
 
 
 def predict_lstm(sym, X):
-    """LSTM on sequences from X. NaN for first seq-1."""
     mf = MODELS_DIR / ("lstm_" + sym + ".pt")
     sf = MODELS_DIR / (
         "scaler_lstm_" + sym + ".joblib"
@@ -229,7 +228,9 @@ def predict_lstm(sym, X):
         return None
     try:
         payload = torch.load(
-            str(mf), map_location="cpu",
+            str(mf),
+            map_location="cpu",
+            weights_only=False,
         )
         seq_len = int(payload.get("seq_len", 50))
         hidden = int(payload.get("hidden", 32))
@@ -486,7 +487,7 @@ def compute_metrics(trades, years):
 
 def main():
     log.info("=" * 60)
-    log.info("ARGUS-Trader BACKTEST v4")
+    log.info("ARGUS-Trader BACKTEST v5")
     log.info("SYMBOLS=%s", SYMBOLS_LIST)
     log.info(
         "THRESHOLD=%.2f%% NOTIONAL=$%.2f",
