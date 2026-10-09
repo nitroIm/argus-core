@@ -1,13 +1,9 @@
 # ============================================================
-# ARGUS-Trader — CAUSAL v3
+# ARGUS-Trader — CAUSAL v4
 # ------------------------------------------------------------
-# v3: DB routing via symbol_conn (DB1: BTC/ETH, DB2: SOL/BNB).
-#     SYMBOLS from env, fallback to config.SYMBOLS.
-#     long_short_ratio читается в try/except — в DB2 её нет.
-#     Автопоиск db2.py (как в features.py v8).
-#     Логика расчёта не менялась с v2.
-# v2: batch load all data per symbol, process in memory,
-#     batch insert. No per-event SELECT.
+# v4: market_type='futures' in load_window_data.
+#     English logs (no emoji).
+# v3: DB routing via symbol_conn.
 # ============================================================
 
 import os
@@ -22,7 +18,6 @@ CRYPTO_ROOT = SCRIPT_DIR.parent
 DATA_DIR = CRYPTO_ROOT / "data"
 sys.path.insert(0, str(CRYPTO_ROOT))
 
-# Auto-locate db2.py (same trick as features.py v8)
 for _p in CRYPTO_ROOT.rglob("db2.py"):
     _d = str(_p.parent)
     if "__pycache__" in _d:
@@ -102,7 +97,7 @@ def load_json(path, default=None):
         with open(path, "r", encoding="utf-8") as f:
             return json.load(f)
     except Exception as e:
-        log.warning(f"load {path.name}: {e}")
+        log.warning("load %s: %s", path.name, e)
         return default if default is not None else {}
 
 
@@ -128,7 +123,7 @@ def fetch_events(symbol, limit=EVENT_LIMIT):
                     for r in cur.fetchall()
                 ]
     except Exception as e:
-        log.error(f"fetch_events: {e}")
+        log.error("fetch_events: %s", e)
         return []
 
 
@@ -146,7 +141,7 @@ def fetch_existing_event_ids(symbol, events):
                 )
                 return {r[0] for r in cur.fetchall()}
     except Exception as e:
-        log.error(f"fetch_existing_event_ids: {e}")
+        log.error("fetch_existing_event_ids: %s", e)
         return set()
 
 
@@ -173,6 +168,7 @@ def load_window_data(symbol, events):
                     "SELECT timestamp, open, high, low, close, volume "
                     "FROM candles WHERE symbol = %s "
                     "AND timeframe = '1h' "
+                    "AND market_type = 'futures' "
                     "AND timestamp >= %s AND timestamp <= %s "
                     "ORDER BY timestamp",
                     (symbol, start, latest),
@@ -211,9 +207,8 @@ def load_window_data(symbol, events):
                     for r in cur.fetchall()
                 ]
     except Exception as e:
-        log.error(f"load_window_data (core): {e}")
+        log.error("load_window_data (core): %s", e)
 
-    # long_short_ratio — optional (нет в DB2)
     try:
         with symbol_conn(symbol) as conn:
             with conn.cursor() as cur:
@@ -409,24 +404,24 @@ def save_batch(symbol, entries):
                 cur.execute(sql, tuple(params))
                 return cur.rowcount or 0
     except Exception as e:
-        log.error(f"save_batch: {e}")
+        log.error("save_batch: %s", e)
         return 0
 
 
 def analyze_symbol(symbol, levels_data, patterns_data):
-    log.info(f"📊 {symbol} — causal")
+    log.info("%s -- causal", symbol)
     events = fetch_events(symbol, limit=EVENT_LIMIT)
     if not events:
-        log.warning(f"{symbol}: событий нет")
+        log.warning("%s: no events", symbol)
         return None
 
-    log.info(f"   Событий в БД: {len(events)}")
+    log.info("   events in DB: %d", len(events))
 
     existing = fetch_existing_event_ids(symbol, events)
-    log.info(f"   Уже в causal_links: {len(existing)}")
+    log.info("   already in causal_links: %d", len(existing))
 
     new_events = [e for e in events if e["id"] not in existing]
-    log.info(f"   Новых для обработки: {len(new_events)}")
+    log.info("   new to process: %d", len(new_events))
 
     if not new_events:
         return {
@@ -439,7 +434,7 @@ def analyze_symbol(symbol, levels_data, patterns_data):
 
     data = load_window_data(symbol, new_events)
     log.info(
-        "   Window: candles=%d funding=%d oi=%d ls=%d",
+        "   window: candles=%d funding=%d oi=%d ls=%d",
         len(data.get("candles", [])),
         len(data.get("funding", [])),
         len(data.get("oi", [])),
@@ -454,12 +449,12 @@ def analyze_symbol(symbol, levels_data, patterns_data):
             )
             entries.append(entry)
         except Exception as e:
-            log.warning(f"build_entry {ev['id']}: {e}")
+            log.warning("build_entry %s: %s", ev["id"], e)
 
-    log.info(f"   Построено entries: {len(entries)}")
+    log.info("   entries built: %d", len(entries))
 
     saved = save_batch(symbol, entries)
-    log.info(f"   ✅ Добавлено в causal_links: {saved}")
+    log.info("   added to causal_links: %d", saved)
 
     summary = {}
     for e in entries:
@@ -496,10 +491,6 @@ def analyze_symbol(symbol, levels_data, patterns_data):
             "avg_change_24h": avg(s["change_24h_avg"]),
         }
 
-    log.info(f"   Сводка по событиям:")
-    for t, s in summary_out.items():
-        log.info(f"     {t} (N={s['count']})")
-
     return {
         "symbol": symbol,
         "total_events": len(events),
@@ -511,7 +502,7 @@ def analyze_symbol(symbol, levels_data, patterns_data):
 
 def main():
     log.info("=" * 60)
-    log.info("🔗 ARGUS-Trader CAUSAL v3 (batch)")
+    log.info("ARGUS-Trader CAUSAL v4")
     log.info(
         "SYMBOLS=%s DB2_SYMBOLS=%s (DB2_OK=%s)",
         SYMBOLS, sorted(DB2_SYMBOLS), DB2_OK,
@@ -520,8 +511,10 @@ def main():
 
     levels_data = load_json(LEVELS_FILE, {})
     patterns_data = load_json(PATTERNS_FILE, {})
-    log.info(f"   Уровни: {'✅' if levels_data else '⚠️ нет'}")
-    log.info(f"   Паттерны: {'✅' if patterns_data else '⚠️ нет'}")
+    log.info("   levels: %s",
+             "ok" if levels_data else "missing")
+    log.info("   patterns: %s",
+             "ok" if patterns_data else "missing")
     log.info("")
 
     all_analysis = {}
@@ -541,12 +534,12 @@ def main():
                 ).isoformat(),
                 "symbols": all_analysis,
             }, f, ensure_ascii=False, indent=2, default=str)
-        log.info(f"💾 {ANALYSIS_FILE.name} сохранён")
+        log.info("%s saved", ANALYSIS_FILE.name)
     except Exception as e:
-        log.error(f"save analysis: {e}")
+        log.error("save analysis: %s", e)
 
     log.info("=" * 60)
-    log.info("✅ CAUSAL DONE")
+    log.info("CAUSAL DONE")
     log.info("=" * 60)
 
     close_connection()
