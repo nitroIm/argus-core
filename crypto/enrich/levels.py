@@ -1,19 +1,16 @@
 # ============================================================
-# ARGUS-Trader — LEVELS v3
+# ARGUS-Trader - LEVELS v4
 # ------------------------------------------------------------
-# v3: адаптивные уровни — шаг выбирается автоматически
-#     от текущей цены:
-#       $85,000 → major 10k, mid 5k, minor 1k
-#       $8,500  → major 1k, mid 500, minor 100
-#       $850    → major 100, mid 50, minor 10
-#     Диапазон: ±70% от цены (покрывает 10k-200k для BTC).
-# ------------------------------------------------------------
-# v2: три уровня приоритета (major/mid/minor)
+# v4: market_type='futures'. DB2 routing (symbol_conn).
+#     English logs (no emoji).
+# v3: adaptive levels (major/mid/minor by price).
 # ============================================================
 
+import os
 import sys
 import json
 import logging
+import math
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -22,8 +19,32 @@ CRYPTO_ROOT = SCRIPT_DIR.parent
 DATA_DIR = CRYPTO_ROOT / "data"
 sys.path.insert(0, str(CRYPTO_ROOT))
 
-from config import SYMBOLS
+for _p in CRYPTO_ROOT.rglob("db2.py"):
+    _d = str(_p.parent)
+    if "__pycache__" in _d:
+        continue
+    if _d not in sys.path:
+        sys.path.insert(0, _d)
+    break
+
+from config import SYMBOLS as CONFIG_SYMBOLS
 from db import get_connection, close_connection
+
+DB2_OK = False
+get_conn_db2 = None
+close_conn_db2 = None
+if (os.getenv("ARGUS_DB_URL_2") or "").strip():
+    try:
+        from db2 import get_connection as get_conn_db2
+        from db2 import close_connection as close_conn_db2
+        _t = get_conn_db2()
+        with _t as _c:
+            with _c.cursor() as _cur:
+                _cur.execute("SELECT 1")
+                _cur.fetchone()
+        DB2_OK = True
+    except Exception as e:
+        print("DB2 fail: " + str(e))
 
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 ANALYSIS_FILE = DATA_DIR / "levels_analysis.json"
@@ -35,14 +56,45 @@ logging.basicConfig(
 )
 log = logging.getLogger("crypto.levels")
 
+DEFAULT_SYMBOLS = (
+    list(CONFIG_SYMBOLS) if CONFIG_SYMBOLS
+    else ["BTCUSDT", "ETHUSDT"]
+)
+SYMBOLS = [
+    s.strip().upper()
+    for s in (
+        os.getenv("SYMBOLS")
+        or ",".join(DEFAULT_SYMBOLS)
+    ).split(",")
+    if s.strip()
+]
+DB2_SYMBOLS = {
+    s.strip().upper()
+    for s in (
+        os.getenv("DB2_SYMBOLS") or "SOLUSDT,BNBUSDT"
+    ).split(",")
+    if s.strip()
+}
+
+
+def symbol_conn(symbol):
+    if symbol in DB2_SYMBOLS and DB2_OK:
+        try:
+            return get_conn_db2()
+        except Exception as e:
+            log.warning("db2 conn %s: %s", symbol, e)
+    return get_connection()
+
 
 def fetch_candles(symbol, limit=2000):
     try:
-        with get_connection() as conn:
+        with symbol_conn(symbol) as conn:
             with conn.cursor() as cur:
                 cur.execute(
                     "SELECT timestamp, open, high, low, close, volume "
-                    "FROM candles WHERE symbol = %s AND timeframe = '1h' "
+                    "FROM candles WHERE symbol = %s "
+                    "AND timeframe = '1h' "
+                    "AND market_type = 'futures' "
                     "ORDER BY timestamp DESC LIMIT %s",
                     (symbol, limit),
                 )
@@ -60,28 +112,17 @@ def fetch_candles(symbol, limit=2000):
                     for r in rows
                 ]
     except Exception as e:
-        log.error(f"fetch_candles: {e}")
+        log.error("fetch_candles: %s", e)
         return []
 
 
 def pick_step_size(price):
-    """
-    Подбирает базовый шаг по порядку цены.
-    Возвращает (major_step, mid_step, minor_step).
-    Логика: 1 значащая цифра цены × (1, 0.5, 0.1).
-    """
-    import math
-
     if price <= 0:
         return 1, 0.5, 0.1
 
-    # Порядок цены: 85000 → 10000, 8500 → 1000, 850 → 100
-    order = 10 ** (math.floor(math.log10(price)) - 1)  # 10% от порядка
-
-    # Основной шаг — 10% от порядка
+    order = 10 ** (math.floor(math.log10(price)) - 1)
     major = order
 
-    # Если major слишком маленький или большой — корректируем
     ratio = price / major
     if ratio > 50:
         major = major * 10
@@ -95,23 +136,16 @@ def pick_step_size(price):
 
 
 def build_round_levels(current_price, range_pct=70):
-    """
-    Строит ВСЕ круглые уровни в диапазоне ±range_pct% от цены.
-    Шаг определяется автоматически от цены.
-    Tier: 1 = major, 2 = mid, 3 = minor (только ближние ±10%).
-    """
     major, mid, minor = pick_step_size(current_price)
 
     lower = current_price * (1 - range_pct / 100)
     upper = current_price * (1 + range_pct / 100)
 
-    # Защита: нижняя граница не меньше нуля
     if lower <= 0:
         lower = current_price * 0.01
 
     levels = []
 
-    # --- Major (1 шаг) ---
     start = int(lower / major) * major
     end = int(upper / major + 1) * major
     v = start
@@ -124,7 +158,6 @@ def build_round_levels(current_price, range_pct=70):
             })
         v += major
 
-    # --- Mid (0.5 шага) — исключаем Major ---
     start = int(lower / mid) * mid
     end = int(upper / mid + 1) * mid
     v = start
@@ -137,14 +170,14 @@ def build_round_levels(current_price, range_pct=70):
             })
         v += mid
 
-    # --- Minor (0.1 шага) — только ближние ±10% ---
     near_lower = current_price * 0.90
     near_upper = current_price * 1.10
     start = int(near_lower / minor) * minor
     end = int(near_upper / minor + 1) * minor
     v = start
     while v <= end:
-        if v > 0 and abs(v % mid) > 1e-9 and abs(v % major) > 1e-9:
+        if v > 0 and abs(v % mid) > 1e-9 \
+                and abs(v % major) > 1e-9:
             levels.append({
                 "price": float(v),
                 "tier": 3,
@@ -152,15 +185,15 @@ def build_round_levels(current_price, range_pct=70):
             })
         v += minor
 
-    # --- Distance ---
     for lvl in levels:
         lvl["distance_pct"] = round(
             (lvl["price"] - current_price) / current_price * 100, 2
         )
         lvl["distance_abs"] = round(lvl["price"] - current_price, 2)
-        lvl["position"] = "above" if lvl["price"] > current_price else "below"
+        lvl["position"] = (
+            "above" if lvl["price"] > current_price else "below"
+        )
 
-    # Сортируем по близости к цене
     levels.sort(key=lambda x: abs(x["distance_pct"]))
     return levels
 
@@ -211,7 +244,8 @@ def find_supports_resistances(candles, current_price, top_n=5):
         if low < current_price:
             touches = find_touches(candles, low)
             if touches >= 2:
-                distance_pct = round((current_price - low) / current_price * 100, 2)
+                distance_pct = round(
+                    (current_price - low) / current_price * 100, 2)
                 supports.append({
                     "price": round(low, 2),
                     "touches": touches,
@@ -227,7 +261,8 @@ def find_supports_resistances(candles, current_price, top_n=5):
         if high > current_price:
             touches = find_touches(candles, high)
             if touches >= 2:
-                distance_pct = round((high - current_price) / current_price * 100, 2)
+                distance_pct = round(
+                    (high - current_price) / current_price * 100, 2)
                 resistances.append({
                     "price": round(high, 2),
                     "touches": touches,
@@ -261,7 +296,11 @@ def volume_profile(candles, bins=20, top_n=5):
         bucket = min(bucket, bins - 1)
         profile[bucket] = profile.get(bucket, 0) + c["volume"]
 
-    sorted_buckets = sorted(profile.items(), key=lambda x: x[1], reverse=True)[:top_n]
+    sorted_buckets = sorted(
+        profile.items(),
+        key=lambda x: x[1],
+        reverse=True,
+    )[:top_n]
 
     result = []
     for bucket, vol in sorted_buckets:
@@ -274,30 +313,32 @@ def volume_profile(candles, bins=20, top_n=5):
 
 
 def format_price(price):
-    """Красивое форматирование цены."""
     if price >= 1000:
-        return f"${int(price):,}"
+        return "$%s" % format(int(price), ",")
     elif price >= 1:
-        return f"${price:,.2f}"
+        return "$%s" % format(price, ",.2f")
     else:
-        return f"${price:.4f}"
+        return "$%.4f" % price
 
 
 def analyze_symbol(symbol):
-    log.info(f"📊 {symbol} — анализ уровней")
+    log.info("%s -- levels analysis", symbol)
     candles = fetch_candles(symbol, limit=2000)
     if not candles:
-        log.warning(f"{symbol}: свечей нет")
+        log.warning("%s: no candles", symbol)
         return None
 
-    log.info(f"   Свечей: {len(candles)}")
+    log.info("   candles=%d", len(candles))
 
     current = candles[-1]
     current_price = current["close"]
     major, mid, minor = pick_step_size(current_price)
 
-    log.info(f"   Текущая цена: {format_price(current_price)}")
-    log.info(f"   Подобранные шаги: major={major:g} | mid={mid:g} | minor={minor:g}")
+    log.info(
+        "   price=%s steps major=%g mid=%g minor=%g",
+        format_price(current_price),
+        major, mid, minor,
+    )
 
     round_levels = build_round_levels(current_price, range_pct=70)
 
@@ -305,7 +346,8 @@ def analyze_symbol(symbol):
     h30, l30 = recent_extremes(candles, 720)
     h90, l90 = recent_extremes(candles, 2160)
 
-    supports, resistances = find_supports_resistances(candles, current_price, top_n=5)
+    supports, resistances = find_supports_resistances(
+        candles, current_price, top_n=5)
     vol_profile = volume_profile(candles, bins=20, top_n=5)
 
     return {
@@ -326,7 +368,11 @@ def analyze_symbol(symbol):
 
 def main():
     log.info("=" * 60)
-    log.info("📍 ARGUS-Trader LEVELS v3 (адаптивный)")
+    log.info("ARGUS-Trader LEVELS v4")
+    log.info(
+        "SYMBOLS=%s DB2_SYMBOLS=%s (DB2_OK=%s)",
+        SYMBOLS, sorted(DB2_SYMBOLS), DB2_OK,
+    )
     log.info("=" * 60)
 
     all_analysis = {}
@@ -338,60 +384,62 @@ def main():
 
         all_analysis[symbol] = analysis
 
-        # --- Лог ---
         log.info("")
-        log.info(f"   🔵 Major:")
-        major_lvls = [l for l in analysis["round_levels"] if l["tier"] == 1]
-        for l in major_lvls[:10]:
-            arrow = "⬆" if l["position"] == "above" else "⬇"
-            log.info(f"     {arrow} {format_price(l['price'])} "
-                     f"({l['distance_pct']:+.2f}%)")
-
-        log.info(f"   🟢 Mid:")
-        mid_lvls = [l for l in analysis["round_levels"] if l["tier"] == 2]
-        for l in mid_lvls[:6]:
-            arrow = "⬆" if l["position"] == "above" else "⬇"
-            log.info(f"     {arrow} {format_price(l['price'])} "
-                     f"({l['distance_pct']:+.2f}%)")
-
-        log.info(f"   ⚪ Minor (ближние):")
-        minor_lvls = [l for l in analysis["round_levels"] if l["tier"] == 3]
-        for l in minor_lvls[:5]:
-            arrow = "⬆" if l["position"] == "above" else "⬇"
-            log.info(f"     {arrow} {format_price(l['price'])} "
-                     f"({l['distance_pct']:+.2f}%)")
+        log.info("   Major:")
+        for l in analysis["round_levels"]:
+            if l["tier"] == 1 and len([
+                x for x in analysis["round_levels"]
+                if x["tier"] == 1
+            ]) <= 10:
+                log.info(
+                    "     %s (%.2f%%)",
+                    format_price(l["price"]),
+                    l["distance_pct"],
+                )
 
         if analysis["supports"]:
-            log.info(f"   🛡 Поддержки:")
+            log.info("   Supports:")
             for s in analysis["supports"][:3]:
-                log.info(f"     {format_price(s['price'])} — "
-                         f"{s['touches']} касаний "
-                         f"(-{s['distance_pct']:.2f}%)")
+                log.info(
+                    "     %s touches=%d -%.2f%%",
+                    format_price(s["price"]),
+                    s["touches"],
+                    s["distance_pct"],
+                )
 
         if analysis["resistances"]:
-            log.info(f"   ⚔️ Сопротивления:")
+            log.info("   Resistances:")
             for r in analysis["resistances"][:3]:
-                log.info(f"     {format_price(r['price'])} — "
-                         f"{r['touches']} касаний "
-                         f"(+{r['distance_pct']:.2f}%)")
-
+                log.info(
+                    "     %s touches=%d +%.2f%%",
+                    format_price(r["price"]),
+                    r["touches"],
+                    r["distance_pct"],
+                )
         log.info("")
 
     try:
         with open(ANALYSIS_FILE, "w", encoding="utf-8") as f:
             json.dump({
-                "generated_at": datetime.now(timezone.utc).isoformat(),
+                "generated_at": datetime.now(
+                    timezone.utc
+                ).isoformat(),
                 "symbols": all_analysis,
             }, f, ensure_ascii=False, indent=2, default=str)
-        log.info(f"💾 {ANALYSIS_FILE.name} сохранён")
+        log.info("%s saved", ANALYSIS_FILE.name)
     except Exception as e:
-        log.error(f"save analysis: {e}")
+        log.error("save analysis: %s", e)
 
     log.info("=" * 60)
-    log.info("✅ LEVELS DONE")
+    log.info("LEVELS DONE")
     log.info("=" * 60)
 
     close_connection()
+    if DB2_OK and close_conn_db2:
+        try:
+            close_conn_db2()
+        except Exception:
+            pass
 
 
 if __name__ == "__main__":
