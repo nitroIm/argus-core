@@ -1,7 +1,8 @@
 # ============================================================
-# ARGUS-Trader - EXPORT v6
+# ARGUS-Trader - EXPORT v7
 # ------------------------------------------------------------
-# v6: drop MOVE_THRESHOLD_PCT import (not in dataset v10).
+# v7: remove external_market block (table dropped).
+# v6: drop MOVE_THRESHOLD_PCT import.
 # ============================================================
 
 import os
@@ -143,42 +144,11 @@ def export_dataset_csv():
     except Exception as exc:
         log.error("export features: %s", exc)
 
-    out2 = EXPORT_DIR / "external_market.csv"
-    try:
-        with get_connection() as conn:
-            with conn.cursor() as cur:
-                cur.execute(
-                    "SELECT symbol, timestamp, "
-                    "close, change_pct "
-                    "FROM external_market "
-                    "ORDER BY symbol, timestamp"
-                )
-                rows = cur.fetchall()
-        with open(
-            out2, "w", encoding="utf-8",
-            newline="",
-        ) as f:
-            w = csv.writer(f)
-            w.writerow([
-                "symbol",
-                "timestamp",
-                "close",
-                "change_pct",
-            ])
-            for r in rows:
-                w.writerow(r)
-        log.info(
-            "external -> %s (%d rows)",
-            out2.name, len(rows),
-        )
-    except Exception as exc:
-        log.error("export external: %s", exc)
-
 
 def export_readme():
     readme = EXPORT_DIR / "README.md"
     lines = [
-        "# ARGUS ML - Export v6",
+        "# ARGUS ML - Export v7",
         "",
         "## Per-symbol models",
         "- lgb_BTCUSDT.txt + meta_BTCUSDT.json",
@@ -192,7 +162,6 @@ def export_readme():
         "",
         "## Data",
         "- features_hourly.csv - 30 internal cols",
-        "- external_market.csv - DXY/SPX/GOLD",
         "",
         "## Config",
         "- HORIZON: " + str(HORIZON) + "h",
@@ -214,7 +183,7 @@ def export_readme():
 
 def main():
     log.info("=" * 60)
-    log.info("ARGUS-Trader EXPORT v6")
+    log.info("ARGUS-Trader EXPORT v7")
     log.info(
         "FEATURE_COLS=%d INTERNAL=%d",
         len(FEATURE_COLS),
