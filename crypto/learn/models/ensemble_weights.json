@@ -1,0 +1,89 @@
+{
+  "computed_at": "2026-10-09T17:39:39.671750+00:00",
+  "algos": [
+    "lgb",
+    "xgb",
+    "cat",
+    "ridge",
+    "mlp",
+    "lstm"
+  ],
+  "symbols": {
+    "BTCUSDT": {
+      "ic": {
+        "lgb": 0.0522,
+        "xgb": 0.0302,
+        "cat": 0.0215,
+        "ridge": 0.0264,
+        "mlp": -0.0187,
+        "lstm": 0.0345
+      },
+      "weights": {
+        "lgb": 0.3167,
+        "xgb": 0.1833,
+        "cat": 0.1305,
+        "ridge": 0.1602,
+        "mlp": 0.0,
+        "lstm": 0.2093
+      },
+      "trade_allowed": true
+    },
+    "ETHUSDT": {
+      "ic": {
+        "lgb": 0.0155,
+        "xgb": 0.0213,
+        "cat": 0.0125,
+        "ridge": -0.0269,
+        "mlp": 0.0103,
+        "lstm": 0.0089
+      },
+      "weights": {
+        "lgb": 0.2263,
+        "xgb": 0.3109,
+        "cat": 0.1825,
+        "ridge": 0.0,
+        "mlp": 0.1504,
+        "lstm": 0.1299
+      },
+      "trade_allowed": true
+    },
+    "SOLUSDT": {
+      "ic": {
+        "lgb": 0.0435,
+        "xgb": 0.0494,
+        "cat": 0.0614,
+        "ridge": 0.0041,
+        "mlp": 0.0052,
+        "lstm": -0.0112
+      },
+      "weights": {
+        "lgb": 0.2659,
+        "xgb": 0.302,
+        "cat": 0.3753,
+        "ridge": 0.0251,
+        "mlp": 0.0318,
+        "lstm": 0.0
+      },
+      "trade_allowed": true
+    },
+    "BNBUSDT": {
+      "ic": {
+        "lgb": 0.0242,
+        "xgb": 0.0327,
+        "cat": 0.0375,
+        "ridge": -0.0186,
+        "mlp": 0.0321,
+        "lstm": 0.025
+      },
+      "weights": {
+        "lgb": 0.1597,
+        "xgb": 0.2158,
+        "cat": 0.2475,
+        "ridge": 0.0,
+        "mlp": 0.2119,
+        "lstm": 0.165
+      },
+      "trade_allowed": true
+    }
+  }
+}

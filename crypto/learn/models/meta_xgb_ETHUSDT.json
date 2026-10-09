@@ -1,0 +1,92 @@
+{
+  "trained_at": "2026-10-09T17:32:44.124872+00:00",
+  "version": "v2-xgb",
+  "objective": "regression",
+  "algorithm": "xgboost",
+  "symbol": "ETHUSDT",
+  "y_clip": 20.0,
+  "n_clipped": 9,
+  "n_total": 53438,
+  "n_train": 42738,
+  "n_test": 10688,
+  "best_iteration": 132,
+  "ic_train": 0.3059,
+  "ic_test": 0.0213,
+  "mae_test": 1.5549,
+  "rmse_test": 2.2586,
+  "features": [
+    "change_pct",
+    "range_pct",
+    "body_pct",
+    "upper_wick_pct",
+    "lower_wick_pct",
+    "volume_ratio_24h",
+    "volatility_24h",
+    "volatility_7d",
+    "change_4h",
+    "change_24h",
+    "change_1d",
+    "trend_up",
+    "hour_of_day",
+    "funding_rate",
+    "funding_trend",
+    "ema9_dist_pct",
+    "ema21_dist_pct",
+    "ema50_dist_pct",
+    "macd",
+    "macd_signal",
+    "bb_upper_dist",
+    "bb_lower_dist",
+    "bb_width_pct",
+    "dist_high_24h_pct",
+    "dist_low_24h_pct",
+    "consecutive_up",
+    "session",
+    "oi_change_pct",
+    "ls_ratio",
+    "taker_ratio"
+  ],
+  "top_features": [
+    {
+      "name": "f17",
+      "gain": 346.18
+    },
+    {
+      "name": "f7",
+      "gain": 311.67
+    },
+    {
+      "name": "f22",
+      "gain": 292.77
+    },
+    {
+      "name": "f16",
+      "gain": 285.03
+    },
+    {
+      "name": "f25",
+      "gain": 281.43
+    },
+    {
+      "name": "f13",
+      "gain": 272.44
+    },
+    {
+      "name": "f27",
+      "gain": 269.64
+    },
+    {
+      "name": "f6",
+      "gain": 268.89
+    },
+    {
+      "name": "f19",
+      "gain": 257.88
+    },
+    {
+      "name": "f14",
+      "gain": 257.1
+    }
+  ],
+  "horizon": 12
+}
