@@ -1,12 +1,9 @@
 # ============================================================
-# ARGUS-Trader — EVENTS v4
+# ARGUS-Trader — EVENTS v5
 # ------------------------------------------------------------
-# v4: DB routing via symbol_conn (DB1: BTC/ETH, DB2: SOL/BNB).
-#     SYMBOLS from env, fallback to config.SYMBOLS.
-#     Автопоиск db2.py (как в features.py v8).
-#     Логика расчёта не менялась с v3.1.
-# v3.1: batch INSERT in save_events. 73s -> ~3s.
-# v3: adaptive thresholds via percentile over last 30 days.
+# v5: market_type='futures' in fetch_data.
+#     English logs (no emoji).
+# v4: DB routing via symbol_conn.
 # ============================================================
 
 import os
@@ -21,7 +18,6 @@ CRYPTO_ROOT = SCRIPT_DIR.parent
 DATA_DIR = CRYPTO_ROOT / "data"
 sys.path.insert(0, str(CRYPTO_ROOT))
 
-# Auto-locate db2.py (same trick as features.py v8)
 for _p in CRYPTO_ROOT.rglob("db2.py"):
     _d = str(_p.parent)
     if "__pycache__" in _d:
@@ -134,7 +130,9 @@ def fetch_data(symbol, limit=2000):
             with conn.cursor() as cur:
                 cur.execute(
                     "SELECT timestamp, open, high, low, close, volume "
-                    "FROM candles WHERE symbol = %s AND timeframe = '1h' "
+                    "FROM candles WHERE symbol = %s "
+                    "AND timeframe = '1h' "
+                    "AND market_type = 'futures' "
                     "ORDER BY timestamp DESC LIMIT %s",
                     (symbol, limit),
                 )
@@ -178,7 +176,7 @@ def fetch_data(symbol, limit=2000):
             })
         return result
     except Exception as e:
-        log.error(f"fetch_data: {e}")
+        log.error("fetch_data: %s", e)
         return []
 
 
@@ -307,7 +305,7 @@ def fetch_existing_events(symbol):
                 )
                 return {(r[0], r[1]) for r in cur.fetchall()}
     except Exception as e:
-        log.error(f"fetch_existing_events: {e}")
+        log.error("fetch_existing_events: %s", e)
         return set()
 
 
@@ -489,7 +487,6 @@ def detect_events(symbol, data, th):
 
 
 def save_events(symbol, events):
-    """Single INSERT for all events."""
     if not events:
         return 0
 
@@ -515,12 +512,11 @@ def save_events(symbol, events):
                 cur.execute(sql, tuple(params))
                 return cur.rowcount or 0
     except Exception as e:
-        log.error(f"save_events batch failed: {e}, fallback to single")
+        log.error("save_events batch failed: %s", e)
         return save_events_single(symbol, events)
 
 
 def save_events_single(symbol, events):
-    """Fallback: insert one by one with SAVEPOINT."""
     added = 0
     try:
         with symbol_conn(symbol) as conn:
@@ -551,35 +547,31 @@ def save_events_single(symbol, events):
                             )
                         except Exception:
                             pass
-                        log.warning(f"row {i} skip: {ex}")
+                        log.warning("row %d skip: %s", i, ex)
     except Exception as e:
-        log.error(f"save_events_single: {e}")
+        log.error("save_events_single: %s", e)
     return added
 
 
 def analyze_symbol(symbol):
-    log.info(f"📊 {symbol} — детект событий")
+    log.info("%s -- detect events", symbol)
     data = fetch_data(symbol, limit=THRESHOLD_LOOKBACK_HOURS)
     if not data:
-        log.warning(f"{symbol}: данных нет")
+        log.warning("%s: no data", symbol)
         return None
 
-    log.info(f"   Свечей: {len(data)}")
+    log.info("   candles=%d", len(data))
 
     th = compute_thresholds(data)
-    log.info(f"   🎚 thresholds ({th['source']}):")
-    log.info(f"      rise_1h  = {th['rise_1h_pct']}%")
-    log.info(f"      rise_4h  = {th['rise_4h_pct']}%")
-    log.info(f"      volume   = x{th['volume_ratio']}")
-    log.info(f"      funding  = {th['funding_pct']}%")
-    log.info(f"      oi       = {th['oi_pct']}%")
-    log.info(f"      ls_high  = {th['ls_high']}")
-    log.info(f"      ls_low   = {th['ls_low']}")
-    log.info(f"      rsi_high = {th['rsi_high']}")
-    log.info(f"      rsi_low  = {th['rsi_low']}")
+    log.info("   thresholds (%s):", th["source"])
+    log.info("      rise_1h  = %s%%", th["rise_1h_pct"])
+    log.info("      rise_4h  = %s%%", th["rise_4h_pct"])
+    log.info("      volume   = x%s", th["volume_ratio"])
+    log.info("      funding  = %s%%", th["funding_pct"])
+    log.info("      oi       = %s%%", th["oi_pct"])
 
     existing = fetch_existing_events(symbol)
-    log.info(f"   Уже в БД: {len(existing)}")
+    log.info("   already in DB: %d", len(existing))
 
     all_events = detect_events(symbol, data, th)
 
@@ -588,18 +580,15 @@ def analyze_symbol(symbol):
         if (e["timestamp"], e["event_type"]) not in existing
     ]
 
-    log.info(f"   Найдено всего: {len(all_events)}")
-    log.info(f"   Новых для записи: {len(new_events)}")
+    log.info("   found total: %d", len(all_events))
+    log.info("   new to save: %d", len(new_events))
 
     by_type = {}
     for e in all_events:
         by_type[e["event_type"]] = by_type.get(e["event_type"], 0) + 1
-    log.info(f"   По типам:")
-    for t, c in sorted(by_type.items(), key=lambda x: -x[1]):
-        log.info(f"     {t}: {c}")
 
     saved = save_events(symbol, new_events)
-    log.info(f"   ✅ Добавлено в БД: {saved}")
+    log.info("   added to DB: %d", saved)
 
     return {
         "symbol": symbol,
@@ -608,24 +597,12 @@ def analyze_symbol(symbol):
         "saved": saved,
         "by_type": by_type,
         "thresholds": th,
-        "recent_events": [
-            {
-                "timestamp": str(e["timestamp"]),
-                "type": e["event_type"],
-                "change_pct": e["change_pct"],
-                "magnitude": e["magnitude"],
-                "threshold": e.get("threshold"),
-            }
-            for e in sorted(
-                all_events, key=lambda x: x["timestamp"], reverse=True
-            )[:20]
-        ],
     }
 
 
 def main():
     log.info("=" * 60)
-    log.info("⚡ ARGUS-Trader EVENTS v4 (adaptive + batch)")
+    log.info("ARGUS-Trader EVENTS v5")
     log.info(
         "SYMBOLS=%s DB2_SYMBOLS=%s (DB2_OK=%s)",
         SYMBOLS, sorted(DB2_SYMBOLS), DB2_OK,
@@ -642,15 +619,17 @@ def main():
     try:
         with open(ANALYSIS_FILE, "w", encoding="utf-8") as f:
             json.dump({
-                "generated_at": datetime.now(timezone.utc).isoformat(),
+                "generated_at": datetime.now(
+                    timezone.utc
+                ).isoformat(),
                 "symbols": all_analysis,
             }, f, ensure_ascii=False, indent=2, default=str)
-        log.info(f"💾 {ANALYSIS_FILE.name} сохранён")
+        log.info("%s saved", ANALYSIS_FILE.name)
     except Exception as e:
-        log.error(f"save analysis: {e}")
+        log.error("save analysis: %s", e)
 
     log.info("=" * 60)
-    log.info("✅ EVENTS DONE")
+    log.info("EVENTS DONE")
     log.info("=" * 60)
 
     close_connection()
