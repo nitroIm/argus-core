@@ -1,19 +1,19 @@
 {
-  "generated_at": "2026-10-09T09:05:44.319639+00:00",
+  "generated_at": "2026-10-09T10:05:42.414632+00:00",
   "total_news": 128,
-  "avg_sentiment": 0.112,
+  "avg_sentiment": 0.075,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
-  "bullish_count": 28,
-  "bearish_count": 15,
-  "neutral_count": 85,
+  "bullish_count": 27,
+  "bearish_count": 18,
+  "neutral_count": 83,
   "fake_count": 0,
   "cross_confirmed": 11,
-  "single_source": 102,
+  "single_source": 104,
   "by_source": {
     "Cointelegraph": {
       "total": 25,
       "bull": 8,
-      "bear": 0
+      "bear": 1
     },
     "Decrypt": {
       "total": 25,
@@ -32,8 +32,8 @@
     },
     "CryptoPotato": {
       "total": 25,
-      "bull": 7,
-      "bear": 7
+      "bull": 6,
+      "bear": 8
     },
     "Bitcoinist": {
       "total": 8,
@@ -43,7 +43,7 @@
     "ForkLog": {
       "total": 25,
       "bull": 6,
-      "bear": 1
+      "bear": 2
     }
   },
   "top_bullish": [
@@ -56,28 +56,12 @@
       "sentiment": 1.0,
       "bull_weight": 1.2,
       "bear_weight": 0.0,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-09T09:05:44.192353+00:00",
-      "effective_weight": 1.8,
-      "title_original": "Таиланд утвердил правила для ETF на базе биткоина и Ethereum",
-      "cross_check": 1
-    },
-    {
-      "title": "Thailand finalizes rules paving way for Bitcoin, Ether ETFs",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-10-09T03:08:51+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-09T09:05:42.987137+00:00",
-      "effective_weight": 1.3,
-      "title_original": "Thailand finalizes rules paving way for Bitcoin, Ether ETFs",
-      "cross_check": 3
+      "collected_at": "2026-10-09T10:05:42.296440+00:00",
+      "effective_weight": 1.2,
+      "title_original": "Таиланд утвердил правила для ETF на базе биткоина и Ethereum",
+      "cross_check": 1
     },
     {
       "title": "Netflix показал трейлер сериала о Сэме Бэнкмане-Фриде",
@@ -90,10 +74,26 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-09T09:05:44.192583+00:00",
+      "collected_at": "2026-10-09T10:05:42.296651+00:00",
       "effective_weight": 1.2,
       "title_original": "Netflix показал трейлер сериала о Сэме Бэнкмане-Фриде",
       "cross_check": 1
+    },
+    {
+      "title": "Thailand finalizes rules paving way for Bitcoin, Ether ETFs",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-10-09T03:08:51+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-09T10:05:40.394532+00:00",
+      "effective_weight": 1.04,
+      "title_original": "Thailand finalizes rules paving way for Bitcoin, Ether ETFs",
+      "cross_check": 3
     },
     {
       "title": "China’s P2P stablecoin wallets surge 43x, Korea’s $450B crypto economy: Asia Express",
@@ -106,7 +106,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-09T09:05:42.987263+00:00",
+      "collected_at": "2026-10-09T10:05:40.394645+00:00",
       "effective_weight": 1.04,
       "title_original": "China’s P2P stablecoin wallets surge 43x, Korea’s $450B crypto economy: Asia Express",
       "cross_check": 1
@@ -122,13 +122,45 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-09T09:05:42.987331+00:00",
+      "collected_at": "2026-10-09T10:05:40.394697+00:00",
       "effective_weight": 1.04,
       "title_original": "Securitize stock jumps over 10% after launching tokenized US equities on Solana",
       "cross_check": 2
     }
   ],
   "top_bearish": [
+    {
+      "title": "Bitcoin speculators move 55K BTC to exchanges amid $1.1B liquidations",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-10-09T09:50:01+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.2,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-09T10:05:40.394274+00:00",
+      "effective_weight": 1.95,
+      "title_original": "Bitcoin speculators move 55K BTC to exchanges amid $1.1B liquidations",
+      "cross_check": 1
+    },
+    {
+      "title": "МВФ выпустил третье за год предупреждение о рисках токенизации",
+      "source": "ForkLog",
+      "source_weight": 1.2,
+      "lang": "ru",
+      "pub_date": "2026-10-09T10:02:37+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 2.4,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-09T10:05:42.296272+00:00",
+      "effective_weight": 1.8,
+      "title_original": "МВФ выпустил третье за год предупреждение о рисках токенизации",
+      "cross_check": 1
+    },
     {
       "title": "Anthropic запретит жестокое обращение с Claude",
       "source": "ForkLog",
@@ -138,10 +170,10 @@
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 1.5,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-09T09:05:44.192407+00:00",
-      "effective_weight": 1.8,
+      "collected_at": "2026-10-09T10:05:42.296491+00:00",
+      "effective_weight": 1.2,
       "title_original": "Anthropic запретит жестокое обращение с Claude",
       "cross_check": 1
     },
@@ -154,10 +186,10 @@
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 3.3,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-09T09:05:43.018361+00:00",
-      "effective_weight": 1.65,
+      "collected_at": "2026-10-09T10:05:40.473889+00:00",
+      "effective_weight": 1.1,
       "title_original": "SIM-Swap Fraudster Who Spent Stolen Crypto on Gold Grills and Dubai Trips Jailed",
       "cross_check": 1
     },
@@ -172,42 +204,10 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-09T09:05:43.018930+00:00",
+      "collected_at": "2026-10-09T10:05:40.474327+00:00",
       "effective_weight": 0.88,
       "title_original": "US Government Moves $1 Billion in Bitcoin Seized From Bitfinex Hacker",
       "cross_check": 3
-    },
-    {
-      "title": "Uranium Finance Hacker Who Bought Pokémon and Magic Cards Convicted Over $50M Theft",
-      "source": "Decrypt",
-      "source_weight": 1.1,
-      "lang": "en",
-      "pub_date": "2026-10-08T11:37:17+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-09T09:05:43.019254+00:00",
-      "effective_weight": 0.88,
-      "title_original": "Uranium Finance Hacker Who Bought Pokémon and Magic Cards Convicted Over $50M Theft",
-      "cross_check": 1
-    },
-    {
-      "title": "Ohio Returns $15,300 Lost at Crypto ATM in Fake Microsoft Scam",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-09T02:15:45+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-09T09:05:43.162563+00:00",
-      "effective_weight": 0.8,
-      "title_original": "Ohio Returns $15,300 Lost at Crypto ATM in Fake Microsoft Scam",
-      "cross_check": 1
     }
   ]
 }
