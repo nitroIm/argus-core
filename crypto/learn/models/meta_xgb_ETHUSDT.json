@@ -1,5 +1,5 @@
 {
-  "trained_at": "2026-10-09T15:37:43.345629+00:00",
+  "trained_at": "2026-10-09T17:15:31.191964+00:00",
   "version": "v2-xgb",
   "objective": "regression",
   "algorithm": "xgboost",
@@ -9,11 +9,11 @@
   "n_total": 53438,
   "n_train": 42738,
   "n_test": 10688,
-  "best_iteration": 92,
-  "ic_train": 0.2748,
-  "ic_test": 0.0046,
-  "mae_test": 1.5547,
-  "rmse_test": 2.2598,
+  "best_iteration": 132,
+  "ic_train": 0.3059,
+  "ic_test": 0.0213,
+  "mae_test": 1.5549,
+  "rmse_test": 2.2586,
   "features": [
     "change_pct",
     "range_pct",
@@ -44,76 +44,48 @@
     "session",
     "oi_change_pct",
     "ls_ratio",
-    "taker_ratio",
-    "us10y_level",
-    "us10y_change_1d",
-    "hashrate_log",
-    "hashrate_change_1d",
-    "ob_bid_pct",
-    "ob_ask_pct",
-    "ob_spread_pct",
-    "events_1h",
-    "events_24h",
-    "rsi_overbought_24h",
-    "anomaly_24h",
-    "asia_nikkei_6h",
-    "asia_shanghai_6h",
-    "asia_shanghai_12h",
-    "asia_hangseng_6h",
-    "asia_usdcny_6h",
-    "asia_usdcny_12h",
-    "asia_dax_6h",
-    "asia_stoxx50_6h",
-    "asia_ftse_6h",
-    "asia_eurusd_6h",
-    "asia_vix_1h",
-    "asia_nasdaq_1h",
-    "asia_us10y_6h",
-    "asia_usdjpy_6h",
-    "asia_kospi_6h",
-    "asia_taiex_6h",
-    "asia_impact_score"
+    "taker_ratio"
   ],
   "top_features": [
     {
-      "name": "f27",
-      "gain": 320.41
-    },
-    {
-      "name": "f19",
-      "gain": 312.63
+      "name": "f17",
+      "gain": 346.18
     },
     {
       "name": "f7",
-      "gain": 309.92
+      "gain": 311.67
     },
     {
       "name": "f22",
-      "gain": 304.12
+      "gain": 292.77
     },
     {
-      "name": "f24",
-      "gain": 302.59
+      "name": "f16",
+      "gain": 285.03
     },
     {
-      "name": "f17",
-      "gain": 298.03
-    },
-    {
-      "name": "f18",
-      "gain": 297.43
+      "name": "f25",
+      "gain": 281.43
     },
     {
       "name": "f13",
-      "gain": 293.52
+      "gain": 272.44
     },
     {
-      "name": "f23",
-      "gain": 286.55
+      "name": "f27",
+      "gain": 269.64
     },
     {
-      "name": "f28",
-      "gain": 282.0
+      "name": "f6",
+      "gain": 268.89
+    },
+    {
+      "name": "f19",
+      "gain": 257.88
+    },
+    {
+      "name": "f14",
+      "gain": 257.1
     }
   ],
   "horizon": 12

@@ -1,4 +1,4 @@
-# ARGUS ML - Export v7
+# ARGUS ML - Export v8
 
 ## Per-symbol models
 - lgb_BTCUSDT.txt + meta_BTCUSDT.json
@@ -16,7 +16,7 @@
 ## Config
 - HORIZON: 12h
 - REFERENCE: BTCUSDT
-- FEATURE_COLS: 58
+- FEATURE_COLS: 30
 - USE_CROSS: 0 (off)
 
 ## Usage
