@@ -1,22 +1,30 @@
 {
-  "trained_at": "2026-10-10T02:35:40.010662+00:00",
-  "version": "v14",
+  "trained_at": "2026-10-10T03:35:24.733344+00:00",
+  "version": "v15",
   "objective": "regression",
   "symbol": "BNBUSDT",
   "n_total": 53440,
-  "n_train": 42740,
+  "n_train": 42572,
   "n_test": 10688,
-  "n_val_inner": 6411,
-  "best_iteration": 170,
-  "ic_train": 0.3305,
-  "ic_test": 0.0242,
-  "mae_train": 1.8275,
-  "mae_test": 1.27,
-  "rmse_train": 2.8642,
-  "rmse_test": 1.849,
-  "sign_acc_train": 0.5337,
-  "sign_acc_test": 0.5193,
-  "num_trees": 170,
+  "n_tr_inner": 36006,
+  "n_val_inner": 6386,
+  "purge_hours": 180,
+  "gap_tr_va": 180,
+  "y_clip": 20.0,
+  "best_iteration": 189,
+  "ic_train": 0.3368,
+  "ic_val": 0.1498,
+  "ic_test": 0.0355,
+  "mae_train": 1.9045,
+  "mae_val": 1.3317,
+  "mae_test": 1.2698,
+  "rmse_train": 2.9153,
+  "rmse_val": 1.9603,
+  "rmse_test": 1.8467,
+  "sign_acc_train": 0.5414,
+  "sign_acc_val": 0.5094,
+  "sign_acc_test": 0.5079,
+  "num_trees": 189,
   "features": [
     "change_pct",
     "range_pct",
@@ -51,44 +59,44 @@
   ],
   "top_features": [
     {
-      "name": "ema50_dist_pct",
-      "gain": 67527.14
-    },
-    {
       "name": "volatility_7d",
-      "gain": 49399.61
-    },
-    {
-      "name": "funding_rate",
-      "gain": 47170.26
+      "gain": 52837.35
     },
     {
       "name": "volatility_24h",
-      "gain": 43670.69
+      "gain": 45239.97
     },
     {
-      "name": "macd_signal",
-      "gain": 41686.82
+      "name": "ema50_dist_pct",
+      "gain": 42804.16
     },
     {
       "name": "change_24h",
-      "gain": 40545.34
+      "gain": 39332.63
+    },
+    {
+      "name": "macd_signal",
+      "gain": 38290.45
+    },
+    {
+      "name": "funding_rate",
+      "gain": 35439.83
     },
     {
       "name": "ema21_dist_pct",
-      "gain": 26888.3
+      "gain": 26014.66
     },
     {
       "name": "ema9_dist_pct",
-      "gain": 19990.65
-    },
-    {
-      "name": "bb_width_pct",
-      "gain": 18842.95
+      "gain": 17671.13
     },
     {
       "name": "macd",
-      "gain": 16784.78
+      "gain": 17565.21
+    },
+    {
+      "name": "bb_width_pct",
+      "gain": 16908.44
     }
   ],
   "horizon": 12,
@@ -111,5 +119,5 @@
   "num_rounds": 1000,
   "early_stop": 30,
   "override": false,
-  "exported_at": "2026-10-10T02:40:46.387101+00:00"
+  "exported_at": "2026-10-10T03:42:17.524269+00:00"
 }

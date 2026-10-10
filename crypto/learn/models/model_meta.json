@@ -1,0 +1,122 @@
+{
+  "trained_at": "2026-10-10T03:35:07.534981+00:00",
+  "version": "v15",
+  "objective": "regression",
+  "symbol": "BTCUSDT",
+  "n_total": 53438,
+  "n_train": 42570,
+  "n_test": 10688,
+  "n_tr_inner": 36004,
+  "n_val_inner": 6386,
+  "purge_hours": 180,
+  "gap_tr_va": 180,
+  "y_clip": 20.0,
+  "best_iteration": 104,
+  "ic_train": 0.2654,
+  "ic_val": 0.1424,
+  "ic_test": 0.0489,
+  "mae_train": 1.5057,
+  "mae_val": 1.2354,
+  "mae_test": 1.075,
+  "rmse_train": 2.2428,
+  "rmse_val": 1.7587,
+  "rmse_test": 1.5331,
+  "sign_acc_train": 0.5413,
+  "sign_acc_val": 0.5207,
+  "sign_acc_test": 0.4898,
+  "num_trees": 104,
+  "features": [
+    "change_pct",
+    "range_pct",
+    "body_pct",
+    "upper_wick_pct",
+    "lower_wick_pct",
+    "volume_ratio_24h",
+    "volatility_24h",
+    "volatility_7d",
+    "change_4h",
+    "change_24h",
+    "change_1d",
+    "trend_up",
+    "hour_of_day",
+    "funding_rate",
+    "funding_trend",
+    "ema9_dist_pct",
+    "ema21_dist_pct",
+    "ema50_dist_pct",
+    "macd",
+    "macd_signal",
+    "bb_upper_dist",
+    "bb_lower_dist",
+    "bb_width_pct",
+    "dist_high_24h_pct",
+    "dist_low_24h_pct",
+    "consecutive_up",
+    "session",
+    "oi_change_pct",
+    "ls_ratio",
+    "taker_ratio"
+  ],
+  "top_features": [
+    {
+      "name": "ls_ratio",
+      "gain": 19113.21
+    },
+    {
+      "name": "funding_rate",
+      "gain": 13484.35
+    },
+    {
+      "name": "volatility_7d",
+      "gain": 13236.23
+    },
+    {
+      "name": "macd_signal",
+      "gain": 10884.12
+    },
+    {
+      "name": "ema50_dist_pct",
+      "gain": 8318.51
+    },
+    {
+      "name": "volatility_24h",
+      "gain": 6827.62
+    },
+    {
+      "name": "bb_width_pct",
+      "gain": 6518.59
+    },
+    {
+      "name": "change_24h",
+      "gain": 4570.26
+    },
+    {
+      "name": "macd",
+      "gain": 4350.46
+    },
+    {
+      "name": "dist_low_24h_pct",
+      "gain": 3442.5
+    }
+  ],
+  "horizon": 12,
+  "params_used": {
+    "objective": "regression",
+    "metric": "rmse",
+    "boosting_type": "gbdt",
+    "num_leaves": 8,
+    "max_depth": 3,
+    "learning_rate": 0.03,
+    "feature_fraction": 0.5,
+    "bagging_fraction": 0.6,
+    "bagging_freq": 5,
+    "min_data_in_leaf": 80,
+    "lambda_l1": 1.0,
+    "lambda_l2": 1.0,
+    "verbose": -1,
+    "seed": 42
+  },
+  "num_rounds": 1000,
+  "early_stop": 30,
+  "override": false
+}

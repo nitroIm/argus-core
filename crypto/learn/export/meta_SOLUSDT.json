@@ -1,22 +1,30 @@
 {
-  "trained_at": "2026-10-10T02:35:35.016856+00:00",
-  "version": "v14",
+  "trained_at": "2026-10-10T03:35:19.646877+00:00",
+  "version": "v15",
   "objective": "regression",
   "symbol": "SOLUSDT",
   "n_total": 53001,
-  "n_train": 42388,
+  "n_train": 42220,
   "n_test": 10601,
-  "n_val_inner": 6359,
-  "best_iteration": 58,
-  "ic_train": 0.1816,
-  "ic_test": 0.0343,
-  "mae_train": 3.0362,
-  "mae_test": 1.821,
-  "rmse_train": 4.4917,
-  "rmse_test": 2.5291,
-  "sign_acc_train": 0.5001,
-  "sign_acc_test": 0.4925,
-  "num_trees": 58,
+  "n_tr_inner": 35707,
+  "n_val_inner": 6333,
+  "purge_hours": 180,
+  "gap_tr_va": 180,
+  "y_clip": 20.0,
+  "best_iteration": 56,
+  "ic_train": 0.1821,
+  "ic_val": 0.0406,
+  "ic_test": 0.0418,
+  "mae_train": 3.1163,
+  "mae_val": 2.4083,
+  "mae_test": 1.82,
+  "rmse_train": 4.4365,
+  "rmse_val": 3.3118,
+  "rmse_test": 2.5281,
+  "sign_acc_train": 0.4979,
+  "sign_acc_val": 0.5114,
+  "sign_acc_test": 0.4951,
+  "num_trees": 56,
   "features": [
     "change_pct",
     "range_pct",
@@ -52,43 +60,43 @@
   "top_features": [
     {
       "name": "volatility_24h",
-      "gain": 87680.23
+      "gain": 65875.59
     },
     {
       "name": "ls_ratio",
-      "gain": 31068.43
+      "gain": 26985.87
     },
     {
       "name": "funding_rate",
-      "gain": 27663.19
+      "gain": 19752.78
     },
     {
       "name": "volatility_7d",
-      "gain": 22338.3
-    },
-    {
-      "name": "range_pct",
-      "gain": 21829.25
+      "gain": 17978.07
     },
     {
       "name": "macd_signal",
-      "gain": 11742.86
+      "gain": 14982.36
+    },
+    {
+      "name": "range_pct",
+      "gain": 14291.05
     },
     {
       "name": "bb_width_pct",
-      "gain": 11132.99
-    },
-    {
-      "name": "dist_high_24h_pct",
-      "gain": 6412.86
+      "gain": 12119.57
     },
     {
       "name": "ema50_dist_pct",
-      "gain": 6165.19
+      "gain": 5132.63
+    },
+    {
+      "name": "dist_high_24h_pct",
+      "gain": 4553.33
     },
     {
       "name": "change_24h",
-      "gain": 3894.39
+      "gain": 4416.36
     }
   ],
   "horizon": 12,
@@ -111,5 +119,5 @@
   "num_rounds": 500,
   "early_stop": 20,
   "override": true,
-  "exported_at": "2026-10-10T02:40:46.386318+00:00"
+  "exported_at": "2026-10-10T03:42:17.522742+00:00"
 }
