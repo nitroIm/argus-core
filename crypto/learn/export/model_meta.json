@@ -1,30 +1,30 @@
 {
-  "trained_at": "2026-10-10T03:35:07.534981+00:00",
-  "version": "v15",
-  "objective": "regression",
+  "trained_at": "2026-10-10T08:23:13.419217+00:00",
+  "version": "v17",
+  "objective": "binary",
   "symbol": "BTCUSDT",
-  "n_total": 53438,
-  "n_train": 42570,
-  "n_test": 10688,
-  "n_tr_inner": 36004,
-  "n_val_inner": 6386,
-  "purge_hours": 180,
-  "gap_tr_va": 180,
-  "y_clip": 20.0,
-  "best_iteration": 104,
-  "ic_train": 0.2654,
-  "ic_val": 0.1424,
-  "ic_test": 0.0489,
-  "mae_train": 1.5057,
-  "mae_val": 1.2354,
-  "mae_test": 1.075,
-  "rmse_train": 2.2428,
-  "rmse_val": 1.7587,
-  "rmse_test": 1.5331,
-  "sign_acc_train": 0.5413,
-  "sign_acc_val": 0.5207,
-  "sign_acc_test": 0.4898,
-  "num_trees": 104,
+  "n_total": 41906,
+  "n_train": 33320,
+  "n_test": 8382,
+  "n_tr_inner": 28118,
+  "n_val_inner": 4998,
+  "purge_hours": 204,
+  "gap_tr_va": 204,
+  "class_thr_pct": 0.3,
+  "best_iteration": 116,
+  "auc_train": 0.6564,
+  "auc_val": 0.526,
+  "auc_test": 0.5049,
+  "acc_train": 0.608,
+  "acc_val": 0.5262,
+  "acc_test": 0.5082,
+  "conf60_acc_te": 0.5127,
+  "conf60_cov_te": 0.0749,
+  "conf60_n_te": 628,
+  "conf65_acc_te": 0.5616,
+  "conf65_cov_te": 0.0087,
+  "conf65_n_te": 73,
+  "num_trees": 116,
   "features": [
     "change_pct",
     "range_pct",
@@ -60,64 +60,70 @@
   "top_features": [
     {
       "name": "ls_ratio",
-      "gain": 19113.21
-    },
-    {
-      "name": "funding_rate",
-      "gain": 13484.35
+      "gain": 3466.85
     },
     {
       "name": "volatility_7d",
-      "gain": 13236.23
+      "gain": 3336.62
     },
     {
-      "name": "macd_signal",
-      "gain": 10884.12
-    },
-    {
-      "name": "ema50_dist_pct",
-      "gain": 8318.51
+      "name": "funding_rate",
+      "gain": 2354.0
     },
     {
       "name": "volatility_24h",
-      "gain": 6827.62
-    },
-    {
-      "name": "bb_width_pct",
-      "gain": 6518.59
+      "gain": 2068.15
     },
     {
       "name": "change_24h",
-      "gain": 4570.26
+      "gain": 1791.46
     },
     {
-      "name": "macd",
-      "gain": 4350.46
+      "name": "macd_signal",
+      "gain": 1756.32
     },
     {
-      "name": "dist_low_24h_pct",
-      "gain": 3442.5
+      "name": "dist_high_24h_pct",
+      "gain": 1334.82
+    },
+    {
+      "name": "bb_upper_dist",
+      "gain": 1330.18
+    },
+    {
+      "name": "ema21_dist_pct",
+      "gain": 894.09
+    },
+    {
+      "name": "bb_width_pct",
+      "gain": 803.77
     }
   ],
   "horizon": 12,
   "params_used": {
-    "objective": "regression",
-    "metric": "rmse",
+    "objective": "binary",
+    "metric": "auc",
     "boosting_type": "gbdt",
-    "num_leaves": 8,
-    "max_depth": 3,
-    "learning_rate": 0.03,
+    "num_leaves": 16,
+    "max_depth": 4,
+    "learning_rate": 0.02,
     "feature_fraction": 0.5,
-    "bagging_fraction": 0.6,
+    "bagging_fraction": 0.7,
     "bagging_freq": 5,
-    "min_data_in_leaf": 80,
+    "min_data_in_leaf": 100,
     "lambda_l1": 1.0,
     "lambda_l2": 1.0,
+    "is_unbalance": false,
     "verbose": -1,
     "seed": 42
   },
-  "num_rounds": 1000,
-  "early_stop": 30,
-  "override": false,
-  "exported_at": "2026-10-10T03:42:17.525322+00:00"
+  "num_rounds": 2000,
+  "early_stop": 80,
+  "ic_test": 0.0098,
+  "ic_val": 0.0521,
+  "ic_train": 0.3128,
+  "sign_acc_test": 0.5082,
+  "sign_acc_val": 0.5262,
+  "sign_acc_train": 0.608,
+  "exported_at": "2026-10-10T08:28:04.200569+00:00"
 }

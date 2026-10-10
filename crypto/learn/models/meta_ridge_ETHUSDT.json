@@ -1,0 +1,92 @@
+{
+  "trained_at": "2026-10-10T08:24:36.686185+00:00",
+  "version": "v2-ridge",
+  "objective": "regression",
+  "algorithm": "ridge",
+  "symbol": "ETHUSDT",
+  "alpha": 100.0,
+  "y_clip": 20.0,
+  "n_clipped": 9,
+  "n_total": 44994,
+  "n_train": 35791,
+  "n_test": 8999,
+  "ic_train": 0.1088,
+  "ic_test": -0.0417,
+  "mae_test": 1.9466,
+  "rmse_test": 2.6174,
+  "features": [
+    "change_pct",
+    "range_pct",
+    "body_pct",
+    "upper_wick_pct",
+    "lower_wick_pct",
+    "volume_ratio_24h",
+    "volatility_24h",
+    "volatility_7d",
+    "change_4h",
+    "change_24h",
+    "change_1d",
+    "trend_up",
+    "hour_of_day",
+    "funding_rate",
+    "funding_trend",
+    "ema9_dist_pct",
+    "ema21_dist_pct",
+    "ema50_dist_pct",
+    "macd",
+    "macd_signal",
+    "bb_upper_dist",
+    "bb_lower_dist",
+    "bb_width_pct",
+    "dist_high_24h_pct",
+    "dist_low_24h_pct",
+    "consecutive_up",
+    "session",
+    "oi_change_pct",
+    "ls_ratio",
+    "taker_ratio"
+  ],
+  "top_features": [
+    {
+      "name": "ema50_dist_pct",
+      "coef": 0.4907
+    },
+    {
+      "name": "change_24h",
+      "coef": -0.3776
+    },
+    {
+      "name": "bb_upper_dist",
+      "coef": 0.1785
+    },
+    {
+      "name": "volatility_24h",
+      "coef": 0.1667
+    },
+    {
+      "name": "bb_width_pct",
+      "coef": 0.1461
+    },
+    {
+      "name": "ls_ratio",
+      "coef": -0.1249
+    },
+    {
+      "name": "change_pct",
+      "coef": -0.1097
+    },
+    {
+      "name": "ema21_dist_pct",
+      "coef": -0.1077
+    },
+    {
+      "name": "bb_lower_dist",
+      "coef": 0.1009
+    },
+    {
+      "name": "ema9_dist_pct",
+      "coef": -0.092
+    }
+  ],
+  "horizon": 12
+}

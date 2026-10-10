@@ -1,0 +1,92 @@
+{
+  "trained_at": "2026-10-10T08:24:40.568596+00:00",
+  "version": "v2-ridge",
+  "objective": "regression",
+  "algorithm": "ridge",
+  "symbol": "SOLUSDT",
+  "alpha": 100.0,
+  "y_clip": 20.0,
+  "n_clipped": 198,
+  "n_total": 47863,
+  "n_train": 38086,
+  "n_test": 9573,
+  "ic_train": 0.1534,
+  "ic_test": -0.0526,
+  "mae_test": 2.1955,
+  "rmse_test": 2.8844,
+  "features": [
+    "change_pct",
+    "range_pct",
+    "body_pct",
+    "upper_wick_pct",
+    "lower_wick_pct",
+    "volume_ratio_24h",
+    "volatility_24h",
+    "volatility_7d",
+    "change_4h",
+    "change_24h",
+    "change_1d",
+    "trend_up",
+    "hour_of_day",
+    "funding_rate",
+    "funding_trend",
+    "ema9_dist_pct",
+    "ema21_dist_pct",
+    "ema50_dist_pct",
+    "macd",
+    "macd_signal",
+    "bb_upper_dist",
+    "bb_lower_dist",
+    "bb_width_pct",
+    "dist_high_24h_pct",
+    "dist_low_24h_pct",
+    "consecutive_up",
+    "session",
+    "oi_change_pct",
+    "ls_ratio",
+    "taker_ratio"
+  ],
+  "top_features": [
+    {
+      "name": "change_24h",
+      "coef": -0.561
+    },
+    {
+      "name": "volatility_24h",
+      "coef": 0.5104
+    },
+    {
+      "name": "ls_ratio",
+      "coef": -0.3442
+    },
+    {
+      "name": "ema21_dist_pct",
+      "coef": 0.3103
+    },
+    {
+      "name": "change_pct",
+      "coef": -0.2809
+    },
+    {
+      "name": "volatility_7d",
+      "coef": -0.2739
+    },
+    {
+      "name": "ema50_dist_pct",
+      "coef": 0.2584
+    },
+    {
+      "name": "macd_signal",
+      "coef": -0.2338
+    },
+    {
+      "name": "change_4h",
+      "coef": -0.1766
+    },
+    {
+      "name": "range_pct",
+      "coef": 0.1032
+    }
+  ],
+  "horizon": 12
+}

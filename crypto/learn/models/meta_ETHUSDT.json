@@ -1,0 +1,128 @@
+{
+  "trained_at": "2026-10-10T08:23:18.129977+00:00",
+  "version": "v17",
+  "objective": "binary",
+  "symbol": "ETHUSDT",
+  "n_total": 44994,
+  "n_train": 35791,
+  "n_test": 8999,
+  "n_tr_inner": 30218,
+  "n_val_inner": 5369,
+  "purge_hours": 204,
+  "gap_tr_va": 204,
+  "class_thr_pct": 0.3,
+  "best_iteration": 16,
+  "auc_train": 0.6066,
+  "auc_val": 0.5594,
+  "auc_test": 0.512,
+  "acc_train": 0.5342,
+  "acc_val": 0.5094,
+  "acc_test": 0.5176,
+  "conf60_acc_te": 0.0,
+  "conf60_cov_te": 0.0,
+  "conf60_n_te": 0,
+  "conf65_acc_te": 0.0,
+  "conf65_cov_te": 0.0,
+  "conf65_n_te": 0,
+  "num_trees": 16,
+  "features": [
+    "change_pct",
+    "range_pct",
+    "body_pct",
+    "upper_wick_pct",
+    "lower_wick_pct",
+    "volume_ratio_24h",
+    "volatility_24h",
+    "volatility_7d",
+    "change_4h",
+    "change_24h",
+    "change_1d",
+    "trend_up",
+    "hour_of_day",
+    "funding_rate",
+    "funding_trend",
+    "ema9_dist_pct",
+    "ema21_dist_pct",
+    "ema50_dist_pct",
+    "macd",
+    "macd_signal",
+    "bb_upper_dist",
+    "bb_lower_dist",
+    "bb_width_pct",
+    "dist_high_24h_pct",
+    "dist_low_24h_pct",
+    "consecutive_up",
+    "session",
+    "oi_change_pct",
+    "ls_ratio",
+    "taker_ratio"
+  ],
+  "top_features": [
+    {
+      "name": "change_24h",
+      "gain": 768.42
+    },
+    {
+      "name": "volatility_7d",
+      "gain": 536.32
+    },
+    {
+      "name": "volatility_24h",
+      "gain": 431.4
+    },
+    {
+      "name": "macd_signal",
+      "gain": 421.38
+    },
+    {
+      "name": "funding_rate",
+      "gain": 406.33
+    },
+    {
+      "name": "bb_lower_dist",
+      "gain": 311.95
+    },
+    {
+      "name": "ls_ratio",
+      "gain": 300.63
+    },
+    {
+      "name": "dist_high_24h_pct",
+      "gain": 274.79
+    },
+    {
+      "name": "bb_width_pct",
+      "gain": 202.77
+    },
+    {
+      "name": "range_pct",
+      "gain": 178.94
+    }
+  ],
+  "horizon": 12,
+  "params_used": {
+    "objective": "binary",
+    "metric": "auc",
+    "boosting_type": "gbdt",
+    "num_leaves": 16,
+    "max_depth": 4,
+    "learning_rate": 0.02,
+    "feature_fraction": 0.5,
+    "bagging_fraction": 0.7,
+    "bagging_freq": 5,
+    "min_data_in_leaf": 100,
+    "lambda_l1": 1.0,
+    "lambda_l2": 1.0,
+    "is_unbalance": false,
+    "verbose": -1,
+    "seed": 42
+  },
+  "num_rounds": 2000,
+  "early_stop": 80,
+  "ic_test": 0.024,
+  "ic_val": 0.1189,
+  "ic_train": 0.2131,
+  "sign_acc_test": 0.5176,
+  "sign_acc_val": 0.5094,
+  "sign_acc_train": 0.5342
+}

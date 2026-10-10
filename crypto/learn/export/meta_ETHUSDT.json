@@ -1,30 +1,30 @@
 {
-  "trained_at": "2026-10-10T03:35:12.995264+00:00",
-  "version": "v15",
-  "objective": "regression",
+  "trained_at": "2026-10-10T08:23:18.129977+00:00",
+  "version": "v17",
+  "objective": "binary",
   "symbol": "ETHUSDT",
-  "n_total": 53438,
-  "n_train": 42570,
-  "n_test": 10688,
-  "n_tr_inner": 36004,
-  "n_val_inner": 6386,
-  "purge_hours": 180,
-  "gap_tr_va": 180,
-  "y_clip": 20.0,
-  "best_iteration": 212,
-  "ic_train": 0.1892,
-  "ic_val": 0.1611,
-  "ic_test": 0.0252,
-  "mae_train": 1.9497,
-  "mae_val": 1.975,
-  "mae_test": 1.5542,
-  "rmse_train": 2.8814,
-  "rmse_val": 2.8216,
-  "rmse_test": 2.2576,
-  "sign_acc_train": 0.5264,
-  "sign_acc_val": 0.4969,
-  "sign_acc_test": 0.4867,
-  "num_trees": 212,
+  "n_total": 44994,
+  "n_train": 35791,
+  "n_test": 8999,
+  "n_tr_inner": 30218,
+  "n_val_inner": 5369,
+  "purge_hours": 204,
+  "gap_tr_va": 204,
+  "class_thr_pct": 0.3,
+  "best_iteration": 16,
+  "auc_train": 0.6066,
+  "auc_val": 0.5594,
+  "auc_test": 0.512,
+  "acc_train": 0.5342,
+  "acc_val": 0.5094,
+  "acc_test": 0.5176,
+  "conf60_acc_te": 0.0,
+  "conf60_cov_te": 0.0,
+  "conf60_n_te": 0,
+  "conf65_acc_te": 0.0,
+  "conf65_cov_te": 0.0,
+  "conf65_n_te": 0,
+  "num_trees": 16,
   "features": [
     "change_pct",
     "range_pct",
@@ -59,65 +59,71 @@
   ],
   "top_features": [
     {
+      "name": "change_24h",
+      "gain": 768.42
+    },
+    {
       "name": "volatility_7d",
-      "gain": 24862.4
+      "gain": 536.32
     },
     {
       "name": "volatility_24h",
-      "gain": 23864.47
+      "gain": 431.4
     },
     {
       "name": "macd_signal",
-      "gain": 16990.68
-    },
-    {
-      "name": "change_24h",
-      "gain": 11255.44
-    },
-    {
-      "name": "ls_ratio",
-      "gain": 9893.87
-    },
-    {
-      "name": "ema50_dist_pct",
-      "gain": 8259.6
-    },
-    {
-      "name": "bb_width_pct",
-      "gain": 6679.34
-    },
-    {
-      "name": "bb_lower_dist",
-      "gain": 5902.12
-    },
-    {
-      "name": "dist_high_24h_pct",
-      "gain": 5299.08
+      "gain": 421.38
     },
     {
       "name": "funding_rate",
-      "gain": 5243.53
+      "gain": 406.33
+    },
+    {
+      "name": "bb_lower_dist",
+      "gain": 311.95
+    },
+    {
+      "name": "ls_ratio",
+      "gain": 300.63
+    },
+    {
+      "name": "dist_high_24h_pct",
+      "gain": 274.79
+    },
+    {
+      "name": "bb_width_pct",
+      "gain": 202.77
+    },
+    {
+      "name": "range_pct",
+      "gain": 178.94
     }
   ],
   "horizon": 12,
   "params_used": {
-    "objective": "regression",
-    "metric": "rmse",
+    "objective": "binary",
+    "metric": "auc",
     "boosting_type": "gbdt",
-    "num_leaves": 4,
-    "max_depth": 2,
+    "num_leaves": 16,
+    "max_depth": 4,
     "learning_rate": 0.02,
-    "feature_fraction": 0.4,
-    "bagging_fraction": 0.6,
+    "feature_fraction": 0.5,
+    "bagging_fraction": 0.7,
     "bagging_freq": 5,
-    "min_data_in_leaf": 150,
-    "lambda_l1": 2.0,
-    "lambda_l2": 2.0,
+    "min_data_in_leaf": 100,
+    "lambda_l1": 1.0,
+    "lambda_l2": 1.0,
+    "is_unbalance": false,
     "verbose": -1,
     "seed": 42
   },
-  "num_rounds": 500,
-  "early_stop": 20,
-  "override": true,
-  "exported_at": "2026-10-10T03:42:17.521745+00:00"
+  "num_rounds": 2000,
+  "early_stop": 80,
+  "ic_test": 0.024,
+  "ic_val": 0.1189,
+  "ic_train": 0.2131,
+  "sign_acc_test": 0.5176,
+  "sign_acc_val": 0.5094,
+  "sign_acc_train": 0.5342,
+  "exported_at": "2026-10-10T08:28:04.197645+00:00"
 }

@@ -1,0 +1,128 @@
+{
+  "trained_at": "2026-10-10T08:23:27.570943+00:00",
+  "version": "v17",
+  "objective": "binary",
+  "symbol": "BNBUSDT",
+  "n_total": 44660,
+  "n_train": 35524,
+  "n_test": 8932,
+  "n_tr_inner": 29991,
+  "n_val_inner": 5329,
+  "purge_hours": 204,
+  "gap_tr_va": 204,
+  "class_thr_pct": 0.3,
+  "best_iteration": 47,
+  "auc_train": 0.6311,
+  "auc_val": 0.5559,
+  "auc_test": 0.4817,
+  "acc_train": 0.5865,
+  "acc_val": 0.5416,
+  "acc_test": 0.4865,
+  "conf60_acc_te": 0.5172,
+  "conf60_cov_te": 0.0032,
+  "conf60_n_te": 29,
+  "conf65_acc_te": 0.0,
+  "conf65_cov_te": 0.0,
+  "conf65_n_te": 0,
+  "num_trees": 47,
+  "features": [
+    "change_pct",
+    "range_pct",
+    "body_pct",
+    "upper_wick_pct",
+    "lower_wick_pct",
+    "volume_ratio_24h",
+    "volatility_24h",
+    "volatility_7d",
+    "change_4h",
+    "change_24h",
+    "change_1d",
+    "trend_up",
+    "hour_of_day",
+    "funding_rate",
+    "funding_trend",
+    "ema9_dist_pct",
+    "ema21_dist_pct",
+    "ema50_dist_pct",
+    "macd",
+    "macd_signal",
+    "bb_upper_dist",
+    "bb_lower_dist",
+    "bb_width_pct",
+    "dist_high_24h_pct",
+    "dist_low_24h_pct",
+    "consecutive_up",
+    "session",
+    "oi_change_pct",
+    "ls_ratio",
+    "taker_ratio"
+  ],
+  "top_features": [
+    {
+      "name": "volatility_7d",
+      "gain": 3123.73
+    },
+    {
+      "name": "change_24h",
+      "gain": 2395.21
+    },
+    {
+      "name": "dist_high_24h_pct",
+      "gain": 1339.97
+    },
+    {
+      "name": "volatility_24h",
+      "gain": 1285.62
+    },
+    {
+      "name": "ls_ratio",
+      "gain": 1015.5
+    },
+    {
+      "name": "bb_width_pct",
+      "gain": 835.41
+    },
+    {
+      "name": "macd_signal",
+      "gain": 829.77
+    },
+    {
+      "name": "dist_low_24h_pct",
+      "gain": 526.78
+    },
+    {
+      "name": "macd",
+      "gain": 496.91
+    },
+    {
+      "name": "volume_ratio_24h",
+      "gain": 455.68
+    }
+  ],
+  "horizon": 12,
+  "params_used": {
+    "objective": "binary",
+    "metric": "auc",
+    "boosting_type": "gbdt",
+    "num_leaves": 16,
+    "max_depth": 4,
+    "learning_rate": 0.02,
+    "feature_fraction": 0.5,
+    "bagging_fraction": 0.7,
+    "bagging_freq": 5,
+    "min_data_in_leaf": 100,
+    "lambda_l1": 1.0,
+    "lambda_l2": 1.0,
+    "is_unbalance": false,
+    "verbose": -1,
+    "seed": 42
+  },
+  "num_rounds": 2000,
+  "early_stop": 80,
+  "ic_test": -0.0366,
+  "ic_val": 0.1118,
+  "ic_train": 0.2622,
+  "sign_acc_test": 0.4865,
+  "sign_acc_val": 0.5416,
+  "sign_acc_train": 0.5865
+}
