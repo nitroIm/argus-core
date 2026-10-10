@@ -1,6 +1,9 @@
 # ============================================================
-# ARGUS - УТРЕННИЙ ОТЧЁТ v13
+# ARGUS - MORNING REPORT v14
 # ------------------------------------------------------------
+# v14: asia_market -> global_market, asia_patterns -> global_patterns.
+#      market_type='futures' in candles queries.
+#      Extended MARKET_LABELS to 20 markets.
 # v13: external block = ONLY active forecasts.
 # v12: external markets block.
 # v11: Kaliningrad time, DB2.
@@ -124,16 +127,22 @@ MARKET_LABELS = {
     "SHANGHAI": "Shanghai CN",
     "HANGSENG": "HangSeng HK",
     "USDCNY":   "USD/CNY",
+    "USDJPY":   "USD/JPY",
+    "KOSPI":    "KOSPI KR",
+    "TAIEX":    "TAIEX TW",
     "DAX":      "DAX DE",
     "SX5E":     "EuroStoxx50",
     "FTSE":     "FTSE UK",
     "EURUSD":   "EUR/USD",
     "VIX":      "VIX",
     "NASDAQ":   "NASDAQ",
+    "SPX":      "S&P 500",
     "US10Y":    "US 10Y",
-    "USDJPY":   "USD/JPY",
-    "KOSPI":    "KOSPI KR",
-    "TAIEX":    "TAIEX TW",
+    "US30Y":    "US 30Y",
+    "DXY":      "DXY",
+    "GOLD":     "Gold",
+    "BRENT":    "Brent",
+    "COPPER":   "Copper",
 }
 
 EVENT_LOOKBACK_H = 12
@@ -386,7 +395,8 @@ def fmt_system_block():
                     cur.execute(
                         "SELECT COUNT(*) FROM candles "
                         "WHERE symbol=%s AND "
-                        "timeframe='1h'",
+                        "timeframe='1h' "
+                        "AND market_type='futures'",
                         (sym,),
                     )
                     n = cur.fetchone()[0] or 0
@@ -536,6 +546,7 @@ def _fetch_last_price(symbol):
                         "SELECT close FROM candles "
                         "WHERE symbol=%s AND "
                         "timeframe='1h' "
+                        "AND market_type='futures' "
                         "ORDER BY timestamp DESC "
                         "LIMIT 1",
                         (symbol,),
@@ -551,6 +562,7 @@ def _fetch_last_price(symbol):
                         "SELECT close FROM candles "
                         "WHERE symbol=%s AND "
                         "timeframe='1h' "
+                        "AND market_type='futures' "
                         "ORDER BY timestamp DESC "
                         "LIMIT 1",
                         (symbol,),
@@ -577,7 +589,7 @@ def _fetch_active_forecasts():
                 cur.execute(
                     "SELECT symbol, timestamp, "
                     "change_pct "
-                    "FROM asia_market "
+                    "FROM global_market "
                     "WHERE timestamp > %s "
                     "AND ABS(change_pct) > 0.5 "
                     "ORDER BY timestamp DESC",
@@ -604,7 +616,7 @@ def _fetch_active_forecasts():
                         "condition_pct, lag_hours, "
                         "samples, hit_rate, "
                         "avg_impact_pct "
-                        "FROM asia_patterns "
+                        "FROM global_patterns "
                         "WHERE source_symbol = %s "
                         "AND direction = %s "
                         "AND samples >= %s "
@@ -865,6 +877,7 @@ def fetch_candles(symbol, limit=200):
                     "low, close, volume FROM candles "
                     "WHERE symbol=%s AND "
                     "timeframe='1h' "
+                    "AND market_type='futures' "
                     "ORDER BY timestamp DESC LIMIT %s",
                     (symbol, limit),
                 )
@@ -954,7 +967,7 @@ def fmt_regime(regime):
 def build_report_text():
     now = now_local()
     lines = []
-    lines.append("☀️ <b>ARGUS — утро</b> v13")
+    lines.append("☀️ <b>ARGUS — утро</b> v14")
     lines.append(
         now.strftime("%d.%m.%Y %H:%M") + " КЛГ"
     )
@@ -981,9 +994,6 @@ def build_report_text():
     lines.append("─" * 20)
     lines.append("")
 
-    levels = load_json(
-        DATA_DIR / "levels_analysis.json"
-    )
     patterns = load_json(
         DATA_DIR / "patterns_analysis.json"
     )
@@ -1102,7 +1112,7 @@ def build_report_text():
 
 
 def main():
-    print("Morning report v13 - start")
+    print("Morning report v14 - start")
     print("DB2_OK = " + str(DB2_OK))
 
     text = build_report_text()
