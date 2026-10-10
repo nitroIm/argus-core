@@ -1,12 +1,13 @@
 # ============================================================
-# ARGUS-Trader - DATASET v19
+# ARGUS-Trader - DATASET v20
 # ------------------------------------------------------------
-# v19: +6 lag features (ret_lag1/2/3/6/12/24).
-#      Computed from candles, not from DB.
-#      FEATURE_COLS: 30 -> 36.
-#      INTERNAL_COLS unchanged (30) for DB SELECT.
+# v20: binary classification target.
+#      y=1 if next_ret > +THR
+#      y=0 if next_ret < -THR
+#      dropped if |next_ret| <= THR
+#      THR = CLASS_THR_PCT (default 0.3).
+#      Same 30 features as v17.
 # v18: purge = HORIZON + MAX_LOOKBACK + SAFETY (204h).
-# v17: FEATURE_COLS = INTERNAL_COLS only (30 cols).
 # ============================================================
 
 import os
@@ -58,6 +59,10 @@ log = logging.getLogger("crypto.learn.dataset")
 
 HORIZON = int(os.getenv("HORIZON", "12"))
 
+CLASS_THR_PCT = float(
+    os.getenv("CLASS_THR_PCT", "0.3")
+)
+
 MAX_LOOKBACK = int(
     os.getenv("MAX_LOOKBACK", "168")
 )
@@ -104,7 +109,6 @@ def symbol_conn(symbol):
     return get_connection()
 
 
-# Base features from features_hourly (30).
 INTERNAL_COLS = [
     "change_pct",
     "range_pct",
@@ -138,17 +142,7 @@ INTERNAL_COLS = [
     "taker_ratio",
 ]
 
-# v19: lag return features from candles.
-LAG_HOURS = [1, 2, 3, 6, 12, 24]
-LAG_RET_COLS = [
-    "ret_lag1", "ret_lag2", "ret_lag3",
-    "ret_lag6", "ret_lag12", "ret_lag24",
-]
-
-# Full feature vector: 30 + 6 = 36.
-FEATURE_COLS = (
-    list(INTERNAL_COLS) + list(LAG_RET_COLS)
-)
+FEATURE_COLS = list(INTERNAL_COLS)
 
 TARGET_RET = "next_return"
 TARGET_COL = "next_change_pct"
@@ -243,7 +237,7 @@ def build_targets(candles, horizon):
 
 def _row_for(d, ts):
     row = []
-    for i in range(len(FEATURE_COLS)):
+    for i in range(len(INTERNAL_COLS)):
         v = d["fa"][i].get(ts)
         row.append(v if v is not None else np.nan)
     return row
@@ -252,6 +246,9 @@ def _row_for(d, ts):
 def build_xy_all(symbols_data, targets_map):
     X, y_dir, y_ret = [], [], []
     ts_list, sym_list = [], []
+
+    thr = CLASS_THR_PCT
+    n_drop = 0
 
     for symbol in SYMBOLS:
         d = symbols_data.get(symbol)
@@ -263,12 +260,20 @@ def build_xy_all(symbols_data, targets_map):
             ret = targets.get(ts)
             if ret is None:
                 continue
+            if abs(ret) <= thr:
+                n_drop += 1
+                continue
             row = _row_for(d, ts)
             X.append(row)
             y_dir.append(1 if ret > 0 else 0)
             y_ret.append(float(ret))
             ts_list.append(ts)
             sym_list.append(symbol)
+
+    log.info(
+        "class build: kept=%d dropped=%d (|ret|<=%.2f)",
+        len(X), n_drop, thr,
+    )
 
     if not X:
         return (
@@ -390,12 +395,9 @@ def _finalize_X(X_train, X_test):
     )
 
 
-def _build_feat_arrays(rows, candles):
-    # v19: base 30 from DB, 6 lags from candles.
+def _build_feat_arrays(rows):
     feats = {}
-    fa = [dict() for _ in FEATURE_COLS]
-    n_base = len(INTERNAL_COLS)
-
+    fa = [dict() for _ in INTERNAL_COLS]
     for ts, vals in rows:
         feats[ts] = True
         for i, v in enumerate(vals):
@@ -405,25 +407,6 @@ def _build_feat_arrays(rows, candles):
                 fa[i][ts] = float(v)
             except Exception:
                 pass
-
-    closes = []
-    ts_list = []
-    for ts, vals in candles:
-        closes.append(vals[3])
-        ts_list.append(ts)
-    n = len(closes)
-
-    for j, K in enumerate(LAG_HOURS):
-        col = n_base + j
-        for i in range(K, n):
-            c0 = closes[i - K]
-            c1 = closes[i]
-            if not c0 or not c1 or c0 <= 0:
-                continue
-            fa[col][ts_list[i]] = (
-                (c1 - c0) / c0 * 100
-            )
-
     return feats, fa
 
 
@@ -432,12 +415,12 @@ def _load_symbol(symbol):
     if not rows:
         return None
 
-    candles = fetch_candles(symbol)
-    if not candles:
+    feats, fa = _build_feat_arrays(rows)
+    if not feats:
         return None
 
-    feats, fa = _build_feat_arrays(rows, candles)
-    if not feats:
+    candles = fetch_candles(symbol)
+    if not candles:
         return None
 
     return {
@@ -449,15 +432,15 @@ def _load_symbol(symbol):
 
 def prepare(test_frac=0.2):
     log.info("=" * 60)
-    log.info("DATASET v19")
+    log.info("DATASET v20 (binary target)")
     log.info("SYMBOLS=%s", SYMBOLS)
     log.info("HORIZON=%dh", HORIZON)
+    log.info("CLASS_THR_PCT=%.2f", CLASS_THR_PCT)
     log.info("MAX_LOOKBACK=%dh", MAX_LOOKBACK)
-    log.info("PURGE_SAFETY=%dh", PURGE_SAFETY)
     log.info("PURGE_HOURS=%dh", PURGE_HOURS)
     log.info("DB2_OK=%s", DB2_OK)
     log.info(
-        "features expected: %d (30 base + 6 lag)",
+        "features expected: %d",
         len(FEATURE_COLS),
     )
     log.info("=" * 60)
@@ -519,14 +502,10 @@ def prepare(test_frac=0.2):
         nan_tr, nan_te,
     )
 
-    balance = {
-        "up_train": int(y_train.sum()),
-        "down_train": int(
-            len(y_train) - y_train.sum()
-        ),
-        "ret_mean": float(r_train.mean()),
-        "ret_std": float(r_train.std()),
-    }
+    up_tr = int(y_train.sum())
+    down_tr = int(len(y_train) - up_tr)
+    up_te = int(y_test.sum())
+    down_te = int(len(y_test) - up_te)
 
     log.info(
         "split: train=%d test=%d features=%d",
@@ -534,9 +513,14 @@ def prepare(test_frac=0.2):
         len(FEATURE_COLS),
     )
     log.info(
-        "ret_train: mean=%.4f std=%.4f",
-        balance["ret_mean"],
-        balance["ret_std"],
+        "class balance train: up=%d down=%d (%.1f%% up)",
+        up_tr, down_tr,
+        100.0 * up_tr / max(len(y_train), 1),
+    )
+    log.info(
+        "class balance test:  up=%d down=%d (%.1f%% up)",
+        up_te, down_te,
+        100.0 * up_te / max(len(y_test), 1),
     )
 
     return {
@@ -549,10 +533,10 @@ def prepare(test_frac=0.2):
         "n_total": len(X),
         "n_train": len(X_train),
         "n_test": len(X_test),
-        "balance": balance,
         "feature_cols": FEATURE_COLS,
         "horizon": HORIZON,
         "purge_hours": PURGE_HOURS,
+        "class_thr_pct": CLASS_THR_PCT,
         "symbols": sorted(set(sym)),
         "reference": REFERENCE,
         "ts_test": ts_test,
