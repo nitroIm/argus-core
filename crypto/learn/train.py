@@ -1,13 +1,12 @@
 # ============================================================
 # ARGUS-Trader - TRAIN [PRODUCTION]
 # ------------------------------------------------------------
-# v14: per-symbol overrides. ETH/SOL get simpler models
-#      (overfit fix: IC_train 0.26 -> IC_test 0.015).
-# v13: inner val split (15% of train) + early_stopping(30).
-#      NUM_ROUNDS 200 -> 1000.
-# v12: regression target (next_return).
-# v11: PARAMS tuned for per-symbol.
-# v10: per-symbol models.
+# v15: honest val split (purge between X_tr and X_va),
+#      ic_train measured on X_tr only,
+#      ic_val added to meta,
+#      Y_CLIP=20 for LGB (parity with xgb/cat/ridge).
+# v14: per-symbol overrides. ETH/SOL get simpler models.
+# v13: inner val split (15% of train) + early_stopping.
 # ============================================================
 
 import os
@@ -46,6 +45,7 @@ MIN_SAMPLES = 200
 NUM_ROUNDS = 1000
 VAL_FRAC = 0.15
 EARLY_STOP = 30
+Y_CLIP = 20.0
 
 PARAMS_BASE = {
     "objective": "regression",
@@ -64,9 +64,6 @@ PARAMS_BASE = {
     "seed": 42,
 }
 
-# v14: simpler models for ETH/SOL (overfit fix).
-# ETH: IC_train=0.26 IC_test=0.015 sign_acc=0.498
-# SOL: mixed results, same fix applied.
 SYMBOL_OVERRIDES = {
     "ETHUSDT": {
         "num_leaves": 4,
@@ -112,7 +109,6 @@ DB2_SET = {
 
 
 def params_for(symbol):
-    """Merge base params with per-symbol override."""
     p = dict(PARAMS_BASE)
     rounds = NUM_ROUNDS
     early = EARLY_STOP
@@ -200,17 +196,27 @@ def train_one(symbol):
     r_train = data["r_train"]
     r_test = data["r_test"]
 
+    # v15: clip target (parity with xgb/cat/ridge).
+    r_train = np.clip(r_train, -Y_CLIP, Y_CLIP)
+    r_test_c = np.clip(r_test, -Y_CLIP, Y_CLIP)
+
     n_tr = len(X_train)
     cut = int(n_tr * (1 - VAL_FRAC))
-    X_tr = X_train[:cut]
-    r_tr = r_train[:cut]
+
+    # v15: purge gap between X_tr and X_va.
+    # use same PURGE_HOURS as dataset split.
+    purge = ds.PURGE_HOURS
+    cut_clean = max(cut - purge, int(n_tr * 0.5))
+
+    X_tr = X_train[:cut_clean]
+    r_tr = r_train[:cut_clean]
     X_va = X_train[cut:]
     r_va = r_train[cut:]
 
     log.info(
-        "%s: train=%d val=%d test=%d",
+        "%s: train=%d val=%d test=%d (gap=%dh)",
         symbol, len(X_tr), len(X_va),
-        len(X_test),
+        len(X_test), cut - cut_clean,
     )
 
     params, num_rounds, early_stop = params_for(symbol)
@@ -237,44 +243,63 @@ def train_one(symbol):
         ],
     )
 
-    best_iter = model.best_iteration or model.num_trees()
+    best_iter = (
+        model.best_iteration
+        or model.num_trees()
+    )
     log.info(
         "%s: best_iteration=%d (of %d)",
         symbol, best_iter, num_rounds,
     )
 
-    p_train = model.predict(X_train).astype(np.float32)
-    p_test = model.predict(X_test).astype(np.float32)
+    # v15: honest metrics on the exact sets.
+    p_tr = model.predict(X_tr).astype(np.float32)
+    p_va = model.predict(X_va).astype(np.float32)
+    p_te = model.predict(X_test).astype(np.float32)
 
-    mae_tr = float(np.mean(np.abs(p_train - r_train)))
-    mae_te = float(np.mean(np.abs(p_test - r_test)))
+    mae_tr = float(np.mean(np.abs(p_tr - r_tr)))
+    mae_va = float(np.mean(np.abs(p_va - r_va)))
+    mae_te = float(
+        np.mean(np.abs(p_te - r_test_c))
+    )
     rmse_tr = float(
-        np.sqrt(np.mean((p_train - r_train) ** 2))
+        np.sqrt(np.mean((p_tr - r_tr) ** 2))
+    )
+    rmse_va = float(
+        np.sqrt(np.mean((p_va - r_va) ** 2))
     )
     rmse_te = float(
-        np.sqrt(np.mean((p_test - r_test) ** 2))
+        np.sqrt(np.mean((p_te - r_test_c) ** 2))
     )
-    ic_tr = _ic(r_train, p_train)
-    ic_te = _ic(r_test, p_test)
+    ic_tr = _ic(r_tr, p_tr)
+    ic_va = _ic(r_va, p_va)
+    ic_te = _ic(r_test_c, p_te)
 
     sign_tr = float(
-        np.mean(np.sign(p_train) == np.sign(r_train))
+        np.mean(np.sign(p_tr) == np.sign(r_tr))
+    )
+    sign_va = float(
+        np.mean(np.sign(p_va) == np.sign(r_va))
     )
     sign_te = float(
-        np.mean(np.sign(p_test) == np.sign(r_test))
+        np.mean(np.sign(p_te) == np.sign(r_test_c))
     )
 
     log.info(
-        "%s: test: IC=%.4f MAE=%.4f RMSE=%.4f",
+        "%s: test:  IC=%.4f MAE=%.4f RMSE=%.4f",
         symbol, ic_te, mae_te, rmse_te,
+    )
+    log.info(
+        "%s: val:   IC=%.4f MAE=%.4f RMSE=%.4f",
+        symbol, ic_va, mae_va, rmse_va,
     )
     log.info(
         "%s: train: IC=%.4f MAE=%.4f RMSE=%.4f",
         symbol, ic_tr, mae_tr, rmse_tr,
     )
     log.info(
-        "%s: sign-acc: train=%.4f test=%.4f",
-        symbol, sign_tr, sign_te,
+        "%s: sign-acc: tr=%.4f va=%.4f te=%.4f",
+        symbol, sign_tr, sign_va, sign_te,
     )
 
     importance = model.feature_importance(
@@ -300,21 +325,29 @@ def train_one(symbol):
         "trained_at": datetime.now(
             timezone.utc
         ).isoformat(),
-        "version": "v14",
+        "version": "v15",
         "objective": "regression",
         "symbol": symbol,
         "n_total": data["n_total"],
         "n_train": data["n_train"],
         "n_test": data["n_test"],
+        "n_tr_inner": len(X_tr),
         "n_val_inner": len(X_va),
+        "purge_hours": int(purge),
+        "gap_tr_va": int(cut - cut_clean),
+        "y_clip": Y_CLIP,
         "best_iteration": best_iter,
         "ic_train": round(ic_tr, 4),
+        "ic_val": round(ic_va, 4),
         "ic_test": round(ic_te, 4),
         "mae_train": round(mae_tr, 4),
+        "mae_val": round(mae_va, 4),
         "mae_test": round(mae_te, 4),
         "rmse_train": round(rmse_tr, 4),
+        "rmse_val": round(rmse_va, 4),
         "rmse_test": round(rmse_te, 4),
         "sign_acc_train": round(sign_tr, 4),
+        "sign_acc_val": round(sign_va, 4),
         "sign_acc_test": round(sign_te, 4),
         "num_trees": model.num_trees(),
         "features": feat_names,
@@ -367,8 +400,9 @@ def write_compat(symbols, metas):
 def train():
     log.info("=" * 60)
     log.info(
-        "ARGUS-Trader TRAIN v14 "
-        "(per-symbol params, regression)"
+        "ARGUS-Trader TRAIN v15 "
+        "(honest val, purge=%dh, y_clip=%.0f)",
+        ds.PURGE_HOURS, Y_CLIP,
     )
     log.info("SYMBOLS=%s", SYMBOLS_LIST)
     log.info(
@@ -394,9 +428,10 @@ def train():
     log.info("TRAIN DONE")
     for sym, m in metas.items():
         log.info(
-            "  %s: IC=%.4f MAE=%.4f best_iter=%d",
+            "  %s: IC_te=%.4f IC_va=%.4f "
+            "best_iter=%d",
             sym, m["ic_test"],
-            m["mae_test"], m["best_iteration"],
+            m["ic_val"], m["best_iteration"],
         )
     if metas:
         ic_avg = (
@@ -404,7 +439,7 @@ def train():
             / len(metas)
         )
         log.info(
-            "  AVG IC=%.4f (%d models)",
+            "  AVG IC_test=%.4f (%d models)",
             ic_avg, len(metas),
         )
     log.info("=" * 60)
