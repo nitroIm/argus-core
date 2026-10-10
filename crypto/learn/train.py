@@ -1,12 +1,11 @@
 # ============================================================
-# ARGUS-Trader - TRAIN [PRODUCTION]
+# ARGUS-Trader - TRAIN v16
 # ------------------------------------------------------------
-# v15: honest val split (purge between X_tr and X_va),
-#      ic_train measured on X_tr only,
-#      ic_val added to meta,
-#      Y_CLIP=20 for LGB (parity with xgb/cat/ridge).
-# v14: per-symbol overrides. ETH/SOL get simpler models.
-# v13: inner val split (15% of train) + early_stopping.
+# v16: 36 features (dataset v19).
+#      Stronger regularization (min_data=200, L1/L2=2.0).
+#      Early stopping by IC (feval), not RMSE.
+#      No SYMBOL_OVERRIDES (single param set).
+# v15: honest val split, ic_val in meta, Y_CLIP=20.
 # ============================================================
 
 import os
@@ -42,52 +41,29 @@ MODELS_DIR.mkdir(parents=True, exist_ok=True)
 PREV_DIR = MODELS_DIR / "prev"
 
 MIN_SAMPLES = 200
-NUM_ROUNDS = 1000
+NUM_ROUNDS = 1500
 VAL_FRAC = 0.15
-EARLY_STOP = 30
+EARLY_STOP = 50
 Y_CLIP = 20.0
 
 PARAMS_BASE = {
     "objective": "regression",
-    "metric": "rmse",
     "boosting_type": "gbdt",
     "num_leaves": 8,
     "max_depth": 3,
-    "learning_rate": 0.03,
-    "feature_fraction": 0.5,
+    "learning_rate": 0.02,
+    "feature_fraction": 0.4,
     "bagging_fraction": 0.6,
     "bagging_freq": 5,
-    "min_data_in_leaf": 80,
-    "lambda_l1": 1.0,
-    "lambda_l2": 1.0,
+    "min_data_in_leaf": 200,
+    "lambda_l1": 2.0,
+    "lambda_l2": 2.0,
     "verbose": -1,
     "seed": 42,
 }
 
-SYMBOL_OVERRIDES = {
-    "ETHUSDT": {
-        "num_leaves": 4,
-        "max_depth": 2,
-        "learning_rate": 0.02,
-        "feature_fraction": 0.4,
-        "min_data_in_leaf": 150,
-        "lambda_l1": 2.0,
-        "lambda_l2": 2.0,
-        "num_rounds": 500,
-        "early_stop": 20,
-    },
-    "SOLUSDT": {
-        "num_leaves": 4,
-        "max_depth": 2,
-        "learning_rate": 0.02,
-        "feature_fraction": 0.4,
-        "min_data_in_leaf": 150,
-        "lambda_l1": 2.0,
-        "lambda_l2": 2.0,
-        "num_rounds": 500,
-        "early_stop": 20,
-    },
-}
+# v16: no per-symbol overrides.
+SYMBOL_OVERRIDES = {}
 
 SYMBOLS_LIST = [
     s.strip().upper()
@@ -169,6 +145,19 @@ def _ic(y_true, y_pred):
     return float((yt * yp).sum() / d)
 
 
+def _ic_feval(preds, eval_data):
+    y = eval_data.get_label()
+    if len(y) < 10:
+        return "ic", 0.0, True
+    yt = y - y.mean()
+    yp = preds - preds.mean()
+    d = np.sqrt((yt * yt).sum() * (yp * yp).sum())
+    if d == 0:
+        return "ic", 0.0, True
+    ic = float((yt * yp).sum() / d)
+    return "ic", ic, True
+
+
 def train_one(symbol):
     log.info("-" * 60)
     log.info("TRAIN %s", symbol)
@@ -217,10 +206,10 @@ def train_one(symbol):
     )
 
     params, num_rounds, early_stop = params_for(symbol)
-    override = symbol in SYMBOL_OVERRIDES
     log.info(
-        "%s: params override=%s rounds=%d early=%d",
-        symbol, override, num_rounds, early_stop,
+        "%s: features=%d rounds=%d early=%d",
+        symbol, X_tr.shape[1],
+        num_rounds, early_stop,
     )
 
     train_set = lgb.Dataset(X_tr, label=r_tr)
@@ -232,9 +221,12 @@ def train_one(symbol):
         params, train_set,
         num_boost_round=num_rounds,
         valid_sets=[val_set],
+        feval=_ic_feval,
         callbacks=[
             lgb.early_stopping(
-                early_stop, verbose=False,
+                early_stop,
+                verbose=False,
+                first_metric_only=True,
             ),
             lgb.log_evaluation(100),
         ],
@@ -307,7 +299,7 @@ def train_one(symbol):
         key=lambda x: -x[1],
     )
     log.info("%s: top features:", symbol)
-    for name, score in pairs[:5]:
+    for name, score in pairs[:8]:
         log.info("  %s: %.2f", name, score)
 
     save_prev(symbol)
@@ -321,7 +313,7 @@ def train_one(symbol):
         "trained_at": datetime.now(
             timezone.utc
         ).isoformat(),
-        "version": "v15",
+        "version": "v16",
         "objective": "regression",
         "symbol": symbol,
         "n_total": data["n_total"],
@@ -355,7 +347,7 @@ def train_one(symbol):
         "params_used": params,
         "num_rounds": num_rounds,
         "early_stop": early_stop,
-        "override": override,
+        "override": False,
     }
     with open(
         meta_file(symbol), "w", encoding="utf-8",
@@ -396,18 +388,14 @@ def write_compat(symbols, metas):
 def train():
     log.info("=" * 60)
     log.info(
-        "ARGUS-Trader TRAIN v15 "
-        "(honest val, purge=%dh, y_clip=%.0f)",
-        ds.PURGE_HOURS, Y_CLIP,
+        "ARGUS-Trader TRAIN v16 "
+        "(36feat, purge=%dh, ic-stop)",
+        ds.PURGE_HOURS,
     )
     log.info("SYMBOLS=%s", SYMBOLS_LIST)
     log.info(
         "BASE: rounds=%d early=%d val=%.2f",
         NUM_ROUNDS, EARLY_STOP, VAL_FRAC,
-    )
-    log.info(
-        "OVERRIDES: %s",
-        list(SYMBOL_OVERRIDES.keys()),
     )
     log.info("=" * 60)
 
