@@ -1,0 +1,114 @@
+{
+  "trained_at": "2026-10-10T02:35:35.016856+00:00",
+  "version": "v14",
+  "objective": "regression",
+  "symbol": "SOLUSDT",
+  "n_total": 53001,
+  "n_train": 42388,
+  "n_test": 10601,
+  "n_val_inner": 6359,
+  "best_iteration": 58,
+  "ic_train": 0.1816,
+  "ic_test": 0.0343,
+  "mae_train": 3.0362,
+  "mae_test": 1.821,
+  "rmse_train": 4.4917,
+  "rmse_test": 2.5291,
+  "sign_acc_train": 0.5001,
+  "sign_acc_test": 0.4925,
+  "num_trees": 58,
+  "features": [
+    "change_pct",
+    "range_pct",
+    "body_pct",
+    "upper_wick_pct",
+    "lower_wick_pct",
+    "volume_ratio_24h",
+    "volatility_24h",
+    "volatility_7d",
+    "change_4h",
+    "change_24h",
+    "change_1d",
+    "trend_up",
+    "hour_of_day",
+    "funding_rate",
+    "funding_trend",
+    "ema9_dist_pct",
+    "ema21_dist_pct",
+    "ema50_dist_pct",
+    "macd",
+    "macd_signal",
+    "bb_upper_dist",
+    "bb_lower_dist",
+    "bb_width_pct",
+    "dist_high_24h_pct",
+    "dist_low_24h_pct",
+    "consecutive_up",
+    "session",
+    "oi_change_pct",
+    "ls_ratio",
+    "taker_ratio"
+  ],
+  "top_features": [
+    {
+      "name": "volatility_24h",
+      "gain": 87680.23
+    },
+    {
+      "name": "ls_ratio",
+      "gain": 31068.43
+    },
+    {
+      "name": "funding_rate",
+      "gain": 27663.19
+    },
+    {
+      "name": "volatility_7d",
+      "gain": 22338.3
+    },
+    {
+      "name": "range_pct",
+      "gain": 21829.25
+    },
+    {
+      "name": "macd_signal",
+      "gain": 11742.86
+    },
+    {
+      "name": "bb_width_pct",
+      "gain": 11132.99
+    },
+    {
+      "name": "dist_high_24h_pct",
+      "gain": 6412.86
+    },
+    {
+      "name": "ema50_dist_pct",
+      "gain": 6165.19
+    },
+    {
+      "name": "change_24h",
+      "gain": 3894.39
+    }
+  ],
+  "horizon": 12,
+  "params_used": {
+    "objective": "regression",
+    "metric": "rmse",
+    "boosting_type": "gbdt",
+    "num_leaves": 4,
+    "max_depth": 2,
+    "learning_rate": 0.02,
+    "feature_fraction": 0.4,
+    "bagging_fraction": 0.6,
+    "bagging_freq": 5,
+    "min_data_in_leaf": 150,
+    "lambda_l1": 2.0,
+    "lambda_l2": 2.0,
+    "verbose": -1,
+    "seed": 42
+  },
+  "num_rounds": 500,
+  "early_stop": 20,
+  "override": true
+}

@@ -1,0 +1,92 @@
+{
+  "trained_at": "2026-10-10T02:36:27.162992+00:00",
+  "version": "v2-ridge",
+  "objective": "regression",
+  "algorithm": "ridge",
+  "symbol": "BTCUSDT",
+  "alpha": 100.0,
+  "y_clip": 20.0,
+  "n_clipped": 0,
+  "n_total": 53438,
+  "n_train": 42738,
+  "n_test": 10688,
+  "ic_train": 0.1449,
+  "ic_test": 0.0264,
+  "mae_test": 1.0974,
+  "rmse_test": 1.5433,
+  "features": [
+    "change_pct",
+    "range_pct",
+    "body_pct",
+    "upper_wick_pct",
+    "lower_wick_pct",
+    "volume_ratio_24h",
+    "volatility_24h",
+    "volatility_7d",
+    "change_4h",
+    "change_24h",
+    "change_1d",
+    "trend_up",
+    "hour_of_day",
+    "funding_rate",
+    "funding_trend",
+    "ema9_dist_pct",
+    "ema21_dist_pct",
+    "ema50_dist_pct",
+    "macd",
+    "macd_signal",
+    "bb_upper_dist",
+    "bb_lower_dist",
+    "bb_width_pct",
+    "dist_high_24h_pct",
+    "dist_low_24h_pct",
+    "consecutive_up",
+    "session",
+    "oi_change_pct",
+    "ls_ratio",
+    "taker_ratio"
+  ],
+  "top_features": [
+    {
+      "name": "macd",
+      "coef": -0.3682
+    },
+    {
+      "name": "bb_lower_dist",
+      "coef": 0.2774
+    },
+    {
+      "name": "bb_upper_dist",
+      "coef": 0.2599
+    },
+    {
+      "name": "ls_ratio",
+      "coef": -0.2458
+    },
+    {
+      "name": "dist_low_24h_pct",
+      "coef": -0.2316
+    },
+    {
+      "name": "ema9_dist_pct",
+      "coef": -0.186
+    },
+    {
+      "name": "change_24h",
+      "coef": -0.1589
+    },
+    {
+      "name": "bb_width_pct",
+      "coef": 0.148
+    },
+    {
+      "name": "ema21_dist_pct",
+      "coef": 0.1315
+    },
+    {
+      "name": "macd_signal",
+      "coef": 0.1233
+    }
+  ],
+  "horizon": 12
+}

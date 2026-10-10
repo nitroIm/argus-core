@@ -1,0 +1,92 @@
+{
+  "trained_at": "2026-10-10T02:36:38.972424+00:00",
+  "version": "v2-ridge",
+  "objective": "regression",
+  "algorithm": "ridge",
+  "symbol": "BNBUSDT",
+  "alpha": 100.0,
+  "y_clip": 20.0,
+  "n_clipped": 75,
+  "n_total": 53440,
+  "n_train": 42740,
+  "n_test": 10688,
+  "ic_train": 0.1436,
+  "ic_test": -0.0186,
+  "mae_test": 1.281,
+  "rmse_test": 1.8744,
+  "features": [
+    "change_pct",
+    "range_pct",
+    "body_pct",
+    "upper_wick_pct",
+    "lower_wick_pct",
+    "volume_ratio_24h",
+    "volatility_24h",
+    "volatility_7d",
+    "change_4h",
+    "change_24h",
+    "change_1d",
+    "trend_up",
+    "hour_of_day",
+    "funding_rate",
+    "funding_trend",
+    "ema9_dist_pct",
+    "ema21_dist_pct",
+    "ema50_dist_pct",
+    "macd",
+    "macd_signal",
+    "bb_upper_dist",
+    "bb_lower_dist",
+    "bb_width_pct",
+    "dist_high_24h_pct",
+    "dist_low_24h_pct",
+    "consecutive_up",
+    "session",
+    "oi_change_pct",
+    "ls_ratio",
+    "taker_ratio"
+  ],
+  "top_features": [
+    {
+      "name": "ema50_dist_pct",
+      "coef": 0.4692
+    },
+    {
+      "name": "change_24h",
+      "coef": -0.3878
+    },
+    {
+      "name": "bb_width_pct",
+      "coef": 0.2226
+    },
+    {
+      "name": "range_pct",
+      "coef": 0.2208
+    },
+    {
+      "name": "macd",
+      "coef": -0.1949
+    },
+    {
+      "name": "change_pct",
+      "coef": -0.1933
+    },
+    {
+      "name": "ema21_dist_pct",
+      "coef": 0.1795
+    },
+    {
+      "name": "dist_low_24h_pct",
+      "coef": -0.1167
+    },
+    {
+      "name": "bb_upper_dist",
+      "coef": 0.1124
+    },
+    {
+      "name": "macd_signal",
+      "coef": -0.1028
+    }
+  ],
+  "horizon": 12
+}

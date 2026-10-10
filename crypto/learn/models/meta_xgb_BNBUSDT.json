@@ -1,0 +1,92 @@
+{
+  "trained_at": "2026-10-10T02:36:00.179528+00:00",
+  "version": "v2-xgb",
+  "objective": "regression",
+  "algorithm": "xgboost",
+  "symbol": "BNBUSDT",
+  "y_clip": 20.0,
+  "n_clipped": 74,
+  "n_total": 53440,
+  "n_train": 42740,
+  "n_test": 10688,
+  "best_iteration": 69,
+  "ic_train": 0.362,
+  "ic_test": 0.0327,
+  "mae_test": 1.2642,
+  "rmse_test": 1.8355,
+  "features": [
+    "change_pct",
+    "range_pct",
+    "body_pct",
+    "upper_wick_pct",
+    "lower_wick_pct",
+    "volume_ratio_24h",
+    "volatility_24h",
+    "volatility_7d",
+    "change_4h",
+    "change_24h",
+    "change_1d",
+    "trend_up",
+    "hour_of_day",
+    "funding_rate",
+    "funding_trend",
+    "ema9_dist_pct",
+    "ema21_dist_pct",
+    "ema50_dist_pct",
+    "macd",
+    "macd_signal",
+    "bb_upper_dist",
+    "bb_lower_dist",
+    "bb_width_pct",
+    "dist_high_24h_pct",
+    "dist_low_24h_pct",
+    "consecutive_up",
+    "session",
+    "oi_change_pct",
+    "ls_ratio",
+    "taker_ratio"
+  ],
+  "top_features": [
+    {
+      "name": "f7",
+      "gain": 903.85
+    },
+    {
+      "name": "f16",
+      "gain": 825.68
+    },
+    {
+      "name": "f17",
+      "gain": 772.89
+    },
+    {
+      "name": "f13",
+      "gain": 655.42
+    },
+    {
+      "name": "f19",
+      "gain": 612.48
+    },
+    {
+      "name": "f9",
+      "gain": 590.07
+    },
+    {
+      "name": "f6",
+      "gain": 589.07
+    },
+    {
+      "name": "f20",
+      "gain": 557.74
+    },
+    {
+      "name": "f15",
+      "gain": 544.84
+    },
+    {
+      "name": "f26",
+      "gain": 543.91
+    }
+  ],
+  "horizon": 12
+}
