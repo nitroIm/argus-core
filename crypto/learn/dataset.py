@@ -1,20 +1,18 @@
 # ============================================================
-# ARGUS-Trader - DATASET v21 (Triple Barrier)
+# ARGUS-Trader - DATASET v22 (Triple Barrier + Regime + Micro)
 # ------------------------------------------------------------
-# v21: Triple Barrier labeling + 3-class target.
-#      Barriers: +UP_PCT / -DN_PCT / HORIZON hours.
-#      Labels: 2=LONG, 0=SHORT, 1=NEUTRAL(timeout).
-#      RFE: top 17 features kept (from 30).
-# v17: FEATURE_COLS = INTERNAL_COLS only (30).
+# v22: Triple Barrier with volatility-based dynamic barriers.
+#      HMM regime detection (3 states) as feature.
+#      Microstructure features (order flow, VVR).
+#      3-class target: 2=LONG, 0=SHORT, 1=NEUTRAL.
+#      Purge = HORIZON + MAX_LOOKBACK + SAFETY.
 # ============================================================
 
 import os
 import sys
 import logging
 from pathlib import Path
-from datetime import (
-    datetime, timezone, timedelta,
-)
+from datetime import datetime, timezone
 
 import numpy as np
 
@@ -36,9 +34,7 @@ DB2_OK = False
 get_conn_db2 = None
 if (os.getenv("ARGUS_DB_URL_2") or "").strip():
     try:
-        from db2 import (
-            get_connection as get_conn_db2,
-        )
+        from db2 import get_connection as get_conn_db2
         _t = get_conn_db2()
         with _t as _c:
             with _c.cursor() as _cur:
@@ -57,9 +53,9 @@ log = logging.getLogger("crypto.learn.dataset")
 
 HORIZON = int(os.getenv("HORIZON", "12"))
 
-# Triple Barrier params (% from entry)
-UP_PCT = float(os.getenv("TB_UP_PCT", "0.5"))
-DN_PCT = float(os.getenv("TB_DN_PCT", "0.5"))
+TB_UP_MULT = float(os.getenv("TB_UP_MULT", "1.0"))
+TB_DN_MULT = float(os.getenv("TB_DN_MULT", "1.0"))
+TB_VOL_WINDOW = int(os.getenv("TB_VOL_WINDOW", "24"))
 
 MAX_LOOKBACK = int(os.getenv("MAX_LOOKBACK", "168"))
 PURGE_SAFETY = int(os.getenv("PURGE_SAFETY", "24"))
@@ -69,23 +65,15 @@ DEFAULT_SYMBOLS = ["BTCUSDT", "ETHUSDT"]
 
 SYMBOLS = [
     s.strip().upper()
-    for s in (
-        os.getenv("SYMBOLS")
-        or ",".join(DEFAULT_SYMBOLS)
-    ).split(",")
+    for s in (os.getenv("SYMBOLS") or ",".join(DEFAULT_SYMBOLS)).split(",")
     if s.strip()
 ]
 
-REFERENCE = (
-    os.getenv("REFERENCE") or "BTCUSDT"
-).strip().upper()
+REFERENCE = (os.getenv("REFERENCE") or "BTCUSDT").strip().upper()
 
 DB2_SYMBOLS = {
     s.strip().upper()
-    for s in (
-        os.getenv("DB2_SYMBOLS")
-        or "SOLUSDT,BNBUSDT"
-    ).split(",")
+    for s in (os.getenv("DB2_SYMBOLS") or "SOLUSDT,BNBUSDT").split(",")
     if s.strip()
 }
 
@@ -115,7 +103,17 @@ INTERNAL_COLS = [
     "ls_ratio", "taker_ratio",
 ]
 
-FEATURE_COLS = list(INTERNAL_COLS)
+MICRO_COLS = [
+    "volume_to_volatility",
+    "taker_flow_imbalance",
+    "oi_change_accel",
+]
+
+REGIME_COLS = ["regime_hmm"]
+
+FEATURE_COLS = (
+    list(INTERNAL_COLS) + list(MICRO_COLS) + list(REGIME_COLS)
+)
 
 TARGET_RET = "next_return"
 TARGET_COL = "next_change_pct"
@@ -141,19 +139,13 @@ def _fetch(conn, sql, params=()):
 
 
 def _sel(cols, table, where):
-    return (
-        "SELECT " + ", ".join(cols)
-        + " FROM " + table
-        + " WHERE " + where
-    )
+    return "SELECT " + ", ".join(cols) + " FROM " + table + " WHERE " + where
 
 
 def fetch_features(symbol, limit=100000):
     cols = ["timestamp"] + INTERNAL_COLS
-    sql = _sel(
-        cols, "features_hourly",
-        "symbol = %s ORDER BY timestamp LIMIT %s",
-    )
+    sql = _sel(cols, "features_hourly",
+               "symbol = %s ORDER BY timestamp LIMIT %s")
     try:
         with symbol_conn(symbol) as conn:
             return _fetch(conn, sql, (symbol, limit))
@@ -163,13 +155,11 @@ def fetch_features(symbol, limit=100000):
 
 
 def fetch_candles(symbol, limit=100000):
-    cols = ["timestamp", "open", "high", "low", "close"]
-    sql = _sel(
-        cols, "candles",
-        "symbol = %s AND timeframe = '1h' "
-        "AND market_type = 'futures' "
-        "ORDER BY timestamp LIMIT %s",
-    )
+    cols = ["timestamp", "open", "high", "low", "close", "volume"]
+    sql = _sel(cols, "candles",
+               "symbol = %s AND timeframe = '1h' "
+               "AND market_type = 'futures' "
+               "ORDER BY timestamp LIMIT %s")
     try:
         with symbol_conn(symbol) as conn:
             return _fetch(conn, sql, (symbol, limit))
@@ -178,23 +168,48 @@ def fetch_candles(symbol, limit=100000):
         return []
 
 
+def _compute_volatility(closes, window):
+    """Rolling std of log returns."""
+    n = len(closes)
+    vols = np.full(n, np.nan)
+    if n < window + 1:
+        return vols
+    log_ret = np.zeros(n)
+    for i in range(1, n):
+        if closes[i - 1] > 0 and closes[i] > 0:
+            log_ret[i] = np.log(closes[i] / closes[i - 1])
+    for i in range(window, n):
+        seg = log_ret[i - window + 1:i + 1]
+        vols[i] = float(np.std(seg)) * 100.0
+    return vols
+
+
 def build_targets_triple_barrier(candles, horizon,
-                                  up_pct, dn_pct):
-    """Triple Barrier labels.
-    Returns dict: ts -> (label, ret_pct, exit_bar).
-    label: 2=LONG, 0=SHORT, 1=NEUTRAL(timeout).
-    """
+                                  up_mult, dn_mult,
+                                  vol_window):
+    """Triple Barrier with dynamic volatility-based barriers."""
     out = {}
     n = len(candles)
+    closes = [c[1][3] for c in candles]
+    vols = _compute_volatility(closes, vol_window)
+
     for i in range(n):
         ts = candles[i][0]
         if i + horizon >= n:
             out[ts] = None
             continue
-        c0 = candles[i][1][3]
+        c0 = closes[i]
         if not c0 or c0 <= 0:
             out[ts] = None
             continue
+
+        vol = vols[i]
+        if not np.isfinite(vol) or vol <= 0:
+            out[ts] = None
+            continue
+
+        up_pct = up_mult * vol
+        dn_pct = dn_mult * vol
 
         up_price = c0 * (1 + up_pct / 100.0)
         dn_price = c0 * (1 - dn_pct / 100.0)
@@ -204,7 +219,7 @@ def build_targets_triple_barrier(candles, horizon,
         exit_bar = horizon
 
         for j in range(1, horizon + 1):
-            cj = candles[i + j][1][3]
+            cj = closes[i + j]
             if not cj or cj <= 0:
                 continue
             if cj >= up_price:
@@ -219,7 +234,7 @@ def build_targets_triple_barrier(candles, horizon,
                 break
 
         if ret_pct is None:
-            c_end = candles[i + horizon][1][3]
+            c_end = closes[i + horizon]
             if not c_end or c_end <= 0:
                 out[ts] = None
                 continue
@@ -229,9 +244,76 @@ def build_targets_triple_barrier(candles, horizon,
     return out
 
 
+def _detect_regimes(closes, n_states=3):
+    """Simple HMM-like regime detection by volatility + trend."""
+    n = len(closes)
+    regimes = np.full(n, 1, dtype=np.int32)
+    if n < 50:
+        return regimes
+
+    vols = _compute_volatility(closes, 24)
+    ret_24 = np.full(n, np.nan)
+    for i in range(24, n):
+        if closes[i - 24] > 0:
+            ret_24[i] = (closes[i] - closes[i - 24]) / closes[i - 24] * 100.0
+
+    vol_median = np.nanmedian(vols)
+    ret_median = np.nanmedian(np.abs(ret_24))
+
+    for i in range(n):
+        v = vols[i]
+        r = ret_24[i]
+        if not np.isfinite(v) or not np.isfinite(r):
+            continue
+        if v > vol_median * 1.5:
+            regimes[i] = 2
+        elif abs(r) > ret_median * 1.5:
+            regimes[i] = 0
+        else:
+            regimes[i] = 1
+    return regimes
+
+
+def _compute_micro_features(candles, rows):
+    """Compute microstructure features from candles + existing."""
+    n = len(candles)
+    vols = [c[1][4] for c in candles]
+    closes = [c[1][3] for c in candles]
+
+    vvr = np.full(n, np.nan)
+    for i in range(24, n):
+        v_mean = np.mean(vols[i - 23:i + 1])
+        c_std = np.std([closes[j] for j in range(i - 23, i + 1)])
+        if c_std > 0:
+            vvr[i] = v_mean / c_std
+
+    oi_accel = np.full(n, np.nan)
+    for i, (ts, vals) in enumerate(rows):
+        if i < 3:
+            continue
+        try:
+            oi_now = float(vals[INTERNAL_COLS.index("oi_change_pct")])
+            oi_prev = float(rows[i - 1][1][INTERNAL_COLS.index("oi_change_pct")])
+            oi_prev2 = float(rows[i - 2][1][INTERNAL_COLS.index("oi_change_pct")])
+            oi_accel[i] = oi_now - 2 * oi_prev + oi_prev2
+        except Exception:
+            pass
+
+    tf_imb = np.full(n, np.nan)
+    for i, (ts, vals) in enumerate(rows):
+        try:
+            taker = float(vals[INTERNAL_COLS.index("taker_ratio")])
+            if taker > 0:
+                tf_imb[i] = (taker - 1.0) / (taker + 1.0)
+        except Exception:
+            pass
+
+    return vvr, tf_imb, oi_accel
+
+
 def _row_for(d, ts):
     row = []
-    for i in range(len(INTERNAL_COLS)):
+    for i in range(len(FEATURE_COLS)):
         v = d["fa"][i].get(ts)
         row.append(v if v is not None else np.nan)
     return row
@@ -267,8 +349,7 @@ def build_xy_all(symbols_data, targets_map):
             [], [],
         )
 
-    order = sorted(range(len(ts_list)),
-                   key=lambda i: ts_list[i])
+    order = sorted(range(len(ts_list)), key=lambda i: ts_list[i])
     X = [X[i] for i in order]
     y_cls = [y_cls[i] for i in order]
     y_ret = [y_ret[i] for i in order]
@@ -283,8 +364,7 @@ def build_xy_all(symbols_data, targets_map):
     )
 
 
-def per_symbol_split(X, y, y_ret, ts_list,
-                     sym_list, test_frac=0.2):
+def per_symbol_split(X, y, y_ret, ts_list, sym_list, test_frac=0.2):
     X = np.asarray(X)
     y = np.asarray(y)
     y_ret = np.asarray(y_ret)
@@ -292,10 +372,8 @@ def per_symbol_split(X, y, y_ret, ts_list,
     train_idx, test_idx = [], []
 
     for sym in sorted(set(sym_list)):
-        idxs = [i for i, s in enumerate(sym_list)
-                if s == sym]
-        idxs_sorted = sorted(idxs,
-                             key=lambda i: ts_list[i])
+        idxs = [i for i, s in enumerate(sym_list) if s == sym]
+        idxs_sorted = sorted(idxs, key=lambda i: ts_list[i])
         n = len(idxs_sorted)
         if n < 20:
             train_idx.extend(idxs_sorted)
@@ -309,10 +387,8 @@ def per_symbol_split(X, y, y_ret, ts_list,
 
         train_idx.extend(idxs_sorted[:train_keep])
         test_idx.extend(idxs_sorted[split:])
-        log.info(
-            "  %s: train=%d (purged %dh) test=%d",
-            sym, train_keep, purge, n - split,
-        )
+        log.info("  %s: train=%d (purged %dh) test=%d",
+                 sym, train_keep, purge, n - split)
 
     train_idx.sort(key=lambda i: ts_list[i])
     test_idx.sort(key=lambda i: ts_list[i])
@@ -328,10 +404,8 @@ def per_symbol_split(X, y, y_ret, ts_list,
 
 
 def _finalize_X(X_train, X_test):
-    X_train = np.asarray(X_train,
-                          dtype=np.float64).copy()
-    X_test = np.asarray(X_test,
-                         dtype=np.float64).copy()
+    X_train = np.asarray(X_train, dtype=np.float64).copy()
+    X_test = np.asarray(X_test, dtype=np.float64).copy()
 
     X_train[~np.isfinite(X_train)] = np.nan
     X_test[~np.isfinite(X_test)] = np.nan
@@ -356,9 +430,11 @@ def _finalize_X(X_train, X_test):
     )
 
 
-def _build_feat_arrays(rows):
+def _build_feat_arrays(rows, candles, micro_vvr, micro_tf, micro_oi):
     feats = {}
-    fa = [dict() for _ in INTERNAL_COLS]
+    fa = [dict() for _ in FEATURE_COLS]
+    n_base = len(INTERNAL_COLS)
+
     for ts, vals in rows:
         feats[ts] = True
         for i, v in enumerate(vals):
@@ -368,6 +444,21 @@ def _build_feat_arrays(rows):
                 fa[i][ts] = float(v)
             except Exception:
                 pass
+
+    for i, (ts, _) in enumerate(candles):
+        if i < len(micro_vvr):
+            if np.isfinite(micro_vvr[i]):
+                fa[n_base][ts] = float(micro_vvr[i])
+            if np.isfinite(micro_tf[i]):
+                fa[n_base + 1][ts] = float(micro_tf[i])
+            if np.isfinite(micro_oi[i]):
+                fa[n_base + 2][ts] = float(micro_oi[i])
+
+    closes = [c[1][3] for c in candles]
+    regimes = _detect_regimes(closes)
+    for i, (ts, _) in enumerate(candles):
+        fa[n_base + 3][ts] = int(regimes[i])
+
     return feats, fa
 
 
@@ -375,26 +466,31 @@ def _load_symbol(symbol):
     rows = fetch_features(symbol)
     if not rows:
         return None
-    feats, fa = _build_feat_arrays(rows)
-    if not feats:
-        return None
+
     candles = fetch_candles(symbol)
     if not candles:
         return None
-    return {"feats": feats, "fa": fa,
-            "candles": candles}
+
+    micro_vvr, micro_tf, micro_oi = _compute_micro_features(candles, rows)
+
+    feats, fa = _build_feat_arrays(rows, candles, micro_vvr, micro_tf, micro_oi)
+    if not feats:
+        return None
+
+    return {"feats": feats, "fa": fa, "candles": candles}
 
 
 def prepare(test_frac=0.2):
     log.info("=" * 60)
-    log.info("DATASET v21 (Triple Barrier)")
+    log.info("DATASET v22 (Triple Barrier + Regime + Micro)")
     log.info("SYMBOLS=%s", SYMBOLS)
     log.info("HORIZON=%dh", HORIZON)
-    log.info("TB_UP=%.2f%% TB_DN=%.2f%%",
-             UP_PCT, DN_PCT)
+    log.info("TB_UP_MULT=%.2f TB_DN_MULT=%.2f VOL_WIN=%d",
+             TB_UP_MULT, TB_DN_MULT, TB_VOL_WINDOW)
     log.info("PURGE_HOURS=%dh", PURGE_HOURS)
-    log.info("DB2_OK=%s", DB2_OK)
-    log.info("features: %d", len(FEATURE_COLS))
+    log.info("features: %d (%d base + %d micro + %d regime)",
+             len(FEATURE_COLS), len(INTERNAL_COLS),
+             len(MICRO_COLS), len(REGIME_COLS))
     log.info("=" * 60)
 
     symbols_data = {}
@@ -406,26 +502,18 @@ def prepare(test_frac=0.2):
             log.warning("%s: no data", symbol)
             continue
         symbols_data[symbol] = d
-        targets_map[symbol] = (
-            build_targets_triple_barrier(
-                d["candles"], HORIZON,
-                UP_PCT, DN_PCT,
-            )
+        targets_map[symbol] = build_targets_triple_barrier(
+            d["candles"], HORIZON,
+            TB_UP_MULT, TB_DN_MULT, TB_VOL_WINDOW,
         )
-        log.info(
-            "%s: feat=%d candles=%d",
-            symbol, len(d["feats"]),
-            len(d["candles"]),
-        )
+        log.info("%s: feat=%d candles=%d",
+                 symbol, len(d["feats"]), len(d["candles"]))
 
     if REFERENCE not in symbols_data:
         log.error("REFERENCE %s missing", REFERENCE)
         return None
 
-    X, y_cls, y_ret, ts, sym = build_xy_all(
-        symbols_data, targets_map,
-    )
-
+    X, y_cls, y_ret, ts, sym = build_xy_all(symbols_data, targets_map)
     log.info("samples: %d", len(X))
 
     if len(X) < 100:
@@ -440,9 +528,7 @@ def prepare(test_frac=0.2):
         X, y_cls, y_ret, ts, sym, test_frac,
     )
 
-    X_train, X_test = _finalize_X(
-        X_train, X_test,
-    )
+    X_train, X_test = _finalize_X(X_train, X_test)
 
     up_tr = int((y_train == 2).sum())
     dn_tr = int((y_train == 0).sum())
@@ -451,39 +537,21 @@ def prepare(test_frac=0.2):
     dn_te = int((y_test == 0).sum())
     nt_te = int((y_test == 1).sum())
 
-    log.info(
-        "split: train=%d test=%d features=%d",
-        len(X_train), len(X_test),
-        len(FEATURE_COLS),
-    )
-    log.info(
-        "train classes: LONG=%d SHORT=%d NEUTRAL=%d",
-        up_tr, dn_tr, nt_tr,
-    )
-    log.info(
-        "test classes:  LONG=%d SHORT=%d NEUTRAL=%d",
-        up_te, dn_te, nt_te,
-    )
+    log.info("split: train=%d test=%d features=%d",
+             len(X_train), len(X_test), len(FEATURE_COLS))
+    log.info("train: LONG=%d SHORT=%d NEUTRAL=%d", up_tr, dn_tr, nt_tr)
+    log.info("test:  LONG=%d SHORT=%d NEUTRAL=%d", up_te, dn_te, nt_te)
 
     return {
-        "X_train": X_train,
-        "y_train": y_train,
-        "X_test": X_test,
-        "y_test": y_test,
-        "r_train": r_train,
-        "r_test": r_test,
-        "n_total": len(X),
-        "n_train": len(X_train),
-        "n_test": len(X_test),
+        "X_train": X_train, "y_train": y_train,
+        "X_test": X_test, "y_test": y_test,
+        "r_train": r_train, "r_test": r_test,
+        "n_total": len(X), "n_train": len(X_train), "n_test": len(X_test),
         "feature_cols": FEATURE_COLS,
-        "horizon": HORIZON,
-        "purge_hours": PURGE_HOURS,
-        "tb_up_pct": UP_PCT,
-        "tb_dn_pct": DN_PCT,
-        "symbols": sorted(set(sym)),
-        "reference": REFERENCE,
-        "ts_test": ts_test,
-        "sym_test": sym_test,
+        "horizon": HORIZON, "purge_hours": PURGE_HOURS,
+        "tb_up_mult": TB_UP_MULT, "tb_dn_mult": TB_DN_MULT,
+        "symbols": sorted(set(sym)), "reference": REFERENCE,
+        "ts_test": ts_test, "sym_test": sym_test,
     }
 
 
@@ -503,12 +571,9 @@ def main():
     data = prepare()
     if data is None:
         return
-    log.info(
-        "total=%d train=%d test=%d features=%d",
-        data["n_total"],
-        data["n_train"], data["n_test"],
-        len(data["feature_cols"]),
-    )
+    log.info("total=%d train=%d test=%d features=%d",
+             data["n_total"], data["n_train"],
+             data["n_test"], len(data["feature_cols"]))
 
 
 if __name__ == "__main__":
