@@ -1,11 +1,11 @@
 # ============================================================
-# ARGUS-Trader - DATASET v17
+# ARGUS-Trader - DATASET v18
 # ------------------------------------------------------------
+# v18: purge = HORIZON + MAX_LOOKBACK (180h).
+#      v17 had purge = HORIZON only (12h) -> feature
+#      window overlap between train and test (leak).
+#      MAX_LOOKBACK = 168h (volatility_7d).
 # v17: FEATURE_COLS = INTERNAL_COLS only (30 cols).
-#      Removed: MACRO/ONCHAIN/OB/EVENT/ANOMALY/ASIA/EXTERNAL.
-#      Reason: those sources don't cover train period
-#      (2020-2025). All are fresh (Aug-Oct 2026).
-# v16: fetch_orderbook silent for DB2.
 # ============================================================
 
 import os
@@ -56,6 +56,13 @@ logging.basicConfig(
 log = logging.getLogger("crypto.learn.dataset")
 
 HORIZON = int(os.getenv("HORIZON", "12"))
+
+# v18: max lookback across INTERNAL_COLS features.
+# volatility_7d uses 168h window -> dominating.
+MAX_LOOKBACK = int(
+    os.getenv("MAX_LOOKBACK", "168")
+)
+PURGE_HOURS = HORIZON + MAX_LOOKBACK
 
 DEFAULT_SYMBOLS = ["BTCUSDT", "ETHUSDT"]
 
@@ -299,7 +306,8 @@ def per_symbol_split(
             continue
         split = int(n * (1 - test_frac))
 
-        purge = min(HORIZON, split)
+        # v18: purge = HORIZON + MAX_LOOKBACK
+        purge = min(PURGE_HOURS, split)
         train_keep = split - purge
         if train_keep < 20:
             train_keep = split
@@ -309,7 +317,7 @@ def per_symbol_split(
         )
         test_idx.extend(idxs_sorted[split:])
         log.info(
-            "  %s: train=%d (purged %d) test=%d",
+            "  %s: train=%d (purged %dh) test=%d",
             sym, train_keep, purge,
             n - split,
         )
@@ -405,9 +413,11 @@ def _load_symbol(symbol):
 
 def prepare(test_frac=0.2):
     log.info("=" * 60)
-    log.info("DATASET v17")
+    log.info("DATASET v18")
     log.info("SYMBOLS=%s", SYMBOLS)
     log.info("HORIZON=%dh", HORIZON)
+    log.info("MAX_LOOKBACK=%dh", MAX_LOOKBACK)
+    log.info("PURGE_HOURS=%dh", PURGE_HOURS)
     log.info("DB2_OK=%s", DB2_OK)
     log.info(
         "features expected: %d",
@@ -505,6 +515,7 @@ def prepare(test_frac=0.2):
         "balance": balance,
         "feature_cols": FEATURE_COLS,
         "horizon": HORIZON,
+        "purge_hours": PURGE_HOURS,
         "symbols": sorted(set(sym)),
         "reference": REFERENCE,
         "ts_test": ts_test,
