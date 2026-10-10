@@ -1,11 +1,11 @@
 # ============================================================
-# ARGUS-Trader - DATASET v18
+# ARGUS-Trader - DATASET v19
 # ------------------------------------------------------------
+# v19: +6 lag features (ret_lag1/2/3/6/12/24).
+#      Computed from candles, not from DB.
+#      FEATURE_COLS: 30 -> 36.
+#      INTERNAL_COLS unchanged (30) for DB SELECT.
 # v18: purge = HORIZON + MAX_LOOKBACK + SAFETY (204h).
-#      v17 had purge = HORIZON only (12h) -> feature
-#      window overlap between train and test (leak).
-#      MAX_LOOKBACK = 168h (volatility_7d).
-#      SAFETY = 24h (off-by-one guard).
 # v17: FEATURE_COLS = INTERNAL_COLS only (30 cols).
 # ============================================================
 
@@ -104,6 +104,7 @@ def symbol_conn(symbol):
     return get_connection()
 
 
+# Base features from features_hourly (30).
 INTERNAL_COLS = [
     "change_pct",
     "range_pct",
@@ -137,7 +138,17 @@ INTERNAL_COLS = [
     "taker_ratio",
 ]
 
-FEATURE_COLS = list(INTERNAL_COLS)
+# v19: lag return features from candles.
+LAG_HOURS = [1, 2, 3, 6, 12, 24]
+LAG_RET_COLS = [
+    "ret_lag1", "ret_lag2", "ret_lag3",
+    "ret_lag6", "ret_lag12", "ret_lag24",
+]
+
+# Full feature vector: 30 + 6 = 36.
+FEATURE_COLS = (
+    list(INTERNAL_COLS) + list(LAG_RET_COLS)
+)
 
 TARGET_RET = "next_return"
 TARGET_COL = "next_change_pct"
@@ -232,7 +243,7 @@ def build_targets(candles, horizon):
 
 def _row_for(d, ts):
     row = []
-    for i in range(len(INTERNAL_COLS)):
+    for i in range(len(FEATURE_COLS)):
         v = d["fa"][i].get(ts)
         row.append(v if v is not None else np.nan)
     return row
@@ -379,9 +390,12 @@ def _finalize_X(X_train, X_test):
     )
 
 
-def _build_feat_arrays(rows):
+def _build_feat_arrays(rows, candles):
+    # v19: base 30 from DB, 6 lags from candles.
     feats = {}
-    fa = [dict() for _ in INTERNAL_COLS]
+    fa = [dict() for _ in FEATURE_COLS]
+    n_base = len(INTERNAL_COLS)
+
     for ts, vals in rows:
         feats[ts] = True
         for i, v in enumerate(vals):
@@ -391,6 +405,25 @@ def _build_feat_arrays(rows):
                 fa[i][ts] = float(v)
             except Exception:
                 pass
+
+    closes = []
+    ts_list = []
+    for ts, vals in candles:
+        closes.append(vals[3])
+        ts_list.append(ts)
+    n = len(closes)
+
+    for j, K in enumerate(LAG_HOURS):
+        col = n_base + j
+        for i in range(K, n):
+            c0 = closes[i - K]
+            c1 = closes[i]
+            if not c0 or not c1 or c0 <= 0:
+                continue
+            fa[col][ts_list[i]] = (
+                (c1 - c0) / c0 * 100
+            )
+
     return feats, fa
 
 
@@ -399,12 +432,12 @@ def _load_symbol(symbol):
     if not rows:
         return None
 
-    feats, fa = _build_feat_arrays(rows)
-    if not feats:
-        return None
-
     candles = fetch_candles(symbol)
     if not candles:
+        return None
+
+    feats, fa = _build_feat_arrays(rows, candles)
+    if not feats:
         return None
 
     return {
@@ -416,7 +449,7 @@ def _load_symbol(symbol):
 
 def prepare(test_frac=0.2):
     log.info("=" * 60)
-    log.info("DATASET v18")
+    log.info("DATASET v19")
     log.info("SYMBOLS=%s", SYMBOLS)
     log.info("HORIZON=%dh", HORIZON)
     log.info("MAX_LOOKBACK=%dh", MAX_LOOKBACK)
@@ -424,7 +457,7 @@ def prepare(test_frac=0.2):
     log.info("PURGE_HOURS=%dh", PURGE_HOURS)
     log.info("DB2_OK=%s", DB2_OK)
     log.info(
-        "features expected: %d",
+        "features expected: %d (30 base + 6 lag)",
         len(FEATURE_COLS),
     )
     log.info("=" * 60)
