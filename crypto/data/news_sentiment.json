@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-10-10T14:05:38.837372+00:00",
+  "generated_at": "2026-10-10T15:05:39.480421+00:00",
   "total_news": 128,
-  "avg_sentiment": -0.026,
+  "avg_sentiment": -0.024,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
   "bullish_count": 16,
   "bearish_count": 20,
@@ -22,7 +22,7 @@
     },
     "Bitcoin.com": {
       "total": 10,
-      "bull": 1,
+      "bull": 2,
       "bear": 0
     },
     "CryptoSlate": {
@@ -42,11 +42,27 @@
     },
     "ForkLog": {
       "total": 25,
-      "bull": 3,
+      "bull": 2,
       "bear": 5
     }
   },
   "top_bullish": [
+    {
+      "title": "Bitcoin Price Holds $82K as Blackrock Leads ETF Rebound",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-10T14:45:51+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-10T15:05:38.153984+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Bitcoin Price Holds $82K as Blackrock Leads ETF Rebound",
+      "cross_check": 1
+    },
     {
       "title": "Bitcoin Price Clings to $82,800 as the Next Breakout Remains Elusive",
       "source": "Bitcoin.com",
@@ -58,7 +74,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-10T14:05:37.399275+00:00",
+      "collected_at": "2026-10-10T15:05:38.154089+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitcoin Price Clings to $82,800 as the Next Breakout Remains Elusive",
       "cross_check": 1
@@ -74,7 +90,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-10T14:05:37.722829+00:00",
+      "collected_at": "2026-10-10T15:05:38.401062+00:00",
       "effective_weight": 1.0,
       "title_original": "Cardano Just Delivered Two Bullish Signals at TOKEN2049 as ADA Rebounds",
       "cross_check": 1
@@ -90,7 +106,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-10T14:05:37.205053+00:00",
+      "collected_at": "2026-10-10T15:05:38.028596+00:00",
       "effective_weight": 0.88,
       "title_original": "Ethereum L2 Starknet Jumps 20% After Saying It Wants to Become an L1",
       "cross_check": 1
@@ -106,29 +122,29 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-10T14:05:37.723069+00:00",
+      "collected_at": "2026-10-10T15:05:38.401514+00:00",
       "effective_weight": 0.8,
       "title_original": "These 5 Bitcoin Indicators Have Turned Bullish for the First Time Since 2025: Report",
-      "cross_check": 1
-    },
-    {
-      "title": "AI, ECDSA, and Bitcoin’s Endgame? Ledger CTO Pushes Back Against Cryptographic Apocalypse Predictions",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-09T17:03:07+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-10T14:05:37.723110+00:00",
-      "effective_weight": 0.8,
-      "title_original": "AI, ECDSA, and Bitcoin’s Endgame? Ledger CTO Pushes Back Against Cryptographic Apocalypse Predictions",
       "cross_check": 1
     }
   ],
   "top_bearish": [
+    {
+      "title": "1 Year Since Crypto’s Biggest Liquidation Event: Bitcoin Hasn’t Fully Recovered Yet",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-10T14:31:41+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.2,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-10T15:05:38.400973+00:00",
+      "effective_weight": 1.5,
+      "title_original": "1 Year Since Crypto’s Biggest Liquidation Event: Bitcoin Hasn’t Fully Recovered Yet",
+      "cross_check": 1
+    },
     {
       "title": "New York permanently bars Celsius founder Mashinsky in $35M fraud settlement",
       "source": "Cointelegraph",
@@ -140,7 +156,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-10T14:05:37.114917+00:00",
+      "collected_at": "2026-10-10T15:05:37.988832+00:00",
       "effective_weight": 1.04,
       "title_original": "New York permanently bars Celsius founder Mashinsky in $35M fraud settlement",
       "cross_check": 2
@@ -156,7 +172,7 @@
       "bear_weight": 1.2,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-10T14:05:38.768101+00:00",
+      "collected_at": "2026-10-10T15:05:39.358179+00:00",
       "effective_weight": 0.96,
       "title_original": "Ликвидация сети дроповодов, кража рекламных аккаунтов Google и другие события кибербезопасности",
       "cross_check": 1
@@ -172,25 +188,9 @@
       "bear_weight": 1.2,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-10T14:05:38.768158+00:00",
+      "collected_at": "2026-10-10T15:05:39.358289+00:00",
       "effective_weight": 0.96,
       "title_original": "Бессент: США конфискуют связанную с Ираном криптовалюту на $1 млрд",
-      "cross_check": 1
-    },
-    {
-      "title": "В TD Cowen предупредили о рисках для акционеров Strategy",
-      "source": "ForkLog",
-      "source_weight": 1.2,
-      "lang": "ru",
-      "pub_date": "2026-10-09T14:50:43+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.2,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-10T14:05:38.768185+00:00",
-      "effective_weight": 0.96,
-      "title_original": "В TD Cowen предупредили о рисках для акционеров Strategy",
       "cross_check": 1
     },
     {
@@ -204,7 +204,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-10T14:05:37.205111+00:00",
+      "collected_at": "2026-10-10T15:05:38.028701+00:00",
       "effective_weight": 0.88,
       "title_original": "New York AG Secures Up to $35M and Industry Ban From Ex-Celsius CEO Alex Mashinsky",
       "cross_check": 2
