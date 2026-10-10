@@ -196,15 +196,12 @@ def train_one(symbol):
     r_train = data["r_train"]
     r_test = data["r_test"]
 
-    # v15: clip target (parity with xgb/cat/ridge).
     r_train = np.clip(r_train, -Y_CLIP, Y_CLIP)
     r_test_c = np.clip(r_test, -Y_CLIP, Y_CLIP)
 
     n_tr = len(X_train)
     cut = int(n_tr * (1 - VAL_FRAC))
 
-    # v15: purge gap between X_tr and X_va.
-    # use same PURGE_HOURS as dataset split.
     purge = ds.PURGE_HOURS
     cut_clean = max(cut - purge, int(n_tr * 0.5))
 
@@ -252,7 +249,6 @@ def train_one(symbol):
         symbol, best_iter, num_rounds,
     )
 
-    # v15: honest metrics on the exact sets.
     p_tr = model.predict(X_tr).astype(np.float32)
     p_va = model.predict(X_va).astype(np.float32)
     p_te = model.predict(X_test).astype(np.float32)
