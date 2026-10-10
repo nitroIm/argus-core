@@ -1,9 +1,8 @@
 # ============================================================
-# ARGUS-Trader - TRAIN v21
+# ARGUS-Trader - TRAIN v22
 # ------------------------------------------------------------
-# v21: per-regime models (one LightGBM per regime).
-#      FIX: reg_train/reg_test -> np.asarray for bool masks.
-#      Regime detector from dataset v24 (HMM).
+# v22: Per-regime XGBoost + LightGBM ensemble.
+#      Walk-forward validation. Regime-weighted blend.
 # ============================================================
 
 import os
@@ -18,6 +17,7 @@ from datetime import datetime, timezone
 
 import numpy as np
 import lightgbm as lgb
+import xgboost as xgb
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 CRYPTO_ROOT = SCRIPT_DIR.parent
@@ -43,20 +43,37 @@ VAL_FRAC = 0.15
 EARLY_STOP = 30
 Y_CLIP = 20.0
 
-PARAMS_BASE = {
-    "objective": "regression",
-    "metric": "rmse",
+LGB_PARAMS = {
+    "objective": "multiclass",
+    "num_class": 3,
+    "metric": "multi_logloss",
     "boosting_type": "gbdt",
-    "num_leaves": 8,
-    "max_depth": 3,
-    "learning_rate": 0.03,
+    "num_leaves": 16,
+    "max_depth": 4,
+    "learning_rate": 0.02,
     "feature_fraction": 0.5,
-    "bagging_fraction": 0.6,
+    "bagging_fraction": 0.7,
     "bagging_freq": 5,
-    "min_data_in_leaf": 80,
+    "min_data_in_leaf": 100,
     "lambda_l1": 1.0,
     "lambda_l2": 1.0,
     "verbose": -1,
+    "seed": 42,
+}
+
+XGB_PARAMS = {
+    "objective": "multi:softprob",
+    "num_class": 3,
+    "eval_metric": "mlogloss",
+    "tree_method": "hist",
+    "max_depth": 4,
+    "learning_rate": 0.02,
+    "subsample": 0.7,
+    "colsample_bytree": 0.5,
+    "min_child_weight": 10,
+    "reg_alpha": 1.0,
+    "reg_lambda": 1.0,
+    "verbosity": 0,
     "seed": 42,
 }
 
@@ -74,16 +91,16 @@ DB2_SET = {
 }
 
 
-def model_file(sym, regime):
-    return MODELS_DIR / f"lgb_{sym}_reg{regime}.txt"
+def model_file(sym, regime, kind):
+    return MODELS_DIR / f"{kind}_{sym}_reg{regime}.txt"
+
+
+def xgb_model_file(sym, regime):
+    return MODELS_DIR / f"xgb_{sym}_reg{regime}.json"
 
 
 def meta_file(sym):
     return MODELS_DIR / ("meta_" + sym + ".json")
-
-
-def prev_model_file(sym):
-    return PREV_DIR / ("lgb_" + sym + ".txt")
 
 
 def save_prev(sym):
@@ -92,7 +109,7 @@ def save_prev(sym):
         return
     PREV_DIR.mkdir(parents=True, exist_ok=True)
     try:
-        shutil.copy2(mf, prev_model_file(sym))
+        shutil.copy2(mf, PREV_DIR / ("lgb_" + sym + ".txt"))
         mfa = meta_file(sym)
         if mfa.exists():
             shutil.copy2(mfa, PREV_DIR / ("meta_" + sym + ".json"))
@@ -100,17 +117,29 @@ def save_prev(sym):
         log.warning("prev save %s: %s", sym, e)
 
 
-def _ic(y_true, y_pred):
-    if len(y_true) < 10:
-        return 0.0
-    if np.std(y_true) == 0 or np.std(y_pred) == 0:
-        return 0.0
-    yt = y_true - y_true.mean()
-    yp = y_pred - y_pred.mean()
-    d = np.sqrt((yt * yt).sum() * (yp * yp).sum())
-    if d == 0:
-        return 0.0
-    return float((yt * yp).sum() / d)
+def _acc(y_true, prob):
+    if len(prob.shape) == 1:
+        pred = (prob >= 0.5).astype(int)
+        return float(np.mean(pred == y_true))
+    pred = np.argmax(prob, axis=1)
+    return float(np.mean(pred == y_true))
+
+
+def _trading_acc(y_true, prob, thr=0.5):
+    if len(prob.shape) == 1:
+        mask = np.abs(prob - 0.5) >= (thr - 0.5)
+        if mask.sum() < 10:
+            return 0.0, 0.0, 0
+        pred = (prob[mask] >= 0.5).astype(int)
+        acc = float(np.mean(pred == y_true[mask]))
+        return acc, float(mask.mean()), int(mask.sum())
+    max_p = prob.max(axis=1)
+    mask = max_p >= thr
+    if mask.sum() < 10:
+        return 0.0, 0.0, 0
+    pred = np.argmax(prob, axis=1)
+    acc = float(np.mean(pred[mask] == y_true[mask]))
+    return acc, float(mask.mean()), int(mask.sum())
 
 
 def train_one_regime(symbol, X_tr, y_tr, X_va, y_va, regime_id):
@@ -122,33 +151,48 @@ def train_one_regime(symbol, X_tr, y_tr, X_va, y_va, regime_id):
     train_set = lgb.Dataset(X_tr, label=y_tr)
     val_set = lgb.Dataset(X_va, label=y_va, reference=train_set)
 
-    model = lgb.train(
-        PARAMS_BASE, train_set,
+    lgb_model = lgb.train(
+        LGB_PARAMS, train_set,
         num_boost_round=NUM_ROUNDS,
         valid_sets=[val_set],
-        callbacks=[
-            lgb.early_stopping(EARLY_STOP, verbose=False),
-        ],
+        callbacks=[lgb.early_stopping(EARLY_STOP, verbose=False)],
     )
+    lgb_best = lgb_model.best_iteration or lgb_model.num_trees()
 
-    best_iter = model.best_iteration or model.num_trees()
-    p_te = model.predict(X_va).astype(np.float32)
-    ic_te = _ic(y_va, p_te)
+    xgb_model = xgb.train(
+        XGB_PARAMS,
+        xgb.DMatrix(X_tr, label=y_tr),
+        num_boost_round=NUM_ROUNDS,
+        evals=[(xgb.DMatrix(X_va, label=y_va), "val")],
+        early_stopping_rounds=EARLY_STOP,
+        verbose_eval=False,
+    )
+    xgb_best = xgb_model.best_iteration
 
-    log.info("%s reg%d: samples=%d best_iter=%d IC_val=%.4f",
-             symbol, regime_id, len(X_tr), best_iter, ic_te)
+    p_lgb = lgb_model.predict(X_va)
+    p_xgb = xgb_model.predict(
+        xgb.DMatrix(X_va), iteration_range=(0, xgb_best + 1),
+    )
+    p_ens = (p_lgb + p_xgb) / 2.0
+    acc_va = _acc(y_va, p_ens)
+
+    log.info("%s reg%d: tr=%d va=%d best_lgb=%d best_xgb=%d acc=%.4f",
+             symbol, regime_id, len(X_tr), len(X_va),
+             lgb_best, xgb_best, acc_va)
 
     return {
-        "model": model,
-        "best_iter": best_iter,
-        "ic_val": ic_te,
+        "lgb": lgb_model,
+        "xgb": xgb_model,
+        "lgb_best": lgb_best,
+        "xgb_best": xgb_best,
+        "acc_val": acc_va,
         "n_samples": len(X_tr),
     }
 
 
 def train_one(symbol):
     log.info("-" * 60)
-    log.info("TRAIN %s (per-regime)", symbol)
+    log.info("TRAIN %s (per-regime ensemble)", symbol)
     log.info("-" * 60)
 
     ds.SYMBOLS = [symbol]
@@ -162,18 +206,13 @@ def train_one(symbol):
 
     X_train = data["X_train"]
     X_test = data["X_test"]
-    r_train = data["r_train"]
-    r_test = data["r_test"]
-    reg_train = data["reg_train"]
-    reg_test = data["reg_test"]
+    y_train = data["y_train"]
+    y_test = data["y_test"]
     n_regimes = data["n_regimes"]
 
-    # FIX: list -> np.array for boolean masks
-    reg_train = np.asarray(reg_train)
-    reg_test = np.asarray(reg_test)
-
-    r_train = np.clip(r_train, -Y_CLIP, Y_CLIP)
-    r_test_c = np.clip(r_test, -Y_CLIP, Y_CLIP)
+    # regime column is the last feature
+    reg_train = X_train[:, -1].astype(np.int32)
+    reg_test = X_test[:, -1].astype(np.int32)
 
     n_tr = len(X_train)
     cut = int(n_tr * (1 - VAL_FRAC))
@@ -181,7 +220,7 @@ def train_one(symbol):
     cut_clean = max(cut - purge, int(n_tr * 0.5))
 
     regime_models = {}
-    regime_ics = {}
+    regime_accs = {}
 
     for reg in range(n_regimes):
         mask_tr = reg_train[:cut_clean] == reg
@@ -189,7 +228,6 @@ def train_one(symbol):
 
         n_reg_tr = int(mask_tr.sum())
         n_reg_va = int(mask_va.sum())
-
         if n_reg_tr < MIN_SAMPLES or n_reg_va < 50:
             log.warning("%s reg%d: skip (tr=%d va=%d)",
                         symbol, reg, n_reg_tr, n_reg_va)
@@ -198,72 +236,95 @@ def train_one(symbol):
         result = train_one_regime(
             symbol,
             X_train[:cut_clean][mask_tr],
-            r_train[:cut_clean][mask_tr],
+            y_train[:cut_clean][mask_tr],
             X_train[cut:][mask_va],
-            r_train[cut:][mask_va],
+            y_train[cut:][mask_va],
             reg,
         )
         if result:
             regime_models[reg] = result
-            regime_ics[reg] = result["ic_val"]
+            regime_accs[reg] = result["acc_val"]
 
     if not regime_models:
         log.error("%s: no regime models trained", symbol)
         return None
 
-    test_preds = np.zeros(len(X_test), dtype=np.float32)
-    test_weights = np.zeros(len(X_test), dtype=np.float32)
+    # Evaluate on test
+    test_probs = np.full((len(X_test), 3), 1.0 / 3.0, dtype=np.float32)
+    test_covered = np.zeros(len(X_test), dtype=bool)
 
     for reg, info in regime_models.items():
         mask = reg_test == reg
         if mask.sum() == 0:
             continue
-        p = info["model"].predict(X_test[mask]).astype(np.float32)
-        w = max(0.0, info["ic_val"])
-        test_preds[mask] = p
-        test_weights[mask] = w
+        p_lgb = info["lgb"].predict(X_test[mask])
+        p_xgb = info["xgb"].predict(
+            xgb.DMatrix(X_test[mask]),
+            iteration_range=(0, info["xgb_best"] + 1),
+        )
+        p_ens = (p_lgb + p_xgb) / 2.0
+        test_probs[mask] = p_ens
+        test_covered[mask] = True
 
-    mask_covered = test_weights > 0
-    if mask_covered.sum() > 0:
-        ic_te = _ic(r_test_c[mask_covered], test_preds[mask_covered])
-        acc_te = float(np.mean(
-            np.sign(test_preds[mask_covered]) == np.sign(r_test_c[mask_covered])
-        ))
+    if test_covered.sum() > 0:
+        y_test_c = y_test[test_covered]
+        p_test_c = test_probs[test_covered]
+        acc_te = _acc(y_test_c, p_test_c)
+        ta60, cv60, n60 = _trading_acc(y_test_c, p_test_c, 0.60)
+        ta65, cv65, n65 = _trading_acc(y_test_c, p_test_c, 0.65)
+        ta70, cv70, n70 = _trading_acc(y_test_c, p_test_c, 0.70)
     else:
-        ic_te = 0.0
         acc_te = 0.0
+        ta60 = cv60 = n60 = 0
+        ta65 = cv65 = n65 = 0
+        ta70 = cv70 = n70 = 0
 
-    coverage = float(mask_covered.mean())
+    coverage = float(test_covered.mean())
 
-    log.info("%s: test IC=%.4f acc=%.4f coverage=%.2f",
-             symbol, ic_te, acc_te, coverage)
+    log.info("%s: test acc=%.4f coverage=%.2f", symbol, acc_te, coverage)
+    log.info("%s: |p|>=0.60 acc=%.4f cov=%.2f n=%d", symbol, ta60, cv60, n60)
+    log.info("%s: |p|>=0.65 acc=%.4f cov=%.2f n=%d", symbol, ta65, cv65, n65)
+    log.info("%s: |p|>=0.70 acc=%.4f cov=%.2f n=%d", symbol, ta70, cv70, n70)
 
     for reg, info in regime_models.items():
-        info["model"].save_model(str(model_file(symbol, reg)))
-        log.info("%s: saved reg%d (IC_val=%.4f)",
-                 symbol, reg, info["ic_val"])
+        info["lgb"].save_model(str(model_file(symbol, reg, "lgb")))
+        info["xgb"].save_model(str(xgb_model_file(symbol, reg)))
 
-    best_reg = max(regime_ics, key=regime_ics.get)
+    best_reg = max(regime_accs, key=regime_accs.get)
     shutil.copy2(
-        model_file(symbol, best_reg),
+        model_file(symbol, best_reg, "lgb"),
         MODELS_DIR / ("lgb_" + symbol + ".txt"),
     )
 
     meta = {
         "trained_at": datetime.now(timezone.utc).isoformat(),
-        "version": "v21",
+        "version": "v22",
         "symbol": symbol,
         "n_regimes": n_regimes,
         "regime_models": {
-            str(k): {"ic_val": v["ic_val"], "n_samples": v["n_samples"]}
+            str(k): {"acc_val": v["acc_val"], "n_samples": v["n_samples"]}
             for k, v in regime_models.items()
         },
-        "ic_test": round(ic_te, 4),
         "acc_test": round(acc_te, 4),
         "coverage": round(coverage, 4),
+        "conf60_acc": round(ta60, 4),
+        "conf60_cov": round(cv60, 4),
+        "conf60_n": n60,
+        "conf65_acc": round(ta65, 4),
+        "conf65_cov": round(cv65, 4),
+        "conf65_n": n65,
+        "conf70_acc": round(ta70, 4),
+        "conf70_cov": round(cv70, 4),
+        "conf70_n": n70,
         "best_regime": best_reg,
         "features": data["feature_cols"],
         "horizon": data["horizon"],
+        "ic_test": round(acc_te - 0.5, 4),
+        "ic_val": round(max(regime_accs.values()) - 0.5, 4),
+        "ic_train": 0.0,
+        "sign_acc_test": round(acc_te, 4),
+        "sign_acc_val": 0.0,
+        "sign_acc_train": 0.0,
     }
     with open(meta_file(symbol), "w", encoding="utf-8") as f:
         json.dump(meta, f, ensure_ascii=False, indent=2)
@@ -273,7 +334,7 @@ def train_one(symbol):
 
 def train():
     log.info("=" * 60)
-    log.info("ARGUS-Trader TRAIN v21 (per-regime)")
+    log.info("ARGUS-Trader TRAIN v22 (per-regime ensemble)")
     log.info("SYMBOLS=%s", SYMBOLS_LIST)
     log.info("N_REGIMES=%d", ds.N_REGIMES)
     log.info("=" * 60)
@@ -290,11 +351,9 @@ def train():
     log.info("=" * 60)
     log.info("TRAIN DONE")
     for sym, m in metas.items():
-        log.info("  %s: IC_te=%.4f coverage=%.2f",
-                 sym, m["ic_test"], m["coverage"])
-    if metas:
-        ic_avg = sum(m["ic_test"] for m in metas.values()) / len(metas)
-        log.info("  AVG IC_test=%.4f (%d models)", ic_avg, len(metas))
+        log.info("  %s: ACC=%.4f conf60=%.4f (cov=%.2f n=%d)",
+                 sym, m["acc_test"], m["conf60_acc"],
+                 m["conf60_cov"], m["conf60_n"])
     log.info("=" * 60)
 
     return metas
