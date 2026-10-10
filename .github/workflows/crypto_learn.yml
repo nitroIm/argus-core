@@ -1,11 +1,11 @@
 # ============================================================
 # ARGUS - LEARN (ML training)
 # ------------------------------------------------------------
+# v9: Triple Barrier + 3-class + RFE (train.py v18).
+#     Removed regression steps (xgb/cat/ridge/mlp/lstm).
+#     Removed train_weights (6-algo ensemble no longer).
+#     train.py v18 saves both lgb + xgb internally.
 # v8: + Run lstm.
-# v7: + Run ridge + Run mlp.
-# v6: + Run weights.
-# v5: + Run cat.
-# v4: + Run xgb.
 # ============================================================
 
 name: Crypto Learn
@@ -59,62 +59,15 @@ jobs:
           SYMBOLS: BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT
           DB2_SYMBOLS: SOLUSDT,BNBUSDT
           HORIZON: '12'
+          TB_UP_PCT: '0.5'
+          TB_DN_PCT: '0.5'
+          CLASS_THR_PCT: '0.3'
           MOVE_THRESHOLD_PCT: '0.5'
           TELEGRAM_BOT_TOKEN: >-
             ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: >-
             ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python crypto/learn/runner.py
-
-      - name: Run xgb
-        env:
-          ARGUS_DB_URL: ${{ secrets.ARGUS_DB_URL }}
-          ARGUS_DB_URL_2: ${{ secrets.ARGUS_DB_URL_2 }}
-          SYMBOLS: BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT
-          DB2_SYMBOLS: SOLUSDT,BNBUSDT
-          HORIZON: '12'
-        run: python crypto/learn/train_xgb.py
-
-      - name: Run cat
-        env:
-          ARGUS_DB_URL: ${{ secrets.ARGUS_DB_URL }}
-          ARGUS_DB_URL_2: ${{ secrets.ARGUS_DB_URL_2 }}
-          SYMBOLS: BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT
-          DB2_SYMBOLS: SOLUSDT,BNBUSDT
-          HORIZON: '12'
-        run: python crypto/learn/train_cat.py
-
-      - name: Run ridge
-        env:
-          ARGUS_DB_URL: ${{ secrets.ARGUS_DB_URL }}
-          ARGUS_DB_URL_2: ${{ secrets.ARGUS_DB_URL_2 }}
-          SYMBOLS: BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT
-          DB2_SYMBOLS: SOLUSDT,BNBUSDT
-          HORIZON: '12'
-        run: python crypto/learn/train_ridge.py
-
-      - name: Run mlp
-        env:
-          ARGUS_DB_URL: ${{ secrets.ARGUS_DB_URL }}
-          ARGUS_DB_URL_2: ${{ secrets.ARGUS_DB_URL_2 }}
-          SYMBOLS: BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT
-          DB2_SYMBOLS: SOLUSDT,BNBUSDT
-          HORIZON: '12'
-        run: python crypto/learn/train_mlp.py
-
-      - name: Run lstm
-        env:
-          ARGUS_DB_URL: ${{ secrets.ARGUS_DB_URL }}
-          ARGUS_DB_URL_2: ${{ secrets.ARGUS_DB_URL_2 }}
-          SYMBOLS: BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT
-          DB2_SYMBOLS: SOLUSDT,BNBUSDT
-          HORIZON: '12'
-        run: python crypto/learn/train_lstm.py
-
-      - name: Run weights
-        env:
-          SYMBOLS: BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT
-        run: python crypto/learn/train_weights.py
 
       - name: Export for migration
         env:
