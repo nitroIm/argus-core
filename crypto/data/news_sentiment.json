@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-10-10T13:05:37.965218+00:00",
+  "generated_at": "2026-10-10T14:05:38.837372+00:00",
   "total_news": 128,
-  "avg_sentiment": -0.027,
+  "avg_sentiment": -0.026,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
   "bullish_count": 16,
-  "bearish_count": 21,
-  "neutral_count": 91,
+  "bearish_count": 20,
+  "neutral_count": 92,
   "fake_count": 0,
   "cross_confirmed": 5,
-  "single_source": 106,
+  "single_source": 108,
   "by_source": {
     "Cointelegraph": {
       "total": 25,
@@ -28,7 +28,7 @@
     "CryptoSlate": {
       "total": 10,
       "bull": 0,
-      "bear": 5
+      "bear": 4
     },
     "CryptoPotato": {
       "total": 25,
@@ -56,10 +56,10 @@
       "sentiment": 1.0,
       "bull_weight": 1.5,
       "bear_weight": 0.0,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-10T13:05:36.758311+00:00",
-      "effective_weight": 1.5,
+      "collected_at": "2026-10-10T14:05:37.399275+00:00",
+      "effective_weight": 1.0,
       "title_original": "Bitcoin Price Clings to $82,800 as the Next Breakout Remains Elusive",
       "cross_check": 1
     },
@@ -72,27 +72,11 @@
       "sentiment": 1.0,
       "bull_weight": 1.2,
       "bear_weight": 0.0,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-10T13:05:36.961899+00:00",
-      "effective_weight": 1.5,
+      "collected_at": "2026-10-10T14:05:37.722829+00:00",
+      "effective_weight": 1.0,
       "title_original": "Cardano Just Delivered Two Bullish Signals at TOKEN2049 as ADA Rebounds",
-      "cross_check": 1
-    },
-    {
-      "title": "BTQ займется постквантовой защитой инфраструктуры MoonPay Korea",
-      "source": "ForkLog",
-      "source_weight": 1.2,
-      "lang": "ru",
-      "pub_date": "2026-10-09T13:40:00+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 2.0,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-10T13:05:37.843416+00:00",
-      "effective_weight": 0.96,
-      "title_original": "BTQ займется постквантовой защитой инфраструктуры MoonPay Korea",
       "cross_check": 1
     },
     {
@@ -106,7 +90,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-10T13:05:36.530153+00:00",
+      "collected_at": "2026-10-10T14:05:37.205053+00:00",
       "effective_weight": 0.88,
       "title_original": "Ethereum L2 Starknet Jumps 20% After Saying It Wants to Become an L1",
       "cross_check": 1
@@ -122,9 +106,25 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-10T13:05:36.962305+00:00",
+      "collected_at": "2026-10-10T14:05:37.723069+00:00",
       "effective_weight": 0.8,
       "title_original": "These 5 Bitcoin Indicators Have Turned Bullish for the First Time Since 2025: Report",
+      "cross_check": 1
+    },
+    {
+      "title": "AI, ECDSA, and Bitcoin’s Endgame? Ledger CTO Pushes Back Against Cryptographic Apocalypse Predictions",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-09T17:03:07+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-10T14:05:37.723110+00:00",
+      "effective_weight": 0.8,
+      "title_original": "AI, ECDSA, and Bitcoin’s Endgame? Ledger CTO Pushes Back Against Cryptographic Apocalypse Predictions",
       "cross_check": 1
     }
   ],
@@ -140,7 +140,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-10T13:05:36.495458+00:00",
+      "collected_at": "2026-10-10T14:05:37.114917+00:00",
       "effective_weight": 1.04,
       "title_original": "New York permanently bars Celsius founder Mashinsky in $35M fraud settlement",
       "cross_check": 2
@@ -156,7 +156,7 @@
       "bear_weight": 1.2,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-10T13:05:37.843167+00:00",
+      "collected_at": "2026-10-10T14:05:38.768101+00:00",
       "effective_weight": 0.96,
       "title_original": "Ликвидация сети дроповодов, кража рекламных аккаунтов Google и другие события кибербезопасности",
       "cross_check": 1
@@ -172,7 +172,7 @@
       "bear_weight": 1.2,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-10T13:05:37.843266+00:00",
+      "collected_at": "2026-10-10T14:05:38.768158+00:00",
       "effective_weight": 0.96,
       "title_original": "Бессент: США конфискуют связанную с Ираном криптовалюту на $1 млрд",
       "cross_check": 1
@@ -188,7 +188,7 @@
       "bear_weight": 1.2,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-10T13:05:37.843319+00:00",
+      "collected_at": "2026-10-10T14:05:38.768185+00:00",
       "effective_weight": 0.96,
       "title_original": "В TD Cowen предупредили о рисках для акционеров Strategy",
       "cross_check": 1
@@ -204,7 +204,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-10T13:05:36.530255+00:00",
+      "collected_at": "2026-10-10T14:05:37.205111+00:00",
       "effective_weight": 0.88,
       "title_original": "New York AG Secures Up to $35M and Industry Ban From Ex-Celsius CEO Alex Mashinsky",
       "cross_check": 2
