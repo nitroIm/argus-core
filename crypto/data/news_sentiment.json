@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-10-10T04:05:43.348505+00:00",
+  "generated_at": "2026-10-10T05:05:39.913253+00:00",
   "total_news": 128,
-  "avg_sentiment": -0.049,
+  "avg_sentiment": -0.055,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
-  "bullish_count": 18,
+  "bullish_count": 17,
   "bearish_count": 21,
-  "neutral_count": 89,
+  "neutral_count": 90,
   "fake_count": 0,
   "cross_confirmed": 7,
   "single_source": 109,
@@ -22,7 +22,7 @@
     },
     "Bitcoin.com": {
       "total": 10,
-      "bull": 1,
+      "bull": 0,
       "bear": 1
     },
     "CryptoSlate": {
@@ -58,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-10T04:05:43.227134+00:00",
+      "collected_at": "2026-10-10T05:05:39.844712+00:00",
       "effective_weight": 0.96,
       "title_original": "BTQ займется постквантовой защитой инфраструктуры MoonPay Korea",
       "cross_check": 1
@@ -74,7 +74,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-10T04:05:43.227547+00:00",
+      "collected_at": "2026-10-10T05:05:39.844916+00:00",
       "effective_weight": 0.96,
       "title_original": "Таиланд утвердил правила для ETF на базе биткоина и Ethereum",
       "cross_check": 1
@@ -90,7 +90,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-10T04:05:43.227732+00:00",
+      "collected_at": "2026-10-10T05:05:39.845013+00:00",
       "effective_weight": 0.96,
       "title_original": "Netflix показал трейлер сериала о Сэме Бэнкмане-Фриде",
       "cross_check": 1
@@ -106,25 +106,25 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-10T04:05:41.768771+00:00",
+      "collected_at": "2026-10-10T05:05:38.436689+00:00",
       "effective_weight": 0.88,
       "title_original": "Ethereum L2 Starknet Jumps 20% After Saying It Wants to Become an L1",
       "cross_check": 1
     },
     {
-      "title": "Brazil Seizes Record Crypto Funds From Self-Custody Wallets",
-      "source": "Bitcoin.com",
+      "title": "These 5 Bitcoin Indicators Have Turned Bullish for the First Time Since 2025: Report",
+      "source": "CryptoPotato",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-10-09T19:05:58+00:00",
+      "pub_date": "2026-10-09T18:06:56+00:00",
       "sentiment": 1.0,
       "bull_weight": 1.2,
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-10T04:05:41.974654+00:00",
+      "collected_at": "2026-10-10T05:05:38.845656+00:00",
       "effective_weight": 0.8,
-      "title_original": "Brazil Seizes Record Crypto Funds From Self-Custody Wallets",
+      "title_original": "These 5 Bitcoin Indicators Have Turned Bullish for the First Time Since 2025: Report",
       "cross_check": 1
     }
   ],
@@ -138,10 +138,10 @@
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 1.2,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-10T04:05:43.226867+00:00",
-      "effective_weight": 1.8,
+      "collected_at": "2026-10-10T05:05:39.844570+00:00",
+      "effective_weight": 1.2,
       "title_original": "Ликвидация сети дроповодов, кража рекламных аккаунтов Google и другие события кибербезопасности",
       "cross_check": 1
     },
@@ -156,7 +156,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-10T04:05:41.721094+00:00",
+      "collected_at": "2026-10-10T05:05:38.352321+00:00",
       "effective_weight": 1.04,
       "title_original": "New York permanently bars Celsius founder Mashinsky in $35M fraud settlement",
       "cross_check": 2
@@ -172,7 +172,7 @@
       "bear_weight": 1.2,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-10T04:05:41.721831+00:00",
+      "collected_at": "2026-10-10T05:05:38.352691+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin speculators move 55K BTC to exchanges amid $1.1B liquidations",
       "cross_check": 1
@@ -188,7 +188,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-10T04:05:42.039116+00:00",
+      "collected_at": "2026-10-10T05:05:38.727950+00:00",
       "effective_weight": 1.0,
       "title_original": "Celsius founder faces lifetime ban, but can trade his own crypto",
       "cross_check": 1
@@ -204,7 +204,7 @@
       "bear_weight": 1.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-10T04:05:42.039222+00:00",
+      "collected_at": "2026-10-10T05:05:38.727984+00:00",
       "effective_weight": 1.0,
       "title_original": "Solana doubles block production speed to 200ms as network prepares for Alpenglow upgrade",
       "cross_check": 1
