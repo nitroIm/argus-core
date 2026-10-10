@@ -1,12 +1,12 @@
 # ============================================================
-# ARGUS - MORNING REPORT v14
+# ARGUS - MORNING REPORT v14.1
 # ------------------------------------------------------------
+# v14.1: fmt_model_block reads ic_test (regression).
+#        Acc ? -> IC <value>.
 # v14: asia_market -> global_market, asia_patterns -> global_patterns.
 #      market_type='futures' in candles queries.
 #      Extended MARKET_LABELS to 20 markets.
 # v13: external block = ONLY active forecasts.
-# v12: external markets block.
-# v11: Kaliningrad time, DB2.
 # ============================================================
 
 import os
@@ -463,11 +463,16 @@ def fmt_model_block():
     if not meta:
         lines.append("  нет")
         return lines
+
+    ic = meta.get("ic_test")
     acc = meta.get("accuracy")
     trained = meta.get("trained_at")
     n_feat = len(meta.get("features", []))
-    line = "  Acc "
-    if acc is not None:
+
+    line = "  IC "
+    if ic is not None:
+        line += format(ic, ".4f")
+    elif acc is not None:
         line += format(acc, ".4f")
     else:
         line += "?"
@@ -967,7 +972,7 @@ def fmt_regime(regime):
 def build_report_text():
     now = now_local()
     lines = []
-    lines.append("☀️ <b>ARGUS — утро</b> v14")
+    lines.append("☀️ <b>ARGUS — утро</b> v14.1")
     lines.append(
         now.strftime("%d.%m.%Y %H:%M") + " КЛГ"
     )
@@ -1112,7 +1117,7 @@ def build_report_text():
 
 
 def main():
-    print("Morning report v14 - start")
+    print("Morning report v14.1 - start")
     print("DB2_OK = " + str(DB2_OK))
 
     text = build_report_text()
