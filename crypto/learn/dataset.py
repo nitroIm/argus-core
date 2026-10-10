@@ -1,10 +1,11 @@
 # ============================================================
 # ARGUS-Trader - DATASET v18
 # ------------------------------------------------------------
-# v18: purge = HORIZON + MAX_LOOKBACK (180h).
+# v18: purge = HORIZON + MAX_LOOKBACK + SAFETY (204h).
 #      v17 had purge = HORIZON only (12h) -> feature
 #      window overlap between train and test (leak).
 #      MAX_LOOKBACK = 168h (volatility_7d).
+#      SAFETY = 24h (off-by-one guard).
 # v17: FEATURE_COLS = INTERNAL_COLS only (30 cols).
 # ============================================================
 
@@ -57,12 +58,15 @@ log = logging.getLogger("crypto.learn.dataset")
 
 HORIZON = int(os.getenv("HORIZON", "12"))
 
-# v18: max lookback across INTERNAL_COLS features.
-# volatility_7d uses 168h window -> dominating.
 MAX_LOOKBACK = int(
     os.getenv("MAX_LOOKBACK", "168")
 )
-PURGE_HOURS = HORIZON + MAX_LOOKBACK
+PURGE_SAFETY = int(
+    os.getenv("PURGE_SAFETY", "24")
+)
+PURGE_HOURS = (
+    HORIZON + MAX_LOOKBACK + PURGE_SAFETY
+)
 
 DEFAULT_SYMBOLS = ["BTCUSDT", "ETHUSDT"]
 
@@ -306,7 +310,6 @@ def per_symbol_split(
             continue
         split = int(n * (1 - test_frac))
 
-        # v18: purge = HORIZON + MAX_LOOKBACK
         purge = min(PURGE_HOURS, split)
         train_keep = split - purge
         if train_keep < 20:
@@ -417,6 +420,7 @@ def prepare(test_frac=0.2):
     log.info("SYMBOLS=%s", SYMBOLS)
     log.info("HORIZON=%dh", HORIZON)
     log.info("MAX_LOOKBACK=%dh", MAX_LOOKBACK)
+    log.info("PURGE_SAFETY=%dh", PURGE_SAFETY)
     log.info("PURGE_HOURS=%dh", PURGE_HOURS)
     log.info("DB2_OK=%s", DB2_OK)
     log.info(
