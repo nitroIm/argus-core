@@ -1,10 +1,11 @@
 # ============================================================
-# ARGUS-Trader - PREDICT v16
+# ARGUS-Trader - PREDICT v17
 # ------------------------------------------------------------
+# v17: _prepare_seq fixed for dataset v17/v18 API.
+#      - ds.fetch_asia_market() removed (does not exist).
+#      - ds._row_for(d, ts) - correct 2-arg signature.
+#      LSTM now actually contributes to the blend.
 # v16: sanity filter on model outputs.
-#      Skips models with |pred| > MAX_ABS_PCT.
-#      Fixes +27000% bug from broken mlp/ridge.
-#      Also clamps final blend to +-MAX_ABS_PCT.
 # v15: 6-model blend. + lstm.
 # ============================================================
 
@@ -121,7 +122,6 @@ def _nan_safe_row(row):
 
 
 def _sane(p):
-    """Check model output is finite and within sane range."""
     if p is None:
         return False
     try:
@@ -147,14 +147,9 @@ def _prepare_seq(symbol, seq_len):
     ts_last = ts_sorted[-1]
     ts_seq = ts_sorted[-seq_len:]
 
-    asia = ds.fetch_asia_market()
-
     rows = []
     for ts in ts_seq:
-        row = ds._row_for(
-            symbol, d, asia, ts,
-            [], [], [],
-        )
+        row = ds._row_for(d, ts)
         rows.append(row)
     return ts_last, rows
 
@@ -257,7 +252,9 @@ def predict_lstm(sym, expected):
         return None
     try:
         payload = torch.load(
-            str(mf), map_location="cpu"
+            str(mf),
+            map_location="cpu",
+            weights_only=False,
         )
         seq_len = int(payload.get("seq_len", 50))
         hidden = int(payload.get("hidden", 32))
@@ -326,7 +323,6 @@ def _clip01(v):
 
 
 def _acc_from_meta(sym):
-    """Read ic_test from lgb meta (current model)."""
     p = MODELS_DIR / ("meta_lgb_" + sym + ".json")
     if not p.exists():
         p = MODELS_DIR / ("meta_" + sym + ".json")
@@ -443,7 +439,7 @@ def predict_one(symbol, wdata):
         ),
         "model_acc": acc,
         "objective": "regression",
-        "model_version": "v16-6models-sane",
+        "model_version": "v17-6models-sane",
         "sources": list(preds.keys()),
         "skipped": skipped,
         "blend": len(preds) > 1,
@@ -462,7 +458,7 @@ def predict_one(symbol, wdata):
 
 def main():
     log.info("=" * 60)
-    log.info("ARGUS-Trader PREDICT v16")
+    log.info("ARGUS-Trader PREDICT v17")
     log.info("SYMBOLS=%s", SYMBOLS_LIST)
     log.info("FEATURE_COLS=%d", len(ds.FEATURE_COLS))
     log.info("MAX_ABS_PCT=%.1f", MAX_ABS_PCT)
