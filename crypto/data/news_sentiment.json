@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-10-10T17:05:38.020150+00:00",
+  "generated_at": "2026-10-10T18:05:49.472499+00:00",
   "total_news": 128,
-  "avg_sentiment": 0.0,
+  "avg_sentiment": -0.021,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
   "bullish_count": 16,
-  "bearish_count": 18,
-  "neutral_count": 94,
+  "bearish_count": 19,
+  "neutral_count": 93,
   "fake_count": 0,
   "cross_confirmed": 7,
-  "single_source": 104,
+  "single_source": 106,
   "by_source": {
     "Cointelegraph": {
       "total": 25,
@@ -28,7 +28,7 @@
     "CryptoSlate": {
       "total": 10,
       "bull": 1,
-      "bear": 3
+      "bear": 4
     },
     "CryptoPotato": {
       "total": 25,
@@ -48,22 +48,6 @@
   },
   "top_bullish": [
     {
-      "title": "Being right about Bitcoin won’t save your 3x leveraged ETF position",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-10T17:00:12+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-10T17:05:36.930394+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Being right about Bitcoin won’t save your 3x leveraged ETF position",
-      "cross_check": 1
-    },
-    {
       "title": "Bitcoin Price Holds $82K as Blackrock Leads ETF Rebound",
       "source": "Bitcoin.com",
       "source_weight": 1.0,
@@ -74,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-10T17:05:36.860688+00:00",
+      "collected_at": "2026-10-10T18:05:48.122062+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitcoin Price Holds $82K as Blackrock Leads ETF Rebound",
       "cross_check": 1
@@ -90,9 +74,25 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-10T17:05:36.860792+00:00",
+      "collected_at": "2026-10-10T18:05:48.122161+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitcoin Price Clings to $82,800 as the Next Breakout Remains Elusive",
+      "cross_check": 1
+    },
+    {
+      "title": "Being right about Bitcoin won’t save your 3x leveraged ETF position",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-10T17:00:12+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-10T18:05:48.168103+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Being right about Bitcoin won’t save your 3x leveraged ETF position",
       "cross_check": 1
     },
     {
@@ -106,7 +106,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-10T17:05:37.056852+00:00",
+      "collected_at": "2026-10-10T18:05:48.284258+00:00",
       "effective_weight": 1.0,
       "title_original": "Cardano Just Delivered Two Bullish Signals at TOKEN2049 as ADA Rebounds",
       "cross_check": 1
@@ -122,13 +122,29 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-10T17:05:37.057237+00:00",
+      "collected_at": "2026-10-10T18:05:48.284677+00:00",
       "effective_weight": 0.8,
       "title_original": "These 5 Bitcoin Indicators Have Turned Bullish for the First Time Since 2025: Report",
       "cross_check": 1
     }
   ],
   "top_bearish": [
+    {
+      "title": "Newer AI models missed more payment fraud in Coinbase’s benchmark",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-10T18:00:18+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-10T18:05:48.168041+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Newer AI models missed more payment fraud in Coinbase’s benchmark",
+      "cross_check": 1
+    },
     {
       "title": "New York permanently bars Celsius founder Mashinsky in $35M fraud settlement",
       "source": "Cointelegraph",
@@ -140,7 +156,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-10T17:05:36.623147+00:00",
+      "collected_at": "2026-10-10T18:05:47.877824+00:00",
       "effective_weight": 1.04,
       "title_original": "New York permanently bars Celsius founder Mashinsky in $35M fraud settlement",
       "cross_check": 2
@@ -156,7 +172,7 @@
       "bear_weight": 1.2,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-10T17:05:37.056799+00:00",
+      "collected_at": "2026-10-10T18:05:48.284199+00:00",
       "effective_weight": 1.0,
       "title_original": "1 Year Since Crypto’s Biggest Liquidation Event: Bitcoin Hasn’t Fully Recovered Yet",
       "cross_check": 1
@@ -172,7 +188,7 @@
       "bear_weight": 1.2,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-10T17:05:37.896078+00:00",
+      "collected_at": "2026-10-10T18:05:49.349413+00:00",
       "effective_weight": 0.96,
       "title_original": "Ликвидация сети дроповодов, кража рекламных аккаунтов Google и другие события кибербезопасности",
       "cross_check": 1
@@ -188,25 +204,9 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-10T17:05:36.930771+00:00",
+      "collected_at": "2026-10-10T18:05:48.168478+00:00",
       "effective_weight": 0.8,
       "title_original": "Celsius founder faces lifetime ban, but can trade his own crypto",
-      "cross_check": 1
-    },
-    {
-      "title": "Solana doubles block production speed to 200ms as network prepares for Alpenglow upgrade",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-10T00:40:59+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-10T17:05:36.930823+00:00",
-      "effective_weight": 0.8,
-      "title_original": "Solana doubles block production speed to 200ms as network prepares for Alpenglow upgrade",
       "cross_check": 1
     }
   ]
