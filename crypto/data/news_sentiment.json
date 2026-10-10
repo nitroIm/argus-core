@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-10-10T11:05:40.926811+00:00",
+  "generated_at": "2026-10-10T12:05:58.316410+00:00",
   "total_news": 128,
-  "avg_sentiment": -0.062,
+  "avg_sentiment": -0.06,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
   "bullish_count": 14,
   "bearish_count": 21,
@@ -58,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-10T11:05:40.812869+00:00",
+      "collected_at": "2026-10-10T12:05:58.193014+00:00",
       "effective_weight": 0.96,
       "title_original": "BTQ займется постквантовой защитой инфраструктуры MoonPay Korea",
       "cross_check": 1
@@ -74,7 +74,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-10T11:05:39.607365+00:00",
+      "collected_at": "2026-10-10T12:05:57.050569+00:00",
       "effective_weight": 0.88,
       "title_original": "Ethereum L2 Starknet Jumps 20% After Saying It Wants to Become an L1",
       "cross_check": 1
@@ -90,7 +90,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-10T11:05:39.984524+00:00",
+      "collected_at": "2026-10-10T12:05:57.329529+00:00",
       "effective_weight": 0.8,
       "title_original": "These 5 Bitcoin Indicators Have Turned Bullish for the First Time Since 2025: Report",
       "cross_check": 1
@@ -106,7 +106,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-10T11:05:39.984582+00:00",
+      "collected_at": "2026-10-10T12:05:57.329595+00:00",
       "effective_weight": 0.8,
       "title_original": "AI, ECDSA, and Bitcoin’s Endgame? Ledger CTO Pushes Back Against Cryptographic Apocalypse Predictions",
       "cross_check": 1
@@ -122,7 +122,7 @@
       "bear_weight": 0.0,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-10T11:05:39.531200+00:00",
+      "collected_at": "2026-10-10T12:05:57.022548+00:00",
       "effective_weight": 0.65,
       "title_original": "Thailand finalizes rules paving way for Bitcoin, Ether ETFs",
       "cross_check": 2
@@ -140,26 +140,10 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-10T11:05:39.530006+00:00",
+      "collected_at": "2026-10-10T12:05:57.021629+00:00",
       "effective_weight": 1.04,
       "title_original": "New York permanently bars Celsius founder Mashinsky in $35M fraud settlement",
       "cross_check": 2
-    },
-    {
-      "title": "Ledger Investigates $86M Crypto Drain as Reseller Supply-Chain Fears Grow",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-10T05:37:39+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.2,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-10T11:05:39.984353+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Ledger Investigates $86M Crypto Drain as Reseller Supply-Chain Fears Grow",
-      "cross_check": 3
     },
     {
       "title": "Ликвидация сети дроповодов, кража рекламных аккаунтов Google и другие события кибербезопасности",
@@ -172,7 +156,7 @@
       "bear_weight": 1.2,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-10T11:05:40.812580+00:00",
+      "collected_at": "2026-10-10T12:05:58.192759+00:00",
       "effective_weight": 0.96,
       "title_original": "Ликвидация сети дроповодов, кража рекламных аккаунтов Google и другие события кибербезопасности",
       "cross_check": 1
@@ -188,7 +172,7 @@
       "bear_weight": 1.2,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-10T11:05:40.812693+00:00",
+      "collected_at": "2026-10-10T12:05:58.192863+00:00",
       "effective_weight": 0.96,
       "title_original": "Бессент: США конфискуют связанную с Ираном криптовалюту на $1 млрд",
       "cross_check": 1
@@ -204,10 +188,26 @@
       "bear_weight": 1.2,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-10T11:05:40.812747+00:00",
+      "collected_at": "2026-10-10T12:05:58.192912+00:00",
       "effective_weight": 0.96,
       "title_original": "В TD Cowen предупредили о рисках для акционеров Strategy",
       "cross_check": 1
+    },
+    {
+      "title": "New York AG Secures Up to $35M and Industry Ban From Ex-Celsius CEO Alex Mashinsky",
+      "source": "Decrypt",
+      "source_weight": 1.1,
+      "lang": "en",
+      "pub_date": "2026-10-09T16:07:07+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-10T12:05:57.050670+00:00",
+      "effective_weight": 0.88,
+      "title_original": "New York AG Secures Up to $35M and Industry Ban From Ex-Celsius CEO Alex Mashinsky",
+      "cross_check": 2
     }
   ]
 }
