@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-10-10T06:05:42.633370+00:00",
+  "generated_at": "2026-10-10T07:05:42.244265+00:00",
   "total_news": 128,
-  "avg_sentiment": -0.081,
+  "avg_sentiment": -0.074,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
   "bullish_count": 15,
   "bearish_count": 22,
@@ -58,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-10T06:05:42.566552+00:00",
+      "collected_at": "2026-10-10T07:05:42.122027+00:00",
       "effective_weight": 0.96,
       "title_original": "BTQ займется постквантовой защитой инфраструктуры MoonPay Korea",
       "cross_check": 1
@@ -74,7 +74,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-10T06:05:42.566743+00:00",
+      "collected_at": "2026-10-10T07:05:42.122502+00:00",
       "effective_weight": 0.96,
       "title_original": "Таиланд утвердил правила для ETF на базе биткоина и Ethereum",
       "cross_check": 1
@@ -90,7 +90,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-10T06:05:42.566845+00:00",
+      "collected_at": "2026-10-10T07:05:42.122693+00:00",
       "effective_weight": 0.96,
       "title_original": "Netflix показал трейлер сериала о Сэме Бэнкмане-Фриде",
       "cross_check": 1
@@ -106,7 +106,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-10T06:05:41.075456+00:00",
+      "collected_at": "2026-10-10T07:05:40.536332+00:00",
       "effective_weight": 0.88,
       "title_original": "Ethereum L2 Starknet Jumps 20% After Saying It Wants to Become an L1",
       "cross_check": 1
@@ -122,29 +122,13 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-10T06:05:41.514502+00:00",
+      "collected_at": "2026-10-10T07:05:40.990400+00:00",
       "effective_weight": 0.8,
       "title_original": "These 5 Bitcoin Indicators Have Turned Bullish for the First Time Since 2025: Report",
       "cross_check": 1
     }
   ],
   "top_bearish": [
-    {
-      "title": "Ledger Investigates $86M Crypto Drain as Reseller Supply-Chain Fears Grow",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-10T05:37:39+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.2,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-10T06:05:41.514393+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Ledger Investigates $86M Crypto Drain as Reseller Supply-Chain Fears Grow",
-      "cross_check": 3
-    },
     {
       "title": "Ликвидация сети дроповодов, кража рекламных аккаунтов Google и другие события кибербезопасности",
       "source": "ForkLog",
@@ -156,7 +140,7 @@
       "bear_weight": 1.2,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-10T06:05:42.566420+00:00",
+      "collected_at": "2026-10-10T07:05:42.121771+00:00",
       "effective_weight": 1.2,
       "title_original": "Ликвидация сети дроповодов, кража рекламных аккаунтов Google и другие события кибербезопасности",
       "cross_check": 1
@@ -172,7 +156,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-10T06:05:40.991090+00:00",
+      "collected_at": "2026-10-10T07:05:40.463036+00:00",
       "effective_weight": 1.04,
       "title_original": "New York permanently bars Celsius founder Mashinsky in $35M fraud settlement",
       "cross_check": 2
@@ -188,7 +172,7 @@
       "bear_weight": 1.2,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-10T06:05:40.991454+00:00",
+      "collected_at": "2026-10-10T07:05:40.463783+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin speculators move 55K BTC to exchanges amid $1.1B liquidations",
       "cross_check": 1
@@ -204,10 +188,26 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-10T06:05:41.368194+00:00",
+      "collected_at": "2026-10-10T07:05:40.888186+00:00",
       "effective_weight": 1.0,
       "title_original": "Celsius founder faces lifetime ban, but can trade his own crypto",
       "cross_check": 1
+    },
+    {
+      "title": "Ledger Investigates $86M Crypto Drain as Reseller Supply-Chain Fears Grow",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-10T05:37:39+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.2,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-10T07:05:40.990201+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Ledger Investigates $86M Crypto Drain as Reseller Supply-Chain Fears Grow",
+      "cross_check": 3
     }
   ]
 }
