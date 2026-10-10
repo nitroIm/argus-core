@@ -1,11 +1,11 @@
 # ============================================================
-# ARGUS-Trader - TRAIN v16
+# ARGUS-Trader - TRAIN v17 (classification)
 # ------------------------------------------------------------
-# v16: 36 features (dataset v19).
-#      Stronger regularization (min_data=200, L1/L2=2.0).
-#      Early stopping by IC (feval), not RMSE.
-#      No SYMBOL_OVERRIDES (single param set).
-# v15: honest val split, ic_val in meta, Y_CLIP=20.
+# v17: binary classification (direction).
+#      Objective: binary, metric: auc.
+#      Early stopping by AUC.
+#      Probability output (0..1).
+#      No regression, no RMSE, no IC.
 # ============================================================
 
 import os
@@ -41,29 +41,27 @@ MODELS_DIR.mkdir(parents=True, exist_ok=True)
 PREV_DIR = MODELS_DIR / "prev"
 
 MIN_SAMPLES = 200
-NUM_ROUNDS = 1500
+NUM_ROUNDS = 2000
 VAL_FRAC = 0.15
-EARLY_STOP = 50
-Y_CLIP = 20.0
+EARLY_STOP = 80
 
 PARAMS_BASE = {
-    "objective": "regression",
+    "objective": "binary",
+    "metric": "auc",
     "boosting_type": "gbdt",
-    "num_leaves": 8,
-    "max_depth": 3,
+    "num_leaves": 16,
+    "max_depth": 4,
     "learning_rate": 0.02,
-    "feature_fraction": 0.4,
-    "bagging_fraction": 0.6,
+    "feature_fraction": 0.5,
+    "bagging_fraction": 0.7,
     "bagging_freq": 5,
-    "min_data_in_leaf": 200,
-    "lambda_l1": 2.0,
-    "lambda_l2": 2.0,
+    "min_data_in_leaf": 100,
+    "lambda_l1": 1.0,
+    "lambda_l2": 1.0,
+    "is_unbalance": False,
     "verbose": -1,
     "seed": 42,
 }
-
-# v16: no per-symbol overrides.
-SYMBOL_OVERRIDES = {}
 
 SYMBOLS_LIST = [
     s.strip().upper()
@@ -82,24 +80,6 @@ DB2_SET = {
     ).split(",")
     if s.strip()
 }
-
-
-def params_for(symbol):
-    p = dict(PARAMS_BASE)
-    rounds = NUM_ROUNDS
-    early = EARLY_STOP
-
-    ov = SYMBOL_OVERRIDES.get(symbol)
-    if ov:
-        for k, v in ov.items():
-            if k == "num_rounds":
-                rounds = v
-            elif k == "early_stop":
-                early = v
-            else:
-                p[k] = v
-
-    return p, rounds, early
 
 
 def model_file(sym):
@@ -132,30 +112,39 @@ def save_prev(sym):
         log.warning("prev save %s: %s", sym, e)
 
 
-def _ic(y_true, y_pred):
-    if len(y_true) < 10:
-        return 0.0
-    if np.std(y_true) == 0 or np.std(y_pred) == 0:
-        return 0.0
-    yt = y_true - y_true.mean()
-    yp = y_pred - y_pred.mean()
-    d = np.sqrt((yt * yt).sum() * (yp * yp).sum())
-    if d == 0:
-        return 0.0
-    return float((yt * yp).sum() / d)
+def _auc(y_true, y_pred):
+    """Simple AUC via rank-based formula."""
+    y_true = np.asarray(y_true)
+    y_pred = np.asarray(y_pred)
+    n_pos = int((y_true == 1).sum())
+    n_neg = int((y_true == 0).sum())
+    if n_pos == 0 or n_neg == 0:
+        return 0.5
+    order = np.argsort(y_pred)
+    ranks = np.empty_like(order, dtype=np.float64)
+    ranks[order] = np.arange(1, len(y_pred) + 1)
+    # handle ties by averaging
+    sp = y_pred[order]
+    i = 0
+    while i < len(sp):
+        j = i
+        while j + 1 < len(sp) and sp[j + 1] == sp[i]:
+            j += 1
+        if j > i:
+            avg = (i + 1 + j + 1) / 2.0
+            for k in range(i, j + 1):
+                ranks[order[k]] = avg
+        i = j + 1
+    sum_pos = ranks[y_true == 1].sum()
+    auc = (
+        sum_pos - n_pos * (n_pos + 1) / 2.0
+    ) / (n_pos * n_neg)
+    return float(auc)
 
 
-def _ic_feval(preds, eval_data):
-    y = eval_data.get_label()
-    if len(y) < 10:
-        return "ic", 0.0, True
-    yt = y - y.mean()
-    yp = preds - preds.mean()
-    d = np.sqrt((yt * yt).sum() * (yp * yp).sum())
-    if d == 0:
-        return "ic", 0.0, True
-    ic = float((yt * yp).sum() / d)
-    return "ic", ic, True
+def _acc(y_true, prob, thr=0.5):
+    pred = (prob >= thr).astype(int)
+    return float(np.mean(pred == y_true))
 
 
 def train_one(symbol):
@@ -176,17 +165,14 @@ def train_one(symbol):
 
     if data["n_train"] < MIN_SAMPLES:
         log.warning(
-            "%s: not enough samples: %d < %d",
-            symbol, data["n_train"], MIN_SAMPLES,
+            "%s: not enough samples: %d",
+            symbol, data["n_train"],
         )
 
     X_train = data["X_train"]
     X_test = data["X_test"]
-    r_train = data["r_train"]
-    r_test = data["r_test"]
-
-    r_train = np.clip(r_train, -Y_CLIP, Y_CLIP)
-    r_test_c = np.clip(r_test, -Y_CLIP, Y_CLIP)
+    y_train = data["y_train"]
+    y_test = data["y_test"]
 
     n_tr = len(X_train)
     cut = int(n_tr * (1 - VAL_FRAC))
@@ -195,9 +181,9 @@ def train_one(symbol):
     cut_clean = max(cut - purge, int(n_tr * 0.5))
 
     X_tr = X_train[:cut_clean]
-    r_tr = r_train[:cut_clean]
+    y_tr = y_train[:cut_clean]
     X_va = X_train[cut:]
-    r_va = r_train[cut:]
+    y_va = y_train[cut:]
 
     log.info(
         "%s: train=%d val=%d test=%d (gap=%dh)",
@@ -205,28 +191,18 @@ def train_one(symbol):
         len(X_test), cut - cut_clean,
     )
 
-    params, num_rounds, early_stop = params_for(symbol)
-    log.info(
-        "%s: features=%d rounds=%d early=%d",
-        symbol, X_tr.shape[1],
-        num_rounds, early_stop,
-    )
-
-    train_set = lgb.Dataset(X_tr, label=r_tr)
+    train_set = lgb.Dataset(X_tr, label=y_tr)
     val_set = lgb.Dataset(
-        X_va, label=r_va, reference=train_set,
+        X_va, label=y_va, reference=train_set,
     )
 
     model = lgb.train(
-        params, train_set,
-        num_boost_round=num_rounds,
+        PARAMS_BASE, train_set,
+        num_boost_round=NUM_ROUNDS,
         valid_sets=[val_set],
-        feval=_ic_feval,
         callbacks=[
             lgb.early_stopping(
-                early_stop,
-                verbose=False,
-                first_metric_only=True,
+                EARLY_STOP, verbose=False,
             ),
             lgb.log_evaluation(100),
         ],
@@ -238,56 +214,51 @@ def train_one(symbol):
     )
     log.info(
         "%s: best_iteration=%d (of %d)",
-        symbol, best_iter, num_rounds,
+        symbol, best_iter, NUM_ROUNDS,
     )
 
     p_tr = model.predict(X_tr).astype(np.float32)
     p_va = model.predict(X_va).astype(np.float32)
     p_te = model.predict(X_test).astype(np.float32)
 
-    mae_tr = float(np.mean(np.abs(p_tr - r_tr)))
-    mae_va = float(np.mean(np.abs(p_va - r_va)))
-    mae_te = float(
-        np.mean(np.abs(p_te - r_test_c))
-    )
-    rmse_tr = float(
-        np.sqrt(np.mean((p_tr - r_tr) ** 2))
-    )
-    rmse_va = float(
-        np.sqrt(np.mean((p_va - r_va) ** 2))
-    )
-    rmse_te = float(
-        np.sqrt(np.mean((p_te - r_test_c) ** 2))
-    )
-    ic_tr = _ic(r_tr, p_tr)
-    ic_va = _ic(r_va, p_va)
-    ic_te = _ic(r_test_c, p_te)
+    auc_tr = _auc(y_tr, p_tr)
+    auc_va = _auc(y_va, p_va)
+    auc_te = _auc(y_test, p_te)
 
-    sign_tr = float(
-        np.mean(np.sign(p_tr) == np.sign(r_tr))
-    )
-    sign_va = float(
-        np.mean(np.sign(p_va) == np.sign(r_va))
-    )
-    sign_te = float(
-        np.mean(np.sign(p_te) == np.sign(r_test_c))
-    )
+    acc_tr = _acc(y_tr, p_tr, 0.5)
+    acc_va = _acc(y_va, p_va, 0.5)
+    acc_te = _acc(y_test, p_te, 0.5)
+
+    # high-confidence subset
+    def conf_stats(y, p, thr):
+        m = np.abs(p - 0.5) >= (thr - 0.5)
+        if m.sum() < 10:
+            return 0.0, 0.0, 0
+        acc = float(np.mean(
+            ((p[m] >= 0.5).astype(int)) == y[m]
+        ))
+        cov = float(m.mean())
+        return acc, cov, int(m.sum())
+
+    a60_tr, c60_tr, n60_tr = conf_stats(y_tr, p_tr, 0.60)
+    a60_te, c60_te, n60_te = conf_stats(y_test, p_te, 0.60)
+    a65_te, c65_te, n65_te = conf_stats(y_test, p_te, 0.65)
 
     log.info(
-        "%s: test:  IC=%.4f MAE=%.4f RMSE=%.4f",
-        symbol, ic_te, mae_te, rmse_te,
+        "%s: AUC  tr=%.4f va=%.4f te=%.4f",
+        symbol, auc_tr, auc_va, auc_te,
     )
     log.info(
-        "%s: val:   IC=%.4f MAE=%.4f RMSE=%.4f",
-        symbol, ic_va, mae_va, rmse_va,
+        "%s: ACC  tr=%.4f va=%.4f te=%.4f",
+        symbol, acc_tr, acc_va, acc_te,
     )
     log.info(
-        "%s: train: IC=%.4f MAE=%.4f RMSE=%.4f",
-        symbol, ic_tr, mae_tr, rmse_tr,
+        "%s: |p-0.5|>=0.10  acc_te=%.4f cov=%.2f n=%d",
+        symbol, a60_te, c60_te, n60_te,
     )
     log.info(
-        "%s: sign-acc: tr=%.4f va=%.4f te=%.4f",
-        symbol, sign_tr, sign_va, sign_te,
+        "%s: |p-0.5|>=0.15  acc_te=%.4f cov=%.2f n=%d",
+        symbol, a65_te, c65_te, n65_te,
     )
 
     importance = model.feature_importance(
@@ -299,7 +270,7 @@ def train_one(symbol):
         key=lambda x: -x[1],
     )
     log.info("%s: top features:", symbol)
-    for name, score in pairs[:8]:
+    for name, score in pairs[:5]:
         log.info("  %s: %.2f", name, score)
 
     save_prev(symbol)
@@ -313,8 +284,8 @@ def train_one(symbol):
         "trained_at": datetime.now(
             timezone.utc
         ).isoformat(),
-        "version": "v16",
-        "objective": "regression",
+        "version": "v17",
+        "objective": "binary",
         "symbol": symbol,
         "n_total": data["n_total"],
         "n_train": data["n_train"],
@@ -323,20 +294,20 @@ def train_one(symbol):
         "n_val_inner": len(X_va),
         "purge_hours": int(purge),
         "gap_tr_va": int(cut - cut_clean),
-        "y_clip": Y_CLIP,
+        "class_thr_pct": data["class_thr_pct"],
         "best_iteration": best_iter,
-        "ic_train": round(ic_tr, 4),
-        "ic_val": round(ic_va, 4),
-        "ic_test": round(ic_te, 4),
-        "mae_train": round(mae_tr, 4),
-        "mae_val": round(mae_va, 4),
-        "mae_test": round(mae_te, 4),
-        "rmse_train": round(rmse_tr, 4),
-        "rmse_val": round(rmse_va, 4),
-        "rmse_test": round(rmse_te, 4),
-        "sign_acc_train": round(sign_tr, 4),
-        "sign_acc_val": round(sign_va, 4),
-        "sign_acc_test": round(sign_te, 4),
+        "auc_train": round(auc_tr, 4),
+        "auc_val": round(auc_va, 4),
+        "auc_test": round(auc_te, 4),
+        "acc_train": round(acc_tr, 4),
+        "acc_val": round(acc_va, 4),
+        "acc_test": round(acc_te, 4),
+        "conf60_acc_te": round(a60_te, 4),
+        "conf60_cov_te": round(c60_te, 4),
+        "conf60_n_te": n60_te,
+        "conf65_acc_te": round(a65_te, 4),
+        "conf65_cov_te": round(c65_te, 4),
+        "conf65_n_te": n65_te,
         "num_trees": model.num_trees(),
         "features": feat_names,
         "top_features": [
@@ -344,10 +315,22 @@ def train_one(symbol):
             for n, s in pairs[:10]
         ],
         "horizon": data["horizon"],
-        "params_used": params,
-        "num_rounds": num_rounds,
-        "early_stop": early_stop,
-        "override": False,
+        "params_used": PARAMS_BASE,
+        "num_rounds": NUM_ROUNDS,
+        "early_stop": EARLY_STOP,
+        # compat keys for predict.py / backtest.py
+        "ic_test": round(
+            2.0 * (auc_te - 0.5), 4
+        ),
+        "ic_val": round(
+            2.0 * (auc_va - 0.5), 4
+        ),
+        "ic_train": round(
+            2.0 * (auc_tr - 0.5), 4
+        ),
+        "sign_acc_test": round(acc_te, 4),
+        "sign_acc_val": round(acc_va, 4),
+        "sign_acc_train": round(acc_tr, 4),
     }
     with open(
         meta_file(symbol), "w", encoding="utf-8",
@@ -370,10 +353,6 @@ def write_compat(symbols, metas):
         shutil.copy2(
             src, MODELS_DIR / "lgb_model.txt"
         )
-        log.info(
-            "compat: lgb_model.txt <- lgb_%s.txt",
-            ref,
-        )
     if metas.get(ref):
         with open(
             MODELS_DIR / "model_meta.json",
@@ -388,11 +367,10 @@ def write_compat(symbols, metas):
 def train():
     log.info("=" * 60)
     log.info(
-        "ARGUS-Trader TRAIN v16 "
-        "(36feat, purge=%dh, ic-stop)",
-        ds.PURGE_HOURS,
+        "ARGUS-Trader TRAIN v17 (binary, AUC)"
     )
     log.info("SYMBOLS=%s", SYMBOLS_LIST)
+    log.info("CLASS_THR_PCT=%.2f", ds.CLASS_THR_PCT)
     log.info(
         "BASE: rounds=%d early=%d val=%.2f",
         NUM_ROUNDS, EARLY_STOP, VAL_FRAC,
@@ -412,19 +390,20 @@ def train():
     log.info("TRAIN DONE")
     for sym, m in metas.items():
         log.info(
-            "  %s: IC_te=%.4f IC_va=%.4f "
-            "best_iter=%d",
-            sym, m["ic_test"],
-            m["ic_val"], m["best_iteration"],
+            "  %s: AUC_te=%.4f AUC_va=%.4f "
+            "ACC_te=%.4f best_iter=%d",
+            sym, m["auc_test"],
+            m["auc_val"], m["acc_test"],
+            m["best_iteration"],
         )
     if metas:
-        ic_avg = (
-            sum(m["ic_test"] for m in metas.values())
+        avg_auc = (
+            sum(m["auc_test"] for m in metas.values())
             / len(metas)
         )
         log.info(
-            "  AVG IC_test=%.4f (%d models)",
-            ic_avg, len(metas),
+            "  AVG AUC_test=%.4f (%d models)",
+            avg_auc, len(metas),
         )
     log.info("=" * 60)
 
