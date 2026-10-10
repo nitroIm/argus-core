@@ -1,9 +1,7 @@
 # ============================================================
 # ARGUS - DETECT
 # ------------------------------------------------------------
-# v3: + ARGUS_DB_URL_2, SYMBOLS, DB2_SYMBOLS in Run detect.
-#     Without them anomaly v3 cannot route SOL/BNB to DB2.
-# v2: shared concurrency argus-crypto-pipeline.
+# v3: + ARGUS_DB_URL_2, SYMBOLS, DB2_SYMBOLS in Run2: shared concurrency argus-crypto-pipeline.
 # ============================================================
 
 name: ARGUS Crypto Detect
@@ -35,15 +33,15 @@ jobs:
         with:
           path: ~/.cache/pip
           key: >-
-            pip-crypto-${{ hashFiles('c -rypto/requirements.txt') }}
+            pip-crypto-${{ hashFiles('crypto/requirements.txt') }}
           restore-keys: pip-crypto-
 
       - name: Install deps
         run: |
-          python - namem pip: install --up Run detectgrade pip
+          python -m pip install --upgrade pip
           pip install -r crypto/requirements.txt
 
-     
+      - name: Run detect
         env:
           ARGUS_DB_URL: >-
             ${{ secrets.ARGUS_DB_URL }}
