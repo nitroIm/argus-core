@@ -2,8 +2,8 @@
 # ARGUS-Trader - TRAIN v21
 # ------------------------------------------------------------
 # v21: per-regime models (one LightGBM per regime).
+#      FIX: reg_train/reg_test -> np.asarray for bool masks.
 #      Regime detector from dataset v24 (HMM).
-#      Adaptive weights by regime IC_val.
 # ============================================================
 
 import os
@@ -168,6 +168,10 @@ def train_one(symbol):
     reg_test = data["reg_test"]
     n_regimes = data["n_regimes"]
 
+    # FIX: list -> np.array for boolean masks
+    reg_train = np.asarray(reg_train)
+    reg_test = np.asarray(reg_test)
+
     r_train = np.clip(r_train, -Y_CLIP, Y_CLIP)
     r_test_c = np.clip(r_test, -Y_CLIP, Y_CLIP)
 
@@ -183,8 +187,8 @@ def train_one(symbol):
         mask_tr = reg_train[:cut_clean] == reg
         mask_va = reg_train[cut:] == reg
 
-        n_reg_tr = mask_tr.sum()
-        n_reg_va = mask_va.sum()
+        n_reg_tr = int(mask_tr.sum())
+        n_reg_va = int(mask_va.sum())
 
         if n_reg_tr < MIN_SAMPLES or n_reg_va < 50:
             log.warning("%s reg%d: skip (tr=%d va=%d)",
