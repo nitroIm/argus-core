@@ -1,8 +1,8 @@
 # ============================================================
 # ARGUS - LEARN (per-regime + HMM)
 # ------------------------------------------------------------
-# v12: +hmmlearn install. Full env vars.
-#      Per-regime models (train.py v21, dataset.py v24).
+# v12: +hmmlearn. Per-regime models.
+#      train.py v21 + dataset.py v24.
 # ============================================================
 
 name: Crypto Learn
@@ -84,7 +84,7 @@ jobs:
             git pull --rebase -X theirs \
               --autostash origin main || true
             if git push origin main; then
-.py              echo "Push OK"
+              echo "Push OK"
               break
             fi
             echo "Retry $i"
