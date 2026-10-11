@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-10-11T15:05:43.243613+00:00",
+  "generated_at": "2026-10-11T16:05:40.290027+00:00",
   "total_news": 128,
-  "avg_sentiment": -0.024,
+  "avg_sentiment": -0.034,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
   "bullish_count": 14,
-  "bearish_count": 19,
-  "neutral_count": 95,
+  "bearish_count": 20,
+  "neutral_count": 94,
   "fake_count": 0,
-  "cross_confirmed": 5,
-  "single_source": 106,
+  "cross_confirmed": 7,
+  "single_source": 105,
   "by_source": {
     "Cointelegraph": {
       "total": 25,
@@ -28,7 +28,7 @@
     "CryptoSlate": {
       "total": 10,
       "bull": 1,
-      "bear": 1
+      "bear": 2
     },
     "CryptoPotato": {
       "total": 25,
@@ -48,6 +48,22 @@
   },
   "top_bullish": [
     {
+      "title": "Bitcoin, Ethereum and Solana ETFs All in the Red for October",
+      "source": "Decrypt",
+      "source_weight": 1.1,
+      "lang": "en",
+      "pub_date": "2026-10-11T16:01:03+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-11T16:05:38.815553+00:00",
+      "effective_weight": 1.65,
+      "title_original": "Bitcoin, Ethereum and Solana ETFs All in the Red for October",
+      "cross_check": 3
+    },
+    {
       "title": "Ripple ETFs Defy Crypto Slump With Another Green Week but XRP Price Sinks",
       "source": "CryptoPotato",
       "source_weight": 1.0,
@@ -56,10 +72,10 @@
       "sentiment": 1.0,
       "bull_weight": 1.2,
       "bear_weight": 0.0,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-11T15:05:42.281825+00:00",
-      "effective_weight": 1.5,
+      "collected_at": "2026-10-11T16:05:39.336205+00:00",
+      "effective_weight": 1.0,
       "title_original": "Ripple ETFs Defy Crypto Slump With Another Green Week but XRP Price Sinks",
       "cross_check": 1
     },
@@ -74,7 +90,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-11T15:05:42.281889+00:00",
+      "collected_at": "2026-10-11T16:05:39.336267+00:00",
       "effective_weight": 1.0,
       "title_original": "‘Buy Crypto’ Google Searches Hit Yearly Highs: Is Retail Coming Back?",
       "cross_check": 1
@@ -90,7 +106,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-11T15:05:42.281946+00:00",
+      "collected_at": "2026-10-11T16:05:39.336322+00:00",
       "effective_weight": 1.0,
       "title_original": "Viral Altcoin Defies Market Slumber With 53% Surge, BTC Calms at $83K: Weekend Watch",
       "cross_check": 1
@@ -106,29 +122,29 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-11T15:05:43.120102+00:00",
+      "collected_at": "2026-10-11T16:05:40.166760+00:00",
       "effective_weight": 0.96,
       "title_original": "Бывший топ-менеджер FTX раскритиковала сериал Netflix о крахе биржи",
-      "cross_check": 1
-    },
-    {
-      "title": "Musk Sees SpaceX Worth Far More Than Earth’s Economy; Saylor Is Bullish",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-11T03:30:37+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-11T15:05:42.029805+00:00",
-      "effective_weight": 0.8,
-      "title_original": "Musk Sees SpaceX Worth Far More Than Earth’s Economy; Saylor Is Bullish",
       "cross_check": 1
     }
   ],
   "top_bearish": [
+    {
+      "title": "Bitcoin hedge funds face a liquidation trap when their collateral is split across markets",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-11T16:00:20+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.2,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-11T16:05:39.202679+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Bitcoin hedge funds face a liquidation trap when their collateral is split across markets",
+      "cross_check": 1
+    },
     {
       "title": "Coldcard X Account Hit by Phishing Scam After $100M Fiasco",
       "source": "Bitcoin.com",
@@ -140,7 +156,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-11T15:05:42.029472+00:00",
+      "collected_at": "2026-10-11T16:05:39.081227+00:00",
       "effective_weight": 1.0,
       "title_original": "Coldcard X Account Hit by Phishing Scam After $100M Fiasco",
       "cross_check": 2
@@ -156,7 +172,7 @@
       "bear_weight": 3.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-11T15:05:42.029629+00:00",
+      "collected_at": "2026-10-11T16:05:39.081382+00:00",
       "effective_weight": 0.8,
       "title_original": "Argentina’s Central Bank Rejects Near-Term Crypto Banking Integration",
       "cross_check": 1
@@ -172,7 +188,7 @@
       "bear_weight": 1.2,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-11T15:05:42.029748+00:00",
+      "collected_at": "2026-10-11T16:05:39.081494+00:00",
       "effective_weight": 0.8,
       "title_original": "Stephen Hawking’s Warning That AI Amplifies the Illusion of Knowledge",
       "cross_check": 1
@@ -188,25 +204,9 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-11T15:05:42.124561+00:00",
+      "collected_at": "2026-10-11T16:05:39.203135+00:00",
       "effective_weight": 0.8,
       "title_original": "Newer AI models missed more payment fraud in Coinbase’s benchmark",
-      "cross_check": 1
-    },
-    {
-      "title": "BTC, ETH, XRP Crash Sparks Whale Accumulation as Buy Signals Appear",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-11T03:58:55+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 2.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-11T15:05:42.282116+00:00",
-      "effective_weight": 0.8,
-      "title_original": "BTC, ETH, XRP Crash Sparks Whale Accumulation as Buy Signals Appear",
       "cross_check": 1
     }
   ]
