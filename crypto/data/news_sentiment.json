@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-10-11T11:05:38.745868+00:00",
+  "generated_at": "2026-10-11T12:05:42.226889+00:00",
   "total_news": 128,
-  "avg_sentiment": -0.031,
+  "avg_sentiment": -0.019,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
   "bullish_count": 14,
-  "bearish_count": 21,
-  "neutral_count": 93,
+  "bearish_count": 19,
+  "neutral_count": 95,
   "fake_count": 0,
   "cross_confirmed": 5,
   "single_source": 108,
@@ -32,8 +32,8 @@
     },
     "CryptoPotato": {
       "total": 25,
-      "bull": 4,
-      "bear": 7
+      "bull": 5,
+      "bear": 6
     },
     "Bitcoinist": {
       "total": 8,
@@ -42,25 +42,25 @@
     },
     "ForkLog": {
       "total": 25,
-      "bull": 3,
-      "bear": 5
+      "bull": 2,
+      "bear": 4
     }
   },
   "top_bullish": [
     {
-      "title": "Viral Altcoin Defies Market Slumber With 53% Surge, BTC Calms at $83K: Weekend Watch",
+      "title": "‘Buy Crypto’ Google Searches Hit Yearly Highs: Is Retail Coming Back?",
       "source": "CryptoPotato",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-10-11T10:16:49+00:00",
+      "pub_date": "2026-10-11T11:58:28+00:00",
       "sentiment": 1.0,
-      "bull_weight": 1.5,
+      "bull_weight": 1.0,
       "bear_weight": 0.0,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-11T11:05:37.627096+00:00",
+      "collected_at": "2026-10-11T12:05:41.025714+00:00",
       "effective_weight": 1.5,
-      "title_original": "Viral Altcoin Defies Market Slumber With 53% Surge, BTC Calms at $83K: Weekend Watch",
+      "title_original": "‘Buy Crypto’ Google Searches Hit Yearly Highs: Is Retail Coming Back?",
       "cross_check": 1
     },
     {
@@ -74,9 +74,25 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-11T11:05:38.620343+00:00",
+      "collected_at": "2026-10-11T12:05:42.101831+00:00",
       "effective_weight": 1.2,
       "title_original": "Бывший топ-менеджер FTX раскритиковала сериал Netflix о крахе биржи",
+      "cross_check": 1
+    },
+    {
+      "title": "Viral Altcoin Defies Market Slumber With 53% Surge, BTC Calms at $83K: Weekend Watch",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-11T10:16:49+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.5,
+      "bear_weight": 0.0,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-11T12:05:41.025775+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Viral Altcoin Defies Market Slumber With 53% Surge, BTC Calms at $83K: Weekend Watch",
       "cross_check": 1
     },
     {
@@ -90,7 +106,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-11T11:05:37.479651+00:00",
+      "collected_at": "2026-10-11T12:05:40.911191+00:00",
       "effective_weight": 0.8,
       "title_original": "Musk Sees SpaceX Worth Far More Than Earth’s Economy; Saylor Is Bullish",
       "cross_check": 1
@@ -106,25 +122,9 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-11T11:05:37.479805+00:00",
+      "collected_at": "2026-10-11T12:05:40.911373+00:00",
       "effective_weight": 0.8,
       "title_original": "Ripple CEO Owns ‘a Lot of XRP’: Why He’s ‘Incredibly Bullish’ on Crypto",
-      "cross_check": 1
-    },
-    {
-      "title": "Being right about Bitcoin won’t save your 3x leveraged ETF position",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-10T17:00:12+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-11T11:05:37.544785+00:00",
-      "effective_weight": 0.8,
-      "title_original": "Being right about Bitcoin won’t save your 3x leveraged ETF position",
       "cross_check": 1
     }
   ],
@@ -140,7 +140,7 @@
       "bear_weight": 3.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-11T11:05:37.479486+00:00",
+      "collected_at": "2026-10-11T12:05:40.911030+00:00",
       "effective_weight": 1.0,
       "title_original": "Argentina’s Central Bank Rejects Near-Term Crypto Banking Integration",
       "cross_check": 1
@@ -156,7 +156,7 @@
       "bear_weight": 1.2,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-11T11:05:37.479594+00:00",
+      "collected_at": "2026-10-11T12:05:40.911135+00:00",
       "effective_weight": 0.8,
       "title_original": "Stephen Hawking’s Warning That AI Amplifies the Illusion of Knowledge",
       "cross_check": 1
@@ -172,7 +172,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-11T11:05:37.544728+00:00",
+      "collected_at": "2026-10-11T12:05:40.960714+00:00",
       "effective_weight": 0.8,
       "title_original": "Newer AI models missed more payment fraud in Coinbase’s benchmark",
       "cross_check": 1
@@ -188,7 +188,7 @@
       "bear_weight": 2.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-11T11:05:37.627275+00:00",
+      "collected_at": "2026-10-11T12:05:41.025946+00:00",
       "effective_weight": 0.8,
       "title_original": "BTC, ETH, XRP Crash Sparks Whale Accumulation as Buy Signals Appear",
       "cross_check": 1
@@ -204,7 +204,7 @@
       "bear_weight": 1.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-11T11:05:37.627347+00:00",
+      "collected_at": "2026-10-11T12:05:41.026004+00:00",
       "effective_weight": 0.8,
       "title_original": "Bitcoin Price Analysis: Is BTC’s Recovery Over as US Demand Turns Negative?",
       "cross_check": 1
