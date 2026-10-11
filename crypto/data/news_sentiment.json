@@ -1,18 +1,18 @@
 {
-  "generated_at": "2026-10-11T17:05:46.175017+00:00",
+  "generated_at": "2026-10-11T18:05:38.347561+00:00",
   "total_news": 128,
-  "avg_sentiment": -0.04,
+  "avg_sentiment": -0.042,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
-  "bullish_count": 14,
-  "bearish_count": 20,
-  "neutral_count": 94,
+  "bullish_count": 13,
+  "bearish_count": 19,
+  "neutral_count": 96,
   "fake_count": 0,
   "cross_confirmed": 10,
   "single_source": 104,
   "by_source": {
     "Cointelegraph": {
       "total": 25,
-      "bull": 1,
+      "bull": 0,
       "bear": 2
     },
     "Decrypt": {
@@ -28,7 +28,7 @@
     "CryptoSlate": {
       "total": 10,
       "bull": 0,
-      "bear": 2
+      "bear": 1
     },
     "CryptoPotato": {
       "total": 25,
@@ -58,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-11T17:05:43.199453+00:00",
+      "collected_at": "2026-10-11T18:05:37.125210+00:00",
       "effective_weight": 1.1,
       "title_original": "Bitcoin, Ethereum and Solana ETFs All in the Red for October",
       "cross_check": 3
@@ -74,25 +74,9 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-11T17:05:43.522003+00:00",
+      "collected_at": "2026-10-11T18:05:37.529846+00:00",
       "effective_weight": 1.0,
       "title_original": "Ripple ETFs Defy Crypto Slump With Another Green Week but XRP Price Sinks",
-      "cross_check": 1
-    },
-    {
-      "title": "‘Buy Crypto’ Google Searches Hit Yearly Highs: Is Retail Coming Back?",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-11T11:58:28+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-11T17:05:43.522064+00:00",
-      "effective_weight": 1.0,
-      "title_original": "‘Buy Crypto’ Google Searches Hit Yearly Highs: Is Retail Coming Back?",
       "cross_check": 1
     },
     {
@@ -106,7 +90,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-11T17:05:46.052721+00:00",
+      "collected_at": "2026-10-11T18:05:38.222529+00:00",
       "effective_weight": 0.96,
       "title_original": "Бывший топ-менеджер FTX раскритиковала сериал Netflix о крахе биржи",
       "cross_check": 1
@@ -122,9 +106,25 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-11T17:05:43.361513+00:00",
+      "collected_at": "2026-10-11T18:05:37.291470+00:00",
       "effective_weight": 0.8,
       "title_original": "Musk Sees SpaceX Worth Far More Than Earth’s Economy; Saylor Is Bullish",
+      "cross_check": 1
+    },
+    {
+      "title": "‘Buy Crypto’ Google Searches Hit Yearly Highs: Is Retail Coming Back?",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-11T11:58:28+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-11T18:05:37.529909+00:00",
+      "effective_weight": 0.8,
+      "title_original": "‘Buy Crypto’ Google Searches Hit Yearly Highs: Is Retail Coming Back?",
       "cross_check": 1
     }
   ],
@@ -140,7 +140,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-11T17:05:43.361163+00:00",
+      "collected_at": "2026-10-11T18:05:37.291154+00:00",
       "effective_weight": 1.0,
       "title_original": "Coldcard X Account Hit by Phishing Scam After $100M Fiasco",
       "cross_check": 2
@@ -156,7 +156,7 @@
       "bear_weight": 1.2,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-11T17:05:43.411075+00:00",
+      "collected_at": "2026-10-11T18:05:37.405357+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitcoin hedge funds face a liquidation trap when their collateral is split across markets",
       "cross_check": 1
@@ -172,7 +172,7 @@
       "bear_weight": 3.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-11T17:05:43.361324+00:00",
+      "collected_at": "2026-10-11T18:05:37.291311+00:00",
       "effective_weight": 0.8,
       "title_original": "Argentina’s Central Bank Rejects Near-Term Crypto Banking Integration",
       "cross_check": 1
@@ -188,25 +188,25 @@
       "bear_weight": 1.2,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-11T17:05:43.361434+00:00",
+      "collected_at": "2026-10-11T18:05:37.291413+00:00",
       "effective_weight": 0.8,
       "title_original": "Stephen Hawking’s Warning That AI Amplifies the Illusion of Knowledge",
       "cross_check": 1
     },
     {
-      "title": "Newer AI models missed more payment fraud in Coinbase’s benchmark",
-      "source": "CryptoSlate",
+      "title": "BTC, ETH, XRP Crash Sparks Whale Accumulation as Buy Signals Appear",
+      "source": "CryptoPotato",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-10-10T18:00:18+00:00",
+      "pub_date": "2026-10-11T03:58:55+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 1.5,
+      "bear_weight": 2.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-11T17:05:43.411532+00:00",
+      "collected_at": "2026-10-11T18:05:37.530171+00:00",
       "effective_weight": 0.8,
-      "title_original": "Newer AI models missed more payment fraud in Coinbase’s benchmark",
+      "title_original": "BTC, ETH, XRP Crash Sparks Whale Accumulation as Buy Signals Appear",
       "cross_check": 1
     }
   ]
