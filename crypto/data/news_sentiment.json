@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-10-11T21:05:37.914637+00:00",
+  "generated_at": "2026-10-11T22:05:40.657678+00:00",
   "total_news": 128,
-  "avg_sentiment": -0.034,
+  "avg_sentiment": -0.031,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
   "bullish_count": 13,
   "bearish_count": 18,
   "neutral_count": 97,
   "fake_count": 0,
   "cross_confirmed": 13,
-  "single_source": 99,
+  "single_source": 97,
   "by_source": {
     "Cointelegraph": {
       "total": 25,
@@ -48,22 +48,6 @@
   },
   "top_bullish": [
     {
-      "title": "Bitcoin, Ethereum and Solana ETFs All in the Red for October",
-      "source": "Decrypt",
-      "source_weight": 1.1,
-      "lang": "en",
-      "pub_date": "2026-10-11T16:01:03+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-11T21:05:36.622406+00:00",
-      "effective_weight": 1.1,
-      "title_original": "Bitcoin, Ethereum and Solana ETFs All in the Red for October",
-      "cross_check": 3
-    },
-    {
       "title": "Russia’s Moscow Exchange Pilots Crypto Trading for December Launch",
       "source": "Bitcoin.com",
       "source_weight": 1.0,
@@ -74,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-11T21:05:36.739962+00:00",
+      "collected_at": "2026-10-11T22:05:39.590919+00:00",
       "effective_weight": 1.0,
       "title_original": "Russia’s Moscow Exchange Pilots Crypto Trading for December Launch",
       "cross_check": 2
@@ -90,10 +74,26 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-11T21:05:37.814651+00:00",
+      "collected_at": "2026-10-11T22:05:40.532600+00:00",
       "effective_weight": 0.96,
       "title_original": "Бывший топ-менеджер FTX раскритиковала сериал Netflix о крахе биржи",
       "cross_check": 1
+    },
+    {
+      "title": "Bitcoin, Ethereum and Solana ETFs All in the Red for October",
+      "source": "Decrypt",
+      "source_weight": 1.1,
+      "lang": "en",
+      "pub_date": "2026-10-11T16:01:03+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-11T22:05:39.316336+00:00",
+      "effective_weight": 0.88,
+      "title_original": "Bitcoin, Ethereum and Solana ETFs All in the Red for October",
+      "cross_check": 3
     },
     {
       "title": "Ripple ETFs Defy Crypto Slump With Another Green Week but XRP Price Sinks",
@@ -106,7 +106,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-11T21:05:36.992690+00:00",
+      "collected_at": "2026-10-11T22:05:39.824682+00:00",
       "effective_weight": 0.8,
       "title_original": "Ripple ETFs Defy Crypto Slump With Another Green Week but XRP Price Sinks",
       "cross_check": 1
@@ -122,7 +122,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-11T21:05:36.992738+00:00",
+      "collected_at": "2026-10-11T22:05:39.824747+00:00",
       "effective_weight": 0.8,
       "title_original": "‘Buy Crypto’ Google Searches Hit Yearly Highs: Is Retail Coming Back?",
       "cross_check": 1
@@ -140,25 +140,9 @@
       "bear_weight": 1.2,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-11T21:05:36.867924+00:00",
+      "collected_at": "2026-10-11T22:05:39.734373+00:00",
       "effective_weight": 1.0,
       "title_original": "Some Aave loans sit near liquidation with collateral that can take hours to cash out",
-      "cross_check": 1
-    },
-    {
-      "title": "Bitcoin hedge funds face a liquidation trap when their collateral is split across markets",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-11T16:00:20+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.2,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-11T21:05:36.868096+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Bitcoin hedge funds face a liquidation trap when their collateral is split across markets",
       "cross_check": 1
     },
     {
@@ -172,7 +156,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-11T21:05:36.740114+00:00",
+      "collected_at": "2026-10-11T22:05:39.591114+00:00",
       "effective_weight": 0.8,
       "title_original": "Coldcard X Account Hit by Phishing Scam After $100M Fiasco",
       "cross_check": 2
@@ -188,9 +172,25 @@
       "bear_weight": 3.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-11T21:05:36.740227+00:00",
+      "collected_at": "2026-10-11T22:05:39.591260+00:00",
       "effective_weight": 0.8,
       "title_original": "Argentina’s Central Bank Rejects Near-Term Crypto Banking Integration",
+      "cross_check": 1
+    },
+    {
+      "title": "Bitcoin hedge funds face a liquidation trap when their collateral is split across markets",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-11T16:00:20+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.2,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-11T22:05:39.734853+00:00",
+      "effective_weight": 0.8,
+      "title_original": "Bitcoin hedge funds face a liquidation trap when their collateral is split across markets",
       "cross_check": 1
     },
     {
@@ -204,7 +204,7 @@
       "bear_weight": 2.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-11T21:05:36.992916+00:00",
+      "collected_at": "2026-10-11T22:05:39.824969+00:00",
       "effective_weight": 0.8,
       "title_original": "BTC, ETH, XRP Crash Sparks Whale Accumulation as Buy Signals Appear",
       "cross_check": 1
