@@ -1,18 +1,18 @@
 {
-  "generated_at": "2026-10-11T09:05:42.398169+00:00",
+  "generated_at": "2026-10-11T10:05:47.059406+00:00",
   "total_news": 128,
-  "avg_sentiment": -0.06,
+  "avg_sentiment": -0.062,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
-  "bullish_count": 14,
+  "bullish_count": 13,
   "bearish_count": 22,
-  "neutral_count": 92,
+  "neutral_count": 93,
   "fake_count": 0,
   "cross_confirmed": 5,
   "single_source": 104,
   "by_source": {
     "Cointelegraph": {
       "total": 25,
-      "bull": 2,
+      "bull": 1,
       "bear": 2
     },
     "Decrypt": {
@@ -58,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-11T09:05:42.273926+00:00",
+      "collected_at": "2026-10-11T10:05:46.932471+00:00",
       "effective_weight": 1.2,
       "title_original": "Бывший топ-менеджер FTX раскритиковала сериал Netflix о крахе биржи",
       "cross_check": 1
@@ -72,10 +72,10 @@
       "sentiment": 1.0,
       "bull_weight": 1.2,
       "bear_weight": 0.0,
-      "freshness": 1.0,
+      "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-11T09:05:41.114520+00:00",
-      "effective_weight": 1.0,
+      "collected_at": "2026-10-11T10:05:45.546560+00:00",
+      "effective_weight": 0.8,
       "title_original": "Musk Sees SpaceX Worth Far More Than Earth’s Economy; Saylor Is Bullish",
       "cross_check": 1
     },
@@ -90,7 +90,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-11T09:05:41.114707+00:00",
+      "collected_at": "2026-10-11T10:05:45.546738+00:00",
       "effective_weight": 0.8,
       "title_original": "Ripple CEO Owns ‘a Lot of XRP’: Why He’s ‘Incredibly Bullish’ on Crypto",
       "cross_check": 1
@@ -106,7 +106,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-11T09:05:41.168611+00:00",
+      "collected_at": "2026-10-11T10:05:45.647103+00:00",
       "effective_weight": 0.8,
       "title_original": "Being right about Bitcoin won’t save your 3x leveraged ETF position",
       "cross_check": 1
@@ -122,7 +122,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-11T09:05:41.231835+00:00",
+      "collected_at": "2026-10-11T10:05:45.772891+00:00",
       "effective_weight": 0.8,
       "title_original": "Cardano Just Delivered Two Bullish Signals at TOKEN2049 as ADA Rebounds",
       "cross_check": 1
@@ -138,10 +138,10 @@
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 3.5,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-11T09:05:41.114352+00:00",
-      "effective_weight": 1.5,
+      "collected_at": "2026-10-11T10:05:45.546391+00:00",
+      "effective_weight": 1.0,
       "title_original": "Argentina’s Central Bank Rejects Near-Term Crypto Banking Integration",
       "cross_check": 1
     },
@@ -156,25 +156,9 @@
       "bear_weight": 1.2,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-11T09:05:41.114464+00:00",
+      "collected_at": "2026-10-11T10:05:45.546503+00:00",
       "effective_weight": 1.0,
       "title_original": "Stephen Hawking’s Warning That AI Amplifies the Illusion of Knowledge",
-      "cross_check": 1
-    },
-    {
-      "title": "BTC, ETH, XRP Crash Sparks Whale Accumulation as Buy Signals Appear",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-11T03:58:55+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 2.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-11T09:05:41.231473+00:00",
-      "effective_weight": 1.0,
-      "title_original": "BTC, ETH, XRP Crash Sparks Whale Accumulation as Buy Signals Appear",
       "cross_check": 1
     },
     {
@@ -188,7 +172,7 @@
       "bear_weight": 2.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-11T09:05:41.114866+00:00",
+      "collected_at": "2026-10-11T10:05:45.546891+00:00",
       "effective_weight": 0.8,
       "title_original": "Bitcoin Price Never Recovered From the $19B Crash That Hit a Year Ago",
       "cross_check": 2
@@ -204,9 +188,25 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-11T09:05:41.168528+00:00",
+      "collected_at": "2026-10-11T10:05:45.647015+00:00",
       "effective_weight": 0.8,
       "title_original": "Newer AI models missed more payment fraud in Coinbase’s benchmark",
+      "cross_check": 1
+    },
+    {
+      "title": "BTC, ETH, XRP Crash Sparks Whale Accumulation as Buy Signals Appear",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-11T03:58:55+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 2.0,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-11T10:05:45.772570+00:00",
+      "effective_weight": 0.8,
+      "title_original": "BTC, ETH, XRP Crash Sparks Whale Accumulation as Buy Signals Appear",
       "cross_check": 1
     }
   ]
