@@ -1,19 +1,19 @@
 {
-  "generated_at": "2026-10-12T18:05:43.097324+00:00",
+  "generated_at": "2026-10-12T19:05:44.731264+00:00",
   "total_news": 128,
-  "avg_sentiment": 0.057,
+  "avg_sentiment": 0.078,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
-  "bullish_count": 15,
-  "bearish_count": 10,
-  "neutral_count": 103,
+  "bullish_count": 16,
+  "bearish_count": 8,
+  "neutral_count": 104,
   "fake_count": 0,
-  "cross_confirmed": 12,
-  "single_source": 97,
+  "cross_confirmed": 9,
+  "single_source": 98,
   "by_source": {
     "Cointelegraph": {
       "total": 25,
       "bull": 2,
-      "bear": 1
+      "bear": 0
     },
     "Decrypt": {
       "total": 25,
@@ -22,8 +22,8 @@
     },
     "Bitcoin.com": {
       "total": 10,
-      "bull": 1,
-      "bear": 2
+      "bull": 2,
+      "bear": 1
     },
     "CryptoSlate": {
       "total": 10,
@@ -48,19 +48,19 @@
   },
   "top_bullish": [
     {
-      "title": "Internet Computer (ICP) Pumps 14% Daily: More Gains Ahead?",
-      "source": "CryptoPotato",
+      "title": "State of TRON Q3 2026 Report Highlights $2.21 Trillion in Stablecoin Settlement Amid Network Activity Growth",
+      "source": "Bitcoin.com",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-10-12T17:36:24+00:00",
+      "pub_date": "2026-10-12T18:45:26+00:00",
       "sentiment": 1.0,
-      "bull_weight": 1.0,
+      "bull_weight": 2.0,
       "bear_weight": 0.0,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T18:05:42.105320+00:00",
+      "collected_at": "2026-10-12T19:05:43.287755+00:00",
       "effective_weight": 1.5,
-      "title_original": "Internet Computer (ICP) Pumps 14% Daily: More Gains Ahead?",
+      "title_original": "State of TRON Q3 2026 Report Highlights $2.21 Trillion in Stablecoin Settlement Amid Network Activity Growth",
       "cross_check": 1
     },
     {
@@ -74,7 +74,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T18:05:41.618849+00:00",
+      "collected_at": "2026-10-12T19:05:43.018114+00:00",
       "effective_weight": 1.3,
       "title_original": "XRP treasury Evernorth’s shares rise 5% at Nasdaq opening print",
       "cross_check": 1
@@ -90,26 +90,10 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T18:05:41.618907+00:00",
+      "collected_at": "2026-10-12T19:05:43.018158+00:00",
       "effective_weight": 1.3,
       "title_original": "Ledger implant tests Bitcoin ETFs as safer custodial solutions than hardware wallets",
       "cross_check": 3
-    },
-    {
-      "title": "Morgan Stanley перенесла запуск торговли токенизированными акциями на 2027 год",
-      "source": "ForkLog",
-      "source_weight": 1.2,
-      "lang": "ru",
-      "pub_date": "2026-10-12T13:00:00+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-12T18:05:42.973898+00:00",
-      "effective_weight": 1.2,
-      "title_original": "Morgan Stanley перенесла запуск торговли токенизированными акциями на 2027 год",
-      "cross_check": 1
     },
     {
       "title": "Bitcoin, Ether ETFs Lose $1.2 Billion as Institutional Demand Cracks",
@@ -122,29 +106,29 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T18:05:41.841076+00:00",
+      "collected_at": "2026-10-12T19:05:43.288036+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitcoin, Ether ETFs Lose $1.2 Billion as Institutional Demand Cracks",
+      "cross_check": 1
+    },
+    {
+      "title": "Internet Computer (ICP) Pumps 14% Daily: More Gains Ahead?",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-12T17:36:24+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-12T19:05:43.540700+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Internet Computer (ICP) Pumps 14% Daily: More Gains Ahead?",
       "cross_check": 1
     }
   ],
   "top_bearish": [
-    {
-      "title": "Bitcoin Price Walks a Tightrope as Bears Circle the $82K Zone",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-12T13:10:52+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.2,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-12T18:05:41.841127+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Bitcoin Price Walks a Tightrope as Bears Circle the $82K Zone",
-      "cross_check": 1
-    },
     {
       "title": "Coinbase AI Agent Cuts Fraud by 30% in Onramp Experiment",
       "source": "CryptoPotato",
@@ -156,26 +140,10 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T18:05:42.105934+00:00",
+      "collected_at": "2026-10-12T19:05:43.541158+00:00",
       "effective_weight": 0.8,
       "title_original": "Coinbase AI Agent Cuts Fraud by 30% in Onramp Experiment",
       "cross_check": 1
-    },
-    {
-      "title": "New York permanently bars Celsius founder Mashinsky in $35M fraud settlement",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-10-09T20:14:02+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 0.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-12T18:05:41.619976+00:00",
-      "effective_weight": 0.65,
-      "title_original": "New York permanently bars Celsius founder Mashinsky in $35M fraud settlement",
-      "cross_check": 2
     },
     {
       "title": "LBank at 11: Eric He on Building an Exchange for More Than One Market Cycle",
@@ -188,7 +156,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.1,
-      "collected_at": "2026-10-12T18:05:42.152908+00:00",
+      "collected_at": "2026-10-12T19:05:43.607432+00:00",
       "effective_weight": 0.648,
       "title_original": "LBank at 11: Eric He on Building an Exchange for More Than One Market Cycle",
       "cross_check": 1
@@ -204,10 +172,42 @@
       "bear_weight": 1.5,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T18:05:41.656572+00:00",
+      "collected_at": "2026-10-12T19:05:43.099327+00:00",
       "effective_weight": 0.55,
       "title_original": "New York AG Secures Up to $35M and Industry Ban From Ex-Celsius CEO Alex Mashinsky",
-      "cross_check": 2
+      "cross_check": 1
+    },
+    {
+      "title": "Bitcoin Bleeds in Uptober—How Low Can It Go? Experts Weigh In",
+      "source": "Decrypt",
+      "source_weight": 1.1,
+      "lang": "en",
+      "pub_date": "2026-10-09T13:20:12+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.0,
+      "freshness": 0.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-12T19:05:43.099402+00:00",
+      "effective_weight": 0.55,
+      "title_original": "Bitcoin Bleeds in Uptober—How Low Can It Go? Experts Weigh In",
+      "cross_check": 1
+    },
+    {
+      "title": "BTC, ETH, XRP Crash Sparks Whale Accumulation as Buy Signals Appear",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-11T03:58:55+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 2.0,
+      "freshness": 0.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-12T19:05:43.541591+00:00",
+      "effective_weight": 0.5,
+      "title_original": "BTC, ETH, XRP Crash Sparks Whale Accumulation as Buy Signals Appear",
+      "cross_check": 1
     }
   ]
 }
