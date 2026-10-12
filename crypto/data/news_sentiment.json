@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-10-12T07:05:43.418379+00:00",
+  "generated_at": "2026-10-12T08:05:51.101743+00:00",
   "total_news": 128,
-  "avg_sentiment": -0.005,
+  "avg_sentiment": -0.023,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
-  "bullish_count": 13,
-  "bearish_count": 15,
+  "bullish_count": 12,
+  "bearish_count": 16,
   "neutral_count": 100,
   "fake_count": 0,
-  "cross_confirmed": 9,
-  "single_source": 107,
+  "cross_confirmed": 6,
+  "single_source": 108,
   "by_source": {
     "Cointelegraph": {
       "total": 25,
@@ -32,8 +32,8 @@
     },
     "CryptoPotato": {
       "total": 25,
-      "bull": 6,
-      "bear": 5
+      "bull": 5,
+      "bear": 6
     },
     "Bitcoinist": {
       "total": 8,
@@ -48,22 +48,6 @@
   },
   "top_bullish": [
     {
-      "title": "Бывший топ-менеджер FTX раскритиковала сериал Netflix о крахе биржи",
-      "source": "ForkLog",
-      "source_weight": 1.2,
-      "lang": "ru",
-      "pub_date": "2026-10-11T07:17:58+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-12T07:05:43.297799+00:00",
-      "effective_weight": 0.96,
-      "title_original": "Бывший топ-менеджер FTX раскритиковала сериал Netflix о крахе биржи",
-      "cross_check": 1
-    },
-    {
       "title": "Bitcoin, Ethereum and Solana ETFs All in the Red for October",
       "source": "Decrypt",
       "source_weight": 1.1,
@@ -74,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T07:05:41.815989+00:00",
+      "collected_at": "2026-10-12T08:05:49.499403+00:00",
       "effective_weight": 0.88,
       "title_original": "Bitcoin, Ethereum and Solana ETFs All in the Red for October",
       "cross_check": 1
@@ -90,7 +74,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T07:05:42.011975+00:00",
+      "collected_at": "2026-10-12T08:05:49.703972+00:00",
       "effective_weight": 0.8,
       "title_original": "XRP Gaining Nasdaq Exposure as Evernorth Takes 473M XRP Public",
       "cross_check": 1
@@ -106,7 +90,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T07:05:42.012039+00:00",
+      "collected_at": "2026-10-12T08:05:49.704031+00:00",
       "effective_weight": 0.8,
       "title_original": "China Sees Explosive Growth of AI-Powered ‘One Person Companies’",
       "cross_check": 1
@@ -122,13 +106,45 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T07:05:42.242780+00:00",
+      "collected_at": "2026-10-12T08:05:49.919844+00:00",
       "effective_weight": 0.8,
       "title_original": "Ripple ETFs Defy Crypto Slump With Another Green Week but XRP Price Sinks",
+      "cross_check": 1
+    },
+    {
+      "title": "‘Buy Crypto’ Google Searches Hit Yearly Highs: Is Retail Coming Back?",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-11T11:58:28+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-12T08:05:49.919903+00:00",
+      "effective_weight": 0.8,
+      "title_original": "‘Buy Crypto’ Google Searches Hit Yearly Highs: Is Retail Coming Back?",
       "cross_check": 1
     }
   ],
   "top_bearish": [
+    {
+      "title": "Coinbase AI Agent Cuts Fraud by 30% in Onramp Experiment",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-12T07:03:02+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-12T08:05:49.919521+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Coinbase AI Agent Cuts Fraud by 30% in Onramp Experiment",
+      "cross_check": 1
+    },
     {
       "title": "Aave’s USDG rollover plan has a yield below most quoted borrowing rates",
       "source": "CryptoSlate",
@@ -138,10 +154,10 @@
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 1.0,
-      "freshness": 1.0,
+      "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T07:05:42.136584+00:00",
-      "effective_weight": 1.0,
+      "collected_at": "2026-10-12T08:05:49.762542+00:00",
+      "effective_weight": 0.8,
       "title_original": "Aave’s USDG rollover plan has a yield below most quoted borrowing rates",
       "cross_check": 1
     },
@@ -156,7 +172,7 @@
       "bear_weight": 1.2,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T07:05:42.136748+00:00",
+      "collected_at": "2026-10-12T08:05:49.762709+00:00",
       "effective_weight": 0.8,
       "title_original": "Some Aave loans sit near liquidation with collateral that can take hours to cash out",
       "cross_check": 1
@@ -172,7 +188,7 @@
       "bear_weight": 1.2,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T07:05:42.136964+00:00",
+      "collected_at": "2026-10-12T08:05:49.762957+00:00",
       "effective_weight": 0.8,
       "title_original": "Bitcoin hedge funds face a liquidation trap when their collateral is split across markets",
       "cross_check": 1
@@ -188,26 +204,10 @@
       "bear_weight": 1.5,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T07:05:41.723990+00:00",
+      "collected_at": "2026-10-12T08:05:49.470902+00:00",
       "effective_weight": 0.65,
       "title_original": "New York permanently bars Celsius founder Mashinsky in $35M fraud settlement",
       "cross_check": 2
-    },
-    {
-      "title": "Ликвидация сети дроповодов, кража рекламных аккаунтов Google и другие события кибербезопасности",
-      "source": "ForkLog",
-      "source_weight": 1.2,
-      "lang": "ru",
-      "pub_date": "2026-10-10T04:00:00+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.2,
-      "freshness": 0.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-12T07:05:43.298310+00:00",
-      "effective_weight": 0.6,
-      "title_original": "Ликвидация сети дроповодов, кража рекламных аккаунтов Google и другие события кибербезопасности",
-      "cross_check": 1
     }
   ]
 }
