@@ -1,9 +1,11 @@
 # ============================================================
-# ARGUS-Trader - DATASET v27
+# ARGUS-Trader - DATASET v28
 # ------------------------------------------------------------
-# v27: Dollar Bars (50M USD) + Triple Barrier + HMM regimes.
-#      + Microstructure features (OFI, TFI, VWAP dist).
-#      Feature count: 30 base + 4 micro + 1 regime = 35.
+# v28: hourly candles (no 1m data).
+#      + Triple Barrier labels (vol-scaled barriers).
+#      + HMM regimes (3 states) as feature.
+#      + Cross-asset features from BTC (5 cols).
+#      30 base + 5 cross + 1 regime = 36 features.
 # ============================================================
 
 import os
@@ -13,7 +15,6 @@ from pathlib import Path
 from datetime import datetime, timezone
 
 import numpy as np
-import pandas as pd
 from hmmlearn.hmm import GaussianHMM
 
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -53,7 +54,6 @@ log = logging.getLogger("crypto.learn.dataset")
 
 HORIZON = int(os.getenv("HORIZON", "12"))
 N_REGIMES = int(os.getenv("N_REGIMES", "3"))
-DOLLAR_BAR_SIZE = float(os.getenv("DOLLAR_BAR_SIZE", "50000000"))
 TB_UP_MULT = float(os.getenv("TB_UP_MULT", "1.0"))
 TB_DN_MULT = float(os.getenv("TB_DN_MULT", "1.0"))
 TB_VOL_WINDOW = int(os.getenv("TB_VOL_WINDOW", "24"))
@@ -76,6 +76,7 @@ DB2_SYMBOLS = {
 
 LEADER = "BTCUSDT"
 
+
 def symbol_conn(symbol):
     if symbol in DB2_SYMBOLS and DB2_OK:
         try:
@@ -83,6 +84,7 @@ def symbol_conn(symbol):
         except Exception as exc:
             log.warning("db2 conn %s: %s", symbol, exc)
     return get_connection()
+
 
 INTERNAL_COLS = [
     "change_pct", "range_pct", "body_pct",
@@ -100,11 +102,11 @@ INTERNAL_COLS = [
     "ls_ratio", "taker_ratio",
 ]
 
-MICRO_COLS = ["ofi", "tfi", "vwap_dist_pct", "trade_imbalance"]
-CROSS_SRC = ["change_24h", "change_4h", "volatility_24h", "trend_up", "ema50_dist_pct"]
+CROSS_SRC = ["change_24h", "change_4h", "volatility_24h",
+             "trend_up", "ema50_dist_pct"]
 CROSS_COLS = ["btc_" + c for c in CROSS_SRC]
 
-FEATURE_COLS = list(INTERNAL_COLS) + list(MICRO_COLS) + list(CROSS_COLS) + ["regime"]
+FEATURE_COLS = list(INTERNAL_COLS) + list(CROSS_COLS) + ["regime"]
 
 TARGET_RET = "next_return"
 TARGET_COL = "next_change_pct"
@@ -133,60 +135,33 @@ def _sel(cols, table, where):
     return "SELECT " + ", ".join(cols) + " FROM " + table + " WHERE " + where
 
 
-def fetch_minute_candles(symbol, limit=500000):
-    cols = ["timestamp", "open", "high", "low", "close", "volume"]
+def fetch_features(symbol, limit=100000):
+    cols = ["timestamp"] + INTERNAL_COLS
+    sql = _sel(cols, "features_hourly",
+               "symbol = %s ORDER BY timestamp LIMIT %s")
+    try:
+        with symbol_conn(symbol) as conn:
+            return _fetch(conn, sql, (symbol, limit))
+    except Exception as exc:
+        log.warning("features %s: %s", symbol, exc)
+        return []
+
+
+def fetch_candles(symbol, limit=100000):
+    cols = ["timestamp", "open", "high", "low", "close"]
     sql = _sel(cols, "candles",
-               "symbol = %s AND timeframe = '1m' "
+               "symbol = %s AND timeframe = '1h' "
                "AND market_type = 'futures' "
                "ORDER BY timestamp LIMIT %s")
     try:
         with symbol_conn(symbol) as conn:
             return _fetch(conn, sql, (symbol, limit))
     except Exception as exc:
-        log.warning("1m candles %s: %s", symbol, exc)
+        log.warning("candles %s: %s", symbol, exc)
         return []
 
 
-def fetch_taker_flow(symbol, limit=500000):
-    try:
-        sql = ("SELECT timestamp, buy_volume, sell_volume, "
-               "buy_trades, sell_trades "
-               "FROM taker_flow WHERE symbol = %s "
-               "ORDER BY timestamp LIMIT %s")
-        with symbol_conn(symbol) as conn:
-            return _fetch(conn, sql, (symbol, limit))
-    except Exception as exc:
-        log.warning("taker_flow %s: %s", symbol, exc)
-        return []
-
-
-def build_dollar_bars(minute_rows, dollar_size):
-    if not minute_rows:
-        return []
-    bars = []
-    cur_vol = 0.0
-    o = h = l = c = 0.0
-    start_ts = None
-    for ts, vals in minute_rows:
-        try:
-            oo, hh, ll, cc, vv = [float(x) for x in vals[:5]]
-        except Exception:
-            continue
-        if start_ts is None:
-            start_ts = ts
-            o = h = l = c = cc
-            cur_vol = 0.0
-        h = max(h, hh)
-        l = min(l, ll)
-        c = cc
-        cur_vol += vv * cc
-        if cur_vol >= dollar_size:
-            bars.append((start_ts, (o, h, l, c), cur_vol))
-            start_ts = None
-    return bars
-
-
-def compute_volatility(closes, window):
+def _compute_volatility(closes, window):
     closes = [float(c) for c in closes]
     n = len(closes)
     vols = np.full(n, np.nan)
@@ -202,17 +177,17 @@ def compute_volatility(closes, window):
     return vols
 
 
-def build_triple_barrier(bars, horizon, up_mult, dn_mult, vol_window):
+def build_triple_barrier(candles, horizon, up_mult, dn_mult, vol_window):
     out = {}
-    n = len(bars)
-    closes = [b[1][3] for b in bars]
-    vols = compute_volatility(closes, vol_window)
+    n = len(candles)
+    closes = [float(c[1][3]) for c in candles]
+    vols = _compute_volatility(closes, vol_window)
     for i in range(n):
-        ts = bars[i][0]
+        ts = candles[i][0]
         if i + horizon >= n:
             out[ts] = None
             continue
-        c0 = float(closes[i])
+        c0 = closes[i]
         if c0 <= 0:
             out[ts] = None
             continue
@@ -220,34 +195,29 @@ def build_triple_barrier(bars, horizon, up_mult, dn_mult, vol_window):
         if not np.isfinite(vol) or vol <= 0:
             out[ts] = None
             continue
-        up_pct = up_mult * vol
-        dn_pct = dn_mult * vol
-        up_price = c0 * (1 + up_pct / 100.0)
-        dn_price = c0 * (1 - dn_pct / 100.0)
+        up_price = c0 * (1 + up_mult * vol / 100.0)
+        dn_price = c0 * (1 - dn_mult * vol / 100.0)
         label = 1
         ret_pct = None
-        exit_bar = horizon
         for j in range(1, horizon + 1):
-            cj = float(closes[i + j])
+            cj = closes[i + j]
             if cj <= 0:
                 continue
             if cj >= up_price:
                 label = 2
                 ret_pct = (cj - c0) / c0 * 100.0
-                exit_bar = j
                 break
             if cj <= dn_price:
                 label = 0
                 ret_pct = (cj - c0) / c0 * 100.0
-                exit_bar = j
                 break
         if ret_pct is None:
-            c_end = float(closes[i + horizon])
+            c_end = closes[i + horizon]
             if c_end <= 0:
                 out[ts] = None
                 continue
             ret_pct = (c_end - c0) / c0 * 100.0
-        out[ts] = (label, ret_pct, exit_bar)
+        out[ts] = (label, ret_pct)
     return out
 
 
@@ -317,70 +287,43 @@ def _build_cross(leader_rows):
     return out
 
 
-def _compute_micro(bars, taker_rows):
-    flow_map = {}
-    for ts, vals in taker_rows:
-        try:
-            bv = float(vals[0]) if vals[0] else 0.0
-            sv = float(vals[1]) if vals[1] else 0.0
-            bt = float(vals[2]) if vals[2] else 0.0
-            st = float(vals[3]) if vals[3] else 0.0
-        except Exception:
-            continue
-        flow_map[ts] = (bv, sv, bt, st)
-    ofi = {}
-    tfi = {}
-    for ts, (o, h, l, c), dv in bars:
-        bv = sv = bt = st = 0.0
-        for fts, (fbv, fsv, fbt, fst) in flow_map.items():
-            if fts == ts:
-                bv, sv, bt, st = fbv, fsv, fbt, fst
-                break
-        tot_v = bv + sv
-        ofi[ts] = (bv - sv) / tot_v if tot_v > 0 else 0.0
-        tot_t = bt + st
-        tfi[ts] = (bt - st) / tot_t if tot_t > 0 else 0.0
-    return ofi, tfi
-
-
-def _load_symbol(symbol, cross=None, leader_rows=None):
-    m_rows = fetch_minute_candles(symbol)
-    if not m_rows:
+def _load_symbol(symbol, cross=None):
+    rows = fetch_features(symbol)
+    if not rows:
         return None
-    bars = build_dollar_bars(m_rows, DOLLAR_BAR_SIZE)
-    if not bars:
+    feats, fa = _build_feat_arrays(rows)
+    if not feats:
         return None
-    feats = {b[0]: True for b in bars}
-    closes = [float(b[1][3]) for b in bars]
+    candles = fetch_candles(symbol)
+    if not candles:
+        return None
+    closes = [float(c[1][3]) for c in candles]
     regimes = detect_regimes(closes, N_REGIMES)
-    ts_index = {b[0]: i for i, b in enumerate(bars)}
-    taker_rows = fetch_taker_flow(symbol)
-    ofi, tfi = _compute_micro(bars, taker_rows) if taker_rows else ({}, {})
+    ts_index = {c[0]: i for i, c in enumerate(candles)}
     return {
         "feats": feats,
-        "bars": bars,
+        "fa": fa,
+        "candles": candles,
         "closes": closes,
         "regimes": regimes,
         "ts_index": ts_index,
         "cross": cross or {},
-        "ofi": ofi,
-        "tfi": tfi,
     }
 
 
 def _row_for(d, ts):
-    row = [np.nan] * len(INTERNAL_COLS)
-    bar_idx = d["ts_index"].get(ts)
-    if bar_idx is None:
-        return row
-    ofi = d["ofi"].get(ts, 0.0)
-    tfi = d["tfi"].get(ts, 0.0)
-    vwap_dist = 0.0
-    trade_imb = tfi
+    row = []
+    for i in range(len(INTERNAL_COLS)):
+        v = d["fa"][i].get(ts)
+        row.append(v if v is not None else np.nan)
     for c in CROSS_SRC:
-        row.append(d["cross"].get(ts, {}).get(c, np.nan))
-    row.extend([ofi, tfi, vwap_dist, trade_imb])
-    row.append(float(d["regimes"][bar_idx]) if bar_idx < len(d["regimes"]) else 0.0)
+        v = d["cross"].get(ts, {}).get(c)
+        row.append(v if v is not None else np.nan)
+    idx = d["ts_index"].get(ts)
+    if idx is not None and idx < len(d["regimes"]):
+        row.append(float(d["regimes"][idx]))
+    else:
+        row.append(0.0)
     return row
 
 
@@ -396,14 +339,15 @@ def build_xy_all(symbols_data, targets_map):
             t = targets.get(ts)
             if t is None:
                 continue
-            label, ret_pct, _ = t
+            label, ret_pct = t
             X.append(_row_for(d, ts))
             y_cls.append(label)
             y_ret.append(float(ret_pct))
             ts_list.append(ts)
             sym_list.append(symbol)
     if not X:
-        return (np.array([], dtype=np.float32), np.array([], dtype=np.int32),
+        return (np.array([], dtype=np.float32),
+                np.array([], dtype=np.int32),
                 np.array([], dtype=np.float32), [], [])
     order = sorted(range(len(ts_list)), key=lambda i: ts_list[i])
     return (
@@ -466,19 +410,20 @@ def _finalize_X(X_train, X_test):
 
 def prepare(test_frac=0.2):
     log.info("=" * 60)
-    log.info("DATASET v27 (Dollar Bars + Triple Barrier + HMM)")
+    log.info("DATASET v28 (hourly + Triple Barrier + HMM + cross)")
     log.info("SYMBOLS=%s", SYMBOLS)
-    log.info("DOLLAR_BAR_SIZE=%.0f USD", DOLLAR_BAR_SIZE)
+    log.info("LEADER=%s", LEADER)
     log.info("HORIZON=%dh N_REGIMES=%d", HORIZON, N_REGIMES)
-    log.info("features: %d", len(FEATURE_COLS))
+    log.info("features: %d (30 base + %d cross + 1 regime)",
+             len(FEATURE_COLS), len(CROSS_COLS))
     log.info("=" * 60)
 
-    leader_rows = fetch_minute_candles(LEADER)
+    leader_rows = fetch_features(LEADER)
     if not leader_rows:
         log.error("leader %s missing", LEADER)
         return None
     cross = _build_cross(leader_rows)
-    log.info("leader %s cross-features: %d timestamps", LEADER, len(cross))
+    log.info("leader %s: %d timestamps", LEADER, len(cross))
 
     symbols_data = {}
     targets_map = {}
@@ -488,11 +433,12 @@ def prepare(test_frac=0.2):
             log.warning("%s: no data", symbol); continue
         symbols_data[symbol] = d
         targets_map[symbol] = build_triple_barrier(
-            d["bars"], HORIZON, TB_UP_MULT, TB_DN_MULT, TB_VOL_WINDOW,
+            d["candles"], HORIZON, TB_UP_MULT, TB_DN_MULT, TB_VOL_WINDOW,
         )
         reg_dist = np.bincount(d["regimes"], minlength=N_REGIMES)
-        log.info("%s: bars=%d regimes=%s",
-                 symbol, len(d["bars"]), reg_dist.tolist())
+        log.info("%s: feat=%d candles=%d regimes=%s",
+                 symbol, len(d["feats"]), len(d["candles"]),
+                 reg_dist.tolist())
 
     if REFERENCE not in symbols_data:
         log.error("REFERENCE %s missing", REFERENCE); return None
@@ -535,7 +481,7 @@ def prepare(test_frac=0.2):
 
 
 def prepare_one(symbol):
-    leader_rows = fetch_minute_candles(LEADER)
+    leader_rows = fetch_features(LEADER)
     cross = _build_cross(leader_rows) if leader_rows else {}
     d = _load_symbol(symbol, cross=(None if symbol == LEADER else cross))
     if d is None:
