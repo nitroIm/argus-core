@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-10-12T00:05:41.345605+00:00",
+  "generated_at": "2026-10-12T01:05:41.168923+00:00",
   "total_news": 128,
-  "avg_sentiment": -0.006,
+  "avg_sentiment": 0.003,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
-  "bullish_count": 14,
+  "bullish_count": 15,
   "bearish_count": 17,
-  "neutral_count": 97,
+  "neutral_count": 96,
   "fake_count": 0,
   "cross_confirmed": 13,
   "single_source": 97,
@@ -22,7 +22,7 @@
     },
     "Bitcoin.com": {
       "total": 10,
-      "bull": 2,
+      "bull": 3,
       "bear": 1
     },
     "CryptoSlate": {
@@ -48,6 +48,22 @@
   },
   "top_bullish": [
     {
+      "title": "XRP Gaining Nasdaq Exposure as Evernorth Takes 473M XRP Public",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-12T00:35:48+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-12T01:05:40.056484+00:00",
+      "effective_weight": 1.5,
+      "title_original": "XRP Gaining Nasdaq Exposure as Evernorth Takes 473M XRP Public",
+      "cross_check": 1
+    },
+    {
       "title": "China Sees Explosive Growth of AI-Powered ‘One Person Companies’",
       "source": "Bitcoin.com",
       "source_weight": 1.0,
@@ -56,28 +72,12 @@
       "sentiment": 1.0,
       "bull_weight": 1.0,
       "bear_weight": 0.0,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-12T00:05:40.016178+00:00",
-      "effective_weight": 1.5,
-      "title_original": "China Sees Explosive Growth of AI-Powered ‘One Person Companies’",
-      "cross_check": 1
-    },
-    {
-      "title": "Russia’s Moscow Exchange Pilots Crypto Trading for December Launch",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-11T19:00:48+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T00:05:40.016340+00:00",
+      "collected_at": "2026-10-12T01:05:40.056532+00:00",
       "effective_weight": 1.0,
-      "title_original": "Russia’s Moscow Exchange Pilots Crypto Trading for December Launch",
-      "cross_check": 2
+      "title_original": "China Sees Explosive Growth of AI-Powered ‘One Person Companies’",
+      "cross_check": 1
     },
     {
       "title": "Бывший топ-менеджер FTX раскритиковала сериал Netflix о крахе биржи",
@@ -90,7 +90,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T00:05:41.239790+00:00",
+      "collected_at": "2026-10-12T01:05:41.074102+00:00",
       "effective_weight": 0.96,
       "title_original": "Бывший топ-менеджер FTX раскритиковала сериал Netflix о крахе биржи",
       "cross_check": 1
@@ -106,26 +106,26 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T00:05:39.766560+00:00",
+      "collected_at": "2026-10-12T01:05:39.745526+00:00",
       "effective_weight": 0.88,
       "title_original": "Bitcoin, Ethereum and Solana ETFs All in the Red for October",
       "cross_check": 3
     },
     {
-      "title": "Ripple ETFs Defy Crypto Slump With Another Green Week but XRP Price Sinks",
-      "source": "CryptoPotato",
+      "title": "Russia’s Moscow Exchange Pilots Crypto Trading for December Launch",
+      "source": "Bitcoin.com",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-10-11T14:36:29+00:00",
+      "pub_date": "2026-10-11T19:00:48+00:00",
       "sentiment": 1.0,
-      "bull_weight": 1.2,
+      "bull_weight": 1.0,
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T00:05:40.432482+00:00",
+      "collected_at": "2026-10-12T01:05:40.056679+00:00",
       "effective_weight": 0.8,
-      "title_original": "Ripple ETFs Defy Crypto Slump With Another Green Week but XRP Price Sinks",
-      "cross_check": 1
+      "title_original": "Russia’s Moscow Exchange Pilots Crypto Trading for December Launch",
+      "cross_check": 2
     }
   ],
   "top_bearish": [
@@ -140,7 +140,7 @@
       "bear_weight": 1.2,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T00:05:40.252352+00:00",
+      "collected_at": "2026-10-12T01:05:40.178114+00:00",
       "effective_weight": 1.0,
       "title_original": "Some Aave loans sit near liquidation with collateral that can take hours to cash out",
       "cross_check": 1
@@ -156,7 +156,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T00:05:40.016488+00:00",
+      "collected_at": "2026-10-12T01:05:40.056820+00:00",
       "effective_weight": 0.8,
       "title_original": "Coldcard X Account Hit by Phishing Scam After $100M Fiasco",
       "cross_check": 2
@@ -172,7 +172,7 @@
       "bear_weight": 1.2,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T00:05:40.252531+00:00",
+      "collected_at": "2026-10-12T01:05:40.178275+00:00",
       "effective_weight": 0.8,
       "title_original": "Bitcoin hedge funds face a liquidation trap when their collateral is split across markets",
       "cross_check": 1
@@ -188,7 +188,7 @@
       "bear_weight": 2.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T00:05:40.432699+00:00",
+      "collected_at": "2026-10-12T01:05:40.302776+00:00",
       "effective_weight": 0.8,
       "title_original": "BTC, ETH, XRP Crash Sparks Whale Accumulation as Buy Signals Appear",
       "cross_check": 1
@@ -204,7 +204,7 @@
       "bear_weight": 1.5,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T00:05:39.667407+00:00",
+      "collected_at": "2026-10-12T01:05:39.663497+00:00",
       "effective_weight": 0.65,
       "title_original": "New York permanently bars Celsius founder Mashinsky in $35M fraud settlement",
       "cross_check": 2
