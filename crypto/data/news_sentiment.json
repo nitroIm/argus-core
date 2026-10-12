@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-10-12T04:05:37.550589+00:00",
+  "generated_at": "2026-10-12T05:05:41.736916+00:00",
   "total_news": 128,
-  "avg_sentiment": 0.001,
+  "avg_sentiment": -0.005,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
-  "bullish_count": 15,
+  "bullish_count": 14,
   "bearish_count": 17,
-  "neutral_count": 96,
+  "neutral_count": 97,
   "fake_count": 0,
-  "cross_confirmed": 11,
-  "single_source": 101,
+  "cross_confirmed": 10,
+  "single_source": 102,
   "by_source": {
     "Cointelegraph": {
       "total": 25,
@@ -32,7 +32,7 @@
     },
     "CryptoPotato": {
       "total": 25,
-      "bull": 7,
+      "bull": 6,
       "bear": 5
     },
     "Bitcoinist": {
@@ -58,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T04:05:36.339205+00:00",
+      "collected_at": "2026-10-12T05:05:40.475921+00:00",
       "effective_weight": 1.0,
       "title_original": "XRP Gaining Nasdaq Exposure as Evernorth Takes 473M XRP Public",
       "cross_check": 1
@@ -74,7 +74,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T04:05:36.339235+00:00",
+      "collected_at": "2026-10-12T05:05:40.475974+00:00",
       "effective_weight": 1.0,
       "title_original": "China Sees Explosive Growth of AI-Powered ‘One Person Companies’",
       "cross_check": 1
@@ -90,7 +90,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T04:05:37.483079+00:00",
+      "collected_at": "2026-10-12T05:05:41.614103+00:00",
       "effective_weight": 0.96,
       "title_original": "Бывший топ-менеджер FTX раскритиковала сериал Netflix о крахе биржи",
       "cross_check": 1
@@ -106,10 +106,10 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T04:05:35.712280+00:00",
+      "collected_at": "2026-10-12T05:05:40.189952+00:00",
       "effective_weight": 0.88,
       "title_original": "Bitcoin, Ethereum and Solana ETFs All in the Red for October",
-      "cross_check": 3
+      "cross_check": 2
     },
     {
       "title": "Russia’s Moscow Exchange Pilots Crypto Trading for December Launch",
@@ -122,7 +122,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T04:05:36.339341+00:00",
+      "collected_at": "2026-10-12T05:05:40.476174+00:00",
       "effective_weight": 0.8,
       "title_original": "Russia’s Moscow Exchange Pilots Crypto Trading for December Launch",
       "cross_check": 2
@@ -140,7 +140,7 @@
       "bear_weight": 1.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T04:05:36.529461+00:00",
+      "collected_at": "2026-10-12T05:05:40.613050+00:00",
       "effective_weight": 1.0,
       "title_original": "Aave’s USDG rollover plan has a yield below most quoted borrowing rates",
       "cross_check": 1
@@ -156,7 +156,7 @@
       "bear_weight": 1.2,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T04:05:36.529552+00:00",
+      "collected_at": "2026-10-12T05:05:40.613212+00:00",
       "effective_weight": 0.8,
       "title_original": "Some Aave loans sit near liquidation with collateral that can take hours to cash out",
       "cross_check": 1
@@ -172,7 +172,7 @@
       "bear_weight": 1.2,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T04:05:36.529669+00:00",
+      "collected_at": "2026-10-12T05:05:40.613456+00:00",
       "effective_weight": 0.8,
       "title_original": "Bitcoin hedge funds face a liquidation trap when their collateral is split across markets",
       "cross_check": 1
@@ -188,7 +188,7 @@
       "bear_weight": 1.5,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T04:05:35.598665+00:00",
+      "collected_at": "2026-10-12T05:05:40.052557+00:00",
       "effective_weight": 0.65,
       "title_original": "New York permanently bars Celsius founder Mashinsky in $35M fraud settlement",
       "cross_check": 2
@@ -204,7 +204,7 @@
       "bear_weight": 1.2,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T04:05:35.598994+00:00",
+      "collected_at": "2026-10-12T05:05:40.053148+00:00",
       "effective_weight": 0.65,
       "title_original": "Bitcoin speculators move 55K BTC to exchanges amid $1.1B liquidations",
       "cross_check": 1
