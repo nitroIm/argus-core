@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-10-12T05:05:41.736916+00:00",
+  "generated_at": "2026-10-12T06:05:38.819856+00:00",
   "total_news": 128,
-  "avg_sentiment": -0.005,
+  "avg_sentiment": 0.005,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
   "bullish_count": 14,
-  "bearish_count": 17,
-  "neutral_count": 97,
+  "bearish_count": 15,
+  "neutral_count": 99,
   "fake_count": 0,
   "cross_confirmed": 10,
   "single_source": 102,
@@ -13,7 +13,7 @@
     "Cointelegraph": {
       "total": 25,
       "bull": 0,
-      "bear": 2
+      "bear": 1
     },
     "Decrypt": {
       "total": 25,
@@ -43,7 +43,7 @@
     "ForkLog": {
       "total": 25,
       "bull": 2,
-      "bear": 4
+      "bear": 3
     }
   },
   "top_bullish": [
@@ -58,25 +58,9 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T05:05:40.475921+00:00",
+      "collected_at": "2026-10-12T06:05:37.481896+00:00",
       "effective_weight": 1.0,
       "title_original": "XRP Gaining Nasdaq Exposure as Evernorth Takes 473M XRP Public",
-      "cross_check": 1
-    },
-    {
-      "title": "China Sees Explosive Growth of AI-Powered ‘One Person Companies’",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-11T23:23:39+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-12T05:05:40.475974+00:00",
-      "effective_weight": 1.0,
-      "title_original": "China Sees Explosive Growth of AI-Powered ‘One Person Companies’",
       "cross_check": 1
     },
     {
@@ -90,7 +74,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T05:05:41.614103+00:00",
+      "collected_at": "2026-10-12T06:05:38.753460+00:00",
       "effective_weight": 0.96,
       "title_original": "Бывший топ-менеджер FTX раскритиковала сериал Netflix о крахе биржи",
       "cross_check": 1
@@ -106,10 +90,26 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T05:05:40.189952+00:00",
+      "collected_at": "2026-10-12T06:05:37.164118+00:00",
       "effective_weight": 0.88,
       "title_original": "Bitcoin, Ethereum and Solana ETFs All in the Red for October",
-      "cross_check": 2
+      "cross_check": 1
+    },
+    {
+      "title": "China Sees Explosive Growth of AI-Powered ‘One Person Companies’",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-11T23:23:39+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-12T06:05:37.481926+00:00",
+      "effective_weight": 0.8,
+      "title_original": "China Sees Explosive Growth of AI-Powered ‘One Person Companies’",
+      "cross_check": 1
     },
     {
       "title": "Russia’s Moscow Exchange Pilots Crypto Trading for December Launch",
@@ -122,7 +122,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T05:05:40.476174+00:00",
+      "collected_at": "2026-10-12T06:05:37.482035+00:00",
       "effective_weight": 0.8,
       "title_original": "Russia’s Moscow Exchange Pilots Crypto Trading for December Launch",
       "cross_check": 2
@@ -140,7 +140,7 @@
       "bear_weight": 1.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T05:05:40.613050+00:00",
+      "collected_at": "2026-10-12T06:05:37.605328+00:00",
       "effective_weight": 1.0,
       "title_original": "Aave’s USDG rollover plan has a yield below most quoted borrowing rates",
       "cross_check": 1
@@ -156,7 +156,7 @@
       "bear_weight": 1.2,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T05:05:40.613212+00:00",
+      "collected_at": "2026-10-12T06:05:37.605413+00:00",
       "effective_weight": 0.8,
       "title_original": "Some Aave loans sit near liquidation with collateral that can take hours to cash out",
       "cross_check": 1
@@ -172,7 +172,7 @@
       "bear_weight": 1.2,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T05:05:40.613456+00:00",
+      "collected_at": "2026-10-12T06:05:37.605525+00:00",
       "effective_weight": 0.8,
       "title_original": "Bitcoin hedge funds face a liquidation trap when their collateral is split across markets",
       "cross_check": 1
@@ -188,25 +188,25 @@
       "bear_weight": 1.5,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T05:05:40.052557+00:00",
+      "collected_at": "2026-10-12T06:05:37.055741+00:00",
       "effective_weight": 0.65,
       "title_original": "New York permanently bars Celsius founder Mashinsky in $35M fraud settlement",
       "cross_check": 2
     },
     {
-      "title": "Bitcoin speculators move 55K BTC to exchanges amid $1.1B liquidations",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-10-09T09:50:01+00:00",
+      "title": "Ликвидация сети дроповодов, кража рекламных аккаунтов Google и другие события кибербезопасности",
+      "source": "ForkLog",
+      "source_weight": 1.2,
+      "lang": "ru",
+      "pub_date": "2026-10-10T04:00:00+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 1.2,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T05:05:40.053148+00:00",
-      "effective_weight": 0.65,
-      "title_original": "Bitcoin speculators move 55K BTC to exchanges amid $1.1B liquidations",
+      "collected_at": "2026-10-12T06:05:38.753705+00:00",
+      "effective_weight": 0.6,
+      "title_original": "Ликвидация сети дроповодов, кража рекламных аккаунтов Google и другие события кибербезопасности",
       "cross_check": 1
     }
   ]
