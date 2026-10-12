@@ -1,9 +1,8 @@
 # ============================================================
-# ARGUS-Trader - TRAIN v23
+# ARGUS-Trader - TRAIN v24
 # ------------------------------------------------------------
-# v23: Per-regime LightGBM + XGBoost ensemble.
-#      Meta-labeling (2-stage model).
-#      Regime-weighted blend.
+# v24: FIX best_iteration crash in XGB meta model.
+#      per-regime LGB+XGB ensemble + meta-labeling.
 # ============================================================
 
 import os
@@ -162,6 +161,17 @@ def _trading_acc(y_true, prob, thr=0.5):
     return acc, float(mask.mean()), int(mask.sum())
 
 
+def _xgb_rounds(model):
+    try:
+        return int(model.best_iteration)
+    except Exception:
+        pass
+    try:
+        return int(model.num_boosted_rounds()) - 1
+    except Exception:
+        return 0
+
+
 def train_one_regime(symbol, X_tr, y_tr, X_va, y_va, regime_id):
     if len(X_tr) < MIN_SAMPLES:
         log.warning("%s reg%d: too few samples %d",
@@ -187,7 +197,7 @@ def train_one_regime(symbol, X_tr, y_tr, X_va, y_va, regime_id):
         early_stopping_rounds=EARLY_STOP,
         verbose_eval=False,
     )
-    xgb_best = xgb_model.best_iteration
+    xgb_best = _xgb_rounds(xgb_model)
 
     p_lgb = lgb_model.predict(X_va)
     p_xgb = xgb_model.predict(
@@ -268,8 +278,7 @@ def train_one(symbol):
         log.error("%s: no regime models trained", symbol)
         return None
 
-    # Meta-labeling: train on validation set
-    # Primary predictions on val
+    # Meta-labeling on validation
     X_va_all = X_train[cut:]
     y_va_all = y_train[cut:]
     reg_va_all = reg_train[cut:]
@@ -288,11 +297,9 @@ def train_one(symbol):
         val_probs[mask] = (p_lgb + p_xgb) / 2.0
         val_covered[mask] = True
 
-    # Meta target: 1 if primary correct
     primary_pred = np.argmax(val_probs, axis=1)
     meta_y = (primary_pred == y_va_all).astype(int)
 
-    # Meta features: primary conviction + regime + orthogonal
     meta_X = np.column_stack([
         val_probs.max(axis=1),
         val_probs[:, 0] - val_probs[:, 2],
@@ -300,6 +307,8 @@ def train_one(symbol):
     ])
 
     meta_mask = val_covered
+    meta_model = None
+    meta_best = 0
     if meta_mask.sum() > 100:
         meta_model = xgb.train(
             META_PARAMS,
@@ -307,15 +316,14 @@ def train_one(symbol):
             num_boost_round=300,
             verbose_eval=False,
         )
-        meta_best = meta_model.best_iteration or 300
-        log.info("%s: meta model trained (n=%d)", symbol, meta_mask.sum())
+        meta_best = _xgb_rounds(meta_model)
+        log.info("%s: meta model trained (n=%d, rounds=%d)",
+                 symbol, meta_mask.sum(), meta_best + 1)
     else:
-        meta_model = None
-        meta_best = 0
         log.warning("%s: too few val samples for meta (%d)",
                     symbol, meta_mask.sum())
 
-    # Evaluate on test
+    # Test
     test_probs = np.full((len(X_test), 3), 1.0 / 3.0, dtype=np.float32)
     test_covered = np.zeros(len(X_test), dtype=bool)
     for reg, info in regime_models.items():
@@ -345,7 +353,7 @@ def train_one(symbol):
 
     coverage = float(test_covered.mean())
 
-    # Meta evaluation on test
+    # Meta eval on test
     meta_acc_te = 0.0
     meta_cov_te = 0.0
     meta_n_te = 0
@@ -389,7 +397,7 @@ def train_one(symbol):
 
     meta = {
         "trained_at": datetime.now(timezone.utc).isoformat(),
-        "version": "v23",
+        "version": "v24",
         "symbol": symbol,
         "n_regimes": n_regimes,
         "regime_models": {
@@ -428,7 +436,7 @@ def train_one(symbol):
 
 def train():
     log.info("=" * 60)
-    log.info("ARGUS-Trader TRAIN v23 (per-regime + meta)")
+    log.info("ARGUS-Trader TRAIN v24 (per-regime + meta, fix)")
     log.info("SYMBOLS=%s", SYMBOLS_LIST)
     log.info("N_REGIMES=%d", ds.N_REGIMES)
     log.info("=" * 60)
