@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-10-12T21:05:39.494186+00:00",
+  "generated_at": "2026-10-12T22:05:43.765584+00:00",
   "total_news": 128,
-  "avg_sentiment": 0.1,
+  "avg_sentiment": 0.091,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
-  "bullish_count": 18,
+  "bullish_count": 17,
   "bearish_count": 5,
-  "neutral_count": 105,
+  "neutral_count": 106,
   "fake_count": 0,
-  "cross_confirmed": 15,
+  "cross_confirmed": 14,
   "single_source": 97,
   "by_source": {
     "Cointelegraph": {
@@ -17,7 +17,7 @@
     },
     "Decrypt": {
       "total": 25,
-      "bull": 3,
+      "bull": 2,
       "bear": 1
     },
     "Bitcoin.com": {
@@ -48,22 +48,6 @@
   },
   "top_bullish": [
     {
-      "title": "Bitcoin Could Rally to $94K, but First It Must Break Through This Key Price Zone",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-12T20:40:28+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.5,
-      "bear_weight": 0.0,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-12T21:05:38.469802+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Bitcoin Could Rally to $94K, but First It Must Break Through This Key Price Zone",
-      "cross_check": 1
-    },
-    {
       "title": "Solana Treasury Firm DeFi Development Keeps Buying SOL as CHAD Preferred Stock Hits Record",
       "source": "Decrypt",
       "source_weight": 1.1,
@@ -74,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T21:05:37.526314+00:00",
+      "collected_at": "2026-10-12T22:05:41.653657+00:00",
       "effective_weight": 1.1,
       "title_original": "Solana Treasury Firm DeFi Development Keeps Buying SOL as CHAD Preferred Stock Hits Record",
       "cross_check": 1
@@ -90,7 +74,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T21:05:37.485198+00:00",
+      "collected_at": "2026-10-12T22:05:41.536469+00:00",
       "effective_weight": 1.04,
       "title_original": "XRP treasury Evernorth’s shares rise 5% at Nasdaq opening print",
       "cross_check": 1
@@ -106,7 +90,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T21:05:37.485255+00:00",
+      "collected_at": "2026-10-12T22:05:41.536522+00:00",
       "effective_weight": 1.04,
       "title_original": "Ledger implant tests Bitcoin ETFs as safer custodial solutions than hardware wallets",
       "cross_check": 3
@@ -122,9 +106,25 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T21:05:38.245086+00:00",
+      "collected_at": "2026-10-12T22:05:41.915767+00:00",
       "effective_weight": 1.0,
       "title_original": "Who Pays and Who Gains as Ledger Drama Fuels Multisig Adoption",
+      "cross_check": 1
+    },
+    {
+      "title": "State of TRON Q3 2026 Report Highlights $2.21 Trillion in Stablecoin Settlement Amid Network Activity Growth",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-12T18:45:26+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 2.0,
+      "bear_weight": 0.0,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-12T22:05:41.915850+00:00",
+      "effective_weight": 1.0,
+      "title_original": "State of TRON Q3 2026 Report Highlights $2.21 Trillion in Stablecoin Settlement Amid Network Activity Growth",
       "cross_check": 1
     }
   ],
@@ -140,7 +140,7 @@
       "bear_weight": 1.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T21:05:38.469859+00:00",
+      "collected_at": "2026-10-12T22:05:42.511023+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitcoin Miner Fees Fall to Just 0.64% of Revenue, Analyst Says",
       "cross_check": 1
@@ -156,7 +156,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T21:05:38.470506+00:00",
+      "collected_at": "2026-10-12T22:05:42.511525+00:00",
       "effective_weight": 0.8,
       "title_original": "Coinbase AI Agent Cuts Fraud by 30% in Onramp Experiment",
       "cross_check": 1
@@ -172,7 +172,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.1,
-      "collected_at": "2026-10-12T21:05:38.567495+00:00",
+      "collected_at": "2026-10-12T22:05:42.647420+00:00",
       "effective_weight": 0.648,
       "title_original": "LBank at 11: Eric He on Building an Exchange for More Than One Market Cycle",
       "cross_check": 1
@@ -188,7 +188,7 @@
       "bear_weight": 3.2,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T21:05:37.526476+00:00",
+      "collected_at": "2026-10-12T22:05:41.653734+00:00",
       "effective_weight": 1.1,
       "title_original": "Bitcoin Spooked? Crypto Fear and Greed Index Drops to Pre-Rally August Lows",
       "cross_check": 1
@@ -202,10 +202,10 @@
       "sentiment": -0.294,
       "bull_weight": 1.2,
       "bear_weight": 2.2,
-      "freshness": 1.0,
+      "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T21:05:38.245481+00:00",
-      "effective_weight": 1.0,
+      "collected_at": "2026-10-12T22:05:41.916073+00:00",
+      "effective_weight": 0.8,
       "title_original": "Bitcoin Price Defies $681M ETF Outflow as Oil Trades Above $100",
       "cross_check": 1
     }
