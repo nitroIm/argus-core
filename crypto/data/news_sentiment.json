@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-10-12T09:05:41.875800+00:00",
+  "generated_at": "2026-10-12T10:05:45.517671+00:00",
   "total_news": 128,
-  "avg_sentiment": -0.005,
+  "avg_sentiment": 0.001,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
   "bullish_count": 13,
   "bearish_count": 15,
   "neutral_count": 100,
   "fake_count": 0,
   "cross_confirmed": 6,
-  "single_source": 111,
+  "single_source": 109,
   "by_source": {
     "Cointelegraph": {
       "total": 25,
@@ -22,7 +22,7 @@
     },
     "Bitcoin.com": {
       "total": 10,
-      "bull": 2,
+      "bull": 3,
       "bear": 0
     },
     "CryptoSlate": {
@@ -42,25 +42,25 @@
     },
     "ForkLog": {
       "total": 25,
-      "bull": 2,
+      "bull": 1,
       "bear": 3
     }
   },
   "top_bullish": [
     {
-      "title": "NEAR, FIL, ICP Rocket by Double Digits, BTC Rejected at $84K Again: Market Watch",
-      "source": "CryptoPotato",
+      "title": "XRP ETF Buyers Refuse to Quit Despite Sitting on a $230M Paper Loss",
+      "source": "Bitcoin.com",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-10-12T08:47:55+00:00",
+      "pub_date": "2026-10-12T09:30:41+00:00",
       "sentiment": 1.0,
-      "bull_weight": 1.0,
+      "bull_weight": 1.2,
       "bear_weight": 0.0,
       "freshness": 1.5,
-      "fake_score": 0.2,
-      "collected_at": "2026-10-12T09:05:40.771064+00:00",
-      "effective_weight": 1.2,
-      "title_original": "NEAR, FIL, ICP Rocket by Double Digits, BTC Rejected at $84K Again: Market Watch",
+      "fake_score": 0.0,
+      "collected_at": "2026-10-12T10:05:43.748830+00:00",
+      "effective_weight": 1.5,
+      "title_original": "XRP ETF Buyers Refuse to Quit Despite Sitting on a $230M Paper Loss",
       "cross_check": 1
     },
     {
@@ -74,7 +74,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T09:05:39.892884+00:00",
+      "collected_at": "2026-10-12T10:05:43.507381+00:00",
       "effective_weight": 0.88,
       "title_original": "Bitcoin, Ethereum and Solana ETFs All in the Red for October",
       "cross_check": 1
@@ -90,7 +90,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T09:05:40.259635+00:00",
+      "collected_at": "2026-10-12T10:05:43.749235+00:00",
       "effective_weight": 0.8,
       "title_original": "XRP Gaining Nasdaq Exposure as Evernorth Takes 473M XRP Public",
       "cross_check": 1
@@ -106,25 +106,25 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T09:05:40.259664+00:00",
+      "collected_at": "2026-10-12T10:05:43.749290+00:00",
       "effective_weight": 0.8,
       "title_original": "China Sees Explosive Growth of AI-Powered ‘One Person Companies’",
       "cross_check": 1
     },
     {
-      "title": "Ripple ETFs Defy Crypto Slump With Another Green Week but XRP Price Sinks",
+      "title": "NEAR, FIL, ICP Rocket by Double Digits, BTC Rejected at $84K Again: Market Watch",
       "source": "CryptoPotato",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-10-11T14:36:29+00:00",
+      "pub_date": "2026-10-12T08:47:55+00:00",
       "sentiment": 1.0,
-      "bull_weight": 1.2,
+      "bull_weight": 1.0,
       "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-12T09:05:40.771266+00:00",
+      "freshness": 1.0,
+      "fake_score": 0.2,
+      "collected_at": "2026-10-12T10:05:44.262061+00:00",
       "effective_weight": 0.8,
-      "title_original": "Ripple ETFs Defy Crypto Slump With Another Green Week but XRP Price Sinks",
+      "title_original": "NEAR, FIL, ICP Rocket by Double Digits, BTC Rejected at $84K Again: Market Watch",
       "cross_check": 1
     }
   ],
@@ -140,7 +140,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T09:05:40.771096+00:00",
+      "collected_at": "2026-10-12T10:05:44.262109+00:00",
       "effective_weight": 1.0,
       "title_original": "Coinbase AI Agent Cuts Fraud by 30% in Onramp Experiment",
       "cross_check": 1
@@ -156,7 +156,7 @@
       "bear_weight": 1.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T09:05:40.498514+00:00",
+      "collected_at": "2026-10-12T10:05:44.037097+00:00",
       "effective_weight": 0.8,
       "title_original": "Aave’s USDG rollover plan has a yield below most quoted borrowing rates",
       "cross_check": 1
@@ -172,7 +172,7 @@
       "bear_weight": 1.2,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T09:05:40.498601+00:00",
+      "collected_at": "2026-10-12T10:05:44.037259+00:00",
       "effective_weight": 0.8,
       "title_original": "Some Aave loans sit near liquidation with collateral that can take hours to cash out",
       "cross_check": 1
@@ -188,7 +188,7 @@
       "bear_weight": 1.5,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T09:05:39.796960+00:00",
+      "collected_at": "2026-10-12T10:05:43.435018+00:00",
       "effective_weight": 0.65,
       "title_original": "New York permanently bars Celsius founder Mashinsky in $35M fraud settlement",
       "cross_check": 2
@@ -204,7 +204,7 @@
       "bear_weight": 1.2,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T09:05:41.807761+00:00",
+      "collected_at": "2026-10-12T10:05:45.393507+00:00",
       "effective_weight": 0.6,
       "title_original": "Ликвидация сети дроповодов, кража рекламных аккаунтов Google и другие события кибербезопасности",
       "cross_check": 1
