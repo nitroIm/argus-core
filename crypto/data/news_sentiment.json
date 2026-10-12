@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-10-12T10:05:45.517671+00:00",
+  "generated_at": "2026-10-12T11:05:50.942632+00:00",
   "total_news": 128,
-  "avg_sentiment": 0.001,
+  "avg_sentiment": -0.014,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
-  "bullish_count": 13,
-  "bearish_count": 15,
-  "neutral_count": 100,
+  "bullish_count": 12,
+  "bearish_count": 14,
+  "neutral_count": 102,
   "fake_count": 0,
   "cross_confirmed": 6,
   "single_source": 109,
@@ -22,7 +22,7 @@
     },
     "Bitcoin.com": {
       "total": 10,
-      "bull": 3,
+      "bull": 2,
       "bear": 0
     },
     "CryptoSlate": {
@@ -38,12 +38,12 @@
     "Bitcoinist": {
       "total": 8,
       "bull": 0,
-      "bear": 0
+      "bear": 1
     },
     "ForkLog": {
       "total": 25,
       "bull": 1,
-      "bear": 3
+      "bear": 1
     }
   },
   "top_bullish": [
@@ -56,10 +56,10 @@
       "sentiment": 1.0,
       "bull_weight": 1.2,
       "bear_weight": 0.0,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T10:05:43.748830+00:00",
-      "effective_weight": 1.5,
+      "collected_at": "2026-10-12T11:05:49.276945+00:00",
+      "effective_weight": 1.0,
       "title_original": "XRP ETF Buyers Refuse to Quit Despite Sitting on a $230M Paper Loss",
       "cross_check": 1
     },
@@ -74,7 +74,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T10:05:43.507381+00:00",
+      "collected_at": "2026-10-12T11:05:49.129543+00:00",
       "effective_weight": 0.88,
       "title_original": "Bitcoin, Ethereum and Solana ETFs All in the Red for October",
       "cross_check": 1
@@ -90,25 +90,9 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T10:05:43.749235+00:00",
+      "collected_at": "2026-10-12T11:05:49.277372+00:00",
       "effective_weight": 0.8,
       "title_original": "XRP Gaining Nasdaq Exposure as Evernorth Takes 473M XRP Public",
-      "cross_check": 1
-    },
-    {
-      "title": "China Sees Explosive Growth of AI-Powered ‘One Person Companies’",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-11T23:23:39+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-12T10:05:43.749290+00:00",
-      "effective_weight": 0.8,
-      "title_original": "China Sees Explosive Growth of AI-Powered ‘One Person Companies’",
       "cross_check": 1
     },
     {
@@ -122,13 +106,45 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.2,
-      "collected_at": "2026-10-12T10:05:44.262061+00:00",
+      "collected_at": "2026-10-12T11:05:49.790339+00:00",
       "effective_weight": 0.8,
       "title_original": "NEAR, FIL, ICP Rocket by Double Digits, BTC Rejected at $84K Again: Market Watch",
+      "cross_check": 1
+    },
+    {
+      "title": "Ripple ETFs Defy Crypto Slump With Another Green Week but XRP Price Sinks",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-11T14:36:29+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-12T11:05:49.790680+00:00",
+      "effective_weight": 0.8,
+      "title_original": "Ripple ETFs Defy Crypto Slump With Another Green Week but XRP Price Sinks",
       "cross_check": 1
     }
   ],
   "top_bearish": [
+    {
+      "title": "LBank at 11: Eric He on Building an Exchange for More Than One Market Cycle",
+      "source": "Bitcoinist",
+      "source_weight": 0.9,
+      "lang": "en",
+      "pub_date": "2026-10-12T11:00:40+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.1,
+      "collected_at": "2026-10-12T11:05:49.903647+00:00",
+      "effective_weight": 1.215,
+      "title_original": "LBank at 11: Eric He on Building an Exchange for More Than One Market Cycle",
+      "cross_check": 1
+    },
     {
       "title": "Coinbase AI Agent Cuts Fraud by 30% in Onramp Experiment",
       "source": "CryptoPotato",
@@ -140,7 +156,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T10:05:44.262109+00:00",
+      "collected_at": "2026-10-12T11:05:49.790385+00:00",
       "effective_weight": 1.0,
       "title_original": "Coinbase AI Agent Cuts Fraud by 30% in Onramp Experiment",
       "cross_check": 1
@@ -156,7 +172,7 @@
       "bear_weight": 1.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T10:05:44.037097+00:00",
+      "collected_at": "2026-10-12T11:05:49.370798+00:00",
       "effective_weight": 0.8,
       "title_original": "Aave’s USDG rollover plan has a yield below most quoted borrowing rates",
       "cross_check": 1
@@ -172,7 +188,7 @@
       "bear_weight": 1.2,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T10:05:44.037259+00:00",
+      "collected_at": "2026-10-12T11:05:49.370948+00:00",
       "effective_weight": 0.8,
       "title_original": "Some Aave loans sit near liquidation with collateral that can take hours to cash out",
       "cross_check": 1
@@ -188,26 +204,10 @@
       "bear_weight": 1.5,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-12T10:05:43.435018+00:00",
+      "collected_at": "2026-10-12T11:05:49.044812+00:00",
       "effective_weight": 0.65,
       "title_original": "New York permanently bars Celsius founder Mashinsky in $35M fraud settlement",
       "cross_check": 2
-    },
-    {
-      "title": "Ликвидация сети дроповодов, кража рекламных аккаунтов Google и другие события кибербезопасности",
-      "source": "ForkLog",
-      "source_weight": 1.2,
-      "lang": "ru",
-      "pub_date": "2026-10-10T04:00:00+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.2,
-      "freshness": 0.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-12T10:05:45.393507+00:00",
-      "effective_weight": 0.6,
-      "title_original": "Ликвидация сети дроповодов, кража рекламных аккаунтов Google и другие события кибербезопасности",
-      "cross_check": 1
     }
   ]
 }
