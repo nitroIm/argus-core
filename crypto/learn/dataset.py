@@ -1,10 +1,8 @@
 # ============================================================
-# ARGUS-Trader - DATASET v28
+# ARGUS-Trader - DATASET v29
 # ------------------------------------------------------------
-# v28: hourly candles (no 1m data).
-#      + Triple Barrier labels (vol-scaled barriers).
-#      + HMM regimes (3 states) as feature.
-#      + Cross-asset features from BTC (5 cols).
+# v29: Triple Barrier + HMM regimes + cross-asset (BTC).
+#      Hourly candles (no 1m data available).
 #      30 base + 5 cross + 1 regime = 36 features.
 # ============================================================
 
@@ -410,7 +408,7 @@ def _finalize_X(X_train, X_test):
 
 def prepare(test_frac=0.2):
     log.info("=" * 60)
-    log.info("DATASET v28 (hourly + Triple Barrier + HMM + cross)")
+    log.info("DATASET v29 (Triple Barrier + HMM + cross)")
     log.info("SYMBOLS=%s", SYMBOLS)
     log.info("LEADER=%s", LEADER)
     log.info("HORIZON=%dh N_REGIMES=%d", HORIZON, N_REGIMES)
