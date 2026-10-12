@@ -1,8 +1,9 @@
 # ============================================================
-# ARGUS-Trader - TRAIN v22
+# ARGUS-Trader - TRAIN v23
 # ------------------------------------------------------------
-# v22: Per-regime XGBoost + LightGBM ensemble.
-#      Walk-forward validation. Regime-weighted blend.
+# v23: Per-regime LightGBM + XGBoost ensemble.
+#      Meta-labeling (2-stage model).
+#      Regime-weighted blend.
 # ============================================================
 
 import os
@@ -77,6 +78,21 @@ XGB_PARAMS = {
     "seed": 42,
 }
 
+META_PARAMS = {
+    "objective": "binary:logistic",
+    "eval_metric": "logloss",
+    "tree_method": "hist",
+    "max_depth": 3,
+    "learning_rate": 0.02,
+    "subsample": 0.7,
+    "colsample_bytree": 0.5,
+    "min_child_weight": 20,
+    "reg_alpha": 2.0,
+    "reg_lambda": 2.0,
+    "verbosity": 0,
+    "seed": 42,
+}
+
 SYMBOLS_LIST = [
     s.strip().upper()
     for s in (os.getenv("SYMBOLS")
@@ -91,12 +107,16 @@ DB2_SET = {
 }
 
 
-def model_file(sym, regime, kind):
-    return MODELS_DIR / f"{kind}_{sym}_reg{regime}.txt"
+def model_file(sym, regime):
+    return MODELS_DIR / f"lgb_{sym}_reg{regime}.txt"
 
 
 def xgb_model_file(sym, regime):
     return MODELS_DIR / f"xgb_{sym}_reg{regime}.json"
+
+
+def meta_model_file(sym):
+    return MODELS_DIR / f"meta_xgb_{sym}.json"
 
 
 def meta_file(sym):
@@ -192,7 +212,7 @@ def train_one_regime(symbol, X_tr, y_tr, X_va, y_va, regime_id):
 
 def train_one(symbol):
     log.info("-" * 60)
-    log.info("TRAIN %s (per-regime ensemble)", symbol)
+    log.info("TRAIN %s (per-regime ensemble + meta)", symbol)
     log.info("-" * 60)
 
     ds.SYMBOLS = [symbol]
@@ -210,7 +230,6 @@ def train_one(symbol):
     y_test = data["y_test"]
     n_regimes = data["n_regimes"]
 
-    # regime column is the last feature
     reg_train = X_train[:, -1].astype(np.int32)
     reg_test = X_test[:, -1].astype(np.int32)
 
@@ -249,10 +268,56 @@ def train_one(symbol):
         log.error("%s: no regime models trained", symbol)
         return None
 
+    # Meta-labeling: train on validation set
+    # Primary predictions on val
+    X_va_all = X_train[cut:]
+    y_va_all = y_train[cut:]
+    reg_va_all = reg_train[cut:]
+
+    val_probs = np.full((len(X_va_all), 3), 1.0 / 3.0, dtype=np.float32)
+    val_covered = np.zeros(len(X_va_all), dtype=bool)
+    for reg, info in regime_models.items():
+        mask = reg_va_all == reg
+        if mask.sum() == 0:
+            continue
+        p_lgb = info["lgb"].predict(X_va_all[mask])
+        p_xgb = info["xgb"].predict(
+            xgb.DMatrix(X_va_all[mask]),
+            iteration_range=(0, info["xgb_best"] + 1),
+        )
+        val_probs[mask] = (p_lgb + p_xgb) / 2.0
+        val_covered[mask] = True
+
+    # Meta target: 1 if primary correct
+    primary_pred = np.argmax(val_probs, axis=1)
+    meta_y = (primary_pred == y_va_all).astype(int)
+
+    # Meta features: primary conviction + regime + orthogonal
+    meta_X = np.column_stack([
+        val_probs.max(axis=1),
+        val_probs[:, 0] - val_probs[:, 2],
+        reg_va_all,
+    ])
+
+    meta_mask = val_covered
+    if meta_mask.sum() > 100:
+        meta_model = xgb.train(
+            META_PARAMS,
+            xgb.DMatrix(meta_X[meta_mask], label=meta_y[meta_mask]),
+            num_boost_round=300,
+            verbose_eval=False,
+        )
+        meta_best = meta_model.best_iteration or 300
+        log.info("%s: meta model trained (n=%d)", symbol, meta_mask.sum())
+    else:
+        meta_model = None
+        meta_best = 0
+        log.warning("%s: too few val samples for meta (%d)",
+                    symbol, meta_mask.sum())
+
     # Evaluate on test
     test_probs = np.full((len(X_test), 3), 1.0 / 3.0, dtype=np.float32)
     test_covered = np.zeros(len(X_test), dtype=bool)
-
     for reg, info in regime_models.items():
         mask = reg_test == reg
         if mask.sum() == 0:
@@ -262,8 +327,7 @@ def train_one(symbol):
             xgb.DMatrix(X_test[mask]),
             iteration_range=(0, info["xgb_best"] + 1),
         )
-        p_ens = (p_lgb + p_xgb) / 2.0
-        test_probs[mask] = p_ens
+        test_probs[mask] = (p_lgb + p_xgb) / 2.0
         test_covered[mask] = True
 
     if test_covered.sum() > 0:
@@ -281,24 +345,51 @@ def train_one(symbol):
 
     coverage = float(test_covered.mean())
 
+    # Meta evaluation on test
+    meta_acc_te = 0.0
+    meta_cov_te = 0.0
+    meta_n_te = 0
+    if meta_model is not None and test_covered.sum() > 100:
+        test_meta_X = np.column_stack([
+            test_probs.max(axis=1),
+            test_probs[:, 0] - test_probs[:, 2],
+            reg_test,
+        ])
+        meta_prob_te = meta_model.predict(
+            xgb.DMatrix(test_meta_X),
+            iteration_range=(0, meta_best + 1),
+        )
+        primary_pred_te = np.argmax(test_probs, axis=1)
+        meta_mask_te = meta_prob_te >= 0.55
+        if meta_mask_te.sum() > 10:
+            meta_acc_te = float(np.mean(
+                primary_pred_te[meta_mask_te] == y_test[meta_mask_te]
+            ))
+            meta_cov_te = float(meta_mask_te.mean())
+            meta_n_te = int(meta_mask_te.sum())
+
     log.info("%s: test acc=%.4f coverage=%.2f", symbol, acc_te, coverage)
     log.info("%s: |p|>=0.60 acc=%.4f cov=%.2f n=%d", symbol, ta60, cv60, n60)
     log.info("%s: |p|>=0.65 acc=%.4f cov=%.2f n=%d", symbol, ta65, cv65, n65)
     log.info("%s: |p|>=0.70 acc=%.4f cov=%.2f n=%d", symbol, ta70, cv70, n70)
+    log.info("%s: META acc=%.4f cov=%.2f n=%d",
+             symbol, meta_acc_te, meta_cov_te, meta_n_te)
 
     for reg, info in regime_models.items():
-        info["lgb"].save_model(str(model_file(symbol, reg, "lgb")))
+        info["lgb"].save_model(str(model_file(symbol, reg)))
         info["xgb"].save_model(str(xgb_model_file(symbol, reg)))
+    if meta_model is not None:
+        meta_model.save_model(str(meta_model_file(symbol)))
 
     best_reg = max(regime_accs, key=regime_accs.get)
     shutil.copy2(
-        model_file(symbol, best_reg, "lgb"),
+        model_file(symbol, best_reg),
         MODELS_DIR / ("lgb_" + symbol + ".txt"),
     )
 
     meta = {
         "trained_at": datetime.now(timezone.utc).isoformat(),
-        "version": "v22",
+        "version": "v23",
         "symbol": symbol,
         "n_regimes": n_regimes,
         "regime_models": {
@@ -316,6 +407,9 @@ def train_one(symbol):
         "conf70_acc": round(ta70, 4),
         "conf70_cov": round(cv70, 4),
         "conf70_n": n70,
+        "meta_acc": round(meta_acc_te, 4),
+        "meta_cov": round(meta_cov_te, 4),
+        "meta_n": meta_n_te,
         "best_regime": best_reg,
         "features": data["feature_cols"],
         "horizon": data["horizon"],
@@ -334,7 +428,7 @@ def train_one(symbol):
 
 def train():
     log.info("=" * 60)
-    log.info("ARGUS-Trader TRAIN v22 (per-regime ensemble)")
+    log.info("ARGUS-Trader TRAIN v23 (per-regime + meta)")
     log.info("SYMBOLS=%s", SYMBOLS_LIST)
     log.info("N_REGIMES=%d", ds.N_REGIMES)
     log.info("=" * 60)
@@ -351,9 +445,9 @@ def train():
     log.info("=" * 60)
     log.info("TRAIN DONE")
     for sym, m in metas.items():
-        log.info("  %s: ACC=%.4f conf60=%.4f (cov=%.2f n=%d)",
-                 sym, m["acc_test"], m["conf60_acc"],
-                 m["conf60_cov"], m["conf60_n"])
+        log.info("  %s: ACC=%.4f META=%.4f conf60=%.4f (cov=%.2f n=%d)",
+                 sym, m["acc_test"], m["meta_acc"],
+                 m["conf60_acc"], m["conf60_cov"], m["conf60_n"])
     log.info("=" * 60)
 
     return metas
