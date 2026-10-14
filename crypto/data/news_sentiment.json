@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-10-14T03:05:42.119406+00:00",
+  "generated_at": "2026-10-14T04:05:55.733080+00:00",
   "total_news": 128,
-  "avg_sentiment": -0.059,
+  "avg_sentiment": -0.056,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
   "bullish_count": 13,
   "bearish_count": 20,
@@ -58,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-14T03:05:40.691373+00:00",
+      "collected_at": "2026-10-14T04:05:54.095226+00:00",
       "effective_weight": 1.04,
       "title_original": "Strive reports $208M in warrant exercises as Bitcoin holdings jump 11%",
       "cross_check": 1
@@ -74,7 +74,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-14T03:05:41.017015+00:00",
+      "collected_at": "2026-10-14T04:05:54.396345+00:00",
       "effective_weight": 1.0,
       "title_original": "US deposit rates choke USDC adoption, and a BIS model reveals why",
       "cross_check": 1
@@ -90,7 +90,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-14T03:05:40.744049+00:00",
+      "collected_at": "2026-10-14T04:05:54.158407+00:00",
       "effective_weight": 0.88,
       "title_original": "Bitcoin Shakes Off Spooky Season Jitters: Can Bulls Keep It Going?",
       "cross_check": 1
@@ -106,7 +106,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-14T03:05:40.744147+00:00",
+      "collected_at": "2026-10-14T04:05:54.158596+00:00",
       "effective_weight": 0.88,
       "title_original": "AI Powered PlayStation Crack Could Let You Play GTA 6 on PC at Launch",
       "cross_check": 1
@@ -122,45 +122,13 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-14T03:05:40.744294+00:00",
+      "collected_at": "2026-10-14T04:05:54.158961+00:00",
       "effective_weight": 0.88,
       "title_original": "UK Moves Closer to Keeping $5B Bitcoin Haul After High Court Ruling",
       "cross_check": 1
     }
   ],
   "top_bearish": [
-    {
-      "title": "SkyAI risks SEC offer failure if SOL falls under $100",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-14T02:20:08+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.0,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-14T03:05:41.016895+00:00",
-      "effective_weight": 1.5,
-      "title_original": "SkyAI risks SEC offer failure if SOL falls under $100",
-      "cross_check": 1
-    },
-    {
-      "title": "Character.AI Files for Bankruptcy as Disney Bids $20 Million—And Users Get Grief Resources",
-      "source": "Decrypt",
-      "source_weight": 1.1,
-      "lang": "en",
-      "pub_date": "2026-10-13T21:16:04+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 3.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-14T03:05:40.743796+00:00",
-      "effective_weight": 1.1,
-      "title_original": "Character.AI Files for Bankruptcy as Disney Bids $20 Million—And Users Get Grief Resources",
-      "cross_check": 1
-    },
     {
       "title": "Digital cash offers ‘cash-like privacy,’ but bank data breaches threaten users: BIS",
       "source": "Cointelegraph",
@@ -172,7 +140,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-14T03:05:40.691604+00:00",
+      "collected_at": "2026-10-14T04:05:54.095457+00:00",
       "effective_weight": 1.04,
       "title_original": "Digital cash offers ‘cash-like privacy,’ but bank data breaches threaten users: BIS",
       "cross_check": 1
@@ -188,7 +156,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-14T03:05:40.691987+00:00",
+      "collected_at": "2026-10-14T04:05:54.095738+00:00",
       "effective_weight": 1.04,
       "title_original": "Chinese fraud victims lose key court battle over 61,000 Bitcoin",
       "cross_check": 2
@@ -204,10 +172,42 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-14T03:05:40.954042+00:00",
+      "collected_at": "2026-10-14T04:05:54.345044+00:00",
       "effective_weight": 1.0,
       "title_original": "BNY Brings 24/7 Dollar Settlement to Singapore Gulf Bank",
       "cross_check": 1
+    },
+    {
+      "title": "SkyAI risks SEC offer failure if SOL falls under $100",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-14T02:20:08+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.0,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-14T04:05:54.396217+00:00",
+      "effective_weight": 1.0,
+      "title_original": "SkyAI risks SEC offer failure if SOL falls under $100",
+      "cross_check": 1
+    },
+    {
+      "title": "Metaplanet unveils $380 million share buyback after stock crashes nearly 90% from peak",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-14T00:30:45+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 2.0,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-14T04:05:54.396286+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Metaplanet unveils $380 million share buyback after stock crashes nearly 90% from peak",
+      "cross_check": 2
     }
   ]
 }
