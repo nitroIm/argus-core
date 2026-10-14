@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-10-14T05:05:41.642275+00:00",
+  "generated_at": "2026-10-14T06:05:46.331983+00:00",
   "total_news": 128,
-  "avg_sentiment": -0.059,
+  "avg_sentiment": -0.063,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
-  "bullish_count": 13,
+  "bullish_count": 12,
   "bearish_count": 20,
-  "neutral_count": 95,
+  "neutral_count": 96,
   "fake_count": 0,
   "cross_confirmed": 12,
   "single_source": 97,
@@ -32,7 +32,7 @@
     },
     "CryptoPotato": {
       "total": 25,
-      "bull": 7,
+      "bull": 6,
       "bear": 6
     },
     "Bitcoinist": {
@@ -58,25 +58,9 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-14T05:05:39.593133+00:00",
+      "collected_at": "2026-10-14T06:05:44.332099+00:00",
       "effective_weight": 1.04,
       "title_original": "Strive reports $208M in warrant exercises as Bitcoin holdings jump 11%",
-      "cross_check": 1
-    },
-    {
-      "title": "US deposit rates choke USDC adoption, and a BIS model reveals why",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-13T23:10:52+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-14T05:05:40.056221+00:00",
-      "effective_weight": 1.0,
-      "title_original": "US deposit rates choke USDC adoption, and a BIS model reveals why",
       "cross_check": 1
     },
     {
@@ -90,7 +74,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-14T05:05:39.682361+00:00",
+      "collected_at": "2026-10-14T06:05:44.454208+00:00",
       "effective_weight": 0.88,
       "title_original": "Bitcoin Shakes Off Spooky Season Jitters: Can Bulls Keep It Going?",
       "cross_check": 1
@@ -106,7 +90,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-14T05:05:39.682468+00:00",
+      "collected_at": "2026-10-14T06:05:44.454383+00:00",
       "effective_weight": 0.88,
       "title_original": "AI Powered PlayStation Crack Could Let You Play GTA 6 on PC at Launch",
       "cross_check": 1
@@ -122,10 +106,26 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-14T05:05:39.682621+00:00",
+      "collected_at": "2026-10-14T06:05:44.454534+00:00",
       "effective_weight": 0.88,
       "title_original": "UK Moves Closer to Keeping $5B Bitcoin Haul After High Court Ruling",
       "cross_check": 2
+    },
+    {
+      "title": "US deposit rates choke USDC adoption, and a BIS model reveals why",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-13T23:10:52+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-14T06:05:44.864226+00:00",
+      "effective_weight": 0.8,
+      "title_original": "US deposit rates choke USDC adoption, and a BIS model reveals why",
+      "cross_check": 1
     }
   ],
   "top_bearish": [
@@ -140,7 +140,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-14T05:05:39.593364+00:00",
+      "collected_at": "2026-10-14T06:05:44.332329+00:00",
       "effective_weight": 1.04,
       "title_original": "Digital cash offers ‘cash-like privacy,’ but bank data breaches threaten users: BIS",
       "cross_check": 1
@@ -156,7 +156,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-14T05:05:39.593653+00:00",
+      "collected_at": "2026-10-14T06:05:44.332614+00:00",
       "effective_weight": 1.04,
       "title_original": "Chinese fraud victims lose key court battle over 61,000 Bitcoin",
       "cross_check": 2
@@ -172,7 +172,7 @@
       "bear_weight": 1.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-14T05:05:40.056070+00:00",
+      "collected_at": "2026-10-14T06:05:44.864123+00:00",
       "effective_weight": 1.0,
       "title_original": "SkyAI risks SEC offer failure if SOL falls under $100",
       "cross_check": 1
@@ -188,7 +188,7 @@
       "bear_weight": 2.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-14T05:05:40.056150+00:00",
+      "collected_at": "2026-10-14T06:05:44.864176+00:00",
       "effective_weight": 1.0,
       "title_original": "Metaplanet unveils $380 million share buyback after stock crashes nearly 90% from peak",
       "cross_check": 2
@@ -204,7 +204,7 @@
       "bear_weight": 1.2,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-14T05:05:41.517879+00:00",
+      "collected_at": "2026-10-14T06:05:46.210357+00:00",
       "effective_weight": 0.96,
       "title_original": "Аналитики K33 исключили массовую продажу биткоинов властями США",
       "cross_check": 1
