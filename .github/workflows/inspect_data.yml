@@ -1,4 +1,4 @@
-name: Inspect Parquet Data
+name: Inspect Parquet
 on:
   workflow_dispatch:
 
@@ -14,11 +14,7 @@ jobs:
         with:
           repository: nitroIm/vision_out
           path: vision_out
-
-      - name: List files
-        run: |
-          echo "=== vision_out/crypto/collect ==="
-          ls -la vision_out/crypto/collect/
+          token: ${{ secrets.GH_PAT }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -28,7 +24,5 @@ jobs:
       - name: Install dependencies
         run: pip install pandas pyarrow
 
-      - name: Run inspection script
-        env:
-          DATA_DIR: vision_out/crypto/collect
+      - name: Run inspection
         run: python crypto/collect/inspect_data.py
