@@ -1,9 +1,9 @@
 # ============================================================
-# ARGUS - BOT HOST v3.6
+# ARGUS - BOT HOST v5.0
 # ------------------------------------------------------------
-# v3.6: + команда /fetch_funding (Binance -> vps_inbox).
-# v3.5: fix approve -> approved_download идёт в argus-core.
-# v3.4: два репозитория.
+# v5.0: только BTC 15m collector.
+#       Убран старый 4-coin binance_collect.
+#       /btc_on /btc_off /btc_status + кнопки.
 # ============================================================
 
 import os
@@ -12,6 +12,13 @@ import base64
 import asyncio
 import logging
 import requests
+from datetime import datetime, timezone
+
+try:
+    import psycopg
+    PSYCOPG_OK = True
+except ImportError:
+    PSYCOPG_OK = False
 
 try:
     from aiogram import Bot, Dispatcher, types, F
@@ -28,23 +35,6 @@ try:
     load_dotenv()
 except ImportError:
     print("WARN: python-dotenv not installed")
-
-# ---- vps_inbox import (crypto/vps_inbox) -------------------
-_BOT_DIR = os.path.dirname(
-    os.path.abspath(__file__)
-)
-sys.path.insert(
-    0,
-    os.path.join(_BOT_DIR, "crypto", "vps_inbox"),
-)
-
-try:
-    import vps_funding
-    VPS_FUNDING_OK = True
-except Exception as e:
-    print("WARN: vps_funding not loaded: " + str(e))
-    vps_funding = None
-    VPS_FUNDING_OK = False
 
 
 BOT_TOKEN = (os.getenv("BOT_TOKEN") or "").strip()
@@ -66,11 +56,9 @@ if not GITHUB_REPO:
     sys.exit(1)
 if not GITHUB_REPO_BOOKS:
     print("WARN: GITHUB_REPO_BOOKS not set")
-    print("      personal-* will use GITHUB_REPO")
 
 
 def repo_of(kind):
-    """core -> argus-core, books -> personal-books."""
     if kind == "books":
         return GITHUB_REPO_BOOKS or GITHUB_REPO
     return GITHUB_REPO
@@ -84,48 +72,51 @@ logger = logging.getLogger(__name__)
 logger.info("BOT_TOKEN: " + str(len(BOT_TOKEN)))
 logger.info("REPO: " + GITHUB_REPO)
 logger.info("REPO_BOOKS: " + (GITHUB_REPO_BOOKS or "-"))
-logger.info(
-    "VPS_FUNDING_OK: " + str(VPS_FUNDING_OK)
+logger.info("PSYCOPG_OK: " + str(PSYCOPG_OK))
+
+# ----- binance/ path for BTC collector -----
+SCRIPT_DIR = os.path.dirname(
+    os.path.abspath(__file__)
 )
+BINANCE_DIR = os.path.join(
+    SCRIPT_DIR, "binance"
+)
+if BINANCE_DIR not in sys.path:
+    sys.path.insert(0, BINANCE_DIR)
+
+try:
+    import btc_data_binance
+    BTC_COLLECT_OK = True
+    logger.info("BTC_COLLECT: ok")
+except Exception as e:
+    BTC_COLLECT_OK = False
+    logger.warning("btc_data_binance: " + str(e))
 
 
 WORKFLOWS = {
-    "train": {
-        "file": "train_model.yml",
-        "repo": "core",
-    },
-    "collect": {
-        "file": "crypto_collect.yml",
-        "repo": "core",
-    },
-    "enrich": {
-        "file": "crypto_enrich.yml",
-        "repo": "core",
-    },
-    "detect": {
-        "file": "crypto_detect.yml",
-        "repo": "core",
-    },
-    "report_week": {
-        "file": "crypto_reporter.yml",
-        "repo": "core",
-    },
-    "audio": {
-        "file": "personal_audio.yml",
-        "repo": "books",
-    },
+    "train": {"file": "train_model.yml", "repo": "core"},
+    "collect": {"file": "crypto_collect.yml", "repo": "core"},
+    "enrich": {"file": "crypto_enrich.yml", "repo": "core"},
+    "detect": {"file": "crypto_detect.yml", "repo": "core"},
+    "report_week": {"file": "crypto_reporter.yml", "repo": "core"},
+    "audio": {"file": "personal_audio.yml", "repo": "books"},
 }
 
 
-# ------------------------------------------------------------
-# GITHUB API
-# ------------------------------------------------------------
-def gh_headers(accept="application/vnd.github+json"):
+# ============================================================
+# GITHUB HELPERS
+# ============================================================
+
+def _gh_headers(accept="application/vnd.github+json"):
     return {
         "Accept": accept,
         "Authorization": "Bearer " + GITHUB_PAT,
         "X-GitHub-Api-Version": "2022-11-28",
     }
+
+
+def gh_headers(accept="application/vnd.github+json"):
+    return _gh_headers(accept)
 
 
 def run_workflow(key, inputs=None):
@@ -165,7 +156,9 @@ def read_json(path, repo_kind="core"):
     url += path
     headers = gh_headers("application/vnd.github.raw")
     try:
-        r = requests.get(url, headers=headers, timeout=15)
+        r = requests.get(
+            url, headers=headers, timeout=15,
+        )
         if r.status_code == 200:
             return r.json()
     except Exception:
@@ -252,9 +245,91 @@ def send_dispatch(event_type, payload,
         return False
 
 
-# ------------------------------------------------------------
+# ============================================================
+# DB TEST
+# ============================================================
+
+def _mask_url(url):
+    if not url:
+        return "NOT SET"
+    try:
+        head, tail = url.split("@", 1)
+        if ":" in head:
+            user = head.rsplit(":", 1)[0]
+        else:
+            user = head
+        return user + "@***@" + tail[:40]
+    except Exception:
+        return "***"
+
+
+def _check_db(label, url):
+    lines = ["<b>" + label + "</b>"]
+    lines.append(_mask_url(url))
+    if not url:
+        lines.append("✗ env var NOT SET")
+        return lines, False
+    if not PSYCOPG_OK:
+        lines.append("✗ psycopg not installed")
+        return lines, False
+    try:
+        conn = psycopg.connect(
+            url, connect_timeout=15,
+            application_name="argus-dbtest",
+        )
+    except Exception as e:
+        lines.append("✗ connect: " + str(e)[:100])
+        return lines, False
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT 1")
+            cur.fetchone()
+            lines.append("✓ SELECT 1")
+            cur.execute(
+                "SELECT COUNT(*) FROM pg_tables "
+                "WHERE schemaname='public'"
+            )
+            n = cur.fetchone()[0]
+            lines.append("✓ tables: " + str(n))
+            cur.execute(
+                "SELECT market_type, COUNT(*) "
+                "FROM candles "
+                "WHERE symbol='BTCUSDT' "
+                "GROUP BY market_type"
+            )
+            for mt, cnt in cur.fetchall():
+                lines.append(
+                    "✓ BTCUSDT " + str(mt)
+                    + ": " + str(cnt)
+                )
+    except Exception as e:
+        lines.append("✗ query: " + str(e)[:100])
+        conn.close()
+        return lines, False
+    conn.close()
+    lines.append("✓ OK")
+    return lines, True
+
+
+def dbtest_report():
+    url1 = (os.getenv("AIVEN_DB_URL") or "").strip()
+    if not url1:
+        url1 = (os.getenv("ARGUS_DB_URL") or "").strip()
+    lines = ["🗄️ DB connectivity test", ""]
+    l1, ok1 = _check_db("AIVEN_DB", url1)
+    lines.extend(l1)
+    lines.append("")
+    if ok1:
+        lines.append("✅ OK")
+    else:
+        lines.append("⚠️ FAIL")
+    return "\n".join(lines)
+
+
+# ============================================================
 # HELPERS
-# ------------------------------------------------------------
+# ============================================================
+
 def fmt_price(p):
     if p >= 1000:
         return "$" + format(int(p), ",")
@@ -303,63 +378,41 @@ def trained_books():
     return result
 
 
+def btc_status_report():
+    if not BTC_COLLECT_OK:
+        return "❌ btc_data_binance not loaded"
+    state = "🟢 ON" if btc_data_binance.is_enabled() else "🔴 OFF"
+    lines = ["🪙 BTC 15m collector"]
+    lines.append("")
+    lines.append("state: " + state)
+    lines.append("flag: " + btc_data_binance.FLAG_FILE)
+    lines.append("symbol: " + btc_data_binance.SYMBOL)
+    lines.append("timeframe: " + btc_data_binance.TIMEFRAME)
+    return "\n".join(lines)
+
+
 def build_status():
     lines = ["📊 ARGUS - статус", ""]
     s = read_json("data/summary.json", "core")
     if s:
         lines.append("🏛️ ARGUS")
-        lines.append("📚 Книг: " + str(s.get("total_books", 0)))
+        lines.append(
+            "📚 Книг: " + str(s.get("total_books", 0))
+        )
         lines.append(
             "📄 Чанков: " + str(s.get("total_chunks", 0))
         )
     else:
         lines.append("🏛️ ARGUS: нет данных")
     lines.append("")
-    levels = read_json(
-        "crypto/data/levels_analysis.json", "core",
+    lines.append(
+        "🪙 btc_collect: "
+        + ("ok" if BTC_COLLECT_OK else "fail")
     )
-    patterns = read_json(
-        "crypto/data/patterns_analysis.json", "core",
+    lines.append(
+        "🗄️ psycopg: "
+        + ("ok" if PSYCOPG_OK else "fail")
     )
-    if levels or patterns:
-        lines.append("🪙 Crypto")
-        if levels and levels.get("symbols"):
-            for sym, d in levels["symbols"].items():
-                name = sym.replace("USDT", "")
-                price = d.get("current_price", 0)
-                lines.append(
-                    "💰 " + name + ": "
-                    + fmt_price(price)
-                )
-                sup = d.get("supports", [])
-                if sup:
-                    s1 = sup[0]
-                    lines.append(
-                        "  support "
-                        + fmt_price(s1["price"])
-                    )
-                res = d.get("resistances", [])
-                if res:
-                    r1 = res[0]
-                    lines.append(
-                        "  resist "
-                        + fmt_price(r1["price"])
-                    )
-        if patterns and patterns.get("symbols"):
-            lines.append("")
-            lines.append("🧩 Patterns")
-            for sym, d in patterns["symbols"].items():
-                name = sym.replace("USDT", "")
-                up = d.get("up_ratio", 0) * 100
-                mk = d.get("markov", {})
-                p10 = mk.get("p_1_given_0", 0)
-                line = "  " + name + ": "
-                line += format(up, ".0f") + "% up"
-                line += "  P(1|0)="
-                line += format(p10, ".2f")
-                lines.append(line)
-    else:
-        lines.append("🪙 Crypto: нет данных")
     return "\n".join(lines)
 
 
@@ -371,16 +424,17 @@ def short_info():
         "📚 Хранить знания из книг\n"
         "🔍 Отвечать на вопросы (/ask)\n"
         "📥 Искать и скачивать книги (/find)\n"
-        "🪙 Собирать данные BTC/ETH\n"
+        "🪙 Собирать данные BTC 15m\n"
         "📈 Строить паттерны и прогнозы\n"
         "🎧 Озвучивать книги\n\n"
         "Выбирай кнопки внизу."
     )
 
 
-# ------------------------------------------------------------
+# ============================================================
 # BOT
-# ------------------------------------------------------------
+# ============================================================
+
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
 
@@ -441,12 +495,18 @@ def kb_crypto():
     return InlineKeyboardMarkup(inline_keyboard=[
         [
             InlineKeyboardButton(
-                text="🪙 Collect",
-                callback_data="action:collect",
+                text="🟢 BTC ON",
+                callback_data="btc:on",
             ),
             InlineKeyboardButton(
-                text="🧠 Enrich",
-                callback_data="action:enrich",
+                text="🔴 BTC OFF",
+                callback_data="btc:off",
+            ),
+        ],
+        [
+            InlineKeyboardButton(
+                text="📊 BTC статус",
+                callback_data="btc:status",
             ),
         ],
         [
@@ -457,12 +517,6 @@ def kb_crypto():
             InlineKeyboardButton(
                 text="📊 Отчёт недели",
                 callback_data="report:week",
-            ),
-        ],
-        [
-            InlineKeyboardButton(
-                text="📥 Funding bootstrap",
-                callback_data="vps:funding",
             ),
         ],
         [
@@ -531,29 +585,17 @@ def kb_charts():
                 text="🪙 BTC свечи",
                 callback_data="charts:show:btc_candles",
             ),
-            InlineKeyboardButton(
-                text="🪙 ETH свечи",
-                callback_data="charts:show:eth_candles",
-            ),
         ],
         [
             InlineKeyboardButton(
                 text="🧩 BTC паттерн",
                 callback_data="charts:show:btc_pattern",
             ),
-            InlineKeyboardButton(
-                text="🧩 ETH паттерн",
-                callback_data="charts:show:eth_pattern",
-            ),
         ],
         [
             InlineKeyboardButton(
                 text="🧠 BTC Markov",
                 callback_data="charts:show:btc_markov",
-            ),
-            InlineKeyboardButton(
-                text="🧠 ETH Markov",
-                callback_data="charts:show:eth_markov",
             ),
         ],
         [
@@ -628,9 +670,10 @@ def kb_confirm(action, payload=""):
     ])
 
 
-# ------------------------------------------------------------
+# ============================================================
 # COMMANDS
-# ------------------------------------------------------------
+# ============================================================
+
 @dp.message(Command("start"))
 async def cmd_start(message: types.Message):
     await message.answer(
@@ -708,48 +751,52 @@ async def cmd_charts(message: types.Message):
     )
 
 
-@dp.message(Command("fetch_funding"))
-async def cmd_fetch_funding(
-    message: types.Message,
-):
-    if not VPS_FUNDING_OK:
-        await message.answer(
-            "❌ vps_funding не загружен. "
-            "Проверь crypto/vps_inbox/vps_funding.py"
-        )
-        return
-
-    await message.answer(
-        "🪙 Funding bootstrap\n"
-        "Binance -> GitHub vps_inbox.\n"
-        "~1 минута."
-    )
-
-    loop = asyncio.get_event_loop()
-
-    def _run():
-        return vps_funding.bootstrap(
-            repo=GITHUB_REPO,
-            pat=GITHUB_PAT,
-        )
-
+@dp.message(Command("dbtest"))
+async def cmd_dbtest(message: types.Message):
+    await message.answer("🗄️ Проверяю DB...")
+    loop = asyncio.get_running_loop()
     try:
-        results = await loop.run_in_executor(
-            None, _run,
+        text = await loop.run_in_executor(
+            None, dbtest_report,
         )
     except Exception as e:
-        await message.answer("❌ " + str(e))
+        await message.answer("❌ " + str(e)[:200])
         return
-
-    text = vps_funding.summary_text(results)
     if len(text) > 4000:
         text = text[:3950] + "\n..."
-    await message.answer(text)
+    await message.answer(text, parse_mode="HTML")
 
 
-# ------------------------------------------------------------
-# CALLBACKS - MENU
-# ------------------------------------------------------------
+@dp.message(Command("btc_on"))
+async def cmd_btc_on(message: types.Message):
+    if not BTC_COLLECT_OK:
+        await message.answer("❌ btc_data_binance not loaded")
+        return
+    btc_data_binance.set_enabled(True)
+    await message.answer("🟢 BTC 15m collector: ON")
+
+
+@dp.message(Command("btc_off"))
+async def cmd_btc_off(message: types.Message):
+    if not BTC_COLLECT_OK:
+        await message.answer("❌ btc_data_binance not loaded")
+        return
+    btc_data_binance.set_enabled(False)
+    await message.answer("🔴 BTC 15m collector: OFF")
+
+
+@dp.message(Command("btc_status"))
+async def cmd_btc_status(message: types.Message):
+    if not BTC_COLLECT_OK:
+        await message.answer("❌ btc_data_binance not loaded")
+        return
+    await message.answer(btc_status_report())
+
+
+# ============================================================
+# CALLBACKS
+# ============================================================
+
 @dp.callback_query(F.data == "menu:main")
 async def cb_main(cb: CallbackQuery):
     await cb.message.edit_text(
@@ -764,8 +811,7 @@ async def cb_books(cb: CallbackQuery):
     books = personal_books()
     if not books:
         await cb.message.edit_text(
-            "📚 Мои книги\n\n"
-            "Пока пусто.\n"
+            "📚 Мои книги\n\nПока пусто.\n"
             "Найди через /find.",
             reply_markup=kb_back(),
         )
@@ -933,8 +979,7 @@ async def cb_confirm_train(cb: CallbackQuery):
 @dp.callback_query(F.data == "menu:ask")
 async def cb_ask(cb: CallbackQuery):
     await cb.message.edit_text(
-        "💬 Спросить ARGUS\n\n"
-        "Напиши:\n/ask твой вопрос",
+        "💬 Спросить ARGUS\n\nНапиши:\n/ask вопрос",
         reply_markup=kb_back(),
     )
     await cb.answer()
@@ -973,9 +1018,6 @@ async def cb_status(cb: CallbackQuery):
     )
 
 
-# ------------------------------------------------------------
-# CHARTS
-# ------------------------------------------------------------
 @dp.callback_query(F.data == "charts:menu")
 async def cb_charts_menu(cb: CallbackQuery):
     await cb.message.edit_text(
@@ -1005,29 +1047,6 @@ async def cb_charts_show(cb: CallbackQuery):
         pass
 
 
-# ------------------------------------------------------------
-# CRYPTO
-# ------------------------------------------------------------
-@dp.callback_query(F.data == "action:collect")
-async def cb_collect(cb: CallbackQuery):
-    await cb.answer("Запускаю...")
-    ok, msg = run_workflow("collect")
-    await cb.message.edit_text(
-        "✅ Collect" if ok else "❌ " + msg,
-        reply_markup=kb_crypto(),
-    )
-
-
-@dp.callback_query(F.data == "action:enrich")
-async def cb_enrich(cb: CallbackQuery):
-    await cb.answer("Запускаю...")
-    ok, msg = run_workflow("enrich")
-    await cb.message.edit_text(
-        "✅ Enrich" if ok else "❌ " + msg,
-        reply_markup=kb_crypto(),
-    )
-
-
 @dp.callback_query(F.data == "action:detect")
 async def cb_detect(cb: CallbackQuery):
     await cb.answer("Запускаю...")
@@ -1048,90 +1067,64 @@ async def cb_report(cb: CallbackQuery):
     )
 
 
-@dp.callback_query(F.data == "vps:funding")
-async def cb_vps_funding(cb: CallbackQuery):
-    if not VPS_FUNDING_OK:
-        await cb.answer(
-            "vps_funding не загружен",
-            show_alert=True,
-        )
+@dp.callback_query(F.data == "btc:on")
+async def cb_btc_on(cb: CallbackQuery):
+    if not BTC_COLLECT_OK:
+        await cb.answer("Модуль не загружен", show_alert=True)
         return
-    await cb.answer("Старт...")
-    await cb.message.edit_text(
-        "🪙 Funding bootstrap\n"
-        "Binance -> GitHub vps_inbox.\n"
-        "~1 минута."
-    )
-    loop = asyncio.get_event_loop()
+    btc_data_binance.set_enabled(True)
+    await cb.answer("🟢 BTC 15m collector ON")
 
-    def _run():
-        return vps_funding.bootstrap(
-            repo=GITHUB_REPO,
-            pat=GITHUB_PAT,
-        )
 
-    try:
-        results = await loop.run_in_executor(
-            None, _run,
-        )
-    except Exception as e:
-        await cb.message.edit_text("❌ " + str(e))
+@dp.callback_query(F.data == "btc:off")
+async def cb_btc_off(cb: CallbackQuery):
+    if not BTC_COLLECT_OK:
+        await cb.answer("Модуль не загружен", show_alert=True)
         return
+    btc_data_binance.set_enabled(False)
+    await cb.answer("🔴 BTC 15m collector OFF")
 
-    text = vps_funding.summary_text(results)
-    if len(text) > 4000:
-        text = text[:3950] + "\n..."
+
+@dp.callback_query(F.data == "btc:status")
+async def cb_btc_status(cb: CallbackQuery):
+    await cb.answer("Читаю...")
     await cb.message.edit_text(
-        text, reply_markup=kb_crypto(),
+        btc_status_report(),
+        reply_markup=kb_crypto(),
     )
 
 
-# ------------------------------------------------------------
-# PERSONAL DOWNLOAD -> dispatch (books)
-# ------------------------------------------------------------
 @dp.callback_query(F.data.startswith("personal_dl:"))
 async def cb_pdl(cb: CallbackQuery):
     idx = cb.data.replace("personal_dl:", "")
     await cb.answer("Запускаю...")
-
     cand = read_json(
         "data/personal_candidates.json", "books",
     )
     if not cand:
         await cb.message.edit_text("❌ Нет списка")
         return
-
     items = cand.get("items", [])
     try:
         i = int(idx)
     except ValueError:
         await cb.answer("Ошибка", show_alert=True)
         return
-
     if i < 0 or i >= len(items):
-        await cb.answer(
-            "Вне диапазона", show_alert=True,
-        )
+        await cb.answer("Вне диапазона", show_alert=True)
         return
-
     item = items[i]
     url = item.get("url")
     title = item.get("title", "book")
-
     if not url:
         await cb.message.edit_text("❌ Нет URL")
         return
-
     send_dispatch("personal_download", {
-        "url": url,
-        "title": title,
+        "url": url, "title": title,
     }, "books")
-
     await cb.message.edit_text(
-        "📥 Скачиваю\n\n"
-        + title[:150]
-        + "\n\n⏳ 1-2 минуты.\n"
-        + "PDF появится в personal_books/"
+        "📥 Скачиваю\n\n" + title[:150]
+        + "\n\n⏳ 1-2 минуты."
     )
 
 
@@ -1153,22 +1146,18 @@ async def cb_personal_reject(cb: CallbackQuery):
 )
 async def cb_pnext(cb: CallbackQuery):
     await cb.answer("Загружаю...")
-
     cand = read_json(
         "data/personal_candidates.json", "books",
     )
     if not cand:
         return
-
     items = cand.get("items", [])
     offset = cand.get("offset", 5)
     total = len(items)
-
     next_batch = items[offset:offset + 5]
     if not next_batch:
         await cb.message.edit_text("Больше нет книг")
         return
-
     for i, item in enumerate(next_batch):
         real_i = offset + i
         title = item.get("title", "?")[:200]
@@ -1204,7 +1193,6 @@ async def cb_pnext(cb: CallbackQuery):
             }, timeout=15)
         except Exception:
             pass
-
     try:
         await cb.message.edit_reply_markup(
             reply_markup=None,
@@ -1213,9 +1201,6 @@ async def cb_pnext(cb: CallbackQuery):
         pass
 
 
-# ------------------------------------------------------------
-# APPROVE (ARGUS Core -> argus-core)
-# ------------------------------------------------------------
 @dp.callback_query(F.data.startswith("approve:"))
 async def cb_approve(cb: CallbackQuery):
     sid = cb.data.replace("approve:", "")
@@ -1240,11 +1225,50 @@ async def cb_reject(cb: CallbackQuery):
     await cb.answer("OK")
 
 
-# ------------------------------------------------------------
+# ============================================================
+# BTC 15m LOOP (background, every 15 min)
+# ============================================================
+async def btc_loop():
+    if not BTC_COLLECT_OK:
+        logger.warning(
+            "btc_loop: btc_data_binance not loaded"
+        )
+        return
+    if not PSYCOPG_OK:
+        logger.warning(
+            "btc_loop: psycopg not installed"
+        )
+        return
+
+    logger.info("btc_loop: started")
+    loop = asyncio.get_running_loop()
+
+    await asyncio.sleep(180)
+
+    while True:
+        try:
+            if btc_data_binance.is_enabled():
+                logger.info("btc_loop: tick")
+                added = await loop.run_in_executor(
+                    None,
+                    btc_data_binance.collect_btc,
+                )
+                logger.info(
+                    "btc_loop: added=%d", added
+                )
+            else:
+                logger.info("btc_loop: disabled, skip")
+        except Exception as e:
+            logger.error("btc_loop error: %s", e)
+        await asyncio.sleep(900)
+
+
+# ============================================================
 # RUN
-# ------------------------------------------------------------
+# ============================================================
 async def main():
-    logger.info("ARGUS Bot Host v3.6 started")
+    logger.info("ARGUS Bot Host v5.0 started")
+    asyncio.create_task(btc_loop())
     await dp.start_polling(bot)
 
 
