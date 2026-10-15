@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-10-15T19:05:51.381439+00:00",
+  "generated_at": "2026-10-15T20:05:41.438880+00:00",
   "total_news": 128,
-  "avg_sentiment": -0.147,
+  "avg_sentiment": -0.148,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
-  "bullish_count": 11,
+  "bullish_count": 10,
   "bearish_count": 30,
-  "neutral_count": 87,
+  "neutral_count": 88,
   "fake_count": 0,
   "cross_confirmed": 1,
   "single_source": 113,
@@ -22,18 +22,18 @@
     },
     "Bitcoin.com": {
       "total": 10,
-      "bull": 1,
+      "bull": 0,
       "bear": 3
     },
     "CryptoSlate": {
       "total": 10,
       "bull": 2,
-      "bear": 3
+      "bear": 2
     },
     "CryptoPotato": {
       "total": 25,
       "bull": 0,
-      "bear": 5
+      "bear": 6
     },
     "Bitcoinist": {
       "total": 8,
@@ -58,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-15T19:05:49.289400+00:00",
+      "collected_at": "2026-10-15T20:05:40.104090+00:00",
       "effective_weight": 1.3,
       "title_original": "Bitcoin slips under $80K after US PPI gains most in four years",
       "cross_check": 1
@@ -74,7 +74,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-15T19:05:49.454000+00:00",
+      "collected_at": "2026-10-15T20:05:40.147184+00:00",
       "effective_weight": 1.1,
       "title_original": "Mastercard and BVNK Launch 'Global Money Platform' to Merge Fiat and Stablecoins",
       "cross_check": 1
@@ -90,7 +90,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-15T19:05:49.289913+00:00",
+      "collected_at": "2026-10-15T20:05:40.104948+00:00",
       "effective_weight": 1.04,
       "title_original": "VanEck seeks to withdraw application for Lido staked Ether ETF",
       "cross_check": 1
@@ -106,60 +106,44 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-15T19:05:49.289939+00:00",
+      "collected_at": "2026-10-15T20:05:40.104994+00:00",
       "effective_weight": 1.04,
       "title_original": "Polygon gains US payments licenses after closing Coinme deal",
       "cross_check": 1
     },
     {
-      "title": "Bitcoin, Ether ETFs Lose $391M as Single-Day Rebound Vanishes",
-      "source": "Bitcoin.com",
+      "title": "AI agents keep coming back for crypto as x402 wallet refill rate surges to 89%",
+      "source": "CryptoSlate",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-10-15T14:40:09+00:00",
+      "pub_date": "2026-10-15T14:30:53+00:00",
       "sentiment": 1.0,
-      "bull_weight": 1.2,
+      "bull_weight": 1.5,
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-15T19:05:49.632079+00:00",
+      "collected_at": "2026-10-15T20:05:40.337281+00:00",
       "effective_weight": 1.0,
-      "title_original": "Bitcoin, Ether ETFs Lose $391M as Single-Day Rebound Vanishes",
+      "title_original": "AI agents keep coming back for crypto as x402 wallet refill rate surges to 89%",
       "cross_check": 1
     }
   ],
   "top_bearish": [
     {
-      "title": "Cross River Bank Brings Ripple’s RLUSD Into Traditional Banking",
-      "source": "Bitcoin.com",
+      "title": "Pi Network (PI) Plunges Near Its ATL: 3 AIs Speculate Whether Q4 Will Bring More Pain",
+      "source": "CryptoPotato",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-10-15T18:10:21+00:00",
+      "pub_date": "2026-10-15T19:20:13+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 1.5,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-15T19:05:49.631869+00:00",
+      "collected_at": "2026-10-15T20:05:40.482062+00:00",
       "effective_weight": 1.5,
-      "title_original": "Cross River Bank Brings Ripple’s RLUSD Into Traditional Banking",
-      "cross_check": 2
-    },
-    {
-      "title": "South Korea names two crypto firms in breach wave that also hit major banks",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-15T19:00:53+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-15T19:05:49.857118+00:00",
-      "effective_weight": 1.5,
-      "title_original": "South Korea names two crypto firms in breach wave that also hit major banks",
-      "cross_check": 2
+      "title_original": "Pi Network (PI) Plunges Near Its ATL: 3 AIs Speculate Whether Q4 Will Bring More Pain",
+      "cross_check": 1
     },
     {
       "title": "Mastercard brings stablecoin balances into traditional banking and card payments",
@@ -172,7 +156,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-15T19:05:49.289371+00:00",
+      "collected_at": "2026-10-15T20:05:40.104040+00:00",
       "effective_weight": 1.3,
       "title_original": "Mastercard brings stablecoin balances into traditional banking and card payments",
       "cross_check": 2
@@ -188,7 +172,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-15T19:05:49.289429+00:00",
+      "collected_at": "2026-10-15T20:05:40.104140+00:00",
       "effective_weight": 1.3,
       "title_original": "Russia to ban direct peer-to-peer crypto trades starting July 2027",
       "cross_check": 1
@@ -204,9 +188,25 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-15T19:05:51.309343+00:00",
+      "collected_at": "2026-10-15T20:05:41.313077+00:00",
       "effective_weight": 1.2,
       "title_original": "В России запретят P2P-сделки с криптовалютой для физлиц",
+      "cross_check": 1
+    },
+    {
+      "title": "Bitcoin Whipsaws as Crypto Liquidations Near $1 Billion",
+      "source": "Decrypt",
+      "source_weight": 1.1,
+      "lang": "en",
+      "pub_date": "2026-10-15T15:20:41+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.2,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-15T20:05:40.147231+00:00",
+      "effective_weight": 1.1,
+      "title_original": "Bitcoin Whipsaws as Crypto Liquidations Near $1 Billion",
       "cross_check": 1
     }
   ]
