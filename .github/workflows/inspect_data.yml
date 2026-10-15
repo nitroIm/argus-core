@@ -1,6 +1,6 @@
-name: Inspect Data Files
+name: Inspect Parquet Data
 on:
-  workflow_dispatch: # Запуск вручную
+  workflow_dispatch: # Запуск вручную из вкладки Actions
 
 jobs:
   inspect:
@@ -8,11 +8,14 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+      
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
+      
       - name: Install dependencies
         run: pip install pandas pyarrow
+      
       - name: Run inspection script
-        run: python crypto/binance/inspect_data.py
+        run: python crypto/collect/inspect_data.py
