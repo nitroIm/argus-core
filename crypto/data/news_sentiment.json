@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-10-15T12:05:38.216664+00:00",
-  "total_news": 103,
-  "avg_sentiment": -0.127,
+  "generated_at": "2026-10-15T13:05:40.480610+00:00",
+  "total_news": 128,
+  "avg_sentiment": -0.145,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
-  "bullish_count": 12,
-  "bearish_count": 26,
-  "neutral_count": 65,
+  "bullish_count": 15,
+  "bearish_count": 32,
+  "neutral_count": 81,
   "fake_count": 0,
-  "cross_confirmed": 2,
-  "single_source": 85,
+  "cross_confirmed": 1,
+  "single_source": 113,
   "by_source": {
     "Cointelegraph": {
       "total": 25,
@@ -22,11 +22,16 @@
     },
     "Bitcoin.com": {
       "total": 10,
-      "bull": 1,
+      "bull": 2,
       "bear": 3
     },
     "CryptoSlate": {
       "total": 10,
+      "bull": 2,
+      "bear": 5
+    },
+    "CryptoPotato": {
+      "total": 25,
       "bull": 2,
       "bear": 5
     },
@@ -38,24 +43,40 @@
     "ForkLog": {
       "total": 25,
       "bull": 3,
-      "bear": 2
+      "bear": 3
     }
   },
   "top_bullish": [
     {
-      "title": "US Becomes Bitcoin Net Importer Again, Says Chainalysis",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
+      "title": "Zcash Tanks Double Digits After 'Meteoric Rise' Sees Leverage Build Up",
+      "source": "Decrypt",
+      "source_weight": 1.1,
       "lang": "en",
-      "pub_date": "2026-10-15T11:30:52+00:00",
+      "pub_date": "2026-10-15T12:42:30+00:00",
       "sentiment": 1.0,
       "bull_weight": 1.0,
       "bear_weight": 0.0,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-15T12:05:37.135159+00:00",
+      "collected_at": "2026-10-15T13:05:39.080765+00:00",
+      "effective_weight": 1.65,
+      "title_original": "Zcash Tanks Double Digits After 'Meteoric Rise' Sees Leverage Build Up",
+      "cross_check": 1
+    },
+    {
+      "title": "Ledger Launches $849 Android Vault After Multi-Million Dollar Wallet Scare",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-15T13:00:21+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-15T13:05:39.204515+00:00",
       "effective_weight": 1.5,
-      "title_original": "US Becomes Bitcoin Net Importer Again, Says Chainalysis",
+      "title_original": "Ledger Launches $849 Android Vault After Multi-Million Dollar Wallet Scare",
       "cross_check": 1
     },
     {
@@ -69,25 +90,9 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-15T12:05:38.156522+00:00",
+      "collected_at": "2026-10-15T13:05:40.358563+00:00",
       "effective_weight": 1.2,
       "title_original": "Standard Chartered отложил прогноз роста рынка стейблкоинов до $2 трлн на два года",
-      "cross_check": 1
-    },
-    {
-      "title": "VanEck отказалась от запуска ETF на stETH",
-      "source": "ForkLog",
-      "source_weight": 1.2,
-      "lang": "ru",
-      "pub_date": "2026-10-15T07:00:00+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 2.2,
-      "bear_weight": 0.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-15T12:05:38.156555+00:00",
-      "effective_weight": 1.2,
-      "title_original": "VanEck отказалась от запуска ETF на stETH",
       "cross_check": 1
     },
     {
@@ -101,7 +106,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-15T12:05:36.682732+00:00",
+      "collected_at": "2026-10-15T13:05:39.018732+00:00",
       "effective_weight": 1.04,
       "title_original": "VanEck seeks to withdraw application for Lido staked Ether ETF",
       "cross_check": 1
@@ -117,7 +122,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-15T12:05:36.682776+00:00",
+      "collected_at": "2026-10-15T13:05:39.018778+00:00",
       "effective_weight": 1.04,
       "title_original": "Polygon gains US payments licenses after closing Coinme deal",
       "cross_check": 1
@@ -125,20 +130,52 @@
   ],
   "top_bearish": [
     {
-      "title": "Bitcoin Tests $81,000 as Rate Hike Fears Linger After Hot Inflation Data",
-      "source": "Decrypt",
-      "source_weight": 1.1,
+      "title": "HEX token sellers erase $160M following reports of founder Richard Schueler arrest",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
       "lang": "en",
-      "pub_date": "2026-10-15T11:48:42+00:00",
+      "pub_date": "2026-10-15T12:12:57+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 1.2,
+      "bear_weight": 1.0,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-15T12:05:36.952229+00:00",
-      "effective_weight": 1.65,
-      "title_original": "Bitcoin Tests $81,000 as Rate Hike Fears Linger After Hot Inflation Data",
-      "cross_check": 3
+      "collected_at": "2026-10-15T13:05:39.017984+00:00",
+      "effective_weight": 1.95,
+      "title_original": "HEX token sellers erase $160M following reports of founder Richard Schueler arrest",
+      "cross_check": 1
+    },
+    {
+      "title": "Crypto scammers stole millions from victims, then returned pretending to help recover their money",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-15T12:20:40+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-15T13:05:39.409703+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Crypto scammers stole millions from victims, then returned pretending to help recover their money",
+      "cross_check": 2
+    },
+    {
+      "title": "Why Markets Are Dumping: Sticky Inflation Is the Problem Bitcoin Can’t Ignore",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-15T12:46:39+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-15T13:05:39.485958+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Why Markets Are Dumping: Sticky Inflation Is the Problem Bitcoin Can’t Ignore",
+      "cross_check": 1
     },
     {
       "title": "Bitget, Liquid exploits push Q3 crypto hacks toward $1.2B",
@@ -151,7 +188,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-15T12:05:36.682375+00:00",
+      "collected_at": "2026-10-15T13:05:39.018222+00:00",
       "effective_weight": 1.3,
       "title_original": "Bitget, Liquid exploits push Q3 crypto hacks toward $1.2B",
       "cross_check": 1
@@ -167,41 +204,9 @@
       "bear_weight": 1.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-15T12:05:36.682413+00:00",
+      "collected_at": "2026-10-15T13:05:39.018272+00:00",
       "effective_weight": 1.3,
       "title_original": "Bitcoin dips to $80.1K as KOSPI closes at its lowest since April",
-      "cross_check": 1
-    },
-    {
-      "title": "Без лишних слов. Как снизить AML-риск биткоинов до нуля с помощью миксера no.talk",
-      "source": "ForkLog",
-      "source_weight": 1.2,
-      "lang": "ru",
-      "pub_date": "2026-10-15T09:35:33+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.2,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-15T12:05:38.156341+00:00",
-      "effective_weight": 1.2,
-      "title_original": "Без лишних слов. Как снизить AML-риск биткоинов до нуля с помощью миксера no.talk",
-      "cross_check": 1
-    },
-    {
-      "title": "Биткоин протестировал $81 000 на фоне обвала азиатских рынков",
-      "source": "ForkLog",
-      "source_weight": 1.2,
-      "lang": "ru",
-      "pub_date": "2026-10-15T06:11:50+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-15T12:05:38.156632+00:00",
-      "effective_weight": 1.2,
-      "title_original": "Биткоин протестировал $81 000 на фоне обвала азиатских рынков",
       "cross_check": 1
     }
   ]
