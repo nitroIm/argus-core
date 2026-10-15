@@ -1,21 +1,34 @@
 name: Inspect Parquet Data
 on:
-  workflow_dispatch: # Запуск вручную из вкладки Actions
+  workflow_dispatch:
 
 jobs:
   inspect:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout argus-core
         uses: actions/checkout@v4
-      
+
+      - name: Checkout vision_out
+        uses: actions/checkout@v4
+        with:
+          repository: nitroIm/vision_out
+          path: vision_out
+
+      - name: List files
+        run: |
+          echo "=== vision_out/crypto/collect ==="
+          ls -la vision_out/crypto/collect/
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
-      
+
       - name: Install dependencies
         run: pip install pandas pyarrow
-      
+
       - name: Run inspection script
+        env:
+          DATA_DIR: vision_out/crypto/collect
         run: python crypto/collect/inspect_data.py
