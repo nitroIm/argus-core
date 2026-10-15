@@ -1,6 +1,10 @@
-# init_db.py — создаёт таблицу candles если её нет
+# ============================================================
+# ARGUS — INIT DB (create candles table)
+# Path: crypto/binance/init_db.py
+# ============================================================
 
 import os
+import sys
 import psycopg
 
 DB_URL = (os.getenv("AIVEN_DB_URL") or "").strip()
@@ -30,16 +34,30 @@ CREATE INDEX IF NOT EXISTS idx_candles_lookup
     ON candles (symbol, market_type, timeframe, open_time DESC);
 """
 
+
 def main():
     if not DB_URL:
         print("ERR: AIVEN_DB_URL not set")
-        return
+        sys.exit(1)
+
     conn = psycopg.connect(DB_URL, connect_timeout=15)
     with conn.cursor() as cur:
         cur.execute(SQL_CREATE)
+        cur.execute("""
+            SELECT column_name, data_type
+            FROM information_schema.columns
+            WHERE table_name = 'candles'
+            ORDER BY ordinal_position;
+        """)
+        cols = cur.fetchall()
     conn.commit()
     conn.close()
+
     print("OK: таблица candles готова")
+    print(f"Колонок: {len(cols)}")
+    for name, dtype in cols:
+        print(f"  - {name}: {dtype}")
+
 
 if __name__ == "__main__":
     main()
