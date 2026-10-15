@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-10-15T16:06:01.916509+00:00",
-  "total_news": 103,
-  "avg_sentiment": -0.133,
+  "generated_at": "2026-10-15T17:05:42.764090+00:00",
+  "total_news": 128,
+  "avg_sentiment": -0.118,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
   "bullish_count": 13,
-  "bearish_count": 26,
-  "neutral_count": 64,
+  "bearish_count": 30,
+  "neutral_count": 85,
   "fake_count": 0,
   "cross_confirmed": 0,
-  "single_source": 93,
+  "single_source": 114,
   "by_source": {
     "Cointelegraph": {
       "total": 25,
@@ -17,18 +17,23 @@
     },
     "Decrypt": {
       "total": 25,
-      "bull": 2,
-      "bear": 8
+      "bull": 3,
+      "bear": 7
     },
     "Bitcoin.com": {
       "total": 10,
-      "bull": 3,
+      "bull": 2,
       "bear": 1
     },
     "CryptoSlate": {
       "total": 10,
       "bull": 3,
       "bear": 3
+    },
+    "CryptoPotato": {
+      "total": 25,
+      "bull": 0,
+      "bear": 5
     },
     "Bitcoinist": {
       "total": 8,
@@ -43,6 +48,22 @@
   },
   "top_bullish": [
     {
+      "title": "Mastercard and BVNK Launch 'Global Money Platform' to Merge Fiat and Stablecoins",
+      "source": "Decrypt",
+      "source_weight": 1.1,
+      "lang": "en",
+      "pub_date": "2026-10-15T16:28:50+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-15T17:05:40.359594+00:00",
+      "effective_weight": 1.65,
+      "title_original": "Mastercard and BVNK Launch 'Global Money Platform' to Merge Fiat and Stablecoins",
+      "cross_check": 1
+    },
+    {
       "title": "Bitcoin slips under $80K after US PPI gains most in four years",
       "source": "Cointelegraph",
       "source_weight": 1.3,
@@ -51,10 +72,10 @@
       "sentiment": 1.0,
       "bull_weight": 1.0,
       "bear_weight": 0.0,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-15T16:05:59.827255+00:00",
-      "effective_weight": 1.95,
+      "collected_at": "2026-10-15T17:05:40.292682+00:00",
+      "effective_weight": 1.3,
       "title_original": "Bitcoin slips under $80K after US PPI gains most in four years",
       "cross_check": 2
     },
@@ -69,7 +90,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-15T16:05:59.971024+00:00",
+      "collected_at": "2026-10-15T17:05:40.359792+00:00",
       "effective_weight": 1.1,
       "title_original": "Zcash Tanks Double Digits After 'Meteoric Rise' Sees Leverage Build Up",
       "cross_check": 1
@@ -85,7 +106,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-15T16:05:59.828172+00:00",
+      "collected_at": "2026-10-15T17:05:40.293623+00:00",
       "effective_weight": 1.04,
       "title_original": "VanEck seeks to withdraw application for Lido staked Ether ETF",
       "cross_check": 1
@@ -101,25 +122,9 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-15T16:05:59.828217+00:00",
+      "collected_at": "2026-10-15T17:05:40.293672+00:00",
       "effective_weight": 1.04,
       "title_original": "Polygon gains US payments licenses after closing Coinme deal",
-      "cross_check": 1
-    },
-    {
-      "title": "Bitcoin, Ether ETFs Lose $391M as Single-Day Rebound Vanishes",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-15T14:40:09+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-15T16:06:00.191345+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Bitcoin, Ether ETFs Lose $391M as Single-Day Rebound Vanishes",
       "cross_check": 1
     }
   ],
@@ -133,60 +138,12 @@
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 1.5,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-15T16:05:59.827189+00:00",
-      "effective_weight": 1.95,
+      "collected_at": "2026-10-15T17:05:40.292626+00:00",
+      "effective_weight": 1.3,
       "title_original": "Mastercard brings stablecoin balances into traditional banking and card payments",
       "cross_check": 1
-    },
-    {
-      "title": "В России запретят P2P-сделки с криптовалютой для физлиц",
-      "source": "ForkLog",
-      "source_weight": 1.2,
-      "lang": "ru",
-      "pub_date": "2026-10-15T15:09:41+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-15T16:06:01.837287+00:00",
-      "effective_weight": 1.8,
-      "title_original": "В России запретят P2P-сделки с криптовалютой для физлиц",
-      "cross_check": 1
-    },
-    {
-      "title": "Bitcoin Whipsaws as Crypto Liquidations Near $1 Billion",
-      "source": "Decrypt",
-      "source_weight": 1.1,
-      "lang": "en",
-      "pub_date": "2026-10-15T15:20:41+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.2,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-15T16:05:59.970858+00:00",
-      "effective_weight": 1.65,
-      "title_original": "Bitcoin Whipsaws as Crypto Liquidations Near $1 Billion",
-      "cross_check": 1
-    },
-    {
-      "title": "Crypto Casino Gamdom Goes Dark After a $3 Million Wallet Hack",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-15T15:15:25+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-15T16:06:00.191296+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Crypto Casino Gamdom Goes Dark After a $3 Million Wallet Hack",
-      "cross_check": 2
     },
     {
       "title": "Russia to ban direct peer-to-peer crypto trades starting July 2027",
@@ -199,9 +156,57 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-15T16:05:59.827311+00:00",
+      "collected_at": "2026-10-15T17:05:40.292735+00:00",
       "effective_weight": 1.3,
       "title_original": "Russia to ban direct peer-to-peer crypto trades starting July 2027",
+      "cross_check": 1
+    },
+    {
+      "title": "HEX token sellers erase $160M following reports of founder Richard Schueler arrest",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-10-15T12:12:57+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.0,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-15T17:05:40.292975+00:00",
+      "effective_weight": 1.3,
+      "title_original": "HEX token sellers erase $160M following reports of founder Richard Schueler arrest",
+      "cross_check": 1
+    },
+    {
+      "title": "В России запретят P2P-сделки с криптовалютой для физлиц",
+      "source": "ForkLog",
+      "source_weight": 1.2,
+      "lang": "ru",
+      "pub_date": "2026-10-15T15:09:41+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-15T17:05:42.641594+00:00",
+      "effective_weight": 1.2,
+      "title_original": "В России запретят P2P-сделки с криптовалютой для физлиц",
+      "cross_check": 1
+    },
+    {
+      "title": "AstraZeneca заплатит до $1,5 млрд за поиск лекарств с помощью ИИ",
+      "source": "ForkLog",
+      "source_weight": 1.2,
+      "lang": "ru",
+      "pub_date": "2026-10-15T12:04:44+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.2,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-15T17:05:42.641837+00:00",
+      "effective_weight": 1.2,
+      "title_original": "AstraZeneca заплатит до $1,5 млрд за поиск лекарств с помощью ИИ",
       "cross_check": 1
     }
   ]
