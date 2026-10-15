@@ -1,12 +1,20 @@
 import pandas as pd
 import glob
+import os
 
 def inspect():
-    files = sorted(glob.glob("vision_out/crypto/collect/*.parquet"))
+    # Ищем parquet везде внутри репозитория
+    files = sorted(glob.glob("**/*.parquet", recursive=True))
     if not files:
-        print("❌ Нет .parquet в vision_out/crypto/collect/")
+        print("❌ Ни одного .parquet не найдено")
+        print("Текущая папка:", os.getcwd())
+        for root, dirs, fs in os.walk("."):
+            if ".git" in root:
+                continue
+            print(f"  {root}: {fs}")
         return
 
+    print(f"Найдено файлов: {len(files)}")
     for f in files:
         print(f"\n{'='*70}")
         print(f"📂 {f}")
