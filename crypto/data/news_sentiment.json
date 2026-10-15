@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-10-15T06:05:40.147128+00:00",
+  "generated_at": "2026-10-15T07:05:44.258426+00:00",
   "total_news": 128,
-  "avg_sentiment": -0.109,
+  "avg_sentiment": -0.128,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
-  "bullish_count": 11,
-  "bearish_count": 25,
-  "neutral_count": 92,
+  "bullish_count": 12,
+  "bearish_count": 28,
+  "neutral_count": 88,
   "fake_count": 0,
   "cross_confirmed": 7,
-  "single_source": 101,
+  "single_source": 103,
   "by_source": {
     "Cointelegraph": {
       "total": 25,
@@ -23,7 +23,7 @@
     "Bitcoin.com": {
       "total": 10,
       "bull": 0,
-      "bear": 1
+      "bear": 2
     },
     "CryptoSlate": {
       "total": 10,
@@ -33,7 +33,7 @@
     "CryptoPotato": {
       "total": 25,
       "bull": 2,
-      "bear": 5
+      "bear": 6
     },
     "Bitcoinist": {
       "total": 8,
@@ -42,11 +42,27 @@
     },
     "ForkLog": {
       "total": 25,
-      "bull": 2,
-      "bear": 2
+      "bull": 3,
+      "bear": 3
     }
   },
   "top_bullish": [
+    {
+      "title": "VanEck отказалась от запуска ETF на stETH",
+      "source": "ForkLog",
+      "source_weight": 1.2,
+      "lang": "ru",
+      "pub_date": "2026-10-15T07:00:00+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 2.2,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-15T07:05:44.135971+00:00",
+      "effective_weight": 1.8,
+      "title_original": "VanEck отказалась от запуска ETF на stETH",
+      "cross_check": 1
+    },
     {
       "title": "VanEck seeks to withdraw application for Lido staked Ether ETF",
       "source": "Cointelegraph",
@@ -58,7 +74,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-15T06:05:38.689505+00:00",
+      "collected_at": "2026-10-15T07:05:42.347579+00:00",
       "effective_weight": 1.3,
       "title_original": "VanEck seeks to withdraw application for Lido staked Ether ETF",
       "cross_check": 1
@@ -72,10 +88,10 @@
       "sentiment": 1.0,
       "bull_weight": 1.0,
       "bear_weight": 0.0,
-      "freshness": 1.0,
+      "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-15T06:05:38.689555+00:00",
-      "effective_weight": 1.3,
+      "collected_at": "2026-10-15T07:05:42.347630+00:00",
+      "effective_weight": 1.04,
       "title_original": "Polygon gains US payments licenses after closing Coinme deal",
       "cross_check": 2
     },
@@ -90,7 +106,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-15T06:05:38.689981+00:00",
+      "collected_at": "2026-10-15T07:05:42.348085+00:00",
       "effective_weight": 1.04,
       "title_original": "Canada crypto remittances to Asian countries surge 141% to $2.36B: Chainalysis",
       "cross_check": 1
@@ -106,29 +122,61 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-15T06:05:39.010553+00:00",
+      "collected_at": "2026-10-15T07:05:42.965327+00:00",
       "effective_weight": 1.0,
       "title_original": "Qivalis wins Dutch EMI license, but MiCA rules block launch",
       "cross_check": 2
-    },
-    {
-      "title": "Qivalis получила лицензию для запуска евро-стейблкоина при поддержке 37 банков",
-      "source": "ForkLog",
-      "source_weight": 1.2,
-      "lang": "ru",
-      "pub_date": "2026-10-14T12:36:03+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-15T06:05:40.023554+00:00",
-      "effective_weight": 0.96,
-      "title_original": "Qivalis получила лицензию для запуска евро-стейблкоина при поддержке 37 банков",
-      "cross_check": 1
     }
   ],
   "top_bearish": [
+    {
+      "title": "Биткоин протестировал $81 000 на фоне обвала азиатских рынков",
+      "source": "ForkLog",
+      "source_weight": 1.2,
+      "lang": "ru",
+      "pub_date": "2026-10-15T06:11:50+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-15T07:05:44.136104+00:00",
+      "effective_weight": 1.8,
+      "title_original": "Биткоин протестировал $81 000 на фоне обвала азиатских рынков",
+      "cross_check": 1
+    },
+    {
+      "title": "He Bought a Nearly Bankrupt Company From Warren Buffett for $1,000 and Turned It Into a $98 Billion Giant",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-15T06:30:42+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-15T07:05:42.742956+00:00",
+      "effective_weight": 1.5,
+      "title_original": "He Bought a Nearly Bankrupt Company From Warren Buffett for $1,000 and Turned It Into a $98 Billion Giant",
+      "cross_check": 1
+    },
+    {
+      "title": "Ethereum Just Tanked to 2-Month Low as Wintermute Keeps Shorting ETH",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-15T06:30:48+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-15T07:05:43.083414+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Ethereum Just Tanked to 2-Month Low as Wintermute Keeps Shorting ETH",
+      "cross_check": 1
+    },
     {
       "title": "South Korea plans cybersecurity overhaul after attacks hit banks, crypto firms",
       "source": "Cointelegraph",
@@ -138,28 +186,12 @@
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 1.5,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-15T06:05:38.689256+00:00",
-      "effective_weight": 1.95,
+      "collected_at": "2026-10-15T07:05:42.347329+00:00",
+      "effective_weight": 1.3,
       "title_original": "South Korea plans cybersecurity overhaul after attacks hit banks, crypto firms",
       "cross_check": 2
-    },
-    {
-      "title": "Why Did Bitcoin Suddenly Crash to $80K?",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-15T05:53:39+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 2.0,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-15T06:05:39.142970+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Why Did Bitcoin Suddenly Crash to $80K?",
-      "cross_check": 1
     },
     {
       "title": "Bitcoin miners plunge up to 13% in Wall Street’s worst selloff since July",
@@ -172,41 +204,9 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-15T06:05:38.689449+00:00",
+      "collected_at": "2026-10-15T07:05:42.347524+00:00",
       "effective_weight": 1.3,
       "title_original": "Bitcoin miners plunge up to 13% in Wall Street’s worst selloff since July",
-      "cross_check": 1
-    },
-    {
-      "title": "US authorities dismantle crypto scam network that stole tens of millions",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-10-14T17:56:45+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-15T06:05:38.689731+00:00",
-      "effective_weight": 1.04,
-      "title_original": "US authorities dismantle crypto scam network that stole tens of millions",
-      "cross_check": 1
-    },
-    {
-      "title": "OCC report finds debanking efforts tied to crypto activities",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-10-14T17:03:20+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-15T06:05:38.689778+00:00",
-      "effective_weight": 1.04,
-      "title_original": "OCC report finds debanking efforts tied to crypto activities",
       "cross_check": 1
     }
   ]
