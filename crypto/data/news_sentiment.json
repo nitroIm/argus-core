@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-10-16T18:05:52.156371+00:00",
+  "generated_at": "2026-10-16T19:05:40.999349+00:00",
   "total_news": 128,
-  "avg_sentiment": -0.006,
+  "avg_sentiment": -0.015,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
   "bullish_count": 16,
   "bearish_count": 20,
   "neutral_count": 92,
   "fake_count": 0,
-  "cross_confirmed": 6,
-  "single_source": 106,
+  "cross_confirmed": 10,
+  "single_source": 104,
   "by_source": {
     "Cointelegraph": {
       "total": 25,
@@ -22,7 +22,7 @@
     },
     "Bitcoin.com": {
       "total": 10,
-      "bull": 3,
+      "bull": 2,
       "bear": 1
     },
     "CryptoSlate": {
@@ -32,7 +32,7 @@
     },
     "CryptoPotato": {
       "total": 25,
-      "bull": 4,
+      "bull": 5,
       "bear": 4
     },
     "Bitcoinist": {
@@ -48,6 +48,22 @@
   },
   "top_bullish": [
     {
+      "title": "Dacity Coin Spikes on GTA VI Trailer, Trading Against Tokenized Take-Two Stock",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-16T18:18:09+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-16T19:05:39.833002+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Dacity Coin Spikes on GTA VI Trailer, Trading Against Tokenized Take-Two Stock",
+      "cross_check": 1
+    },
+    {
       "title": "Crypto PACs escalate spending against Sherrod Brown in Ohio Senate race",
       "source": "Cointelegraph",
       "source_weight": 1.3,
@@ -56,10 +72,10 @@
       "sentiment": 1.0,
       "bull_weight": 1.0,
       "bear_weight": 0.0,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-16T18:05:49.434249+00:00",
-      "effective_weight": 1.95,
+      "collected_at": "2026-10-16T19:05:39.188643+00:00",
+      "effective_weight": 1.3,
       "title_original": "Crypto PACs escalate spending against Sherrod Brown in Ohio Senate race",
       "cross_check": 1
     },
@@ -72,27 +88,11 @@
       "sentiment": 1.0,
       "bull_weight": 1.2,
       "bear_weight": 0.0,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-16T18:05:49.527375+00:00",
-      "effective_weight": 1.65,
+      "collected_at": "2026-10-16T19:05:39.282255+00:00",
+      "effective_weight": 1.1,
       "title_original": "India's Cyber Agency Says AI Agents Read Confidential Business Records Without Authorization",
-      "cross_check": 1
-    },
-    {
-      "title": "Top Bittensor Price Predictions as TAO Rises 10% Daily",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-16T17:22:00+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-16T18:05:50.870686+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Top Bittensor Price Predictions as TAO Rises 10% Daily",
       "cross_check": 1
     },
     {
@@ -106,7 +106,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-16T18:05:49.434752+00:00",
+      "collected_at": "2026-10-16T19:05:39.189126+00:00",
       "effective_weight": 1.04,
       "title_original": "Solana’s Liu says Shanghai event postponed over registration surge",
       "cross_check": 1
@@ -122,7 +122,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-16T18:05:49.434902+00:00",
+      "collected_at": "2026-10-16T19:05:39.189269+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin may seek 20-month trend line reclaim before new record highs: CryptoQuant",
       "cross_check": 1
@@ -140,7 +140,7 @@
       "bear_weight": 1.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-16T18:05:49.434512+00:00",
+      "collected_at": "2026-10-16T19:05:39.188892+00:00",
       "effective_weight": 1.3,
       "title_original": "Strategy conditionally declares daily dividends as STRC hovers below $100",
       "cross_check": 2
@@ -156,7 +156,7 @@
       "bear_weight": 1.2,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-16T18:05:49.434622+00:00",
+      "collected_at": "2026-10-16T19:05:39.189001+00:00",
       "effective_weight": 1.3,
       "title_original": "Ledger’s early implant warnings deserved more action, Karpelès says",
       "cross_check": 1
@@ -172,26 +172,10 @@
       "bear_weight": 1.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-16T18:05:49.527444+00:00",
+      "collected_at": "2026-10-16T19:05:39.282317+00:00",
       "effective_weight": 1.1,
       "title_original": "CFTC Wants to Drop Gemini’s $5M Settlement. A Judge Just Said No",
       "cross_check": 2
-    },
-    {
-      "title": "Scammer Lost $4.8M in Bitcoin to Tampered Ledger Wallets: Chainalysis",
-      "source": "Decrypt",
-      "source_weight": 1.1,
-      "lang": "en",
-      "pub_date": "2026-10-16T12:22:18+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-16T18:05:49.527615+00:00",
-      "effective_weight": 1.1,
-      "title_original": "Scammer Lost $4.8M in Bitcoin to Tampered Ledger Wallets: Chainalysis",
-      "cross_check": 1
     },
     {
       "title": "Balaji’s ‘Singapore of social media’ begins with a wave of bans",
@@ -204,9 +188,25 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-16T18:05:49.435248+00:00",
+      "collected_at": "2026-10-16T19:05:39.189466+00:00",
       "effective_weight": 1.04,
       "title_original": "Balaji’s ‘Singapore of social media’ begins with a wave of bans",
+      "cross_check": 1
+    },
+    {
+      "title": "Scammer loses $4.8M stored on tampered Ledgers: Asia Express",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-10-15T22:42:58+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-16T19:05:39.189603+00:00",
+      "effective_weight": 1.04,
+      "title_original": "Scammer loses $4.8M stored on tampered Ledgers: Asia Express",
       "cross_check": 1
     }
   ]
