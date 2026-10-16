@@ -1,13 +1,17 @@
 # ============================================================
-# ARGUS - NEWS REPORT v7
+# ARGUS - NEWS REPORT v8
 # ------------------------------------------------------------
+# v8: + BTC блок (цена, 24ч, RSI, ATR).
+#     + ссылки и источники новостей.
+#     + VK группа (только утром 09:00).
+#     + TG канал (только утром 09:00).
+#     + TG личка (утро 09:00 + вечер 20:00).
 # v7: should_send_now — only by Kaliningrad hour.
-#     No manual override. No GITHUB_EVENT_NAME check.
-# v6: SEND_HOURS_LOCAL in Kaliningrad.
 # ============================================================
 
 import os
 import sys
+import re
 import json
 import hashlib
 import logging
@@ -16,6 +20,12 @@ from datetime import datetime, timezone
 from datetime import timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
+
+try:
+    import psycopg
+    PSYCOPG_OK = True
+except ImportError:
+    PSYCOPG_OK = False
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 CRYPTO_ROOT = SCRIPT_DIR.parent
@@ -49,30 +59,39 @@ CHAT_ID = (
     os.getenv("TELEGRAM_CHAT_ID")
     or ""
 ).strip()
+TG_CHANNEL_ID = (
+    os.getenv("TG_CHANNEL_ID")
+    or ""
+).strip()
+VK_TOKEN = (os.getenv("VK_TOKEN") or "").strip()
+VK_GROUP_ID = (os.getenv("VK_GROUP_ID") or "").strip()
+DB_URL = (os.getenv("AIVEN_DB_URL") or "").strip()
 
 MAX_MESSAGE_LEN = 3800
+MAX_VK_LEN = 15000
 HISTORY_DAYS = 7
 STALE_HOURS = 6
 
-# ============================================================
-# ВРЕМЯ ОТПРАВКИ (в КАЛИНИНГРАДЕ)
-# ============================================================
+SYMBOL = "BTCUSDT"
+TIMEFRAME = "15m"
+
 TZ = ZoneInfo("Europe/Kaliningrad")
 
-# Часы по КЛГ когда слать отчёт в TG.
-# 9 = утро, 20 = вечер.
-SEND_HOURS_LOCAL = {9, 20}
+# Часы по КЛГ
+SEND_HOURS_PERSONAL = {9, 20}  # TG личка
+SEND_HOURS_GROUP = {9}         # TG канал + VK группа
 
 
 def now_local():
     return datetime.now(timezone.utc).astimezone(TZ)
 
 
-def should_send_now():
-    """True only if current Kaliningrad hour
-    in SEND_HOURS_LOCAL."""
-    local = now_local()
-    return local.hour in SEND_HOURS_LOCAL
+def should_send_personal():
+    return now_local().hour in SEND_HOURS_PERSONAL
+
+
+def should_send_group():
+    return now_local().hour in SEND_HOURS_GROUP
 
 
 def esc(s):
@@ -105,36 +124,70 @@ def split_text(text, max_len):
     return parts
 
 
-def send_message(text):
-    if not BOT_TOKEN or not CHAT_ID:
-        log.warning("TELEGRAM not configured")
-        log.info(text)
+def send_telegram(text, chat_id):
+    if not BOT_TOKEN or not chat_id:
         return False
-    parts = split_text(text, MAX_MESSAGE_LEN)
     ok_all = True
-    for i, part in enumerate(parts):
+    parts = split_text(text, MAX_MESSAGE_LEN)
+    for part in parts:
         try:
-            url = "https://api.telegram.org/bot"
-            url += BOT_TOKEN + "/sendMessage"
+            url = "https://api.telegram.org/bot" + BOT_TOKEN + "/sendMessage"
             payload = {
-                "chat_id": CHAT_ID,
+                "chat_id": chat_id,
                 "text": part,
                 "parse_mode": "HTML",
                 "disable_web_page_preview": True,
             }
-            r = requests.post(
-                url, json=payload, timeout=20,
-            )
+            r = requests.post(url, json=payload, timeout=20)
             if r.status_code != 200:
-                log.error(
-                    "tg err %d: %s",
-                    r.status_code, r.text[:200],
-                )
+                log.error("tg %s: %s", chat_id, r.status_code)
                 ok_all = False
         except Exception as e:
             log.exception("send: %s", e)
             ok_all = False
     return ok_all
+
+
+def send_vk(text):
+    if not VK_TOKEN or not VK_GROUP_ID:
+        log.warning("VK not configured")
+        return False
+    try:
+        gid = VK_GROUP_ID.strip()
+        if gid.startswith("-"):
+            owner_id = gid
+        else:
+            owner_id = "-" + gid
+        url = "https://api.vk.com/method/wall.post"
+        params = {
+            "owner_id": owner_id,
+            "from_group": 1,
+            "message": text[:MAX_VK_LEN],
+            "access_token": VK_TOKEN,
+            "v": "5.199",
+        }
+        r = requests.post(url, data=params, timeout=30)
+        data = r.json()
+        if "error" in data:
+            log.error("VK err: %s", data["error"])
+            return False
+        log.info("VK posted: %s", data.get("response"))
+        return True
+    except Exception as e:
+        log.error("VK: %s", e)
+        return False
+
+
+def to_plain(text):
+    text = re.sub(
+        r"<a href=\"([^\"]+)\">([^<]+)</a>",
+        r"\2 (\1)", text,
+    )
+    text = re.sub(r"<[^>]+>", "", text)
+    text = text.replace("&amp;", "&")
+    text = text.replace("&lt;", "<")
+    text = text.replace("&gt;", ">")
+    return text
 
 
 def load_json(path, default=None):
@@ -152,14 +205,9 @@ def load_json(path, default=None):
 
 def save_json(path, data):
     try:
-        path.parent.mkdir(
-            parents=True, exist_ok=True,
-        )
+        path.parent.mkdir(parents=True, exist_ok=True)
         with open(path, "w", encoding="utf-8") as f:
-            json.dump(
-                data, f,
-                ensure_ascii=False, indent=2,
-            )
+            json.dump(data, f, ensure_ascii=False, indent=2)
     except Exception as e:
         log.error("save %s: %s", path.name, e)
 
@@ -190,9 +238,7 @@ def fmt_age(h):
 
 
 def load_sent_history():
-    data = load_json(
-        SENT_HISTORY_FILE, {"entries": []},
-    )
+    data = load_json(SENT_HISTORY_FILE, {"entries": []})
     if not isinstance(data, dict):
         data = {"entries": []}
     if "entries" not in data:
@@ -263,19 +309,126 @@ def translate_top(items, n=3):
     if not originals:
         return []
     try:
-        log.info(
-            "translating %d items", len(originals),
-        )
+        log.info("translating %d items", len(originals))
         return translate_batch(originals)
     except Exception as e:
         log.exception("translate_top: %s", e)
         return originals
 
 
-def build_report(
-    data, bull_items, bear_items,
-    bull_ru, bear_ru, age_h,
-):
+# ============================================================
+# BTC
+# ============================================================
+def _rsi(closes, period=14):
+    if len(closes) < period + 1:
+        return None
+    gains = 0.0
+    losses = 0.0
+    for i in range(1, period + 1):
+        d = closes[i] - closes[i - 1]
+        if d >= 0:
+            gains += d
+        else:
+            losses -= d
+    ag = gains / period
+    al = losses / period
+    for i in range(period + 1, len(closes)):
+        d = closes[i] - closes[i - 1]
+        g = d if d > 0 else 0
+        l = -d if d < 0 else 0
+        ag = (ag * (period - 1) + g) / period
+        al = (al * (period - 1) + l) / period
+    if al == 0:
+        return 100.0
+    rs = ag / al
+    return 100 - 100 / (1 + rs)
+
+
+def _atr(highs, lows, closes, period=14):
+    if len(highs) < period + 1:
+        return None
+    trs = []
+    for i in range(1, len(highs)):
+        tr = max(
+            highs[i] - lows[i],
+            abs(highs[i] - closes[i - 1]),
+            abs(lows[i] - closes[i - 1]),
+        )
+        trs.append(tr)
+    if len(trs) < period:
+        return None
+    a = sum(trs[:period]) / period
+    for i in range(period, len(trs)):
+        a = (a * (period - 1) + trs[i]) / period
+    return a
+
+
+def fetch_btc_snapshot():
+    if not PSYCOPG_OK or not DB_URL:
+        return None
+    try:
+        conn = psycopg.connect(
+            DB_URL, connect_timeout=30,
+            application_name="argus-news",
+        )
+        with conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT open_time, close, high, low "
+                    "FROM candles WHERE symbol=%s AND timeframe=%s "
+                    "AND market_type='spot' "
+                    "ORDER BY open_time DESC LIMIT 100",
+                    (SYMBOL, TIMEFRAME),
+                )
+                rows = list(reversed(cur.fetchall()))
+        conn.close()
+        if len(rows) < 20:
+            return None
+        closes = [float(r[1]) for r in rows]
+        highs = [float(r[2]) for r in rows]
+        lows = [float(r[3]) for r in rows]
+        price = closes[-1]
+        change_pct = 0
+        if len(closes) >= 96:
+            prev = closes[-96]
+            if prev:
+                change_pct = (price - prev) / prev * 100
+        rsi = _rsi(closes, 14)
+        atr = _atr(highs, lows, closes, 14)
+        atr_pct = (atr / price * 100) if atr and price else 0
+        return {
+            "price": price,
+            "change_pct": change_pct,
+            "rsi": rsi,
+            "atr": atr,
+            "atr_pct": atr_pct,
+        }
+    except Exception as e:
+        log.error("fetch_btc: %s", e)
+        return None
+
+
+def fmt_price(p):
+    if p is None:
+        return "?"
+    if p >= 1000:
+        return "$" + format(int(p), ",")
+    if p >= 1:
+        return "$" + format(p, ".2f")
+    return "$" + format(p, ".4f")
+
+
+def fmt_pct(v):
+    if v is None:
+        return "?"
+    return format(v, "+.2f") + "%"
+
+
+# ============================================================
+# REPORT
+# ============================================================
+def build_report(data, bull_items, bear_items,
+                 bull_ru, bear_ru, age_h, btc):
     mood = data.get("mood", "Неизвестно")
     avg = data.get("avg_sentiment", 0.0)
     total = data.get("total_news", 0)
@@ -287,56 +440,99 @@ def build_report(
 
     now = now_local()
     lines = []
-    lines.append("📰 <b>ARGUS — Новости</b> v7")
-    line = now.strftime("%d.%m %H:%M")
-    line += " КЛГ"
-    lines.append(line)
+    lines.append("📰 <b>ARGUS — Новости</b>")
+    lines.append(now.strftime("%d.%m %H:%M") + " КЛГ")
     lines.append("")
 
+    # ---- BTC ----
+    if btc:
+        line = "💰 <b>BTC</b> " + fmt_price(btc["price"])
+        line += " | " + fmt_pct(btc["change_pct"]) + " 24ч"
+        lines.append(line)
+        parts = []
+        if btc["rsi"] is not None:
+            r = btc["rsi"]
+            st = ("перекуп" if r >= 70
+                  else "перепрод" if r <= 30 else "нейтр")
+            parts.append("RSI " + format(r, ".1f") + " " + st)
+        if btc["atr"]:
+            parts.append(
+                "ATR " + fmt_price(btc["atr"])
+                + " (" + format(btc["atr_pct"], ".2f") + "%)"
+            )
+        if parts:
+            lines.append("  " + " | ".join(parts))
+        lines.append("")
+
+    # ---- freshness ----
     if age_h is not None:
         icon = "✅" if age_h <= STALE_HOURS else "⚠️"
-        line = icon + " Данные: "
-        line += fmt_age(age_h) + " назад"
+        line = icon + " Данные: " + fmt_age(age_h) + " назад"
         if age_h > STALE_HOURS:
             line += " (устарели)"
         lines.append(line)
     lines.append("")
 
+    # ---- mood ----
     lines.append("🎭 " + esc(mood))
-    lines.append(
-        "📊 Сентимент: <b>"
-        + format(avg, "+.3f") + "</b>"
-    )
+    lines.append("📊 Сентимент: <b>" + format(avg, "+.3f") + "</b>")
     lines.append("")
 
     lines.append("📈 Всего: " + str(total))
     lines.append("🟢 Бычьих: " + str(bull))
     lines.append("🔴 Медвежьих: " + str(bear))
     lines.append("🟡 Нейтральных: " + str(neu))
-
     if fake:
         lines.append("⚠️ Подозрительных: " + str(fake))
     if cross:
-        lines.append(
-            "🔍 Подтв. источниками: " + str(cross)
-        )
+        lines.append("🔍 Подтв. источниками: " + str(cross))
     lines.append("")
 
-    if bull_ru:
+    # ---- позитив ----
+    if bull_ru or bull_items:
         lines.append("🟢 <b>Позитив:</b>")
-        for t in bull_ru[:3]:
-            lines.append("  • " + esc(t[:150]))
+        for i, it in enumerate(bull_items[:3]):
+            title = it.get("title_original") or it.get("title", "")
+            if i < len(bull_ru):
+                title = bull_ru[i]
+            url = it.get("url") or it.get("link") or ""
+            src = it.get("source") or ""
+            t_esc = esc(title[:180])
+            if url:
+                lines.append(
+                    "  • <a href=\"" + esc(url) + "\">"
+                    + t_esc + "</a>"
+                )
+            else:
+                lines.append("  • " + t_esc)
+            if src:
+                lines.append("    <i>" + esc(src) + "</i>")
         lines.append("")
-    elif bull_items:
+    else:
         lines.append("🟢 Позитив: новых нет")
         lines.append("")
 
-    if bear_ru:
+    # ---- негатив ----
+    if bear_ru or bear_items:
         lines.append("🔴 <b>Негатив:</b>")
-        for t in bear_ru[:3]:
-            lines.append("  • " + esc(t[:150]))
+        for i, it in enumerate(bear_items[:3]):
+            title = it.get("title_original") or it.get("title", "")
+            if i < len(bear_ru):
+                title = bear_ru[i]
+            url = it.get("url") or it.get("link") or ""
+            src = it.get("source") or ""
+            t_esc = esc(title[:180])
+            if url:
+                lines.append(
+                    "  • <a href=\"" + esc(url) + "\">"
+                    + t_esc + "</a>"
+                )
+            else:
+                lines.append("  • " + t_esc)
+            if src:
+                lines.append("    <i>" + esc(src) + "</i>")
         lines.append("")
-    elif bear_items:
+    else:
         lines.append("🔴 Негатив: новых нет")
         lines.append("")
 
@@ -347,17 +543,22 @@ def build_report(
     return "\n".join(lines)
 
 
+# ============================================================
+# MAIN
+# ============================================================
 def main():
-    log.info("news report v7")
+    log.info("news report v8")
     local = now_local()
     log.info(
-        "local time: %s КЛГ (hour=%d, send_hours=%s)",
+        "local time: %s КЛГ (hour=%d)",
         local.strftime("%H:%M"), local.hour,
-        sorted(SEND_HOURS_LOCAL),
     )
 
-    if not should_send_now():
-        log.info("skip send — hour not in list")
+    send_p = should_send_personal()
+    send_g = should_send_group()
+
+    if not send_p and not send_g:
+        log.info("skip — hour not in list")
         return
 
     if not SENTIMENT_FILE.exists():
@@ -366,7 +567,7 @@ def main():
 
     data = load_json(SENTIMENT_FILE)
     if not data:
-        log.error("sentiment file empty/broken")
+        log.error("sentiment empty/broken")
         sys.exit(1)
 
     age_h = file_age_hours(SENTIMENT_FILE)
@@ -384,44 +585,53 @@ def main():
     bull_fresh = filter_fresh(top_bull, seen)
     bear_fresh = filter_fresh(top_bear, seen)
 
-    log.info(
-        "bull: %d total, %d fresh",
-        len(top_bull), len(bull_fresh),
-    )
-    log.info(
-        "bear: %d total, %d fresh",
-        len(top_bear), len(bear_fresh),
-    )
+    log.info("bull: %d total, %d fresh",
+             len(top_bull), len(bull_fresh))
+    log.info("bear: %d total, %d fresh",
+             len(top_bear), len(bear_fresh))
 
     bull_ru = translate_top(bull_fresh, 3)
     bear_ru = translate_top(bear_fresh, 3)
 
-    text = build_report(
+    btc = fetch_btc_snapshot()
+
+    text_tg = build_report(
         data, bull_fresh, bear_fresh,
-        bull_ru, bear_ru, age_h,
+        bull_ru, bear_ru, age_h, btc,
     )
-    log.info("report: %d chars", len(text))
+    text_vk = to_plain(text_tg)
 
-    ok = send_message(text)
+    log.info("report: %d chars", len(text_tg))
 
-    if ok:
+    sent_any = False
+
+    # TG личка — утром и вечером
+    if send_p:
+        log.info("→ TG personal")
+        if send_telegram(text_tg, CHAT_ID):
+            sent_any = True
+
+    # TG канал + VK — только утром
+    if send_g:
+        if TG_CHANNEL_ID:
+            log.info("→ TG channel")
+            send_telegram(text_tg, TG_CHANNEL_ID)
+        log.info("→ VK group")
+        if send_vk(text_vk):
+            sent_any = True
+
+    if sent_any:
         for it in bull_fresh[:3]:
-            t = it.get("title_original")
-            if not t:
-                t = it.get("title", "")
+            t = it.get("title_original") or it.get("title", "")
             if t:
                 add_sent_hash(history, _title_hash(t))
         for it in bear_fresh[:3]:
-            t = it.get("title_original")
-            if not t:
-                t = it.get("title", "")
+            t = it.get("title_original") or it.get("title", "")
             if t:
                 add_sent_hash(history, _title_hash(t))
         save_json(SENT_HISTORY_FILE, history)
-        log.info(
-            "history updated: %d entries",
-            len(history.get("entries", [])),
-        )
+        log.info("history updated: %d entries",
+                 len(history.get("entries", [])))
         log.info("report sent")
     else:
         log.warning("send failed, no history update")
