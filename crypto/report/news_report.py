@@ -294,9 +294,6 @@ def translate_top(items, n=3):
         return originals
 
 
-# ============================================================
-# BTC
-# ============================================================
 def _rsi(closes, period=14):
     if len(closes) < period + 1:
         return None
@@ -402,9 +399,6 @@ def fmt_pct(v):
     return format(v, "+.2f") + "%"
 
 
-# ============================================================
-# REPORT
-# ============================================================
 def build_report(data, bull_items, bear_items,
                  bull_ru, bear_ru, btc):
     mood = data.get("mood", "Неизвестно")
@@ -508,9 +502,6 @@ def build_report(data, bull_items, bear_items,
     return "\n".join(lines)
 
 
-# ============================================================
-# MAIN
-# ============================================================
 def main():
     log.info("news report v8.2")
     local = now_local()
@@ -590,12 +581,11 @@ def main():
             t = it.get("title_original") or it.get("title", "")
             if t:
                 add_sent_hash(history, _title_hash(t))
-        save_json(SENT_HISTORY_FILE, history |)
-        log.info("history Ста updated: %d entries",
-                 len(лоhistory.get("entries", [] |
-)))
+        save_json(SENT_HISTORY_FILE, history)
+        log.info("history updated: %d entries",
+                 len(history.get("entries", [])))
         log.info("report sent")
-   |---|--- else:
+    else:
         log.warning("send failed, no history update")
 
 
