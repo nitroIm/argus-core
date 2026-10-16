@@ -1,166 +1,42 @@
 # ============================================================
-# ARGUS - MORNING REPORT v14.1
+# ARGUS - MORNING REPORT v15.2
 # ------------------------------------------------------------
-# v14.1: fmt_model_block reads ic_test (regression).
-#        Acc ? -> IC <value>.
-# v14: asia_market -> global_market, asia_patterns -> global_patterns.
-#      market_type='futures' in candles queries.
-#      Extended MARKET_LABELS to 20 markets.
-# v13: external block = ONLY active forecasts.
+# Только BTC. Только Aiven DB. Только таблица candles.
+# Текстовый отчёт. Без графиков. Без внешних модулей.
 # ============================================================
 
 import os
 import sys
-import json
 import requests
 from datetime import datetime, timezone
-from datetime import timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-SCRIPT_DIR = Path(__file__).resolve().parent
-CRYPTO_ROOT = SCRIPT_DIR.parent
-DATA_DIR = CRYPTO_ROOT / "data"
-STATE_DIR = (
-    CRYPTO_ROOT / "mexc" / "simulator_01" / "state"
-)
-LEARN_DIR = CRYPTO_ROOT / "learn"
-MODELS_DIR = LEARN_DIR / "models"
-TMP_DIR = Path("/tmp/argus_charts")
-TMP_DIR.mkdir(parents=True, exist_ok=True)
+try:
+    import psycopg
+except ImportError:
+    print("ERR: psycopg not installed")
+    sys.exit(1)
 
 TZ = ZoneInfo("Europe/Kaliningrad")
 
-sys.path.insert(0, str(CRYPTO_ROOT))
-sys.path.insert(
-    0, str(CRYPTO_ROOT / "mexc" / "simulator_01")
+DB_URL = (os.getenv("AIVEN_DB_URL") or "").strip()
+BOT_TOKEN = (os.getenv("BOT_TOKEN") or "").strip()
+CHAT_ID = (os.getenv("TELEGRAM_CHAT_ID") or "").strip()
+FLAG_FILE = os.getenv(
+    "BTC_COLLECT_FLAG", "/home/container/.btc_collect_on"
 )
 
-for _p in CRYPTO_ROOT.rglob("db2.py"):
-    _d = str(_p.parent)
-    if "__pycache__" in _d:
-        continue
-    if _d not in sys.path:
-        sys.path.insert(0, _d)
-    break
-
-from db import get_connection
-from db import close_connection
-from report.charts import plot_candles
-from report.charts import plot_pattern
-from report.charts import plot_rsi
-from report.charts import plot_funding
-from report.charts import plot_oi
-from report.charts import compute_rsi
-from report.risk import compute_atr
-
-DB2_OK = False
-get_conn_db2 = None
-close_conn_db2 = None
-if (os.getenv("ARGUS_DB_URL_2") or "").strip():
-    try:
-        from db2 import get_connection as get_conn_db2
-        from db2 import close_connection as close_conn_db2
-        _t = get_conn_db2()
-        with _t as _c:
-            with _c.cursor() as _cur:
-                _cur.execute("SELECT 1")
-                _cur.fetchone()
-        DB2_OK = True
-    except Exception as e:
-        print("DB2 fail: " + str(e))
-
-BOT_TOKEN = (
-    os.getenv("TELEGRAM_BOT_TOKEN")
-    or os.getenv("BOT_TOKEN")
-    or ""
-).strip()
-CHAT_ID = (
-    os.getenv("TELEGRAM_CHAT_ID")
-    or ""
-).strip()
-
-MAX_POSITIONS = 3
-
-SYMBOLS = [
-    ("BTCUSDT", "BTC", "DB1"),
-    ("ETHUSDT", "ETH", "DB1"),
-    ("SOLUSDT", "SOL", "DB2"),
-    ("BNBUSDT", "BNB", "DB2"),
-]
-DB2_SYMBOLS = {"SOLUSDT", "BNBUSDT"}
-DB1_SYMBOLS_LOCAL = {"BTCUSDT", "ETHUSDT"}
-
-WATCHED_FILES = [
-    ("levels_analysis.json",   120),
-    ("patterns_analysis.json", 120),
-    ("correlations.json",      360),
-    ("events_analysis.json",   360),
-    ("causal_analysis.json",   360),
-    ("news_sentiment.json",    720),
-]
-
-SPOT_SOURCES = [
-    {
-        "name": "MEXC",
-        "url": "https://api.mexc.com/api/v3/ticker/price?symbol={sym}",
-        "parse": lambda j: float(j["price"]),
-    },
-    {
-        "name": "Binance",
-        "url": "https://api.binance.com/api/v3/ticker/price?symbol={sym}",
-        "parse": lambda j: float(j["price"]),
-    },
-]
-
-EXPLORER_OK = False
-try:
-    import explorer as explorer_mod
-    EXPLORER_OK = True
-except Exception as e:
-    print("explorer fail: " + str(e))
-    explorer_mod = None
+SYMBOL = "BTCUSDT"
+NAME = "BTC"
+TIMEFRAME = "15m"
 
 
-MARKET_LABELS = {
-    "NIKKEI":   "Nikkei JP",
-    "SHANGHAI": "Shanghai CN",
-    "HANGSENG": "HangSeng HK",
-    "USDCNY":   "USD/CNY",
-    "USDJPY":   "USD/JPY",
-    "KOSPI":    "KOSPI KR",
-    "TAIEX":    "TAIEX TW",
-    "DAX":      "DAX DE",
-    "SX5E":     "EuroStoxx50",
-    "FTSE":     "FTSE UK",
-    "EURUSD":   "EUR/USD",
-    "VIX":      "VIX",
-    "NASDAQ":   "NASDAQ",
-    "SPX":      "S&P 500",
-    "US10Y":    "US 10Y",
-    "US30Y":    "US 30Y",
-    "DXY":      "DXY",
-    "GOLD":     "Gold",
-    "BRENT":    "Brent",
-    "COPPER":   "Copper",
-}
-
-EVENT_LOOKBACK_H = 12
-MIN_RULE_SAMPLES = 15
-MIN_RULE_HIT = 0.58
-
-
+# ============================================================
+# UTILS
+# ============================================================
 def now_local():
     return datetime.now(timezone.utc).astimezone(TZ)
-
-
-def candles_conn(symbol):
-    if symbol in DB2_SYMBOLS and DB2_OK:
-        try:
-            return get_conn_db2()
-        except Exception as e:
-            print("db2 conn fail: " + str(e))
-    return get_connection()
 
 
 def fmt_price(p):
@@ -177,20 +53,10 @@ def fmt_age(mins):
     if mins is None:
         return "?"
     if mins < 60:
-        return str(int(mins)) + "м"
+        return str(int(mins)) + " мин"
     if mins < 1440:
-        return str(int(mins // 60)) + "ч"
-    return str(int(mins // 1440)) + "д"
-
-
-def _signed_usd(v):
-    sign = "+" if v >= 0 else "-"
-    return sign + "$" + format(abs(v), ".2f")
-
-
-def _signed_pct(v):
-    sign = "+" if v >= 0 else ""
-    return sign + format(v, ".2f") + "%"
+        return str(int(mins // 60)) + " ч"
+    return str(int(mins // 1440)) + " д"
 
 
 def _to_local(ts):
@@ -201,673 +67,61 @@ def _to_local(ts):
     return ts.astimezone(TZ).strftime("%d.%m %H:%M")
 
 
-def escape_html(text):
-    if not text:
-        return ""
-    text = text.replace("&", "&amp;")
-    text = text.replace("<", "&lt;")
-    text = text.replace(">", "&gt;")
-    return text
-
-
-def load_json(path, default=None):
-    if default is None:
-        default = {}
-    if not path.exists():
-        return default
-    try:
-        with open(path, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except Exception:
-        return default
-
-
-# ============================================================
-# PORTFOLIO
-# ============================================================
-def load_portfolio():
-    return load_json(STATE_DIR / "portfolio.json", {})
-
-
-def load_positions():
-    return load_json(STATE_DIR / "positions.json", [])
-
-
-def load_trades():
-    return load_json(STATE_DIR / "trades.json", [])
-
-
-def trades_in_window(hours):
-    cutoff = datetime.now(timezone.utc) - timedelta(
-        hours=hours
+def get_conn():
+    if not DB_URL:
+        raise RuntimeError("AIVEN_DB_URL not set")
+    return psycopg.connect(
+        DB_URL, connect_timeout=15,
+        application_name="argus-morning",
     )
-    out = []
-    for t in load_trades():
-        if not isinstance(t, dict):
-            continue
-        ts = t.get("exit_time")
-        if not ts:
-            continue
-        try:
-            dt = datetime.fromisoformat(ts)
-            if dt.tzinfo is None:
-                dt = dt.replace(tzinfo=timezone.utc)
-        except Exception:
-            continue
-        if dt >= cutoff:
-            out.append(t)
+
+
+# ============================================================
+# INDICATORS (inline)
+# ============================================================
+def compute_rsi(closes, period=14):
+    if len(closes) < period + 1:
+        return [None] * len(closes)
+    out = [None] * period
+    gains = 0.0
+    losses = 0.0
+    for i in range(1, period + 1):
+        d = closes[i] - closes[i - 1]
+        if d >= 0:
+            gains += d
+        else:
+            losses -= d
+    avg_gain = gains / period
+    avg_loss = losses / period
+    rs = avg_gain / avg_loss if avg_loss > 0 else 999
+    out.append(100 - 100 / (1 + rs))
+    for i in range(period + 1, len(closes)):
+        d = closes[i] - closes[i - 1]
+        gain = d if d > 0 else 0
+        loss = -d if d < 0 else 0
+        avg_gain = (avg_gain * (period - 1) + gain) / period
+        avg_loss = (avg_loss * (period - 1) + loss) / period
+        rs = avg_gain / avg_loss if avg_loss > 0 else 999
+        out.append(100 - 100 / (1 + rs))
     return out
 
 
-def fmt_portfolio_block():
-    p = load_portfolio()
-    lines = []
-    if not p:
-        lines.append("💼 <b>Портфель</b>")
-        lines.append("  нет")
-        return lines
-    lines.append("💼 <b>Портфель</b>")
-
-    balance = float(p.get("balance", 0))
-    start = float(p.get("start_balance", 50))
-    pnl = float(p.get("realized_pnl", 0))
-    total = int(p.get("total_trades", 0))
-    wins = int(p.get("wins", 0))
-    losses = int(p.get("losses", 0))
-    pnl_pct = (pnl / start * 100) if start else 0
-    wr = (wins / total * 100) if total else 0
-
-    line = "  $" + format(balance, ".2f")
-    line += " | PnL " + _signed_usd(pnl)
-    line += " (" + _signed_pct(pnl_pct) + ")"
-    lines.append(line)
-
-    line = "  Сделок " + str(total)
-    line += " (" + str(wins) + "W/"
-    line += str(losses) + "L WR "
-    line += format(wr, ".1f") + "%)"
-    lines.append(line)
-
-    positions = load_positions()
-    lines.append(
-        "  Открыто: " + str(len(positions))
-        + "/" + str(MAX_POSITIONS)
-    )
-    for pos in positions:
-        sym = str(pos.get("symbol", "?")).replace(
-            "USDT", ""
-        )
-        d = pos.get("direction", "?")
-        entry = float(pos.get("entry_price", 0))
-        stop = float(pos.get("stop", 0))
-        target = float(pos.get("target", 0))
-        size = float(pos.get("size_usd", 0))
-        line = "    " + sym + " " + d
-        line += " $" + format(size, ".2f")
-        line += " @ " + fmt_price(entry)
-        lines.append(line)
-        line = "      стоп " + fmt_price(stop)
-        line += " | цель " + fmt_price(target)
-        lines.append(line)
-
-    recent = trades_in_window(24)
-    lines.append("📊 <b>Сделки 24ч</b>")
-    if not recent:
-        lines.append("  закрытий нет")
-        return lines
-
-    wins_24 = [
-        t for t in recent if t.get("pnl_usd", 0) > 0
-    ]
-    losses_24 = [
-        t for t in recent if t.get("pnl_usd", 0) <= 0
-    ]
-    pnl_24 = sum(
-        float(t.get("pnl_usd", 0)) for t in recent
-    )
-    line = "  Закрыто " + str(len(recent))
-    line += " (" + str(len(wins_24)) + "W/"
-    line += str(len(losses_24)) + "L)"
-    line += " | PnL " + _signed_usd(pnl_24)
-    lines.append(line)
-
-    if len(recent) >= 2:
-        st = sorted(
-            recent,
-            key=lambda x: float(
-                x.get("pnl_usd", 0)
-            ),
-            reverse=True,
-        )
-        for label, t in [
-            ("Луч", st[0]), ("Худ", st[-1])
-        ]:
-            sym = str(t.get("symbol", "?")).replace(
-                "USDT", ""
-            )
-            pnl_t = float(t.get("pnl_usd", 0))
-            reason = t.get("exit_reason", "?")
-            line = "  " + label + " " + sym
-            line += " " + _signed_usd(pnl_t)
-            line += " (" + str(reason) + ")"
-            lines.append(line)
-    return lines
-
-
-# ============================================================
-# SYSTEM
-# ============================================================
-def _count_in(conn, table):
-    try:
-        with conn.cursor() as cur:
-            cur.execute("SELECT COUNT(*) FROM " + table)
-            return cur.fetchone()[0] or 0
-    except Exception:
-        return -1
-
-
-def _max_ts_in(conn, table):
-    try:
-        with conn.cursor() as cur:
-            cur.execute(
-                "SELECT MAX(timestamp) FROM " + table
-            )
-            row = cur.fetchone()
-            if row and row[0]:
-                ts = row[0]
-                if ts.tzinfo is None:
-                    ts = ts.replace(tzinfo=timezone.utc)
-                return ts
-    except Exception:
-        pass
-    return None
-
-
-def fmt_system_block():
-    lines = ["📦 <b>Система</b>"]
-
-    candle_parts = []
-    for sym, name, db in SYMBOLS:
-        n = -1
-        try:
-            with candles_conn(sym) as conn:
-                with conn.cursor() as cur:
-                    cur.execute(
-                        "SELECT COUNT(*) FROM candles "
-                        "WHERE symbol=%s AND "
-                        "timeframe='1h' "
-                        "AND market_type='futures'",
-                        (sym,),
-                    )
-                    n = cur.fetchone()[0] or 0
-        except Exception:
-            pass
-        candle_parts.append(
-            name + " " + (str(n) if n >= 0 else "?")
-        )
-    lines.append(
-        "  Свечи: " + " | ".join(candle_parts)
-    )
-
-    try:
-        with get_connection() as conn:
-            n_feat = _count_in(
-                conn, "features_hourly"
-            )
-            ts_feat = _max_ts_in(
-                conn, "features_hourly"
-            )
-            age = None
-            if ts_feat:
-                age = int(
-                    (datetime.now(timezone.utc)
-                     - ts_feat).total_seconds() / 60
-                )
-            lines.append(
-                "  Features " + str(n_feat)
-                + " (" + fmt_age(age) + ")"
-            )
-            lines.append(
-                "  Events " + str(
-                    _count_in(conn, "events")
-                )
-            )
-            lines.append(
-                "  Causal " + str(
-                    _count_in(conn, "causal_links")
-                )
-            )
-            try:
-                with conn.cursor() as cur:
-                    cur.execute(
-                        "SELECT COUNT(*) FROM anomaly_log "
-                        "WHERE created_at > "
-                        "NOW() - INTERVAL '24 hours'"
-                    )
-                    n_an = cur.fetchone()[0] or 0
-                lines.append(
-                    "  Anomaly 24ч " + str(n_an)
-                )
-            except Exception:
-                pass
-    except Exception as e:
-        lines.append("  DB err: " + str(e)[:60])
-    return lines
-
-
-def fmt_model_block():
-    lines = ["🧠 <b>Модель</b>"]
-    meta = load_json(
-        MODELS_DIR / "model_meta.json", {}
-    )
-    if not meta:
-        lines.append("  нет")
-        return lines
-
-    ic = meta.get("ic_test")
-    acc = meta.get("accuracy")
-    trained = meta.get("trained_at")
-    n_feat = len(meta.get("features", []))
-
-    line = "  IC "
-    if ic is not None:
-        line += format(ic, ".4f")
-    elif acc is not None:
-        line += format(acc, ".4f")
-    else:
-        line += "?"
-    line += " | фич " + str(n_feat)
-    lines.append(line)
-
-    if trained:
-        try:
-            dt = datetime.fromisoformat(trained)
-            if dt.tzinfo is None:
-                dt = dt.replace(tzinfo=timezone.utc)
-            age_h = int(
-                (datetime.now(timezone.utc)
-                 - dt).total_seconds() / 3600
-            )
-            lines.append(
-                "  Обучена " + str(age_h) + "ч назад"
-            )
-        except Exception:
-            pass
-
-    signals = load_json(
-        LEARN_DIR / "last_signals.json", {}
-    )
-    for s in signals.get("signals", []):
-        sym = s.get("symbol", "?").replace(
-            "USDT", ""
-        )
-        action = s.get("action", "?")
-        prob = s.get("prob_up", 0.5)
-        lines.append(
-            "  " + sym + ": " + action
-            + " (" + format(prob, ".3f") + ")"
-        )
-    return lines
-
-
-def fmt_files_block():
-    lines = ["📁 <b>Файлы</b>"]
-    now = datetime.now(timezone.utc)
-    for name, max_age in WATCHED_FILES:
-        path = DATA_DIR / name
-        if not path.exists():
-            lines.append("  ❌ " + name)
-            continue
-        try:
-            mtime = path.stat().st_mtime
-            age = int(
-                (now.timestamp() - mtime) / 60
-            )
-        except Exception:
-            lines.append("  ? " + name)
-            continue
-        if age <= max_age:
-            icon = "✅"
-        elif age <= max_age * 2:
-            icon = "⚠️"
-        else:
-            icon = "❌"
-        lines.append(
-            "  " + icon + " " + name
-            + " (" + fmt_age(age) + ")"
-        )
-    return lines
-
-
-# ============================================================
-# EXTERNAL MARKETS
-# ============================================================
-def _fetch_last_price(symbol):
-    try:
-        if symbol in DB1_SYMBOLS_LOCAL:
-            with get_connection() as conn:
-                with conn.cursor() as cur:
-                    cur.execute(
-                        "SELECT close FROM candles "
-                        "WHERE symbol=%s AND "
-                        "timeframe='1h' "
-                        "AND market_type='futures' "
-                        "ORDER BY timestamp DESC "
-                        "LIMIT 1",
-                        (symbol,),
-                    )
-                    row = cur.fetchone()
-                    return float(row[0]) if row else None
-        else:
-            if not DB2_OK:
-                return None
-            with get_conn_db2() as conn:
-                with conn.cursor() as cur:
-                    cur.execute(
-                        "SELECT close FROM candles "
-                        "WHERE symbol=%s AND "
-                        "timeframe='1h' "
-                        "AND market_type='futures' "
-                        "ORDER BY timestamp DESC "
-                        "LIMIT 1",
-                        (symbol,),
-                    )
-                    row = cur.fetchone()
-                    return float(row[0]) if row else None
-    except Exception:
+def compute_atr(candles, period=14):
+    if len(candles) < period + 1:
         return None
-
-
-def _fetch_active_forecasts():
-    if not DB2_OK:
-        return []
-
-    now = datetime.now(timezone.utc)
-    cutoff = now - timedelta(
-        hours=EVENT_LOOKBACK_H
-    )
-
-    out = []
-    try:
-        with get_conn_db2() as conn:
-            with conn.cursor() as cur:
-                cur.execute(
-                    "SELECT symbol, timestamp, "
-                    "change_pct "
-                    "FROM global_market "
-                    "WHERE timestamp > %s "
-                    "AND ABS(change_pct) > 0.5 "
-                    "ORDER BY timestamp DESC",
-                    (cutoff,),
-                )
-                moves = cur.fetchall()
-
-                for src, ev_ts, chg in moves:
-                    chg = float(chg)
-                    direction = (
-                        "up" if chg > 0 else "down"
-                    )
-                    abs_chg = abs(chg)
-
-                    if ev_ts.tzinfo is None:
-                        ev_ts_utc = ev_ts.replace(
-                            tzinfo=timezone.utc
-                        )
-                    else:
-                        ev_ts_utc = ev_ts
-
-                    cur.execute(
-                        "SELECT target_symbol, "
-                        "condition_pct, lag_hours, "
-                        "samples, hit_rate, "
-                        "avg_impact_pct "
-                        "FROM global_patterns "
-                        "WHERE source_symbol = %s "
-                        "AND direction = %s "
-                        "AND samples >= %s "
-                        "AND hit_rate >= %s "
-                        "AND condition_pct <= %s "
-                        "ORDER BY hit_rate DESC, "
-                        "samples DESC",
-                        (src, direction,
-                         MIN_RULE_SAMPLES, MIN_RULE_HIT,
-                         abs_chg),
-                    )
-                    rules = cur.fetchall()
-
-                    active = []
-                    for (tgt, cond, lag, n, hit,
-                         avg) in rules:
-                        forecast_ts = (
-                            ev_ts_utc + timedelta(
-                                hours=int(lag)
-                            )
-                        )
-                        if forecast_ts <= now:
-                            continue
-                        active.append({
-                            "target": tgt,
-                            "cond": float(cond),
-                            "lag": int(lag),
-                            "n": int(n),
-                            "hit": float(hit),
-                            "avg": float(avg),
-                            "forecast_ts": forecast_ts,
-                        })
-
-                    if active:
-                        out.append({
-                            "src": src,
-                            "ev_ts": ev_ts_utc,
-                            "change": chg,
-                            "active": active,
-                        })
-    except Exception as e:
-        print("external: " + str(e))
-
-    return out
-
-
-def fmt_external_block():
-    lines = ["🌏 <b>Ожидается</b>"]
-
-    if not DB2_OK:
-        lines.append("  DB2 недоступен")
-        return lines
-
-    active_list = _fetch_active_forecasts()
-
-    if not active_list:
-        lines.append("  Активных прогнозов нет")
-        lines.append(
-            "  (нет движений с непройденным lag)"
-        )
-        return lines
-
-    now = datetime.now(timezone.utc)
-
-    for a in active_list[:6]:
-        label = MARKET_LABELS.get(
-            a["src"], a["src"]
-        )
-        sign = "+" if a["change"] > 0 else ""
-        arrow = "↑" if a["change"] > 0 else "↓"
-        ago_h = int(
-            (now - a["ev_ts"]).total_seconds()
-            / 3600
-        )
-        ago_m = int(
-            ((now - a["ev_ts"]).total_seconds()
-             % 3600) / 60
-        )
-
-        line = "  " + arrow + " <b>" + label
-        line += "</b> "
-        line += sign + format(a["change"], ".2f")
-        line += "%"
-        line += " в " + _to_local(a["ev_ts"])
-        line += " КЛГ"
-        line += " (" + str(ago_h) + "ч"
-        if ago_m > 0:
-            line += " " + str(ago_m) + "м"
-        line += " назад)"
-        lines.append(line)
-
-        for f in a["active"]:
-            tgt_s = f["target"].replace(
-                "USDT", ""
-            )
-            price = _fetch_last_price(f["target"])
-            avg_f = f["avg"]
-            d_sign = "+" if avg_f > 0 else ""
-            d_word = (
-                "↑ вверх" if avg_f > 0
-                else "↓ вниз"
-            )
-
-            line = "     <b>" + tgt_s + "</b> "
-            line += d_word + " " + d_sign
-            line += format(avg_f, ".2f") + "%"
-            lines.append(line)
-
-            if price:
-                forecast_price = price * (
-                    1 + avg_f / 100
-                )
-                line = "       " + fmt_price(price)
-                line += " → "
-                line += fmt_price(forecast_price)
-                lines.append(line)
-
-            line = "       когда: "
-            line += _to_local(f["forecast_ts"])
-            line += " КЛГ"
-            line += " (+" + str(f["lag"]) + "ч)"
-            lines.append(line)
-
-            line = "       точность: "
-            line += format(f["hit"] * 100, ".0f")
-            line += "%"
-            line += " (N=" + str(f["n"]) + ")"
-            lines.append(line)
-
-        lines.append("")
-
-    return lines
-
-
-# ============================================================
-# SPOT + SEND
-# ============================================================
-def fetch_spot(symbol):
-    for src in SPOT_SOURCES:
-        try:
-            url = src["url"].format(sym=symbol)
-            r = requests.get(url, timeout=8)
-            if r.status_code == 200:
-                return src["parse"](r.json())
-        except Exception:
-            continue
-    return None
-
-
-def split_text(text, max_len=3800):
-    if len(text) <= max_len:
-        return [text]
-    parts = []
-    current = ""
-    for line in text.split("\n"):
-        if len(current) + len(line) + 1 > max_len:
-            if current:
-                parts.append(current)
-            current = line
-        else:
-            current = (
-                current + "\n" + line
-                if current else line
-            )
-    if current:
-        parts.append(current)
-    return parts
-
-
-def send_message(text):
-    if not BOT_TOKEN or not CHAT_ID:
-        print("no token")
-        return False
-    parts = split_text(text, 3800)
-    ok_all = True
-    for part in parts:
-        try:
-            url = "https://api.telegram.org/bot"
-            url += BOT_TOKEN + "/sendMessage"
-            payload = {
-                "chat_id": CHAT_ID,
-                "text": part,
-                "parse_mode": "HTML",
-                "disable_web_page_preview": True,
-            }
-            r = requests.post(
-                url, json=payload, timeout=20,
-            )
-            if r.status_code != 200:
-                print(
-                    "send err " + str(r.status_code)
-                )
-                ok_all = False
-        except Exception as e:
-            print("send: " + str(e))
-            ok_all = False
-    return ok_all
-
-
-def send_media_group(photos):
-    if not BOT_TOKEN or not CHAT_ID:
-        return False
-    if not photos:
-        return False
-    photos = photos[:10]
-    media = []
-    files = {}
-    for i, (path, caption) in enumerate(photos):
-        if not Path(path).exists():
-            continue
-        attach = "file" + str(i)
-        item = {
-            "type": "photo",
-            "media": "attach://" + attach,
-        }
-        if i == 0 and caption:
-            item["caption"] = caption[:1000]
-            item["parse_mode"] = "HTML"
-        media.append(item)
-        files[attach] = (
-            Path(path).name,
-            open(path, "rb"),
-            "image/png",
-        )
-    if not media:
-        return False
-    try:
-        url = "https://api.telegram.org/bot"
-        url += BOT_TOKEN + "/sendMediaGroup"
-        r = requests.post(
-            url,
-            data={
-                "chat_id": CHAT_ID,
-                "media": json.dumps(media),
-            },
-            files=files, timeout=60,
-        )
-        for f in files.values():
-            try:
-                f[1].close()
-            except Exception:
-                pass
-        return r.status_code == 200
-    except Exception as e:
-        print("album: " + str(e))
-        return False
+    trs = []
+    for i in range(1, len(candles)):
+        h = candles[i]["high"]
+        l = candles[i]["low"]
+        pc = candles[i - 1]["close"]
+        tr = max(h - l, abs(h - pc), abs(l - pc))
+        trs.append(tr)
+    if len(trs) < period:
+        return None
+    atr = sum(trs[:period]) / period
+    for i in range(period, len(trs)):
+        atr = (atr * (period - 1) + trs[i]) / period
+    return atr
 
 
 # ============================================================
@@ -875,16 +129,14 @@ def send_media_group(photos):
 # ============================================================
 def fetch_candles(symbol, limit=200):
     try:
-        with candles_conn(symbol) as conn:
+        with get_conn() as conn:
             with conn.cursor() as cur:
                 cur.execute(
-                    "SELECT timestamp, open, high, "
-                    "low, close, volume FROM candles "
-                    "WHERE symbol=%s AND "
-                    "timeframe='1h' "
-                    "AND market_type='futures' "
-                    "ORDER BY timestamp DESC LIMIT %s",
-                    (symbol, limit),
+                    "SELECT open_time, open, high, low, close, volume "
+                    "FROM candles WHERE symbol=%s "
+                    "AND timeframe=%s AND market_type='spot' "
+                    "ORDER BY open_time DESC LIMIT %s",
+                    (symbol, TIMEFRAME, limit),
                 )
                 rows = list(reversed(cur.fetchall()))
                 return [
@@ -899,71 +151,194 @@ def fetch_candles(symbol, limit=200):
                     for r in rows
                 ]
     except Exception as e:
-        print("candles " + symbol + ": " + str(e))
+        print("candles: " + str(e))
         return []
 
 
-def fetch_funding(symbol, limit=50):
+def fetch_stats(symbol):
     try:
-        with candles_conn(symbol) as conn:
+        with get_conn() as conn:
             with conn.cursor() as cur:
                 cur.execute(
-                    "SELECT timestamp, rate "
-                    "FROM funding_rates "
-                    "WHERE symbol=%s AND "
-                    "rate IS NOT NULL "
-                    "ORDER BY timestamp DESC LIMIT %s",
-                    (symbol, limit),
+                    "SELECT COUNT(*) FROM candles WHERE symbol=%s",
+                    (symbol,),
                 )
-                rows = list(reversed(cur.fetchall()))
-                return [
-                    {
-                        "timestamp": r[0],
-                        "rate": float(r[1]),
-                    }
-                    for r in rows
-                ]
-    except Exception:
-        return []
+                total = cur.fetchone()[0] or 0
 
-
-def fetch_oi(symbol, limit=100):
-    try:
-        with candles_conn(symbol) as conn:
-            with conn.cursor() as cur:
                 cur.execute(
-                    "SELECT timestamp, oi "
-                    "FROM open_interest "
-                    "WHERE symbol=%s AND "
-                    "oi IS NOT NULL "
-                    "ORDER BY timestamp DESC LIMIT %s",
-                    (symbol, limit),
+                    "SELECT market_type, COUNT(*) FROM candles "
+                    "WHERE symbol=%s GROUP BY market_type",
+                    (symbol,),
                 )
-                rows = list(reversed(cur.fetchall()))
-                return [
-                    {
-                        "timestamp": r[0],
-                        "oi": float(r[1]),
-                    }
-                    for r in rows
-                ]
-    except Exception:
-        return []
+                by_market = dict(cur.fetchall())
+
+                cur.execute(
+                    "SELECT MAX(open_time) FROM candles WHERE symbol=%s",
+                    (symbol,),
+                )
+                last_ts = cur.fetchone()[0]
+
+                cur.execute(
+                    "SELECT COUNT(*) FROM candles WHERE symbol=%s "
+                    "AND open_time > NOW() - INTERVAL '24 hours'",
+                    (symbol,),
+                )
+                rows_24h = cur.fetchone()[0] or 0
+
+                cur.execute(
+                    "SELECT COUNT(*) FROM candles WHERE symbol=%s "
+                    "AND (open IS NULL OR high IS NULL OR low IS NULL "
+                    "OR close IS NULL OR volume IS NULL)",
+                    (symbol,),
+                )
+                nulls = cur.fetchone()[0] or 0
+
+        return {
+            "total": total,
+            "by_market": by_market,
+            "last_ts": last_ts,
+            "rows_24h": rows_24h,
+            "nulls": nulls,
+        }
+    except Exception as e:
+        print("stats: " + str(e))
+        return None
 
 
-def fmt_regime(regime):
-    if not regime:
-        return "?"
-    label = regime.get("label", "?")
-    m = {
-        "trend_up": "тренд↑",
-        "trend_down": "тренд↓",
-        "flat": "флэт",
-        "chop": "пила",
-        "volatile": "волатильно",
-        "unknown": "нет данных",
-    }
-    return m.get(label, label)
+# ============================================================
+# BLOCKS
+# ============================================================
+def fmt_collector_block(stats):
+    lines = ["📡 <b>Сбор данных</b>"]
+
+    flag_on = Path(FLAG_FILE).exists()
+    lines.append(
+        "  Статус: " + ("🟢 ON" if flag_on else "🔴 OFF")
+    )
+
+    if stats is None:
+        lines.append("  ❌ DB недоступна")
+        return lines
+
+    lines.append("  Свечей всего: " + str(stats["total"]))
+
+    if stats["by_market"]:
+        parts = []
+        for mt, cnt in sorted(stats["by_market"].items()):
+            parts.append(str(mt) + " " + str(cnt))
+        lines.append("  " + " | ".join(parts))
+
+    lines.append("  За 24ч: " + str(stats["rows_24h"]))
+
+    last_ts = stats["last_ts"]
+    if last_ts:
+        if last_ts.tzinfo is None:
+            last_ts = last_ts.replace(tzinfo=timezone.utc)
+        age_min = int(
+            (datetime.now(timezone.utc) - last_ts)
+            .total_seconds() / 60
+        )
+        line = "  Последняя: " + _to_local(last_ts) + " КЛГ"
+        line += " (" + fmt_age(age_min) + " назад)"
+        lines.append(line)
+
+        if age_min <= 30:
+            lines.append("  ✅ Данные свежие")
+        elif age_min <= 120:
+            lines.append("  ⚠️ Данные с задержкой")
+        else:
+            lines.append("  ❌ Данные устарели!")
+
+    if stats["nulls"] == 0:
+        lines.append("  ✅ Пустых полей нет")
+    else:
+        lines.append("  ⚠️ Пустых полей: " + str(stats["nulls"]))
+
+    return lines
+
+
+def fmt_btc_block(candles):
+    lines = ["💰 <b>" + NAME + "</b>"]
+
+    if not candles:
+        lines.append("  нет данных")
+        return lines
+
+    price = candles[-1]["close"]
+
+    change_24h = 0
+    if len(candles) >= 96:
+        prev = candles[-96]["close"]
+        if prev:
+            change_24h = (price - prev) / prev * 100
+
+    line = "  " + fmt_price(price)
+    line += " | " + format(change_24h, "+.2f") + "% 24ч"
+    lines.append(line)
+
+    atr = compute_atr(candles, 14)
+    closes = [c["close"] for c in candles]
+    rsi = compute_rsi(closes, 14)
+
+    line = "  "
+    if atr:
+        line += "ATR " + fmt_price(atr)
+    if rsi and rsi[-1] is not None:
+        r = rsi[-1]
+        if r >= 70:
+            st = "перекуп"
+        elif r <= 30:
+            st = "перепрод"
+        else:
+            st = "нейтр"
+        line += " | RSI " + format(r, ".1f") + " " + st
+    lines.append(line)
+
+    return lines
+
+
+# ============================================================
+# SEND
+# ============================================================
+def split_text(text, max_len=3800):
+    if len(text) <= max_len:
+        return [text]
+    parts = []
+    current = ""
+    for line in text.split("\n"):
+        if len(current) + len(line) + 1 > max_len:
+            if current:
+                parts.append(current)
+            current = line
+        else:
+            current = current + "\n" + line if current else line
+    if current:
+        parts.append(current)
+    return parts
+
+
+def send_message(text):
+    if not BOT_TOKEN or not CHAT_ID:
+        print("no token/chat")
+        return False
+    for part in split_text(text, 3800):
+        try:
+            url = (
+                "https://api.telegram.org/bot"
+                + BOT_TOKEN + "/sendMessage"
+            )
+            r = requests.post(url, json={
+                "chat_id": CHAT_ID,
+                "text": part,
+                "parse_mode": "HTML",
+                "disable_web_page_preview": True,
+            }, timeout=20)
+            if r.status_code != 200:
+                print("send err " + str(r.status_code))
+        except Exception as e:
+            print("send: " + str(e))
+            return False
+    return True
 
 
 # ============================================================
@@ -972,249 +347,28 @@ def fmt_regime(regime):
 def build_report_text():
     now = now_local()
     lines = []
-    lines.append("☀️ <b>ARGUS — утро</b> v14.1")
-    lines.append(
-        now.strftime("%d.%m.%Y %H:%M") + " КЛГ"
-    )
+    lines.append("☀️ <b>ARGUS — утро</b>")
+    lines.append(now.strftime("%d.%m.%Y %H:%M") + " КЛГ")
     lines.append("")
 
-    lines.extend(fmt_portfolio_block())
-    lines.append("")
-    lines.append("─" * 20)
-    lines.append("")
-
-    lines.extend(fmt_system_block())
-    lines.append("")
-
-    lines.extend(fmt_model_block())
-    lines.append("")
-
-    lines.extend(fmt_files_block())
+    stats = fetch_stats(SYMBOL)
+    lines.extend(fmt_collector_block(stats))
     lines.append("")
     lines.append("─" * 20)
     lines.append("")
 
-    lines.extend(fmt_external_block())
-    lines.append("")
-    lines.append("─" * 20)
-    lines.append("")
+    candles = fetch_candles(SYMBOL, 200)
+    lines.extend(fmt_btc_block(candles))
 
-    patterns = load_json(
-        DATA_DIR / "patterns_analysis.json"
-    )
-
-    for symbol, name, db in SYMBOLS:
-        candles = fetch_candles(symbol, 200)
-        if not candles:
-            lines.append(
-                "⚠️ <b>" + name + "</b> ["
-                + db + "]: нет свечей"
-            )
-            lines.append("")
-            continue
-
-        price_close = candles[-1]["close"]
-        spot = fetch_spot(symbol)
-        change_24h = 0
-        if len(candles) >= 25:
-            prev = candles[-25]["close"]
-            if prev:
-                change_24h = (
-                    (price_close - prev)
-                    / prev * 100
-                )
-
-        line = "💰 <b>" + name + "</b> ["
-        line += db + "]: "
-        if spot:
-            line += fmt_price(spot) + " (spot)"
-        else:
-            line += fmt_price(price_close)
-        line += " | "
-        line += format(change_24h, "+.2f")
-        line += "% 24ч"
-        lines.append(line)
-
-        sym_p = patterns.get(
-            "symbols", {}
-        ).get(symbol, {})
-        regime = sym_p.get("regime", {})
-        if regime:
-            reg = fmt_regime(regime)
-            allowed = regime.get(
-                "trade_allowed", True
-            )
-            mark = "✅" if allowed else "⛔"
-            up = regime.get("up_ratio")
-            line = "  " + mark + " " + reg
-            if up is not None:
-                line += " (up "
-                line += format(up, ".2f") + ")"
-            lines.append(line)
-
-        atr = compute_atr(candles, 14)
-        closes = [c["close"] for c in candles]
-        rsi = compute_rsi(closes, 14)
-
-        line = "  "
-        if atr:
-            line += "ATR " + fmt_price(atr)
-        if rsi and rsi[-1] is not None:
-            r = rsi[-1]
-            if r >= 70:
-                st = "перекуп"
-            elif r <= 30:
-                st = "перепрод"
-            else:
-                st = "нейтр"
-            line += " | RSI " + format(r, ".1f")
-            line += " " + st
-        lines.append(line)
-
-        funding_data = fetch_funding(symbol, 50)
-        if funding_data:
-            cur_f = (
-                funding_data[-1]["rate"] * 100
-            )
-            lines.append(
-                "  funding "
-                + format(cur_f, "+.4f") + "%"
-            )
-
-        if EXPLORER_OK:
-            try:
-                r = explorer_mod.analyze(symbol)
-                direction = r.get(
-                    "direction", "NONE"
-                )
-                score = r.get("score", 0)
-                if direction == "NONE":
-                    line = "  🎯 NONE"
-                    reg = r.get("regime", {})
-                    if not reg.get(
-                        "trade_allowed", True
-                    ):
-                        line += " (вето)"
-                    line += " score "
-                    line += format(score, ".3f")
-                    lines.append(line)
-                else:
-                    if direction == "LONG":
-                        em = "📈"
-                    else:
-                        em = "📉"
-                    line = "  " + em + " "
-                    line += direction
-                    line += " score "
-                    line += format(score, ".3f")
-                    lines.append(line)
-            except Exception as e:
-                print("explorer: " + str(e))
-        lines.append("")
-
-    lines.append("📊 Графики ниже")
     return "\n".join(lines)
 
 
 def main():
-    print("Morning report v14.1 - start")
-    print("DB2_OK = " + str(DB2_OK))
-
+    print("Morning report v15.2 - start")
     text = build_report_text()
     print("len: " + str(len(text)))
     send_message(text)
-
-    levels = load_json(
-        DATA_DIR / "levels_analysis.json"
-    )
-    patterns = load_json(
-        DATA_DIR / "patterns_analysis.json"
-    )
-    photos = []
-
-    for symbol, name, prefix in [
-        ("BTCUSDT", "BTC", "btc"),
-        ("ETHUSDT", "ETH", "eth"),
-    ]:
-        candles = fetch_candles(symbol, 200)
-        if not candles:
-            continue
-
-        sym_lvl = levels.get(
-            "symbols", {}
-        ).get(symbol, {})
-        sup = sym_lvl.get("supports", [])
-        res = sym_lvl.get(
-            "resistances", []
-        )
-
-        path = TMP_DIR / (prefix + "_candles.png")
-        plot_candles(
-            symbol, candles,
-            supports=sup, resistances=res,
-            output_path=str(path), title=name,
-        )
-        photos.append((str(path), ""))
-
-        path = TMP_DIR / (prefix + "_rsi.png")
-        if plot_rsi(
-            symbol, candles,
-            output_path=str(path),
-        ):
-            photos.append((str(path), ""))
-
-        funding_data = fetch_funding(symbol, 50)
-        if funding_data:
-            path = TMP_DIR / (
-                prefix + "_funding.png"
-            )
-            if plot_funding(
-                symbol, funding_data,
-                output_path=str(path),
-            ):
-                photos.append((str(path), ""))
-
-        oi_data = fetch_oi(symbol, 100)
-        if oi_data:
-            path = TMP_DIR / (prefix + "_oi.png")
-            if plot_oi(
-                symbol, oi_data,
-                output_path=str(path),
-            ):
-                photos.append((str(path), ""))
-
-        sym_p = patterns.get(
-            "symbols", {}
-        ).get(symbol, {})
-        binary = sym_p.get("binary_string", "")
-        if binary:
-            path = TMP_DIR / (
-                prefix + "_pattern.png"
-            )
-            if plot_pattern(
-                symbol, binary,
-                output_path=str(path),
-            ):
-                photos.append((str(path), ""))
-
-    if photos:
-        cap = "📊 " + str(len(photos)) + " графиков"
-        ph = [(photos[0][0], cap)] + photos[1:]
-        send_media_group(ph)
-
-    if EXPLORER_OK and explorer_mod is not None:
-        try:
-            explorer_mod.close_all()
-        except Exception:
-            pass
-
-    close_connection()
-    if DB2_OK and close_conn_db2 is not None:
-        try:
-            close_conn_db2()
-        except Exception:
-            pass
-    print("Morning report - done")
+    print("done")
 
 
 if __name__ == "__main__":
