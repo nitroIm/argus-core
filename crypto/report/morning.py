@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - MORNING REPORT v15.2
+# ARGUS - MORNING REPORT v15.3
 # ------------------------------------------------------------
 # Только BTC. Только Aiven DB. Только таблица candles.
 # Текстовый отчёт. Без графиков. Без внешних модулей.
@@ -21,7 +21,11 @@ except ImportError:
 TZ = ZoneInfo("Europe/Kaliningrad")
 
 DB_URL = (os.getenv("AIVEN_DB_URL") or "").strip()
-BOT_TOKEN = (os.getenv("BOT_TOKEN") or "").strip()
+BOT_TOKEN = (
+    os.getenv("TELEGRAM_BOT_TOKEN")
+    or os.getenv("BOT_TOKEN")
+    or ""
+).strip()
 CHAT_ID = (os.getenv("TELEGRAM_CHAT_ID") or "").strip()
 FLAG_FILE = os.getenv(
     "BTC_COLLECT_FLAG", "/home/container/.btc_collect_on"
@@ -364,7 +368,7 @@ def build_report_text():
 
 
 def main():
-    print("Morning report v15.2 - start")
+    print("Morning report v15.3 - start")
     text = build_report_text()
     print("len: " + str(len(text)))
     send_message(text)
