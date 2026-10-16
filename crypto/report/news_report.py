@@ -590,7 +590,7 @@ def main():
             t = it.get("title_original") or it.get("title", "")
             if t:
                 add_sent_hash(history, _title_hash(t))
-        save_json(SENT_HISTлоORY_FILE, history |)
+        save_json(SENT_HISTORY_FILE, history |)
         log.info("history Ста updated: %d entries",
                  len(лоhistory.get("entries", [] |
 )))
