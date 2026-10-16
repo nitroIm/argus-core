@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-10-16T08:05:39.167734+00:00",
+  "generated_at": "2026-10-16T09:05:41.465032+00:00",
   "total_news": 128,
-  "avg_sentiment": -0.149,
+  "avg_sentiment": -0.147,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
   "bullish_count": 6,
   "bearish_count": 25,
@@ -58,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-16T08:05:37.762802+00:00",
+      "collected_at": "2026-10-16T09:05:39.796436+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin slips under $80K after US PPI gains most in four years",
       "cross_check": 1
@@ -74,7 +74,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-16T08:05:37.815992+00:00",
+      "collected_at": "2026-10-16T09:05:39.851239+00:00",
       "effective_weight": 0.88,
       "title_original": "Mastercard and BVNK Launch 'Global Money Platform' to Merge Fiat and Stablecoins",
       "cross_check": 1
@@ -90,7 +90,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-16T08:05:37.816177+00:00",
+      "collected_at": "2026-10-16T09:05:39.851430+00:00",
       "effective_weight": 0.88,
       "title_original": "Zcash Tanks Double Digits After 'Meteoric Rise' Sees Leverage Build Up",
       "cross_check": 1
@@ -106,7 +106,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-16T08:05:38.104526+00:00",
+      "collected_at": "2026-10-16T09:05:40.179468+00:00",
       "effective_weight": 0.8,
       "title_original": "Two firms control corporate Bitcoin buys, even as business adoption broadens",
       "cross_check": 1
@@ -122,29 +122,13 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-16T08:05:38.226096+00:00",
+      "collected_at": "2026-10-16T09:05:40.308003+00:00",
       "effective_weight": 0.8,
       "title_original": "Bitcoin Could Jump 50% If Developers Agree on Quantum Plan: Capriole CEO",
       "cross_check": 1
     }
   ],
   "top_bearish": [
-    {
-      "title": "Fed Chair Warsh’s Bangkok Speech: 4 Key Takeaways and What They Mean for Bitcoin",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-16T07:56:22+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-16T08:05:38.225669+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Fed Chair Warsh’s Bangkok Speech: 4 Key Takeaways and What They Mean for Bitcoin",
-      "cross_check": 1
-    },
     {
       "title": "Balaji’s ‘Singapore of social media’ begins with a wave of bans",
       "source": "Cointelegraph",
@@ -156,7 +140,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-16T08:05:37.762378+00:00",
+      "collected_at": "2026-10-16T09:05:39.796022+00:00",
       "effective_weight": 1.3,
       "title_original": "Balaji’s ‘Singapore of social media’ begins with a wave of bans",
       "cross_check": 1
@@ -172,7 +156,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-16T08:05:37.762546+00:00",
+      "collected_at": "2026-10-16T09:05:39.796187+00:00",
       "effective_weight": 1.04,
       "title_original": "Scammer loses $4.8M stored on tampered Ledgers: Asia Express",
       "cross_check": 1
@@ -188,7 +172,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-16T08:05:37.762753+00:00",
+      "collected_at": "2026-10-16T09:05:39.796387+00:00",
       "effective_weight": 1.04,
       "title_original": "Mastercard brings stablecoin balances into traditional banking and card payments",
       "cross_check": 1
@@ -204,9 +188,25 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-16T08:05:37.762851+00:00",
+      "collected_at": "2026-10-16T09:05:39.796485+00:00",
       "effective_weight": 1.04,
       "title_original": "Russia to ban direct peer-to-peer crypto trades starting July 2027",
+      "cross_check": 1
+    },
+    {
+      "title": "HEX token sellers erase $160M following reports of founder Richard Schueler arrest",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-10-15T12:12:57+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.0,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-16T09:05:39.796670+00:00",
+      "effective_weight": 1.04,
+      "title_original": "HEX token sellers erase $160M following reports of founder Richard Schueler arrest",
       "cross_check": 1
     }
   ]
