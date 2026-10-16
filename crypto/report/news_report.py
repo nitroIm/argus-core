@@ -1,12 +1,8 @@
 # ============================================================
-# ARGUS - NEWS REPORT v8.1
+# ARGUS - NEWS REPORT v8.2
 # ------------------------------------------------------------
-# Распределение по времени (КЛГ):
-#   TG личка:        09:00 + 20:00
-#   TG канал:        09:00
-#   VK группа:       09:00
-#
-# ТЕСТ: поставь в env NEWS_TEST_MODE=1 — отправка идёт всегда.
+# v8.2: убрано "КЛГ" и строка "Данные: X назад".
+# v8.1: TEST_MODE через env NEWS_TEST_MODE.
 # ============================================================
 
 import os
@@ -61,7 +57,6 @@ VK_TOKEN = (os.getenv("VK_TOKEN") or "").strip()
 VK_GROUP_ID = (os.getenv("VK_GROUP_ID") or "").strip()
 DB_URL = (os.getenv("AIVEN_DB_URL") or "").strip()
 
-# ---- ТЕСТ ----
 TEST_MODE = (
     os.getenv("NEWS_TEST_MODE", "").strip().lower()
     in ("1", "true", "yes", "on")
@@ -70,15 +65,14 @@ TEST_MODE = (
 MAX_MESSAGE_LEN = 3800
 MAX_VK_LEN = 15000
 HISTORY_DAYS = 7
-STALE_HOURS = 6
 
 SYMBOL = "BTCUSDT"
 TIMEFRAME = "15m"
 
 TZ = ZoneInfo("Europe/Kaliningrad")
 
-SEND_HOURS_PERSONAL = {9, 20}   # TG личка
-SEND_HOURS_GROUP = {9}          # TG канал + VK
+SEND_HOURS_PERSONAL = {9, 20}
+SEND_HOURS_GROUP = {9}
 
 
 def now_local():
@@ -219,24 +213,6 @@ def _title_hash(text):
     return hashlib.md5(
         t.encode("utf-8"), usedforsecurity=False,
     ).hexdigest()
-
-
-def file_age_hours(path):
-    if not path.exists():
-        return None
-    mtime = path.stat().st_mtime
-    now = datetime.now(timezone.utc).timestamp()
-    return (now - mtime) / 3600
-
-
-def fmt_age(h):
-    if h is None:
-        return "?"
-    if h < 1:
-        return str(int(h * 60)) + "м"
-    if h < 24:
-        return format(h, ".1f") + "ч"
-    return format(h / 24, ".1f") + "д"
 
 
 def load_sent_history():
@@ -430,7 +406,7 @@ def fmt_pct(v):
 # REPORT
 # ============================================================
 def build_report(data, bull_items, bear_items,
-                 bull_ru, bear_ru, age_h, btc):
+                 bull_ru, bear_ru, btc):
     mood = data.get("mood", "Неизвестно")
     avg = data.get("avg_sentiment", 0.0)
     total = data.get("total_news", 0)
@@ -443,7 +419,7 @@ def build_report(data, bull_items, bear_items,
     now = now_local()
     lines = []
     lines.append("📰 <b>ARGUS — Новости</b>")
-    lines.append(now.strftime("%d.%m %H:%M") + " КЛГ")
+    lines.append(now.strftime("%d.%m %H:%M"))
     lines.append("")
 
     if btc:
@@ -464,14 +440,6 @@ def build_report(data, bull_items, bear_items,
         if parts:
             lines.append("  " + " | ".join(parts))
         lines.append("")
-
-    if age_h is not None:
-        icon = "✅" if age_h <= STALE_HOURS else "⚠️"
-        line = icon + " Данные: " + fmt_age(age_h) + " назад"
-        if age_h > STALE_HOURS:
-            line += " (устарели)"
-        lines.append(line)
-    lines.append("")
 
     lines.append("🎭 " + esc(mood))
     lines.append("📊 Сентимент: <b>" + format(avg, "+.3f") + "</b>")
@@ -544,10 +512,10 @@ def build_report(data, bull_items, bear_items,
 # MAIN
 # ============================================================
 def main():
-    log.info("news report v8.1")
+    log.info("news report v8.2")
     local = now_local()
     log.info(
-        "local time: %s КЛГ (hour=%d)",
+        "local time: %s (hour=%d)",
         local.strftime("%H:%M"), local.hour,
     )
     if TEST_MODE:
@@ -568,10 +536,6 @@ def main():
     if not data:
         log.error("sentiment empty/broken")
         sys.exit(1)
-
-    age_h = file_age_hours(SENTIMENT_FILE)
-    log.info("data age: %s",
-             fmt_age(age_h) if age_h else "?")
 
     history = load_sent_history()
     history = clean_history(history)
@@ -596,7 +560,7 @@ def main():
 
     text_tg = build_report(
         data, bull_fresh, bear_fresh,
-        bull_ru, bear_ru, age_h, btc,
+        bull_ru, bear_ru, btc,
     )
     text_vk = to_plain(text_tg)
 
@@ -626,11 +590,12 @@ def main():
             t = it.get("title_original") or it.get("title", "")
             if t:
                 add_sent_hash(history, _title_hash(t))
-        save_json(SENT_HISTORY_FILE, history)
-        log.info("history updated: %d entries",
-                 len(history.get("entries", [])))
+        save_json(SENT_HISTлоORY_FILE, history |)
+        log.info("history Ста updated: %d entries",
+                 len(лоhistory.get("entries", [] |
+)))
         log.info("report sent")
-    else:
+   |---|--- else:
         log.warning("send failed, no history update")
 
 
