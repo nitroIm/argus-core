@@ -1,23 +1,23 @@
 {
-  "generated_at": "2026-10-16T09:05:41.465032+00:00",
+  "generated_at": "2026-10-16T10:05:45.957898+00:00",
   "total_news": 128,
-  "avg_sentiment": -0.147,
+  "avg_sentiment": -0.132,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
   "bullish_count": 6,
-  "bearish_count": 25,
-  "neutral_count": 97,
+  "bearish_count": 26,
+  "neutral_count": 96,
   "fake_count": 0,
   "cross_confirmed": 1,
   "single_source": 117,
   "by_source": {
     "Cointelegraph": {
       "total": 25,
-      "bull": 1,
+      "bull": 2,
       "bear": 7
     },
     "Decrypt": {
       "total": 25,
-      "bull": 3,
+      "bull": 2,
       "bear": 6
     },
     "Bitcoin.com": {
@@ -33,7 +33,7 @@
     "CryptoPotato": {
       "total": 25,
       "bull": 1,
-      "bear": 5
+      "bear": 6
     },
     "Bitcoinist": {
       "total": 8,
@@ -48,6 +48,22 @@
   },
   "top_bullish": [
     {
+      "title": "Bitcoin may seek 20-month trend line reclaim before new record highs: CryptoQuant",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-10-16T09:22:13+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 2.2,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-16T10:05:44.107335+00:00",
+      "effective_weight": 1.95,
+      "title_original": "Bitcoin may seek 20-month trend line reclaim before new record highs: CryptoQuant",
+      "cross_check": 1
+    },
+    {
       "title": "Bitcoin slips under $80K after US PPI gains most in four years",
       "source": "Cointelegraph",
       "source_weight": 1.3,
@@ -58,7 +74,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-16T09:05:39.796436+00:00",
+      "collected_at": "2026-10-16T10:05:44.108037+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin slips under $80K after US PPI gains most in four years",
       "cross_check": 1
@@ -74,7 +90,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-16T09:05:39.851239+00:00",
+      "collected_at": "2026-10-16T10:05:44.176935+00:00",
       "effective_weight": 0.88,
       "title_original": "Mastercard and BVNK Launch 'Global Money Platform' to Merge Fiat and Stablecoins",
       "cross_check": 1
@@ -90,7 +106,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-16T09:05:39.851430+00:00",
+      "collected_at": "2026-10-16T10:05:44.177141+00:00",
       "effective_weight": 0.88,
       "title_original": "Zcash Tanks Double Digits After 'Meteoric Rise' Sees Leverage Build Up",
       "cross_check": 1
@@ -106,29 +122,29 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-16T09:05:40.179468+00:00",
+      "collected_at": "2026-10-16T10:05:44.533250+00:00",
       "effective_weight": 0.8,
       "title_original": "Two firms control corporate Bitcoin buys, even as business adoption broadens",
-      "cross_check": 1
-    },
-    {
-      "title": "Bitcoin Could Jump 50% If Developers Agree on Quantum Plan: Capriole CEO",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-15T20:41:14+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-16T09:05:40.308003+00:00",
-      "effective_weight": 0.8,
-      "title_original": "Bitcoin Could Jump 50% If Developers Agree on Quantum Plan: Capriole CEO",
       "cross_check": 1
     }
   ],
   "top_bearish": [
+    {
+      "title": "This Bitcoin Cycle Theory Puts $350K in Focus Before the Next Crash",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-16T09:40:54+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 2.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-16T10:05:44.629713+00:00",
+      "effective_weight": 1.5,
+      "title_original": "This Bitcoin Cycle Theory Puts $350K in Focus Before the Next Crash",
+      "cross_check": 1
+    },
     {
       "title": "Balaji’s ‘Singapore of social media’ begins with a wave of bans",
       "source": "Cointelegraph",
@@ -140,7 +156,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-16T09:05:39.796022+00:00",
+      "collected_at": "2026-10-16T10:05:44.107624+00:00",
       "effective_weight": 1.3,
       "title_original": "Balaji’s ‘Singapore of social media’ begins with a wave of bans",
       "cross_check": 1
@@ -156,7 +172,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-16T09:05:39.796187+00:00",
+      "collected_at": "2026-10-16T10:05:44.107790+00:00",
       "effective_weight": 1.04,
       "title_original": "Scammer loses $4.8M stored on tampered Ledgers: Asia Express",
       "cross_check": 1
@@ -172,7 +188,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-16T09:05:39.796387+00:00",
+      "collected_at": "2026-10-16T10:05:44.107989+00:00",
       "effective_weight": 1.04,
       "title_original": "Mastercard brings stablecoin balances into traditional banking and card payments",
       "cross_check": 1
@@ -188,25 +204,9 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-16T09:05:39.796485+00:00",
+      "collected_at": "2026-10-16T10:05:44.108085+00:00",
       "effective_weight": 1.04,
       "title_original": "Russia to ban direct peer-to-peer crypto trades starting July 2027",
-      "cross_check": 1
-    },
-    {
-      "title": "HEX token sellers erase $160M following reports of founder Richard Schueler arrest",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-10-15T12:12:57+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-16T09:05:39.796670+00:00",
-      "effective_weight": 1.04,
-      "title_original": "HEX token sellers erase $160M following reports of founder Richard Schueler arrest",
       "cross_check": 1
     }
   ]
