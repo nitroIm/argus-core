@@ -1,393 +1,610 @@
 # ============================================================
-# ARGUS-Trader — ВЕЧЕРНИЙ ОТЧЁТ v3
+# ARGUS - EVENING REPORT v16.0
 # ------------------------------------------------------------
-# v3: + portfolio (day PnL, trades today, positions).
-#     + model status + files freshness.
-#     Kaliningrad time.
-#     DB2 routing for SOL/BNB.
-# v2.2: base technical audit.
+# Только BTC. Только Aiven DB. Только candles.
+# Одна картинка (свечи + объём + RSI) + текст.
+# Показывает что произошло с утра (последние 12ч)
+# и полный контекст за 24ч.
 # ============================================================
 
 import os
 import sys
-import json
-import logging
 import requests
 from datetime import datetime, timezone
-from datetime import timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-SCRIPT_DIR = Path(__file__).resolve().parent
-CRYPTO_ROOT = SCRIPT_DIR.parent
-DATA_DIR = CRYPTO_ROOT / "data"
-STATE_DIR = (
-    CRYPTO_ROOT / "mexc" / "simulator_01" / "state"
-)
-LEARN_DIR = CRYPTO_ROOT / "learn"
-MODELS_DIR = LEARN_DIR / "models"
+try:
+    import psycopg
+except ImportError:
+    print("ERR: psycopg not installed")
+    sys.exit(1)
 
-sys.path.insert(0, str(CRYPTO_ROOT))
-sys.path.insert(
-    0, str(CRYPTO_ROOT / "mexc" / "simulator_01")
-)
-
-# Auto-locate db2.py
-for _p in CRYPTO_ROOT.rglob("db2.py"):
-    _d = str(_p.parent)
-    if "__pycache__" in _d:
-        continue
-    if _d not in sys.path:
-        sys.path.insert(0, _d)
-    break
-
-from db import get_connection, close_connection
-
-DB2_OK = False
-get_conn_db2 = None
-close_conn_db2 = None
-if (os.getenv("ARGUS_DB_URL_2") or "").strip():
-    try:
-        from db2 import get_connection as get_conn_db2
-        from db2 import close_connection as close_conn_db2
-        _t = get_conn_db2()
-        with _t as _c:
-            with _c.cursor() as _cur:
-                _cur.execute("SELECT 1")
-                _cur.fetchone()
-        DB2_OK = True
-        print("DB2 OK")
-    except Exception as e:
-        print("DB2 fail: " + str(e))
-else:
-    print("ARGUS_DB_URL_2 not set")
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-)
-log = logging.getLogger("crypto.evening")
+try:
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    from matplotlib.patches import Rectangle
+    MPL_OK = True
+except ImportError:
+    MPL_OK = False
+    print("WARN: matplotlib not installed")
 
 TZ = ZoneInfo("Europe/Kaliningrad")
+TMP_DIR = Path("/tmp/argus_charts")
+TMP_DIR.mkdir(parents=True, exist_ok=True)
 
+DB_URL = (os.getenv("AIVEN_DB_URL") or "").strip()
 BOT_TOKEN = (
     os.getenv("TELEGRAM_BOT_TOKEN")
     or os.getenv("BOT_TOKEN")
     or ""
 ).strip()
-CHAT_ID = (
-    os.getenv("TELEGRAM_CHAT_ID")
-    or ""
-).strip()
+CHAT_ID = (os.getenv("TELEGRAM_CHAT_ID") or "").strip()
 
-LOOKBACK_HOURS = 24
-MAX_MESSAGE_LEN = 3800
-MIN_COLLECT_RUNS = 8
-
-FRESHNESS_EXPECTED = {
-    "candles": 90,
-    "features_hourly": 120,
-    "price_patterns": 120,
-}
-
-DB_TABLES = [
-    ("candles", "candles"),
-    ("funding_rates", "funding"),
-    ("open_interest", "OI"),
-    ("long_short_ratio", "LS"),
-    ("taker_flow", "taker"),
-    ("features_hourly", "features"),
-    ("price_patterns", "patterns"),
-    ("events", "events"),
-    ("causal_links", "causal"),
-    ("anomaly_log", "anomaly"),
-]
-
-FRESHNESS_CHECKS = [
-    ("candles", "timestamp", "свечи"),
-    ("features_hourly", "timestamp", "features"),
-    ("price_patterns", "timestamp", "patterns"),
-]
-
-WATCHED_FILES = [
-    ("levels_analysis.json",   120),
-    ("patterns_analysis.json", 120),
-    ("correlations.json",      360),
-    ("events_analysis.json",   360),
-    ("causal_analysis.json",   360),
-    ("news_sentiment.json",    720),
-]
+SYMBOL = "BTCUSDT"
+NAME = "BTC"
+TIMEFRAME = "15m"
+H24 = 96     # 24 часа
+H12 = 48     # с утра
 
 
 def now_local():
     return datetime.now(timezone.utc).astimezone(TZ)
 
 
-def _esc(s):
-    if not s:
-        return ""
-    s = str(s)
-    s = s.replace("&", "&amp;")
-    s = s.replace("<", "&lt;")
-    s = s.replace(">", "&gt;")
-    return s
+def fmt_price(p):
+    if p is None:
+        return "?"
+    if p >= 1000:
+        return "$" + format(int(p), ",")
+    if p >= 1:
+        return "$" + format(p, ".2f")
+    return "$" + format(p, ".4f")
 
 
-def _since(hours):
-    return datetime.now(timezone.utc) - timedelta(
-        hours=hours
-    )
+def fmt_usd(v):
+    if v is None:
+        return "?"
+    a = abs(v)
+    sign = "-" if v < 0 else ""
+    if a >= 1_000_000_000:
+        return sign + "$" + format(a / 1e9, ".2f") + "B"
+    if a >= 1_000_000:
+        return sign + "$" + format(a / 1e6, ".2f") + "M"
+    if a >= 1_000:
+        return sign + "$" + format(a / 1e3, ".1f") + "K"
+    return sign + "$" + format(a, ".2f")
+
+
+def fmt_btc(v):
+    if v is None:
+        return "?"
+    if v >= 1000:
+        return format(v, ",.1f") + " BTC"
+    if v >= 1:
+        return format(v, ".2f") + " BTC"
+    return format(v, ".4f") + " BTC"
+
+
+def fmt_pct(v):
+    if v is None:
+        return "?"
+    return format(v, "+.2f") + "%"
 
 
 def fmt_age(mins):
     if mins is None:
         return "?"
     if mins < 60:
-        return str(int(mins)) + "м"
+        return str(int(mins)) + " мин"
     if mins < 1440:
-        return str(int(mins // 60)) + "ч"
-    return str(int(mins // 1440)) + "д"
+        return str(int(mins // 60)) + " ч"
+    return str(int(mins // 1440)) + " д"
 
 
-def _signed_usd(v):
-    sign = "+" if v >= 0 else "-"
-    return sign + "$" + format(abs(v), ".2f")
+def _to_local(ts):
+    if ts is None:
+        return "?"
+    if ts.tzinfo is None:
+        ts = ts.replace(tzinfo=timezone.utc)
+    return ts.astimezone(TZ).strftime("%d.%m %H:%M")
 
 
-def _signed_pct(v):
-    sign = "+" if v >= 0 else ""
-    return sign + format(v, ".2f") + "%"
-
-
-def load_json(path, default=None):
-    if default is None:
-        default = {}
-    if not path.exists():
-        return default
-    try:
-        with open(path, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except Exception:
-        return default
+def get_conn():
+    if not DB_URL:
+        raise RuntimeError("AIVEN_DB_URL not set")
+    return psycopg.connect(
+        DB_URL, connect_timeout=15,
+        application_name="argus-evening",
+    )
 
 
 # ============================================================
-# PORTFOLIO (day view)
+# INDICATORS
 # ============================================================
-def load_portfolio():
-    return load_json(STATE_DIR / "portfolio.json", {})
-
-
-def load_positions():
-    return load_json(STATE_DIR / "positions.json", [])
-
-
-def load_trades():
-    return load_json(STATE_DIR / "trades.json", [])
-
-
-def trades_in_window(hours):
-    cutoff = _since(hours)
-    out = []
-    for t in load_trades():
-        if not isinstance(t, dict):
-            continue
-        ts = t.get("exit_time")
-        if not ts:
-            continue
-        try:
-            dt = datetime.fromisoformat(ts)
-            if dt.tzinfo is None:
-                dt = dt.replace(tzinfo=timezone.utc)
-        except Exception:
-            continue
-        if dt >= cutoff:
-            out.append(t)
+def ema_series(values, period):
+    if len(values) < period:
+        return [None] * len(values)
+    k = 2 / (period + 1)
+    e = sum(values[:period]) / period
+    out = [None] * (period - 1) + [e]
+    for i in range(period, len(values)):
+        e = values[i] * k + e * (1 - k)
+        out.append(e)
     return out
 
 
-def fmt_portfolio_block():
-    p = load_portfolio()
-    lines = []
-
-    if not p:
-        lines.append("💼 <b>Портфель</b>")
-        lines.append("  файл не найден")
-        return lines
-
-    lines.append("💼 <b>Портфель</b>")
-
-    balance = float(p.get("balance", 0))
-    start = float(p.get("start_balance", 50))
-    pnl = float(p.get("realized_pnl", 0))
-    total = int(p.get("total_trades", 0))
-    wins = int(p.get("wins", 0))
-    losses = int(p.get("losses", 0))
-
-    pnl_pct = (pnl / start * 100) if start else 0
-    wr = (wins / total * 100) if total else 0
-
-    line = "  Баланс: $" + format(balance, ".2f")
-    line += " | PnL " + _signed_usd(pnl)
-    line += " (" + _signed_pct(pnl_pct) + ")"
-    lines.append(line)
-
-    line = "  Сделок: " + str(total)
-    line += " (" + str(wins) + "W/"
-    line += str(losses) + "L"
-    line += " WR " + format(wr, ".1f") + "%)"
-    lines.append(line)
-
-    positions = load_positions()
-    lines.append(
-        "  Открыто: " + str(len(positions)) + "/3"
-    )
-
-    for pos in positions:
-        sym = str(pos.get("symbol", "?")).replace(
-            "USDT", ""
-        )
-        d = pos.get("direction", "?")
-        entry = float(pos.get("entry_price", 0))
-        lines.append(
-            "    " + sym + " " + d
-            + " @ " + format(entry, ".4f")
-        )
-
-    recent = trades_in_window(24)
-    lines.append("")
-    lines.append("📊 <b>Сделки за сутки</b>")
-
-    if not recent:
-        lines.append("  закрытий не было")
-        return lines
-
-    wins_24 = [
-        t for t in recent if t.get("pnl_usd", 0) > 0
-    ]
-    losses_24 = [
-        t for t in recent if t.get("pnl_usd", 0) <= 0
-    ]
-    pnl_24 = sum(
-        float(t.get("pnl_usd", 0)) for t in recent
-    )
-
-    line = "  Закрыто: " + str(len(recent))
-    line += " (" + str(len(wins_24)) + "W/"
-    line += str(len(losses_24)) + "L)"
-    line += " | PnL " + _signed_usd(pnl_24)
-    lines.append(line)
-
-    if len(recent) >= 2:
-        sorted_t = sorted(
-            recent,
-            key=lambda x: float(x.get("pnl_usd", 0)),
-            reverse=True,
-        )
-        for label, t in [
-            ("Лучшая", sorted_t[0]),
-            ("Худшая", sorted_t[-1]),
-        ]:
-            sym = str(t.get("symbol", "?")).replace(
-                "USDT", ""
-            )
-            pnl_t = float(t.get("pnl_usd", 0))
-            reason = t.get("exit_reason", "?")
-            line = "  " + label + ": " + sym
-            line += " " + _signed_usd(pnl_t)
-            line += " (" + str(reason) + ")"
-            lines.append(line)
-
-    return lines
-
-
-# ============================================================
-# MODEL + FILES
-# ============================================================
-def fmt_model_block():
-    lines = ["🧠 <b>Модель</b>"]
-    meta = load_json(
-        MODELS_DIR / "model_meta.json", {}
-    )
-    if not meta:
-        lines.append("  model_meta.json нет")
-        return lines
-
-    acc = meta.get("accuracy")
-    trained = meta.get("trained_at")
-
-    line = "  Accuracy: "
-    if acc is not None:
-        line += format(acc, ".4f")
-    else:
-        line += "?"
-    lines.append(line)
-
-    if trained:
-        try:
-            dt = datetime.fromisoformat(trained)
-            if dt.tzinfo is None:
-                dt = dt.replace(tzinfo=timezone.utc)
-            age_h = int(
-                (datetime.now(timezone.utc)
-                 - dt).total_seconds() / 3600
-            )
-            lines.append(
-                "  Обучена: " + str(age_h) + "ч назад"
-            )
-        except Exception:
-            pass
-
-    signals = load_json(
-        LEARN_DIR / "last_signals.json", {}
-    )
-    for s in signals.get("signals", []):
-        sym = s.get("symbol", "?").replace("USDT", "")
-        action = s.get("action", "?")
-        prob = s.get("prob_up", 0.5)
-        line = "  " + sym + ": " + action
-        line += " (" + format(prob, ".3f") + ")"
-        lines.append(line)
-    return lines
-
-
-def fmt_files_block():
-    lines = ["📁 <b>Файлы</b>"]
-    now = datetime.now(timezone.utc)
-    for name, max_age_min in WATCHED_FILES:
-        path = DATA_DIR / name
-        if not path.exists():
-            lines.append("  ❌ " + name)
-            continue
-        try:
-            mtime = path.stat().st_mtime
-            dt = datetime.fromtimestamp(
-                mtime, tz=timezone.utc
-            )
-            age = int(
-                (now - dt).total_seconds() / 60
-            )
-        except Exception:
-            lines.append("  ? " + name)
-            continue
-        if age <= max_age_min:
-            icon = "✅"
-        elif age <= max_age_min * 2:
-            icon = "⚠️"
+def rsi_series(closes, period=14):
+    if len(closes) < period + 1:
+        return [None] * len(closes)
+    out = [None] * period
+    gains = 0.0
+    losses = 0.0
+    for i in range(1, period + 1):
+        d = closes[i] - closes[i - 1]
+        if d >= 0:
+            gains += d
         else:
-            icon = "❌"
+            losses -= d
+    ag = gains / period
+    al = losses / period
+    rs = ag / al if al > 0 else 999
+    out.append(100 - 100 / (1 + rs))
+    for i in range(period + 1, len(closes)):
+        d = closes[i] - closes[i - 1]
+        g = d if d > 0 else 0
+        l = -d if d < 0 else 0
+        ag = (ag * (period - 1) + g) / period
+        al = (al * (period - 1) + l) / period
+        rs = ag / al if al > 0 else 999
+        out.append(100 - 100 / (1 + rs))
+    return out
+
+
+def atr_value(candles, period=14):
+    if len(candles) < period + 1:
+        return None
+    trs = []
+    for i in range(1, len(candles)):
+        h = candles[i]["high"]
+        l = candles[i]["low"]
+        pc = candles[i - 1]["close"]
+        trs.append(max(h - l, abs(h - pc), abs(l - pc)))
+    if len(trs) < period:
+        return None
+    a = sum(trs[:period]) / period
+    for i in range(period, len(trs)):
+        a = (a * (period - 1) + trs[i]) / period
+    return a
+
+
+# ============================================================
+# DB
+# ============================================================
+def fetch_candles(symbol, limit=300):
+    try:
+        with get_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT open_time, open, high, low, close, "
+                    "volume, taker_buy_volume, quote_volume, count "
+                    "FROM candles WHERE symbol=%s "
+                    "AND timeframe=%s AND market_type='spot' "
+                    "ORDER BY open_time DESC LIMIT %s",
+                    (symbol, TIMEFRAME, limit),
+                )
+                rows = list(reversed(cur.fetchall()))
+                return [
+                    {
+                        "timestamp": r[0],
+                        "open": float(r[1]),
+                        "high": float(r[2]),
+                        "low": float(r[3]),
+                        "close": float(r[4]),
+                        "volume": float(r[5]) if r[5] is not None else 0.0,
+                        "taker_buy_volume": (
+                            float(r[6]) if r[6] is not None else 0.0
+                        ),
+                        "quote_volume": (
+                            float(r[7]) if r[7] is not None else 0.0
+                        ),
+                        "count": int(r[8]) if r[8] is not None else 0,
+                    }
+                    for r in rows
+                ]
+    except Exception as e:
+        print("candles: " + str(e))
+        return []
+
+
+def fetch_stats(symbol):
+    try:
+        with get_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT COUNT(*) FROM candles WHERE symbol=%s",
+                    (symbol,),
+                )
+                total = cur.fetchone()[0] or 0
+
+                cur.execute(
+                    "SELECT market_type, COUNT(*) FROM candles "
+                    "WHERE symbol=%s GROUP BY market_type",
+                    (symbol,),
+                )
+                by_market = dict(cur.fetchall())
+
+                cur.execute(
+                    "SELECT MAX(open_time) FROM candles WHERE symbol=%s",
+                    (symbol,),
+                )
+                last_ts = cur.fetchone()[0]
+
+                cur.execute(
+                    "SELECT COUNT(*) FROM candles WHERE symbol=%s "
+                    "AND open_time > NOW() - INTERVAL '24 hours'",
+                    (symbol,),
+                )
+                rows_24h = cur.fetchone()[0] or 0
+
+        return {
+            "total": total,
+            "by_market": by_market,
+            "last_ts": last_ts,
+            "rows_24h": rows_24h,
+        }
+    except Exception as e:
+        print("stats: " + str(e))
+        return None
+
+
+# ============================================================
+# HELPERS
+# ============================================================
+def period_stats(candles, label):
+    if not candles:
+        return None
+    first = candles[0]
+    last = candles[-1]
+    price = last["close"]
+    open_p = first["open"]
+    change_usd = price - open_p
+    change_pct = (change_usd / open_p * 100) if open_p else 0
+
+    hi = max(c["high"] for c in candles)
+    lo = min(c["low"] for c in candles)
+    hi_pct = (hi - open_p) / open_p * 100 if open_p else 0
+    lo_pct = (lo - open_p) / open_p * 100 if open_p else 0
+
+    vol_btc = sum(c["volume"] for c in candles)
+    vol_usd = sum(c["quote_volume"] for c in candles)
+    taker_buy = sum(c["taker_buy_volume"] for c in candles)
+    taker_sell = vol_btc - taker_buy
+    buy_pct = (taker_buy / vol_btc * 100) if vol_btc else 0
+    sell_pct = 100 - buy_pct if vol_btc else 0
+    trades = sum(c["count"] for c in candles)
+    avg_trade_usd = (vol_usd / trades) if trades else 0
+
+    green = sum(1 for c in candles if c["close"] >= c["open"])
+    red = len(candles) - green
+
+    best = max(candles, key=lambda c: c["high"] - c["open"])
+    best_pct = (best["high"] - best["open"]) / best["open"] * 100
+    worst = min(candles, key=lambda c: c["low"] - c["open"])
+    worst_pct = (worst["low"] - worst["open"]) / worst["open"] * 100
+
+    return {
+        "label": label,
+        "price": price,
+        "open": open_p,
+        "change_usd": change_usd,
+        "change_pct": change_pct,
+        "hi": hi,
+        "lo": lo,
+        "hi_pct": hi_pct,
+        "lo_pct": lo_pct,
+        "vol_btc": vol_btc,
+        "vol_usd": vol_usd,
+        "taker_buy": taker_buy,
+        "taker_sell": taker_sell,
+        "buy_pct": buy_pct,
+        "sell_pct": sell_pct,
+        "trades": trades,
+        "avg_trade_usd": avg_trade_usd,
+        "green": green,
+        "red": red,
+        "best_pct": best_pct,
+        "best_ts": best["timestamp"],
+        "worst_pct": worst_pct,
+        "worst_ts": worst["timestamp"],
+    }
+
+
+# ============================================================
+# BLOCKS
+# ============================================================
+def fmt_collector_block(stats):
+    lines = ["📡 <b>Сбор данных</b>"]
+
+    if stats is None:
+        lines.append("  ❌ DB недоступна")
+        return lines
+
+    last_ts = stats["last_ts"]
+    if last_ts is None:
+        lines.append("  Статус: ❌ нет данных")
+    else:
+        if last_ts.tzinfo is None:
+            last_ts = last_ts.replace(tzinfo=timezone.utc)
+        age_min = int(
+            (datetime.now(timezone.utc) - last_ts)
+            .total_seconds() / 60
+        )
+        if age_min <= 30:
+            lines.append("  Статус: 🟢 ON")
+        elif age_min <= 120:
+            lines.append("  Статус: ⚠️ задержка")
+        else:
+            lines.append("  Статус: 🔴 OFF")
+
+    lines.append("  Свечей всего: " + str(stats["total"]))
+    if stats["by_market"]:
+        parts = []
+        for mt, cnt in sorted(stats["by_market"].items()):
+            parts.append(str(mt) + " " + str(cnt))
+        lines.append("  " + " | ".join(parts))
+    lines.append("  За 24ч: " + str(stats["rows_24h"]))
+
+    if last_ts:
+        if last_ts.tzinfo is None:
+            last_ts = last_ts.replace(tzinfo=timezone.utc)
+        age_min = int(
+            (datetime.now(timezone.utc) - last_ts)
+            .total_seconds() / 60
+        )
         lines.append(
-            "  " + icon + " " + name
-            + " (" + fmt_age(age) + ")"
+            "  Последняя: " + _to_local(last_ts)
+            + " КЛГ (" + fmt_age(age_min) + " назад)"
         )
     return lines
 
 
+def fmt_day_block(s):
+    """Что произошло с утра (последние ~12ч)."""
+    lines = ["🌤️ <b>С утра</b>"]
+    if not s:
+        lines.append("  нет данных")
+        return lines
+
+    line = "  " + fmt_price(s["open"])
+    line += " → " + fmt_price(s["price"])
+    line += " | " + fmt_pct(s["change_pct"])
+    line += " (" + ("+" if s["change_usd"] >= 0 else "")
+    line += fmt_price(abs(s["change_usd"])) + ")"
+    lines.append(line)
+
+    lines.append(
+        "  Макс: " + fmt_price(s["hi"])
+        + " (" + fmt_pct(s["hi_pct"]) + ")"
+    )
+    lines.append(
+        "  Мин: " + fmt_price(s["lo"])
+        + " (" + fmt_pct(s["lo_pct"]) + ")"
+    )
+    lines.append(
+        "  Диапазон: " + fmt_price(s["hi"] - s["lo"])
+        + " (" + format((s["hi"] - s["lo"]) / s["lo"] * 100, ".2f") + "%)"
+    )
+    lines.append(
+        "  Свечей: " + str(s["green"] + s["red"])
+        + " (🟢 " + str(s["green"]) + " / 🔴 " + str(s["red"]) + ")"
+    )
+    return lines
+
+
+def fmt_volume_block(s):
+    lines = ["📊 <b>Объёмы за 24ч</b>"]
+    if not s:
+        lines.append("  нет данных")
+        return lines
+
+    lines.append(
+        "  Объём: " + fmt_btc(s["vol_btc"])
+        + " | " + fmt_usd(s["vol_usd"])
+    )
+
+    bar_len = 16
+    b = int(round(s["buy_pct"] / 100 * bar_len))
+    if b < 0:
+        b = 0
+    if b > bar_len:
+        b = bar_len
+    s_len = bar_len - b
+    bar = "🟢" * b + "🔴" * s_len
+
+    lines.append(
+        "  Taker buy: " + fmt_btc(s["taker_buy"])
+        + " (" + format(s["buy_pct"], ".1f") + "%)"
+    )
+    lines.append(
+        "  Taker sell: " + fmt_btc(s["taker_sell"])
+        + " (" + format(s["sell_pct"], ".1f") + "%)"
+    )
+    lines.append("  " + bar)
+    lines.append("  Сделок: " + format(s["trades"], ","))
+    lines.append(
+        "  Средняя сделка: " + fmt_usd(s["avg_trade_usd"])
+    )
+    return lines
+
+
+def fmt_indicators_block(candles):
+    lines = ["📈 <b>Индикаторы</b>"]
+    if not candles:
+        lines.append("  нет данных")
+        return lines
+
+    price = candles[-1]["close"]
+    a = atr_value(candles, 14)
+    a_pct = (a / price * 100) if a and price else 0
+
+    closes = [c["close"] for c in candles]
+    r15 = rsi_series(closes, 14)[-1]
+
+    # 1h RSI: сворачиваем 4×15m в 1h
+    c1h = []
+    for i in range(0, len(candles) - 3, 4):
+        chunk = candles[i:i + 4]
+        c1h.append(chunk[-1]["close"])
+    r1h = rsi_series(c1h, 14)[-1] if c1h else None
+
+    e9 = ema_series(closes, 9)[-1]
+    e21 = ema_series(closes, 21)[-1]
+    e50 = ema_series(closes, 50)[-1]
+
+    if a:
+        lines.append(
+            "  ATR(14) 15m: " + fmt_price(a)
+            + " (" + format(a_pct, ".2f") + "%)"
+        )
+    if r15 is not None:
+        st = "перекуп" if r15 >= 70 else "перепрод" if r15 <= 30 else "нейтр"
+        lines.append("  RSI(14) 15m: " + format(r15, ".1f") + " " + st)
+    if r1h is not None:
+        st = "перекуп" if r1h >= 70 else "перепрод" if r1h <= 30 else "нейтр"
+        lines.append("  RSI(14) 1h:  " + format(r1h, ".1f") + " " + st)
+    if e9:
+        lines.append(
+            "  EMA(9)  15m: " + fmt_price(e9)
+            + " (цена " + ("выше" if price >= e9 else "ниже") + ")"
+        )
+    if e21:
+        lines.append(
+            "  EMA(21) 15m: " + fmt_price(e21)
+            + " (цена " + ("выше" if price >= e21 else "ниже") + ")"
+        )
+    if e50:
+        lines.append(
+            "  EMA(50) 15m: " + fmt_price(e50)
+            + " (цена " + ("выше" if price >= e50 else "ниже") + ")"
+        )
+    return lines
+
+
+def fmt_structure_block(s):
+    lines = ["🕯️ <b>Структура 24ч</b>"]
+    if not s:
+        lines.append("  нет данных")
+        return lines
+
+    lines.append(
+        "  Свечей: " + str(s["green"] + s["red"])
+        + " (🟢 " + str(s["green"]) + " / 🔴 " + str(s["red"]) + ")"
+    )
+    lines.append(
+        "  Макс. рост: " + fmt_pct(s["best_pct"])
+        + " в " + _to_local(s["best_ts"])
+    )
+    lines.append(
+        "  Макс. падение: " + fmt_pct(s["worst_pct"])
+        + " в " + _to_local(s["worst_ts"])
+    )
+    return lines
+
+
 # ============================================================
-# TELEGRAM
+# CHART
 # ============================================================
-def split_text(text, max_len):
+def plot_chart(candles, out_path):
+    if not MPL_OK or not candles:
+        return False
+    try:
+        n = len(candles)
+        xs = list(range(n))
+        closes = [c["close"] for c in candles]
+
+        e9 = ema_series(closes, 9)
+        e21 = ema_series(closes, 21)
+        e50 = ema_series(closes, 50)
+        rsi = rsi_series(closes, 14)
+
+        fig, (ax1, ax2, ax3) = plt.subplots(
+            3, 1, figsize=(12, 8),
+            gridspec_kw={"height_ratios": [3, 1, 1]},
+            sharex=True,
+        )
+
+        # ----- panel 1: candles + EMA -----
+        for i, c in enumerate(candles):
+            color = "#26a69a" if c["close"] >= c["open"] else "#ef5350"
+            ax1.plot([i, i], [c["low"], c["high"]],
+                     color=color, linewidth=0.7)
+            y0 = min(c["open"], c["close"])
+            h = abs(c["close"] - c["open"]) or (c["high"] - c["low"]) * 0.01
+            ax1.add_patch(Rectangle(
+                (i - 0.3, y0), 0.6, h, color=color,
+            ))
+
+        def plot_line(ax, series, color, label, width=1.0):
+            xx = [i for i, v in enumerate(series) if v is not None]
+            yy = [v for v in series if v is not None]
+            if xx:
+                ax.plot(xx, yy, color=color, linewidth=width, label=label)
+
+        plot_line(ax1, e9,  "#ffb74d", "EMA 9")
+        plot_line(ax1, e21, "#4fc3f7", "EMA 21")
+        plot_line(ax1, e50, "#ba68c8", "EMA 50")
+
+        ax1.set_ylabel("Price")
+        ax1.set_title(NAME + " 15m — вечер")
+        ax1.grid(alpha=0.2)
+        ax1.legend(loc="upper left", fontsize=8)
+
+        # ----- panel 2: volume -----
+        for i, c in enumerate(candles):
+            color = "#26a69a" if c["close"] >= c["open"] else "#ef5350"
+            ax2.bar(i, c["volume"], color=color, width=0.7)
+        ax2.set_ylabel("Volume")
+        ax2.grid(alpha=0.2)
+
+        # ----- panel 3: RSI -----
+        rx = [i for i, v in enumerate(rsi) if v is not None]
+        ry = [v for v in rsi if v is not None]
+        ax3.plot(rx, ry, color="#ba68c8", linewidth=1.0)
+        ax3.axhline(70, color="#ef5350", linewidth=0.5, alpha=0.6)
+        ax3.axhline(30, color="#26a69a", linewidth=0.5, alpha=0.6)
+        ax3.set_ylim(0, 100)
+        ax3.set_ylabel("RSI")
+        ax3.grid(alpha=0.2)
+
+        # ----- x labels -----
+        step = max(1, n // 8)
+        ticks = list(range(0, n, step))
+        labels = [
+            candles[i]["timestamp"].astimezone(TZ).strftime("%H:%M")
+            if candles[i]["timestamp"].tzinfo
+            else candles[i]["timestamp"].replace(
+                tzinfo=timezone.utc
+            ).astimezone(TZ).strftime("%H:%M")
+            for i in ticks
+        ]
+        ax3.set_xticks(ticks)
+        ax3.set_xticklabels(labels, fontsize=8)
+
+        plt.tight_layout()
+        plt.savefig(out_path, dpi=90)
+        plt.close(fig)
+        return True
+    except Exception as e:
+        print("chart: " + str(e))
+        return False
+
+
+# ============================================================
+# SEND
+# ============================================================
+def split_text(text, max_len=3800):
     if len(text) <= max_len:
         return [text]
     parts = []
@@ -398,10 +615,7 @@ def split_text(text, max_len):
                 parts.append(current)
             current = line
         else:
-            current = (
-                current + "\n" + line
-                if current else line
-            )
+            current = current + "\n" + line if current else line
     if current:
         parts.append(current)
     return parts
@@ -409,435 +623,102 @@ def split_text(text, max_len):
 
 def send_message(text):
     if not BOT_TOKEN or not CHAT_ID:
-        log.warning("TG not configured")
-        log.info(text)
+        print("no token/chat")
         return False
-    parts = split_text(text, MAX_MESSAGE_LEN)
-    ok_all = True
-    for i, part in enumerate(parts):
+    for part in split_text(text, 3800):
         try:
-            url = "https://api.telegram.org/bot"
-            url += BOT_TOKEN + "/sendMessage"
-            payload = {
+            url = "https://api.telegram.org/bot" + BOT_TOKEN + "/sendMessage"
+            r = requests.post(url, json={
                 "chat_id": CHAT_ID,
                 "text": part,
                 "parse_mode": "HTML",
                 "disable_web_page_preview": True,
-            }
-            r = requests.post(
-                url, json=payload, timeout=20,
-            )
+            }, timeout=20)
             if r.status_code != 200:
-                log.error(
-                    "tg %d: %s",
-                    r.status_code, r.text[:200],
-                )
-                ok_all = False
+                print("send err " + str(r.status_code))
         except Exception as e:
-            log.exception("send: %s", e)
-            ok_all = False
-    return ok_all
+            print("send: " + str(e))
+            return False
+    return True
 
 
-# ============================================================
-# WORKFLOWS / FRESHNESS / EVENTS
-# ============================================================
-def fetch_runs(hours=LOOKBACK_HOURS):
-    since = _since(hours)
-    out = []
+def send_photo(path, caption=""):
+    if not BOT_TOKEN or not CHAT_ID:
+        return False
+    if not Path(path).exists():
+        return False
     try:
-        with get_connection() as conn:
-            with conn.cursor() as cur:
-                cur.execute(
-                    "SELECT job_name, status, "
-                    "started_at, records_added "
-                    "FROM collect_log "
-                    "WHERE started_at > %s "
-                    "ORDER BY started_at DESC",
-                    (since,),
-                )
-                for row in cur.fetchall():
-                    out.append({
-                        "job": row[0] or "?",
-                        "status": row[1] or "?",
-                        "started": row[2],
-                        "added": row[3] or 0,
-                    })
-    except Exception as e:
-        log.exception("fetch_runs: %s", e)
-    return out
-
-
-def group_runs(runs):
-    grouped = {}
-    for r in runs:
-        key = r["job"]
-        if key not in grouped:
-            grouped[key] = {
-                "ok": 0, "fail": 0, "added": 0,
-                "last_fail": None, "last_ok": None,
-            }
-        g = grouped[key]
-        if r["status"] == "ok":
-            g["ok"] += 1
-            if g["last_ok"] is None:
-                g["last_ok"] = r["started"]
-        else:
-            g["fail"] += 1
-            if g["last_fail"] is None:
-                g["last_fail"] = r["started"]
-        g["added"] += r["added"]
-    return grouped
-
-
-def _max_ts(cur, table, col):
-    try:
-        cur.execute(
-            "SELECT MAX(" + col + ") FROM " + table
-        )
-        row = cur.fetchone()
-        if row and row[0]:
-            ts = row[0]
-            if ts.tzinfo is None:
-                ts = ts.replace(tzinfo=timezone.utc)
-            return ts
-    except Exception:
-        pass
-    return None
-
-
-def fetch_freshness():
-    now = datetime.now(timezone.utc)
-    out = {}
-    try:
-        with get_connection() as conn:
-            with conn.cursor() as cur:
-                for table, col, label in FRESHNESS_CHECKS:
-                    ts = _max_ts(cur, table, col)
-                    if ts:
-                        mins = int(
-                            (now - ts).total_seconds()
-                            / 60
-                        )
-                        out[table] = {
-                            "label": label, "age_min": mins,
-                        }
-                    else:
-                        out[table] = {
-                            "label": label, "age_min": None,
-                        }
-    except Exception as e:
-        log.exception("freshness: %s", e)
-    return out
-
-
-def fetch_events_24h():
-    since = _since(24)
-    out = []
-    try:
-        with get_connection() as conn:
-            with conn.cursor() as cur:
-                cur.execute(
-                    "SELECT symbol, timestamp, "
-                    "event_type, change_pct "
-                    "FROM events "
-                    "WHERE timestamp > %s "
-                    "ORDER BY timestamp DESC LIMIT 20",
-                    (since,),
-                )
-                for r in cur.fetchall():
-                    cp = float(r[3]) if r[3] else 0
-                    out.append({
-                        "symbol": r[0] or "?",
-                        "timestamp": r[1],
-                        "type": r[2] or "?",
-                        "change_pct": cp,
-                    })
-    except Exception as e:
-        log.exception("events: %s", e)
-    return out
-
-
-def fetch_anomalies_24h():
-    since = _since(24)
-    out = []
-    try:
-        with get_connection() as conn:
-            with conn.cursor() as cur:
-                cur.execute(
-                    "SELECT symbol, timestamp, "
-                    "anomaly_type, severity "
-                    "FROM anomaly_log "
-                    "WHERE created_at > %s "
-                    "ORDER BY timestamp DESC LIMIT 20",
-                    (since,),
-                )
-                for r in cur.fetchall():
-                    out.append({
-                        "symbol": r[0] or "?",
-                        "timestamp": r[1],
-                        "type": r[2] or "?",
-                        "severity": r[3] or "?",
-                    })
-    except Exception as e:
-        log.exception("anomalies: %s", e)
-    return out
-
-
-def fetch_stats():
-    stats = {}
-    try:
-        with get_connection() as conn:
-            with conn.cursor() as cur:
-                for table, _ in DB_TABLES:
-                    try:
-                        cur.execute(
-                            "SELECT COUNT(*) FROM " + table
-                        )
-                        stats[table] = cur.fetchone()[0] or 0
-                    except Exception:
-                        stats[table] = -1
-    except Exception:
-        pass
-    return stats
-
-
-def fmt_age_or_dash(mins):
-    return fmt_age(mins) if mins is not None else "нет"
-
-
-def icon_age(mins, expected):
-    if mins is None:
-        return "❌"
-    if mins <= expected:
-        return "✅"
-    if mins <= expected * 2:
-        return "⚠️"
-    return "❌"
-
-
-def fmt_time_short(ts):
-    if not ts:
-        return "?"
-    if ts.tzinfo is None:
-        ts = ts.replace(tzinfo=timezone.utc)
-    return ts.astimezone(TZ).strftime("%H:%M")
-
-
-# ============================================================
-# REPORT SECTIONS
-# ============================================================
-def _section_workflows(lines, grouped):
-    lines.append("⚙️ <b>Workflows 24ч</b>")
-    if not grouped:
-        lines.append("  ⚠️ запусков не было")
-        return
-    total = sum(
-        g["ok"] + g["fail"] for g in grouped.values()
-    )
-    lines.append("  всего: " + str(total))
-    for job in sorted(grouped.keys()):
-        g = grouped[job]
-        icon = "✅" if g["fail"] == 0 else "⚠️"
-        line = "  " + icon + " " + _esc(job) + ": "
-        line += str(g["ok"]) + " ok"
-        if g["fail"]:
-            line += " / " + str(g["fail"]) + " fail"
-        line += " / +" + str(g["added"])
-        lines.append(line)
-
-
-def _section_freshness(lines, fresh):
-    lines.append("🕐 <b>Свежесть</b>")
-    for table, info in fresh.items():
-        exp = FRESHNESS_EXPECTED.get(table, 120)
-        icon = icon_age(info["age_min"], exp)
-        lines.append(
-            "  " + icon + " " + info["label"]
-            + ": " + fmt_age_or_dash(info["age_min"])
-        )
-
-
-def _section_events(lines, events):
-    lines.append("📅 <b>События 24ч</b>")
-    if not events:
-        lines.append("  нет (рынок спокоен)")
-        return
-    by_type = {}
-    for e in events:
-        t = e["type"]
-        by_type[t] = by_type.get(t, 0) + 1
-    parts = []
-    for t, n in sorted(
-        by_type.items(), key=lambda x: -x[1]
-    ):
-        parts.append(_esc(t) + " " + str(n))
-    line = "  всего " + str(len(events))
-    line += ": " + ", ".join(parts)
-    lines.append(line)
-    for e in events[:3]:
-        sym = e["symbol"].replace("USDT", "")
-        t = fmt_time_short(e["timestamp"])
-        cp = format(e["change_pct"], "+.2f")
-        lines.append(
-            "    " + t + " " + _esc(sym)
-            + " " + _esc(e["type"])
-            + " (" + cp + "%)"
-        )
-
-
-def _section_anomalies(lines, anomalies):
-    lines.append("🚨 <b>Аномалии 24ч</b>")
-    if not anomalies:
-        lines.append("  нет")
-        return
-    by_type = {}
-    for a in anomalies:
-        t = a["type"]
-        by_type[t] = by_type.get(t, 0) + 1
-    parts = []
-    for t, n in sorted(
-        by_type.items(), key=lambda x: -x[1]
-    ):
-        parts.append(_esc(t) + " " + str(n))
-    line = "  всего " + str(len(anomalies))
-    line += ": " + ", ".join(parts)
-    lines.append(line)
-
-
-def _section_stats(lines, stats):
-    lines.append("📊 <b>Всего в БД</b>")
-    parts = []
-    for key, label in DB_TABLES[:8]:
-        n = stats.get(key, -1)
-        if n < 0:
-            continue
-        parts.append(label + " " + format(n, ","))
-    half = (len(parts) + 1) // 2
-    for i in range(half):
-        line = "  " + parts[i]
-        if i + half < len(parts):
-            line += " | " + parts[i + half]
-        lines.append(line)
-
-
-def _collect_problems(grouped, fresh):
-    problems = []
-    for job, g in grouped.items():
-        if g["fail"] > 0:
-            problems.append(
-                "workflow " + _esc(job)
-                + ": " + str(g["fail"]) + " fail"
+        url = "https://api.telegram.org/bot" + BOT_TOKEN + "/sendPhoto"
+        with open(path, "rb") as f:
+            r = requests.post(
+                url,
+                data={"chat_id": CHAT_ID, "caption": caption},
+                files={"photo": f},
+                timeout=60,
             )
-    if grouped:
-        total_max = 0
-        for g in grouped.values():
-            t = g["ok"] + g["fail"]
-            if t > total_max:
-                total_max = t
-        if total_max < MIN_COLLECT_RUNS:
-            problems.append(
-                "мало запусков ("
-                + str(total_max) + " за 24ч)"
-            )
-    else:
-        problems.append("нет данных о запусках")
-    for table, info in fresh.items():
-        exp = FRESHNESS_EXPECTED.get(table, 120)
-        age = info["age_min"]
-        if age is None:
-            problems.append(info["label"] + ": нет")
-        elif age > exp * 2:
-            problems.append(
-                info["label"] + ": " + fmt_age(age)
-            )
-    return problems
+        return r.status_code == 200
+    except Exception as e:
+        print("photo: " + str(e))
+        return False
 
 
 # ============================================================
 # REPORT
 # ============================================================
-def build_report():
+def build_report_text(candles, stats):
     now = now_local()
     lines = []
-    lines.append("🌙 <b>ARGUS — вечер</b> v3")
-    line = now.strftime("%d.%m.%Y %H:%M")
-    line += " КЛГ"
-    lines.append(line)
+    lines.append("🌙 <b>ARGUS — вечер</b>")
+    lines.append(now.strftime("%d.%m.%Y %H:%M") + " КЛГ")
     lines.append("")
 
-    lines.extend(fmt_portfolio_block())
+    lines.extend(fmt_collector_block(stats))
     lines.append("")
     lines.append("─" * 20)
     lines.append("")
 
-    lines.extend(fmt_model_block())
-    lines.append("")
-
-    lines.extend(fmt_files_block())
-    lines.append("")
-    lines.append("─" * 20)
-    lines.append("")
-
-    runs = fetch_runs(LOOKBACK_HOURS)
-    grouped = group_runs(runs)
-    _section_workflows(lines, grouped)
-    lines.append("")
-
-    fresh = fetch_freshness()
-    _section_freshness(lines, fresh)
-    lines.append("")
-
-    events = fetch_events_24h()
-    _section_events(lines, events)
-    lines.append("")
-
-    anomalies = fetch_anomalies_24h()
-    _section_anomalies(lines, anomalies)
-    lines.append("")
-
-    stats = fetch_stats()
-    _section_stats(lines, stats)
-    lines.append("")
-
-    problems = _collect_problems(grouped, fresh)
-    if not problems:
-        lines.append("✨ <i>Всё штатно</i>")
+    # С утра
+    if len(candles) >= H12:
+        s12 = period_stats(candles[-H12:], "12h")
     else:
-        lines.append("⚠️ <b>Внимание</b>")
-        for p in problems:
-            lines.append("  • " + p)
+        s12 = period_stats(candles, "all")
+    lines.extend(fmt_day_block(s12))
+    lines.append("")
+
+    # 24ч контекст
+    if len(candles) >= H24:
+        s24 = period_stats(candles[-H24:], "24h")
+    else:
+        s24 = period_stats(candles, "all")
+
+    lines.extend(fmt_volume_block(s24))
+    lines.append("")
+    lines.extend(fmt_indicators_block(candles))
+    lines.append("")
+    lines.extend(fmt_structure_block(s24))
 
     return "\n".join(lines)
 
 
 def main():
-    log.info("evening report v3 start")
-    log.info("DB2_OK = %s", DB2_OK)
+    print("Evening report v16.0 - start")
 
-    exit_code = 0
-    try:
-        text = build_report()
-        log.info("len: %d", len(text))
-        ok = send_message(text)
-        if ok:
-            log.info("sent")
-    except Exception as e:
-        log.exception("main: %s", e)
-        exit_code = 1
-    finally:
-        try:
-            close_connection()
-        except Exception:
-            pass
-        if DB2_OK and close_conn_db2:
-            try:
-                close_conn_db2()
-            except Exception:
-                pass
+    stats = fetch_stats(SYMBOL)
+    candles = fetch_candles(SYMBOL, 300)
 
-    if exit_code:
-        sys.exit(exit_code)
+    text = build_report_text(candles, stats)
+    print("len: " + str(len(text)))
+
+    # 1. Сначала картинка
+    if MPL_OK and candles:
+        path = TMP_DIR / "btc_evening.png"
+        if plot_chart(candles, str(path)):
+            send_photo(str(path), "")
+
+    # 2. Потом текст
+    send_message(text)
+
+    print("done")
 
 
 if __name__ == "__main__":
