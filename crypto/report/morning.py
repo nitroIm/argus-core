@@ -1,15 +1,14 @@
 # ============================================================
-# ARGUS - MORNING REPORT v15.3
+# ARGUS - MORNING REPORT v15.4
 # ------------------------------------------------------------
 # Только BTC. Только Aiven DB. Только таблица candles.
-# Текстовый отчёт. Без графиков. Без внешних модулей.
+# Статус коллектора определяется по свежести последней свечи.
 # ============================================================
 
 import os
 import sys
 import requests
 from datetime import datetime, timezone
-from pathlib import Path
 from zoneinfo import ZoneInfo
 
 try:
@@ -27,18 +26,12 @@ BOT_TOKEN = (
     or ""
 ).strip()
 CHAT_ID = (os.getenv("TELEGRAM_CHAT_ID") or "").strip()
-FLAG_FILE = os.getenv(
-    "BTC_COLLECT_FLAG", "/home/container/.btc_collect_on"
-)
 
 SYMBOL = "BTCUSDT"
 NAME = "BTC"
 TIMEFRAME = "15m"
 
 
-# ============================================================
-# UTILS
-# ============================================================
 def now_local():
     return datetime.now(timezone.utc).astimezone(TZ)
 
@@ -80,9 +73,6 @@ def get_conn():
     )
 
 
-# ============================================================
-# INDICATORS (inline)
-# ============================================================
 def compute_rsi(closes, period=14):
     if len(closes) < period + 1:
         return [None] * len(closes)
@@ -128,9 +118,6 @@ def compute_atr(candles, period=14):
     return atr
 
 
-# ============================================================
-# DB READ
-# ============================================================
 def fetch_candles(symbol, limit=200):
     try:
         with get_conn() as conn:
@@ -209,20 +196,31 @@ def fetch_stats(symbol):
         return None
 
 
-# ============================================================
-# BLOCKS
-# ============================================================
 def fmt_collector_block(stats):
     lines = ["📡 <b>Сбор данных</b>"]
-
-    flag_on = Path(FLAG_FILE).exists()
-    lines.append(
-        "  Статус: " + ("🟢 ON" if flag_on else "🔴 OFF")
-    )
 
     if stats is None:
         lines.append("  ❌ DB недоступна")
         return lines
+
+    last_ts = stats["last_ts"]
+
+    # Статус по свежести последней свечи
+    if last_ts is None:
+        lines.append("  Статус: ❌ нет данных")
+    else:
+        if last_ts.tzinfo is None:
+            last_ts = last_ts.replace(tzinfo=timezone.utc)
+        age_min = int(
+            (datetime.now(timezone.utc) - last_ts)
+            .total_seconds() / 60
+        )
+        if age_min <= 30:
+            lines.append("  Статус: 🟢 ON")
+        elif age_min <= 120:
+            lines.append("  Статус: ⚠️ задержка")
+        else:
+            lines.append("  Статус: 🔴 OFF")
 
     lines.append("  Свечей всего: " + str(stats["total"]))
 
@@ -234,7 +232,6 @@ def fmt_collector_block(stats):
 
     lines.append("  За 24ч: " + str(stats["rows_24h"]))
 
-    last_ts = stats["last_ts"]
     if last_ts:
         if last_ts.tzinfo is None:
             last_ts = last_ts.replace(tzinfo=timezone.utc)
@@ -301,9 +298,6 @@ def fmt_btc_block(candles):
     return lines
 
 
-# ============================================================
-# SEND
-# ============================================================
 def split_text(text, max_len=3800):
     if len(text) <= max_len:
         return [text]
@@ -345,9 +339,6 @@ def send_message(text):
     return True
 
 
-# ============================================================
-# REPORT
-# ============================================================
 def build_report_text():
     now = now_local()
     lines = []
@@ -368,7 +359,7 @@ def build_report_text():
 
 
 def main():
-    print("Morning report v15.3 - start")
+    print("Morning report v15.4 - start")
     text = build_report_text()
     print("len: " + str(len(text)))
     send_message(text)
