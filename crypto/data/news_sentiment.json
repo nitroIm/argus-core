@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-10-16T19:05:40.999349+00:00",
+  "generated_at": "2026-10-16T20:05:41.732261+00:00",
   "total_news": 128,
-  "avg_sentiment": -0.015,
+  "avg_sentiment": -0.034,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
-  "bullish_count": 16,
+  "bullish_count": 15,
   "bearish_count": 20,
-  "neutral_count": 92,
+  "neutral_count": 93,
   "fake_count": 0,
-  "cross_confirmed": 10,
-  "single_source": 104,
+  "cross_confirmed": 11,
+  "single_source": 103,
   "by_source": {
     "Cointelegraph": {
       "total": 25,
@@ -22,7 +22,7 @@
     },
     "Bitcoin.com": {
       "total": 10,
-      "bull": 2,
+      "bull": 1,
       "bear": 1
     },
     "CryptoSlate": {
@@ -48,22 +48,6 @@
   },
   "top_bullish": [
     {
-      "title": "Dacity Coin Spikes on GTA VI Trailer, Trading Against Tokenized Take-Two Stock",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-16T18:18:09+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-16T19:05:39.833002+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Dacity Coin Spikes on GTA VI Trailer, Trading Against Tokenized Take-Two Stock",
-      "cross_check": 1
-    },
-    {
       "title": "Crypto PACs escalate spending against Sherrod Brown in Ohio Senate race",
       "source": "Cointelegraph",
       "source_weight": 1.3,
@@ -74,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-16T19:05:39.188643+00:00",
+      "collected_at": "2026-10-16T20:05:39.940566+00:00",
       "effective_weight": 1.3,
       "title_original": "Crypto PACs escalate spending against Sherrod Brown in Ohio Senate race",
       "cross_check": 1
@@ -90,7 +74,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-16T19:05:39.282255+00:00",
+      "collected_at": "2026-10-16T20:05:40.011102+00:00",
       "effective_weight": 1.1,
       "title_original": "India's Cyber Agency Says AI Agents Read Confidential Business Records Without Authorization",
       "cross_check": 1
@@ -106,7 +90,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-16T19:05:39.189126+00:00",
+      "collected_at": "2026-10-16T20:05:39.940998+00:00",
       "effective_weight": 1.04,
       "title_original": "Solana’s Liu says Shanghai event postponed over registration surge",
       "cross_check": 1
@@ -122,13 +106,45 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-16T19:05:39.189269+00:00",
+      "collected_at": "2026-10-16T20:05:39.941107+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin may seek 20-month trend line reclaim before new record highs: CryptoQuant",
+      "cross_check": 1
+    },
+    {
+      "title": "Dacity Coin Spikes on GTA VI Trailer, Trading Against Tokenized Take-Two Stock",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-16T18:18:09+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-16T20:05:40.456985+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Dacity Coin Spikes on GTA VI Trailer, Trading Against Tokenized Take-Two Stock",
       "cross_check": 1
     }
   ],
   "top_bearish": [
+    {
+      "title": "Hackers Jailbreak iPhone 18 Pro on Stage, and It Survives a Reboot",
+      "source": "Decrypt",
+      "source_weight": 1.1,
+      "lang": "en",
+      "pub_date": "2026-10-16T19:36:04+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-16T20:05:40.010829+00:00",
+      "effective_weight": 1.65,
+      "title_original": "Hackers Jailbreak iPhone 18 Pro on Stage, and It Survives a Reboot",
+      "cross_check": 1
+    },
     {
       "title": "Strategy conditionally declares daily dividends as STRC hovers below $100",
       "source": "Cointelegraph",
@@ -140,26 +156,10 @@
       "bear_weight": 1.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-16T19:05:39.188892+00:00",
+      "collected_at": "2026-10-16T20:05:39.940821+00:00",
       "effective_weight": 1.3,
       "title_original": "Strategy conditionally declares daily dividends as STRC hovers below $100",
       "cross_check": 2
-    },
-    {
-      "title": "Ledger’s early implant warnings deserved more action, Karpelès says",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-10-16T13:51:35+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.2,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-16T19:05:39.189001+00:00",
-      "effective_weight": 1.3,
-      "title_original": "Ledger’s early implant warnings deserved more action, Karpelès says",
-      "cross_check": 1
     },
     {
       "title": "CFTC Wants to Drop Gemini’s $5M Settlement. A Judge Just Said No",
@@ -172,10 +172,26 @@
       "bear_weight": 1.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-16T19:05:39.282317+00:00",
+      "collected_at": "2026-10-16T20:05:40.011201+00:00",
       "effective_weight": 1.1,
       "title_original": "CFTC Wants to Drop Gemini’s $5M Settlement. A Judge Just Said No",
       "cross_check": 2
+    },
+    {
+      "title": "Ledger’s early implant warnings deserved more action, Karpelès says",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-10-16T13:51:35+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.2,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-16T20:05:39.940879+00:00",
+      "effective_weight": 1.04,
+      "title_original": "Ledger’s early implant warnings deserved more action, Karpelès says",
+      "cross_check": 1
     },
     {
       "title": "Balaji’s ‘Singapore of social media’ begins with a wave of bans",
@@ -188,25 +204,9 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-16T19:05:39.189466+00:00",
+      "collected_at": "2026-10-16T20:05:39.941294+00:00",
       "effective_weight": 1.04,
       "title_original": "Balaji’s ‘Singapore of social media’ begins with a wave of bans",
-      "cross_check": 1
-    },
-    {
-      "title": "Scammer loses $4.8M stored on tampered Ledgers: Asia Express",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-10-15T22:42:58+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-16T19:05:39.189603+00:00",
-      "effective_weight": 1.04,
-      "title_original": "Scammer loses $4.8M stored on tampered Ledgers: Asia Express",
       "cross_check": 1
     }
   ]
