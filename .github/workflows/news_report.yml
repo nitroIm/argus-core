@@ -2,9 +2,11 @@
 # ARGUS - NEWS REPORT
 # ------------------------------------------------------------
 # Отправка отчёта по новостям.
-# TG личка: 09:00 + 20:00 КЛГ
-# TG канал + VK группа: только 09:00 КЛГ
-# cron-job.org дёргает в 09:00 и 20:00 КЛГ.
+#   TG личка:        09:00 + 20:00 КЛГ
+#   TG канал/группа: 09:00 КЛГ
+#   VK группа:       09:00 КЛГ
+#
+# ТЕСТ: раскомментируй NEWS_TEST_MODE: "1" ниже.
 # ============================================================
 
 name: ARGUS News Report
@@ -47,6 +49,7 @@ jobs:
           VK_TOKEN: ${{ secrets.VK_TOKEN }}
           VK_GROUP_ID: ${{ secrets.VK_GROUP_ID }}
           AIVEN_DB_URL: ${{ secrets.AIVEN_DB_URL }}
+          # NEWS_TEST_MODE: "1"
         run: python crypto/report/news_report.py
 
       - name: Commit
