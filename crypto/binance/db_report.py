@@ -3,19 +3,22 @@
 # Path: crypto/binance/db_report.py
 # ------------------------------------------------------------
 # Читает таблицу candles и печатает отчёт:
-#  - размер таблицы на диске
+#  - размер таблицы
 #  - сколько строк всего
 #  - разбивка по symbol / market_type / timeframe
-#  - диапазон времени (min / max open_time)
-#  - количество свечей по дням (последние 14)
-#  - сколько NULL в каждой колонке
+#  - диапазон времени
+#  - свечей по дням (14 дней)
+#  - NULL по колонкам
+#  - дубликаты
+#  - СПИСОК ПРОПУСКОВ (где, когда, сколько)
 #  - последние 10 строк
 # ============================================================
 
 import os
 import sys
 import logging
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
+from zoneinfo import ZoneInfo
 
 try:
     import psycopg
@@ -24,6 +27,12 @@ except ImportError:
     sys.exit(1)
 
 DB_URL = (os.getenv("AIVEN_DB_URL") or "").strip()
+TZ = ZoneInfo("Europe/Kaliningrad")
+
+SYMBOL = "BTCUSDT"
+MARKET_TYPE = "spot"
+TIMEFRAME = "15m"
+EXPECTED_MIN = 15
 
 logging.basicConfig(
     level=logging.INFO,
@@ -48,11 +57,19 @@ def get_conn():
     )
 
 
+def to_local(ts):
+    if ts is None:
+        return "?"
+    if ts.tzinfo is None:
+        ts = ts.replace(tzinfo=timezone.utc)
+    return ts.astimezone(TZ).strftime("%d.%m %H:%M")
+
+
 def report():
     conn = get_conn()
     cur = conn.cursor()
 
-    # ---------- 1. Размер таблицы ----------
+    # ---------- 1. Размер ----------
     hr("1. TABLE SIZE")
     cur.execute("""
         SELECT
@@ -65,7 +82,7 @@ def report():
     print("table only   : " + str(row[1]))
     print("indexes only : " + str(row[2]))
 
-    # ---------- 2. Всего строк ----------
+    # ---------- 2. Всего ----------
     hr("2. TOTAL ROWS")
     cur.execute("SELECT COUNT(*) FROM candles")
     total = cur.fetchone()[0]
@@ -73,7 +90,7 @@ def report():
 
     if total == 0:
         print("")
-        print("таблица пустая — собирать ещё нечего")
+        print("таблица пустая")
         cur.close()
         conn.close()
         return
@@ -86,22 +103,16 @@ def report():
         GROUP BY symbol, market_type, timeframe
         ORDER BY symbol, market_type, timeframe
     """)
-    print("{:<12} {:<10} {:<8} {:>10}".format(
-        "symbol", "market", "tf", "rows"
-    ))
+    print("{:<12} {:<10} {:<8} {:>10}".format("symbol", "market", "tf", "rows"))
     print("-" * 42)
     for sym, mt, tf, cnt in cur.fetchall():
         print("{:<12} {:<10} {:<8} {:>10}".format(
-            str(sym), str(mt), str(tf), cnt
-        ))
+            str(sym), str(mt), str(tf), cnt))
 
-    # ---------- 4. Диапазон времени ----------
+    # ---------- 4. Диапазон ----------
     hr("4. TIME RANGE")
     cur.execute("""
-        SELECT
-            MIN(open_time),
-            MAX(open_time),
-            MAX(created_at)
+        SELECT MIN(open_time), MAX(open_time), MAX(created_at)
         FROM candles
     """)
     row = cur.fetchone()
@@ -109,23 +120,19 @@ def report():
     print("last  open_time : " + str(row[1]))
     print("last  created_at: " + str(row[2]))
 
-    # ---------- 5. Свечей по дням (последние 14) ----------
+    # ---------- 5. Свечей по дням ----------
     hr("5. ROWS PER DAY (last 14)")
     cur.execute("""
-        SELECT
-            DATE_TRUNC('day', open_time) AS d,
-            COUNT(*)
+        SELECT DATE_TRUNC('day', open_time) AS d, COUNT(*)
         FROM candles
-        GROUP BY d
-        ORDER BY d DESC
-        LIMIT 14
+        GROUP BY d ORDER BY d DESC LIMIT 14
     """)
     print("{:<14} {:>8}".format("date (UTC)", "rows"))
     print("-" * 24)
     for d, cnt in cur.fetchall():
         print("{:<14} {:>8}".format(str(d)[:10], cnt))
 
-    # ---------- 6. NULL по колонкам ----------
+    # ---------- 6. NULL ----------
     hr("6. NULL COUNTS")
     cols = [
         "symbol", "market_type", "timeframe", "open_time",
@@ -155,44 +162,61 @@ def report():
     if dups == 0:
         print("OK — ключ уникален")
 
-    # ---------- 8. Пропуски по 15m ----------
-    hr("8. GAPS (15m, BTCUSDT, spot)")
+    # ---------- 8. Пропуски (детально) ----------
+    hr("8. GAPS (15m, BTCUSDT, spot) — детально")
     cur.execute("""
         WITH t AS (
             SELECT open_time,
                    LAG(open_time) OVER (ORDER BY open_time) AS prev
             FROM candles
-            WHERE symbol='BTCUSDT'
-              AND market_type='spot'
-              AND timeframe='15m'
+            WHERE symbol = %s
+              AND market_type = %s
+              AND timeframe = %s
         )
-        SELECT COUNT(*) FROM t
+        SELECT prev, open_time,
+               EXTRACT(EPOCH FROM (open_time - prev))::int / 60 AS diff_min
+        FROM t
         WHERE prev IS NOT NULL
           AND open_time - prev > INTERVAL '15 minutes'
-    """)
-    gaps = cur.fetchone()[0]
-    print("gaps : " + str(gaps))
-    if gaps == 0:
-        print("OK — пропусков нет")
+        ORDER BY open_time ASC
+    """, (SYMBOL, MARKET_TYPE, TIMEFRAME))
+    gaps = cur.fetchall()
 
-    # ---------- 9. Последние 10 строк ----------
+    if not gaps:
+        print("OK — пропусков нет")
+    else:
+        print("найдено пропусков: " + str(len(gaps)))
+        print("")
+        print("{:<16} {:<16} {:>8} {:>10}".format(
+            "с (КЛГ)", "по (КЛГ)", "мин", "свечей"))
+        print("-" * 56)
+        total_missing = 0
+        for prev, cur_t, diff_min in gaps:
+            missing = (int(diff_min) // EXPECTED_MIN) - 1
+            if missing < 0:
+                missing = 0
+            total_missing += missing
+            print("{:<16} {:<16} {:>8} {:>10}".format(
+                to_local(prev), to_local(cur_t),
+                str(int(diff_min)), str(missing)))
+        print("-" * 56)
+        print("итого пропущено свечей: " + str(total_missing))
+
+    # ---------- 9. Последние 10 ----------
     hr("9. LAST 10 ROWS")
     cur.execute("""
         SELECT open_time, market_type, open, high, low, close,
                volume, taker_buy_volume, quote_volume, count
         FROM candles
-        ORDER BY open_time DESC
-        LIMIT 10
+        ORDER BY open_time DESC LIMIT 10
     """)
     print("{:<20} {:<8} {:>10} {:>10} {:>10} {:>10}".format(
-        "open_time", "market", "open", "high", "low", "close"
-    ))
+        "open_time", "market", "open", "high", "low", "close"))
     print("-" * 74)
     for r in cur.fetchall():
         print("{:<20} {:<8} {:>10} {:>10} {:>10} {:>10}".format(
             str(r[0])[:19], str(r[1]),
-            str(r[2]), str(r[3]), str(r[4]), str(r[5]),
-        ))
+            str(r[2]), str(r[3]), str(r[4]), str(r[5])))
 
     cur.close()
     conn.close()
