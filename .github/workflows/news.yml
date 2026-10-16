@@ -1,11 +1,11 @@
 # ============================================================
-# ARGUS - NEWS
+# ARGUS - NEWS COLLECT
 # ------------------------------------------------------------
-# Каждый час: сбор + отчёт (только в SEND_HOURS_LOCAL).
+# Только сбор новостей в news_sentiment.json.
 # cron-job.org дёргает каждый час.
 # ============================================================
 
-name: ARGUS News
+name: ARGUS News Collect
 
 on:
   workflow_dispatch:
@@ -14,11 +14,11 @@ permissions:
   contents: write
 
 concurrency:
-  group: argus-news
+  group: argus-news-collect
   cancel-in-progress: false
 
 jobs:
-  news:
+  collect:
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -31,29 +31,13 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Cache pip
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: pip-news-${{ hashFiles('crypto/requirements.txt') }}
-          restore-keys: pip-news-
-
       - name: Install deps
         run: |
           python -m pip install --upgrade pip
-          pip install requests==2.32.3
+          pip install requests
 
       - name: Collect news
-        env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python crypto/collect/news.py
-
-      - name: Report news
-        env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: python crypto/report/news_report.py
 
       - name: Commit
         run: |
@@ -61,13 +45,12 @@ jobs:
           git config user.email "argus@github.com"
           git add crypto/data/news_sentiment.json || true
           git add crypto/data/news_history.json || true
-          git add crypto/data/news_sent_history.json || true
           git add crypto/data/news_translate_cache.json || true
           if git diff --staged --quiet; then
             echo "No changes"
             exit 0
           fi
-          git commit -m "ARGUS: news [skip ci]"
+          git commit -m "ARGUS: news collect [skip ci]"
           for i in 1 2 3; do
             git pull --rebase --autostash origin main || true
             if git push origin main; then
@@ -85,4 +68,4 @@ jobs:
           curl -s -X POST \
             "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
             -H "Content-Type: application/json" \
-            -d "{\"chat_id\": \"${TELEGRAM_CHAT_ID}\", \"text\": \"News упал\", \"parse_mode\": \"HTML\"}" || true
+            -d "{\"chat_id\": \"${TELEGRAM_CHAT_ID}\", \"text\": \"⚠️ News collect упал\", \"parse_mode\": \"HTML\"}" || true
