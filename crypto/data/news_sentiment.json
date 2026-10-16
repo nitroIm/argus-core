@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-10-16T03:05:42.076132+00:00",
+  "generated_at": "2026-10-16T04:05:41.342884+00:00",
   "total_news": 128,
-  "avg_sentiment": -0.158,
+  "avg_sentiment": -0.152,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
   "bullish_count": 9,
   "bearish_count": 28,
@@ -58,25 +58,9 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-16T03:05:40.283117+00:00",
+      "collected_at": "2026-10-16T04:05:39.502818+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin slips under $80K after US PPI gains most in four years",
-      "cross_check": 1
-    },
-    {
-      "title": "Two firms control corporate Bitcoin buys, even as business adoption broadens",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-15T21:10:08+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-16T03:05:40.746339+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Two firms control corporate Bitcoin buys, even as business adoption broadens",
       "cross_check": 1
     },
     {
@@ -90,7 +74,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-16T03:05:41.981220+00:00",
+      "collected_at": "2026-10-16T04:05:41.246522+00:00",
       "effective_weight": 0.96,
       "title_original": "Standard Chartered отложил прогноз роста рынка стейблкоинов до $2 трлн на два года",
       "cross_check": 1
@@ -106,7 +90,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-16T03:05:41.981254+00:00",
+      "collected_at": "2026-10-16T04:05:41.246555+00:00",
       "effective_weight": 0.96,
       "title_original": "VanEck отказалась от запуска ETF на stETH",
       "cross_check": 1
@@ -122,29 +106,29 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-16T03:05:40.397486+00:00",
+      "collected_at": "2026-10-16T04:05:39.649275+00:00",
       "effective_weight": 0.88,
       "title_original": "Mastercard and BVNK Launch 'Global Money Platform' to Merge Fiat and Stablecoins",
+      "cross_check": 1
+    },
+    {
+      "title": "Zcash Tanks Double Digits After 'Meteoric Rise' Sees Leverage Build Up",
+      "source": "Decrypt",
+      "source_weight": 1.1,
+      "lang": "en",
+      "pub_date": "2026-10-15T12:42:30+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-16T04:05:39.649407+00:00",
+      "effective_weight": 0.88,
+      "title_original": "Zcash Tanks Double Digits After 'Meteoric Rise' Sees Leverage Build Up",
       "cross_check": 1
     }
   ],
   "top_bearish": [
-    {
-      "title": "82 criminal charges follow armed crypto abduction in Toronto",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-16T02:20:21+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.0,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-16T03:05:40.746223+00:00",
-      "effective_weight": 1.5,
-      "title_original": "82 criminal charges follow armed crypto abduction in Toronto",
-      "cross_check": 1
-    },
     {
       "title": "Scammer loses $4.8M stored on tampered Ledgers: Asia Express",
       "source": "Cointelegraph",
@@ -156,7 +140,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-16T03:05:40.282878+00:00",
+      "collected_at": "2026-10-16T04:05:39.502564+00:00",
       "effective_weight": 1.3,
       "title_original": "Scammer loses $4.8M stored on tampered Ledgers: Asia Express",
       "cross_check": 1
@@ -172,7 +156,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-16T03:05:40.283077+00:00",
+      "collected_at": "2026-10-16T04:05:39.502778+00:00",
       "effective_weight": 1.04,
       "title_original": "Mastercard brings stablecoin balances into traditional banking and card payments",
       "cross_check": 1
@@ -188,7 +172,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-16T03:05:40.283154+00:00",
+      "collected_at": "2026-10-16T04:05:39.502855+00:00",
       "effective_weight": 1.04,
       "title_original": "Russia to ban direct peer-to-peer crypto trades starting July 2027",
       "cross_check": 1
@@ -204,9 +188,25 @@
       "bear_weight": 1.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-16T03:05:40.283270+00:00",
+      "collected_at": "2026-10-16T04:05:39.502975+00:00",
       "effective_weight": 1.04,
       "title_original": "HEX token sellers erase $160M following reports of founder Richard Schueler arrest",
+      "cross_check": 1
+    },
+    {
+      "title": "Bitget, Liquid exploits push Q3 crypto hacks toward $1.2B",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-10-15T10:00:00+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-16T04:05:39.503112+00:00",
+      "effective_weight": 1.04,
+      "title_original": "Bitget, Liquid exploits push Q3 crypto hacks toward $1.2B",
       "cross_check": 1
     }
   ]
