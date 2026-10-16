@@ -1,12 +1,12 @@
 # ============================================================
-# ARGUS - NEWS REPORT v8
+# ARGUS - NEWS REPORT v8.1
 # ------------------------------------------------------------
-# v8: + BTC блок (цена, 24ч, RSI, ATR).
-#     + ссылки и источники новостей.
-#     + VK группа (только утром 09:00).
-#     + TG канал (только утром 09:00).
-#     + TG личка (утро 09:00 + вечер 20:00).
-# v7: should_send_now — only by Kaliningrad hour.
+# Распределение по времени (КЛГ):
+#   TG личка:        09:00 + 20:00
+#   TG канал:        09:00
+#   VK группа:       09:00
+#
+# ТЕСТ: поставь в env NEWS_TEST_MODE=1 — отправка идёт всегда.
 # ============================================================
 
 import os
@@ -55,17 +55,17 @@ BOT_TOKEN = (
     or os.getenv("BOT_TOKEN")
     or ""
 ).strip()
-CHAT_ID = (
-    os.getenv("TELEGRAM_CHAT_ID")
-    or ""
-).strip()
-TG_CHANNEL_ID = (
-    os.getenv("TG_CHANNEL_ID")
-    or ""
-).strip()
+CHAT_ID = (os.getenv("TELEGRAM_CHAT_ID") or "").strip()
+TG_CHANNEL_ID = (os.getenv("TG_CHANNEL_ID") or "").strip()
 VK_TOKEN = (os.getenv("VK_TOKEN") or "").strip()
 VK_GROUP_ID = (os.getenv("VK_GROUP_ID") or "").strip()
 DB_URL = (os.getenv("AIVEN_DB_URL") or "").strip()
+
+# ---- ТЕСТ ----
+TEST_MODE = (
+    os.getenv("NEWS_TEST_MODE", "").strip().lower()
+    in ("1", "true", "yes", "on")
+)
 
 MAX_MESSAGE_LEN = 3800
 MAX_VK_LEN = 15000
@@ -77,9 +77,8 @@ TIMEFRAME = "15m"
 
 TZ = ZoneInfo("Europe/Kaliningrad")
 
-# Часы по КЛГ
-SEND_HOURS_PERSONAL = {9, 20}  # TG личка
-SEND_HOURS_GROUP = {9}         # TG канал + VK группа
+SEND_HOURS_PERSONAL = {9, 20}   # TG личка
+SEND_HOURS_GROUP = {9}          # TG канал + VK
 
 
 def now_local():
@@ -87,10 +86,14 @@ def now_local():
 
 
 def should_send_personal():
+    if TEST_MODE:
+        return True
     return now_local().hour in SEND_HOURS_PERSONAL
 
 
 def should_send_group():
+    if TEST_MODE:
+        return True
     return now_local().hour in SEND_HOURS_GROUP
 
 
@@ -128,8 +131,7 @@ def send_telegram(text, chat_id):
     if not BOT_TOKEN or not chat_id:
         return False
     ok_all = True
-    parts = split_text(text, MAX_MESSAGE_LEN)
-    for part in parts:
+    for part in split_text(text, MAX_MESSAGE_LEN):
         try:
             url = "https://api.telegram.org/bot" + BOT_TOKEN + "/sendMessage"
             payload = {
@@ -444,7 +446,6 @@ def build_report(data, bull_items, bear_items,
     lines.append(now.strftime("%d.%m %H:%M") + " КЛГ")
     lines.append("")
 
-    # ---- BTC ----
     if btc:
         line = "💰 <b>BTC</b> " + fmt_price(btc["price"])
         line += " | " + fmt_pct(btc["change_pct"]) + " 24ч"
@@ -464,7 +465,6 @@ def build_report(data, bull_items, bear_items,
             lines.append("  " + " | ".join(parts))
         lines.append("")
 
-    # ---- freshness ----
     if age_h is not None:
         icon = "✅" if age_h <= STALE_HOURS else "⚠️"
         line = icon + " Данные: " + fmt_age(age_h) + " назад"
@@ -473,7 +473,6 @@ def build_report(data, bull_items, bear_items,
         lines.append(line)
     lines.append("")
 
-    # ---- mood ----
     lines.append("🎭 " + esc(mood))
     lines.append("📊 Сентимент: <b>" + format(avg, "+.3f") + "</b>")
     lines.append("")
@@ -488,7 +487,6 @@ def build_report(data, bull_items, bear_items,
         lines.append("🔍 Подтв. источниками: " + str(cross))
     lines.append("")
 
-    # ---- позитив ----
     if bull_ru or bull_items:
         lines.append("🟢 <b>Позитив:</b>")
         for i, it in enumerate(bull_items[:3]):
@@ -512,7 +510,6 @@ def build_report(data, bull_items, bear_items,
         lines.append("🟢 Позитив: новых нет")
         lines.append("")
 
-    # ---- негатив ----
     if bear_ru or bear_items:
         lines.append("🔴 <b>Негатив:</b>")
         for i, it in enumerate(bear_items[:3]):
@@ -547,12 +544,14 @@ def build_report(data, bull_items, bear_items,
 # MAIN
 # ============================================================
 def main():
-    log.info("news report v8")
+    log.info("news report v8.1")
     local = now_local()
     log.info(
         "local time: %s КЛГ (hour=%d)",
         local.strftime("%H:%M"), local.hour,
     )
+    if TEST_MODE:
+        log.info("TEST_MODE=ON — игнорируем часы")
 
     send_p = should_send_personal()
     send_g = should_send_group()
@@ -605,13 +604,11 @@ def main():
 
     sent_any = False
 
-    # TG личка — утром и вечером
     if send_p:
         log.info("→ TG personal")
         if send_telegram(text_tg, CHAT_ID):
             sent_any = True
 
-    # TG канал + VK — только утром
     if send_g:
         if TG_CHANNEL_ID:
             log.info("→ TG channel")
