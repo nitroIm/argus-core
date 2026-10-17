@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-10-17T11:05:44.360817+00:00",
-  "total_news": 92,
-  "avg_sentiment": -0.098,
+  "generated_at": "2026-10-17T12:05:40.317777+00:00",
+  "total_news": 91,
+  "avg_sentiment": -0.121,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
   "bullish_count": 10,
-  "bearish_count": 19,
-  "neutral_count": 63,
+  "bearish_count": 20,
+  "neutral_count": 61,
   "fake_count": 0,
-  "cross_confirmed": 11,
-  "single_source": 73,
+  "cross_confirmed": 9,
+  "single_source": 69,
   "by_source": {
     "Cointelegraph": {
       "total": 22,
@@ -26,14 +26,14 @@
       "bear": 1
     },
     "CryptoSlate": {
-      "total": 9,
+      "total": 8,
       "bull": 0,
       "bear": 0
     },
     "CryptoPotato": {
       "total": 22,
       "bull": 2,
-      "bear": 6
+      "bear": 7
     },
     "Bitcoinist": {
       "total": 7,
@@ -59,7 +59,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-17T11:05:42.718580+00:00",
+      "collected_at": "2026-10-17T12:05:38.160190+00:00",
       "effective_weight": 1.04,
       "title_original": "Crypto PACs escalate spending against Sherrod Brown in Ohio Senate race",
       "cross_check": 1
@@ -76,7 +76,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-17T11:05:43.042539+00:00",
+      "collected_at": "2026-10-17T12:05:38.497044+00:00",
       "effective_weight": 0.8,
       "title_original": "Solana Apps Generate $193M in 30 Days Amid Real-World Assets Surge",
       "cross_check": 1
@@ -93,7 +93,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-17T11:05:43.282517+00:00",
+      "collected_at": "2026-10-17T12:05:39.274239+00:00",
       "effective_weight": 0.8,
       "title_original": "Injective (INJ) Explodes to a 1-Year High: Has Its Bull Run Begun?",
       "cross_check": 1
@@ -110,7 +110,7 @@
       "bear_weight": 0.0,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-17T11:05:42.718962+00:00",
+      "collected_at": "2026-10-17T12:05:38.160455+00:00",
       "effective_weight": 0.65,
       "title_original": "Bitcoin may seek 20-month trend line reclaim before new record highs: CryptoQuant",
       "cross_check": 1
@@ -127,13 +127,30 @@
       "bear_weight": 0.0,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-17T11:05:42.719310+00:00",
+      "collected_at": "2026-10-17T12:05:38.160710+00:00",
       "effective_weight": 0.65,
       "title_original": "Bitcoin slips under $80K after US PPI gains most in four years",
       "cross_check": 1
     }
   ],
   "top_bearish": [
+    {
+      "title": "2 Banking Giants Make Major Crypto Moves as Schwab and Deutsche Bank Expand Into Digital Assets",
+      "url": "https://cryptopotato.com/2-banking-giants-make-major-crypto-moves-as-schwab-and-deutsche-bank-expand-into-digital-assets/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-17T11:25:46+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-17T12:05:39.273984+00:00",
+      "effective_weight": 1.5,
+      "title_original": "2 Banking Giants Make Major Crypto Moves as Schwab and Deutsche Bank Expand Into Digital Assets",
+      "cross_check": 2
+    },
     {
       "title": "Binance Offers Nearly 8% in XRP for RLUSD But the Base Rate Keeps Falling",
       "url": "https://news.bitcoin.com/exchanges/binance-rlusd-xrp-rewards-7-77-apr-shrinking/",
@@ -146,7 +163,7 @@
       "bear_weight": 1.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-17T11:05:43.042355+00:00",
+      "collected_at": "2026-10-17T12:05:38.496908+00:00",
       "effective_weight": 1.0,
       "title_original": "Binance Offers Nearly 8% in XRP for RLUSD But the Base Rate Keeps Falling",
       "cross_check": 1
@@ -163,7 +180,7 @@
       "bear_weight": 1.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-17T11:05:43.282209+00:00",
+      "collected_at": "2026-10-17T12:05:39.274029+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitcoin’s Road to $125K Could Include a Brutal Drop to $68K: Analyst",
       "cross_check": 1
@@ -180,7 +197,7 @@
       "bear_weight": 1.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-17T11:05:43.282267+00:00",
+      "collected_at": "2026-10-17T12:05:39.274065+00:00",
       "effective_weight": 1.0,
       "title_original": "These Alts Bleed the Most as Bitcoin (BTC) Settles Below $82K: Weekend Watch",
       "cross_check": 1
@@ -197,27 +214,10 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-17T11:05:44.313680+00:00",
+      "collected_at": "2026-10-17T12:05:40.285034+00:00",
       "effective_weight": 0.96,
       "title_original": "DarkSword научился охотиться за криптовалютой на iOS, Chrome взломали за шесть дней с помощью GPT-5.6 Sol и другие события кибербезопасности",
       "cross_check": 1
-    },
-    {
-      "title": "CFTC Wants to Drop Gemini’s $5M Settlement. A Judge Just Said No",
-      "url": "https://decrypt.co/381149/cftc-wants-drop-gemini-5m-settlement-judge-said-no",
-      "source": "Decrypt",
-      "source_weight": 1.1,
-      "lang": "en",
-      "pub_date": "2026-10-16T16:36:04+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-17T11:05:42.817258+00:00",
-      "effective_weight": 0.88,
-      "title_original": "CFTC Wants to Drop Gemini’s $5M Settlement. A Judge Just Said No",
-      "cross_check": 3
     }
   ]
 }
