@@ -2,76 +2,167 @@
 СХЕМА ВНЕШНИХ ДАННЫХ (БЛОК 2)
 ========================================
 
-Таблица 1: global_metrics (CoinMarketCap)
-Частота: 1 час
-Ключ API: CMC_API_KEY (в GitHub Secrets)
+Данные, которые будем собирать из
+CoinMarketCap, Blockchain.com,
+DefiLlama и Alternative.me.
 
-1. last_updated      (TIMESTAMPTZ) - Время обновления (UTC)
-2. btc_dominance     (NUMERIC)     - Доминация BTC (%)
-3. eth_dominance     (NUMERIC)     - Доминация ETH (%)
-4. total_market_cap  (NUMERIC)     - Общая капитализация (USD)
-5. total_volume_24h  (NUMERIC)     - Объём за 24ч (USD)
-6. altcoin_market_cap(NUMERIC)     - Капитализация альткоинов (USD)
-7. stablecoin_market_cap (NUMERIC) - Капитализация стейблкоинов (USD)
-8. defi_market_cap   (NUMERIC)     - Капитализация DeFi (USD)
+!!! ВАЖНО: Этот блок НЕ СМЕШИВАЕТСЯ с Binance (candles). 
+Для внешних данных создаются отдельные таблицы.
 
-Уникальный ключ: (last_updated)
+========================================
+ТАБЛИЦА 1: global_metrics
+========================================
+Источник: CoinMarketCap
+Эндпоинт: /v1/global-metrics/quotes/latest
+Частота: 1 час (для экономии кредитов API)
+Ключ: CMC_API_KEY (GitHub Secrets)
 
-----------------------------------------
+SQL для создания:
+--------------------------------------------------
+CREATE TABLE IF NOT EXISTS global_metrics (
+    last_updated        TIMESTAMPTZ PRIMARY KEY,
+    btc_dominance       NUMERIC,
+    eth_dominance       NUMERIC,
+    total_market_cap    NUMERIC,
+    total_volume_24h    NUMERIC,
+    altcoin_market_cap  NUMERIC,
+    stablecoin_market_cap NUMERIC,
+    defi_market_cap     NUMERIC
+);
+--------------------------------------------------
 
-Таблица 2: btc_network (Blockchain.com)
-Частота: 1 раз в день
-Ключ API: не нужен
+Колонки:
+1. last_updated         (TIMESTAMPTZ) - Время обновления (UTC) [Уникальный ключ]
+2. btc_dominance        (NUMERIC)     - Доминация BTC (%)
+3. eth_dominance        (NUMERIC)     - Доминация ETH (%)
+4. total_market_cap     (NUMERIC)     - Общая капитализация (USD)
+5. total_volume_24h     (NUMERIC)     - Объём за 24ч (USD)
+6. altcoin_market_cap   (NUMERIC)     - Капитализация альткоинов (USD)
+7. stablecoin_market_cap(NUMERIC)     - Капитализация стейблкоинов (USD)
+8. defi_market_cap      (NUMERIC)     - Капитализация DeFi (USD)
 
-1. chart_time (TIMESTAMPTZ) - Время записи (UTC)
-2. chart_name (TEXT)        - hash-rate, difficulty, miners-revenue, n-transactions, market-price
+========================================
+ТАБЛИЦА 2: btc_network
+========================================
+Источник: Blockchain.com
+Эндпоинт: /charts/{chartName}
+Частота: 1 раз в день (утром)
+Ключ: не нужен
+
+SQL для создания:
+--------------------------------------------------
+CREATE TABLE IF NOT EXISTS btc_network (
+    chart_time  TIMESTAMPTZ NOT NULL,
+    chart_name  TEXT NOT NULL,
+    value       NUMERIC,
+    PRIMARY KEY (chart_name, chart_time)
+);
+--------------------------------------------------
+
+Колонки:
+1. chart_time (TIMESTAMPTZ) - Время записи (UTC) [Уникальный ключ 1]
+2. chart_name (TEXT)        - Название метрики [Уникальный ключ 2]
 3. value      (NUMERIC)     - Значение метрики
 
-Уникальный ключ: (chart_name, chart_time)
+Собираемые метрики (chart_name):
+- hash-rate         (TH/s)
+- difficulty        (сложность)
+- miners-revenue    (USD)
+- n-transactions    (шт)
+- market-price      (USD)
 
-----------------------------------------
+========================================
+ТАБЛИЦА 3: stablecoins
+========================================
+Источник: DefiLlama
+Эндпоинт: /stablecoins
+Частота: 15 минут (нет лимитов API)
+Ключ: не нужен
 
-Таблица 3: stablecoins (DefiLlama)
-Частота: 15 минут
-Ключ API: не нужен
+SQL для создания:
+--------------------------------------------------
+CREATE TABLE IF NOT EXISTS stablecoins (
+    symbol      TEXT NOT NULL,
+    timestamp   TIMESTAMPTZ NOT NULL,
+    name        TEXT,
+    circulating NUMERIC,
+    price       NUMERIC,
+    peg_type    TEXT,
+    PRIMARY KEY (symbol, timestamp)
+);
+--------------------------------------------------
 
-1. symbol      (TEXT)        - USDT, USDC, DAI
-2. name        (TEXT)        - Tether, USD Coin
-3. circulating (NUMERIC)     - В обращении (USD)
-4. price       (NUMERIC)     - Цена (должна быть ~1.00)
-5. peg_type    (TEXT)        - peggedUSD
-6. timestamp   (TIMESTAMPTZ) - Время записи (UTC)
+Колонки:
+1. symbol      (TEXT)        - USDT, USDC, DAI [Уникальный ключ 1]
+2. timestamp   (TIMESTAMPTZ) - Время записи (UTC) [Уникальный ключ 2]
+3. name        (TEXT)        - Tether, USD Coin
+4. circulating (NUMERIC)     - В обращении (USD)
+5. price       (NUMERIC)     - Цена (должна быть ~1.00)
+6. peg_type    (TEXT)        - peggedUSD
 
-Уникальный ключ: (symbol, timestamp)
+========================================
+ТАБЛИЦА 4: fear_greed
+========================================
+Источник: Alternative.me
+Эндпоинт: /fng/
+Частота: 1 раз в день (утром)
+Ключ: не нужен
 
-----------------------------------------
+SQL для создания:
+--------------------------------------------------
+CREATE TABLE IF NOT EXISTS fear_greed (
+    timestamp      TIMESTAMPTZ PRIMARY KEY,
+    value          INTEGER,
+    classification TEXT
+);
+--------------------------------------------------
 
-Таблица 4: fear_greed (Alternative.me)
-Частота: 1 раз в день
-Ключ API: не нужен
-
-1. timestamp      (TIMESTAMPTZ) - Время записи (UTC)
+Колонки:
+1. timestamp      (TIMESTAMPTZ) - Время записи (UTC) [Уникальный ключ]
 2. value          (INTEGER)     - Индекс от 0 до 100
 3. classification (TEXT)        - Extreme Fear, Fear, Neutral, Greed, Extreme Greed
 
-Уникальный ключ: (timestamp)
-
 ========================================
-РАСЧЕТНЫЕ МЕТРИКИ (не хранятся в БД)
+ЧТО СЧИТАЕТСЯ ИЗ ЭТИХ КОЛОНОК
+(не хранится в базе, считается в коде отчета)
 ========================================
-- BTC Dominance change <- дельта за день
-- Altseason index <- altcoin_market_cap / total_market_cap
-- Stablecoin ratio <- stablecoin_market_cap / total_market_cap
-- Hash rate change <- дельта за неделю
-- Miner stress <- miners-revenue / market-price
-- F&G moving average <- среднее за 7 дней
+BTC Dominance change  <- btc_dominance (дельта за день)
+Altseason index        <- altcoin_market_cap / total_market_cap
+Stablecoin ratio       <- stablecoin_market_cap / total_market_cap
+Hash rate change       <- hash-rate (дельта за неделю)
+Miner stress           <- miners-revenue / market-price
+F&G moving average     <- fear_greed value (среднее за 7 дней)
 
 ========================================
 ЛОГИКА ИСПОЛЬЗОВАНИЯ
 ========================================
-1. Контекст: total_market_cap + btc_dominance (риск-он/офф)
-2. Ротация: btc_dominance (в BTC) vs altcoin_market_cap (в альты)
-3. Приток денег: stablecoin_market_cap растет (бычий)
-4. Паника/жадность: fear_greed < 20 / > 80
-5. Здоровье сети: hash-rate растет, miners-revenue падает
-6. Депег: stablecoin price < 0.99 / > 1.01
+1. Контекст рынка:
+   total_market_cap + btc_dominance -> риск-он или риск-офф?
+
+2. Ротация капитала:
+   btc_dominance растёт -> деньги в BTC
+   altcoin_market_cap растёт -> сезон альтов
+
+3. Приток денег:
+   stablecoin_market_cap растёт -> новые деньги заходят (бычий)
+
+4. Паника/эйфория:
+   fear_greed < 20 -> все боятся, возможно дно
+   fear_greed > 80 -> все жадничают, возможна вершина
+
+5. Здоровье сети:
+   hash-rate растёт -> сеть укрепляется
+   miners-revenue падает -> майнеры в стрессе
+
+6. Депег стейблкоина:
+   price < 0.99 -> паника, вывод денег
+   price > 1.01 -> избыточный спрос
+
+========================================
+ПОРЯДОК РАЗВЕРТЫВАНИЯ
+========================================
+1. Запустить тестовый скрипт (без записи в БД).
+2. Проверить, что API отдают данные.
+3. Выполнить SQL выше (создать 4 таблицы в Aiven).
+4. Написать коллекторы с записью (ON CONFLICT DO NOTHING).
+5. Встроить в отчеты.
