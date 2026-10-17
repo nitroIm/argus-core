@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-10-17T05:05:36.732957+00:00",
+  "generated_at": "2026-10-17T06:05:51.333036+00:00",
   "total_news": 128,
-  "avg_sentiment": -0.011,
+  "avg_sentiment": 0.008,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
-  "bullish_count": 17,
+  "bullish_count": 18,
   "bearish_count": 19,
-  "neutral_count": 92,
+  "neutral_count": 91,
   "fake_count": 0,
   "cross_confirmed": 10,
-  "single_source": 107,
+  "single_source": 109,
   "by_source": {
     "Cointelegraph": {
       "total": 25,
@@ -22,7 +22,7 @@
     },
     "Bitcoin.com": {
       "total": 10,
-      "bull": 2,
+      "bull": 3,
       "bear": 0
     },
     "CryptoSlate": {
@@ -48,6 +48,22 @@
   },
   "top_bullish": [
     {
+      "title": "A North Carolina Woman Won $100,000 on a Scratch-Off. Then She Won It Again on the Exact Same Game",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-17T05:30:28+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-17T06:05:50.107602+00:00",
+      "effective_weight": 1.5,
+      "title_original": "A North Carolina Woman Won $100,000 on a Scratch-Off. Then She Won It Again on the Exact Same Game",
+      "cross_check": 1
+    },
+    {
       "title": "Crypto PACs escalate spending against Sherrod Brown in Ohio Senate race",
       "source": "Cointelegraph",
       "source_weight": 1.3,
@@ -58,7 +74,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-17T05:05:34.727623+00:00",
+      "collected_at": "2026-10-17T06:05:49.829326+00:00",
       "effective_weight": 1.04,
       "title_original": "Crypto PACs escalate spending against Sherrod Brown in Ohio Senate race",
       "cross_check": 1
@@ -74,7 +90,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-17T05:05:34.727976+00:00",
+      "collected_at": "2026-10-17T06:05:49.829761+00:00",
       "effective_weight": 1.04,
       "title_original": "Solana’s Liu says Shanghai event postponed over registration surge",
       "cross_check": 2
@@ -90,7 +106,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-17T05:05:34.728073+00:00",
+      "collected_at": "2026-10-17T06:05:49.829873+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin may seek 20-month trend line reclaim before new record highs: CryptoQuant",
       "cross_check": 1
@@ -106,25 +122,9 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-17T05:05:35.222756+00:00",
+      "collected_at": "2026-10-17T06:05:50.107792+00:00",
       "effective_weight": 1.0,
       "title_original": "Solana Apps Generate $193M in 30 Days Amid Real-World Assets Surge",
-      "cross_check": 1
-    },
-    {
-      "title": "CIO Bitwise назвал почти все макросценарии позитивными для биткоина",
-      "source": "ForkLog",
-      "source_weight": 1.2,
-      "lang": "ru",
-      "pub_date": "2026-10-16T10:19:26+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-17T05:05:36.616036+00:00",
-      "effective_weight": 0.96,
-      "title_original": "CIO Bitwise назвал почти все макросценарии позитивными для биткоина",
       "cross_check": 1
     }
   ],
@@ -140,7 +140,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-17T05:05:36.615545+00:00",
+      "collected_at": "2026-10-17T06:05:51.206754+00:00",
       "effective_weight": 1.2,
       "title_original": "DarkSword научился охотиться за криптовалютой на iOS, Chrome взломали за шесть дней с помощью GPT-5.6 Sol и другие события кибербезопасности",
       "cross_check": 1
@@ -156,7 +156,7 @@
       "bear_weight": 1.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-17T05:05:34.727818+00:00",
+      "collected_at": "2026-10-17T06:05:49.829553+00:00",
       "effective_weight": 1.04,
       "title_original": "Strategy conditionally declares daily dividends as STRC hovers below $100",
       "cross_check": 1
@@ -172,25 +172,9 @@
       "bear_weight": 1.2,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-17T05:05:34.727868+00:00",
+      "collected_at": "2026-10-17T06:05:49.829611+00:00",
       "effective_weight": 1.04,
       "title_original": "Ledger’s early implant warnings deserved more action, Karpelès says",
-      "cross_check": 1
-    },
-    {
-      "title": "Balaji’s ‘Singapore of social media’ begins with a wave of bans",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-10-16T05:16:11+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-17T05:05:34.728274+00:00",
-      "effective_weight": 1.04,
-      "title_original": "Balaji’s ‘Singapore of social media’ begins with a wave of bans",
       "cross_check": 1
     },
     {
@@ -204,10 +188,26 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-17T05:05:34.822382+00:00",
+      "collected_at": "2026-10-17T06:05:49.889146+00:00",
       "effective_weight": 0.88,
       "title_original": "Hackers Jailbreak iPhone 18 Pro on Stage, and It Survives a Reboot",
       "cross_check": 1
+    },
+    {
+      "title": "CFTC Wants to Drop Gemini’s $5M Settlement. A Judge Just Said No",
+      "source": "Decrypt",
+      "source_weight": 1.1,
+      "lang": "en",
+      "pub_date": "2026-10-16T16:36:04+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.0,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-17T06:05:49.889362+00:00",
+      "effective_weight": 0.88,
+      "title_original": "CFTC Wants to Drop Gemini’s $5M Settlement. A Judge Just Said No",
+      "cross_check": 3
     }
   ]
 }
