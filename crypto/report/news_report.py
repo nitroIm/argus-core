@@ -1,8 +1,9 @@
 # ============================================================
-# ARGUS - NEWS REPORT v8.2
+# ARGUS - NEWS REPORT v9.0
 # ------------------------------------------------------------
-# v8.2: убрано "КЛГ" и строка "Данные: X назад".
-# v8.1: TEST_MODE через env NEWS_TEST_MODE.
+# v9.0: RSI и ATR считаются по ЧАСОВЫМ свечам (1h), чтобы 
+#       отражать дневной контекст, а не 15-минутный шум.
+#       Добавлены Максимум, Минимум и Объём за 24 часа.
 # ============================================================
 
 import os
@@ -294,6 +295,9 @@ def translate_top(items, n=3):
         return originals
 
 
+# ============================================================
+# ИНДИКАТОРЫ И ДАННЫЕ
+# ============================================================
 def _rsi(closes, period=14):
     if len(closes) < period + 1:
         return None
@@ -348,34 +352,66 @@ def fetch_btc_snapshot():
         )
         with conn:
             with conn.cursor() as cur:
+                # Берем 400 свечей (100 часов) для точного расчета
                 cur.execute(
-                    "SELECT open_time, close, high, low "
+                    "SELECT open_time, open, high, low, close, volume "
                     "FROM candles WHERE symbol=%s AND timeframe=%s "
                     "AND market_type='spot' "
-                    "ORDER BY open_time DESC LIMIT 100",
+                    "ORDER BY open_time DESC LIMIT 400",
                     (SYMBOL, TIMEFRAME),
                 )
                 rows = list(reversed(cur.fetchall()))
         conn.close()
-        if len(rows) < 20:
+        
+        if len(rows) < 100:
             return None
-        closes = [float(r[1]) for r in rows]
-        highs = [float(r[2]) for r in rows]
-        lows = [float(r[3]) for r in rows]
-        price = closes[-1]
+
+        # 1. Данные за последние 24 часа (96 свечей по 15м)
+        last_24h = rows[-96:] if len(rows) >= 96 else rows
+        high_24h = max(float(r[2]) for r in last_24h)
+        low_24h = min(float(r[3]) for r in last_24h)
+        vol_24h = sum(float(r[5]) for r in last_24h)
+        
+        price = float(rows[-1][4])
+        
+        # 24ч изменение
         change_pct = 0
-        if len(closes) >= 96:
-            prev = closes[-96]
+        if len(rows) >= 96:
+            prev = float(rows[-96][4])
             if prev:
                 change_pct = (price - prev) / prev * 100
-        rsi = _rsi(closes, 14)
-        atr = _atr(highs, lows, closes, 14)
-        atr_pct = (atr / price * 100) if atr and price else 0
+
+        # 2. Сворачиваем 15м в 1ч свечи для RSI и ATR
+        # (4 свечи по 15м = 1 час)
+        candles_1h = []
+        for i in range(0, len(rows) - 3, 4):
+            chunk = rows[i:i+4]
+            if len(chunk) < 4:
+                continue
+            h = max(float(c[2]) for c in chunk)
+            l = min(float(c[3]) for c in chunk)
+            c = float(chunk[-1][4])
+            candles_1h.append((h, l, c))
+            
+        if len(candles_1h) < 15:
+            return None
+
+        closes_1h = [c[2] for c in candles_1h]
+        highs_1h = [c[0] for c in candles_1h]
+        lows_1h = [c[1] for c in candles_1h]
+
+        rsi_1h = _rsi(closes_1h, 14)
+        atr_1h = _atr(highs_1h, lows_1h, closes_1h, 14)
+        atr_pct = (atr_1h / price * 100) if atr_1h and price else 0
+
         return {
             "price": price,
             "change_pct": change_pct,
-            "rsi": rsi,
-            "atr": atr,
+            "high_24h": high_24h,
+            "low_24h": low_24h,
+            "vol_24h": vol_24h,
+            "rsi": rsi_1h,
+            "atr": atr_1h,
             "atr_pct": atr_pct,
         }
     except Exception as e:
@@ -399,6 +435,14 @@ def fmt_pct(v):
     return format(v, "+.2f") + "%"
 
 
+def fmt_vol(v):
+    if v is None:
+        return "?"
+    if v >= 1000:
+        return format(v, ",.0f") + " BTC"
+    return format(v, ".2f") + " BTC"
+
+
 def build_report(data, bull_items, bear_items,
                  bull_ru, bear_ru, btc):
     mood = data.get("mood", "Неизвестно")
@@ -416,25 +460,35 @@ def build_report(data, bull_items, bear_items,
     lines.append(now.strftime("%d.%m %H:%M"))
     lines.append("")
 
+    # --- БЛОК BTC (24ч) ---
     if btc:
         line = "💰 <b>BTC</b> " + fmt_price(btc["price"])
         line += " | " + fmt_pct(btc["change_pct"]) + " 24ч"
         lines.append(line)
+        
+        line = "  Макс: " + fmt_price(btc["high_24h"])
+        line += " | Мин: " + fmt_price(btc["low_24h"])
+        lines.append(line)
+        
+        line = "  Объём: " + fmt_vol(btc["vol_24h"])
+        lines.append(line)
+        
         parts = []
         if btc["rsi"] is not None:
             r = btc["rsi"]
             st = ("перекуп" if r >= 70
                   else "перепрод" if r <= 30 else "нейтр")
-            parts.append("RSI " + format(r, ".1f") + " " + st)
+            parts.append("RSI(1ч) " + format(r, ".1f") + " " + st)
         if btc["atr"]:
             parts.append(
-                "ATR " + fmt_price(btc["atr"])
+                "ATR(1ч) " + fmt_price(btc["atr"])
                 + " (" + format(btc["atr_pct"], ".2f") + "%)"
             )
         if parts:
             lines.append("  " + " | ".join(parts))
         lines.append("")
 
+    # --- НОВОСТИ ---
     lines.append("🎭 " + esc(mood))
     lines.append("📊 Сентимент: <b>" + format(avg, "+.3f") + "</b>")
     lines.append("")
@@ -503,7 +557,7 @@ def build_report(data, bull_items, bear_items,
 
 
 def main():
-    log.info("news report v8.2")
+    log.info("news report v9.0")
     local = now_local()
     log.info(
         "local time: %s (hour=%d)",
