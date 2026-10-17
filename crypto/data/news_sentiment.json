@@ -1,17 +1,17 @@
 {
-  "generated_at": "2026-10-17T08:05:35.504523+00:00",
-  "total_news": 94,
-  "avg_sentiment": -0.083,
+  "generated_at": "2026-10-17T09:05:36.018071+00:00",
+  "total_news": 93,
+  "avg_sentiment": -0.12,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
   "bullish_count": 10,
-  "bearish_count": 18,
-  "neutral_count": 66,
+  "bearish_count": 20,
+  "neutral_count": 63,
   "fake_count": 0,
   "cross_confirmed": 10,
-  "single_source": 74,
+  "single_source": 75,
   "by_source": {
     "Cointelegraph": {
-      "total": 23,
+      "total": 22,
       "bull": 4,
       "bear": 5
     },
@@ -23,7 +23,7 @@
     "Bitcoin.com": {
       "total": 7,
       "bull": 1,
-      "bear": 1
+      "bear": 2
     },
     "CryptoSlate": {
       "total": 9,
@@ -33,7 +33,7 @@
     "CryptoPotato": {
       "total": 22,
       "bull": 2,
-      "bear": 5
+      "bear": 6
     },
     "Bitcoinist": {
       "total": 7,
@@ -59,7 +59,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-17T08:05:34.152777+00:00",
+      "collected_at": "2026-10-17T09:05:33.448499+00:00",
       "effective_weight": 1.04,
       "title_original": "Crypto PACs escalate spending against Sherrod Brown in Ohio Senate race",
       "cross_check": 1
@@ -76,7 +76,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-17T08:05:34.153312+00:00",
+      "collected_at": "2026-10-17T09:05:33.448823+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin may seek 20-month trend line reclaim before new record highs: CryptoQuant",
       "cross_check": 1
@@ -93,7 +93,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-17T08:05:34.203415+00:00",
+      "collected_at": "2026-10-17T09:05:33.553916+00:00",
       "effective_weight": 0.88,
       "title_original": "GTA 6 Trailer Features Meme Coin—And Solana Copycat Soars 2,900%",
       "cross_check": 1
@@ -110,7 +110,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-17T08:05:34.420729+00:00",
+      "collected_at": "2026-10-17T09:05:33.996135+00:00",
       "effective_weight": 0.8,
       "title_original": "Solana Apps Generate $193M in 30 Days Amid Real-World Assets Surge",
       "cross_check": 1
@@ -127,7 +127,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-17T08:05:34.581513+00:00",
+      "collected_at": "2026-10-17T09:05:34.884208+00:00",
       "effective_weight": 0.8,
       "title_original": "Injective (INJ) Explodes to a 1-Year High: Has Its Bull Run Begun?",
       "cross_check": 1
@@ -135,20 +135,37 @@
   ],
   "top_bearish": [
     {
-      "title": "These Alts Bleed the Most as Bitcoin (BTC) Settles Below $82K: Weekend Watch",
-      "url": "https://cryptopotato.com/these-alts-bleed-the-most-as-bitcoin-btc-settles-below-82k-weekend-watch/",
-      "source": "CryptoPotato",
+      "title": "Binance Offers Nearly 8% in XRP for RLUSD But the Base Rate Keeps Falling",
+      "url": "https://news.bitcoin.com/exchanges/binance-rlusd-xrp-rewards-7-77-apr-shrinking/",
+      "source": "Bitcoin.com",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-10-17T07:30:01+00:00",
+      "pub_date": "2026-10-17T08:30:40+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 1.0,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-17T08:05:34.581168+00:00",
+      "collected_at": "2026-10-17T09:05:33.995975+00:00",
       "effective_weight": 1.5,
-      "title_original": "These Alts Bleed the Most as Bitcoin (BTC) Settles Below $82K: Weekend Watch",
+      "title_original": "Binance Offers Nearly 8% in XRP for RLUSD But the Base Rate Keeps Falling",
+      "cross_check": 1
+    },
+    {
+      "title": "Bitcoin’s Road to $125K Could Include a Brutal Drop to $68K: Analyst",
+      "url": "https://cryptopotato.com/bitcoins-road-to-125k-could-include-a-brutal-drop-to-68k-analyst/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-17T09:01:33+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-17T09:05:34.883957+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Bitcoin’s Road to $125K Could Include a Brutal Drop to $68K: Analyst",
       "cross_check": 1
     },
     {
@@ -163,9 +180,26 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-17T08:05:35.438014+00:00",
+      "collected_at": "2026-10-17T09:05:35.974884+00:00",
       "effective_weight": 1.2,
       "title_original": "DarkSword научился охотиться за криптовалютой на iOS, Chrome взломали за шесть дней с помощью GPT-5.6 Sol и другие события кибербезопасности",
+      "cross_check": 1
+    },
+    {
+      "title": "These Alts Bleed the Most as Bitcoin (BTC) Settles Below $82K: Weekend Watch",
+      "url": "https://cryptopotato.com/these-alts-bleed-the-most-as-bitcoin-btc-settles-below-82k-weekend-watch/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-17T07:30:01+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.0,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-17T09:05:34.884003+00:00",
+      "effective_weight": 1.0,
+      "title_original": "These Alts Bleed the Most as Bitcoin (BTC) Settles Below $82K: Weekend Watch",
       "cross_check": 1
     },
     {
@@ -180,44 +214,10 @@
       "bear_weight": 1.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-17T08:05:34.203000+00:00",
+      "collected_at": "2026-10-17T09:05:33.553673+00:00",
       "effective_weight": 0.88,
       "title_original": "CFTC Wants to Drop Gemini’s $5M Settlement. A Judge Just Said No",
       "cross_check": 3
-    },
-    {
-      "title": "Scammer Lost $4.8M in Bitcoin to Tampered Ledger Wallets: Chainalysis",
-      "url": "https://decrypt.co/381141/scammer-lost-4-8m-in-bitcoin-to-tampered-ledger-wallets-chainalysis",
-      "source": "Decrypt",
-      "source_weight": 1.1,
-      "lang": "en",
-      "pub_date": "2026-10-16T12:22:18+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-17T08:05:34.203211+00:00",
-      "effective_weight": 0.88,
-      "title_original": "Scammer Lost $4.8M in Bitcoin to Tampered Ledger Wallets: Chainalysis",
-      "cross_check": 1
-    },
-    {
-      "title": "Solana Abruptly Postpones Shanghai Event as Registrations Quadruple",
-      "url": "https://news.bitcoin.com/altcoins/solana-abruptly-postpones-shanghai-event-registrations-quadruple/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-16T22:30:01+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-17T08:05:34.420847+00:00",
-      "effective_weight": 0.8,
-      "title_original": "Solana Abruptly Postpones Shanghai Event as Registrations Quadruple",
-      "cross_check": 2
     }
   ]
 }
