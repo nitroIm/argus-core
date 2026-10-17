@@ -1,10 +1,11 @@
 # ============================================================
-# ARGUS-Trader — NEWS ANALYZER v8.0 (FINAL)
+# ARGUS-Trader — NEWS ANALYZER v9.0 (FINAL)
 # ------------------------------------------------------------
-# v8.0: ОКОНЧАТЕЛЬНЫЙ ФИЛЬТР. 
-#       Максимально расширенный словарь трендов и монет.
-#       Жёсткий отсев мусора (казино, спорт, кликбейт).
-#       Ссылки (url) извлекаются и сохраняются.
+# v9.0: 
+#  - Огромный словарь крипто-паттернов (монеты, тренды, компании).
+#  - Жесткий отсев спама (казино, спорт, кликбейт).
+#  - Извлечение ссылок (url) из RSS.
+#  - Учет движения капитала (inflow/outflow, приток/отток).
 # ============================================================
 
 import os
@@ -57,7 +58,6 @@ CRYPTO_PATTERNS = [
 
 # ============================================================
 # ЧЁРНЫЙ СПИСОК (ЖЁСТКИЙ ОТСЕВ)
-# Если это есть, И ЭТО НЕ ПРО КРИПТУ - выкидываем
 # ============================================================
 SPAM_PATTERNS = [
     r"\b(lottery|casino|betting|sportsbook|football|basketball|soccer|nba|nfl|iphone|android|movie|actor|actress|celebrity|weather|horoscope|recipe|cooking|diet)\b",
@@ -72,6 +72,13 @@ BULLISH_WEIGHTS = {
     "рост": 1.0, "бычий": 1.2, "прибыль": 1.0, "подъём": 1.2, "рекорд": 1.2,
     "прорыв": 1.5, "принятие": 1.2, "одобрен": 1.5, "партнёрство": 1.2,
     "запуск": 1.0, "позитив": 1.0, "upgrade": 1.2, "update": 0.8,
+    
+    # --- Движение капитала (Позитив) ---
+    "inflow": 1.8, "inflows": 1.8, "pours": 1.5, "invests": 1.2, "investment": 1.0,
+    "accumulate": 1.2, "accumulation": 1.2, "buy the dip": 1.5, "bought": 1.0,
+    "capital flight to": 1.5, "billion": 1.2, "million": 0.8, "whale buys": 1.5,
+    "приток": 1.8, "вливает": 1.5, "инвестирует": 1.2, "накапливает": 1.2,
+    "выкупают": 1.2, "закупаются": 1.2, "миллиард": 1.2, "миллион": 0.8, "киты покупают": 1.5,
 }
 
 BEARISH_WEIGHTS = {
@@ -83,29 +90,45 @@ BEARISH_WEIGHTS = {
     "взлом": 1.5, "мошенничество": 1.5, "иск": 1.2, "регуляц": 1.2,
     "ликвидац": 1.2, "банкротств": 1.5, "паник": 1.5, "негатив": 1.0,
     "предупрежд": 1.2, "exploit": 1.5, "delay": 1.2, "reject": 1.5,
+    
+    # --- Движение капитала (Негатив) ---
+    "outflow": 1.8, "outflows": 1.8, "withdraw": 1.5, "withdrawal": 1.5,
+    "pull out": 1.5, "sell-off": 1.5, "selloff": 1.5, "flee": 1.5, 
+    "capital flight": 1.8, "whale sells": 1.5, "dumps": 1.2, "selling pressure": 1.2,
+    "отток": 1.8, "выводят": 1.5, "забирают": 1.2, "распродажа": 1.5,
+    "бегство капитала": 1.8, "киты продают": 1.5, "давление продавцов": 1.2, "сливают": 1.2,
 }
 
 CONTEXT_RULES = [
+    # --- Регуляторы ---
     (r"sec\s+(opens|approves|greenlights|allows|clears|permits)", 2.0),
     (r"sec\s+chair\s+(pushes|backs|supports)", 1.2),
     (r"sec\s+(sues|charges|blocks|rejects|bans|delays)", -2.0),
     (r"cftc\s+(sues|charges|blocks|rejects|bans)", -1.5),
     (r"cftc\s+warns?", -0.8),
+    
+    # --- ETF и Институционалы ---
     (r"etf\s+(inflows?|approval|approves|greenlight)", 1.5),
     (r"etf\s+outflows?", -1.2),
     (r"(adopts?|adoption\s+of)\s+bitcoin", 1.5),
     (r"country\s+adopts?\s+crypto", 1.5),
     (r"regulat(ion|ory)\s+clarity", 1.2),
     (r"crypto\s+(ban|bans|banning)", -2.0),
+    
+    # --- Движение капитала и цены ---
     (r"all[- ]time\s+high", 1.8),
     (r"all[- ]time\s+low", -1.8),
     (r"new\s+high", 1.3),
     (r"new\s+low", -1.3),
+    (r"(institutional|big|whale)\s+(money|capital|investors)\s+(pours|flows|enters|buy)", 1.8),
+    (r"(investors|capital|funds)\s+(flee|exit|withdraw|pull out|leave)", -1.8),
+    (r"billion\s+(dollars?|usd)?\s*(pours|flows|invested|enters|inflow)", 1.8),
+    (r"billion\s+(dollars?|usd)?\s*(withdrawn|exit|outflow|pulled)", -1.8),
+    
+    # --- Ликвидации и взломы ---
     (r"liquidation[s]?\s+(cascade|wave|surge)", -1.5),
     (r"(hacked|hack|exploit)\s+(for|of|at)", -1.8),
     (r"stolen\s+(funds|crypto|bitcoin)", -1.8),
-    (r"partner(ship)?\s+with", 1.0),
-    (r"acquire[sd]?\s+", 0.8),
     (r"(risk|risks)\s+of\s+(correction|pullback|crash)", -1.2),
     (r"profit[- ]taking", -0.7),
 ]
@@ -203,32 +226,19 @@ def keywords(text: str, min_len: int = 4) -> set:
 
 
 def is_crypto_related(title: str) -> bool:
-    """
-    Жесткая проверка на крипто-тематику.
-    1. Если есть крипто-слова (даже вперемешку со спамом) - ПРОПУСКАЕМ.
-    2. Если крипто-слов нет, а есть спам - ВЫКИДЫВАЕМ.
-    3. Если ни того, ни другого - ВЫКИДЫВАЕМ (чтобы не тащить мусор).
-    """
     t = title.lower()
     
-    has_crypto = False
+    # 1. Если есть крипто-термины — пропускаем (даже если есть слова из спама)
     for pattern in CRYPTO_PATTERNS:
         if re.search(pattern, t, re.IGNORECASE):
-            has_crypto = True
-            break
+            return True
             
-    if has_crypto:
-        return True
-        
-    has_spam = False
+    # 2. Если крипто-терминов НЕТ, но есть слова из чёрного списка — выкидываем
     for pattern in SPAM_PATTERNS:
         if re.search(pattern, t, re.IGNORECASE):
-            has_spam = True
-            break
+            return False
             
-    if has_spam:
-        return False
-        
+    # 3. Если ни того, ни другого — отбрасываем
     return False
 
 
@@ -243,7 +253,7 @@ def fetch_feed(feed):
         if not blocks:
             blocks = re.findall(r"<entry\b[^>]*>(.*?)</entry>", text, re.IGNORECASE | re.DOTALL)
 
-        for b in blocks[:30]: # увеличено до 30, чтобы после фильтра осталось больше
+        for b in blocks[:30]:
             title_match = re.search(r"<title\b[^>]*>(.*?)</title>", b, re.IGNORECASE | re.DOTALL)
             if not title_match:
                 continue
@@ -361,7 +371,7 @@ def fake_score(title, source_weight):
 
 
 def main():
-    print("📰 ARGUS-Trader NEWS ANALYZER v8.0 (FINAL)")
+    print("📰 ARGUS-Trader NEWS ANALYZER v9.0")
     print("=" * 60)
 
     all_news = []
