@@ -1,9 +1,8 @@
 # ============================================================
-# ARGUS-Trader — NEWS ANALYZER v6.5
+# ARGUS-Trader — NEWS ANALYZER v6.6
 # ------------------------------------------------------------
-# v6.5: fix sentiment — SEC/CFTC не однозначно негатив.
-#       Контекстные правила (SEC opens = позитив).
-# v6.4: перевод убран — только sentiment по оригиналу.
+# v6.6: + извлечение URL (ссылок) из RSS.
+#       + фильтр "только крипто-новости".
 # ============================================================
 
 import os
@@ -34,7 +33,15 @@ FEEDS = [
     {"name": "ForkLog",       "url": "https://forklog.com/feed",                         "lang": "ru", "weight": 1.2},
 ]
 
-# Одиночные слова — веса
+# Слова, чтобы отсечь мусор (лотереи, айфоны и т.д.)
+CRYPTO_KEYWORDS = [
+    "bitcoin", "btc", "ethereum", "eth", "crypto", "blockchain",
+    "defi", "nft", "solana", "sec", "binance", "coin", "token",
+    "web3", "cryptocurrency", "blockchain", "etf", "altcoin",
+    "bull", "bear", "rally", "блокчейн", "биткоин", "криптовалюта",
+    "токен", "биржа", "майнинг", "кошелек", "xrp", "ripple"
+]
+
 BULLISH_WEIGHTS = {
     "moon": 2.0, "surge": 1.5, "rally": 1.5, "breakout": 1.5, "soar": 1.5,
     "gain": 1.0, "rise": 1.0, "jump": 1.0, "high": 1.0, "growth": 1.0,
@@ -56,39 +63,27 @@ BEARISH_WEIGHTS = {
     "предупрежд": 1.2,
 }
 
-# Контекстные правила: если фраза найдена → смещает sentiment.
-# Проверяются ДО одиночных слов.
 CONTEXT_RULES = [
-    # SEC/CFTC — позитив
     (r"sec\s+(opens|approves|greenlights|allows|clears|permits)", 2.0),
     (r"sec\s+chair\s+(pushes|backs|supports)", 1.2),
-    # SEC/CFTC — негатив
     (r"sec\s+(sues|charges|blocks|rejects|bans|delays)", -2.0),
     (r"cftc\s+(sues|charges|blocks|rejects|bans)", -1.5),
     (r"cftc\s+warns?", -0.8),
-    # ETF
     (r"etf\s+(inflows?|approval|approves|greenlight)", 1.5),
     (r"etf\s+outflows?", -1.2),
-    # Adoption
     (r"(adopts?|adoption\s+of)\s+bitcoin", 1.5),
     (r"country\s+adopts?\s+crypto", 1.5),
-    # Regulation
     (r"regulat(ion|ory)\s+clarity", 1.2),
     (r"crypto\s+(ban|bans|banning)", -2.0),
-    # Price
     (r"all[- ]time\s+high", 1.8),
     (r"all[- ]time\s+low", -1.8),
     (r"new\s+high", 1.3),
     (r"new\s+low", -1.3),
-    # Liquidations
     (r"liquidation[s]?\s+(cascade|wave|surge)", -1.5),
-    # Hacks
     (r"(hacked|hack|exploit)\s+(for|of|at)", -1.8),
     (r"stolen\s+(funds|crypto|bitcoin)", -1.8),
-    # Partnerships
     (r"partner(ship)?\s+with", 1.0),
     (r"acquire[sd]?\s+", 0.8),
-    # Риски
     (r"(risk|risks)\s+of\s+(correction|pullback|crash)", -1.2),
     (r"profit[- ]taking", -0.7),
 ]
@@ -185,6 +180,12 @@ def keywords(text: str, min_len: int = 4) -> set:
     return {w for w in words if len(w) >= min_len and w not in stop}
 
 
+def is_crypto_related(title: str) -> bool:
+    """Проверяет, есть ли в заголовке крипто-слова."""
+    t = title.lower()
+    return any(kw in t for kw in CRYPTO_KEYWORDS)
+
+
 def fetch_feed(feed):
     items = []
     try:
@@ -210,6 +211,20 @@ def fetch_feed(feed):
             if len(title) < 15:
                 continue
 
+            # ФИЛЬТР МУСОРА: если нет крипто-слов, пропускаем
+            if not is_crypto_related(title):
+                continue
+
+            # ИЗВЛЕКАЕМ URL
+            url_match = re.search(r"<link\b[^>]*>(.*?)</link>", b, re.IGNORECASE | re.DOTALL)
+            if not url_match:
+                url_match = re.search(r'<link\b[^>]*href="([^"]+)"', b, re.IGNORECASE)
+            
+            url = ""
+            if url_match:
+                url = url_match.group(1).strip()
+                url = url.replace("<![CDATA[", "").replace("]]>", "")
+
             pub_date = None
             for tag in ["pubDate", "published", "updated", "dc:date"]:
                 m = re.search(rf"<{tag}\b[^>]*>(.*?)</{tag}>", b,
@@ -227,6 +242,7 @@ def fetch_feed(feed):
 
             items.append({
                 "title": title,
+                "url": url, # <--- ДОБАВЛЕНО
                 "source": feed["name"],
                 "source_weight": feed.get("weight", 1.0),
                 "lang": feed["lang"],
@@ -238,13 +254,10 @@ def fetch_feed(feed):
 
 
 def analyze_sentiment(title):
-    """Сначала контекстные правила, потом одиночные слова."""
     text = title.lower()
-
     bull = 0.0
     bear = 0.0
 
-    # 1. Контекстные фразы
     for pattern, weight in CONTEXT_RULES:
         if re.search(pattern, text):
             if weight > 0:
@@ -252,7 +265,6 @@ def analyze_sentiment(title):
             else:
                 bear += abs(weight)
 
-    # 2. Одиночные слова
     for w, weight in BULLISH_WEIGHTS.items():
         if w in text:
             bull += weight
@@ -308,8 +320,7 @@ def fake_score(title, source_weight):
 
 
 def main():
-    print("📰 ARGUS-Trader NEWS ANALYZER v6.5")
-    print("(sentiment: контекстные правила + слова)")
+    print("📰 ARGUS-Trader NEWS ANALYZER v6.6")
     print("=" * 60)
 
     all_news = []
@@ -317,7 +328,7 @@ def main():
 
     for feed in FEEDS:
         items = fetch_feed(feed)
-        print(f"📡 {feed['name']}: {len(items)} заголовков (вес {feed.get('weight', 1.0)})")
+        print(f"📡 {feed['name']}: {len(items)} подходящих заголовков (вес {feed.get('weight', 1.0)})")
 
         for item in items:
             h = _hash(item["title"])
@@ -442,19 +453,18 @@ def main():
     print(f"🎭 Настроение: {mood}")
     print(f"📈 Сентимент: {avg_sentiment:+.3f}")
     print(f"   🟢 {bullish} | 🔴 {bearish} | 🟡 {neutral}")
-    print(f"🔍 Перекрёстно подтверждено (3+): {cross_confirmed}")
-    print(f"⚠️ Один источник: {single_source}")
-    print(f"🚨 Подозрительных (fake): {fake_count}")
 
     if top_bull:
         print("\n🟢 Топ бычьих:")
         for n in top_bull[:3]:
             print(f"   + {n['title_original'][:80]}")
+            print(f"     {n['url']}")
 
     if top_bear:
         print("\n🔴 Топ медвежьих:")
         for n in top_bear[:3]:
             print(f"   - {n['title_original'][:80]}")
+            print(f"     {n['url']}")
     print("=" * 60)
 
 
