@@ -49,7 +49,7 @@ jobs:
           VK_TOKEN: ${{ secrets.VK_TOKEN }}
           VK_GROUP_ID: ${{ secrets.VK_GROUP_ID }}
           AIVEN_DB_URL: ${{ secrets.AIVEN_DB_URL }}
-          # NEWS_TEST_MODE: "1"
+          NEWS_TEST_MODE: "1"
         run: python crypto/report/news_report.py
 
       - name: Commit
