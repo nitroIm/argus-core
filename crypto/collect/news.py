@@ -1,8 +1,9 @@
 # ============================================================
-# ARGUS-Trader — NEWS ANALYZER v6.6
+# ARGUS-Trader — NEWS ANALYZER v7.0
 # ------------------------------------------------------------
-# v6.6: + извлечение URL (ссылок) из RSS.
-#       + фильтр "только крипто-новости".
+# v7.0: Огромный словарь крипто-паттернов (монеты, тикеры, 
+#       русские термины). Защита от пропуска важных новостей.
+#       Извлечение ссылок (url) из RSS.
 # ============================================================
 
 import os
@@ -33,13 +34,22 @@ FEEDS = [
     {"name": "ForkLog",       "url": "https://forklog.com/feed",                         "lang": "ru", "weight": 1.2},
 ]
 
-# Слова, чтобы отсечь мусор (лотереи, айфоны и т.д.)
-CRYPTO_KEYWORDS = [
-    "bitcoin", "btc", "ethereum", "eth", "crypto", "blockchain",
-    "defi", "nft", "solana", "sec", "binance", "coin", "token",
-    "web3", "cryptocurrency", "blockchain", "etf", "altcoin",
-    "bull", "bear", "rally", "блокчейн", "биткоин", "криптовалюта",
-    "токен", "биржа", "майнинг", "кошелек", "xrp", "ripple"
+# ============================================================
+# ОГРОМНЫЙ СЛОВАРЬ ПАТТЕРНОВ
+# \b - граница слова, чтобы "sol" не срабатывал на "solution"
+# ============================================================
+CRYPTO_PATTERNS = [
+    # --- Общие термины ---
+    r"\b(bitcoin|btc|ethereum|eth|crypto|cryptocurrency|blockchain|defi|nft|web3|altcoin|stablecoin|token|exchange|wallet|mining|halving|airdrop|metamask|binance|coinbase|kraken|okx|bybit|kucoin|huobi|ftx)\b",
+    
+    # --- Топ-100 монет (Тикеры и названия) ---
+    r"\b(solana|sol|cardano|ada|xrp|ripple|dogecoin|doge|tether|usdt|usdc|polkadot|dot|litecoin|ltc|shiba|shib|avalanche|avax|chainlink|link|polygon|matic|tron|trx|toncoin|ton|uniswap|uni|cosmos|atom|aptos|apt|arbitrum|arb|optimism|op|near|injective|sui|aave|maker|mkr|curve|crv|sandbox|sand|decentraland|mana|terra|luna|ustc|pepe|bonk|wif|floki|stellar|xlm|monero|xmr|ethereum classic|etc|bitcoin cash|bch|filecoin|fil|hedera|hbar|internet computer|icp|vechain|vet|fantom|ftm|theta|axie|axs|eos|flow|gala|the graph|grt|elrond|egld|klaytn|klay|chiliz|chz|quant|qnt|cronos|cro|okb|leo|casper|csp)\b",
+    
+    # --- Русские термины и названия ---
+    r"\b(биткоин|биткойн|эфириум|эфир|криптовалюта|крипта|токен|альткоин|блокчейн|биржа|майнинг|кошелек|солана|кардано|догикоин|рипл|бинанс|тейзер|полкадот|лайткоин|шиба|аваланч|чейнлинк|полигон|трон|тонкоин|монета|актив|децентрализация)\b",
+    
+    # --- Институционалы и регуляторы (в контексте крипты) ---
+    r"\b(microstrategy|blackrock|grayscale|fidelity|vanguard|jpmorgan|goldman sachs|sec|cftc|etf|spot etf|bitcoin etf)\b"
 ]
 
 BULLISH_WEIGHTS = {
@@ -49,7 +59,7 @@ BULLISH_WEIGHTS = {
     "record": 1.2, "institutional": 1.2, "etf": 1.2, "bull": 1.2, "positive": 1.0,
     "рост": 1.0, "бычий": 1.2, "прибыль": 1.0, "подъём": 1.2, "рекорд": 1.2,
     "прорыв": 1.5, "принятие": 1.2, "одобрен": 1.5, "партнёрство": 1.2,
-    "запуск": 1.0, "позитив": 1.0,
+    "запуск": 1.0, "позитив": 1.0, "upgrade": 1.2, "update": 0.8,
 }
 
 BEARISH_WEIGHTS = {
@@ -60,7 +70,7 @@ BEARISH_WEIGHTS = {
     "падение": 1.0, "медвежий": 1.2, "обвал": 1.5, "провал": 1.2, "запрет": 1.5,
     "взлом": 1.5, "мошенничество": 1.5, "иск": 1.2, "регуляц": 1.2,
     "ликвидац": 1.2, "банкротств": 1.5, "паник": 1.5, "негатив": 1.0,
-    "предупрежд": 1.2,
+    "предупрежд": 1.2, "exploit": 1.5, "delay": 1.2, "reject": 1.5,
 }
 
 CONTEXT_RULES = [
@@ -181,9 +191,11 @@ def keywords(text: str, min_len: int = 4) -> set:
 
 
 def is_crypto_related(title: str) -> bool:
-    """Проверяет, есть ли в заголовке крипто-слова."""
     t = title.lower()
-    return any(kw in t for kw in CRYPTO_KEYWORDS)
+    for pattern in CRYPTO_PATTERNS:
+        if re.search(pattern, t, re.IGNORECASE):
+            return True
+    return False
 
 
 def fetch_feed(feed):
@@ -193,15 +205,12 @@ def fetch_feed(feed):
         r.raise_for_status()
         text = r.text
 
-        blocks = re.findall(r"<item\b[^>]*>(.*?)</item>", text,
-                            re.IGNORECASE | re.DOTALL)
+        blocks = re.findall(r"<item\b[^>]*>(.*?)</item>", text, re.IGNORECASE | re.DOTALL)
         if not blocks:
-            blocks = re.findall(r"<entry\b[^>]*>(.*?)</entry>", text,
-                                re.IGNORECASE | re.DOTALL)
+            blocks = re.findall(r"<entry\b[^>]*>(.*?)</entry>", text, re.IGNORECASE | re.DOTALL)
 
         for b in blocks[:25]:
-            title_match = re.search(r"<title\b[^>]*>(.*?)</title>", b,
-                                    re.IGNORECASE | re.DOTALL)
+            title_match = re.search(r"<title\b[^>]*>(.*?)</title>", b, re.IGNORECASE | re.DOTALL)
             if not title_match:
                 continue
 
@@ -211,11 +220,11 @@ def fetch_feed(feed):
             if len(title) < 15:
                 continue
 
-            # ФИЛЬТР МУСОРА: если нет крипто-слов, пропускаем
+            # Пропускаем, если нет ни одного крипто-слова
             if not is_crypto_related(title):
                 continue
 
-            # ИЗВЛЕКАЕМ URL
+            # Извлекаем URL
             url_match = re.search(r"<link\b[^>]*>(.*?)</link>", b, re.IGNORECASE | re.DOTALL)
             if not url_match:
                 url_match = re.search(r'<link\b[^>]*href="([^"]+)"', b, re.IGNORECASE)
@@ -227,8 +236,7 @@ def fetch_feed(feed):
 
             pub_date = None
             for tag in ["pubDate", "published", "updated", "dc:date"]:
-                m = re.search(rf"<{tag}\b[^>]*>(.*?)</{tag}>", b,
-                              re.IGNORECASE | re.DOTALL)
+                m = re.search(rf"<{tag}\b[^>]*>(.*?)</{tag}>", b, re.IGNORECASE | re.DOTALL)
                 if m:
                     date_str = m.group(1).strip()
                     try:
@@ -242,7 +250,7 @@ def fetch_feed(feed):
 
             items.append({
                 "title": title,
-                "url": url, # <--- ДОБАВЛЕНО
+                "url": url,
                 "source": feed["name"],
                 "source_weight": feed.get("weight", 1.0),
                 "lang": feed["lang"],
@@ -320,7 +328,7 @@ def fake_score(title, source_weight):
 
 
 def main():
-    print("📰 ARGUS-Trader NEWS ANALYZER v6.6")
+    print("📰 ARGUS-Trader NEWS ANALYZER v7.0")
     print("=" * 60)
 
     all_news = []
@@ -328,7 +336,7 @@ def main():
 
     for feed in FEEDS:
         items = fetch_feed(feed)
-        print(f"📡 {feed['name']}: {len(items)} подходящих заголовков (вес {feed.get('weight', 1.0)})")
+        print(f"📡 {feed['name']}: {len(items)} подходящих заголовков")
 
         for item in items:
             h = _hash(item["title"])
@@ -346,10 +354,7 @@ def main():
             item["freshness"] = fresh
             item["fake_score"] = fake
             item["collected_at"] = datetime.now(timezone.utc).isoformat()
-            item["effective_weight"] = round(
-                item["source_weight"] * fresh * (1.0 - fake), 3
-            )
-
+            item["effective_weight"] = round(item["source_weight"] * fresh * (1.0 - fake), 3)
             item["title_original"] = item["title"]
 
             all_news.append(item)
@@ -396,15 +401,8 @@ def main():
         mood = "🟡 НЕЙТРАЛЬНОЕ"
 
     clean_news = [n for n in all_news if n["fake_score"] < 0.4]
-    top_bull = sorted(
-        [n for n in clean_news if n["sentiment"] > 0.2],
-        key=lambda x: x["sentiment"] * x["effective_weight"],
-        reverse=True
-    )[:5]
-    top_bear = sorted(
-        [n for n in clean_news if n["sentiment"] < -0.2],
-        key=lambda x: x["sentiment"] * x["effective_weight"]
-    )[:5]
+    top_bull = sorted([n for n in clean_news if n["sentiment"] > 0.2], key=lambda x: x["sentiment"] * x["effective_weight"], reverse=True)[:5]
+    top_bear = sorted([n for n in clean_news if n["sentiment"] < -0.2], key=lambda x: x["sentiment"] * x["effective_weight"])[:5]
 
     by_source = {}
     for n in all_news:
@@ -452,7 +450,6 @@ def main():
     print(f"📊 Всего: {len(all_news)}")
     print(f"🎭 Настроение: {mood}")
     print(f"📈 Сентимент: {avg_sentiment:+.3f}")
-    print(f"   🟢 {bullish} | 🔴 {bearish} | 🟡 {neutral}")
 
     if top_bull:
         print("\n🟢 Топ бычьих:")
