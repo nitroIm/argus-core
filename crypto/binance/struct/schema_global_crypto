@@ -1,223 +1,77 @@
 ========================================
-СХЕМА ВНЕШНИХ ДАННЫХ (не Binance)
+СХЕМА ВНЕШНИХ ДАННЫХ (БЛОК 2)
 ========================================
 
-Данные, которые будем собирать из
-CoinMarketCap, Blockchain.com,
-DefiLlama и Alternative.me.
+Таблица 1: global_metrics (CoinMarketCap)
+Частота: 1 час
+Ключ API: CMC_API_KEY (в GitHub Secrets)
 
-========================================
-ТАБЛИЦА 1: global_metrics
-Источник: CoinMarketCap
-Эндпоинт: /v1/global-metrics/quotes/latest
-Частота: каждые 15 минут
-========================================
-
-1. last_updated
-   Перевод: Время обновления
-   Тип: TIMESTAMPTZ
-   Что значит: когда CMC обновил данные (UTC)
-   Зачем: индекс, сортировка, защита от дубликатов
-
-2. btc_dominance
-   Перевод: Доминация BTC
-   Тип: NUMERIC
-   Что значит: доля BTC в общей капитализации (%)
-   Зачем: рост = деньги уходят в BTC, альты слабеют
-
-3. eth_dominance
-   Перевод: Доминация ETH
-   Тип: NUMERIC
-   Что значит: доля ETH в общей капитализации (%)
-   Зачем: сравнение силы BTC vs ETH
-
-4. total_market_cap
-   Перевод: Общая капитализация
-   Тип: NUMERIC
-   Что значит: суммарная стоимость всех монет (USD)
-   Зачем: глобальный тренд рынка, риск-он/риск-офф
-
-5. total_volume_24h
-   Перевод: Объём за 24ч
-   Тип: NUMERIC
-   Что значит: суммарный объём торгов (USD)
-   Зачем: активность рынка, всплески интереса
-
-6. altcoin_market_cap
-   Перевод: Капитализация альткоинов
-   Тип: NUMERIC
-   Что значит: стоимость всех монет кроме BTC (USD)
-   Зачем: сезон альткоинов, ротация капитала
-
-7. stablecoin_market_cap
-   Перевод: Капитализация стейблкоинов
-   Тип: NUMERIC
-   Что значит: сколько денег в стейблкоинах (USD)
-   Зачем: рост = приток денег на рынок (бычий сигнал)
-
-8. defi_market_cap
-   Перевод: Капитализация DeFi
-   Тип: NUMERIC
-   Что значит: стоимость DeFi-протоколов (USD)
-   Зачем: интерес к DeFi-сектору
+1. last_updated      (TIMESTAMPTZ) - Время обновления (UTC)
+2. btc_dominance     (NUMERIC)     - Доминация BTC (%)
+3. eth_dominance     (NUMERIC)     - Доминация ETH (%)
+4. total_market_cap  (NUMERIC)     - Общая капитализация (USD)
+5. total_volume_24h  (NUMERIC)     - Объём за 24ч (USD)
+6. altcoin_market_cap(NUMERIC)     - Капитализация альткоинов (USD)
+7. stablecoin_market_cap (NUMERIC) - Капитализация стейблкоинов (USD)
+8. defi_market_cap   (NUMERIC)     - Капитализация DeFi (USD)
 
 Уникальный ключ: (last_updated)
 
-========================================
-ТАБЛИЦА 2: btc_network
-Источник: Blockchain.com
-Эндпоинт: /charts/{chartName}
-Частота: раз в день
-========================================
+----------------------------------------
 
-1. chart_time
-   Перевод: Время записи
-   Тип: TIMESTAMPTZ
-   Что значит: момент замера (UTC)
-   Зачем: индекс, сортировка
+Таблица 2: btc_network (Blockchain.com)
+Частота: 1 раз в день
+Ключ API: не нужен
 
-2. chart_name
-   Перевод: Название метрики
-   Тип: TEXT
-   Что значит: hash-rate, difficulty, miners-revenue и др.
-   Зачем: чтобы в одной таблице хранить разные метрики
-
-3. value
-   Перевод: Значение
-   Тип: NUMERIC
-   Что значит: числовое значение метрики
-   Зачем: сам показатель
+1. chart_time (TIMESTAMPTZ) - Время записи (UTC)
+2. chart_name (TEXT)        - hash-rate, difficulty, miners-revenue, n-transactions, market-price
+3. value      (NUMERIC)     - Значение метрики
 
 Уникальный ключ: (chart_name, chart_time)
 
-Метрики, которые собираем:
-- hash-rate         = хешрейт сети (TH/s)
-- difficulty        = сложность майнинга
-- miners-revenue    = доход майнеров (USD)
-- n-transactions    = число транзакций
-- market-price      = цена BTC (для сверки)
+----------------------------------------
 
-========================================
-ТАБЛИЦА 3: stablecoins
-Источник: DefiLlama
-Эндпоинт: /stablecoins
-Частота: каждые 15 минут
-========================================
+Таблица 3: stablecoins (DefiLlama)
+Частота: 15 минут
+Ключ API: не нужен
 
-1. symbol
-   Перевод: Символ
-   Тип: TEXT
-   Что значит: тикер стейблкоина (USDT, USDC, DAI)
-   Зачем: фильтр, добавление новых
-
-2. name
-   Перевод: Название
-   Тип: TEXT
-   Что значит: полное имя (Tether, USD Coin)
-   Зачем: читаемость
-
-3. circulating
-   Перевод: В обращении
-   Тип: NUMERIC
-   Что значит: сколько монет в обращении (USD)
-   Зачем: рост = приток денег на рынок
-
-4. price
-   Перевод: Цена
-   Тип: NUMERIC
-   Что значит: текущая цена (должна быть ~1.00)
-   Зачем: если сильно отклоняется — депег, паника
-
-5. peg_type
-   Перевод: Тип привязки
-   Тип: TEXT
-   Что значит: peggedUSD, peggedEUR и др.
-   Зачем: фильтр — нам нужны только USD
-
-6. timestamp
-   Перевод: Время
-   Тип: TIMESTAMPTZ
-   Что значит: момент записи (UTC)
-   Зачем: индекс, сортировка
+1. symbol      (TEXT)        - USDT, USDC, DAI
+2. name        (TEXT)        - Tether, USD Coin
+3. circulating (NUMERIC)     - В обращении (USD)
+4. price       (NUMERIC)     - Цена (должна быть ~1.00)
+5. peg_type    (TEXT)        - peggedUSD
+6. timestamp   (TIMESTAMPTZ) - Время записи (UTC)
 
 Уникальный ключ: (symbol, timestamp)
 
-========================================
-ТАБЛИЦА 4: fear_greed
-Источник: Alternative.me
-Эндпоинт: /fng/
-Частота: раз в день
-========================================
+----------------------------------------
 
-1. timestamp
-   Перевод: Время
-   Тип: TIMESTAMPTZ
-   Что значит: момент замера (UTC)
-   Зачем: индекс, сортировка
+Таблица 4: fear_greed (Alternative.me)
+Частота: 1 раз в день
+Ключ API: не нужен
 
-2. value
-   Перевод: Значение
-   Тип: INTEGER
-   Что значит: индекс от 0 (страх) до 100 (жадность)
-   Зачем: контр-трендовый фильтр
-
-3. classification
-   Перевод: Классификация
-   Тип: TEXT
-   Что значит: Extreme Fear, Fear, Neutral, Greed, Extreme Greed
-   Зачем: читаемость
+1. timestamp      (TIMESTAMPTZ) - Время записи (UTC)
+2. value          (INTEGER)     - Индекс от 0 до 100
+3. classification (TEXT)        - Extreme Fear, Fear, Neutral, Greed, Extreme Greed
 
 Уникальный ключ: (timestamp)
 
-Логика:
-- < 20  = Extreme Fear  = возможен разворот вверх
-- > 80  = Extreme Greed = возможен разворот вниз
-
 ========================================
-ЧТО СЧИТАЕТСЯ ИЗ ЭТИХ КОЛОНОК
-(не хранится в базе)
+РАСЧЕТНЫЕ МЕТРИКИ (не хранятся в БД)
 ========================================
-
-BTC Dominance change  <- btc_dominance (дельта за день)
-Altseason index        <- altcoin_market_cap / total_market_cap
-Stablecoin ratio       <- stablecoin_market_cap / total_market_cap
-Hash rate change       <- hash-rate (дельта за неделю)
-Miner stress           <- miners-revenue / market-price
-F&G moving average     <- fear_greed value (среднее за 7 дней)
+- BTC Dominance change <- дельта за день
+- Altseason index <- altcoin_market_cap / total_market_cap
+- Stablecoin ratio <- stablecoin_market_cap / total_market_cap
+- Hash rate change <- дельта за неделю
+- Miner stress <- miners-revenue / market-price
+- F&G moving average <- среднее за 7 дней
 
 ========================================
 ЛОГИКА ИСПОЛЬЗОВАНИЯ
 ========================================
-
-1. Контекст рынка:
-   total_market_cap + btc_dominance
-   -> риск-он или риск-офф?
-
-2. Ротация капитала:
-   btc_dominance растёт -> деньги в BTC
-   altcoin_market_cap растёт -> сезон альтов
-
-3. Приток денег:
-   stablecoin_market_cap растёт
-   -> новые деньги заходят на рынок (бычий)
-
-4. Паника/эйфория:
-   fear_greed < 20 -> все боятся, возможно дно
-   fear_greed > 80 -> все жадничают, возможна вершина
-
-5. Здоровье сети:
-   hash-rate растёт -> сеть укрепляется
-   miners-revenue падает -> майнеры в стрессе
-
-6. Депег стейблкоина:
-   price < 0.99 -> паника, вывод денег
-   price > 1.01 -> избыточный спрос
-
-========================================
-ПОРЯДОК СБОРА
-========================================
-
-1. global_metrics  (CoinMarketCap) - ключ API
-2. stablecoins     (DefiLlama)     - без ключа
-3. fear_greed      (Alternative.me) - без ключа
-4. btc_network     (Blockchain.com) - без ключа
+1. Контекст: total_market_cap + btc_dominance (риск-он/офф)
+2. Ротация: btc_dominance (в BTC) vs altcoin_market_cap (в альты)
+3. Приток денег: stablecoin_market_cap растет (бычий)
+4. Паника/жадность: fear_greed < 20 / > 80
+5. Здоровье сети: hash-rate растет, miners-revenue падает
+6. Депег: stablecoin price < 0.99 / > 1.01
