@@ -1,9 +1,10 @@
 # ============================================================
-# ARGUS-Trader — NEWS ANALYZER v7.0
+# ARGUS-Trader — NEWS ANALYZER v8.0 (FINAL)
 # ------------------------------------------------------------
-# v7.0: Огромный словарь крипто-паттернов (монеты, тикеры, 
-#       русские термины). Защита от пропуска важных новостей.
-#       Извлечение ссылок (url) из RSS.
+# v8.0: ОКОНЧАТЕЛЬНЫЙ ФИЛЬТР. 
+#       Максимально расширенный словарь трендов и монет.
+#       Жёсткий отсев мусора (казино, спорт, кликбейт).
+#       Ссылки (url) извлекаются и сохраняются.
 # ============================================================
 
 import os
@@ -35,21 +36,32 @@ FEEDS = [
 ]
 
 # ============================================================
-# ОГРОМНЫЙ СЛОВАРЬ ПАТТЕРНОВ
-# \b - граница слова, чтобы "sol" не срабатывал на "solution"
+# МЕГА-СЛОВАРЬ КРИПТО-ПАТТЕРНОВ
 # ============================================================
 CRYPTO_PATTERNS = [
-    # --- Общие термины ---
+    # --- Базовые термины и топ-монеты ---
     r"\b(bitcoin|btc|ethereum|eth|crypto|cryptocurrency|blockchain|defi|nft|web3|altcoin|stablecoin|token|exchange|wallet|mining|halving|airdrop|metamask|binance|coinbase|kraken|okx|bybit|kucoin|huobi|ftx)\b",
+    
+    # --- Новые тренды, сектора и технологии ---
+    r"\b(rwa|real world asset|tokenization|tokenisation|smart contract|cbdc|layer 2|l2|rollup|zero-knowledge|zk-proof|dao|digital currency|digital asset|distributed ledger|dlts|custody|etf|spot etf|staking|restaking|lst|lrt|yield|yield farming|gamefi|metaverse|ordinals|inscriptions|brc-20|erc-20|erc-721|dex|cex|amm|liquidity|whale|whales)\b",
     
     # --- Топ-100 монет (Тикеры и названия) ---
     r"\b(solana|sol|cardano|ada|xrp|ripple|dogecoin|doge|tether|usdt|usdc|polkadot|dot|litecoin|ltc|shiba|shib|avalanche|avax|chainlink|link|polygon|matic|tron|trx|toncoin|ton|uniswap|uni|cosmos|atom|aptos|apt|arbitrum|arb|optimism|op|near|injective|sui|aave|maker|mkr|curve|crv|sandbox|sand|decentraland|mana|terra|luna|ustc|pepe|bonk|wif|floki|stellar|xlm|monero|xmr|ethereum classic|etc|bitcoin cash|bch|filecoin|fil|hedera|hbar|internet computer|icp|vechain|vet|fantom|ftm|theta|axie|axs|eos|flow|gala|the graph|grt|elrond|egld|klaytn|klay|chiliz|chz|quant|qnt|cronos|cro|okb|leo|casper|csp)\b",
     
-    # --- Русские термины и названия ---
-    r"\b(биткоин|биткойн|эфириум|эфир|криптовалюта|крипта|токен|альткоин|блокчейн|биржа|майнинг|кошелек|солана|кардано|догикоин|рипл|бинанс|тейзер|полкадот|лайткоин|шиба|аваланч|чейнлинк|полигон|трон|тонкоин|монета|актив|децентрализация)\b",
+    # --- Русские термины ---
+    r"\b(биткоин|биткойн|эфириум|эфир|криптовалюта|крипта|токен|альткоин|блокчейн|биржа|майнинг|кошелек|солана|кардано|догикоин|рипл|бинанс|тейзер|полкадот|лайткоин|шиба|аваланч|чейнлинк|полигон|трон|тонкоин|монета|актив|децентрализация|цифровой актив|смарт-контракт|токенизация|цифровая валюта|стейкинг|майнер|киты)\b",
     
-    # --- Институционалы и регуляторы (в контексте крипты) ---
-    r"\b(microstrategy|blackrock|grayscale|fidelity|vanguard|jpmorgan|goldman sachs|sec|cftc|etf|spot etf|bitcoin etf)\b"
+    # --- Институционалы, регуляторы, фонды ---
+    r"\b(microstrategy|blackrock|grayscale|fidelity|vanguard|jpmorgan|goldman sachs|morgan stanley|sec|cftc|gensler|etf|spot etf|bitcoin etf|saylor|sbf|cz|zhao)\b"
+]
+
+# ============================================================
+# ЧЁРНЫЙ СПИСОК (ЖЁСТКИЙ ОТСЕВ)
+# Если это есть, И ЭТО НЕ ПРО КРИПТУ - выкидываем
+# ============================================================
+SPAM_PATTERNS = [
+    r"\b(lottery|casino|betting|sportsbook|football|basketball|soccer|nba|nfl|iphone|android|movie|actor|actress|celebrity|weather|horoscope|recipe|cooking|diet)\b",
+    r"\b(лотерея|казино|ставки|спорт|футбол|баскетбол|айфон|андроид|кино|сериал|актер|знаменитость|погода|гороскоп|рецепт)\b"
 ]
 
 BULLISH_WEIGHTS = {
@@ -191,10 +203,32 @@ def keywords(text: str, min_len: int = 4) -> set:
 
 
 def is_crypto_related(title: str) -> bool:
+    """
+    Жесткая проверка на крипто-тематику.
+    1. Если есть крипто-слова (даже вперемешку со спамом) - ПРОПУСКАЕМ.
+    2. Если крипто-слов нет, а есть спам - ВЫКИДЫВАЕМ.
+    3. Если ни того, ни другого - ВЫКИДЫВАЕМ (чтобы не тащить мусор).
+    """
     t = title.lower()
+    
+    has_crypto = False
     for pattern in CRYPTO_PATTERNS:
         if re.search(pattern, t, re.IGNORECASE):
-            return True
+            has_crypto = True
+            break
+            
+    if has_crypto:
+        return True
+        
+    has_spam = False
+    for pattern in SPAM_PATTERNS:
+        if re.search(pattern, t, re.IGNORECASE):
+            has_spam = True
+            break
+            
+    if has_spam:
+        return False
+        
     return False
 
 
@@ -209,7 +243,7 @@ def fetch_feed(feed):
         if not blocks:
             blocks = re.findall(r"<entry\b[^>]*>(.*?)</entry>", text, re.IGNORECASE | re.DOTALL)
 
-        for b in blocks[:25]:
+        for b in blocks[:30]: # увеличено до 30, чтобы после фильтра осталось больше
             title_match = re.search(r"<title\b[^>]*>(.*?)</title>", b, re.IGNORECASE | re.DOTALL)
             if not title_match:
                 continue
@@ -220,7 +254,6 @@ def fetch_feed(feed):
             if len(title) < 15:
                 continue
 
-            # Пропускаем, если нет ни одного крипто-слова
             if not is_crypto_related(title):
                 continue
 
@@ -328,7 +361,7 @@ def fake_score(title, source_weight):
 
 
 def main():
-    print("📰 ARGUS-Trader NEWS ANALYZER v7.0")
+    print("📰 ARGUS-Trader NEWS ANALYZER v8.0 (FINAL)")
     print("=" * 60)
 
     all_news = []
