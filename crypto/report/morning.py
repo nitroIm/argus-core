@@ -1,9 +1,10 @@
 # ============================================================
-# ARGUS - MORNING REPORT v15.5
+# ARGUS - MORNING REPORT v15.6
 # ------------------------------------------------------------
 # Только BTC. Только Aiven DB. Только таблица candles.
-# Полный обзор за 24 часа: цена, объёмы, волатильность,
-# индикаторы, структура свечей.
+# Текстовый отчёт. Без графиков.
+# v15.6: исправлен знак минуса в изменении цены.
+#        исправлены Максимум/Минимум за период.
 # ============================================================
 
 import os
@@ -31,7 +32,7 @@ CHAT_ID = (os.getenv("TELEGRAM_CHAT_ID") or "").strip()
 SYMBOL = "BTCUSDT"
 NAME = "BTC"
 TIMEFRAME = "15m"
-H24 = 96  # свечей 15m за 24 часа
+H24 = 96
 
 
 def now_local():
@@ -88,11 +89,18 @@ def fmt_age(mins):
     return str(int(mins // 1440)) + " д"
 
 
+def _to_dt(ts):
+    if ts is None:
+        return None
+    if ts.tzinfo is None:
+        return ts.replace(tzinfo=timezone.utc)
+    return ts
+
+
 def _to_local(ts):
+    ts = _to_dt(ts)
     if ts is None:
         return "?"
-    if ts.tzinfo is None:
-        ts = ts.replace(tzinfo=timezone.utc)
     return ts.astimezone(TZ).strftime("%d.%m %H:%M")
 
 
@@ -100,7 +108,7 @@ def get_conn():
     if not DB_URL:
         raise RuntimeError("AIVEN_DB_URL not set")
     return psycopg.connect(
-        DB_URL, connect_timeout=15,
+        DB_URL, connect_timeout=30,
         application_name="argus-morning",
     )
 
@@ -108,19 +116,22 @@ def get_conn():
 # ============================================================
 # INDICATORS
 # ============================================================
-def ema(values, period):
+def ema_series(values, period):
     if len(values) < period:
-        return None
+        return [None] * len(values)
     k = 2 / (period + 1)
     e = sum(values[:period]) / period
-    for v in values[period:]:
-        e = v * k + e * (1 - k)
-    return e
+    out = [None] * (period - 1) + [e]
+    for i in range(period, len(values)):
+        e = values[i] * k + e * (1 - k)
+        out.append(e)
+    return out
 
 
-def rsi(closes, period=14):
+def rsi_series(closes, period=14):
     if len(closes) < period + 1:
-        return None
+        return [None] * len(closes)
+    out = [None] * period
     gains = 0.0
     losses = 0.0
     for i in range(1, period + 1):
@@ -129,21 +140,22 @@ def rsi(closes, period=14):
             gains += d
         else:
             losses -= d
-    avg_gain = gains / period
-    avg_loss = losses / period
+    ag = gains / period
+    al = losses / period
+    rs = ag / al if al > 0 else 999
+    out.append(100 - 100 / (1 + rs))
     for i in range(period + 1, len(closes)):
         d = closes[i] - closes[i - 1]
-        gain = d if d > 0 else 0
-        loss = -d if d < 0 else 0
-        avg_gain = (avg_gain * (period - 1) + gain) / period
-        avg_loss = (avg_loss * (period - 1) + loss) / period
-    if avg_loss == 0:
-        return 100.0
-    rs = avg_gain / avg_loss
-    return 100 - 100 / (1 + rs)
+        g = d if d > 0 else 0
+        l = -d if d < 0 else 0
+        ag = (ag * (period - 1) + g) / period
+        al = (al * (period - 1) + l) / period
+        rs = ag / al if al > 0 else 999
+        out.append(100 - 100 / (1 + rs))
+    return out
 
 
-def atr(candles, period=14):
+def atr_value(candles, period=14):
     if len(candles) < period + 1:
         return None
     trs = []
@@ -241,25 +253,83 @@ def fetch_stats(symbol):
 
 
 # ============================================================
-# BLOCKS
+# HELPERS
+# ============================================================
+def compute_period(candles):
+    if not candles:
+        return None
+    first = candles[0]
+    last = candles[-1]
+    price = last["close"]
+    open_p = first["open"]
+    change_usd = price - open_p
+    change_pct = (change_usd / open_p * 100) if open_p else 0
+
+    hi_c = max(candles, key=lambda c: c["high"])
+    hi = hi_c["high"]
+    hi_ts = hi_c["timestamp"]
+    hi_pct = (hi - open_p) / open_p * 100 if open_p else 0
+
+    lo_c = min(candles, key=lambda c: c["low"])
+    lo = lo_c["low"]
+    lo_ts = lo_c["timestamp"]
+    lo_pct = (lo - open_p) / open_p * 100 if open_p else 0
+
+    vol_btc = sum(c["volume"] for c in candles)
+    vol_usd = sum(c["quote_volume"] for c in candles)
+    taker_buy = sum(c["taker_buy_volume"] for c in candles)
+    taker_sell = vol_btc - taker_buy
+    buy_pct = (taker_buy / vol_btc * 100) if vol_btc else 0
+    sell_pct = 100 - buy_pct if vol_btc else 0
+    trades = sum(c["count"] for c in candles)
+    avg_trade_usd = (vol_usd / trades) if trades else 0
+    avg_trade_btc = (vol_btc / trades) if trades else 0
+
+    green = sum(1 for c in candles if c["close"] >= c["open"])
+    red = len(candles) - green
+
+    return {
+        "open": open_p,
+        "close": price,
+        "change_usd": change_usd,
+        "change_pct": change_pct,
+        "hi": hi,
+        "hi_pct": hi_pct,
+        "hi_ts": hi_ts,
+        "lo": lo,
+        "lo_pct": lo_pct,
+        "lo_ts": lo_ts,
+        "vol_btc": vol_btc,
+        "vol_usd": vol_usd,
+        "taker_buy": taker_buy,
+        "taker_sell": taker_sell,
+        "buy_pct": buy_pct,
+        "sell_pct": sell_pct,
+        "trades": trades,
+        "avg_trade_usd": avg_trade_usd,
+        "avg_trade_btc": avg_trade_btc,
+        "green": green,
+        "red": red,
+        "count": len(candles),
+    }
+
+
+# ============================================================
+# TEXT BLOCKS
 # ============================================================
 def fmt_collector_block(stats):
     lines = ["📡 <b>Сбор данных</b>"]
-
     if stats is None:
         lines.append("  ❌ DB недоступна")
         return lines
 
     last_ts = stats["last_ts"]
-
     if last_ts is None:
         lines.append("  Статус: ❌ нет данных")
     else:
-        if last_ts.tzinfo is None:
-            last_ts = last_ts.replace(tzinfo=timezone.utc)
+        last_dt = _to_dt(last_ts)
         age_min = int(
-            (datetime.now(timezone.utc) - last_ts)
-            .total_seconds() / 60
+            (datetime.now(timezone.utc) - last_dt).total_seconds() / 60
         )
         if age_min <= 30:
             lines.append("  Статус: 🟢 ON")
@@ -274,213 +344,149 @@ def fmt_collector_block(stats):
         for mt, cnt in sorted(stats["by_market"].items()):
             parts.append(str(mt) + " " + str(cnt))
         lines.append("  " + " | ".join(parts))
-
     lines.append("  За 24ч: " + str(stats["rows_24h"]))
 
     if last_ts:
-        if last_ts.tzinfo is None:
-            last_ts = last_ts.replace(tzinfo=timezone.utc)
+        last_dt = _to_dt(last_ts)
         age_min = int(
-            (datetime.now(timezone.utc) - last_ts)
-            .total_seconds() / 60
+            (datetime.now(timezone.utc) - last_dt).total_seconds() / 60
         )
-        line = "  Последняя: " + _to_local(last_ts) + " КЛГ"
-        line += " (" + fmt_age(age_min) + " назад)"
-        lines.append(line)
-
+        lines.append(
+            "  Последняя: " + _to_local(last_ts)
+            + " (" + fmt_age(age_min) + " назад)"
+        )
     return lines
 
 
-def fmt_btc_block(candles):
+def fmt_day_block(s):
     lines = []
-    if not candles:
-        lines.append("💰 <b>" + NAME + "</b>")
-        lines.append("  нет данных")
+    if not s:
+        lines.append("  нет данных за день")
         return lines
 
-    # Последние 24ч
-    last24 = candles[-H24:] if len(candles) >= H24 else candles
-    first = last24[0]
-    last = last24[-1]
-
-    price = last["close"]
-    price_open = first["open"]
-    change_usd = price - price_open
-    change_pct = (change_usd / price_open * 100) if price_open else 0
-
-    hi = max(c["high"] for c in last24)
-    lo = min(c["low"] for c in last24)
-    hi_pct = (hi - price_open) / price_open * 100 if price_open else 0
-    lo_pct = (lo - price_open) / price_open * 100 if price_open else 0
-
-    # Объёмы
-    vol_btc = sum(c["volume"] for c in last24)
-    vol_usd = sum(c["quote_volume"] for c in last24)
-    taker_buy = sum(c["taker_buy_volume"] for c in last24)
-    taker_sell = vol_btc - taker_buy
-    buy_pct = (taker_buy / vol_btc * 100) if vol_btc else 0
-    sell_pct = (taker_sell / vol_btc * 100) if vol_btc else 0
-    trades = sum(c["count"] for c in last24)
-    avg_trade_usd = (vol_usd / trades) if trades else 0
-    avg_trade_btc = (vol_btc / trades) if trades else 0
-
-    # Структура свечей
-    green = sum(1 for c in last24 if c["close"] >= c["open"])
-    red = len(last24) - green
-
-    best = max(last24, key=lambda c: c["high"] - c["open"])
-    best_pct = (best["high"] - best["open"]) / best["open"] * 100
-
-    worst = min(last24, key=lambda c: c["low"] - c["open"])
-    worst_pct = (worst["low"] - worst["open"]) / worst["open"] * 100
-
-    # ATR (в $ и в %)
-    a = atr(candles, 14)
-    a_pct = (a / price * 100) if a and price else 0
-
-    # RSI 15m и 1h
-    closes15 = [c["close"] for c in candles]
-    r15 = rsi(closes15, 14)
-
-    candles_1h = []
-    for i in range(0, len(candles) - 3, 4):
-        chunk = candles[i:i + 4]
-        candles_1h.append({
-            "open": chunk[0]["open"],
-            "high": max(c["high"] for c in chunk),
-            "low": min(c["low"] for c in chunk),
-            "close": chunk[-1]["close"],
-        })
-    closes1h = [c["close"] for c in candles_1h]
-    r1h = rsi(closes1h, 14)
-
-    # EMA (15m)
-    e9 = ema(closes15, 9)
-    e21 = ema(closes15, 21)
-    e50 = ema(closes15, 50)
-
-    # ============================================================
-    # ЦЕНА
-    # ============================================================
-    lines.append("💰 <b>" + NAME + " (spot)</b>")
-    line = "  " + fmt_price(price)
-    line += " | " + fmt_pct(change_pct)
-    line += " (" + ("+" if change_usd >= 0 else "")
-    line += fmt_price(abs(change_usd)) + ")"
+    line = "  " + fmt_price(s["open"])
+    line += " → " + fmt_price(s["close"])
+    line += " | " + fmt_pct(s["change_pct"])
+    
+    # ИСПРАВЛЕНИЕ: правильный знак минуса для USD
+    sign = "+" if s["change_usd"] >= 0 else "-"
+    line += " (" + sign + fmt_price(abs(s["change_usd"])) + ")"
     lines.append(line)
 
     lines.append(
-        "  Открытие 24ч: " + fmt_price(price_open)
+        "  Максимум: " + fmt_price(s["hi"])
+        + " (" + fmt_pct(s["hi_pct"]) + ")"
     )
     lines.append(
-        "  Максимум 24ч: " + fmt_price(hi)
-        + " (" + fmt_pct(hi_pct) + ")"
+        "  Минимум:  " + fmt_price(s["lo"])
+        + " (" + fmt_pct(s["lo_pct"]) + ")"
     )
     lines.append(
-        "  Минимум 24ч: " + fmt_price(lo)
-        + " (" + fmt_pct(lo_pct) + ")"
+        "  Свечей: " + str(s["count"])
+        + " (🟢 " + str(s["green"]) + " / 🔴 " + str(s["red"]) + ")"
     )
-    lines.append("")
+    return lines
 
-    # ============================================================
-    # ОБЪЁМЫ
-    # ============================================================
-    lines.append("📊 <b>Объёмы за 24ч</b>")
+
+def fmt_volume_block(s):
+    lines = []
+    if not s:
+        lines.append("  нет данных")
+        return lines
+
     lines.append(
-        "  Объём: " + fmt_btc(vol_btc)
-        + " | " + fmt_usd(vol_usd)
+        "  Объём: " + fmt_btc(s["vol_btc"])
+        + " | " + fmt_usd(s["vol_usd"])
     )
 
     bar_len = 16
-    b = int(round(buy_pct / 100 * bar_len))
-    s = bar_len - b
-    bar = "🟢" * b + "🔴" * s
+    b = int(round(s["buy_pct"] / 100 * bar_len))
+    b = max(0, min(b, bar_len))
+    bar = "🟢" * b + "🔴" * (bar_len - b)
 
     lines.append(
-        "  Покупки тейкеров: " + fmt_btc(taker_buy)
-        + " (" + format(buy_pct, ".1f") + "%)"
+        "  Taker buy:  " + fmt_btc(s["taker_buy"])
+        + " (" + format(s["buy_pct"], ".1f") + "%)"
     )
     lines.append(
-        "  Продажи тейкеров: " + fmt_btc(taker_sell)
-        + " (" + format(sell_pct, ".1f") + "%)"
+        "  Taker sell: " + fmt_btc(s["taker_sell"])
+        + " (" + format(s["sell_pct"], ".1f") + "%)"
     )
     lines.append("  " + bar)
-
-    lines.append("  Сделок: " + format(trades, ","))
+    lines.append("  Сделок: " + format(s["trades"], ","))
     lines.append(
-        "  Средняя сделка: " + fmt_usd(avg_trade_usd)
-        + " | " + fmt_btc(avg_trade_btc)
+        "  Средняя сделка: " + fmt_usd(s["avg_trade_usd"])
+        + " | " + fmt_btc(s["avg_trade_btc"])
     )
-    lines.append("")
+    return lines
 
-    # ============================================================
-    # ИНДИКАТОРЫ
-    # ============================================================
-    lines.append("📈 <b>Индикаторы</b>")
+
+def fmt_indicators_block(candles):
+    lines = []
+    if not candles:
+        lines.append("  нет данных")
+        return lines
+
+    price = candles[-1]["close"]
+    a = atr_value(candles, 14)
+    a_pct = (a / price * 100) if a and price else 0
+
+    closes = [c["close"] for c in candles]
+    r15 = rsi_series(closes, 14)[-1]
+
+    c1h = []
+    for i in range(0, len(candles) - 3, 4):
+        chunk = candles[i:i + 4]
+        c1h.append(chunk[-1]["close"])
+    r1h = rsi_series(c1h, 14)[-1] if c1h else None
+
+    e9 = ema_series(closes, 9)[-1]
+    e21 = ema_series(closes, 21)[-1]
+    e50 = ema_series(closes, 50)[-1]
 
     if a:
         lines.append(
             "  ATR(14) 15m: " + fmt_price(a)
             + " (" + format(a_pct, ".2f") + "%)"
         )
-
     if r15 is not None:
-        st15 = (
-            "перекуп" if r15 >= 70
-            else "перепрод" if r15 <= 30
-            else "нейтр"
-        )
-        lines.append(
-            "  RSI(14) 15m: " + format(r15, ".1f") + " " + st15
-        )
-
+        st = "перекуп" if r15 >= 70 else "перепрод" if r15 <= 30 else "нейтр"
+        lines.append("  RSI(14) 15m: " + format(r15, ".1f") + " " + st)
     if r1h is not None:
-        st1h = (
-            "перекуп" if r1h >= 70
-            else "перепрод" if r1h <= 30
-            else "нейтр"
-        )
-        lines.append(
-            "  RSI(14) 1h:  " + format(r1h, ".1f") + " " + st1h
-        )
-
+        st = "перекуп" if r1h >= 70 else "перепрод" if r1h <= 30 else "нейтр"
+        lines.append("  RSI(14) 1h:  " + format(r1h, ".1f") + " " + st)
     if e9:
-        pos9 = "выше" if price >= e9 else "ниже"
         lines.append(
             "  EMA(9)  15m: " + fmt_price(e9)
-            + " (цена " + pos9 + ")"
+            + " (цена " + ("выше" if price >= e9 else "ниже") + ")"
         )
     if e21:
-        pos21 = "выше" if price >= e21 else "ниже"
         lines.append(
             "  EMA(21) 15m: " + fmt_price(e21)
-            + " (цена " + pos21 + ")"
+            + " (цена " + ("выше" if price >= e21 else "ниже") + ")"
         )
     if e50:
-        pos50 = "выше" if price >= e50 else "ниже"
         lines.append(
             "  EMA(50) 15m: " + fmt_price(e50)
-            + " (цена " + pos50 + ")"
+            + " (цена " + ("выше" if price >= e50 else "ниже") + ")"
         )
-    lines.append("")
+    return lines
 
-    # ============================================================
-    # СТРУКТУРА
-    # ============================================================
-    lines.append("🕯️ <b>Структура 24ч</b>")
-    lines.append(
-        "  Свечей: " + str(len(last24))
-        + " (🟢 " + str(green) + " / 🔴 " + str(red) + ")"
-    )
-    lines.append(
-        "  Макс. рост:   " + fmt_pct(best_pct)
-        + " в " + _to_local(best["timestamp"])
-    )
-    lines.append(
-        "  Макс. падение: " + fmt_pct(worst_pct)
-        + " в " + _to_local(worst["timestamp"])
-    )
 
+def fmt_extremes_block(s):
+    lines = []
+    if not s:
+        lines.append("  нет данных")
+        return lines
+    # ИСПРАВЛЕНИЕ: показываем реальный максимум и минимум за период
+    lines.append(
+        "  Максимум: " + fmt_pct(s["hi_pct"])
+        + " в " + _to_local(s["hi_ts"]) + " КЛГ"
+    )
+    lines.append(
+        "  Минимум:  " + fmt_pct(s["lo_pct"])
+        + " в " + _to_local(s["lo_ts"]) + " КЛГ"
+    )
     return lines
 
 
@@ -510,10 +516,7 @@ def send_message(text):
         return False
     for part in split_text(text, 3800):
         try:
-            url = (
-                "https://api.telegram.org/bot"
-                + BOT_TOKEN + "/sendMessage"
-            )
+            url = "https://api.telegram.org/bot" + BOT_TOKEN + "/sendMessage"
             r = requests.post(url, json={
                 "chat_id": CHAT_ID,
                 "text": part,
@@ -528,28 +531,51 @@ def send_message(text):
     return True
 
 
-def build_report_text():
+# ============================================================
+# REPORT
+# ============================================================
+def build_report_text(candles, stats):
     now = now_local()
     lines = []
     lines.append("☀️ <b>ARGUS — утро</b>")
     lines.append(now.strftime("%d.%m.%Y %H:%M") + " КЛГ")
     lines.append("")
 
-    stats = fetch_stats(SYMBOL)
     lines.extend(fmt_collector_block(stats))
     lines.append("")
     lines.append("─" * 20)
     lines.append("")
 
-    candles = fetch_candles(SYMBOL, 300)
-    lines.extend(fmt_btc_block(candles))
+    if len(candles) >= H24:
+        s24 = compute_period(candles[-H24:])
+    else:
+        s24 = compute_period(candles)
+
+    lines.append("💰 <b>BTC (spot)</b>")
+    lines.extend(fmt_day_block(s24))
+    lines.append("")
+
+    lines.append("📊 <b>Объёмы за 24ч</b>")
+    lines.extend(fmt_volume_block(s24))
+    lines.append("")
+
+    lines.append("📈 <b>Индикаторы</b>")
+    lines.extend(fmt_indicators_block(candles))
+    lines.append("")
+
+    lines.append("🕯️ <b>Структура 24ч</b>")
+    lines.extend(fmt_extremes_block(s24))
 
     return "\n".join(lines)
 
 
 def main():
-    print("Morning report v15.5 - start")
-    text = build_report_text()
+    print("Morning report v15.6 - start")
+
+    stats = fetch_stats(SYMBOL)
+    candles = fetch_candles(SYMBOL, 300)
+
+    text = build_report_text(candles, stats)
     print("len: " + str(len(text)))
     send_message(text)
     print("done")
