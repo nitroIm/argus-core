@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-10-18T12:05:34.465032+00:00",
-  "total_news": 87,
-  "avg_sentiment": 0.025,
+  "generated_at": "2026-10-18T13:05:36.883943+00:00",
+  "total_news": 86,
+  "avg_sentiment": 0.086,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
-  "bullish_count": 15,
-  "bearish_count": 17,
-  "neutral_count": 55,
+  "bullish_count": 17,
+  "bearish_count": 16,
+  "neutral_count": 53,
   "fake_count": 0,
-  "cross_confirmed": 2,
-  "single_source": 65,
+  "cross_confirmed": 0,
+  "single_source": 70,
   "by_source": {
     "Cointelegraph": {
       "total": 21,
@@ -18,21 +18,21 @@
     "Decrypt": {
       "total": 19,
       "bull": 3,
-      "bear": 4
+      "bear": 3
     },
     "Bitcoin.com": {
-      "total": 6,
+      "total": 5,
       "bull": 1,
       "bear": 0
     },
     "CryptoSlate": {
       "total": 8,
-      "bull": 2,
+      "bull": 3,
       "bear": 0
     },
     "CryptoPotato": {
       "total": 22,
-      "bull": 4,
+      "bull": 5,
       "bear": 8
     },
     "Bitcoinist": {
@@ -48,6 +48,57 @@
   },
   "top_bullish": [
     {
+      "title": "CryptoQuant CEO sees $30,000 Bitcoin floor even if ETFs and treasury firms exit",
+      "url": "https://cryptoslate.com/cryptoquant-ceo-sees-30000-bitcoin-floor-even-if-etfs-and-treasury-firms-exit/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-18T12:30:34+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-18T13:05:35.687347+00:00",
+      "effective_weight": 1.5,
+      "title_original": "CryptoQuant CEO sees $30,000 Bitcoin floor even if ETFs and treasury firms exit",
+      "cross_check": 1
+    },
+    {
+      "title": "Analyst Maps Out 3 Reasons to Be Bullish on Dogecoin (DOGE): But Should You Really Be?",
+      "url": "https://cryptopotato.com/analyst-maps-out-3-reasons-to-be-bullish-on-dogecoin-doge-but-should-you-really-be/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-18T12:17:31+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-18T13:05:35.824217+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Analyst Maps Out 3 Reasons to Be Bullish on Dogecoin (DOGE): But Should You Really Be?",
+      "cross_check": 1
+    },
+    {
+      "title": "Polygon Completes Coinme Deal And Gains US Payments Licences Across 48 States",
+      "url": "https://bitcoinist.com/polygon-coinme-acquisition-us-payments-licences/",
+      "source": "Bitcoinist",
+      "source_weight": 0.9,
+      "lang": "en",
+      "pub_date": "2026-10-18T12:30:00+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.1,
+      "collected_at": "2026-10-18T13:05:35.944420+00:00",
+      "effective_weight": 1.215,
+      "title_original": "Polygon Completes Coinme Deal And Gains US Payments Licences Across 48 States",
+      "cross_check": 1
+    },
+    {
       "title": "Bitcoin’s Old Guard Stirs as 13-Year-Old Wallets Move Millions",
       "url": "https://news.bitcoin.com/crypto-news/bitcoins-old-guard-stirs-as-13-year-old-wallets-move-millions/",
       "source": "Bitcoin.com",
@@ -59,7 +110,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-18T12:05:33.440330+00:00",
+      "collected_at": "2026-10-18T13:05:35.527388+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitcoin’s Old Guard Stirs as 13-Year-Old Wallets Move Millions",
       "cross_check": 1
@@ -76,60 +127,9 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-18T12:05:33.595286+00:00",
+      "collected_at": "2026-10-18T13:05:35.824258+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitcoin Analysts Are More Bullish Now Than at the Start of the 2023 Bull Market: CryptoQuant",
-      "cross_check": 1
-    },
-    {
-      "title": "Ripple and XRP Weekly Wrap: Institutional Wins, Nasdaq Debut, and Price Struggles",
-      "url": "https://cryptopotato.com/ripple-and-xrp-weekly-wrap-institutional-wins-nasdaq-debut-and-price-struggles/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-18T06:30:50+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-18T12:05:33.595429+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Ripple and XRP Weekly Wrap: Institutional Wins, Nasdaq Debut, and Price Struggles",
-      "cross_check": 1
-    },
-    {
-      "title": "Crypto Super PAC Fairshake Pours Millions More Into Defeating Sherrod Brown",
-      "url": "https://decrypt.co/381238/crypto-super-pac-fairshake-pours-millions-more-into-defeating-sherrod-brown",
-      "source": "Decrypt",
-      "source_weight": 1.1,
-      "lang": "en",
-      "pub_date": "2026-10-17T17:01:03+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 2.3,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-18T12:05:33.264666+00:00",
-      "effective_weight": 0.88,
-      "title_original": "Crypto Super PAC Fairshake Pours Millions More Into Defeating Sherrod Brown",
-      "cross_check": 2
-    },
-    {
-      "title": "Crypto Firms Launch Quantum Alliance as 6 Million Bitcoin Sit Exposed",
-      "url": "https://decrypt.co/381236/crypto-firms-launch-quantum-alliance-as-6-million-bitcoin-sit-exposed",
-      "source": "Decrypt",
-      "source_weight": 1.1,
-      "lang": "en",
-      "pub_date": "2026-10-17T16:01:03+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.8,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-18T12:05:33.264737+00:00",
-      "effective_weight": 0.88,
-      "title_original": "Crypto Firms Launch Quantum Alliance as 6 Million Bitcoin Sit Exposed",
       "cross_check": 1
     }
   ],
@@ -146,7 +146,7 @@
       "bear_weight": 2.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-18T12:05:33.595361+00:00",
+      "collected_at": "2026-10-18T13:05:35.824295+00:00",
       "effective_weight": 1.0,
       "title_original": "BTC, ETH, XRP Recover From a Flash Crash as More Volatility Looms: Weekend Watch",
       "cross_check": 1
@@ -163,7 +163,7 @@
       "bear_weight": 1.5,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-18T12:05:33.207614+00:00",
+      "collected_at": "2026-10-18T13:05:35.227921+00:00",
       "effective_weight": 0.65,
       "title_original": "Judge rejects CFTC, Gemini bid to undo $5M settlement",
       "cross_check": 2
@@ -180,7 +180,7 @@
       "bear_weight": 1.5,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-18T12:05:33.207910+00:00",
+      "collected_at": "2026-10-18T13:05:35.228108+00:00",
       "effective_weight": 0.65,
       "title_original": "Mastercard brings stablecoin balances into traditional banking and card payments",
       "cross_check": 1
@@ -197,10 +197,10 @@
       "bear_weight": 1.2,
       "freshness": 0.8,
       "fake_score": 0.1,
-      "collected_at": "2026-10-18T12:05:33.638178+00:00",
+      "collected_at": "2026-10-18T13:05:35.944494+00:00",
       "effective_weight": 0.648,
       "title_original": "Ledger Faces Fresh Scrutiny After Researcher Says Hardware Wallet Warning Came Months Earlier",
-      "cross_check": 2
+      "cross_check": 1
     },
     {
       "title": "DarkSword научился охотиться за криптовалютой на iOS, Chrome взломали за шесть дней с помощью GPT-5.6 Sol и другие события кибербезопасности",
@@ -214,7 +214,7 @@
       "bear_weight": 1.5,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-18T12:05:34.407072+00:00",
+      "collected_at": "2026-10-18T13:05:36.854533+00:00",
       "effective_weight": 0.6,
       "title_original": "DarkSword научился охотиться за криптовалютой на iOS, Chrome взломали за шесть дней с помощью GPT-5.6 Sol и другие события кибербезопасности",
       "cross_check": 1
