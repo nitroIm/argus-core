@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-10-18T08:05:33.483661+00:00",
-  "total_news": 90,
-  "avg_sentiment": -0.026,
+  "generated_at": "2026-10-18T09:05:46.359176+00:00",
+  "total_news": 89,
+  "avg_sentiment": 0.011,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
-  "bullish_count": 14,
+  "bullish_count": 15,
   "bearish_count": 18,
-  "neutral_count": 58,
+  "neutral_count": 56,
   "fake_count": 0,
   "cross_confirmed": 5,
-  "single_source": 65,
+  "single_source": 64,
   "by_source": {
     "Cointelegraph": {
       "total": 22,
@@ -22,7 +22,7 @@
     },
     "Bitcoin.com": {
       "total": 5,
-      "bull": 0,
+      "bull": 1,
       "bear": 0
     },
     "CryptoSlate": {
@@ -41,12 +41,29 @@
       "bear": 1
     },
     "ForkLog": {
-      "total": 7,
+      "total": 6,
       "bull": 0,
       "bear": 1
     }
   },
   "top_bullish": [
+    {
+      "title": "Bitcoin’s Old Guard Stirs as 13-Year-Old Wallets Move Millions",
+      "url": "https://news.bitcoin.com/crypto-news/bitcoins-old-guard-stirs-as-13-year-old-wallets-move-millions/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-18T08:30:51+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 0.8,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-18T09:05:44.961322+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Bitcoin’s Old Guard Stirs as 13-Year-Old Wallets Move Millions",
+      "cross_check": 1
+    },
     {
       "title": "Ripple and XRP Weekly Wrap: Institutional Wins, Nasdaq Debut, and Price Struggles",
       "url": "https://cryptopotato.com/ripple-and-xrp-weekly-wrap-institutional-wins-nasdaq-debut-and-price-struggles/",
@@ -59,7 +76,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-18T08:05:32.437442+00:00",
+      "collected_at": "2026-10-18T09:05:45.171021+00:00",
       "effective_weight": 1.0,
       "title_original": "Ripple and XRP Weekly Wrap: Institutional Wins, Nasdaq Debut, and Price Struggles",
       "cross_check": 1
@@ -76,7 +93,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-18T08:05:32.003476+00:00",
+      "collected_at": "2026-10-18T09:05:44.747030+00:00",
       "effective_weight": 0.88,
       "title_original": "Crypto Super PAC Fairshake Pours Millions More Into Defeating Sherrod Brown",
       "cross_check": 2
@@ -93,7 +110,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-18T08:05:32.003513+00:00",
+      "collected_at": "2026-10-18T09:05:44.747105+00:00",
       "effective_weight": 0.88,
       "title_original": "Crypto Firms Launch Quantum Alliance as 6 Million Bitcoin Sit Exposed",
       "cross_check": 1
@@ -110,26 +127,9 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-18T08:05:32.304911+00:00",
+      "collected_at": "2026-10-18T09:05:45.053071+00:00",
       "effective_weight": 0.8,
       "title_original": "Ethereum sets October 26 for Hoodi’s 200 million gas test",
-      "cross_check": 1
-    },
-    {
-      "title": "Binance Pool shuts on November 10, with record access ending two weeks later",
-      "url": "https://cryptoslate.com/binance-will-shut-its-mining-pool-on-nov-10-giving-miners-a-deadline-to-move/",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-17T13:30:39+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-18T08:05:32.304977+00:00",
-      "effective_weight": 0.8,
-      "title_original": "Binance Pool shuts on November 10, with record access ending two weeks later",
       "cross_check": 1
     }
   ],
@@ -144,10 +144,10 @@
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 2.0,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-18T08:05:32.437403+00:00",
-      "effective_weight": 1.5,
+      "collected_at": "2026-10-18T09:05:45.170944+00:00",
+      "effective_weight": 1.0,
       "title_original": "BTC, ETH, XRP Recover From a Flash Crash as More Volatility Looms: Weekend Watch",
       "cross_check": 1
     },
@@ -163,27 +163,10 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-18T08:05:32.437632+00:00",
+      "collected_at": "2026-10-18T09:05:45.171428+00:00",
       "effective_weight": 0.8,
       "title_original": "2 Banking Giants Make Major Crypto Moves as Schwab and Deutsche Bank Expand Into Digital Assets",
       "cross_check": 2
-    },
-    {
-      "title": "Bitcoin’s Road to $125K Could Include a Brutal Drop to $68K: Analyst",
-      "url": "https://cryptopotato.com/bitcoins-road-to-125k-could-include-a-brutal-drop-to-68k-analyst/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-17T09:01:33+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-18T08:05:32.437669+00:00",
-      "effective_weight": 0.8,
-      "title_original": "Bitcoin’s Road to $125K Could Include a Brutal Drop to $68K: Analyst",
-      "cross_check": 1
     },
     {
       "title": "Judge rejects CFTC, Gemini bid to undo $5M settlement",
@@ -197,7 +180,7 @@
       "bear_weight": 1.5,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-18T08:05:31.928867+00:00",
+      "collected_at": "2026-10-18T09:05:44.657154+00:00",
       "effective_weight": 0.65,
       "title_original": "Judge rejects CFTC, Gemini bid to undo $5M settlement",
       "cross_check": 2
@@ -214,9 +197,26 @@
       "bear_weight": 1.5,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-18T08:05:31.929032+00:00",
+      "collected_at": "2026-10-18T09:05:44.657482+00:00",
       "effective_weight": 0.65,
       "title_original": "Mastercard brings stablecoin balances into traditional banking and card payments",
+      "cross_check": 1
+    },
+    {
+      "title": "Russia to ban direct peer-to-peer crypto trades starting July 2027",
+      "url": "https://cointelegraph.com/news/russia-ban-p2p-crypto-trades-july-2027?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-10-15T14:22:43+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 0.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-18T09:05:44.657601+00:00",
+      "effective_weight": 0.65,
+      "title_original": "Russia to ban direct peer-to-peer crypto trades starting July 2027",
       "cross_check": 1
     }
   ]
