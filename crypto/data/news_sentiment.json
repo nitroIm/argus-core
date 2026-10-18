@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-10-18T11:05:39.054156+00:00",
-  "total_news": 89,
-  "avg_sentiment": 0.029,
+  "generated_at": "2026-10-18T12:05:34.465032+00:00",
+  "total_news": 87,
+  "avg_sentiment": 0.025,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
-  "bullish_count": 16,
+  "bullish_count": 15,
   "bearish_count": 17,
-  "neutral_count": 56,
+  "neutral_count": 55,
   "fake_count": 0,
   "cross_confirmed": 2,
   "single_source": 65,
@@ -26,7 +26,7 @@
       "bear": 0
     },
     "CryptoSlate": {
-      "total": 9,
+      "total": 8,
       "bull": 2,
       "bear": 0
     },
@@ -37,11 +37,11 @@
     },
     "Bitcoinist": {
       "total": 6,
-      "bull": 3,
+      "bull": 2,
       "bear": 1
     },
     "ForkLog": {
-      "total": 6,
+      "total": 5,
       "bull": 0,
       "bear": 1
     }
@@ -59,7 +59,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-18T11:05:37.697271+00:00",
+      "collected_at": "2026-10-18T12:05:33.440330+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitcoin’s Old Guard Stirs as 13-Year-Old Wallets Move Millions",
       "cross_check": 1
@@ -76,7 +76,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-18T11:05:37.951309+00:00",
+      "collected_at": "2026-10-18T12:05:33.595286+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitcoin Analysts Are More Bullish Now Than at the Start of the 2023 Bull Market: CryptoQuant",
       "cross_check": 1
@@ -93,7 +93,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-18T11:05:37.951482+00:00",
+      "collected_at": "2026-10-18T12:05:33.595429+00:00",
       "effective_weight": 1.0,
       "title_original": "Ripple and XRP Weekly Wrap: Institutional Wins, Nasdaq Debut, and Price Struggles",
       "cross_check": 1
@@ -110,7 +110,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-18T11:05:37.465108+00:00",
+      "collected_at": "2026-10-18T12:05:33.264666+00:00",
       "effective_weight": 0.88,
       "title_original": "Crypto Super PAC Fairshake Pours Millions More Into Defeating Sherrod Brown",
       "cross_check": 2
@@ -127,7 +127,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-18T11:05:37.465247+00:00",
+      "collected_at": "2026-10-18T12:05:33.264737+00:00",
       "effective_weight": 0.88,
       "title_original": "Crypto Firms Launch Quantum Alliance as 6 Million Bitcoin Sit Exposed",
       "cross_check": 1
@@ -146,27 +146,10 @@
       "bear_weight": 2.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-18T11:05:37.951385+00:00",
+      "collected_at": "2026-10-18T12:05:33.595361+00:00",
       "effective_weight": 1.0,
       "title_original": "BTC, ETH, XRP Recover From a Flash Crash as More Volatility Looms: Weekend Watch",
       "cross_check": 1
-    },
-    {
-      "title": "2 Banking Giants Make Major Crypto Moves as Schwab and Deutsche Bank Expand Into Digital Assets",
-      "url": "https://cryptopotato.com/2-banking-giants-make-major-crypto-moves-as-schwab-and-deutsche-bank-expand-into-digital-assets/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-17T11:25:46+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-18T11:05:37.951846+00:00",
-      "effective_weight": 0.8,
-      "title_original": "2 Banking Giants Make Major Crypto Moves as Schwab and Deutsche Bank Expand Into Digital Assets",
-      "cross_check": 2
     },
     {
       "title": "Judge rejects CFTC, Gemini bid to undo $5M settlement",
@@ -180,7 +163,7 @@
       "bear_weight": 1.5,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-18T11:05:37.367346+00:00",
+      "collected_at": "2026-10-18T12:05:33.207614+00:00",
       "effective_weight": 0.65,
       "title_original": "Judge rejects CFTC, Gemini bid to undo $5M settlement",
       "cross_check": 2
@@ -197,7 +180,7 @@
       "bear_weight": 1.5,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-18T11:05:37.367672+00:00",
+      "collected_at": "2026-10-18T12:05:33.207910+00:00",
       "effective_weight": 0.65,
       "title_original": "Mastercard brings stablecoin balances into traditional banking and card payments",
       "cross_check": 1
@@ -214,10 +197,27 @@
       "bear_weight": 1.2,
       "freshness": 0.8,
       "fake_score": 0.1,
-      "collected_at": "2026-10-18T11:05:38.035621+00:00",
+      "collected_at": "2026-10-18T12:05:33.638178+00:00",
       "effective_weight": 0.648,
       "title_original": "Ledger Faces Fresh Scrutiny After Researcher Says Hardware Wallet Warning Came Months Earlier",
       "cross_check": 2
+    },
+    {
+      "title": "DarkSword научился охотиться за криптовалютой на iOS, Chrome взломали за шесть дней с помощью GPT-5.6 Sol и другие события кибербезопасности",
+      "url": "https://forklog.com/news/darksword-nauchilsya-ohotitsya-za-kriptovalyutoj-na-ios-chrome-vzlomali-za-shest-dnej-s-pomoshhyu-gpt-5-6-sol-i-drugie-sobytiya-kiberbezopasnosti",
+      "source": "ForkLog",
+      "source_weight": 1.2,
+      "lang": "ru",
+      "pub_date": "2026-10-17T04:00:00+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 0.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-18T12:05:34.407072+00:00",
+      "effective_weight": 0.6,
+      "title_original": "DarkSword научился охотиться за криптовалютой на iOS, Chrome взломали за шесть дней с помощью GPT-5.6 Sol и другие события кибербезопасности",
+      "cross_check": 1
     }
   ]
 }
