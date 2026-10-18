@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-10-18T18:05:37.437665+00:00",
+  "generated_at": "2026-10-18T19:05:46.157738+00:00",
   "total_news": 87,
-  "avg_sentiment": 0.127,
+  "avg_sentiment": 0.086,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
   "bullish_count": 22,
-  "bearish_count": 16,
-  "neutral_count": 49,
+  "bearish_count": 17,
+  "neutral_count": 48,
   "fake_count": 0,
   "cross_confirmed": 3,
-  "single_source": 72,
+  "single_source": 70,
   "by_source": {
     "Cointelegraph": {
       "total": 20,
@@ -26,14 +26,14 @@
       "bear": 0
     },
     "CryptoSlate": {
-      "total": 7,
+      "total": 6,
       "bull": 3,
       "bear": 0
     },
     "CryptoPotato": {
-      "total": 22,
+      "total": 23,
       "bull": 7,
-      "bear": 7
+      "bear": 8
     },
     "Bitcoinist": {
       "total": 7,
@@ -48,23 +48,6 @@
   },
   "top_bullish": [
     {
-      "title": "A $98 Million Bitcoin Long Bet on Hyperliquid Hangs by a Thin Thread",
-      "url": "https://news.bitcoin.com/featured/a-98-million-bitcoin-long-bet-on-hyperliquid-hangs-by-a-thin-thread/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-18T17:30:13+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 0.8,
-      "bear_weight": 0.0,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-18T18:05:35.993513+00:00",
-      "effective_weight": 1.5,
-      "title_original": "A $98 Million Bitcoin Long Bet on Hyperliquid Hangs by a Thin Thread",
-      "cross_check": 1
-    },
-    {
       "title": "Bitcoin ETFs Shed Nearly $1 Billion in Two Weeks as Uptober Stays Red",
       "url": "https://decrypt.co/381246/bitcoin-etfs-shed-nearly-1-billion-two-weeks-uptober-red",
       "source": "Decrypt",
@@ -76,9 +59,26 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-18T18:05:35.742925+00:00",
+      "collected_at": "2026-10-18T19:05:44.561907+00:00",
       "effective_weight": 1.1,
       "title_original": "Bitcoin ETFs Shed Nearly $1 Billion in Two Weeks as Uptober Stays Red",
+      "cross_check": 1
+    },
+    {
+      "title": "A $98 Million Bitcoin Long Bet on Hyperliquid Hangs by a Thin Thread",
+      "url": "https://news.bitcoin.com/featured/a-98-million-bitcoin-long-bet-on-hyperliquid-hangs-by-a-thin-thread/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-18T17:30:13+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 0.8,
+      "bear_weight": 0.0,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-18T19:05:44.742923+00:00",
+      "effective_weight": 1.0,
+      "title_original": "A $98 Million Bitcoin Long Bet on Hyperliquid Hangs by a Thin Thread",
       "cross_check": 1
     },
     {
@@ -93,7 +93,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-18T18:05:35.993644+00:00",
+      "collected_at": "2026-10-18T19:05:44.743074+00:00",
       "effective_weight": 1.0,
       "title_original": "Qubic Loses $1.3 Million in Wallet Raid Before Network Halts",
       "cross_check": 1
@@ -110,7 +110,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-18T18:05:36.192981+00:00",
+      "collected_at": "2026-10-18T19:05:44.841959+00:00",
       "effective_weight": 1.0,
       "title_original": "Two Aave stablecoin backstops shrank $12.4 million as reward rates rose",
       "cross_check": 1
@@ -127,7 +127,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-18T18:05:36.193058+00:00",
+      "collected_at": "2026-10-18T19:05:44.842032+00:00",
       "effective_weight": 1.0,
       "title_original": "SEC approves Coinbase earnings bets that stay settled when the numbers change",
       "cross_check": 1
@@ -135,20 +135,37 @@
   ],
   "top_bearish": [
     {
-      "title": "Cross River Bank Adds Ripple’s RLUSD To Its Payment Infrastructure",
-      "url": "https://bitcoinist.com/cross-river-bank-ripple-rlusd-payments-integration/",
-      "source": "Bitcoinist",
-      "source_weight": 0.9,
+      "title": "Scammer Gets Scammed: Ledger Implant Thieves Steal $4.8M in Bitcoin",
+      "url": "https://cryptopotato.com/scammer-gets-scammed-ledger-implant-thieves-steal-4-8m-in-bitcoin/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-10-18T17:30:00+00:00",
+      "pub_date": "2026-10-18T18:13:38+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 1.5,
       "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-18T19:05:44.949278+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Scammer Gets Scammed: Ledger Implant Thieves Steal $4.8M in Bitcoin",
+      "cross_check": 2
+    },
+    {
+      "title": "Zcash Shielded Pools Draw Fresh Scrutiny After Stolen Crypto Transfers",
+      "url": "https://bitcoinist.com/zcash-shielded-pools-stolen-crypto-forensics/",
+      "source": "Bitcoinist",
+      "source_weight": 0.9,
+      "lang": "en",
+      "pub_date": "2026-10-18T18:30:00+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.8,
+      "freshness": 1.5,
       "fake_score": 0.1,
-      "collected_at": "2026-10-18T18:05:36.510841+00:00",
+      "collected_at": "2026-10-18T19:05:45.080366+00:00",
       "effective_weight": 1.215,
-      "title_original": "Cross River Bank Adds Ripple’s RLUSD To Its Payment Infrastructure",
+      "title_original": "Zcash Shielded Pools Draw Fresh Scrutiny After Stolen Crypto Transfers",
       "cross_check": 1
     },
     {
@@ -163,9 +180,26 @@
       "bear_weight": 1.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-18T18:05:36.379906+00:00",
+      "collected_at": "2026-10-18T19:05:44.949361+00:00",
       "effective_weight": 1.0,
       "title_original": "Ethereum Price Prediction: Is ETH’s 7% Weekly Drop Just the Start?",
+      "cross_check": 1
+    },
+    {
+      "title": "Cross River Bank Adds Ripple’s RLUSD To Its Payment Infrastructure",
+      "url": "https://bitcoinist.com/cross-river-bank-ripple-rlusd-payments-integration/",
+      "source": "Bitcoinist",
+      "source_weight": 0.9,
+      "lang": "en",
+      "pub_date": "2026-10-18T17:30:00+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.0,
+      "fake_score": 0.1,
+      "collected_at": "2026-10-18T19:05:45.080447+00:00",
+      "effective_weight": 0.81,
+      "title_original": "Cross River Bank Adds Ripple’s RLUSD To Its Payment Infrastructure",
       "cross_check": 1
     },
     {
@@ -180,43 +214,9 @@
       "bear_weight": 2.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-18T18:05:36.380289+00:00",
+      "collected_at": "2026-10-18T19:05:44.949715+00:00",
       "effective_weight": 0.8,
       "title_original": "BTC, ETH, XRP Recover From a Flash Crash as More Volatility Looms: Weekend Watch",
-      "cross_check": 1
-    },
-    {
-      "title": "Judge rejects CFTC, Gemini bid to undo $5M settlement",
-      "url": "https://cointelegraph.com/news/judge-rejects-cftc-gemini-5m-settlement-reversal?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-10-16T07:43:29+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 0.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-18T18:05:35.612914+00:00",
-      "effective_weight": 0.65,
-      "title_original": "Judge rejects CFTC, Gemini bid to undo $5M settlement",
-      "cross_check": 2
-    },
-    {
-      "title": "Mastercard brings stablecoin balances into traditional banking and card payments",
-      "url": "https://cointelegraph.com/news/mastercard-bvnk-global-money-platform-stablecoins?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-10-15T15:46:05+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 0.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-18T18:05:35.613241+00:00",
-      "effective_weight": 0.65,
-      "title_original": "Mastercard brings stablecoin balances into traditional banking and card payments",
       "cross_check": 1
     }
   ]
