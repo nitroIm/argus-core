@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-10-19T09:05:41.466881+00:00",
-  "total_news": 85,
-  "avg_sentiment": 0.034,
+  "generated_at": "2026-10-19T10:05:43.358036+00:00",
+  "total_news": 87,
+  "avg_sentiment": -0.001,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
-  "bullish_count": 20,
-  "bearish_count": 19,
-  "neutral_count": 46,
+  "bullish_count": 19,
+  "bearish_count": 20,
+  "neutral_count": 48,
   "fake_count": 0,
   "cross_confirmed": 3,
   "single_source": 66,
@@ -21,17 +21,17 @@
       "bear": 3
     },
     "Bitcoin.com": {
-      "total": 5,
+      "total": 4,
       "bull": 0,
       "bear": 1
     },
     "CryptoSlate": {
       "total": 6,
-      "bull": 3,
-      "bear": 0
+      "bull": 2,
+      "bear": 1
     },
     "CryptoPotato": {
-      "total": 23,
+      "total": 25,
       "bull": 7,
       "bear": 7
     },
@@ -41,7 +41,7 @@
       "bear": 2
     },
     "ForkLog": {
-      "total": 6,
+      "total": 7,
       "bull": 0,
       "bear": 2
     }
@@ -57,12 +57,12 @@
       "sentiment": 1.0,
       "bull_weight": 1.2,
       "bear_weight": 0.0,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-19T09:05:40.013941+00:00",
-      "effective_weight": 1.95,
+      "collected_at": "2026-10-19T10:05:41.617522+00:00",
+      "effective_weight": 1.3,
       "title_original": "JPMorgan takes JPM Coin to Ethereum for institutional clients: Report",
-      "cross_check": 1
+      "cross_check": 2
     },
     {
       "title": "Bitcoin ETFs Shed Nearly $1 Billion in Two Weeks as Uptober Stays Red",
@@ -76,7 +76,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-19T09:05:40.085373+00:00",
+      "collected_at": "2026-10-19T10:05:41.717725+00:00",
       "effective_weight": 0.88,
       "title_original": "Bitcoin ETFs Shed Nearly $1 Billion in Two Weeks as Uptober Stays Red",
       "cross_check": 2
@@ -93,7 +93,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-19T09:05:40.421547+00:00",
+      "collected_at": "2026-10-19T10:05:42.115639+00:00",
       "effective_weight": 0.8,
       "title_original": "Two Aave stablecoin backstops shrank $12.4 million as reward rates rose",
       "cross_check": 1
@@ -110,26 +110,26 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-19T09:05:40.421614+00:00",
+      "collected_at": "2026-10-19T10:05:42.115702+00:00",
       "effective_weight": 0.8,
       "title_original": "SEC approves Coinbase earnings bets that stay settled when the numbers change",
       "cross_check": 1
     },
     {
-      "title": "CryptoQuant CEO sees $30,000 Bitcoin floor even if ETFs and treasury firms exit",
-      "url": "https://cryptoslate.com/cryptoquant-ceo-sees-30000-bitcoin-floor-even-if-etfs-and-treasury-firms-exit/",
-      "source": "CryptoSlate",
+      "title": "Crypto Ends Three-Quarter Losing Streak With 39% Q3 Gain: Report",
+      "url": "https://cryptopotato.com/crypto-ends-three-quarter-losing-streak-with-39-q3-gain-report/",
+      "source": "CryptoPotato",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-10-18T12:30:34+00:00",
+      "pub_date": "2026-10-18T22:17:29+00:00",
       "sentiment": 1.0,
-      "bull_weight": 1.2,
+      "bull_weight": 1.0,
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-19T09:05:40.421730+00:00",
+      "collected_at": "2026-10-19T10:05:42.218086+00:00",
       "effective_weight": 0.8,
-      "title_original": "CryptoQuant CEO sees $30,000 Bitcoin floor even if ETFs and treasury firms exit",
+      "title_original": "Crypto Ends Three-Quarter Losing Streak With 39% Q3 Gain: Report",
       "cross_check": 1
     }
   ],
@@ -146,7 +146,7 @@
       "bear_weight": 1.2,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-19T09:05:40.014143+00:00",
+      "collected_at": "2026-10-19T10:05:41.617710+00:00",
       "effective_weight": 1.3,
       "title_original": "South Korea to meet crypto exchanges amid calls for tax delay",
       "cross_check": 1
@@ -163,7 +163,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-19T09:05:41.413693+00:00",
+      "collected_at": "2026-10-19T10:05:43.304695+00:00",
       "effective_weight": 1.2,
       "title_original": "Qubic остановила блокчейн после взлома 1404 кошельков",
       "cross_check": 1
@@ -180,7 +180,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-19T09:05:40.327148+00:00",
+      "collected_at": "2026-10-19T10:05:41.982243+00:00",
       "effective_weight": 1.0,
       "title_original": "Seoul Court Acquits ‘Jonber Kim’ in Massive $253M Crypto Scam",
       "cross_check": 1
@@ -197,7 +197,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-19T09:05:40.523081+00:00",
+      "collected_at": "2026-10-19T10:05:42.218194+00:00",
       "effective_weight": 0.8,
       "title_original": "Scammer Gets Scammed: Ledger Implant Thieves Steal $4.8M in Bitcoin",
       "cross_check": 2
@@ -214,7 +214,7 @@
       "bear_weight": 1.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-19T09:05:40.523151+00:00",
+      "collected_at": "2026-10-19T10:05:42.218254+00:00",
       "effective_weight": 0.8,
       "title_original": "Ethereum Price Prediction: Is ETH’s 7% Weekly Drop Just the Start?",
       "cross_check": 1
