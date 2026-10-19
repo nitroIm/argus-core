@@ -1,11 +1,10 @@
 # ============================================================
-# ARGUS-Trader — NEWS ANALYZER v11.0 (CONTEXT FIX)
+# ARGUS-Trader — NEWS ANALYZER v12.0 (SENTIMENT FIX)
 # ------------------------------------------------------------
-# v11.0:
-#  - Исправлена иерархия позитив/негатив.
-#  - Добавлены правила для "lost", "hangs by a thread",
-#    "halted", "shrink", "convicted".
-#  - ETF больше не дает слепой плюс, если в новости "outflow".
+# v12.0:
+#  - Сентимент больше не размывается нейтральными новостями.
+#  - Формула: (Вес Позитива - Вес Негатива) / (Вес Позитива + Вес Негатива).
+#  - Понижен порог для смены настроения (0.15 вместо 0.25).
 # ============================================================
 
 import os
@@ -76,14 +75,11 @@ BEARISH_WEIGHTS = {
     "ликвидац": 1.2, "банкротств": 1.5, "паник": 1.5, "негатив": 1.0,
     "предупрежд": 1.2, "exploit": 1.5, "delay": 1.2, "reject": 1.5,
     "postpone": 1.5, "postponed": 1.5, "cancel": 1.5, "canceled": 1.5,
-    
-    # НОВЫЕ СЛОВА (ИСПРАВЛЕНИЕ)
     "lost": 1.5, "lose": 1.5, "loss": 1.5, "losses": 1.5, "bleed": 1.5, "bleeding": 1.5,
     "thread": 1.0, "halted": 1.5, "halt": 1.5, "shrink": 1.2, "shrank": 1.2,
     "convicted": 1.8, "guilty": 1.8, "sentenced": 1.5, "red": 0.8,
     "потеряли": 1.5, "убыток": 1.5, "сократились": 1.2, "остановила": 1.5,
     "висит на тонкой нити": 2.0, "осужден": 1.8, "виновен": 1.8, "красный": 0.8,
-
     "outflow": 1.8, "outflows": 1.8, "withdraw": 1.5, "withdrawal": 1.5,
     "pull out": 1.5, "sell-off": 1.5, "selloff": 1.5, "flee": 1.5, 
     "capital flight": 1.8, "whale sells": 1.5, "selling pressure": 1.2,
@@ -94,31 +90,22 @@ BEARISH_WEIGHTS = {
 }
 
 CONTEXT_RULES = [
-    # --- Исправление ошибок из лога ---
-    (r"(etf|fund|funds)\s+(lost|loss|outflow|shed|bleed)", -2.5), # ETF потеряли
-    (r"(hangs?|hanging)\s+by\s+a\s+thread", -2.0),                # Висит на нити
-    (r"halt(ed|s)?\s+(blockchain|network|chain)", -2.0),          # Остановка блокчейна
-    (r"convicted|guilty\s+of", -2.0),                             # Осужден
-    (r"shrink|shrank|shrunken", -1.5),                            # Сократились
-
-    # --- Регуляторы ---
+    (r"(etf|fund|funds)\s+(lost|loss|outflow|shed|bleed)", -2.5),
+    (r"(hangs?|hanging)\s+by\s+a\s+thread", -2.0),
+    (r"halt(ed|s)?\s+(blockchain|network|chain)", -2.0),
+    (r"convicted|guilty\s+of", -2.0),
+    (r"shrink|shrank|shrunken", -1.5),
     (r"sec\s+(opens|approves|greenlights|allows|clears|permits)", 2.0),
     (r"sec\s+chair\s+(pushes|backs|supports)", 1.2),
     (r"sec\s+(sues|charges|blocks|rejects|bans|delays)", -2.0),
     (r"cftc\s+(sues|charges|blocks|rejects|bans)", -1.5),
-    
-    # --- Политика ---
     (r"(senate|congress|house)\s+(passes|approves|backs|supports)\s+(crypto|bitcoin|blockchain)", 2.0),
     (r"(senate|congress|house)\s+(rejects|blocks|opposes|cracks down on)\s+(crypto|bitcoin|blockchain)", -2.0),
-    
-    # --- ETF и Институционалы ---
     (r"etf\s+(inflows?|approval|approves|greenlight)", 1.5),
     (r"etf\s+outflows?", -1.5),
     (r"(adopts?|adoption\s+of)\s+bitcoin", 1.5),
     (r"country\s+adopts?\s+crypto", 1.5),
     (r"crypto\s+(ban|bans|banning)", -2.0),
-    
-    # --- Движение капитала и цены ---
     (r"all[- ]time\s+high", 1.8),
     (r"all[- ]time\s+low", -1.8),
     (r"new\s+high", 1.3),
@@ -143,19 +130,11 @@ NEWS_HISTORY_FILE = DATA_DIR / "news_history.json"
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("BOT_TOKEN")
 CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
-
 def notify(text: str):
-    if not BOT_TOKEN or not CHAT_ID:
-        return
+    if not BOT_TOKEN or not CHAT_ID: return
     try:
-        requests.post(
-            f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
-            json={"chat_id": CHAT_ID, "text": text, "parse_mode": "HTML"},
-            timeout=10,
-        )
-    except Exception:
-        pass
-
+        requests.post(f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage", json={"chat_id": CHAT_ID, "text": text, "parse_mode": "HTML"}, timeout=10)
+    except Exception: pass
 
 def get_robust_session():
     session = requests.Session()
@@ -261,6 +240,7 @@ def analyze_sentiment(title):
         if w in text: bull += weight
     for w, weight in BEARISH_WEIGHTS.items():
         if w in text: bear += weight
+    
     total = bull + bear
     if total == 0: return 0.0, 0, 0
     score = (bull - bear) / total
@@ -293,7 +273,7 @@ def fake_score(title, source_weight):
     return round(min(1.0, score), 2)
 
 def main():
-    print("📰 ARGUS-Trader NEWS ANALYZER v11.0 (CONTEXT FIX)")
+    print("📰 ARGUS-Trader NEWS ANALYZER v12.0 (SENTIMENT FIX)")
     print("=" * 60)
     all_news = []
     seen_hashes = set()
@@ -335,19 +315,28 @@ def main():
             if len(kw1 & kw2) >= 3: count += 1
         n1["cross_check"] = count
 
-    total_weight = sum(n["effective_weight"] for n in all_news)
-    if total_weight > 0:
-        avg_sentiment = sumnews(n["sentiment"] * n["effective_weight"] for n in all_news) / total_weight
-    else: avg_sentiment = 0.0
+    # СЧИТАЕМ СЕНТИМЕНТ ТОЛЬКО ПО АКТИВНЫМ НОВОСТЯМ
+    bull_news = [n for n in all_news if n["sentiment"] > 0.0]
+    bear_news = [n for n in all_news if n["sentiment"] < 0.0]
+    
+    total_bull_weight = sum(n["effective_weight"] for n in bull_news)
+    total_bear_weight = sum(n["effective_weight"] for n in bear_news)
+    
+    active_weight = total_bull_weight + total_bear_weight
+    if active_weight > 0:
+        avg_sentiment = (total_bull_weight - total_bear_weight) / active_weight
+    else: 
+        avg_sentiment = 0.0
 
     bullish = sum(1 for n in all_news if n["sentiment"] > 0.2)
     bearish = sum(1 for n in all_news if n["sentiment"] < -0.2)
     neutral = len(all_news) - bullish - bearish
-    fake_count = sum(1 for n in all_ if n["fake_score"] > 0.4)
+    fake_count = sum(1 for n in all_news if n["fake_score"] > 0.4)
     cross_confirmed = sum(1 for n in all_news if n["cross_check"] >= 3)
     
-    if avg_sentiment > 0.25: mood = "🟢 БЫЧЬЕ"
-    elif avg_sentiment < -0.25: mood = "🔴 МЕДВЕЖЬЕ"
+    # СНИЖЕН ПОРОГ ДЛЯ НАСТРОЕНИЯ
+    if avg_sentiment > 0.15: mood = "🟢 БЫЧЬЕ"
+    elif avg_sentiment < -0.15: mood = "🔴 МЕДВЕЖЬЕ"
     else: mood = "🟡 НЕЙТРАЛЬНОЕ"
 
     clean_news = [n for n in all_news if n["fake_score"] < 0.4]
