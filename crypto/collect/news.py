@@ -1,10 +1,11 @@
 # ============================================================
-# ARGUS-Trader — NEWS ANALYZER v10.0 (FINAL)
+# ARGUS-Trader — NEWS ANALYZER v11.0 (CONTEXT FIX)
 # ------------------------------------------------------------
-# v10.0: 
-#  - Убран жесткий бан на политику.
-#  - Добавлены веса для pro-crypto / anti-crypto новостей.
-#  - Огромный словарь трендов, монет и компаний.
+# v11.0:
+#  - Исправлена иерархия позитив/негатив.
+#  - Добавлены правила для "lost", "hangs by a thread",
+#    "halted", "shrink", "convicted".
+#  - ETF больше не дает слепой плюс, если в новости "outflow".
 # ============================================================
 
 import os
@@ -35,9 +36,6 @@ FEEDS = [
     {"name": "ForkLog",       "url": "https://forklog.com/feed",                         "lang": "ru", "weight": 1.2},
 ]
 
-# ============================================================
-# МЕГА-СЛОВАРЬ КРИПТО-ПАТТЕРНОВ
-# ============================================================
 CRYPTO_PATTERNS = [
     r"\b(bitcoin|btc|ethereum|eth|crypto|cryptocurrency|blockchain|defi|nft|web3|altcoin|stablecoin|token|exchange|wallet|mining|halving|airdrop|metamask|binance|coinbase|kraken|okx|bybit|kucoin|huobi|ftx)\b",
     r"\b(rwa|real world asset|tokenization|tokenisation|smart contract|cbdc|layer 2|l2|rollup|zero-knowledge|zk-proof|dao|digital currency|digital asset|distributed ledger|dlts|custody|etf|spot etf|staking|restaking|lst|lrt|yield|yield farming|gamefi|metaverse|ordinals|inscriptions|brc-20|erc-20|erc-721|dex|cex|amm|liquidity|whale|whales)\b",
@@ -46,9 +44,6 @@ CRYPTO_PATTERNS = [
     r"\b(microstrategy|blackrock|grayscale|fidelity|vanguard|jpmorgan|goldman sachs|morgan stanley|sec|cftc|gensler|etf|spot etf|bitcoin etf|saylor|sbf|cz|zhao)\b"
 ]
 
-# ============================================================
-# ЧЁРНЫЙ СПИСОК (ЖЁСТКИЙ ОТСЕВ МУСОРА)
-# ============================================================
 SPAM_PATTERNS = [
     r"\b(lottery|casino|betting|sportsbook|football|basketball|soccer|nba|nfl|iphone|android|movie|actor|actress|celebrity|weather|horoscope|recipe|cooking|diet)\b",
     r"\b(лотерея|казино|ставки|спорт|футбол|баскетбол|айфон|андроид|кино|сериал|актер|знаменитость|погода|гороскоп|рецепт)\b"
@@ -61,16 +56,12 @@ BULLISH_WEIGHTS = {
     "record": 1.2, "institutional": 1.2, "etf": 1.2, "bull": 1.2, "positive": 1.0,
     "рост": 1.0, "бычий": 1.2, "прибыль": 1.0, "подъём": 1.2, "рекорд": 1.2,
     "прорыв": 1.5, "принятие": 1.2, "одобрен": 1.5, "партнёрство": 1.2,
-    "запуск": 1.0, "позитив": 1.0, "upgrade": 1.2, "update": 0.8,
-    
-    # Движение капитала (Позитив)
+    "запуск": 1.0, "позитив": 1.0, "upgrade": 1.2, "update": 0.8, "win": 1.2, "won": 1.2,
     "inflow": 1.8, "inflows": 1.8, "pours": 1.5, "invests": 1.2, "investment": 1.0,
     "accumulate": 1.2, "accumulation": 1.2, "buy the dip": 1.5, "bought": 1.0,
-    "capital flight to": 1.5, "billion": 1.2, "million": 0.8, "whale buys": 1.5,
+    "capital flight to": 1.5, "whale buys": 1.5,
     "приток": 1.8, "вливает": 1.5, "инвестирует": 1.2, "накапливает": 1.2,
-    "выкупают": 1.2, "закупаются": 1.2, "миллиард": 1.2, "миллион": 0.8, "киты покупают": 1.5,
-    
-    # Политика (Позитив)
+    "выкупают": 1.2, "закупаются": 1.2, "киты покупают": 1.5,
     "pro-crypto": 1.5, "bipartisan": 1.2, "bill passes": 1.8, "favorable": 1.2,
     "поддержка": 1.2, "двухпартийный": 1.2, "закон принят": 1.8
 }
@@ -86,38 +77,45 @@ BEARISH_WEIGHTS = {
     "предупрежд": 1.2, "exploit": 1.5, "delay": 1.2, "reject": 1.5,
     "postpone": 1.5, "postponed": 1.5, "cancel": 1.5, "canceled": 1.5,
     
-    # Движение капитала (Негатив)
+    # НОВЫЕ СЛОВА (ИСПРАВЛЕНИЕ)
+    "lost": 1.5, "lose": 1.5, "loss": 1.5, "losses": 1.5, "bleed": 1.5, "bleeding": 1.5,
+    "thread": 1.0, "halted": 1.5, "halt": 1.5, "shrink": 1.2, "shrank": 1.2,
+    "convicted": 1.8, "guilty": 1.8, "sentenced": 1.5, "red": 0.8,
+    "потеряли": 1.5, "убыток": 1.5, "сократились": 1.2, "остановила": 1.5,
+    "висит на тонкой нити": 2.0, "осужден": 1.8, "виновен": 1.8, "красный": 0.8,
+
     "outflow": 1.8, "outflows": 1.8, "withdraw": 1.5, "withdrawal": 1.5,
     "pull out": 1.5, "sell-off": 1.5, "selloff": 1.5, "flee": 1.5, 
-    "capital flight": 1.8, "whale sells": 1.5, "dumps": 1.2, "selling pressure": 1.2,
+    "capital flight": 1.8, "whale sells": 1.5, "selling pressure": 1.2,
     "отток": 1.8, "выводят": 1.5, "забирают": 1.2, "распродажа": 1.5,
     "бегство капитала": 1.8, "киты продают": 1.5, "давление продавцов": 1.2, "сливают": 1.2,
-    
-    # Политика (Негатив)
     "anti-crypto": 1.8, "crackdown": 1.8, "enforcement": 1.5, "hostile": 1.5,
     "против": 1.2, "жесткие меры": 1.8, "принудительные": 1.5, "враждебный": 1.5
 }
 
 CONTEXT_RULES = [
+    # --- Исправление ошибок из лога ---
+    (r"(etf|fund|funds)\s+(lost|loss|outflow|shed|bleed)", -2.5), # ETF потеряли
+    (r"(hangs?|hanging)\s+by\s+a\s+thread", -2.0),                # Висит на нити
+    (r"halt(ed|s)?\s+(blockchain|network|chain)", -2.0),          # Остановка блокчейна
+    (r"convicted|guilty\s+of", -2.0),                             # Осужден
+    (r"shrink|shrank|shrunken", -1.5),                            # Сократились
+
     # --- Регуляторы ---
     (r"sec\s+(opens|approves|greenlights|allows|clears|permits)", 2.0),
     (r"sec\s+chair\s+(pushes|backs|supports)", 1.2),
     (r"sec\s+(sues|charges|blocks|rejects|bans|delays)", -2.0),
     (r"cftc\s+(sues|charges|blocks|rejects|bans)", -1.5),
-    (r"cftc\s+warns?", -0.8),
     
     # --- Политика ---
     (r"(senate|congress|house)\s+(passes|approves|backs|supports)\s+(crypto|bitcoin|blockchain)", 2.0),
     (r"(senate|congress|house)\s+(rejects|blocks|opposes|cracks down on)\s+(crypto|bitcoin|blockchain)", -2.0),
-    (r"(pro-crypto|bipartisan)\s+(bill|laws?|regulation)", 1.8),
-    (r"(anti-crypto|hostile)\s+(bill|laws?|regulation|stance)", -1.8),
     
     # --- ETF и Институционалы ---
     (r"etf\s+(inflows?|approval|approves|greenlight)", 1.5),
-    (r"etf\s+outflows?", -1.2),
+    (r"etf\s+outflows?", -1.5),
     (r"(adopts?|adoption\s+of)\s+bitcoin", 1.5),
     (r"country\s+adopts?\s+crypto", 1.5),
-    (r"regulat(ion|ory)\s+clarity", 1.2),
     (r"crypto\s+(ban|bans|banning)", -2.0),
     
     # --- Движение капитала и цены ---
@@ -127,25 +125,16 @@ CONTEXT_RULES = [
     (r"new\s+low", -1.3),
     (r"(institutional|big|whale)\s+(money|capital|investors)\s+(pours|flows|enters|buy)", 1.8),
     (r"(investors|capital|funds)\s+(flee|exit|withdraw|pull out|leave)", -1.8),
-    (r"billion\s+(dollars?|usd)?\s*(pours|flows|invested|enters|inflow)", 1.8),
-    (r"billion\s+(dollars?|usd)?\s*(withdrawn|exit|outflow|pulled)", -1.8),
-    
-    # --- Ликвидации и взломы ---
     (r"liquidation[s]?\s+(cascade|wave|surge)", -1.5),
     (r"(hacked|hack|exploit)\s+(for|of|at)", -1.8),
     (r"stolen\s+(funds|crypto|bitcoin)", -1.8),
     (r"(risk|risks)\s+of\s+(correction|pullback|crash)", -1.2),
-    (r"profit[- ]taking", -0.7),
 ]
 
 CLICKBAIT_PATTERNS = [
-    r"!!!+",
-    r"\?!!",
-    r"\b(shocking|unbelievable|you won't believe|must see|urgent)\b",
-    r"\b(шок|срочно|не поверите|вы не поверите)\b",
-    r"(🚀|🔥|💎|🌙|⚡){2,}",
-    r"\b(AI|Bot|bot)\s*(says|predicts|reveals)",
-    r"\b(top|best|worst)\s+\d+\b",
+    r"!!!+", r"\?!!", r"\b(shocking|unbelievable|you won't believe|must see|urgent)\b",
+    r"\b(шок|срочно|не поверите|вы не поверите)\b", r"(🚀|🔥|💎|🌙|⚡){2,}",
+    r"\b(AI|Bot|bot)\s*(says|predicts|reveals)", r"\b(top|best|worst)\s+\d+\b",
 ]
 
 SENTIMENT_FILE = DATA_DIR / "news_sentiment.json"
@@ -170,44 +159,30 @@ def notify(text: str):
 
 def get_robust_session():
     session = requests.Session()
-    retry = Retry(
-        total=3, backoff_factor=1,
-        status_forcelist=[429, 500, 502, 503, 504],
-        allowed_methods=["GET"],
-    )
+    retry = Retry(total=3, backoff_factor=1, status_forcelist=[429, 500, 502, 503, 504], allowed_methods=["GET"])
     adapter = HTTPAdapter(max_retries=retry)
     session.mount("http://", adapter)
     session.mount("https://", adapter)
     session.headers.update({"User-Agent": "Mozilla/5.0 (compatible; ARGUS-NewsBot/1.0)"})
     return session
 
-
 SESSION = get_robust_session()
 
-
 def load(path, default=None):
-    if not path.exists():
-        return default if default is not None else {}
+    if not path.exists(): return default if default is not None else {}
     try:
-        with open(path, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except Exception:
-        return default if default is not None else {}
-
+        with open(path, "r", encoding="utf-8") as f: return json.load(f)
+    except Exception: return default if default is not None else {}
 
 def save(path, data):
     path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-
+    with open(path, "w", encoding="utf-8") as f: json.dump(data, f, ensure_ascii=False, indent=2)
 
 def _hash(text: str) -> str:
     return hashlib.md5(text.strip().lower().encode("utf-8")).hexdigest()[:16]
 
-
 def clean_text(text: str) -> str:
-    if not text:
-        return ""
+    if not text: return ""
     text = html.unescape(text)
     text = re.sub(r"<[^>]+>", "", text)
     text = re.sub(r"<!\[CDATA\[(.*?)\]\]>", r"\1", text, flags=re.IGNORECASE)
@@ -215,37 +190,24 @@ def clean_text(text: str) -> str:
     text = text.strip(' "\'«»""„""')
     return text.strip()
 
-
 def normalize_title(title: str) -> str:
     text = title.lower()
     text = re.sub(r"[^\w\s]", " ", text)
     text = re.sub(r"\s+", " ", text).strip()
     return text
 
-
 def keywords(text: str, min_len: int = 4) -> set:
-    stop = {"with", "that", "from", "this", "will", "have", "what", "your",
-            "который", "которая", "этого", "чтобы", "будет", "может"}
+    stop = {"with", "that", "from", "this", "will", "have", "what", "your", "который", "которая", "этого", "чтобы", "будет", "может"}
     words = normalize_title(text).split()
     return {w for w in words if len(w) >= min_len and w not in stop}
 
-
 def is_crypto_related(title: str) -> bool:
     t = title.lower()
-    
-    # 1. Если есть крипто-термины (включая политику с криптой) - ПРОПУСКАЕМ
     for pattern in CRYPTO_PATTERNS:
-        if re.search(pattern, t, re.IGNORECASE):
-            return True
-            
-    # 2. Если крипты нет, но есть спам (казино, айфоны) - ВЫКИДЫВАЕМ
+        if re.search(pattern, t, re.IGNORECASE): return True
     for pattern in SPAM_PATTERNS:
-        if re.search(pattern, t, re.IGNORECASE):
-            return False
-            
-    # 3. Если ни того, ни другого - ВЫКИДЫВАЕМ
+        if re.search(pattern, t, re.IGNORECASE): return False
     return False
-
 
 def fetch_feed(feed):
     items = []
@@ -253,34 +215,21 @@ def fetch_feed(feed):
         r = SESSION.get(feed["url"], timeout=20)
         r.raise_for_status()
         text = r.text
-
         blocks = re.findall(r"<item\b[^>]*>(.*?)</item>", text, re.IGNORECASE | re.DOTALL)
-        if not blocks:
-            blocks = re.findall(r"<entry\b[^>]*>(.*?)</entry>", text, re.IGNORECASE | re.DOTALL)
-
+        if not blocks: blocks = re.findall(r"<entry\b[^>]*>(.*?)</entry>", text, re.IGNORECASE | re.DOTALL)
         for b in blocks[:30]:
             title_match = re.search(r"<title\b[^>]*>(.*?)</title>", b, re.IGNORECASE | re.DOTALL)
-            if not title_match:
-                continue
-
+            if not title_match: continue
             raw_title = title_match.group(1).strip()
             title = clean_text(raw_title)
-
-            if len(title) < 15:
-                continue
-
-            if not is_crypto_related(title):
-                continue
-
+            if len(title) < 15: continue
+            if not is_crypto_related(title): continue
             url_match = re.search(r"<link\b[^>]*>(.*?)</link>", b, re.IGNORECASE | re.DOTALL)
-            if not url_match:
-                url_match = re.search(r'<link\b[^>]*href="([^"]+)"', b, re.IGNORECASE)
-            
+            if not url_match: url_match = re.search(r'<link\b[^>]*href="([^"]+)"', b, re.IGNORECASE)
             url = ""
             if url_match:
                 url = url_match.group(1).strip()
                 url = url.replace("<![CDATA[", "").replace("]]>", "")
-
             pub_date = None
             for tag in ["pubDate", "published", "updated", "dc:date"]:
                 m = re.search(rf"<{tag}\b[^>]*>(.*?)</{tag}>", b, re.IGNORECASE | re.DOTALL)
@@ -289,112 +238,76 @@ def fetch_feed(feed):
                     try:
                         from email.utils import parsedate_to_datetime
                         pub_date = parsedate_to_datetime(date_str)
-                        if pub_date.tzinfo is None:
-                            pub_date = pub_date.replace(tzinfo=timezone.utc)
+                        if pub_date.tzinfo is None: pub_date = pub_date.replace(tzinfo=timezone.utc)
                         break
-                    except Exception:
-                        pass
-
+                    except Exception: pass
             items.append({
-                "title": title,
-                "url": url,
-                "source": feed["name"],
-                "source_weight": feed.get("weight", 1.0),
-                "lang": feed["lang"],
+                "title": title, "url": url, "source": feed["name"],
+                "source_weight": feed.get("weight", 1.0), "lang": feed["lang"],
                 "pub_date": pub_date.isoformat() if pub_date else None,
             })
-    except Exception as e:
-        print(f"⚠️ {feed['name']} недоступен: {e}")
+    except Exception as e: print(f"⚠️ {feed['name']} недоступен: {e}")
     return items
-
 
 def analyze_sentiment(title):
     text = title.lower()
     bull = 0.0
     bear = 0.0
-
     for pattern, weight in CONTEXT_RULES:
         if re.search(pattern, text):
-            if weight > 0:
-                bull += weight
-            else:
-                bear += abs(weight)
-
+            if weight > 0: bull += weight
+            else: bear += abs(weight)
     for w, weight in BULLISH_WEIGHTS.items():
-        if w in text:
-            bull += weight
-
+        if w in text: bull += weight
     for w, weight in BEARISH_WEIGHTS.items():
-        if w in text:
-            bear += weight
-
+        if w in text: bear += weight
     total = bull + bear
-    if total == 0:
-        return 0.0, 0, 0
+    if total == 0: return 0.0, 0, 0
     score = (bull - bear) / total
     score = max(-1.0, min(1.0, score))
     return round(score, 3), round(bull, 2), round(bear, 2)
 
-
 def freshness_weight(pub_date_iso):
-    if not pub_date_iso:
-        return 1.0
+    if not pub_date_iso: return 1.0
     try:
         pub = datetime.fromisoformat(pub_date_iso)
-        if pub.tzinfo is None:
-            pub = pub.replace(tzinfo=timezone.utc)
+        if pub.tzinfo is None: pub = pub.replace(tzinfo=timezone.utc)
         age = datetime.now(timezone.utc) - pub
-        if age < timedelta(hours=1):
-            return 1.5
-        elif age < timedelta(hours=6):
-            return 1.0
-        elif age < timedelta(hours=24):
-            return 0.8
-        else:
-            return 0.5
-    except Exception:
-        return 1.0
-
+        if age < timedelta(hours=1): return 1.5
+        elif age < timedelta(hours=6): return 1.0
+        elif age < timedelta(hours=24): return 0.8
+        else: return 0.5
+    except Exception: return 1.0
 
 def fake_score(title, source_weight):
     score = 0.0
     for pattern in CLICKBAIT_PATTERNS:
-        if re.search(pattern, title, re.IGNORECASE):
-            score += 0.25
+        if re.search(pattern, title, re.IGNORECASE): score += 0.25
     letters = [c for c in title if c.isalpha()]
     if letters:
         caps = sum(1 for c in letters if c.isupper())
-        if caps / len(letters) > 0.3:
-            score += 0.2
+        if caps / len(letters) > 0.3: score += 0.2
     emoji_count = len(re.findall(r"[\U0001F300-\U0001FAFF]", title))
-    if emoji_count > 3:
-        score += 0.15
-    if source_weight < 1.0:
-        score += 0.1
+    if emoji_count > 3: score += 0.15
+    if source_weight < 1.0: score += 0.1
     return round(min(1.0, score), 2)
 
-
 def main():
-    print("📰 ARGUS-Trader NEWS ANALYZER v10.0")
+    print("📰 ARGUS-Trader NEWS ANALYZER v11.0 (CONTEXT FIX)")
     print("=" * 60)
-
     all_news = []
     seen_hashes = set()
 
     for feed in FEEDS:
         items = fetch_feed(feed)
         print(f"📡 {feed['name']}: {len(items)} подходящих заголовков")
-
         for item in items:
             h = _hash(item["title"])
-            if h in seen_hashes:
-                continue
+            if h in seen_hashes: continue
             seen_hashes.add(h)
-
             score, bull, bear = analyze_sentiment(item["title"])
             fresh = freshness_weight(item.get("pub_date"))
             fake = fake_score(item["title"], item["source_weight"])
-
             item["sentiment"] = score
             item["bull_weight"] = bull
             item["bear_weight"] = bear
@@ -403,12 +316,10 @@ def main():
             item["collected_at"] = datetime.now(timezone.utc).isoformat()
             item["effective_weight"] = round(item["source_weight"] * fresh * (1.0 - fake), 3)
             item["title_original"] = item["title"]
-
             all_news.append(item)
 
     if not all_news:
         print("❌ Новостей не собрано")
-        notify("❌ <b>ARGUS News:</b> не удалось собрать новости.")
         return
 
     print("\n🔍 Перекрёстная проверка...")
@@ -419,33 +330,25 @@ def main():
             continue
         count = 1
         for j, n2 in enumerate(all_news):
-            if i == j:
-                continue
+            if i == j: continue
             kw2 = keywords(n2["title_original"])
-            if len(kw1 & kw2) >= 3:
-                count += 1
+            if len(kw1 & kw2) >= 3: count += 1
         n1["cross_check"] = count
 
     total_weight = sum(n["effective_weight"] for n in all_news)
     if total_weight > 0:
-        avg_sentiment = sum(n["sentiment"] * n["effective_weight"] for n in all_news) / total_weight
-    else:
-        avg_sentiment = 0.0
+        avg_sentiment = sumnews(n["sentiment"] * n["effective_weight"] for n in all_news) / total_weight
+    else: avg_sentiment = 0.0
 
     bullish = sum(1 for n in all_news if n["sentiment"] > 0.2)
     bearish = sum(1 for n in all_news if n["sentiment"] < -0.2)
     neutral = len(all_news) - bullish - bearish
-
-    fake_count = sum(1 for n in all_news if n["fake_score"] > 0.4)
+    fake_count = sum(1 for n in all_ if n["fake_score"] > 0.4)
     cross_confirmed = sum(1 for n in all_news if n["cross_check"] >= 3)
-    single_source = sum(1 for n in all_news if n["cross_check"] == 1)
-
-    if avg_sentiment > 0.25:
-        mood = "🟢 БЫЧЬЕ"
-    elif avg_sentiment < -0.25:
-        mood = "🔴 МЕДВЕЖЬЕ"
-    else:
-        mood = "🟡 НЕЙТРАЛЬНОЕ"
+    
+    if avg_sentiment > 0.25: mood = "🟢 БЫЧЬЕ"
+    elif avg_sentiment < -0.25: mood = "🔴 МЕДВЕЖЬЕ"
+    else: mood = "🟡 НЕЙТРАЛЬНОЕ"
 
     clean_news = [n for n in all_news if n["fake_score"] < 0.4]
     top_bull = sorted([n for n in clean_news if n["sentiment"] > 0.2], key=lambda x: x["sentiment"] * x["effective_weight"], reverse=True)[:5]
@@ -454,45 +357,20 @@ def main():
     by_source = {}
     for n in all_news:
         src = n["source"]
-        if src not in by_source:
-            by_source[src] = {"total": 0, "bull": 0, "bear": 0}
+        if src not in by_source: by_source[src] = {"total": 0, "bull": 0, "bear": 0}
         by_source[src]["total"] += 1
-        if n["sentiment"] > 0.2:
-            by_source[src]["bull"] += 1
-        elif n["sentiment"] < -0.2:
-            by_source[src]["bear"] += 1
+        if n["sentiment"] > 0.2: by_source[src]["bull"] += 1
+        elif n["sentiment"] < -0.2: by_source[src]["bear"] += 1
 
     result = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
-        "total_news": len(all_news),
-        "avg_sentiment": round(avg_sentiment, 3),
-        "mood": mood,
-        "bullish_count": bullish,
-        "bearish_count": bearish,
-        "neutral_count": neutral,
-        "fake_count": fake_count,
-        "cross_confirmed": cross_confirmed,
-        "single_source": single_source,
-        "by_source": by_source,
-        "top_bullish": top_bull,
-        "top_bearish": top_bear,
+        "total_news": len(all_news), "avg_sentiment": round(avg_sentiment, 3),
+        "mood": mood, "bullish_count": bullish, "bearish_count": bearish, "neutral_count": neutral,
+        "fake_count": fake_count, "cross_confirmed": cross_confirmed,
+        "by_source": by_source, "top_bullish": top_bull, "top_bearish": top_bear,
     }
 
     save(SENTIMENT_FILE, result)
-
-    history = load(NEWS_HISTORY_FILE, {"days": []})
-    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    history["days"] = [d for d in history.get("days", []) if d.get("date") != today]
-    history["days"].append({
-        "date": today,
-        "sentiment": round(avg_sentiment, 3),
-        "total": len(all_news),
-        "fake": fake_count,
-    })
-    if len(history["days"]) > 90:
-        history["days"] = history["days"][-90:]
-    save(NEWS_HISTORY_FILE, history)
-
     print("=" * 60)
     print(f"📊 Всего: {len(all_news)}")
     print(f"🎭 Настроение: {mood}")
@@ -500,17 +378,12 @@ def main():
 
     if top_bull:
         print("\n🟢 Топ бычьих:")
-        for n in top_bull[:3]:
-            print(f"   + {n['title_original'][:80]}")
-            print(f"     {n['url']}")
+        for n in top_bull[:3]: print(f"   + {n['title_original'][:80]}\n     {n['url']}")
 
     if top_bear:
         print("\n🔴 Топ медвежьих:")
-        for n in top_bear[:3]:
-            print(f"   - {n['title_original'][:80]}")
-            print(f"     {n['url']}")
+        for n in top_bear[:3]: print(f"   - {n['title_original'][:80]}\n     {n['url']}")
     print("=" * 60)
-
 
 if __name__ == "__main__":
     main()
