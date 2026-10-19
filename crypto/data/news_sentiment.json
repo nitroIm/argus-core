@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-10-19T22:05:33.517929+00:00",
-  "total_news": 97,
-  "avg_sentiment": -0.279,
+  "generated_at": "2026-10-19T23:05:38.233256+00:00",
+  "total_news": 96,
+  "avg_sentiment": -0.318,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 16,
-  "bearish_count": 22,
-  "neutral_count": 59,
+  "bearish_count": 23,
+  "neutral_count": 57,
   "fake_count": 0,
-  "cross_confirmed": 8,
+  "cross_confirmed": 5,
   "by_source": {
     "Cointelegraph": {
       "total": 23,
@@ -20,14 +20,14 @@
       "bear": 5
     },
     "Bitcoin.com": {
-      "total": 10,
+      "total": 9,
       "bull": 1,
       "bear": 2
     },
     "CryptoSlate": {
       "total": 9,
       "bull": 0,
-      "bear": 4
+      "bear": 5
     },
     "CryptoPotato": {
       "total": 29,
@@ -42,23 +42,6 @@
   },
   "top_bullish": [
     {
-      "title": "Smashed Quantum Computing Record Raises Stakes for Bitcoin Security",
-      "url": "https://news.bitcoin.com/technology/smashed-quantum-computing-record-raises-stakes-bitcoin-security/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-19T21:55:40+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-19T22:05:32.074883+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Smashed Quantum Computing Record Raises Stakes for Bitcoin Security",
-      "cross_check": 1
-    },
-    {
       "title": "Solana treasury firm SkyAI sells all SOL holdings, launches $201M buyback",
       "url": "https://cointelegraph.com/news/solana-treasury-skyai-sells-all-sol-holdings-launches-201m-buyback?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
       "source": "Cointelegraph",
@@ -70,7 +53,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-19T22:05:31.781974+00:00",
+      "collected_at": "2026-10-19T23:05:36.505472+00:00",
       "effective_weight": 1.3,
       "title_original": "Solana treasury firm SkyAI sells all SOL holdings, launches $201M buyback",
       "cross_check": 1
@@ -87,7 +70,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-19T22:05:31.782021+00:00",
+      "collected_at": "2026-10-19T23:05:36.505536+00:00",
       "effective_weight": 1.3,
       "title_original": "Crypto PAC pours $362K into California race voters essentially decided in August",
       "cross_check": 2
@@ -104,10 +87,27 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-19T22:05:31.782567+00:00",
+      "collected_at": "2026-10-19T23:05:36.506273+00:00",
       "effective_weight": 1.04,
       "title_original": "JPMorgan takes JPM Coin to Ethereum for institutional clients: Report",
       "cross_check": 5
+    },
+    {
+      "title": "Smashed Quantum Computing Record Raises Stakes for Bitcoin Security",
+      "url": "https://news.bitcoin.com/technology/smashed-quantum-computing-record-raises-stakes-bitcoin-security/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-19T21:55:40+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-19T23:05:36.837579+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Smashed Quantum Computing Record Raises Stakes for Bitcoin Security",
+      "cross_check": 1
     },
     {
       "title": "Major XRP Adoption News Sparks Excitement Across Ripple’s Community: Details",
@@ -121,7 +121,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-19T22:05:32.319486+00:00",
+      "collected_at": "2026-10-19T23:05:37.131870+00:00",
       "effective_weight": 1.0,
       "title_original": "Major XRP Adoption News Sparks Excitement Across Ripple’s Community: Details",
       "cross_check": 1
@@ -140,7 +140,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-19T22:05:31.880606+00:00",
+      "collected_at": "2026-10-19T23:05:36.590735+00:00",
       "effective_weight": 1.1,
       "title_original": "Mastercard Brings Its Fraud-Fighting Tools to Stablecoin Payments",
       "cross_check": 2
@@ -157,27 +157,10 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-19T22:05:31.880643+00:00",
+      "collected_at": "2026-10-19T23:05:36.590786+00:00",
       "effective_weight": 1.1,
       "title_original": "JPMorgan's JPM Coin Arrives on Ethereum, Putting Bank Dollars on a Public Blockchain",
       "cross_check": 5
-    },
-    {
-      "title": "Abandoned Bitcoin? Wallet Targeted by Noah Doe Lawsuit Moves $33 Million",
-      "url": "https://decrypt.co/381337/abandoned-bitcoin-wallet-noah-doe-lawsuit-moves-33-million",
-      "source": "Decrypt",
-      "source_weight": 1.1,
-      "lang": "en",
-      "pub_date": "2026-10-19T16:46:05+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 2.7,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-19T22:05:31.880676+00:00",
-      "effective_weight": 1.1,
-      "title_original": "Abandoned Bitcoin? Wallet Targeted by Noah Doe Lawsuit Moves $33 Million",
-      "cross_check": 1
     },
     {
       "title": "South Korea to meet crypto exchanges amid calls for tax delay",
@@ -191,7 +174,7 @@
       "bear_weight": 1.2,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-19T22:05:31.782632+00:00",
+      "collected_at": "2026-10-19T23:05:36.506361+00:00",
       "effective_weight": 1.04,
       "title_original": "South Korea to meet crypto exchanges amid calls for tax delay",
       "cross_check": 1
@@ -208,9 +191,26 @@
       "bear_weight": 1.2,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-19T22:05:32.075115+00:00",
+      "collected_at": "2026-10-19T23:05:36.837906+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitmine Boosts Ether Holdings as Tom Lee Blames AI Fears for Crypto Dip",
+      "cross_check": 1
+    },
+    {
+      "title": "Kraken’s opt-in European wallet can expose spot holdings to futures losses",
+      "url": "https://cryptoslate.com/krakens-opt-in-european-wallet-can-expose-spot-holdings-to-futures-losses/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-19T20:00:12+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 3.0,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-19T23:05:36.968887+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Kraken’s opt-in European wallet can expose spot holdings to futures losses",
       "cross_check": 1
     }
   ]
