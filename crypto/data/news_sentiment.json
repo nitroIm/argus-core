@@ -1,38 +1,38 @@
 {
-  "generated_at": "2026-10-20T16:05:36.549326+00:00",
-  "total_news": 102,
-  "avg_sentiment": 0.295,
+  "generated_at": "2026-10-20T17:05:43.175497+00:00",
+  "total_news": 105,
+  "avg_sentiment": 0.274,
   "mood": "🟢 БЫЧЬЕ",
   "bullish_count": 30,
   "bearish_count": 15,
-  "neutral_count": 57,
+  "neutral_count": 60,
   "fake_count": 0,
   "cross_confirmed": 10,
   "by_source": {
     "Cointelegraph": {
       "total": 26,
-      "bull": 9,
+      "bull": 10,
       "bear": 3
     },
     "Decrypt": {
-      "total": 17,
+      "total": 19,
       "bull": 3,
       "bear": 4
     },
     "Bitcoin.com": {
       "total": 9,
-      "bull": 4,
+      "bull": 3,
       "bear": 1
     },
     "CryptoSlate": {
       "total": 9,
       "bull": 3,
-      "bear": 2
+      "bear": 3
     },
     "CryptoPotato": {
-      "total": 26,
+      "total": 27,
       "bull": 9,
-      "bear": 5
+      "bear": 4
     },
     "ForkLog": {
       "total": 15,
@@ -42,20 +42,20 @@
   },
   "top_bullish": [
     {
-      "title": "Швейцарский регулятор FINMA одобрил первый в стране спотовый биткоин-ETF для розничных инвесторов",
-      "url": "https://forklog.com/shvejtsarskij-regulyator-finma-odobril-pervyj-v-strane-spotovyj-bitkoin-etf-dlya-roznichnyh-investorov",
-      "source": "ForkLog",
-      "source_weight": 1.2,
-      "lang": "ru",
-      "pub_date": "2026-10-20T16:00:00+00:00",
+      "title": "Injective, BDACS plan Korean won stablecoin settlement for tokenized assets",
+      "url": "https://cointelegraph.com/news/injective-bdacs-korean-won-stablecoin-tokenized-assets?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-10-20T16:47:48+00:00",
       "sentiment": 1.0,
       "bull_weight": 1.2,
       "bear_weight": 0.0,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-20T16:05:36.487858+00:00",
-      "effective_weight": 1.8,
-      "title_original": "Швейцарский регулятор FINMA одобрил первый в стране спотовый биткоин-ETF для розничных инвесторов",
+      "collected_at": "2026-10-20T17:05:40.929810+00:00",
+      "effective_weight": 1.95,
+      "title_original": "Injective, BDACS plan Korean won stablecoin settlement for tokenized assets",
       "cross_check": 1
     },
     {
@@ -70,7 +70,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-20T16:05:34.953500+00:00",
+      "collected_at": "2026-10-20T17:05:40.930099+00:00",
       "effective_weight": 1.3,
       "title_original": "FINMA approves Switzerland’s first Bitcoin ETF for retail investors",
       "cross_check": 3
@@ -87,7 +87,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-20T16:05:34.953661+00:00",
+      "collected_at": "2026-10-20T17:05:40.930279+00:00",
       "effective_weight": 1.3,
       "title_original": "Tx launches USTX stablecoin to pull RWA liquidity onto its chain",
       "cross_check": 1
@@ -104,46 +104,46 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-20T16:05:34.953779+00:00",
+      "collected_at": "2026-10-20T17:05:40.930426+00:00",
       "effective_weight": 1.3,
       "title_original": "Netflix FTX trailer was ‘enough to upset me’ in first 30 seconds: former FTX COO",
       "cross_check": 1
     },
     {
-      "title": "BlackRock files for third Bitcoin ETF, still no Solana or XRP",
-      "url": "https://cointelegraph.com/news/blackrock-ishares-bitcoin-managed-protection-etf-pbit?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-10-20T08:12:57+00:00",
+      "title": "Швейцарский регулятор FINMA одобрил первый в стране спотовый биткоин-ETF для розничных инвесторов",
+      "url": "https://forklog.com/shvejtsarskij-regulyator-finma-odobril-pervyj-v-strane-spotovyj-bitkoin-etf-dlya-roznichnyh-investorov",
+      "source": "ForkLog",
+      "source_weight": 1.2,
+      "lang": "ru",
+      "pub_date": "2026-10-20T16:00:00+00:00",
       "sentiment": 1.0,
       "bull_weight": 1.2,
       "bear_weight": 0.0,
-      "freshness": 0.8,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-20T16:05:34.954020+00:00",
-      "effective_weight": 1.04,
-      "title_original": "BlackRock files for third Bitcoin ETF, still no Solana or XRP",
-      "cross_check": 2
+      "collected_at": "2026-10-20T17:05:43.095406+00:00",
+      "effective_weight": 1.2,
+      "title_original": "Швейцарский регулятор FINMA одобрил первый в стране спотовый биткоин-ETF для розничных инвесторов",
+      "cross_check": 1
     }
   ],
   "top_bearish": [
     {
-      "title": "Bitget Agrees to Buy Licensed Thai Exchange Weeks After $388M Hack",
-      "url": "https://news.bitcoin.com/exchanges/bitget-agrees-buy-licensed-thai-exchange-weeks-after-388m-hack/",
-      "source": "Bitcoin.com",
+      "title": "Bitcoin’s next selloff could be amplified by the traders still betting on its recovery",
+      "url": "https://cryptoslate.com/bitcoins-next-selloff-could-be-amplified-by-the-traders-still-betting-on-its-recovery/",
+      "source": "CryptoSlate",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-10-20T15:55:47+00:00",
+      "pub_date": "2026-10-20T16:40:45+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 1.5,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-20T16:05:35.167895+00:00",
+      "collected_at": "2026-10-20T17:05:41.526335+00:00",
       "effective_weight": 1.5,
-      "title_original": "Bitget Agrees to Buy Licensed Thai Exchange Weeks After $388M Hack",
-      "cross_check": 2
+      "title_original": "Bitcoin’s next selloff could be amplified by the traders still betting on its recovery",
+      "cross_check": 1
     },
     {
       "title": "Drift exploiter sends $61M ETH to Tornado Cash, holds $194M",
@@ -157,7 +157,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-20T16:05:34.953610+00:00",
+      "collected_at": "2026-10-20T17:05:40.930209+00:00",
       "effective_weight": 1.3,
       "title_original": "Drift exploiter sends $61M ETH to Tornado Cash, holds $194M",
       "cross_check": 1
@@ -174,7 +174,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-20T16:05:34.953717+00:00",
+      "collected_at": "2026-10-20T17:05:40.930349+00:00",
       "effective_weight": 1.3,
       "title_original": "Lloyds and Barclays among UK banks named in crypto transfer complaints, advocacy group says",
       "cross_check": 1
@@ -191,27 +191,27 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-20T16:05:34.953929+00:00",
+      "collected_at": "2026-10-20T17:05:40.930615+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitget plans Thai crypto exchange acquisition weeks after $388M hack",
       "cross_check": 2
     },
     {
-      "title": "Bitcoin fell 1.3% while Nasdaq-100 lost 5.5% in last week’s tech selloff",
-      "url": "https://cryptoslate.com/bitcoin-holds-up-as-hedge-funds-dump-tech-at-fastest-pace-in-a-decade/",
-      "source": "CryptoSlate",
+      "title": "Bitget Agrees to Buy Licensed Thai Exchange Weeks After $388M Hack",
+      "url": "https://news.bitcoin.com/exchanges/bitget-agrees-buy-licensed-thai-exchange-weeks-after-388m-hack/",
+      "source": "Bitcoin.com",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-10-20T11:50:45+00:00",
+      "pub_date": "2026-10-20T15:55:47+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 3.0,
+      "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-20T16:05:35.538846+00:00",
+      "collected_at": "2026-10-20T17:05:41.178088+00:00",
       "effective_weight": 1.0,
-      "title_original": "Bitcoin fell 1.3% while Nasdaq-100 lost 5.5% in last week’s tech selloff",
-      "cross_check": 1
+      "title_original": "Bitget Agrees to Buy Licensed Thai Exchange Weeks After $388M Hack",
+      "cross_check": 2
     }
   ]
 }
