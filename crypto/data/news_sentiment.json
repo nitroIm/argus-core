@@ -1,33 +1,33 @@
 {
-  "generated_at": "2026-10-20T09:05:37.888953+00:00",
-  "total_news": 94,
-  "avg_sentiment": -0.078,
+  "generated_at": "2026-10-20T10:05:41.643201+00:00",
+  "total_news": 96,
+  "avg_sentiment": 0.037,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
-  "bullish_count": 17,
-  "bearish_count": 20,
-  "neutral_count": 57,
+  "bullish_count": 19,
+  "bearish_count": 18,
+  "neutral_count": 59,
   "fake_count": 0,
   "cross_confirmed": 6,
   "by_source": {
     "Cointelegraph": {
-      "total": 23,
+      "total": 24,
       "bull": 6,
-      "bear": 2
+      "bear": 3
     },
     "Decrypt": {
       "total": 16,
-      "bull": 2,
-      "bear": 5
+      "bull": 3,
+      "bear": 4
     },
     "Bitcoin.com": {
       "total": 6,
       "bull": 0,
-      "bear": 1
+      "bear": 0
     },
     "CryptoSlate": {
       "total": 8,
-      "bull": 0,
-      "bear": 5
+      "bull": 1,
+      "bear": 4
     },
     "CryptoPotato": {
       "total": 29,
@@ -35,12 +35,46 @@
       "bear": 7
     },
     "ForkLog": {
-      "total": 12,
+      "total": 13,
       "bull": 1,
       "bear": 0
     }
   },
   "top_bullish": [
+    {
+      "title": "BlackRock Files for 'Buffer' Bitcoin ETF as IBIT Draws $665M in a Day",
+      "url": "https://decrypt.co/381385/blackrock-files-for-buffer-bitcoin-etf-as-ibit-draws-665m-in-a-day",
+      "source": "Decrypt",
+      "source_weight": 1.1,
+      "lang": "en",
+      "pub_date": "2026-10-20T09:13:30+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-20T10:05:40.050599+00:00",
+      "effective_weight": 1.65,
+      "title_original": "BlackRock Files for 'Buffer' Bitcoin ETF as IBIT Draws $665M in a Day",
+      "cross_check": 2
+    },
+    {
+      "title": "Bitcoin ETF comeback exposes a $630 million divide with Ethereum as BlackRock dominates",
+      "url": "https://cryptoslate.com/bitcoin-etf-comeback-exposes-a-630-million-divide-with-ethereum-as-blackrock-dominates/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-20T09:50:52+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-20T10:05:40.466997+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Bitcoin ETF comeback exposes a $630 million divide with Ethereum as BlackRock dominates",
+      "cross_check": 1
+    },
     {
       "title": "BlackRock files for third Bitcoin ETF, still no Solana or XRP",
       "url": "https://cointelegraph.com/news/blackrock-ishares-bitcoin-managed-protection-etf-pbit?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -51,10 +85,10 @@
       "sentiment": 1.0,
       "bull_weight": 1.2,
       "bear_weight": 0.0,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-20T09:05:35.948030+00:00",
-      "effective_weight": 1.95,
+      "collected_at": "2026-10-20T10:05:39.932023+00:00",
+      "effective_weight": 1.3,
       "title_original": "BlackRock files for third Bitcoin ETF, still no Solana or XRP",
       "cross_check": 2
     },
@@ -70,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-20T09:05:35.948107+00:00",
+      "collected_at": "2026-10-20T10:05:39.932078+00:00",
       "effective_weight": 1.3,
       "title_original": "US Bitcoin ETFs draw $527M in biggest showing since September",
       "cross_check": 1
@@ -87,47 +121,30 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-20T09:05:37.821575+00:00",
+      "collected_at": "2026-10-20T10:05:41.606413+00:00",
       "effective_weight": 1.2,
       "title_original": "BlackRock подала заявку на биткоин-ETF с защитой от падения котировок",
-      "cross_check": 1
-    },
-    {
-      "title": "Bitcoin rally could revive treasury buying, but easy-money days over",
-      "url": "https://cointelegraph.com/markets/bitcoin-rally-could-revive-treasury-buying-but-easy-money-days-over?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-10-20T01:35:00+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.5,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-20T09:05:35.948175+00:00",
-      "effective_weight": 1.04,
-      "title_original": "Bitcoin rally could revive treasury buying, but easy-money days over",
-      "cross_check": 1
-    },
-    {
-      "title": "Solana treasury firm SkyAI sells all SOL holdings, launches $201M buyback",
-      "url": "https://cointelegraph.com/news/solana-treasury-skyai-sells-all-sol-holdings-launches-201m-buyback?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-10-19T21:04:34+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-20T09:05:35.948246+00:00",
-      "effective_weight": 1.04,
-      "title_original": "Solana treasury firm SkyAI sells all SOL holdings, launches $201M buyback",
       "cross_check": 1
     }
   ],
   "top_bearish": [
+    {
+      "title": "Bitget plans Thai crypto exchange acquisition weeks after $388M hack",
+      "url": "https://cointelegraph.com/news/bitget-plans-thai-crypto-exchange-acquisition-weeks-after-388m-hack?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-10-20T10:00:00+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-20T10:05:39.931876+00:00",
+      "effective_weight": 1.95,
+      "title_original": "Bitget plans Thai crypto exchange acquisition weeks after $388M hack",
+      "cross_check": 1
+    },
     {
       "title": "JPMorgan drops JPM Coin on Ethereum with zero retail access",
       "url": "https://cryptoslate.com/jpmorgan-drops-jpm-coin-on-ethereum-with-zero-retail-access/",
@@ -140,7 +157,7 @@
       "bear_weight": 1.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-20T09:05:36.602820+00:00",
+      "collected_at": "2026-10-20T10:05:40.467034+00:00",
       "effective_weight": 1.0,
       "title_original": "JPMorgan drops JPM Coin on Ethereum with zero retail access",
       "cross_check": 5
@@ -157,7 +174,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-20T09:05:36.765263+00:00",
+      "collected_at": "2026-10-20T10:05:40.600561+00:00",
       "effective_weight": 1.0,
       "title_original": "Germany’s Sparkassen Start Crypto Trading in its Banking App at €0.99 per Order",
       "cross_check": 1
@@ -174,7 +191,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-20T09:05:36.084816+00:00",
+      "collected_at": "2026-10-20T10:05:40.050702+00:00",
       "effective_weight": 0.88,
       "title_original": "Mastercard Brings Its Fraud-Fighting Tools to Stablecoin Payments",
       "cross_check": 1
@@ -191,27 +208,10 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-20T09:05:36.084886+00:00",
+      "collected_at": "2026-10-20T10:05:40.050740+00:00",
       "effective_weight": 0.88,
       "title_original": "JPMorgan's JPM Coin Arrives on Ethereum, Putting Bank Dollars on a Public Blockchain",
       "cross_check": 5
-    },
-    {
-      "title": "Abandoned Bitcoin? Wallet Targeted by Noah Doe Lawsuit Moves $33 Million",
-      "url": "https://decrypt.co/381337/abandoned-bitcoin-wallet-noah-doe-lawsuit-moves-33-million",
-      "source": "Decrypt",
-      "source_weight": 1.1,
-      "lang": "en",
-      "pub_date": "2026-10-19T16:46:05+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 2.7,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-20T09:05:36.084949+00:00",
-      "effective_weight": 0.88,
-      "title_original": "Abandoned Bitcoin? Wallet Targeted by Noah Doe Lawsuit Moves $33 Million",
-      "cross_check": 1
     }
   ]
 }
