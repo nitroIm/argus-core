@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-10-20T07:05:40.550599+00:00",
-  "total_news": 92,
-  "avg_sentiment": -0.234,
-  "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 16,
+  "generated_at": "2026-10-20T08:05:36.808343+00:00",
+  "total_news": 95,
+  "avg_sentiment": -0.145,
+  "mood": "🟡 НЕЙТРАЛЬНОЕ",
+  "bullish_count": 17,
   "bearish_count": 22,
-  "neutral_count": 54,
+  "neutral_count": 56,
   "fake_count": 0,
   "cross_confirmed": 5,
   "by_source": {
@@ -20,7 +20,7 @@
       "bear": 5
     },
     "Bitcoin.com": {
-      "total": 4,
+      "total": 5,
       "bull": 0,
       "bear": 1
     },
@@ -35,12 +35,29 @@
       "bear": 7
     },
     "ForkLog": {
-      "total": 12,
-      "bull": 0,
+      "total": 14,
+      "bull": 1,
       "bear": 1
     }
   },
   "top_bullish": [
+    {
+      "title": "BlackRock подала заявку на биткоин-ETF с защитой от падения котировок",
+      "url": "https://forklog.com/blackrock-podala-zayavku-na-bitkoin-etf-s-zashhitoj-ot-padeniya-kotirovok",
+      "source": "ForkLog",
+      "source_weight": 1.2,
+      "lang": "ru",
+      "pub_date": "2026-10-20T07:10:00+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-20T08:05:36.739208+00:00",
+      "effective_weight": 1.8,
+      "title_original": "BlackRock подала заявку на биткоин-ETF с защитой от падения котировок",
+      "cross_check": 1
+    },
     {
       "title": "US Bitcoin ETFs draw $527M in biggest showing since September",
       "url": "https://cointelegraph.com/markets/bitcoin-etfs-527m-inflows-biggest-since-september?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -53,7 +70,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-20T07:05:38.889484+00:00",
+      "collected_at": "2026-10-20T08:05:35.426200+00:00",
       "effective_weight": 1.3,
       "title_original": "US Bitcoin ETFs draw $527M in biggest showing since September",
       "cross_check": 1
@@ -68,10 +85,10 @@
       "sentiment": 1.0,
       "bull_weight": 1.5,
       "bear_weight": 0.0,
-      "freshness": 1.0,
+      "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-20T07:05:38.889567+00:00",
-      "effective_weight": 1.3,
+      "collected_at": "2026-10-20T08:05:35.426291+00:00",
+      "effective_weight": 1.04,
       "title_original": "Bitcoin rally could revive treasury buying, but easy-money days over",
       "cross_check": 1
     },
@@ -87,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-20T07:05:38.889641+00:00",
+      "collected_at": "2026-10-20T08:05:35.426366+00:00",
       "effective_weight": 1.04,
       "title_original": "Solana treasury firm SkyAI sells all SOL holdings, launches $201M buyback",
       "cross_check": 1
@@ -104,27 +121,10 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-20T07:05:38.889712+00:00",
+      "collected_at": "2026-10-20T08:05:35.426439+00:00",
       "effective_weight": 1.04,
       "title_original": "Crypto PAC pours $362K into California race voters essentially decided in August",
       "cross_check": 2
-    },
-    {
-      "title": "JPMorgan takes JPM Coin to Ethereum for institutional clients",
-      "url": "https://cointelegraph.com/news/jpmorgan-jpm-coin-ethereum-institutional-clients?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-10-19T08:58:45+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-20T07:05:38.890718+00:00",
-      "effective_weight": 1.04,
-      "title_original": "JPMorgan takes JPM Coin to Ethereum for institutional clients",
-      "cross_check": 5
     }
   ],
   "top_bearish": [
@@ -138,10 +138,10 @@
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 1.0,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-20T07:05:39.223818+00:00",
-      "effective_weight": 1.5,
+      "collected_at": "2026-10-20T08:05:35.737727+00:00",
+      "effective_weight": 1.0,
       "title_original": "JPMorgan drops JPM Coin on Ethereum with zero retail access",
       "cross_check": 5
     },
@@ -155,10 +155,10 @@
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 1.5,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-20T07:05:39.363305+00:00",
-      "effective_weight": 1.5,
+      "collected_at": "2026-10-20T08:05:35.847465+00:00",
+      "effective_weight": 1.0,
       "title_original": "Germany’s Sparkassen Start Crypto Trading in its Banking App at €0.99 per Order",
       "cross_check": 1
     },
@@ -174,7 +174,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-20T07:05:38.958435+00:00",
+      "collected_at": "2026-10-20T08:05:35.499714+00:00",
       "effective_weight": 0.88,
       "title_original": "Mastercard Brings Its Fraud-Fighting Tools to Stablecoin Payments",
       "cross_check": 1
@@ -191,7 +191,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-20T07:05:38.958505+00:00",
+      "collected_at": "2026-10-20T08:05:35.499808+00:00",
       "effective_weight": 0.88,
       "title_original": "JPMorgan's JPM Coin Arrives on Ethereum, Putting Bank Dollars on a Public Blockchain",
       "cross_check": 5
@@ -208,7 +208,7 @@
       "bear_weight": 2.7,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-20T07:05:38.958568+00:00",
+      "collected_at": "2026-10-20T08:05:35.499881+00:00",
       "effective_weight": 0.88,
       "title_original": "Abandoned Bitcoin? Wallet Targeted by Noah Doe Lawsuit Moves $33 Million",
       "cross_check": 1
