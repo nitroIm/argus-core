@@ -1,16 +1,16 @@
 {
-  "generated_at": "2026-10-21T01:05:44.270926+00:00",
-  "total_news": 102,
-  "avg_sentiment": 0.192,
+  "generated_at": "2026-10-21T02:05:49.684826+00:00",
+  "total_news": 101,
+  "avg_sentiment": 0.175,
   "mood": "🟢 БЫЧЬЕ",
   "bullish_count": 27,
   "bearish_count": 19,
-  "neutral_count": 56,
+  "neutral_count": 55,
   "fake_count": 0,
   "cross_confirmed": 3,
   "by_source": {
     "Cointelegraph": {
-      "total": 25,
+      "total": 24,
       "bull": 10,
       "bear": 6
     },
@@ -42,23 +42,6 @@
   },
   "top_bullish": [
     {
-      "title": "Musk’s SpaceX Earnings Rocket Higher as Bitcoin Stash Holds Firm",
-      "url": "https://news.bitcoin.com/featured/musks-spacex-earnings-rocket-higher-as-bitcoin-stash-holds-firm/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-21T00:30:03+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-21T01:05:42.792172+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Musk’s SpaceX Earnings Rocket Higher as Bitcoin Stash Holds Firm",
-      "cross_check": 1
-    },
-    {
       "title": "Microsoft, Alphabet, Goldman Sachs Join Growing List of Companies Objecting to Tokenized Stocks",
       "url": "https://decrypt.co/381448/microsoft-alphabet-goldman-sachs-growing-list-objecting-tokenized-stocks",
       "source": "Decrypt",
@@ -70,27 +53,10 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-21T01:05:42.589983+00:00",
+      "collected_at": "2026-10-21T02:05:47.942938+00:00",
       "effective_weight": 1.1,
       "title_original": "Microsoft, Alphabet, Goldman Sachs Join Growing List of Companies Objecting to Tokenized Stocks",
       "cross_check": 2
-    },
-    {
-      "title": "Swiss Regulator Approves First Retail Fund That Holds Bitcoin Directly",
-      "url": "https://decrypt.co/381446/swiss-regulator-first-retail-fund-holds-bitcoin-directly",
-      "source": "Decrypt",
-      "source_weight": 1.1,
-      "lang": "en",
-      "pub_date": "2026-10-20T19:31:04+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.5,
-      "bear_weight": 0.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-21T01:05:42.590037+00:00",
-      "effective_weight": 1.1,
-      "title_original": "Swiss Regulator Approves First Retail Fund That Holds Bitcoin Directly",
-      "cross_check": 3
     },
     {
       "title": "Injective, BDACS plan Korean won stablecoin settlement for tokenized assets",
@@ -104,7 +70,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-21T01:05:42.430320+00:00",
+      "collected_at": "2026-10-21T02:05:47.797752+00:00",
       "effective_weight": 1.04,
       "title_original": "Injective, BDACS plan Korean won stablecoin settlement for tokenized assets",
       "cross_check": 1
@@ -121,10 +87,44 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-21T01:05:42.430476+00:00",
+      "collected_at": "2026-10-21T02:05:47.798010+00:00",
       "effective_weight": 1.04,
       "title_original": "FINMA approves Switzerland’s first Bitcoin ETF for retail investors",
       "cross_check": 3
+    },
+    {
+      "title": "Tx launches USTX stablecoin to pull RWA liquidity onto its chain",
+      "url": "https://cointelegraph.com/news/tx-ustx-stablecoin-rwa-liquidity-chain?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-10-20T12:30:00+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-21T02:05:47.798116+00:00",
+      "effective_weight": 1.04,
+      "title_original": "Tx launches USTX stablecoin to pull RWA liquidity onto its chain",
+      "cross_check": 1
+    },
+    {
+      "title": "Netflix FTX trailer was ‘enough to upset me’ in first 30 seconds: former FTX COO",
+      "url": "https://cointelegraph.com/news/netflix-ftx-trailer-upset-first-30-seconds-ftx-coo?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-10-20T11:23:00+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-21T02:05:47.798260+00:00",
+      "effective_weight": 1.04,
+      "title_original": "Netflix FTX trailer was ‘enough to upset me’ in first 30 seconds: former FTX COO",
+      "cross_check": 1
     }
   ],
   "top_bearish": [
@@ -140,7 +140,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-21T01:05:42.430111+00:00",
+      "collected_at": "2026-10-21T02:05:47.797421+00:00",
       "effective_weight": 1.3,
       "title_original": "Qubic restarts blockchain, opens recovery claims after $1.4M hack",
       "cross_check": 2
@@ -157,7 +157,7 @@
       "bear_weight": 1.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-21T01:05:42.430158+00:00",
+      "collected_at": "2026-10-21T02:05:47.797499+00:00",
       "effective_weight": 1.3,
       "title_original": "Bitwise, Hyperliquid seek SEC rule changes for token trading, airdrops",
       "cross_check": 1
@@ -174,7 +174,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-21T01:05:42.589920+00:00",
+      "collected_at": "2026-10-21T02:05:47.942870+00:00",
       "effective_weight": 1.1,
       "title_original": "Wallet Linked to Drift Exploit Sends $61 Million in Ethereum to Tornado Cash",
       "cross_check": 2
@@ -191,7 +191,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-21T01:05:42.430284+00:00",
+      "collected_at": "2026-10-21T02:05:47.797692+00:00",
       "effective_weight": 1.04,
       "title_original": "Strive closes $630M SATS IPO, leaves Bitcoin allocation unspecified",
       "cross_check": 1
@@ -208,7 +208,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-21T01:05:42.430508+00:00",
+      "collected_at": "2026-10-21T02:05:47.798063+00:00",
       "effective_weight": 1.04,
       "title_original": "Drift exploiter sends $61M ETH to Tornado Cash, holds $194M",
       "cross_check": 2
