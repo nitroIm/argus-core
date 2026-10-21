@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-10-21T06:05:36.889932+00:00",
+  "generated_at": "2026-10-21T07:05:35.223859+00:00",
   "total_news": 96,
-  "avg_sentiment": 0.218,
+  "avg_sentiment": 0.215,
   "mood": "🟢 БЫЧЬЕ",
   "bullish_count": 27,
   "bearish_count": 18,
@@ -11,7 +11,7 @@
   "by_source": {
     "Cointelegraph": {
       "total": 22,
-      "bull": 10,
+      "bull": 9,
       "bear": 6
     },
     "Decrypt": {
@@ -20,7 +20,7 @@
       "bear": 4
     },
     "Bitcoin.com": {
-      "total": 8,
+      "total": 7,
       "bull": 2,
       "bear": 1
     },
@@ -35,12 +35,29 @@
       "bear": 6
     },
     "ForkLog": {
-      "total": 15,
-      "bull": 2,
+      "total": 16,
+      "bull": 3,
       "bear": 0
     }
   },
   "top_bullish": [
+    {
+      "title": "Приток в биткоин-ETF достиг максимума за месяц",
+      "url": "https://forklog.com/news/pritok-v-bitkoin-etf-dostig-maksimuma-za-mesyats",
+      "source": "ForkLog",
+      "source_weight": 1.2,
+      "lang": "ru",
+      "pub_date": "2026-10-21T06:47:23+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 3.0,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-21T07:05:35.183305+00:00",
+      "effective_weight": 1.8,
+      "title_original": "Приток в биткоин-ETF достиг максимума за месяц",
+      "cross_check": 1
+    },
     {
       "title": "Injective, BDACS plan Korean won stablecoin settlement for tokenized assets",
       "url": "https://cointelegraph.com/news/injective-bdacs-korean-won-stablecoin-tokenized-assets?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -53,7 +70,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-21T06:05:35.202311+00:00",
+      "collected_at": "2026-10-21T07:05:33.300519+00:00",
       "effective_weight": 1.04,
       "title_original": "Injective, BDACS plan Korean won stablecoin settlement for tokenized assets",
       "cross_check": 1
@@ -70,7 +87,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-21T06:05:35.202587+00:00",
+      "collected_at": "2026-10-21T07:05:33.300702+00:00",
       "effective_weight": 1.04,
       "title_original": "FINMA approves Switzerland’s first Bitcoin ETF for retail investors",
       "cross_check": 4
@@ -87,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-21T06:05:35.202700+00:00",
+      "collected_at": "2026-10-21T07:05:33.300775+00:00",
       "effective_weight": 1.04,
       "title_original": "Tx launches USTX stablecoin to pull RWA liquidity onto its chain",
       "cross_check": 1
@@ -104,30 +121,30 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-21T06:05:35.202838+00:00",
+      "collected_at": "2026-10-21T07:05:33.300863+00:00",
       "effective_weight": 1.04,
       "title_original": "Netflix FTX trailer was ‘enough to upset me’ in first 30 seconds: former FTX COO",
       "cross_check": 1
-    },
-    {
-      "title": "BlackRock files for third Bitcoin ETF, still no Solana or XRP",
-      "url": "https://cointelegraph.com/news/blackrock-ishares-bitcoin-managed-protection-etf-pbit?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-10-20T08:12:57+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-21T06:05:35.203118+00:00",
-      "effective_weight": 1.04,
-      "title_original": "BlackRock files for third Bitcoin ETF, still no Solana or XRP",
-      "cross_check": 2
     }
   ],
   "top_bearish": [
+    {
+      "title": "Ripple Backs SEC’s Proposed Crypto Regulation, Calls for End to Case-by-Case Enforcement",
+      "url": "https://cryptopotato.com/ripple-backs-secs-proposed-crypto-regulation-calls-for-end-to-case-by-case-enforcement/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-21T06:07:52+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-21T07:05:33.993922+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Ripple Backs SEC’s Proposed Crypto Regulation, Calls for End to Case-by-Case Enforcement",
+      "cross_check": 1
+    },
     {
       "title": "Qubic restarts blockchain, opens recovery claims after $1.4M hack",
       "url": "https://cointelegraph.com/news/qubic-restarts-blockchain-opens-recovery-claims-after-14m-hack?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -140,7 +157,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-21T06:05:35.201995+00:00",
+      "collected_at": "2026-10-21T07:05:33.300343+00:00",
       "effective_weight": 1.04,
       "title_original": "Qubic restarts blockchain, opens recovery claims after $1.4M hack",
       "cross_check": 2
@@ -157,7 +174,7 @@
       "bear_weight": 1.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-21T06:05:35.202083+00:00",
+      "collected_at": "2026-10-21T07:05:33.300391+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitwise, Hyperliquid seek SEC rule changes for token trading, airdrops",
       "cross_check": 1
@@ -174,7 +191,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-21T06:05:35.202226+00:00",
+      "collected_at": "2026-10-21T07:05:33.300478+00:00",
       "effective_weight": 1.04,
       "title_original": "Strive closes $630M SATS IPO, leaves Bitcoin allocation unspecified",
       "cross_check": 1
@@ -191,26 +208,9 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-21T06:05:35.202645+00:00",
+      "collected_at": "2026-10-21T07:05:33.300737+00:00",
       "effective_weight": 1.04,
       "title_original": "Drift exploiter sends $61M ETH to Tornado Cash, holds $194M",
-      "cross_check": 2
-    },
-    {
-      "title": "Lloyds and Barclays among UK banks named in crypto transfer complaints, advocacy group says",
-      "url": "https://cointelegraph.com/news/uk-banks-crypto-transfer-complaints-stand-with-crypto?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-10-20T12:13:44+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-21T06:05:35.202765+00:00",
-      "effective_weight": 1.04,
-      "title_original": "Lloyds and Barclays among UK banks named in crypto transfer complaints, advocacy group says",
       "cross_check": 2
     }
   ]
