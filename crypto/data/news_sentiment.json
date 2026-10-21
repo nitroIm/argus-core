@@ -1,26 +1,26 @@
 {
-  "generated_at": "2026-10-21T13:05:40.276040+00:00",
-  "total_news": 89,
-  "avg_sentiment": -0.065,
+  "generated_at": "2026-10-21T14:05:40.914486+00:00",
+  "total_news": 88,
+  "avg_sentiment": -0.146,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
-  "bullish_count": 22,
+  "bullish_count": 19,
   "bearish_count": 21,
-  "neutral_count": 46,
+  "neutral_count": 48,
   "fake_count": 0,
-  "cross_confirmed": 6,
+  "cross_confirmed": 9,
   "by_source": {
     "Cointelegraph": {
       "total": 21,
-      "bull": 5,
+      "bull": 3,
       "bear": 8
     },
     "Decrypt": {
-      "total": 20,
+      "total": 19,
       "bull": 4,
-      "bear": 5
+      "bear": 4
     },
     "Bitcoin.com": {
-      "total": 6,
+      "total": 7,
       "bull": 3,
       "bear": 2
     },
@@ -31,33 +31,16 @@
     },
     "CryptoPotato": {
       "total": 25,
-      "bull": 7,
-      "bear": 5
+      "bull": 6,
+      "bear": 6
     },
     "ForkLog": {
-      "total": 9,
+      "total": 8,
       "bull": 2,
       "bear": 0
     }
   },
   "top_bullish": [
-    {
-      "title": "Bitcoin Price Eyes $84,000 as Buyers Regain Short-Term Control",
-      "url": "https://news.bitcoin.com/market-updates/bitcoin-price-eyes-84000-as-buyers-regain-short-term-control/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-21T12:30:01+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-21T13:05:38.779236+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Bitcoin Price Eyes $84,000 as Buyers Regain Short-Term Control",
-      "cross_check": 2
-    },
     {
       "title": "Injective, BDACS plan Korean won stablecoin settlement for tokenized assets",
       "url": "https://cointelegraph.com/news/injective-bdacs-korean-won-stablecoin-tokenized-assets?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -70,27 +53,27 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-21T13:05:38.448619+00:00",
+      "collected_at": "2026-10-21T14:05:39.179260+00:00",
       "effective_weight": 1.04,
       "title_original": "Injective, BDACS plan Korean won stablecoin settlement for tokenized assets",
       "cross_check": 1
     },
     {
-      "title": "FINMA approves Switzerland’s first Bitcoin ETF for retail investors",
-      "url": "https://cointelegraph.com/news/finma-approves-switzerlands-first-bitcoin-etf-retail?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
+      "title": "Bitcoin Price Eyes $84,000 as Buyers Regain Short-Term Control",
+      "url": "https://news.bitcoin.com/market-updates/bitcoin-price-eyes-84000-as-buyers-regain-short-term-control/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-10-20T13:10:00+00:00",
+      "pub_date": "2026-10-21T12:30:01+00:00",
       "sentiment": 1.0,
-      "bull_weight": 2.7,
+      "bull_weight": 1.0,
       "bear_weight": 0.0,
-      "freshness": 0.8,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-21T13:05:38.448862+00:00",
-      "effective_weight": 1.04,
-      "title_original": "FINMA approves Switzerland’s first Bitcoin ETF for retail investors",
-      "cross_check": 4
+      "collected_at": "2026-10-21T14:05:39.516506+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Bitcoin Price Eyes $84,000 as Buyers Regain Short-Term Control",
+      "cross_check": 2
     },
     {
       "title": "Bitcoin Worth $90 Million Pulled From Wintermute by a Mystery Whale",
@@ -104,7 +87,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-21T13:05:38.779456+00:00",
+      "collected_at": "2026-10-21T14:05:39.516709+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitcoin Worth $90 Million Pulled From Wintermute by a Mystery Whale",
       "cross_check": 1
@@ -121,13 +104,47 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-21T13:05:39.049759+00:00",
+      "collected_at": "2026-10-21T14:05:39.792462+00:00",
       "effective_weight": 1.0,
       "title_original": "XRP ETFs Disappoint Again but XRP Price Rockets 5% to Weekly High",
+      "cross_check": 1
+    },
+    {
+      "title": "Приток в биткоин-ETF достиг максимума за месяц",
+      "url": "https://forklog.com/news/pritok-v-bitkoin-etf-dostig-maksimuma-za-mesyats",
+      "source": "ForkLog",
+      "source_weight": 1.2,
+      "lang": "ru",
+      "pub_date": "2026-10-21T06:47:23+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 3.0,
+      "bear_weight": 0.0,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-21T14:05:40.856456+00:00",
+      "effective_weight": 0.96,
+      "title_original": "Приток в биткоин-ETF достиг максимума за месяц",
       "cross_check": 1
     }
   ],
   "top_bearish": [
+    {
+      "title": "What Falling USDT Supply Means for Bitcoin’s Price Recovery",
+      "url": "https://cryptopotato.com/what-falling-usdt-supply-means-for-bitcoins-price-recovery/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-21T13:06:06+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-21T14:05:39.792242+00:00",
+      "effective_weight": 1.5,
+      "title_original": "What Falling USDT Supply Means for Bitcoin’s Price Recovery",
+      "cross_check": 1
+    },
     {
       "title": "Standard Chartered signs definitive deal to acquire Zodia Custody",
       "url": "https://cointelegraph.com/news/standard-chartered-acquire-zodia-custody-uk?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -138,10 +155,10 @@
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 0.8,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-21T13:05:38.448043+00:00",
-      "effective_weight": 1.95,
+      "collected_at": "2026-10-21T14:05:39.178658+00:00",
+      "effective_weight": 1.3,
       "title_original": "Standard Chartered signs definitive deal to acquire Zodia Custody",
       "cross_check": 1
     },
@@ -157,7 +174,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-21T13:05:38.448187+00:00",
+      "collected_at": "2026-10-21T14:05:39.178814+00:00",
       "effective_weight": 1.3,
       "title_original": "Bitcoin ‘top buyers’ halt BTC price upside with $87.7K now key: Glassnode",
       "cross_check": 2
@@ -174,7 +191,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-21T13:05:38.559829+00:00",
+      "collected_at": "2026-10-21T14:05:39.289246+00:00",
       "effective_weight": 1.1,
       "title_original": "UK Banks Hit With 10,000 Complaints Over Blocked Crypto Transfers in 90 Days: Report",
       "cross_check": 3
@@ -191,27 +208,10 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-21T13:05:38.448360+00:00",
+      "collected_at": "2026-10-21T14:05:39.178989+00:00",
       "effective_weight": 1.04,
       "title_original": "Qubic restarts blockchain, opens recovery claims after $1.4M hack",
       "cross_check": 2
-    },
-    {
-      "title": "Bitwise, Hyperliquid seek SEC rule changes for token trading, airdrops",
-      "url": "https://cointelegraph.com/news/bitwise-hyperliquid-seek-sec-rule-changes-for-token-trading-airdrops?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-10-20T20:38:00+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-21T13:05:38.448433+00:00",
-      "effective_weight": 1.04,
-      "title_original": "Bitwise, Hyperliquid seek SEC rule changes for token trading, airdrops",
-      "cross_check": 1
     }
   ]
 }
