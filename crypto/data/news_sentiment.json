@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-10-20T23:05:50.077391+00:00",
+  "generated_at": "2026-10-21T00:05:43.636484+00:00",
   "total_news": 102,
-  "avg_sentiment": 0.133,
+  "avg_sentiment": 0.127,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
   "bullish_count": 26,
   "bearish_count": 20,
@@ -12,7 +12,7 @@
     "Cointelegraph": {
       "total": 25,
       "bull": 10,
-      "bear": 5
+      "bear": 6
     },
     "Decrypt": {
       "total": 20,
@@ -22,7 +22,7 @@
     "Bitcoin.com": {
       "total": 10,
       "bull": 0,
-      "bear": 2
+      "bear": 1
     },
     "CryptoSlate": {
       "total": 6,
@@ -53,7 +53,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-20T23:05:48.493356+00:00",
+      "collected_at": "2026-10-21T00:05:41.670492+00:00",
       "effective_weight": 1.1,
       "title_original": "Microsoft, Alphabet, Goldman Sachs Join Growing List of Companies Objecting to Tokenized Stocks",
       "cross_check": 2
@@ -70,7 +70,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-20T23:05:48.493419+00:00",
+      "collected_at": "2026-10-21T00:05:41.670536+00:00",
       "effective_weight": 1.1,
       "title_original": "Swiss Regulator Approves First Retail Fund That Holds Bitcoin Directly",
       "cross_check": 3
@@ -87,7 +87,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-20T23:05:48.493489+00:00",
+      "collected_at": "2026-10-21T00:05:41.670585+00:00",
       "effective_weight": 1.1,
       "title_original": "Bitcoin ETFs Post Their Best Day in Nearly a Month as BlackRock Does All the Buying",
       "cross_check": 2
@@ -104,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-20T23:05:48.417329+00:00",
+      "collected_at": "2026-10-21T00:05:41.450629+00:00",
       "effective_weight": 1.04,
       "title_original": "Injective, BDACS plan Korean won stablecoin settlement for tokenized assets",
       "cross_check": 1
@@ -121,13 +121,30 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-20T23:05:48.417617+00:00",
+      "collected_at": "2026-10-21T00:05:41.450865+00:00",
       "effective_weight": 1.04,
       "title_original": "FINMA approves Switzerland’s first Bitcoin ETF for retail investors",
       "cross_check": 3
     }
   ],
   "top_bearish": [
+    {
+      "title": "Qubic restarts blockchain, opens recovery claims after $1.4M hack",
+      "url": "https://cointelegraph.com/news/qubic-restarts-blockchain-opens-recovery-claims-after-14m-hack?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-10-20T23:26:02+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-21T00:05:41.450359+00:00",
+      "effective_weight": 1.95,
+      "title_original": "Qubic restarts blockchain, opens recovery claims after $1.4M hack",
+      "cross_check": 2
+    },
     {
       "title": "Bitwise, Hyperliquid seek SEC rule changes for token trading, airdrops",
       "url": "https://cointelegraph.com/news/bitwise-hyperliquid-seek-sec-rule-changes-for-token-trading-airdrops?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -140,26 +157,9 @@
       "bear_weight": 1.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-20T23:05:48.417002+00:00",
+      "collected_at": "2026-10-21T00:05:41.450427+00:00",
       "effective_weight": 1.3,
       "title_original": "Bitwise, Hyperliquid seek SEC rule changes for token trading, airdrops",
-      "cross_check": 1
-    },
-    {
-      "title": "Strive closes $630M SATS IPO, leaves Bitcoin allocation unspecified",
-      "url": "https://cointelegraph.com/news/strive-closes-630m-sats-ipo-leaves-bitcoin-allocation-unspecified?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-10-20T17:40:00+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-20T23:05:48.417255+00:00",
-      "effective_weight": 1.3,
-      "title_original": "Strive closes $630M SATS IPO, leaves Bitcoin allocation unspecified",
       "cross_check": 1
     },
     {
@@ -174,10 +174,27 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-20T23:05:48.493283+00:00",
+      "collected_at": "2026-10-21T00:05:41.670438+00:00",
       "effective_weight": 1.1,
       "title_original": "Wallet Linked to Drift Exploit Sends $61 Million in Ethereum to Tornado Cash",
       "cross_check": 2
+    },
+    {
+      "title": "Strive closes $630M SATS IPO, leaves Bitcoin allocation unspecified",
+      "url": "https://cointelegraph.com/news/strive-closes-630m-sats-ipo-leaves-bitcoin-allocation-unspecified?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-10-20T17:40:00+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-21T00:05:41.450581+00:00",
+      "effective_weight": 1.04,
+      "title_original": "Strive closes $630M SATS IPO, leaves Bitcoin allocation unspecified",
+      "cross_check": 1
     },
     {
       "title": "Drift exploiter sends $61M ETH to Tornado Cash, holds $194M",
@@ -191,26 +208,9 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-20T23:05:48.417684+00:00",
+      "collected_at": "2026-10-21T00:05:41.450908+00:00",
       "effective_weight": 1.04,
       "title_original": "Drift exploiter sends $61M ETH to Tornado Cash, holds $194M",
-      "cross_check": 2
-    },
-    {
-      "title": "Lloyds and Barclays among UK banks named in crypto transfer complaints, advocacy group says",
-      "url": "https://cointelegraph.com/news/uk-banks-crypto-transfer-complaints-stand-with-crypto?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-10-20T12:13:44+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-20T23:05:48.417816+00:00",
-      "effective_weight": 1.04,
-      "title_original": "Lloyds and Barclays among UK banks named in crypto transfer complaints, advocacy group says",
       "cross_check": 2
     }
   ]
