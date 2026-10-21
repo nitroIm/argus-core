@@ -1,10 +1,10 @@
 # ============================================================
-# ARGUS-Trader — NEWS ANALYZER v12.0 (SENTIMENT FIX)
+# ARGUS-Trader — NEWS ANALYZER v13.0 (CONTEXT & ANTI-FRAUD)
 # ------------------------------------------------------------
-# v12.0:
-#  - Сентимент больше не размывается нейтральными новостями.
-#  - Формула: (Вес Позитива - Вес Негатива) / (Вес Позитива + Вес Негатива).
-#  - Понижен порог для смены настроения (0.15 вместо 0.25).
+# v13.0:
+#  - Anti-fraud = позитив.
+#  - JPMorgan / JPM Coin / внедряет = позитив (принятие).
+#  - Исправлено размытие сентимента.
 # ============================================================
 
 import os
@@ -62,7 +62,10 @@ BULLISH_WEIGHTS = {
     "приток": 1.8, "вливает": 1.5, "инвестирует": 1.2, "накапливает": 1.2,
     "выкупают": 1.2, "закупаются": 1.2, "киты покупают": 1.5,
     "pro-crypto": 1.5, "bipartisan": 1.2, "bill passes": 1.8, "favorable": 1.2,
-    "поддержка": 1.2, "двухпартийный": 1.2, "закон принят": 1.8
+    "поддержка": 1.2, "двухпартийный": 1.2, "закон принят": 1.8,
+    
+    # НОВЫЕ ПОЗИТИВНЫЕ СЛОВА
+    "внедряет": 1.2, "приходит": 1.2, "инструменты": 0.8, "привлекли": 1.5,
 }
 
 BEARISH_WEIGHTS = {
@@ -90,22 +93,38 @@ BEARISH_WEIGHTS = {
 }
 
 CONTEXT_RULES = [
+    # --- ИСПРАВЛЕНИЕ: Anti-Fraud это ПОЗИТИВ ---
+    (r"anti[- ]fraud|combat\s+fraud|борьба\s+с\s+мошенничеств|против\s+мошенничества", 2.0),
+    
+    # --- ИСПРАВЛЕНИЕ: JPMorgan / внедрение = ПРИНЯТИЕ ---
+    (r"(jpm|jpmorgan)\s+(coin|ethereum|eth|blockchain)", 1.5),
+    (r"(внедряет|приходит|запускает)\s+(инструменты|на|в)", 1.0),
+
+    # --- Ошибки из прошлого лога ---
     (r"(etf|fund|funds)\s+(lost|loss|outflow|shed|bleed)", -2.5),
     (r"(hangs?|hanging)\s+by\s+a\s+thread", -2.0),
     (r"halt(ed|s)?\s+(blockchain|network|chain)", -2.0),
     (r"convicted|guilty\s+of", -2.0),
     (r"shrink|shrank|shrunken", -1.5),
+
+    # --- Регуляторы ---
     (r"sec\s+(opens|approves|greenlights|allows|clears|permits)", 2.0),
     (r"sec\s+chair\s+(pushes|backs|supports)", 1.2),
     (r"sec\s+(sues|charges|blocks|rejects|bans|delays)", -2.0),
     (r"cftc\s+(sues|charges|blocks|rejects|bans)", -1.5),
+    
+    # --- Политика ---
     (r"(senate|congress|house)\s+(passes|approves|backs|supports)\s+(crypto|bitcoin|blockchain)", 2.0),
     (r"(senate|congress|house)\s+(rejects|blocks|opposes|cracks down on)\s+(crypto|bitcoin|blockchain)", -2.0),
+    
+    # --- ETF и Институционалы ---
     (r"etf\s+(inflows?|approval|approves|greenlight)", 1.5),
     (r"etf\s+outflows?", -1.5),
     (r"(adopts?|adoption\s+of)\s+bitcoin", 1.5),
     (r"country\s+adopts?\s+crypto", 1.5),
     (r"crypto\s+(ban|bans|banning)", -2.0),
+    
+    # --- Движение капитала и цены ---
     (r"all[- ]time\s+high", 1.8),
     (r"all[- ]time\s+low", -1.8),
     (r"new\s+high", 1.3),
@@ -273,7 +292,7 @@ def fake_score(title, source_weight):
     return round(min(1.0, score), 2)
 
 def main():
-    print("📰 ARGUS-Trader NEWS ANALYZER v12.0 (SENTIMENT FIX)")
+    print("📰 ARGUS-Trader NEWS ANALYZER v13.0")
     print("=" * 60)
     all_news = []
     seen_hashes = set()
@@ -315,7 +334,6 @@ def main():
             if len(kw1 & kw2) >= 3: count += 1
         n1["cross_check"] = count
 
-    # СЧИТАЕМ СЕНТИМЕНТ ТОЛЬКО ПО АКТИВНЫМ НОВОСТЯМ
     bull_news = [n for n in all_news if n["sentiment"] > 0.0]
     bear_news = [n for n in all_news if n["sentiment"] < 0.0]
     
@@ -334,7 +352,6 @@ def main():
     fake_count = sum(1 for n in all_news if n["fake_score"] > 0.4)
     cross_confirmed = sum(1 for n in all_news if n["cross_check"] >= 3)
     
-    # СНИЖЕН ПОРОГ ДЛЯ НАСТРОЕНИЯ
     if avg_sentiment > 0.15: mood = "🟢 БЫЧЬЕ"
     elif avg_sentiment < -0.15: mood = "🔴 МЕДВЕЖЬЕ"
     else: mood = "🟡 НЕЙТРАЛЬНОЕ"
