@@ -26,13 +26,12 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          # Устанавливаем только то, что нужно для нашего скрипта
-          pip install pandas pyarrow fastparquet pandas-ta numpy
+          # Установка совместимой библиотеки pandas-ta-classic
+          pip install pandas pyarrow fastparquet pandas-ta-classic numpy
 
       - name: Run backtest
         env:
           BT_NOTIONAL: ${{ inputs.notional }}
-          # Можно добавить другие переменные, если захочешь менять баланс
           BT_BALANCE: '1000'
         run: python crypto/collect/backtest.py
 
