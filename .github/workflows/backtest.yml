@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       notional:
-        description: 'Размер сделки в $'
+        description: 'Размер сделки в $ (Notional)'
         required: true
-        default: '100'
+        default: '20'
 
 jobs:
   backtest:
@@ -26,7 +26,7 @@ jobs:
       - name: Run backtest
         env:
           BT_NOTIONAL: ${{ inputs.notional }}
-          BT_BALANCE: '1000'
+          BT_BALANCE: '100'  # Жестко задали баланс 100$
         run: python crypto/learn/backtest.py
           
       - name: Upload results
