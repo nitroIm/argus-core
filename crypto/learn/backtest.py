@@ -13,10 +13,18 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 DATA_FILE = SCRIPT_DIR.parent / "collect" / "vision_out" / "BTCUSDT_spot_1h.parquet"
 OUT_FILE = SCRIPT_DIR / "backtest_results.json"
 
-INITIAL_BALANCE = float(os.getenv("BT_BALANCE", "1000.0"))
-POSITION_NOTIONAL = float(os.getenv("BT_NOTIONAL", "100.0"))
-FEE_RATE = 0.001
+# ТВОИ НАСТРОЙКИ
+INITIAL_BALANCE = float(os.getenv("BT_BALANCE", "100.0")) # Баланс 100$
+POSITION_NOTIONAL = float(os.getenv("BT_NOTIONAL", "20.0")) # Позиция 20$
+FEE_RATE = 0.001 # 0.1% комиссия
 TEST_YEARS = 6.0
+
+# НАСТРОЙКИ СТРАТЕГИИ
+EMA_FAST = 20
+EMA_SLOW = 50
+RSI_LIMIT = 65
+TP_PCT = 8.0  # Тейк-профит 8%
+SL_PCT = 3.0  # Стоп-лосс 3%
 
 def calculate_ema(series, period):
     return series.ewm(span=period, adjust=False).mean()
@@ -30,6 +38,7 @@ def calculate_rsi(series, period=14):
 
 def main():
     log.info("STARTING BTC/USDT 1H BACKTEST")
+    log.info(f"Balance: ${INITIAL_BALANCE} | Notional: ${POSITION_NOTIONAL}")
     
     if not DATA_FILE.exists():
         log.error(f"DATA FILE NOT FOUND: {DATA_FILE}")
@@ -43,12 +52,11 @@ def main():
     df['open_time'] = pd.to_datetime(df['open_time'], unit='ms')
     df = df.sort_values('open_time').reset_index(drop=True)
 
-    log.info("Calculating indicators (Pure Pandas)...")
-    df['ema_50'] = calculate_ema(df['close'], 50)
-    df['ema_200'] = calculate_ema(df['close'], 200)
+    log.info("Calculating indicators...")
+    df['ema_fast'] = calculate_ema(df['close'], EMA_FAST)
+    df['ema_slow'] = calculate_ema(df['close'], EMA_SLOW)
     df['rsi_14'] = calculate_rsi(df['close'], 14)
     
-    # Убираем первые строки, где EMA 200 еще не рассчиталась
     df = df.dropna().reset_index(drop=True)
 
     log.info("Simulating trades...")
@@ -62,9 +70,10 @@ def main():
         
         if in_position:
             gross_pct = (curr['close'] - entry_price) / entry_price * 100.0
-            is_death_cross = (prev['ema_50'] >= prev['ema_200']) and (curr['ema_50'] < curr['ema_200'])
+            is_death_cross = (prev['ema_fast'] >= prev['ema_slow']) and (curr['ema_fast'] < curr['ema_slow'])
             
-            if gross_pct <= -2.0 or gross_pct >= 5.0 or is_death_cross:
+            # Выход: Стоп-лосс, Тейк-профит или обратное пересечение
+            if gross_pct <= -SL_PCT or gross_pct >= TP_PCT or is_death_cross:
                 net_pct = gross_pct - (FEE_RATE * 200)
                 pnl_usd = POSITION_NOTIONAL * (net_pct / 100.0)
                 
@@ -76,8 +85,9 @@ def main():
                 in_position = False
 
         if not in_position:
-            golden_cross = (prev['ema_50'] <= prev['ema_200']) and (curr['ema_50'] > curr['ema_200'])
-            if golden_cross and curr['rsi_14'] < 70:
+            golden_cross = (prev['ema_fast'] <= prev['ema_slow']) and (curr['ema_fast'] > curr['ema_slow'])
+            # Вход: Золотой крест и RSI ниже лимита
+            if golden_cross and curr['rsi_14'] < RSI_LIMIT:
                 in_position = True
                 entry_price = curr['close']
 
