@@ -36,7 +36,7 @@ def inspect_dataframe(filepath):
                 
         if time_col:
             print(f"\nНайдена колонка времени: '{time_col}'. Конвертируем в datetime...")
-            df[time_col] = pd.to_datetime(df[time_col])
+            df[time_col] = pd.to_datetime(df[time_col], unit='ms')
             # Сортируем от старых к новым
             df = df.sort_values(by=time_col).reset_index(drop=True)
         else:
