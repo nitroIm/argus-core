@@ -1,18 +1,18 @@
 {
-  "generated_at": "2026-10-22T05:05:36.296727+00:00",
-  "total_news": 87,
-  "avg_sentiment": -0.031,
+  "generated_at": "2026-10-22T06:05:36.921377+00:00",
+  "total_news": 88,
+  "avg_sentiment": 0.032,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
-  "bullish_count": 17,
-  "bearish_count": 19,
-  "neutral_count": 51,
+  "bullish_count": 18,
+  "bearish_count": 18,
+  "neutral_count": 52,
   "fake_count": 0,
   "cross_confirmed": 1,
   "by_source": {
     "Cointelegraph": {
       "total": 19,
       "bull": 2,
-      "bear": 7
+      "bear": 6
     },
     "Decrypt": {
       "total": 18,
@@ -35,12 +35,29 @@
       "bear": 5
     },
     "ForkLog": {
-      "total": 9,
-      "bull": 2,
+      "total": 10,
+      "bull": 3,
       "bear": 2
     }
   },
   "top_bullish": [
+    {
+      "title": "Биткоин-ETF привлекли $1,08 млрд за три дня",
+      "url": "https://forklog.com/bitkoin-etf-privlekli-1-08-mlrd-za-tri-dnya",
+      "source": "ForkLog",
+      "source_weight": 1.2,
+      "lang": "ru",
+      "pub_date": "2026-10-22T05:50:00+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 2.7,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-22T06:05:36.857956+00:00",
+      "effective_weight": 1.8,
+      "title_original": "Биткоин-ETF привлекли $1,08 млрд за три дня",
+      "cross_check": 1
+    },
     {
       "title": "Cardano Foundation urges EU against expanding MiCA rules to DeFi and staking",
       "url": "https://cointelegraph.com/news/cardano-foundation-urges-eu-against-expanding-mica-rules-to-defi-and-staking?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -53,7 +70,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-22T05:05:34.551494+00:00",
+      "collected_at": "2026-10-22T06:05:35.464670+00:00",
       "effective_weight": 1.04,
       "title_original": "Cardano Foundation urges EU against expanding MiCA rules to DeFi and staking",
       "cross_check": 1
@@ -70,7 +87,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-22T05:05:34.551709+00:00",
+      "collected_at": "2026-10-22T06:05:35.464893+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin price tags $84.6K as US stocks head higher on SpaceX Q3 earnings beat",
       "cross_check": 2
@@ -87,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-22T05:05:35.369759+00:00",
+      "collected_at": "2026-10-22T06:05:35.926494+00:00",
       "effective_weight": 1.0,
       "title_original": "Why XRP May Retest $1 Before Its Next Major Rally: Analyst",
       "cross_check": 1
@@ -104,30 +121,30 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-22T05:05:36.238977+00:00",
+      "collected_at": "2026-10-22T06:05:36.858369+00:00",
       "effective_weight": 0.96,
       "title_original": "Приток в биткоин-ETF достиг максимума за месяц",
-      "cross_check": 1
-    },
-    {
-      "title": "Bitcoin Hits Weekly High as Crypto Market Rebounds",
-      "url": "https://decrypt.co/381555/bitcoin-price-weekly-high-crypto-rebounds",
-      "source": "Decrypt",
-      "source_weight": 1.1,
-      "lang": "en",
-      "pub_date": "2026-10-21T17:31:03+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-22T05:05:34.610191+00:00",
-      "effective_weight": 0.88,
-      "title_original": "Bitcoin Hits Weekly High as Crypto Market Rebounds",
       "cross_check": 1
     }
   ],
   "top_bearish": [
+    {
+      "title": "XRP Expands Beyond Crypto Trading as Banks and AI Agents Adopt XRPL",
+      "url": "https://news.bitcoin.com/featured/xrp-expands-beyond-crypto-trading-as-banks-and-ai-agents-adopt-xrpl/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-22T05:05:52+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-22T06:05:35.727840+00:00",
+      "effective_weight": 1.5,
+      "title_original": "XRP Expands Beyond Crypto Trading as Banks and AI Agents Adopt XRPL",
+      "cross_check": 1
+    },
     {
       "title": "Tether backs Bolivian fintech bringing USDT payments to food delivery and banking",
       "url": "https://cointelegraph.com/news/tether-backs-bolivian-fintech-bringing-usdt-payments-to-food-delivery-and-banking?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -140,7 +157,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-22T05:05:34.551252+00:00",
+      "collected_at": "2026-10-22T06:05:35.464508+00:00",
       "effective_weight": 1.04,
       "title_original": "Tether backs Bolivian fintech bringing USDT payments to food delivery and banking",
       "cross_check": 1
@@ -157,7 +174,7 @@
       "bear_weight": 0.8,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-22T05:05:34.552078+00:00",
+      "collected_at": "2026-10-22T06:05:35.465261+00:00",
       "effective_weight": 1.04,
       "title_original": "Standard Chartered signs definitive deal to acquire Zodia Custody",
       "cross_check": 2
@@ -174,26 +191,9 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-22T05:05:34.552222+00:00",
+      "collected_at": "2026-10-22T06:05:35.465401+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin ‘top buyers’ halt BTC price upside with $87.7K now key: Glassnode",
-      "cross_check": 1
-    },
-    {
-      "title": "Irish drug lord’s lost Bitcoin fortune comes back to life as $41 million moves to Coinbase",
-      "url": "https://cryptoslate.com/irish-drug-lords-lost-bitcoin-fortune-comes-back-to-life-as-41-million-moves-to-coinbase/",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-21T23:10:19+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-22T05:05:35.274875+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Irish drug lord’s lost Bitcoin fortune comes back to life as $41 million moves to Coinbase",
       "cross_check": 1
     },
     {
@@ -208,7 +208,7 @@
       "bear_weight": 1.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-22T05:05:36.238777+00:00",
+      "collected_at": "2026-10-22T06:05:36.858116+00:00",
       "effective_weight": 0.96,
       "title_original": "Solana запустила обновление Alpenglow, ускоряющее финализацию транзакций на 99%",
       "cross_check": 1
