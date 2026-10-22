@@ -36,7 +36,19 @@ def inspect_dataframe(filepath):
                 
         if time_col:
             print(f"\nНайдена колонка времени: '{time_col}'. Конвертируем в datetime...")
+            
+            # --- БЛОК ИСПРАВЛЕНИЯ ОШИБКИ С ВРЕМЕНЕМ ---
+            # Убираем возможные пустые значения перед конвертацией
+            df = df.dropna(subset=[time_col])
+            
+            # Проверяем: если значение больше 10^14 (16 знаков, микросекунды), 
+            # делим на 1000, чтобы привести к единому формату миллисекунд (13 знаков).
+            df[time_col] = df[time_col].apply(lambda x: x / 1000 if x > 1e14 else x)
+            
+            # Теперь безопасно конвертируем в дату
             df[time_col] = pd.to_datetime(df[time_col], unit='ms')
+            # ------------------------------------------
+
             # Сортируем от старых к новым
             df = df.sort_values(by=time_col).reset_index(drop=True)
         else:
@@ -64,6 +76,10 @@ def inspect_dataframe(filepath):
 
 if __name__ == "__main__":
     print("🚀 ЗАПУСК ПРОВЕРКИ ИСТОРИЧЕСКИХ ДАННЫХ")
+    
+    # Проверяем спот
     inspect_dataframe(FILE_SPOT)
-    # Раскомментируй строку ниже, если захочешь проверить и фьючерсы
-    # inspect_dataframe(FILE_FUT)
+    
+    # Проверяем фьючерсы (если файл есть, он его тоже прочитает)
+    if os.path.exists(FILE_FUT):
+        inspect_dataframe(FILE_FUT)
