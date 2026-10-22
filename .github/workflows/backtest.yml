@@ -21,13 +21,12 @@ jobs:
       - name: Install deps
         run: |
           python -m pip install --upgrade pip
-          pip install pandas pyarrow fastparquet pandas-ta-classic numpy
+          pip install pandas pyarrow fastparquet numpy
           
       - name: Run backtest
         env:
           BT_NOTIONAL: ${{ inputs.notional }}
           BT_BALANCE: '1000'
-        # ПРАВИЛЬНЫЙ ПУТЬ К СКРИПТУ:
         run: python crypto/learn/backtest.py
           
       - name: Upload results
@@ -35,6 +34,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: backtest-results
-          # ПРАВИЛЬНЫЙ ПУТЬ К РЕЗУЛЬТАТУ:
           path: crypto/learn/backtest_results.json
           if-no-files-found: warn
