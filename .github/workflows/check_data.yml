@@ -1,0 +1,27 @@
+name: Check Parquet Data
+
+on:
+  workflow_dispatch: # Запуск только вручную (кнопкой в GitHub)
+
+jobs:
+  inspect_data:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v3
+
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: 📦 Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pandas pyarrow fastparquet
+
+      - name: 🔍 Run Data Inspection Script
+        run: |
+          # Запускаем скрипт из корня репозитория, указывая полный путь
+          python crypto/collect/check_data.py
