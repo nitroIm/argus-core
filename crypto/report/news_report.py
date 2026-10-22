@@ -1,9 +1,8 @@
 # ============================================================
-# ARGUS - NEWS REPORT v10.0 (NO BIAS)
+# ARGUS - NEWS REPORT v10.1
 # ------------------------------------------------------------
-# v10.0: Убрано жесткое деление на Позитив/Негатив.
-#        Выводится единый ТОП-5 главных новостей за сутки
-#        по весу источника и свежести.
+# v10.1: Убрана подпись про авторитетность. Возвращена 
+#        подпись про настроение и прогноз ARGUS.
 # ============================================================
 
 import os
@@ -462,7 +461,6 @@ def build_report(data, top_items, top_ru, btc):
     lines.append("📊 Сентимент: <b>" + format(avg, "+.3f") + "</b> | Всего: " + str(total))
     lines.append("")
 
-    # Выводим просто топ новостей (без разделения)
     if top_items:
         lines.append("🔥 <b>Главные новости:</b>")
         for i, it in enumerate(top_items[:5]):
@@ -473,7 +471,6 @@ def build_report(data, top_items, top_ru, btc):
             src = it.get("source") or ""
             t_esc = esc(title[:180])
             
-            # Добавляем ссылку, если есть
             if url:
                 lines.append(f"  • <a href=\"{esc(url)}\">{t_esc}</a>")
             else:
@@ -486,12 +483,12 @@ def build_report(data, top_items, top_ru, btc):
         lines.append("Новых важных новостей нет.")
         lines.append("")
 
-    lines.append("<i>Бот отбирает новости по авторитетности источника и свежести.</i>")
+    lines.append("<i>Настроение — один из факторов прогноза ARGUS.</i>")
     return "\n".join(lines)
 
 
 def main():
-    log.info("news report v10.0 (No Bias)")
+    log.info("news report v10.1")
     local = now_local()
     log.info("local time: %s (hour=%d)", local.strftime("%H:%M"), local.hour)
     
@@ -519,16 +516,9 @@ def main():
     seen = get_sent_hashes(history)
     log.info("history: %d entries", len(seen))
 
-    # Берем ВСЕ новости (и позитив, и негатив, и нейтральные), которые собрал бот
     all_top = data.get("top_bullish", []) + data.get("top_bearish", [])
-    
-    # Сортируем их по "весу" (авторитетность * свежесть * отсутствие кликбейта)
     all_top.sort(key=lambda x: x.get("effective_weight", 0), reverse=True)
-    
-    # Фильтруем те, что уже отправляли
     fresh_items = filter_fresh(all_top, seen)
-    
-    # Берем топ-5
     top_5 = fresh_items[:5]
     
     log.info("selected %d top news from %d total fresh", len(top_5), len(fresh_items))
