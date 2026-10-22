@@ -1,9 +1,9 @@
 # ============================================================
-# ARGUS - NEWS REPORT v9.0
+# ARGUS - NEWS REPORT v10.0 (NO BIAS)
 # ------------------------------------------------------------
-# v9.0: RSI и ATR считаются по ЧАСОВЫМ свечам (1h), чтобы 
-#       отражать дневной контекст, а не 15-минутный шум.
-#       Добавлены Максимум, Минимум и Объём за 24 часа.
+# v10.0: Убрано жесткое деление на Позитив/Негатив.
+#        Выводится единый ТОП-5 главных новостей за сутки
+#        по весу источника и свежести.
 # ============================================================
 
 import os
@@ -275,7 +275,7 @@ def filter_fresh(items, seen):
     return out
 
 
-def translate_top(items, n=3):
+def translate_top(items, n=5):
     if not items or not TRANSLATE_AVAILABLE:
         return []
     originals = []
@@ -352,7 +352,6 @@ def fetch_btc_snapshot():
         )
         with conn:
             with conn.cursor() as cur:
-                # Берем 400 свечей (100 часов) для точного расчета
                 cur.execute(
                     "SELECT open_time, open, high, low, close, volume "
                     "FROM candles WHERE symbol=%s AND timeframe=%s "
@@ -362,32 +361,23 @@ def fetch_btc_snapshot():
                 )
                 rows = list(reversed(cur.fetchall()))
         conn.close()
-        
         if len(rows) < 100:
             return None
-
-        # 1. Данные за последние 24 часа (96 свечей по 15м)
         last_24h = rows[-96:] if len(rows) >= 96 else rows
         high_24h = max(float(r[2]) for r in last_24h)
         low_24h = min(float(r[3]) for r in last_24h)
         vol_24h = sum(float(r[5]) for r in last_24h)
-        
         price = float(rows[-1][4])
-        
-        # 24ч изменение
         change_pct = 0
         if len(rows) >= 96:
             prev = float(rows[-96][4])
             if prev:
                 change_pct = (price - prev) / prev * 100
 
-        # 2. Сворачиваем 15м в 1ч свечи для RSI и ATR
-        # (4 свечи по 15м = 1 час)
         candles_1h = []
         for i in range(0, len(rows) - 3, 4):
             chunk = rows[i:i+4]
-            if len(chunk) < 4:
-                continue
+            if len(chunk) < 4: continue
             h = max(float(c[2]) for c in chunk)
             l = min(float(c[3]) for c in chunk)
             c = float(chunk[-1][4])
@@ -405,14 +395,9 @@ def fetch_btc_snapshot():
         atr_pct = (atr_1h / price * 100) if atr_1h and price else 0
 
         return {
-            "price": price,
-            "change_pct": change_pct,
-            "high_24h": high_24h,
-            "low_24h": low_24h,
-            "vol_24h": vol_24h,
-            "rsi": rsi_1h,
-            "atr": atr_1h,
-            "atr_pct": atr_pct,
+            "price": price, "change_pct": change_pct,
+            "high_24h": high_24h, "low_24h": low_24h, "vol_24h": vol_24h,
+            "rsi": rsi_1h, "atr": atr_1h, "atr_pct": atr_pct,
         }
     except Exception as e:
         log.error("fetch_btc: %s", e)
@@ -420,39 +405,27 @@ def fetch_btc_snapshot():
 
 
 def fmt_price(p):
-    if p is None:
-        return "?"
-    if p >= 1000:
-        return "$" + format(int(p), ",")
-    if p >= 1:
-        return "$" + format(p, ".2f")
+    if p is None: return "?"
+    if p >= 1000: return "$" + format(int(p), ",")
+    if p >= 1: return "$" + format(p, ".2f")
     return "$" + format(p, ".4f")
 
 
 def fmt_pct(v):
-    if v is None:
-        return "?"
+    if v is None: return "?"
     return format(v, "+.2f") + "%"
 
 
 def fmt_vol(v):
-    if v is None:
-        return "?"
-    if v >= 1000:
-        return format(v, ",.0f") + " BTC"
+    if v is None: return "?"
+    if v >= 1000: return format(v, ",.0f") + " BTC"
     return format(v, ".2f") + " BTC"
 
 
-def build_report(data, bull_items, bear_items,
-                 bull_ru, bear_ru, btc):
+def build_report(data, top_items, top_ru, btc):
     mood = data.get("mood", "Неизвестно")
     avg = data.get("avg_sentiment", 0.0)
     total = data.get("total_news", 0)
-    bull = data.get("bullish_count", 0)
-    bear = data.get("bearish_count", 0)
-    neu = data.get("neutral_count", 0)
-    fake = data.get("fake_count", 0)
-    cross = data.get("cross_confirmed", 0)
 
     now = now_local()
     lines = []
@@ -476,93 +449,52 @@ def build_report(data, bull_items, bear_items,
         parts = []
         if btc["rsi"] is not None:
             r = btc["rsi"]
-            st = ("перекуп" if r >= 70
-                  else "перепрод" if r <= 30 else "нейтр")
+            st = ("перекуп" if r >= 70 else "перепрод" if r <= 30 else "нейтр")
             parts.append("RSI(1ч) " + format(r, ".1f") + " " + st)
         if btc["atr"]:
-            parts.append(
-                "ATR(1ч) " + fmt_price(btc["atr"])
-                + " (" + format(btc["atr_pct"], ".2f") + "%)"
-            )
+            parts.append("ATR(1ч) " + fmt_price(btc["atr"]) + " (" + format(btc["atr_pct"], ".2f") + "%)")
         if parts:
             lines.append("  " + " | ".join(parts))
         lines.append("")
 
     # --- НОВОСТИ ---
     lines.append("🎭 " + esc(mood))
-    lines.append("📊 Сентимент: <b>" + format(avg, "+.3f") + "</b>")
+    lines.append("📊 Сентимент: <b>" + format(avg, "+.3f") + "</b> | Всего: " + str(total))
     lines.append("")
 
-    lines.append("📈 Всего: " + str(total))
-    lines.append("🟢 Бычьих: " + str(bull))
-    lines.append("🔴 Медвежьих: " + str(bear))
-    lines.append("🟡 Нейтральных: " + str(neu))
-    if fake:
-        lines.append("⚠️ Подозрительных: " + str(fake))
-    if cross:
-        lines.append("🔍 Подтв. источниками: " + str(cross))
-    lines.append("")
-
-    if bull_ru or bull_items:
-        lines.append("🟢 <b>Позитив:</b>")
-        for i, it in enumerate(bull_items[:3]):
+    # Выводим просто топ новостей (без разделения)
+    if top_items:
+        lines.append("🔥 <b>Главные новости:</b>")
+        for i, it in enumerate(top_items[:5]):
             title = it.get("title_original") or it.get("title", "")
-            if i < len(bull_ru):
-                title = bull_ru[i]
+            if i < len(top_ru):
+                title = top_ru[i]
             url = it.get("url") or it.get("link") or ""
             src = it.get("source") or ""
             t_esc = esc(title[:180])
+            
+            # Добавляем ссылку, если есть
             if url:
-                lines.append(
-                    "  • <a href=\"" + esc(url) + "\">"
-                    + t_esc + "</a>"
-                )
+                lines.append(f"  • <a href=\"{esc(url)}\">{t_esc}</a>")
             else:
-                lines.append("  • " + t_esc)
+                lines.append(f"  • {t_esc}")
+                
             if src:
-                lines.append("    <i>" + esc(src) + "</i>")
+                lines.append(f"    <i>{esc(src)}</i>")
         lines.append("")
     else:
-        lines.append("🟢 Позитив: новых нет")
+        lines.append("Новых важных новостей нет.")
         lines.append("")
 
-    if bear_ru or bear_items:
-        lines.append("🔴 <b>Негатив:</b>")
-        for i, it in enumerate(bear_items[:3]):
-            title = it.get("title_original") or it.get("title", "")
-            if i < len(bear_ru):
-                title = bear_ru[i]
-            url = it.get("url") or it.get("link") or ""
-            src = it.get("source") or ""
-            t_esc = esc(title[:180])
-            if url:
-                lines.append(
-                    "  • <a href=\"" + esc(url) + "\">"
-                    + t_esc + "</a>"
-                )
-            else:
-                lines.append("  • " + t_esc)
-            if src:
-                lines.append("    <i>" + esc(src) + "</i>")
-        lines.append("")
-    else:
-        lines.append("🔴 Негатив: новых нет")
-        lines.append("")
-
-    lines.append(
-        "<i>Настроение — один из факторов "
-        "прогноза ARGUS.</i>"
-    )
+    lines.append("<i>Бот отбирает новости по авторитетности источника и свежести.</i>")
     return "\n".join(lines)
 
 
 def main():
-    log.info("news report v9.0")
+    log.info("news report v10.0 (No Bias)")
     local = now_local()
-    log.info(
-        "local time: %s (hour=%d)",
-        local.strftime("%H:%M"), local.hour,
-    )
+    log.info("local time: %s (hour=%d)", local.strftime("%H:%M"), local.hour)
+    
     if TEST_MODE:
         log.info("TEST_MODE=ON — игнорируем часы")
 
@@ -587,26 +519,24 @@ def main():
     seen = get_sent_hashes(history)
     log.info("history: %d entries", len(seen))
 
-    top_bull = data.get("top_bullish", [])
-    top_bear = data.get("top_bearish", [])
+    # Берем ВСЕ новости (и позитив, и негатив, и нейтральные), которые собрал бот
+    all_top = data.get("top_bullish", []) + data.get("top_bearish", [])
+    
+    # Сортируем их по "весу" (авторитетность * свежесть * отсутствие кликбейта)
+    all_top.sort(key=lambda x: x.get("effective_weight", 0), reverse=True)
+    
+    # Фильтруем те, что уже отправляли
+    fresh_items = filter_fresh(all_top, seen)
+    
+    # Берем топ-5
+    top_5 = fresh_items[:5]
+    
+    log.info("selected %d top news from %d total fresh", len(top_5), len(fresh_items))
 
-    bull_fresh = filter_fresh(top_bull, seen)
-    bear_fresh = filter_fresh(top_bear, seen)
-
-    log.info("bull: %d total, %d fresh",
-             len(top_bull), len(bull_fresh))
-    log.info("bear: %d total, %d fresh",
-             len(top_bear), len(bear_fresh))
-
-    bull_ru = translate_top(bull_fresh, 3)
-    bear_ru = translate_top(bear_fresh, 3)
-
+    top_ru = translate_top(top_5, 5)
     btc = fetch_btc_snapshot()
 
-    text_tg = build_report(
-        data, bull_fresh, bear_fresh,
-        bull_ru, bear_ru, btc,
-    )
+    text_tg = build_report(data, top_5, top_ru, btc)
     text_vk = to_plain(text_tg)
 
     log.info("report: %d chars", len(text_tg))
@@ -627,17 +557,12 @@ def main():
             sent_any = True
 
     if sent_any:
-        for it in bull_fresh[:3]:
-            t = it.get("title_original") or it.get("title", "")
-            if t:
-                add_sent_hash(history, _title_hash(t))
-        for it in bear_fresh[:3]:
+        for it in top_5:
             t = it.get("title_original") or it.get("title", "")
             if t:
                 add_sent_hash(history, _title_hash(t))
         save_json(SENT_HISTORY_FILE, history)
-        log.info("history updated: %d entries",
-                 len(history.get("entries", [])))
+        log.info("history updated: %d entries", len(history.get("entries", [])))
         log.info("report sent")
     else:
         log.warning("send failed, no history update")
