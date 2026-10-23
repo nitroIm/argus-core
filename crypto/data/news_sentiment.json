@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-10-23T00:05:45.032578+00:00",
+  "generated_at": "2026-10-23T01:05:44.611180+00:00",
   "total_news": 90,
-  "avg_sentiment": -0.052,
+  "avg_sentiment": -0.005,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
   "bullish_count": 21,
   "bearish_count": 25,
@@ -21,12 +21,12 @@
     },
     "Bitcoin.com": {
       "total": 9,
-      "bull": 3,
+      "bull": 2,
       "bear": 0
     },
     "CryptoSlate": {
       "total": 9,
-      "bull": 0,
+      "bull": 1,
       "bear": 4
     },
     "CryptoPotato": {
@@ -42,20 +42,20 @@
   },
   "top_bullish": [
     {
-      "title": "Coinbase Fined Again in Ireland, This Time $3.6M Over Fund Safeguarding",
-      "url": "https://decrypt.co/381638/coinbase-fined-again-ireland-3-6m-fund-safeguarding",
-      "source": "Decrypt",
-      "source_weight": 1.1,
+      "title": "Ethereum’s long-awaited Glamsterdam upgrade hits another roadblock as 13 security risks emerge",
+      "url": "https://cryptoslate.com/ethereums-long-awaited-glamsterdam-upgrade-hits-another-roadblock-as-13-security-risks-emerge/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-10-22T18:36:03+00:00",
+      "pub_date": "2026-10-23T00:40:37+00:00",
       "sentiment": 1.0,
-      "bull_weight": 1.0,
+      "bull_weight": 1.2,
       "bear_weight": 0.0,
-      "freshness": 1.0,
+      "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-23T00:05:43.285943+00:00",
-      "effective_weight": 1.1,
-      "title_original": "Coinbase Fined Again in Ireland, This Time $3.6M Over Fund Safeguarding",
+      "collected_at": "2026-10-23T01:05:43.322744+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Ethereum’s long-awaited Glamsterdam upgrade hits another roadblock as 13 security risks emerge",
       "cross_check": 1
     },
     {
@@ -70,7 +70,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-23T00:05:43.189312+00:00",
+      "collected_at": "2026-10-23T01:05:42.806885+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin hashrate hits seven-month high as AI shift fails to ease mining competition",
       "cross_check": 2
@@ -87,7 +87,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-23T00:05:43.189554+00:00",
+      "collected_at": "2026-10-23T01:05:42.807087+00:00",
       "effective_weight": 1.04,
       "title_original": "CryptoQuant CEO calls rising Bitcoin hashrate ‘indirect bullish signal’ from institutions",
       "cross_check": 2
@@ -104,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-23T00:05:43.189625+00:00",
+      "collected_at": "2026-10-23T01:05:42.807141+00:00",
       "effective_weight": 1.04,
       "title_original": "Thailand SEC says several companies eye crypto ETFs, none has applied",
       "cross_check": 1
@@ -121,7 +121,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-23T00:05:43.190100+00:00",
+      "collected_at": "2026-10-23T01:05:42.807476+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin ETFs bag another $528M, taking 3-day haul past $1B",
       "cross_check": 1
@@ -140,7 +140,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-23T00:05:43.188993+00:00",
+      "collected_at": "2026-10-23T01:05:42.806654+00:00",
       "effective_weight": 1.3,
       "title_original": "New DeepSeek ban in US, Swiss-Asia crypto ties deepen: Asia Express",
       "cross_check": 1
@@ -157,7 +157,7 @@
       "bear_weight": 1.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-23T00:05:43.285868+00:00",
+      "collected_at": "2026-10-23T01:05:42.903722+00:00",
       "effective_weight": 1.1,
       "title_original": "a16z Drops Crypto From Its Name, Widens Bets to AI and Frontier Tech",
       "cross_check": 1
@@ -174,7 +174,7 @@
       "bear_weight": 0.8,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-23T00:05:43.189233+00:00",
+      "collected_at": "2026-10-23T01:05:42.806827+00:00",
       "effective_weight": 1.04,
       "title_original": "Underdog taps zerohash to bring crypto deposits to prediction markets",
       "cross_check": 1
@@ -191,7 +191,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-23T00:05:43.189384+00:00",
+      "collected_at": "2026-10-23T01:05:42.806935+00:00",
       "effective_weight": 1.04,
       "title_original": "Irish cenbank fines Coinbase arm $3.6M for oversight, safeguard failures",
       "cross_check": 1
@@ -208,7 +208,7 @@
       "bear_weight": 2.7,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-23T00:05:43.189693+00:00",
+      "collected_at": "2026-10-23T01:05:42.807192+00:00",
       "effective_weight": 1.04,
       "title_original": "SoFi unveils bank-issued tokenized deposit for yield-bearing crypto funds",
       "cross_check": 2
