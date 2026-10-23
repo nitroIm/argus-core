@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-10-23T20:05:36.898606+00:00",
+  "generated_at": "2026-10-23T21:05:39.633754+00:00",
   "total_news": 93,
-  "avg_sentiment": -0.147,
-  "mood": "🟡 НЕЙТРАЛЬНОЕ",
-  "bullish_count": 22,
-  "bearish_count": 28,
-  "neutral_count": 43,
+  "avg_sentiment": -0.163,
+  "mood": "🔴 МЕДВЕЖЬЕ",
+  "bullish_count": 21,
+  "bearish_count": 27,
+  "neutral_count": 45,
   "fake_count": 0,
-  "cross_confirmed": 13,
+  "cross_confirmed": 12,
   "by_source": {
     "Cointelegraph": {
       "total": 24,
@@ -16,21 +16,21 @@
     },
     "Decrypt": {
       "total": 17,
-      "bull": 3,
+      "bull": 2,
       "bear": 7
     },
     "Bitcoin.com": {
       "total": 8,
       "bull": 3,
-      "bear": 3
+      "bear": 2
     },
     "CryptoSlate": {
-      "total": 7,
+      "total": 8,
       "bull": 1,
       "bear": 2
     },
     "CryptoPotato": {
-      "total": 27,
+      "total": 26,
       "bull": 6,
       "bear": 7
     },
@@ -53,7 +53,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-23T20:05:34.866945+00:00",
+      "collected_at": "2026-10-23T21:05:37.933516+00:00",
       "effective_weight": 1.3,
       "title_original": "SEC flags tokenization as high-risk area in 2027 market examinations",
       "cross_check": 2
@@ -70,7 +70,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-23T20:05:34.867000+00:00",
+      "collected_at": "2026-10-23T21:05:37.933571+00:00",
       "effective_weight": 1.3,
       "title_original": "Bitcoin seeks support above $81K as Brent crude oil hits highest level since March",
       "cross_check": 1
@@ -87,7 +87,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-23T20:05:34.867297+00:00",
+      "collected_at": "2026-10-23T21:05:37.933865+00:00",
       "effective_weight": 1.04,
       "title_original": "HSBC launches Hong Kong dollar stablecoin for retail payments",
       "cross_check": 2
@@ -104,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-23T20:05:34.867550+00:00",
+      "collected_at": "2026-10-23T21:05:37.934114+00:00",
       "effective_weight": 1.04,
       "title_original": "Switzerland’s first retail spot Bitcoin ETF targets November launch",
       "cross_check": 1
@@ -121,13 +121,30 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-23T20:05:35.373385+00:00",
+      "collected_at": "2026-10-23T21:05:38.260079+00:00",
       "effective_weight": 1.0,
       "title_original": "HSBC Launches First Stablecoin, Bringing Hong Kong Dollar Payments to 3.3M Users",
       "cross_check": 2
     }
   ],
   "top_bearish": [
+    {
+      "title": "IRS plans lower tax disclosure penalties, including for crypto: Forbes",
+      "url": "https://cointelegraph.com/news/irs-plans-lower-penalties-for-crypto-tax-disclosures-forbes-reports?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-10-23T20:54:17+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-23T21:05:37.933337+00:00",
+      "effective_weight": 1.95,
+      "title_original": "IRS plans lower tax disclosure penalties, including for crypto: Forbes",
+      "cross_check": 1
+    },
     {
       "title": "Initia halts blockchain after exploit reportedly drains over $2.6M",
       "url": "https://cointelegraph.com/news/initia-halts-blockchain-exploit-drained?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -140,7 +157,7 @@
       "bear_weight": 5.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-23T20:05:34.866826+00:00",
+      "collected_at": "2026-10-23T21:05:37.933410+00:00",
       "effective_weight": 1.3,
       "title_original": "Initia halts blockchain after exploit reportedly drains over $2.6M",
       "cross_check": 1
@@ -157,7 +174,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-23T20:05:34.990110+00:00",
+      "collected_at": "2026-10-23T21:05:38.030747+00:00",
       "effective_weight": 1.1,
       "title_original": "Crypto Scammers Who Used Prayer Groups to Lure Victims Must Pay $1.3 Billion, Says New York",
       "cross_check": 1
@@ -174,7 +191,7 @@
       "bear_weight": 2.7,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-23T20:05:34.867152+00:00",
+      "collected_at": "2026-10-23T21:05:37.933729+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin consolidates after 3% loss as AI fears stoke fresh stock-market weakness",
       "cross_check": 2
@@ -191,26 +208,9 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-23T20:05:34.867600+00:00",
+      "collected_at": "2026-10-23T21:05:37.934161+00:00",
       "effective_weight": 1.04,
       "title_original": "New DeepSeek ban in US, Swiss-Asia crypto ties deepen: Asia Express",
-      "cross_check": 1
-    },
-    {
-      "title": "New York Seeks $1.37B From Novatech Founders in Crypto Fraud Case",
-      "url": "https://news.bitcoin.com/regulation-and-legal/new-york-seeks-1-37b-novatech-founders-crypto-fraud-case/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-23T16:10:26+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-23T20:05:35.373481+00:00",
-      "effective_weight": 1.0,
-      "title_original": "New York Seeks $1.37B From Novatech Founders in Crypto Fraud Case",
       "cross_check": 1
     }
   ]
