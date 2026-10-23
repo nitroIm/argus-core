@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-10-23T11:05:41.949747+00:00",
-  "total_news": 88,
-  "avg_sentiment": -0.101,
+  "generated_at": "2026-10-23T12:05:44.843835+00:00",
+  "total_news": 89,
+  "avg_sentiment": -0.102,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
-  "bullish_count": 20,
-  "bearish_count": 24,
-  "neutral_count": 44,
+  "bullish_count": 21,
+  "bearish_count": 25,
+  "neutral_count": 43,
   "fake_count": 0,
-  "cross_confirmed": 3,
+  "cross_confirmed": 5,
   "by_source": {
     "Cointelegraph": {
       "total": 24,
@@ -15,23 +15,23 @@
       "bear": 7
     },
     "Decrypt": {
-      "total": 16,
+      "total": 17,
       "bull": 4,
-      "bear": 4
+      "bear": 5
     },
     "Bitcoin.com": {
       "total": 6,
       "bull": 1,
-      "bear": 0
+      "bear": 1
     },
     "CryptoSlate": {
       "total": 7,
       "bull": 1,
-      "bear": 5
+      "bear": 4
     },
     "CryptoPotato": {
       "total": 28,
-      "bull": 6,
+      "bull": 7,
       "bear": 7
     },
     "ForkLog": {
@@ -41,6 +41,23 @@
     }
   },
   "top_bullish": [
+    {
+      "title": "Monero (XMR) Gains Attention, Zcash (ZEC) Faces Wild Swings, and More: Bits Recap October 23",
+      "url": "https://cryptopotato.com/monero-xmr-gains-attention-zcash-zec-faces-wild-swings-and-more-bits-recap-october-23/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-23T11:45:04+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 2.2,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-23T12:05:43.630218+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Monero (XMR) Gains Attention, Zcash (ZEC) Faces Wild Swings, and More: Bits Recap October 23",
+      "cross_check": 1
+    },
     {
       "title": "HSBC launches Hong Kong dollar stablecoin for retail payments",
       "url": "https://cointelegraph.com/news/hsbc-launches-redcoin-hong-kong-dollar-stablecoin-payme?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -53,7 +70,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-23T11:05:40.385032+00:00",
+      "collected_at": "2026-10-23T12:05:42.581576+00:00",
       "effective_weight": 1.3,
       "title_original": "HSBC launches Hong Kong dollar stablecoin for retail payments",
       "cross_check": 1
@@ -70,7 +87,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-23T11:05:41.891069+00:00",
+      "collected_at": "2026-10-23T12:05:44.783628+00:00",
       "effective_weight": 1.2,
       "title_original": "Количество кошельков с XRP достигло рекордных 8,24 млн",
       "cross_check": 1
@@ -87,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-23T11:05:40.385511+00:00",
+      "collected_at": "2026-10-23T12:05:42.582014+00:00",
       "effective_weight": 1.04,
       "title_original": "Switzerland’s first retail spot Bitcoin ETF targets November launch",
       "cross_check": 1
@@ -104,30 +121,47 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-23T11:05:40.385797+00:00",
+      "collected_at": "2026-10-23T12:05:42.582314+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin hashrate hits seven-month high as AI shift fails to ease mining competition",
       "cross_check": 2
-    },
-    {
-      "title": "CryptoQuant CEO calls rising Bitcoin hashrate ‘indirect bullish signal’ from institutions",
-      "url": "https://cointelegraph.com/markets/cryptoquant-rising-bitcoin-hashrate-indirect-bullish-signal?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-10-22T13:42:34+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-23T11:05:40.386019+00:00",
-      "effective_weight": 1.04,
-      "title_original": "CryptoQuant CEO calls rising Bitcoin hashrate ‘indirect bullish signal’ from institutions",
-      "cross_check": 1
     }
   ],
   "top_bearish": [
+    {
+      "title": "Ethereum Delays Glamsterdam Testnet Fork Over Gas Security Flaws",
+      "url": "https://decrypt.co/381681/ethereum-delays-glamsterdam-testnet-fork-over-gas-security-flaws",
+      "source": "Decrypt",
+      "source_weight": 1.1,
+      "lang": "en",
+      "pub_date": "2026-10-23T11:49:37+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.2,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-23T12:05:43.294543+00:00",
+      "effective_weight": 1.65,
+      "title_original": "Ethereum Delays Glamsterdam Testnet Fork Over Gas Security Flaws",
+      "cross_check": 4
+    },
+    {
+      "title": "You Can Get a Multisig Bitcoin Loan at a Bank, as Sygnum and Debifi Debut",
+      "url": "https://news.bitcoin.com/finance/you-can-get-a-multisig-bitcoin-loan-at-a-bank-as-sygnum-and-debifi-debut/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-23T11:40:45+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-23T12:05:43.480185+00:00",
+      "effective_weight": 1.5,
+      "title_original": "You Can Get a Multisig Bitcoin Loan at a Bank, as Sygnum and Debifi Debut",
+      "cross_check": 1
+    },
     {
       "title": "В JPMorgan предупредили о рисках для криптоиндустрии без CLARITY Act",
       "url": "https://forklog.com/news/v-jpmorgan-predupredili-o-riskah-dlya-kriptoindustrii-bez-clarity-act",
@@ -138,10 +172,10 @@
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 1.2,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-23T11:05:41.890933+00:00",
-      "effective_weight": 1.8,
+      "collected_at": "2026-10-23T12:05:44.783494+00:00",
+      "effective_weight": 1.2,
       "title_original": "В JPMorgan предупредили о рисках для криптоиндустрии без CLARITY Act",
       "cross_check": 1
     },
@@ -157,7 +191,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-23T11:05:40.385583+00:00",
+      "collected_at": "2026-10-23T12:05:42.582082+00:00",
       "effective_weight": 1.04,
       "title_original": "New DeepSeek ban in US, Swiss-Asia crypto ties deepen: Asia Express",
       "cross_check": 1
@@ -174,44 +208,10 @@
       "bear_weight": 0.8,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-23T11:05:40.385722+00:00",
+      "collected_at": "2026-10-23T12:05:42.582241+00:00",
       "effective_weight": 1.04,
       "title_original": "Underdog taps zerohash to bring crypto deposits to prediction markets",
       "cross_check": 1
-    },
-    {
-      "title": "Irish cenbank fines Coinbase arm $3.6M for oversight, safeguard failures",
-      "url": "https://cointelegraph.com/news/ireland-central-bank-coinbase-oversight-safeguard-failure?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-10-22T16:48:00+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-23T11:05:40.385864+00:00",
-      "effective_weight": 1.04,
-      "title_original": "Irish cenbank fines Coinbase arm $3.6M for oversight, safeguard failures",
-      "cross_check": 1
-    },
-    {
-      "title": "SoFi unveils bank-issued tokenized deposit for yield-bearing crypto funds",
-      "url": "https://cointelegraph.com/news/sofi-bank-issued-tokenized-deposit-yield-bearing-crypto-funds?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-10-22T13:13:45+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 2.7,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-23T11:05:40.386151+00:00",
-      "effective_weight": 1.04,
-      "title_original": "SoFi unveils bank-issued tokenized deposit for yield-bearing crypto funds",
-      "cross_check": 2
     }
   ]
 }
