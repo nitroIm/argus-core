@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-10-23T14:05:42.324315+00:00",
+  "generated_at": "2026-10-23T15:05:37.428960+00:00",
   "total_news": 91,
-  "avg_sentiment": -0.174,
+  "avg_sentiment": -0.235,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 20,
-  "bearish_count": 27,
+  "bullish_count": 19,
+  "bearish_count": 28,
   "neutral_count": 44,
   "fake_count": 0,
-  "cross_confirmed": 9,
+  "cross_confirmed": 6,
   "by_source": {
     "Cointelegraph": {
       "total": 24,
@@ -20,19 +20,19 @@
       "bear": 6
     },
     "Bitcoin.com": {
-      "total": 6,
+      "total": 7,
       "bull": 1,
-      "bear": 1
+      "bear": 2
     },
     "CryptoSlate": {
-      "total": 8,
-      "bull": 1,
-      "bear": 3
+      "total": 7,
+      "bull": 0,
+      "bear": 2
     },
     "CryptoPotato": {
       "total": 28,
       "bull": 7,
-      "bear": 7
+      "bear": 8
     },
     "ForkLog": {
       "total": 8,
@@ -41,23 +41,6 @@
     }
   },
   "top_bullish": [
-    {
-      "title": "HSBC launches Hong Kong dollar stablecoin for retail payments",
-      "url": "https://cointelegraph.com/news/hsbc-launches-redcoin-hong-kong-dollar-stablecoin-payme?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-10-23T08:47:34+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-23T14:05:40.286190+00:00",
-      "effective_weight": 1.3,
-      "title_original": "HSBC launches Hong Kong dollar stablecoin for retail payments",
-      "cross_check": 1
-    },
     {
       "title": "Количество кошельков с XRP достигло рекордных 8,24 млн",
       "url": "https://forklog.com/kolichestvo-koshelkov-s-xrp-dostiglo-rekordnyh-8-24-mln",
@@ -70,9 +53,26 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-23T14:05:42.265761+00:00",
+      "collected_at": "2026-10-23T15:05:37.382047+00:00",
       "effective_weight": 1.2,
       "title_original": "Количество кошельков с XRP достигло рекордных 8,24 млн",
+      "cross_check": 1
+    },
+    {
+      "title": "HSBC launches Hong Kong dollar stablecoin for retail payments",
+      "url": "https://cointelegraph.com/news/hsbc-launches-redcoin-hong-kong-dollar-stablecoin-payme?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-10-23T08:47:34+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-23T15:05:35.678735+00:00",
+      "effective_weight": 1.04,
+      "title_original": "HSBC launches Hong Kong dollar stablecoin for retail payments",
       "cross_check": 1
     },
     {
@@ -87,7 +87,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-23T14:05:40.286549+00:00",
+      "collected_at": "2026-10-23T15:05:35.679012+00:00",
       "effective_weight": 1.04,
       "title_original": "Switzerland’s first retail spot Bitcoin ETF targets November launch",
       "cross_check": 1
@@ -104,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-23T14:05:40.286808+00:00",
+      "collected_at": "2026-10-23T15:05:35.679209+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin hashrate hits seven-month high as AI shift fails to ease mining competition",
       "cross_check": 2
@@ -121,7 +121,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-23T14:05:40.729409+00:00",
+      "collected_at": "2026-10-23T15:05:36.056825+00:00",
       "effective_weight": 1.0,
       "title_original": "An Ethereum OG Who Bought at $18 Just Cashed out $7.23 Million",
       "cross_check": 1
@@ -129,55 +129,21 @@
   ],
   "top_bearish": [
     {
-      "title": "В SlowMist предупредили о рисках для Web3 из-за уязвимостей PHP",
-      "url": "https://forklog.com/news/v-slowmist-predupredili-o-riskah-dlya-web3-iz-za-uyazvimostej-php",
-      "source": "ForkLog",
-      "source_weight": 1.2,
-      "lang": "ru",
-      "pub_date": "2026-10-23T13:29:05+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 2.2,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-23T14:05:42.265558+00:00",
-      "effective_weight": 1.8,
-      "title_original": "В SlowMist предупредили о рисках для Web3 из-за уязвимостей PHP",
-      "cross_check": 1
-    },
-    {
-      "title": "Morning Minute: a16z Drops 'Crypto' From Its Fund",
-      "url": "https://decrypt.co/381691/morning-minute-a16z-drops-crypto-from-its-fund",
-      "source": "Decrypt",
-      "source_weight": 1.1,
-      "lang": "en",
-      "pub_date": "2026-10-23T13:29:21+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.0,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-23T14:05:40.437724+00:00",
-      "effective_weight": 1.65,
-      "title_original": "Morning Minute: a16z Drops 'Crypto' From Its Fund",
-      "cross_check": 3
-    },
-    {
-      "title": "Bitcoin Price Prediction: Will the $85K Rejection Send BTC Back Below $80K?",
-      "url": "https://cryptopotato.com/bitcoin-price-prediction-will-the-85k-rejection-send-btc-back-below-80k/",
+      "title": "Bitcoin Rejected at $85K as Macro Pressure Mounts and FOMC Looms: Weekly Crypto Recap",
+      "url": "https://cryptopotato.com/bitcoin-rejected-at-85k-as-macro-pressure-mounts-and-fomc-looms-weekly-crypto-recap/",
       "source": "CryptoPotato",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-10-23T13:13:55+00:00",
+      "pub_date": "2026-10-23T14:38:36+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 3.3,
+      "bear_weight": 1.5,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-23T14:05:41.126148+00:00",
+      "collected_at": "2026-10-23T15:05:36.319176+00:00",
       "effective_weight": 1.5,
-      "title_original": "Bitcoin Price Prediction: Will the $85K Rejection Send BTC Back Below $80K?",
-      "cross_check": 3
+      "title_original": "Bitcoin Rejected at $85K as Macro Pressure Mounts and FOMC Looms: Weekly Crypto Recap",
+      "cross_check": 2
     },
     {
       "title": "Bitcoin consolidates after 3% loss as AI fears stoke fresh stock-market weakness",
@@ -191,10 +157,27 @@
       "bear_weight": 2.7,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-23T14:05:40.285900+00:00",
+      "collected_at": "2026-10-23T15:05:35.678594+00:00",
       "effective_weight": 1.3,
       "title_original": "Bitcoin consolidates after 3% loss as AI fears stoke fresh stock-market weakness",
       "cross_check": 2
+    },
+    {
+      "title": "В SlowMist предупредили о рисках для Web3 из-за уязвимостей PHP",
+      "url": "https://forklog.com/news/v-slowmist-predupredili-o-riskah-dlya-web3-iz-za-uyazvimostej-php",
+      "source": "ForkLog",
+      "source_weight": 1.2,
+      "lang": "ru",
+      "pub_date": "2026-10-23T13:29:05+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 2.2,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-23T15:05:37.381880+00:00",
+      "effective_weight": 1.2,
+      "title_original": "В SlowMist предупредили о рисках для Web3 из-за уязвимостей PHP",
+      "cross_check": 1
     },
     {
       "title": "В JPMorgan предупредили о рисках для криптоиндустрии без CLARITY Act",
@@ -208,10 +191,27 @@
       "bear_weight": 1.2,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-23T14:05:42.265635+00:00",
+      "collected_at": "2026-10-23T15:05:37.381939+00:00",
       "effective_weight": 1.2,
       "title_original": "В JPMorgan предупредили о рисках для криптоиндустрии без CLARITY Act",
       "cross_check": 1
+    },
+    {
+      "title": "Morning Minute: a16z Drops 'Crypto' From Its Fund",
+      "url": "https://decrypt.co/381691/morning-minute-a16z-drops-crypto-from-its-fund",
+      "source": "Decrypt",
+      "source_weight": 1.1,
+      "lang": "en",
+      "pub_date": "2026-10-23T13:29:21+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.0,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-23T15:05:35.786607+00:00",
+      "effective_weight": 1.1,
+      "title_original": "Morning Minute: a16z Drops 'Crypto' From Its Fund",
+      "cross_check": 2
     }
   ]
 }
