@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-10-24T14:05:36.479621+00:00",
-  "total_news": 93,
-  "avg_sentiment": -0.171,
+  "generated_at": "2026-10-24T15:05:45.109297+00:00",
+  "total_news": 94,
+  "avg_sentiment": -0.233,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 20,
-  "bearish_count": 29,
-  "neutral_count": 44,
+  "bearish_count": 32,
+  "neutral_count": 42,
   "fake_count": 0,
-  "cross_confirmed": 10,
+  "cross_confirmed": 15,
   "by_source": {
     "Cointelegraph": {
       "total": 24,
@@ -21,7 +21,7 @@
     },
     "Bitcoin.com": {
       "total": 9,
-      "bull": 3,
+      "bull": 4,
       "bear": 2
     },
     "CryptoSlate": {
@@ -30,9 +30,9 @@
       "bear": 2
     },
     "CryptoPotato": {
-      "total": 25,
-      "bull": 5,
-      "bear": 7
+      "total": 26,
+      "bull": 4,
+      "bear": 10
     },
     "ForkLog": {
       "total": 8,
@@ -41,6 +41,23 @@
     }
   },
   "top_bullish": [
+    {
+      "title": "BNB Chain Tops Solana, Robinhood as Equity Volume Jumps 11x to $25.6B",
+      "url": "https://news.bitcoin.com/defi/bnb-chain-tops-solana-robinhood-as-equity-volume-jumps-11x-to-25-6b/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-24T14:30:53+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-24T15:05:44.148884+00:00",
+      "effective_weight": 1.5,
+      "title_original": "BNB Chain Tops Solana, Robinhood as Equity Volume Jumps 11x to $25.6B",
+      "cross_check": 1
+    },
     {
       "title": "Bitmain, Canaan и F2Pool поддержали инструменты Tether для автоматизации майнинга",
       "url": "https://forklog.com/news/bitmain-canaan-i-f2pool-podderzhali-instrumenty-tether-dlya-avtomatizatsii-majninga",
@@ -51,10 +68,10 @@
       "sentiment": 1.0,
       "bull_weight": 0.8,
       "bear_weight": 0.0,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-24T14:05:36.429070+00:00",
-      "effective_weight": 1.8,
+      "collected_at": "2026-10-24T15:05:45.041215+00:00",
+      "effective_weight": 1.2,
       "title_original": "Bitmain, Canaan и F2Pool поддержали инструменты Tether для автоматизации майнинга",
       "cross_check": 1
     },
@@ -70,7 +87,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-24T14:05:34.990678+00:00",
+      "collected_at": "2026-10-24T15:05:43.884953+00:00",
       "effective_weight": 1.04,
       "title_original": "SEC flags tokenization as high-risk area in 2027 market examinations",
       "cross_check": 2
@@ -87,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-24T14:05:34.990730+00:00",
+      "collected_at": "2026-10-24T15:05:43.885026+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin seeks support above $81K as Brent crude oil hits highest level since March",
       "cross_check": 1
@@ -104,63 +121,46 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-24T14:05:35.252095+00:00",
+      "collected_at": "2026-10-24T15:05:44.149083+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitcoin Slides Under $81K as Trump Breaks a Line Bulls Held Since August",
-      "cross_check": 1
-    },
-    {
-      "title": "Bitcoin Bettors Push Kalshi and Polymarket to a Record $2.7B Week",
-      "url": "https://news.bitcoin.com/market-updates/kalshi-polymarket-crypto-volume-record-2-7-billion/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-24T09:30:19+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-24T14:05:35.252142+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Bitcoin Bettors Push Kalshi and Polymarket to a Record $2.7B Week",
       "cross_check": 1
     }
   ],
   "top_bearish": [
     {
-      "title": "Arthur Hayes Dumps $22.28M in ETH, ENA, UNI as Scammers Move In Fast",
-      "url": "https://news.bitcoin.com/featured/arthur-hayes-dumps-22-million-eth-altcoins-address-poisoning/",
-      "source": "Bitcoin.com",
+      "title": "Ripple Price Analysis: XRP Faces Another Rejection as Short-Term Outlook Weakens",
+      "url": "https://cryptopotato.com/ripple-price-analysis-xrp-faces-another-rejection-as-short-term-outlook-weakens/",
+      "source": "CryptoPotato",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-10-24T13:30:07+00:00",
+      "pub_date": "2026-10-24T14:50:12+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 3.0,
+      "bear_weight": 1.5,
       "freshness": 1.5,
-      "fake_score": 0.2,
-      "collected_at": "2026-10-24T14:05:35.251993+00:00",
-      "effective_weight": 1.2,
-      "title_original": "Arthur Hayes Dumps $22.28M in ETH, ENA, UNI as Scammers Move In Fast",
+      "fake_score": 0.0,
+      "collected_at": "2026-10-24T15:05:44.348881+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Ripple Price Analysis: XRP Faces Another Rejection as Short-Term Outlook Weakens",
       "cross_check": 1
     },
     {
-      "title": "Ethereum sees biggest exchange withdrawal in four months as October ETF losses top $1 billion",
-      "url": "https://cryptoslate.com/ethereum-sees-biggest-exchange-withdrawal-in-four-months-as-october-etf-losses-top-1-billion/",
-      "source": "CryptoSlate",
+      "title": "Ethereum Price Analysis: Is $2K in Play as Bearish Sentiment Builds?",
+      "url": "https://cryptopotato.com/ethereum-price-analysis-is-2k-in-play-as-bearish-sentiment-builds/",
+      "source": "CryptoPotato",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-10-24T13:30:53+00:00",
-      "sentiment": -0.753,
-      "bull_weight": 1.2,
-      "bear_weight": 8.5,
+      "pub_date": "2026-10-24T14:09:17+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.2,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-24T14:05:35.379314+00:00",
+      "collected_at": "2026-10-24T15:05:44.349017+00:00",
       "effective_weight": 1.5,
-      "title_original": "Ethereum sees biggest exchange withdrawal in four months as October ETF losses top $1 billion",
-      "cross_check": 2
+      "title_original": "Ethereum Price Analysis: Is $2K in Play as Bearish Sentiment Builds?",
+      "cross_check": 1
     },
     {
       "title": "Hong Kong’s Biggest Bank Puts a Stablecoin in 3 Million Wallets",
@@ -174,7 +174,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-24T14:05:35.059702+00:00",
+      "collected_at": "2026-10-24T15:05:43.962435+00:00",
       "effective_weight": 1.1,
       "title_original": "Hong Kong’s Biggest Bank Puts a Stablecoin in 3 Million Wallets",
       "cross_check": 2
@@ -191,7 +191,7 @@
       "bear_weight": 1.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-24T14:05:34.990520+00:00",
+      "collected_at": "2026-10-24T15:05:43.884736+00:00",
       "effective_weight": 1.04,
       "title_original": "IRS plans lower tax disclosure penalties, including for crypto: Forbes",
       "cross_check": 1
@@ -208,7 +208,7 @@
       "bear_weight": 5.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-24T14:05:34.990576+00:00",
+      "collected_at": "2026-10-24T15:05:43.884811+00:00",
       "effective_weight": 1.04,
       "title_original": "Initia halts blockchain after exploit reportedly drains over $2.6M",
       "cross_check": 1
