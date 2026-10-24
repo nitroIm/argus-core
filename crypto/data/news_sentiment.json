@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-10-24T17:05:41.249624+00:00",
-  "total_news": 93,
+  "generated_at": "2026-10-24T18:05:41.114312+00:00",
+  "total_news": 94,
   "avg_sentiment": -0.173,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 21,
   "bearish_count": 31,
-  "neutral_count": 41,
+  "neutral_count": 42,
   "fake_count": 0,
   "cross_confirmed": 15,
   "by_source": {
@@ -21,18 +21,18 @@
     },
     "Bitcoin.com": {
       "total": 10,
-      "bull": 6,
-      "bear": 2
+      "bull": 7,
+      "bear": 1
     },
     "CryptoSlate": {
-      "total": 7,
+      "total": 8,
       "bull": 1,
       "bear": 1
     },
     "CryptoPotato": {
       "total": 26,
-      "bull": 4,
-      "bear": 10
+      "bull": 3,
+      "bear": 11
     },
     "ForkLog": {
       "total": 8,
@@ -42,21 +42,21 @@
   },
   "top_bullish": [
     {
-      "title": "Chamath Palihapitiya Warns Bitcoin Will Hit Zero After Years of Bullish Calls",
-      "url": "https://news.bitcoin.com/price-predictions/chamath-palihapitiya-warns-bitcoin-will-hit-zero-after-years-of-bullish-calls/",
+      "title": "XRP Wallets Hit Record 8.24 Million as Network Growth Accelerates",
+      "url": "https://news.bitcoin.com/market-updates/xrp-wallets-hit-record-8-24-million-as-network-growth-accelerates/",
       "source": "Bitcoin.com",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-10-24T16:30:42+00:00",
+      "pub_date": "2026-10-24T17:30:53+00:00",
       "sentiment": 1.0,
-      "bull_weight": 1.2,
+      "bull_weight": 2.2,
       "bear_weight": 0.0,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-24T17:05:40.085623+00:00",
+      "collected_at": "2026-10-24T18:05:39.768513+00:00",
       "effective_weight": 1.5,
-      "title_original": "Chamath Palihapitiya Warns Bitcoin Will Hit Zero After Years of Bullish Calls",
-      "cross_check": 2
+      "title_original": "XRP Wallets Hit Record 8.24 Million as Network Growth Accelerates",
+      "cross_check": 1
     },
     {
       "title": "Bitmain, Canaan и F2Pool поддержали инструменты Tether для автоматизации майнинга",
@@ -70,10 +70,27 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-24T17:05:41.184990+00:00",
+      "collected_at": "2026-10-24T18:05:41.046150+00:00",
       "effective_weight": 1.2,
       "title_original": "Bitmain, Canaan и F2Pool поддержали инструменты Tether для автоматизации майнинга",
       "cross_check": 1
+    },
+    {
+      "title": "Chamath Palihapitiya Warns Bitcoin Will Hit Zero After Years of Bullish Calls",
+      "url": "https://news.bitcoin.com/price-predictions/chamath-palihapitiya-warns-bitcoin-will-hit-zero-after-years-of-bullish-calls/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-24T16:30:42+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-24T18:05:39.768587+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Chamath Palihapitiya Warns Bitcoin Will Hit Zero After Years of Bullish Calls",
+      "cross_check": 2
     },
     {
       "title": "McRib Is Back, and Bitcoin’s Weirdest Bullish Indicator Lives On",
@@ -87,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-24T17:05:40.085705+00:00",
+      "collected_at": "2026-10-24T18:05:39.768664+00:00",
       "effective_weight": 1.0,
       "title_original": "McRib Is Back, and Bitcoin’s Weirdest Bullish Indicator Lives On",
       "cross_check": 1
@@ -104,30 +121,30 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-24T17:05:40.085778+00:00",
+      "collected_at": "2026-10-24T18:05:39.768729+00:00",
       "effective_weight": 1.0,
       "title_original": "BNB Chain Tops Solana, Robinhood as Equity Volume Jumps 11x to $25.6B",
-      "cross_check": 1
-    },
-    {
-      "title": "Bitcoin Slides Under $81K as Trump Breaks a Line Bulls Held Since August",
-      "url": "https://news.bitcoin.com/finance/bitcoin-price-50-day-moving-average-trump-iran-liquidations/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-24T10:30:46+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-24T17:05:40.085972+00:00",
-      "effective_weight": 0.8,
-      "title_original": "Bitcoin Slides Under $81K as Trump Breaks a Line Bulls Held Since August",
       "cross_check": 1
     }
   ],
   "top_bearish": [
+    {
+      "title": "Oil, AI Credit Stress, and Bitcoin: QCP Flags a Dangerous Macro Mix for Risk Assets",
+      "url": "https://cryptopotato.com/oil-ai-credit-stress-and-bitcoin-qcp-flags-a-dangerous-macro-mix-for-risk-assets/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-24T17:06:45+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 0.8,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-24T18:05:40.127190+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Oil, AI Credit Stress, and Bitcoin: QCP Flags a Dangerous Macro Mix for Risk Assets",
+      "cross_check": 1
+    },
     {
       "title": "Hong Kong’s Biggest Bank Puts a Stablecoin in 3 Million Wallets",
       "url": "https://decrypt.co/381760/hong-kong-bank-hsbc-stablecoin-3-million-wallets",
@@ -140,7 +157,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-24T17:05:39.900156+00:00",
+      "collected_at": "2026-10-24T18:05:39.504645+00:00",
       "effective_weight": 1.1,
       "title_original": "Hong Kong’s Biggest Bank Puts a Stablecoin in 3 Million Wallets",
       "cross_check": 2
@@ -157,7 +174,7 @@
       "bear_weight": 1.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-24T17:05:39.798335+00:00",
+      "collected_at": "2026-10-24T18:05:39.365488+00:00",
       "effective_weight": 1.04,
       "title_original": "IRS plans lower tax disclosure penalties, including for crypto: Forbes",
       "cross_check": 1
@@ -174,7 +191,7 @@
       "bear_weight": 5.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-24T17:05:39.798412+00:00",
+      "collected_at": "2026-10-24T18:05:39.365568+00:00",
       "effective_weight": 1.04,
       "title_original": "Initia halts blockchain after exploit reportedly drains over $2.6M",
       "cross_check": 1
@@ -191,26 +208,9 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-24T17:05:40.440454+00:00",
+      "collected_at": "2026-10-24T18:05:40.127266+00:00",
       "effective_weight": 1.0,
       "title_original": "Ripple Price Analysis: XRP Faces Another Rejection as Short-Term Outlook Weakens",
-      "cross_check": 1
-    },
-    {
-      "title": "Ethereum Price Analysis: Is $2K in Play as Bearish Sentiment Builds?",
-      "url": "https://cryptopotato.com/ethereum-price-analysis-is-2k-in-play-as-bearish-sentiment-builds/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-24T14:09:17+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.2,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-24T17:05:40.440596+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Ethereum Price Analysis: Is $2K in Play as Bearish Sentiment Builds?",
       "cross_check": 1
     }
   ]
