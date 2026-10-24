@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-10-24T06:05:35.468632+00:00",
+  "generated_at": "2026-10-24T07:05:37.537098+00:00",
   "total_news": 93,
-  "avg_sentiment": -0.334,
+  "avg_sentiment": -0.283,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 17,
-  "bearish_count": 31,
+  "bullish_count": 18,
+  "bearish_count": 30,
   "neutral_count": 45,
   "fake_count": 0,
   "cross_confirmed": 13,
@@ -22,25 +22,42 @@
     "Bitcoin.com": {
       "total": 9,
       "bull": 0,
-      "bear": 3
+      "bear": 4
     },
     "CryptoSlate": {
-      "total": 6,
-      "bull": 2,
-      "bear": 3
+      "total": 7,
+      "bull": 3,
+      "bear": 2
     },
     "CryptoPotato": {
       "total": 25,
       "bull": 5,
-      "bear": 8
+      "bear": 7
     },
     "ForkLog": {
-      "total": 11,
+      "total": 10,
       "bull": 2,
       "bear": 2
     }
   },
   "top_bullish": [
+    {
+      "title": "JST Buyback & Burn Upgrade: GasFree Revenue and $20.34M Surplus Injected as JUST’s Ecosystem Trio Solidifies JST Token Value",
+      "url": "https://cryptoslate.com/jst-buyback-burn-upgrade-gasfree-revenue-and-20-34m-surplus-injected-as-justs-ecosystem-trio-solidifies-jst-token-value/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-24T06:38:41+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-24T07:05:36.502703+00:00",
+      "effective_weight": 1.5,
+      "title_original": "JST Buyback & Burn Upgrade: GasFree Revenue and $20.34M Surplus Injected as JUST’s Ecosystem Trio Solidifies JST Token Value",
+      "cross_check": 1
+    },
     {
       "title": "SEC flags tokenization as high-risk area in 2027 market examinations",
       "url": "https://cointelegraph.com/news/sec-adds-tokenized-securities-to-2027-examination-priorities?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -53,7 +70,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-24T06:05:33.783024+00:00",
+      "collected_at": "2026-10-24T07:05:36.193993+00:00",
       "effective_weight": 1.04,
       "title_original": "SEC flags tokenization as high-risk area in 2027 market examinations",
       "cross_check": 2
@@ -70,7 +87,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-24T06:05:33.783066+00:00",
+      "collected_at": "2026-10-24T07:05:36.194066+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin seeks support above $81K as Brent crude oil hits highest level since March",
       "cross_check": 1
@@ -87,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-24T06:05:33.783306+00:00",
+      "collected_at": "2026-10-24T07:05:36.194462+00:00",
       "effective_weight": 1.04,
       "title_original": "HSBC launches Hong Kong dollar stablecoin for retail payments",
       "cross_check": 1
@@ -104,30 +121,30 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-24T06:05:35.430814+00:00",
+      "collected_at": "2026-10-24T07:05:37.469925+00:00",
       "effective_weight": 0.96,
       "title_original": "Количество кошельков с XRP достигло рекордных 8,24 млн",
-      "cross_check": 1
-    },
-    {
-      "title": "Aave changes USDT borrowing rules and loan costs suddenly jump",
-      "url": "https://cryptoslate.com/aave-changes-usdt-borrowing-rules-and-loan-costs-suddenly-jump/",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-23T21:40:08+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 2.2,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-24T06:05:34.174668+00:00",
-      "effective_weight": 0.8,
-      "title_original": "Aave changes USDT borrowing rules and loan costs suddenly jump",
       "cross_check": 1
     }
   ],
   "top_bearish": [
+    {
+      "title": "UAE-Led Coalition Exposes $39 Billion in Crypto Fraud, 960 Arrested",
+      "url": "https://news.bitcoin.com/crypto-news/uae-led-coalition-exposes-39-billion-in-crypto-fraud-960-arrested/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-24T06:30:21+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-24T07:05:36.455687+00:00",
+      "effective_weight": 1.5,
+      "title_original": "UAE-Led Coalition Exposes $39 Billion in Crypto Fraud, 960 Arrested",
+      "cross_check": 1
+    },
     {
       "title": "IRS plans lower tax disclosure penalties, including for crypto: Forbes",
       "url": "https://cointelegraph.com/news/irs-plans-lower-penalties-for-crypto-tax-disclosures-forbes-reports?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -140,7 +157,7 @@
       "bear_weight": 1.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-24T06:05:33.782891+00:00",
+      "collected_at": "2026-10-24T07:05:36.193750+00:00",
       "effective_weight": 1.04,
       "title_original": "IRS plans lower tax disclosure penalties, including for crypto: Forbes",
       "cross_check": 1
@@ -157,7 +174,7 @@
       "bear_weight": 5.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-24T06:05:33.782935+00:00",
+      "collected_at": "2026-10-24T07:05:36.193846+00:00",
       "effective_weight": 1.04,
       "title_original": "Initia halts blockchain after exploit reportedly drains over $2.6M",
       "cross_check": 1
@@ -174,7 +191,7 @@
       "bear_weight": 2.7,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-24T06:05:33.783199+00:00",
+      "collected_at": "2026-10-24T07:05:36.194277+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin consolidates after 3% loss as AI fears stoke fresh stock-market weakness",
       "cross_check": 2
@@ -191,26 +208,9 @@
       "bear_weight": 3.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-24T06:05:34.074932+00:00",
+      "collected_at": "2026-10-24T07:05:36.455906+00:00",
       "effective_weight": 1.0,
       "title_original": "Hacker Prints $2.7M in Crypto as Initia Blockchain Grinds to a Halt",
-      "cross_check": 1
-    },
-    {
-      "title": "Bitcoin (BTC) Tanks Toward $80K, Ripple (XRP) Loses Key Support: Weekend Watch",
-      "url": "https://cryptopotato.com/bitcoin-btc-tanks-toward-80k-ripple-xrp-loses-key-support-weekend-watch/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-24T04:47:34+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-24T06:05:34.324847+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Bitcoin (BTC) Tanks Toward $80K, Ripple (XRP) Loses Key Support: Weekend Watch",
       "cross_check": 1
     }
   ]
