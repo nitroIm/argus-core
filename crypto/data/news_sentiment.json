@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-10-24T03:05:36.914828+00:00",
-  "total_news": 94,
-  "avg_sentiment": -0.288,
+  "generated_at": "2026-10-24T04:05:33.944500+00:00",
+  "total_news": 95,
+  "avg_sentiment": -0.307,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 19,
+  "bullish_count": 18,
   "bearish_count": 30,
-  "neutral_count": 45,
+  "neutral_count": 47,
   "fake_count": 0,
   "cross_confirmed": 13,
   "by_source": {
@@ -21,7 +21,7 @@
     },
     "Bitcoin.com": {
       "total": 10,
-      "bull": 2,
+      "bull": 1,
       "bear": 3
     },
     "CryptoSlate": {
@@ -35,7 +35,7 @@
       "bear": 7
     },
     "ForkLog": {
-      "total": 10,
+      "total": 11,
       "bull": 2,
       "bear": 2
     }
@@ -53,7 +53,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-24T03:05:35.115174+00:00",
+      "collected_at": "2026-10-24T04:05:32.297093+00:00",
       "effective_weight": 1.04,
       "title_original": "SEC flags tokenization as high-risk area in 2027 market examinations",
       "cross_check": 2
@@ -70,7 +70,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-24T03:05:35.115227+00:00",
+      "collected_at": "2026-10-24T04:05:32.297137+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin seeks support above $81K as Brent crude oil hits highest level since March",
       "cross_check": 1
@@ -87,27 +87,10 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-24T03:05:35.115520+00:00",
+      "collected_at": "2026-10-24T04:05:32.297379+00:00",
       "effective_weight": 1.04,
       "title_original": "HSBC launches Hong Kong dollar stablecoin for retail payments",
       "cross_check": 2
-    },
-    {
-      "title": "Aave changes USDT borrowing rules and loan costs suddenly jump",
-      "url": "https://cryptoslate.com/aave-changes-usdt-borrowing-rules-and-loan-costs-suddenly-jump/",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-23T21:40:08+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 2.2,
-      "bear_weight": 0.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-24T03:05:35.651290+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Aave changes USDT borrowing rules and loan costs suddenly jump",
-      "cross_check": 1
     },
     {
       "title": "Количество кошельков с XRP достигло рекордных 8,24 млн",
@@ -121,47 +104,30 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-24T03:05:36.863042+00:00",
+      "collected_at": "2026-10-24T04:05:33.904618+00:00",
       "effective_weight": 0.96,
       "title_original": "Количество кошельков с XRP достигло рекордных 8,24 млн",
       "cross_check": 1
-    }
-  ],
-  "top_bearish": [
+    },
     {
-      "title": "Hacker Prints $2.7M in Crypto as Initia Blockchain Grinds to a Halt",
-      "url": "https://news.bitcoin.com/security/hacker-prints-2-7m-in-crypto-as-initia-blockchain-grinds-to-a-halt/",
+      "title": "HSBC Launches First Stablecoin, Bringing Hong Kong Dollar Payments to 3.3M Users",
+      "url": "https://news.bitcoin.com/stablecoins/hsbc-first-stablecoin-hong-kong-dollar-payments-3-3m-users/",
       "source": "Bitcoin.com",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-10-24T02:30:22+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 3.0,
-      "freshness": 1.5,
+      "pub_date": "2026-10-23T18:15:08+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-24T03:05:35.495092+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Hacker Prints $2.7M in Crypto as Initia Blockchain Grinds to a Halt",
-      "cross_check": 1
-    },
-    {
-      "title": "Netanyahu Considering Crypto Plan to Dodge Banking Sanctions on Israel",
-      "url": "https://decrypt.co/381758/netanyahu-crypto-plan-banking-sanctions-israel",
-      "source": "Decrypt",
-      "source_weight": 1.1,
-      "lang": "en",
-      "pub_date": "2026-10-23T21:16:03+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-24T03:05:35.264740+00:00",
-      "effective_weight": 1.1,
-      "title_original": "Netanyahu Considering Crypto Plan to Dodge Banking Sanctions on Israel",
+      "collected_at": "2026-10-24T04:05:32.602555+00:00",
+      "effective_weight": 0.8,
+      "title_original": "HSBC Launches First Stablecoin, Bringing Hong Kong Dollar Payments to 3.3M Users",
       "cross_check": 2
-    },
+    }
+  ],
+  "top_bearish": [
     {
       "title": "IRS plans lower tax disclosure penalties, including for crypto: Forbes",
       "url": "https://cointelegraph.com/news/irs-plans-lower-penalties-for-crypto-tax-disclosures-forbes-reports?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -174,7 +140,7 @@
       "bear_weight": 1.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-24T03:05:35.115014+00:00",
+      "collected_at": "2026-10-24T04:05:32.296964+00:00",
       "effective_weight": 1.04,
       "title_original": "IRS plans lower tax disclosure penalties, including for crypto: Forbes",
       "cross_check": 1
@@ -191,7 +157,7 @@
       "bear_weight": 5.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-24T03:05:35.115072+00:00",
+      "collected_at": "2026-10-24T04:05:32.297009+00:00",
       "effective_weight": 1.04,
       "title_original": "Initia halts blockchain after exploit reportedly drains over $2.6M",
       "cross_check": 1
@@ -208,10 +174,44 @@
       "bear_weight": 2.7,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-24T03:05:35.115386+00:00",
+      "collected_at": "2026-10-24T04:05:32.297271+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin consolidates after 3% loss as AI fears stoke fresh stock-market weakness",
       "cross_check": 2
+    },
+    {
+      "title": "Hacker Prints $2.7M in Crypto as Initia Blockchain Grinds to a Halt",
+      "url": "https://news.bitcoin.com/security/hacker-prints-2-7m-in-crypto-as-initia-blockchain-grinds-to-a-halt/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-24T02:30:22+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 3.0,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-24T04:05:32.602199+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Hacker Prints $2.7M in Crypto as Initia Blockchain Grinds to a Halt",
+      "cross_check": 1
+    },
+    {
+      "title": "‘CLARITY Is About as Good as You Can Get’—Byron Donalds Talks Bitcoin, Prediction Markets and Florida",
+      "url": "https://news.bitcoin.com/interview/clarity-good-you-can-get-byron-donalds-bitcoin-prediction-markets-florida/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-24T00:01:43+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 0.8,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-24T04:05:32.602312+00:00",
+      "effective_weight": 1.0,
+      "title_original": "‘CLARITY Is About as Good as You Can Get’—Byron Donalds Talks Bitcoin, Prediction Markets and Florida",
+      "cross_check": 1
     }
   ]
 }
