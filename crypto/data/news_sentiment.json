@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-10-25T01:05:36.927355+00:00",
+  "generated_at": "2026-10-25T02:05:36.545082+00:00",
   "total_news": 93,
-  "avg_sentiment": -0.326,
+  "avg_sentiment": -0.302,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 17,
   "bearish_count": 34,
@@ -42,6 +42,23 @@
   },
   "top_bullish": [
     {
+      "title": "Ripple Targets High-Value Real Estate Deals With New Crypto Partnership",
+      "url": "https://news.bitcoin.com/crypto-news/ripple-targets-high-value-real-estate-deals-with-new-crypto-partnership/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-25T01:30:12+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 2.2,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-25T02:05:35.195654+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Ripple Targets High-Value Real Estate Deals With New Crypto Partnership",
+      "cross_check": 1
+    },
+    {
       "title": "Grayscale Tracks 580% Crypto Winner Targeting AI Computing Revenue",
       "url": "https://news.bitcoin.com/market-updates/grayscale-tracks-580-crypto-winner-targeting-ai-computing-revenue/",
       "source": "Bitcoin.com",
@@ -53,7 +70,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T01:05:35.731480+00:00",
+      "collected_at": "2026-10-25T02:05:35.195816+00:00",
       "effective_weight": 1.0,
       "title_original": "Grayscale Tracks 580% Crypto Winner Targeting AI Computing Revenue",
       "cross_check": 1
@@ -70,7 +87,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T01:05:36.866029+00:00",
+      "collected_at": "2026-10-25T02:05:36.495582+00:00",
       "effective_weight": 0.96,
       "title_original": "Bitmain, Canaan и F2Pool поддержали инструменты Tether для автоматизации майнинга",
       "cross_check": 1
@@ -87,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T01:05:35.731660+00:00",
+      "collected_at": "2026-10-25T02:05:35.195969+00:00",
       "effective_weight": 0.8,
       "title_original": "XRP Wallets Hit Record 8.24 Million as Network Growth Accelerates",
       "cross_check": 1
@@ -104,27 +121,10 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T01:05:35.731720+00:00",
+      "collected_at": "2026-10-25T02:05:35.196024+00:00",
       "effective_weight": 0.8,
       "title_original": "Chamath Palihapitiya Warns Bitcoin Will Hit Zero After Years of Bullish Calls",
       "cross_check": 2
-    },
-    {
-      "title": "McRib Is Back, and Bitcoin’s Weirdest Bullish Indicator Lives On",
-      "url": "https://news.bitcoin.com/featured/mcrib-is-back-and-bitcoins-weirdest-bullish-indicator-lives-on/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-24T15:30:46+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-25T01:05:35.731783+00:00",
-      "effective_weight": 0.8,
-      "title_original": "McRib Is Back, and Bitcoin’s Weirdest Bullish Indicator Lives On",
-      "cross_check": 1
     }
   ],
   "top_bearish": [
@@ -140,7 +140,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T01:05:35.731546+00:00",
+      "collected_at": "2026-10-25T02:05:35.195871+00:00",
       "effective_weight": 1.0,
       "title_original": "Keystone Wallet Data Breach Exposes Buyers’ Addresses to Scammers",
       "cross_check": 1
@@ -157,7 +157,7 @@
       "bear_weight": 0.8,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T01:05:35.858234+00:00",
+      "collected_at": "2026-10-25T02:05:35.379068+00:00",
       "effective_weight": 1.0,
       "title_original": "Firedancer makes bounty hunters burn 1 SOL even for duplicate bug reports",
       "cross_check": 1
@@ -174,7 +174,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T01:05:36.011882+00:00",
+      "collected_at": "2026-10-25T02:05:35.599333+00:00",
       "effective_weight": 1.0,
       "title_original": "UAE-Led Operation Flags $39B Linked to Crypto and Online Scams",
       "cross_check": 1
@@ -191,7 +191,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T01:05:35.361599+00:00",
+      "collected_at": "2026-10-25T02:05:34.893945+00:00",
       "effective_weight": 0.88,
       "title_original": "Hong Kong’s Biggest Bank Puts a Stablecoin in 3 Million Wallets",
       "cross_check": 2
@@ -208,7 +208,7 @@
       "bear_weight": 1.2,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T01:05:35.731604+00:00",
+      "collected_at": "2026-10-25T02:05:35.195920+00:00",
       "effective_weight": 0.8,
       "title_original": "Bitcoin Price Sinks to $79,146 as Liquidations Rock Weekend Trading",
       "cross_check": 2
