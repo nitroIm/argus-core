@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-10-25T04:05:38.771842+00:00",
+  "generated_at": "2026-10-25T05:05:39.794869+00:00",
   "total_news": 93,
-  "avg_sentiment": -0.405,
+  "avg_sentiment": -0.4,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 15,
   "bearish_count": 35,
@@ -53,7 +53,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T04:05:37.472673+00:00",
+      "collected_at": "2026-10-25T05:05:38.812013+00:00",
       "effective_weight": 1.0,
       "title_original": "Ripple Targets High-Value Real Estate Deals With New Crypto Partnership",
       "cross_check": 1
@@ -70,7 +70,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T04:05:38.704250+00:00",
+      "collected_at": "2026-10-25T05:05:39.728597+00:00",
       "effective_weight": 0.96,
       "title_original": "Bitmain, Canaan и F2Pool поддержали инструменты Tether для автоматизации майнинга",
       "cross_check": 1
@@ -87,7 +87,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T04:05:37.472879+00:00",
+      "collected_at": "2026-10-25T05:05:38.812219+00:00",
       "effective_weight": 0.8,
       "title_original": "Grayscale Tracks 580% Crypto Winner Targeting AI Computing Revenue",
       "cross_check": 1
@@ -104,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T04:05:37.813594+00:00",
+      "collected_at": "2026-10-25T05:05:39.005033+00:00",
       "effective_weight": 0.8,
       "title_original": "Switzerland’s Bitcoin ETF Is More Important Than It Looks: Here’s Why",
       "cross_check": 1
@@ -121,13 +121,30 @@
       "bear_weight": 0.0,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T04:05:36.941743+00:00",
+      "collected_at": "2026-10-25T05:05:38.531376+00:00",
       "effective_weight": 0.65,
       "title_original": "SEC flags tokenization as high-risk area in 2027 market examinations",
       "cross_check": 2
     }
   ],
   "top_bearish": [
+    {
+      "title": "US Extradites Chinese National in $36.9M+ Crypto Scam With 174 Victims",
+      "url": "https://news.bitcoin.com/regulation-and-legal/us-extradites-chinese-national-in-36-9m-crypto-scam-with-174-victims/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-25T04:30:38+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-25T05:05:38.811786+00:00",
+      "effective_weight": 1.5,
+      "title_original": "US Extradites Chinese National in $36.9M+ Crypto Scam With 174 Victims",
+      "cross_check": 1
+    },
     {
       "title": "Ripple Legal Chief Raises Alarm Over Losses in New Crypto Offerings",
       "url": "https://news.bitcoin.com/crypto-news/ripple-legal-chief-raises-alarm-over-losses-in-new-crypto-offerings/",
@@ -138,28 +155,11 @@
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 3.0,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-25T04:05:37.472536+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Ripple Legal Chief Raises Alarm Over Losses in New Crypto Offerings",
-      "cross_check": 1
-    },
-    {
-      "title": "UAE-Led Operation Flags $39B Linked to Crypto and Online Scams",
-      "url": "https://cryptopotato.com/uae-led-operation-flags-39b-linked-to-crypto-and-online-scams/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-24T22:09:47+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T04:05:37.812962+00:00",
+      "collected_at": "2026-10-25T05:05:38.811860+00:00",
       "effective_weight": 1.0,
-      "title_original": "UAE-Led Operation Flags $39B Linked to Crypto and Online Scams",
+      "title_original": "Ripple Legal Chief Raises Alarm Over Losses in New Crypto Offerings",
       "cross_check": 1
     },
     {
@@ -174,7 +174,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T04:05:37.172303+00:00",
+      "collected_at": "2026-10-25T05:05:38.609417+00:00",
       "effective_weight": 0.88,
       "title_original": "Hong Kong’s Biggest Bank Puts a Stablecoin in 3 Million Wallets",
       "cross_check": 2
@@ -191,27 +191,27 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T04:05:37.472952+00:00",
+      "collected_at": "2026-10-25T05:05:38.812292+00:00",
       "effective_weight": 0.8,
       "title_original": "Keystone Wallet Data Breach Exposes Buyers’ Addresses to Scammers",
       "cross_check": 1
     },
     {
-      "title": "Bitcoin Price Sinks to $79,146 as Liquidations Rock Weekend Trading",
-      "url": "https://news.bitcoin.com/market-updates/bitcoin-price-sinks-to-79146-as-liquidations-rock-weekend-trading/",
-      "source": "Bitcoin.com",
+      "title": "Firedancer makes bounty hunters burn 1 SOL even for duplicate bug reports",
+      "url": "https://cryptoslate.com/firedancer-makes-bounty-hunters-burn-1-sol-even-for-duplicate-bug-reports/",
+      "source": "CryptoSlate",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-10-24T18:30:07+00:00",
+      "pub_date": "2026-10-24T21:00:59+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 1.2,
+      "bear_weight": 0.8,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T04:05:37.473039+00:00",
+      "collected_at": "2026-10-25T05:05:38.900339+00:00",
       "effective_weight": 0.8,
-      "title_original": "Bitcoin Price Sinks to $79,146 as Liquidations Rock Weekend Trading",
-      "cross_check": 2
+      "title_original": "Firedancer makes bounty hunters burn 1 SOL even for duplicate bug reports",
+      "cross_check": 1
     }
   ]
 }
