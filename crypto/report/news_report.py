@@ -1,8 +1,7 @@
 # ============================================================
-# ARGUS - NEWS REPORT v10.1
+# ARGUS - NEWS REPORT v10.2
 # ------------------------------------------------------------
-# v10.1: Убрана подпись про авторитетность. Возвращена 
-#        подпись про настроение и прогноз ARGUS.
+# v10.2: Добавлена реферальная ссылка Bybit в конец отчета.
 # ============================================================
 
 import os
@@ -483,12 +482,19 @@ def build_report(data, top_items, top_ru, btc):
         lines.append("Новых важных новостей нет.")
         lines.append("")
 
+    # --- РЕФЕРАЛЬНАЯ ССЫЛКА BYBIT ---
+    lines.append("─" * 20)
+    lines.append("🔥 <b>Хотите торговать на Bybit?</b>")
+    lines.append("Регистрируйтесь по ссылке и получайте бонусы до $1720:")
+    lines.append("<a href=\"https://www.bybit.com/invite?ref=JV3355&medium=referral&utm_campaign=evergreen\">👉 Забрать бонус на Bybit</a>")
+    lines.append("")
+
     lines.append("<i>Настроение — один из факторов прогноза ARGUS.</i>")
     return "\n".join(lines)
 
 
 def main():
-    log.info("news report v10.1")
+    log.info("news report v10.2")
     local = now_local()
     log.info("local time: %s (hour=%d)", local.strftime("%H:%M"), local.hour)
     
