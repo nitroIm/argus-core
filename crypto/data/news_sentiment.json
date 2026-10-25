@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-10-25T02:05:36.545082+00:00",
+  "generated_at": "2026-10-25T03:05:45.640683+00:00",
   "total_news": 93,
-  "avg_sentiment": -0.302,
+  "avg_sentiment": -0.341,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 17,
+  "bullish_count": 16,
   "bearish_count": 34,
-  "neutral_count": 42,
+  "neutral_count": 43,
   "fake_count": 0,
   "cross_confirmed": 15,
   "by_source": {
@@ -21,7 +21,7 @@
     },
     "Bitcoin.com": {
       "total": 8,
-      "bull": 4,
+      "bull": 3,
       "bear": 2
     },
     "CryptoSlate": {
@@ -51,10 +51,10 @@
       "sentiment": 1.0,
       "bull_weight": 2.2,
       "bear_weight": 0.0,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T02:05:35.195654+00:00",
-      "effective_weight": 1.5,
+      "collected_at": "2026-10-25T03:05:44.538358+00:00",
+      "effective_weight": 1.0,
       "title_original": "Ripple Targets High-Value Real Estate Deals With New Crypto Partnership",
       "cross_check": 1
     },
@@ -70,7 +70,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T02:05:35.195816+00:00",
+      "collected_at": "2026-10-25T03:05:44.538595+00:00",
       "effective_weight": 1.0,
       "title_original": "Grayscale Tracks 580% Crypto Winner Targeting AI Computing Revenue",
       "cross_check": 1
@@ -87,7 +87,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T02:05:36.495582+00:00",
+      "collected_at": "2026-10-25T03:05:45.572829+00:00",
       "effective_weight": 0.96,
       "title_original": "Bitmain, Canaan и F2Pool поддержали инструменты Tether для автоматизации майнинга",
       "cross_check": 1
@@ -104,64 +104,30 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T02:05:35.195969+00:00",
+      "collected_at": "2026-10-25T03:05:44.538804+00:00",
       "effective_weight": 0.8,
       "title_original": "XRP Wallets Hit Record 8.24 Million as Network Growth Accelerates",
       "cross_check": 1
     },
     {
-      "title": "Chamath Palihapitiya Warns Bitcoin Will Hit Zero After Years of Bullish Calls",
-      "url": "https://news.bitcoin.com/price-predictions/chamath-palihapitiya-warns-bitcoin-will-hit-zero-after-years-of-bullish-calls/",
-      "source": "Bitcoin.com",
+      "title": "Switzerland’s Bitcoin ETF Is More Important Than It Looks: Here’s Why",
+      "url": "https://cryptopotato.com/switzerlands-bitcoin-etf-is-more-important-than-it-looks-heres-why/",
+      "source": "CryptoPotato",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-10-24T16:30:42+00:00",
+      "pub_date": "2026-10-24T08:29:22+00:00",
       "sentiment": 1.0,
       "bull_weight": 1.2,
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T02:05:35.196024+00:00",
+      "collected_at": "2026-10-25T03:05:44.743573+00:00",
       "effective_weight": 0.8,
-      "title_original": "Chamath Palihapitiya Warns Bitcoin Will Hit Zero After Years of Bullish Calls",
-      "cross_check": 2
+      "title_original": "Switzerland’s Bitcoin ETF Is More Important Than It Looks: Here’s Why",
+      "cross_check": 1
     }
   ],
   "top_bearish": [
-    {
-      "title": "Keystone Wallet Data Breach Exposes Buyers’ Addresses to Scammers",
-      "url": "https://news.bitcoin.com/security/keystone-wallet-data-breach-exposes-buyers-addresses-to-scammers/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-24T20:30:08+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-25T02:05:35.195871+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Keystone Wallet Data Breach Exposes Buyers’ Addresses to Scammers",
-      "cross_check": 1
-    },
-    {
-      "title": "Firedancer makes bounty hunters burn 1 SOL even for duplicate bug reports",
-      "url": "https://cryptoslate.com/firedancer-makes-bounty-hunters-burn-1-sol-even-for-duplicate-bug-reports/",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-24T21:00:59+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 0.8,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-25T02:05:35.379068+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Firedancer makes bounty hunters burn 1 SOL even for duplicate bug reports",
-      "cross_check": 1
-    },
     {
       "title": "UAE-Led Operation Flags $39B Linked to Crypto and Online Scams",
       "url": "https://cryptopotato.com/uae-led-operation-flags-39b-linked-to-crypto-and-online-scams/",
@@ -174,7 +140,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T02:05:35.599333+00:00",
+      "collected_at": "2026-10-25T03:05:44.742394+00:00",
       "effective_weight": 1.0,
       "title_original": "UAE-Led Operation Flags $39B Linked to Crypto and Online Scams",
       "cross_check": 1
@@ -191,10 +157,27 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T02:05:34.893945+00:00",
+      "collected_at": "2026-10-25T03:05:44.326089+00:00",
       "effective_weight": 0.88,
       "title_original": "Hong Kong’s Biggest Bank Puts a Stablecoin in 3 Million Wallets",
       "cross_check": 2
+    },
+    {
+      "title": "Keystone Wallet Data Breach Exposes Buyers’ Addresses to Scammers",
+      "url": "https://news.bitcoin.com/security/keystone-wallet-data-breach-exposes-buyers-addresses-to-scammers/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-24T20:30:08+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-25T03:05:44.538670+00:00",
+      "effective_weight": 0.8,
+      "title_original": "Keystone Wallet Data Breach Exposes Buyers’ Addresses to Scammers",
+      "cross_check": 1
     },
     {
       "title": "Bitcoin Price Sinks to $79,146 as Liquidations Rock Weekend Trading",
@@ -208,10 +191,27 @@
       "bear_weight": 1.2,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T02:05:35.195920+00:00",
+      "collected_at": "2026-10-25T03:05:44.538738+00:00",
       "effective_weight": 0.8,
       "title_original": "Bitcoin Price Sinks to $79,146 as Liquidations Rock Weekend Trading",
       "cross_check": 2
+    },
+    {
+      "title": "Firedancer makes bounty hunters burn 1 SOL even for duplicate bug reports",
+      "url": "https://cryptoslate.com/firedancer-makes-bounty-hunters-burn-1-sol-even-for-duplicate-bug-reports/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-24T21:00:59+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 0.8,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-25T03:05:44.602421+00:00",
+      "effective_weight": 0.8,
+      "title_original": "Firedancer makes bounty hunters burn 1 SOL even for duplicate bug reports",
+      "cross_check": 1
     }
   ]
 }
