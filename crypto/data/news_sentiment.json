@@ -1,17 +1,17 @@
 {
-  "generated_at": "2026-10-25T11:05:34.470904+00:00",
+  "generated_at": "2026-10-25T12:05:38.187221+00:00",
   "total_news": 93,
-  "avg_sentiment": -0.42,
+  "avg_sentiment": -0.435,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 15,
-  "bearish_count": 36,
+  "bullish_count": 14,
+  "bearish_count": 37,
   "neutral_count": 42,
   "fake_count": 0,
   "cross_confirmed": 9,
   "by_source": {
     "Cointelegraph": {
       "total": 24,
-      "bull": 6,
+      "bull": 5,
       "bear": 7
     },
     "Decrypt": {
@@ -27,7 +27,7 @@
     "CryptoSlate": {
       "total": 9,
       "bull": 0,
-      "bear": 4
+      "bear": 5
     },
     "CryptoPotato": {
       "total": 25,
@@ -42,6 +42,23 @@
   },
   "top_bullish": [
     {
+      "title": "Miner Weekly: Bitcoin Hashrate Shrugs off the AI Unplug, Regaining 1 ZH/s Level",
+      "url": "https://news.bitcoin.com/mining/miner-weekly-bitcoin-hashrate-shrugs-off-the-ai-unplug-regaining-1-zh-s-level/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-25T11:30:17+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-25T12:05:36.822427+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Miner Weekly: Bitcoin Hashrate Shrugs off the AI Unplug, Regaining 1 ZH/s Level",
+      "cross_check": 1
+    },
+    {
       "title": "Russia Hits 270,000 Digital Ruble Accounts in Rapid CBDC Launch",
       "url": "https://news.bitcoin.com/featured/russia-hits-270000-digital-ruble-accounts-in-rapid-cbdc-launch/",
       "source": "Bitcoin.com",
@@ -53,7 +70,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T11:05:33.375235+00:00",
+      "collected_at": "2026-10-25T12:05:36.822686+00:00",
       "effective_weight": 1.0,
       "title_original": "Russia Hits 270,000 Digital Ruble Accounts in Rapid CBDC Launch",
       "cross_check": 1
@@ -70,26 +87,9 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T11:05:34.400646+00:00",
+      "collected_at": "2026-10-25T12:05:38.120146+00:00",
       "effective_weight": 0.96,
       "title_original": "Bitmain, Canaan и F2Pool поддержали инструменты Tether для автоматизации майнинга",
-      "cross_check": 1
-    },
-    {
-      "title": "Ripple Targets High-Value Real Estate Deals With New Crypto Partnership",
-      "url": "https://news.bitcoin.com/crypto-news/ripple-targets-high-value-real-estate-deals-with-new-crypto-partnership/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-25T01:30:12+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 2.2,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-25T11:05:33.375589+00:00",
-      "effective_weight": 0.8,
-      "title_original": "Ripple Targets High-Value Real Estate Deals With New Crypto Partnership",
       "cross_check": 1
     },
     {
@@ -104,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T11:05:33.141040+00:00",
+      "collected_at": "2026-10-25T12:05:36.398555+00:00",
       "effective_weight": 0.65,
       "title_original": "SEC flags tokenization as high-risk area in 2027 market examinations",
       "cross_check": 2
@@ -121,7 +121,7 @@
       "bear_weight": 0.0,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T11:05:33.141114+00:00",
+      "collected_at": "2026-10-25T12:05:36.398629+00:00",
       "effective_weight": 0.65,
       "title_original": "Bitcoin seeks support above $81K as Brent crude oil hits highest level since March",
       "cross_check": 1
@@ -129,20 +129,20 @@
   ],
   "top_bearish": [
     {
-      "title": "Ripple Study Finds Banks Could Unlock $100M Beyond Crypto Custody",
-      "url": "https://news.bitcoin.com/featured/ripple-study-finds-banks-could-unlock-100m-beyond-crypto-custody/",
-      "source": "Bitcoin.com",
+      "title": "A 20-month Polkadot wallet breach reveals the dark side of faster crypto withdrawals",
+      "url": "https://cryptoslate.com/a-20-month-polkadot-wallet-breach-reveals-the-dark-side-of-faster-crypto-withdrawals/",
+      "source": "CryptoSlate",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-10-25T05:30:33+00:00",
+      "pub_date": "2026-10-25T11:20:15+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.0,
+      "bear_weight": 3.0,
+      "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T11:05:33.375299+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Ripple Study Finds Banks Could Unlock $100M Beyond Crypto Custody",
+      "collected_at": "2026-10-25T12:05:36.932930+00:00",
+      "effective_weight": 1.5,
+      "title_original": "A 20-month Polkadot wallet breach reveals the dark side of faster crypto withdrawals",
       "cross_check": 1
     },
     {
@@ -157,26 +157,9 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T11:05:33.444949+00:00",
+      "collected_at": "2026-10-25T12:05:36.932999+00:00",
       "effective_weight": 1.0,
       "title_original": "Kraken wants to be your bank, but who will protect your money?",
-      "cross_check": 1
-    },
-    {
-      "title": "Bitcoin Reclaims $80K Immediately After Peter Schiff Predicted a Crash to $75K",
-      "url": "https://cryptopotato.com/bitcoin-reclaims-80k-immediately-after-peter-schiff-predicted-a-crash-to-75k/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-25T06:00:31+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 2.8,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-25T11:05:33.556720+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Bitcoin Reclaims $80K Immediately After Peter Schiff Predicted a Crash to $75K",
       "cross_check": 1
     },
     {
@@ -191,10 +174,27 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T11:05:33.216184+00:00",
+      "collected_at": "2026-10-25T12:05:36.493050+00:00",
       "effective_weight": 0.88,
       "title_original": "Hong Kong’s Biggest Bank Puts a Stablecoin in 3 Million Wallets",
       "cross_check": 2
+    },
+    {
+      "title": "Ripple Study Finds Banks Could Unlock $100M Beyond Crypto Custody",
+      "url": "https://news.bitcoin.com/featured/ripple-study-finds-banks-could-unlock-100m-beyond-crypto-custody/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-25T05:30:33+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-25T12:05:36.822746+00:00",
+      "effective_weight": 0.8,
+      "title_original": "Ripple Study Finds Banks Could Unlock $100M Beyond Crypto Custody",
+      "cross_check": 1
     },
     {
       "title": "US Extradites Chinese National in $36.9M+ Crypto Scam With 174 Victims",
@@ -208,7 +208,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T11:05:33.375367+00:00",
+      "collected_at": "2026-10-25T12:05:36.822810+00:00",
       "effective_weight": 0.8,
       "title_original": "US Extradites Chinese National in $36.9M+ Crypto Scam With 174 Victims",
       "cross_check": 1
