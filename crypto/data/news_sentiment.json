@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-10-25T00:05:37.266144+00:00",
+  "generated_at": "2026-10-25T01:05:36.927355+00:00",
   "total_news": 93,
-  "avg_sentiment": -0.305,
+  "avg_sentiment": -0.326,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 18,
+  "bullish_count": 17,
   "bearish_count": 34,
-  "neutral_count": 41,
+  "neutral_count": 42,
   "fake_count": 0,
   "cross_confirmed": 15,
   "by_source": {
@@ -21,7 +21,7 @@
     },
     "Bitcoin.com": {
       "total": 8,
-      "bull": 5,
+      "bull": 4,
       "bear": 2
     },
     "CryptoSlate": {
@@ -53,7 +53,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T00:05:36.366809+00:00",
+      "collected_at": "2026-10-25T01:05:35.731480+00:00",
       "effective_weight": 1.0,
       "title_original": "Grayscale Tracks 580% Crypto Winner Targeting AI Computing Revenue",
       "cross_check": 1
@@ -70,7 +70,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T00:05:37.198905+00:00",
+      "collected_at": "2026-10-25T01:05:36.866029+00:00",
       "effective_weight": 0.96,
       "title_original": "Bitmain, Canaan и F2Pool поддержали инструменты Tether для автоматизации майнинга",
       "cross_check": 1
@@ -87,7 +87,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T00:05:36.367025+00:00",
+      "collected_at": "2026-10-25T01:05:35.731660+00:00",
       "effective_weight": 0.8,
       "title_original": "XRP Wallets Hit Record 8.24 Million as Network Growth Accelerates",
       "cross_check": 1
@@ -104,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T00:05:36.367097+00:00",
+      "collected_at": "2026-10-25T01:05:35.731720+00:00",
       "effective_weight": 0.8,
       "title_original": "Chamath Palihapitiya Warns Bitcoin Will Hit Zero After Years of Bullish Calls",
       "cross_check": 2
@@ -121,7 +121,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T00:05:36.367171+00:00",
+      "collected_at": "2026-10-25T01:05:35.731783+00:00",
       "effective_weight": 0.8,
       "title_original": "McRib Is Back, and Bitcoin’s Weirdest Bullish Indicator Lives On",
       "cross_check": 1
@@ -140,27 +140,10 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T00:05:36.366889+00:00",
+      "collected_at": "2026-10-25T01:05:35.731546+00:00",
       "effective_weight": 1.0,
       "title_original": "Keystone Wallet Data Breach Exposes Buyers’ Addresses to Scammers",
       "cross_check": 1
-    },
-    {
-      "title": "Bitcoin Price Sinks to $79,146 as Liquidations Rock Weekend Trading",
-      "url": "https://news.bitcoin.com/market-updates/bitcoin-price-sinks-to-79146-as-liquidations-rock-weekend-trading/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-24T18:30:07+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.2,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-25T00:05:36.366957+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Bitcoin Price Sinks to $79,146 as Liquidations Rock Weekend Trading",
-      "cross_check": 2
     },
     {
       "title": "Firedancer makes bounty hunters burn 1 SOL even for duplicate bug reports",
@@ -174,26 +157,9 @@
       "bear_weight": 0.8,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T00:05:36.465001+00:00",
+      "collected_at": "2026-10-25T01:05:35.858234+00:00",
       "effective_weight": 1.0,
       "title_original": "Firedancer makes bounty hunters burn 1 SOL even for duplicate bug reports",
-      "cross_check": 1
-    },
-    {
-      "title": "Kraken drops Monero spending questions but keeps a $1,500 rolling 30-day withdrawal cap for individuals",
-      "url": "https://cryptoslate.com/kraken-drops-monero-spending-questions-but-keeps-a-1500-rolling-30-day-withdrawal-cap-for-individuals/",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-24T19:00:37+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 4.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-25T00:05:36.465172+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Kraken drops Monero spending questions but keeps a $1,500 rolling 30-day withdrawal cap for individuals",
       "cross_check": 1
     },
     {
@@ -208,10 +174,44 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T00:05:36.540649+00:00",
+      "collected_at": "2026-10-25T01:05:36.011882+00:00",
       "effective_weight": 1.0,
       "title_original": "UAE-Led Operation Flags $39B Linked to Crypto and Online Scams",
       "cross_check": 1
+    },
+    {
+      "title": "Hong Kong’s Biggest Bank Puts a Stablecoin in 3 Million Wallets",
+      "url": "https://decrypt.co/381760/hong-kong-bank-hsbc-stablecoin-3-million-wallets",
+      "source": "Decrypt",
+      "source_weight": 1.1,
+      "lang": "en",
+      "pub_date": "2026-10-24T13:01:02+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-25T01:05:35.361599+00:00",
+      "effective_weight": 0.88,
+      "title_original": "Hong Kong’s Biggest Bank Puts a Stablecoin in 3 Million Wallets",
+      "cross_check": 2
+    },
+    {
+      "title": "Bitcoin Price Sinks to $79,146 as Liquidations Rock Weekend Trading",
+      "url": "https://news.bitcoin.com/market-updates/bitcoin-price-sinks-to-79146-as-liquidations-rock-weekend-trading/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-24T18:30:07+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.2,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-25T01:05:35.731604+00:00",
+      "effective_weight": 0.8,
+      "title_original": "Bitcoin Price Sinks to $79,146 as Liquidations Rock Weekend Trading",
+      "cross_check": 2
     }
   ]
 }
