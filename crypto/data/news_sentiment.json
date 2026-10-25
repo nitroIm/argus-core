@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-10-25T18:05:50.880342+00:00",
-  "total_news": 89,
-  "avg_sentiment": -0.289,
+  "generated_at": "2026-10-25T19:05:36.379127+00:00",
+  "total_news": 90,
+  "avg_sentiment": -0.218,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 17,
-  "bearish_count": 34,
-  "neutral_count": 38,
+  "bullish_count": 18,
+  "bearish_count": 35,
+  "neutral_count": 37,
   "fake_count": 0,
   "cross_confirmed": 4,
   "by_source": {
@@ -25,13 +25,13 @@
       "bear": 2
     },
     "CryptoSlate": {
-      "total": 7,
+      "total": 8,
       "bull": 0,
-      "bear": 4
+      "bear": 5
     },
     "CryptoPotato": {
       "total": 25,
-      "bull": 5,
+      "bull": 6,
       "bear": 11
     },
     "ForkLog": {
@@ -41,6 +41,23 @@
     }
   },
   "top_bullish": [
+    {
+      "title": "Bitcoin vs Ethereum ETFs: The Gap Is Getting Hard to Ignore",
+      "url": "https://cryptopotato.com/bitcoin-vs-ethereum-etfs-the-gap-is-getting-hard-to-ignore/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-25T18:37:13+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-25T19:05:35.610198+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Bitcoin vs Ethereum ETFs: The Gap Is Getting Hard to Ignore",
+      "cross_check": 1
+    },
     {
       "title": "Bitcoin ETFs Snap Two-Week Losing Streak Despite Late-Week Slide",
       "url": "https://decrypt.co/381777/bitcoin-etfs-snap-two-week-losing-streak-despite-late-week-slide",
@@ -53,10 +70,10 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T18:05:49.507949+00:00",
+      "collected_at": "2026-10-25T19:05:35.256246+00:00",
       "effective_weight": 1.1,
       "title_original": "Bitcoin ETFs Snap Two-Week Losing Streak Despite Late-Week Slide",
-      "cross_check": 1
+      "cross_check": 2
     },
     {
       "title": "PHP Flaw Shakes Internet, Bitcoin Flashes Bull Signal, and More – Weekly Recap",
@@ -70,27 +87,10 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T18:05:49.722149+00:00",
+      "collected_at": "2026-10-25T19:05:35.429984+00:00",
       "effective_weight": 1.0,
       "title_original": "PHP Flaw Shakes Internet, Bitcoin Flashes Bull Signal, and More – Weekly Recap",
       "cross_check": 2
-    },
-    {
-      "title": "Bitcoin Withstands Headwinds — Week in Review",
-      "url": "https://news.bitcoin.com/opinion-and-analysis/bitcoin-withstands-headwinds-week-in-review/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-25T13:00:04+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-25T18:05:49.722213+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Bitcoin Withstands Headwinds — Week in Review",
-      "cross_check": 1
     },
     {
       "title": "Bitcoin to $75K Before a Massive Rally? Analysts See a Familiar Setup",
@@ -104,30 +104,47 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T18:05:49.911759+00:00",
+      "collected_at": "2026-10-25T19:05:35.610354+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitcoin to $75K Before a Massive Rally? Analysts See a Familiar Setup",
       "cross_check": 1
     },
     {
-      "title": "XRP to $0.98 or a ‘Face-Melting’ Rally? Analysts Clash on What Comes Next",
-      "url": "https://cryptopotato.com/xrp-to-0-98-or-a-face-melting-rally-analysts-clash-on-what-comes-next/",
-      "source": "CryptoPotato",
+      "title": "Bitcoin Withstands Headwinds — Week in Review",
+      "url": "https://news.bitcoin.com/opinion-and-analysis/bitcoin-withstands-headwinds-week-in-review/",
+      "source": "Bitcoin.com",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-10-25T12:42:57+00:00",
+      "pub_date": "2026-10-25T13:00:04+00:00",
       "sentiment": 1.0,
-      "bull_weight": 1.5,
+      "bull_weight": 1.2,
       "bear_weight": 0.0,
-      "freshness": 1.0,
+      "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T18:05:49.911840+00:00",
-      "effective_weight": 1.0,
-      "title_original": "XRP to $0.98 or a ‘Face-Melting’ Rally? Analysts Clash on What Comes Next",
+      "collected_at": "2026-10-25T19:05:35.430053+00:00",
+      "effective_weight": 0.8,
+      "title_original": "Bitcoin Withstands Headwinds — Week in Review",
       "cross_check": 1
     }
   ],
   "top_bearish": [
+    {
+      "title": "How $37 million stolen from Americans moved through a Bahamas bank into Tether’s USDT",
+      "url": "https://cryptoslate.com/how-37-million-stolen-from-americans-moved-through-a-bahamas-bank-into-tethers-usdt/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-25T18:40:29+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-25T19:05:35.495985+00:00",
+      "effective_weight": 1.5,
+      "title_original": "How $37 million stolen from Americans moved through a Bahamas bank into Tether’s USDT",
+      "cross_check": 1
+    },
     {
       "title": "Website Dares Hackers to Steal Bitcoin as the Clock Keeps Ticking",
       "url": "https://news.bitcoin.com/featured/website-dares-hackers-to-steal-bitcoin-as-the-clock-keeps-ticking/",
@@ -138,10 +155,10 @@
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 1.5,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T18:05:49.721990+00:00",
-      "effective_weight": 1.5,
+      "collected_at": "2026-10-25T19:05:35.429833+00:00",
+      "effective_weight": 1.0,
       "title_original": "Website Dares Hackers to Steal Bitcoin as the Clock Keeps Ticking",
       "cross_check": 1
     },
@@ -157,7 +174,7 @@
       "bear_weight": 1.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T18:05:49.722065+00:00",
+      "collected_at": "2026-10-25T19:05:35.429900+00:00",
       "effective_weight": 1.0,
       "title_original": "Peter Schiff Warns Bitcoin Could Hit $75K After BTC Fell Below $80K",
       "cross_check": 2
@@ -174,7 +191,7 @@
       "bear_weight": 0.8,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T18:05:49.911678+00:00",
+      "collected_at": "2026-10-25T19:05:35.610286+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitcoin Price Prediction: What’s the Most Likely Scenario for BTC Next Week?",
       "cross_check": 2
@@ -191,26 +208,9 @@
       "bear_weight": 3.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T18:05:49.826003+00:00",
+      "collected_at": "2026-10-25T19:05:35.496174+00:00",
       "effective_weight": 0.8,
       "title_original": "A 20-month Polkadot wallet breach reveals the dark side of faster crypto withdrawals",
-      "cross_check": 1
-    },
-    {
-      "title": "Kraken wants to be your bank, but who will protect your money?",
-      "url": "https://cryptoslate.com/kraken-wants-to-be-your-bank-but-who-would-protect-your-money/",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-25T08:00:04+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-25T18:05:49.826071+00:00",
-      "effective_weight": 0.8,
-      "title_original": "Kraken wants to be your bank, but who will protect your money?",
       "cross_check": 1
     }
   ]
