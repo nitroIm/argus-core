@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-10-25T10:05:39.168737+00:00",
-  "total_news": 94,
-  "avg_sentiment": -0.428,
+  "generated_at": "2026-10-25T11:05:34.470904+00:00",
+  "total_news": 93,
+  "avg_sentiment": -0.42,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 15,
   "bearish_count": 36,
-  "neutral_count": 43,
+  "neutral_count": 42,
   "fake_count": 0,
   "cross_confirmed": 9,
   "by_source": {
@@ -20,7 +20,7 @@
       "bear": 9
     },
     "Bitcoin.com": {
-      "total": 10,
+      "total": 9,
       "bull": 2,
       "bear": 3
     },
@@ -53,7 +53,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T10:05:37.745248+00:00",
+      "collected_at": "2026-10-25T11:05:33.375235+00:00",
       "effective_weight": 1.0,
       "title_original": "Russia Hits 270,000 Digital Ruble Accounts in Rapid CBDC Launch",
       "cross_check": 1
@@ -70,7 +70,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T10:05:39.104336+00:00",
+      "collected_at": "2026-10-25T11:05:34.400646+00:00",
       "effective_weight": 0.96,
       "title_original": "Bitmain, Canaan и F2Pool поддержали инструменты Tether для автоматизации майнинга",
       "cross_check": 1
@@ -87,7 +87,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T10:05:37.745604+00:00",
+      "collected_at": "2026-10-25T11:05:33.375589+00:00",
       "effective_weight": 0.8,
       "title_original": "Ripple Targets High-Value Real Estate Deals With New Crypto Partnership",
       "cross_check": 1
@@ -104,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T10:05:37.447685+00:00",
+      "collected_at": "2026-10-25T11:05:33.141040+00:00",
       "effective_weight": 0.65,
       "title_original": "SEC flags tokenization as high-risk area in 2027 market examinations",
       "cross_check": 2
@@ -121,7 +121,7 @@
       "bear_weight": 0.0,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T10:05:37.447749+00:00",
+      "collected_at": "2026-10-25T11:05:33.141114+00:00",
       "effective_weight": 0.65,
       "title_original": "Bitcoin seeks support above $81K as Brent crude oil hits highest level since March",
       "cross_check": 1
@@ -140,26 +140,9 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T10:05:37.745319+00:00",
+      "collected_at": "2026-10-25T11:05:33.375299+00:00",
       "effective_weight": 1.0,
       "title_original": "Ripple Study Finds Banks Could Unlock $100M Beyond Crypto Custody",
-      "cross_check": 1
-    },
-    {
-      "title": "US Extradites Chinese National in $36.9M+ Crypto Scam With 174 Victims",
-      "url": "https://news.bitcoin.com/regulation-and-legal/us-extradites-chinese-national-in-36-9m-crypto-scam-with-174-victims/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-25T04:30:38+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-25T10:05:37.745392+00:00",
-      "effective_weight": 1.0,
-      "title_original": "US Extradites Chinese National in $36.9M+ Crypto Scam With 174 Victims",
       "cross_check": 1
     },
     {
@@ -174,7 +157,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T10:05:37.868517+00:00",
+      "collected_at": "2026-10-25T11:05:33.444949+00:00",
       "effective_weight": 1.0,
       "title_original": "Kraken wants to be your bank, but who will protect your money?",
       "cross_check": 1
@@ -191,7 +174,7 @@
       "bear_weight": 2.8,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T10:05:38.011485+00:00",
+      "collected_at": "2026-10-25T11:05:33.556720+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitcoin Reclaims $80K Immediately After Peter Schiff Predicted a Crash to $75K",
       "cross_check": 1
@@ -208,10 +191,27 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T10:05:37.542626+00:00",
+      "collected_at": "2026-10-25T11:05:33.216184+00:00",
       "effective_weight": 0.88,
       "title_original": "Hong Kong’s Biggest Bank Puts a Stablecoin in 3 Million Wallets",
       "cross_check": 2
+    },
+    {
+      "title": "US Extradites Chinese National in $36.9M+ Crypto Scam With 174 Victims",
+      "url": "https://news.bitcoin.com/regulation-and-legal/us-extradites-chinese-national-in-36-9m-crypto-scam-with-174-victims/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-25T04:30:38+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-25T11:05:33.375367+00:00",
+      "effective_weight": 0.8,
+      "title_original": "US Extradites Chinese National in $36.9M+ Crypto Scam With 174 Victims",
+      "cross_check": 1
     }
   ]
 }
