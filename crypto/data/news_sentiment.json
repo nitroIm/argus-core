@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-10-25T20:05:39.690422+00:00",
+  "generated_at": "2026-10-25T21:05:37.454291+00:00",
   "total_news": 90,
-  "avg_sentiment": -0.315,
+  "avg_sentiment": -0.292,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 17,
-  "bearish_count": 37,
-  "neutral_count": 36,
+  "bearish_count": 36,
+  "neutral_count": 37,
   "fake_count": 0,
-  "cross_confirmed": 4,
+  "cross_confirmed": 3,
   "by_source": {
     "Cointelegraph": {
       "total": 24,
@@ -32,7 +32,7 @@
     "CryptoPotato": {
       "total": 25,
       "bull": 5,
-      "bear": 12
+      "bear": 11
     },
     "ForkLog": {
       "total": 9,
@@ -53,7 +53,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T20:05:38.924677+00:00",
+      "collected_at": "2026-10-25T21:05:36.509739+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitcoin vs Ethereum ETFs: The Gap Is Getting Hard to Ignore",
       "cross_check": 1
@@ -70,7 +70,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T20:05:38.924769+00:00",
+      "collected_at": "2026-10-25T21:05:36.509884+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitcoin to $75K Before a Massive Rally? Analysts See a Familiar Setup",
       "cross_check": 1
@@ -87,7 +87,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T20:05:38.269866+00:00",
+      "collected_at": "2026-10-25T21:05:35.915227+00:00",
       "effective_weight": 0.88,
       "title_original": "Bitcoin ETFs Snap Two-Week Losing Streak Despite Late-Week Slide",
       "cross_check": 2
@@ -104,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T20:05:38.537761+00:00",
+      "collected_at": "2026-10-25T21:05:36.161127+00:00",
       "effective_weight": 0.8,
       "title_original": "PHP Flaw Shakes Internet, Bitcoin Flashes Bull Signal, and More – Weekly Recap",
       "cross_check": 2
@@ -121,30 +121,13 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T20:05:38.537797+00:00",
+      "collected_at": "2026-10-25T21:05:36.161189+00:00",
       "effective_weight": 0.8,
       "title_original": "Bitcoin Withstands Headwinds — Week in Review",
       "cross_check": 1
     }
   ],
   "top_bearish": [
-    {
-      "title": "Initia hack drove its USDC bridge reserve down to $63 as withdrawals failed",
-      "url": "https://cryptoslate.com/initia-hack-drove-its-usdc-bridge-reserve-down-to-63-as-withdrawals-failed/",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-25T19:45:11+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 4.5,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-25T20:05:38.735692+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Initia hack drove its USDC bridge reserve down to $63 as withdrawals failed",
-      "cross_check": 1
-    },
     {
       "title": "Website Dares Hackers to Steal Bitcoin as the Clock Keeps Ticking",
       "url": "https://news.bitcoin.com/featured/website-dares-hackers-to-steal-bitcoin-as-the-clock-keeps-ticking/",
@@ -157,7 +140,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T20:05:38.537668+00:00",
+      "collected_at": "2026-10-25T21:05:36.160982+00:00",
       "effective_weight": 1.0,
       "title_original": "Website Dares Hackers to Steal Bitcoin as the Clock Keeps Ticking",
       "cross_check": 1
@@ -174,10 +157,27 @@
       "bear_weight": 1.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T20:05:38.537707+00:00",
+      "collected_at": "2026-10-25T21:05:36.161044+00:00",
       "effective_weight": 1.0,
       "title_original": "Peter Schiff Warns Bitcoin Could Hit $75K After BTC Fell Below $80K",
       "cross_check": 2
+    },
+    {
+      "title": "Initia hack drove its USDC bridge reserve down to $63 as withdrawals failed",
+      "url": "https://cryptoslate.com/initia-hack-drove-its-usdc-bridge-reserve-down-to-63-as-withdrawals-failed/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-25T19:45:11+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 4.5,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-25T21:05:36.345237+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Initia hack drove its USDC bridge reserve down to $63 as withdrawals failed",
+      "cross_check": 1
     },
     {
       "title": "How $37 million stolen from Americans moved through a Bahamas bank into Tether’s USDT",
@@ -191,7 +191,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T20:05:38.735749+00:00",
+      "collected_at": "2026-10-25T21:05:36.345329+00:00",
       "effective_weight": 1.0,
       "title_original": "How $37 million stolen from Americans moved through a Bahamas bank into Tether’s USDT",
       "cross_check": 1
@@ -208,7 +208,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T20:05:38.924635+00:00",
+      "collected_at": "2026-10-25T21:05:36.509675+00:00",
       "effective_weight": 1.0,
       "title_original": "CoinDCX Admits $16M Loss Just Days After CEO Denied Fresh Wallet Breach",
       "cross_check": 2
