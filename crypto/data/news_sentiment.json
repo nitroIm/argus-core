@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-10-25T08:05:37.225446+00:00",
-  "total_news": 94,
-  "avg_sentiment": -0.427,
+  "generated_at": "2026-10-25T09:05:36.994049+00:00",
+  "total_news": 95,
+  "avg_sentiment": -0.431,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 15,
   "bearish_count": 36,
-  "neutral_count": 43,
+  "neutral_count": 44,
   "fake_count": 0,
   "cross_confirmed": 9,
   "by_source": {
@@ -20,7 +20,7 @@
       "bear": 9
     },
     "Bitcoin.com": {
-      "total": 9,
+      "total": 10,
       "bull": 2,
       "bear": 3
     },
@@ -53,7 +53,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T08:05:36.109355+00:00",
+      "collected_at": "2026-10-25T09:05:35.625809+00:00",
       "effective_weight": 1.0,
       "title_original": "Russia Hits 270,000 Digital Ruble Accounts in Rapid CBDC Launch",
       "cross_check": 1
@@ -70,7 +70,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T08:05:37.173754+00:00",
+      "collected_at": "2026-10-25T09:05:36.942328+00:00",
       "effective_weight": 0.96,
       "title_original": "Bitmain, Canaan и F2Pool поддержали инструменты Tether для автоматизации майнинга",
       "cross_check": 1
@@ -87,26 +87,9 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T08:05:36.109609+00:00",
+      "collected_at": "2026-10-25T09:05:35.626060+00:00",
       "effective_weight": 0.8,
       "title_original": "Ripple Targets High-Value Real Estate Deals With New Crypto Partnership",
-      "cross_check": 1
-    },
-    {
-      "title": "Switzerland’s Bitcoin ETF Is More Important Than It Looks: Here’s Why",
-      "url": "https://cryptopotato.com/switzerlands-bitcoin-etf-is-more-important-than-it-looks-heres-why/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-24T08:29:22+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-25T08:05:36.340570+00:00",
-      "effective_weight": 0.8,
-      "title_original": "Switzerland’s Bitcoin ETF Is More Important Than It Looks: Here’s Why",
       "cross_check": 1
     },
     {
@@ -121,30 +104,30 @@
       "bear_weight": 0.0,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T08:05:35.797842+00:00",
+      "collected_at": "2026-10-25T09:05:35.304590+00:00",
       "effective_weight": 0.65,
       "title_original": "SEC flags tokenization as high-risk area in 2027 market examinations",
       "cross_check": 2
+    },
+    {
+      "title": "Bitcoin seeks support above $81K as Brent crude oil hits highest level since March",
+      "url": "https://cointelegraph.com/markets/bitcoin-seeks-support-above-81k-as-brent-crude-oil-hits-highest-level-since-march?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-10-23T15:39:17+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 0.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-25T09:05:35.304643+00:00",
+      "effective_weight": 0.65,
+      "title_original": "Bitcoin seeks support above $81K as Brent crude oil hits highest level since March",
+      "cross_check": 1
     }
   ],
   "top_bearish": [
-    {
-      "title": "Kraken wants to be your bank, but who will protect your money?",
-      "url": "https://cryptoslate.com/kraken-wants-to-be-your-bank-but-who-would-protect-your-money/",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-25T08:00:04+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-25T08:05:36.197013+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Kraken wants to be your bank, but who will protect your money?",
-      "cross_check": 1
-    },
     {
       "title": "Ripple Study Finds Banks Could Unlock $100M Beyond Crypto Custody",
       "url": "https://news.bitcoin.com/featured/ripple-study-finds-banks-could-unlock-100m-beyond-crypto-custody/",
@@ -157,7 +140,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T08:05:36.109404+00:00",
+      "collected_at": "2026-10-25T09:05:35.625856+00:00",
       "effective_weight": 1.0,
       "title_original": "Ripple Study Finds Banks Could Unlock $100M Beyond Crypto Custody",
       "cross_check": 1
@@ -174,7 +157,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T08:05:36.109455+00:00",
+      "collected_at": "2026-10-25T09:05:35.625905+00:00",
       "effective_weight": 1.0,
       "title_original": "US Extradites Chinese National in $36.9M+ Crypto Scam With 174 Victims",
       "cross_check": 1
@@ -191,9 +174,26 @@
       "bear_weight": 3.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T08:05:36.109503+00:00",
+      "collected_at": "2026-10-25T09:05:35.625953+00:00",
       "effective_weight": 1.0,
       "title_original": "Ripple Legal Chief Raises Alarm Over Losses in New Crypto Offerings",
+      "cross_check": 1
+    },
+    {
+      "title": "Kraken wants to be your bank, but who will protect your money?",
+      "url": "https://cryptoslate.com/kraken-wants-to-be-your-bank-but-who-would-protect-your-money/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-25T08:00:04+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-25T09:05:35.730260+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Kraken wants to be your bank, but who will protect your money?",
       "cross_check": 1
     },
     {
@@ -208,7 +208,7 @@
       "bear_weight": 2.8,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T08:05:36.340094+00:00",
+      "collected_at": "2026-10-25T09:05:35.873372+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitcoin Reclaims $80K Immediately After Peter Schiff Predicted a Crash to $75K",
       "cross_check": 1
