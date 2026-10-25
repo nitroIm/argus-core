@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-10-25T14:05:35.730568+00:00",
-  "total_news": 92,
-  "avg_sentiment": -0.235,
+  "generated_at": "2026-10-25T15:05:43.058994+00:00",
+  "total_news": 91,
+  "avg_sentiment": -0.224,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 18,
-  "bearish_count": 34,
-  "neutral_count": 40,
+  "bearish_count": 32,
+  "neutral_count": 41,
   "fake_count": 0,
-  "cross_confirmed": 9,
+  "cross_confirmed": 3,
   "by_source": {
     "Cointelegraph": {
       "total": 24,
@@ -20,9 +20,9 @@
       "bear": 8
     },
     "Bitcoin.com": {
-      "total": 9,
+      "total": 8,
       "bull": 4,
-      "bear": 2
+      "bear": 1
     },
     "CryptoSlate": {
       "total": 8,
@@ -30,12 +30,12 @@
       "bear": 4
     },
     "CryptoPotato": {
-      "total": 25,
+      "total": 24,
       "bull": 4,
-      "bear": 11
+      "bear": 10
     },
     "ForkLog": {
-      "total": 8,
+      "total": 9,
       "bull": 2,
       "bear": 2
     }
@@ -51,10 +51,10 @@
       "sentiment": 1.0,
       "bull_weight": 1.2,
       "bear_weight": 0.0,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T14:05:34.317014+00:00",
-      "effective_weight": 1.65,
+      "collected_at": "2026-10-25T15:05:41.572703+00:00",
+      "effective_weight": 1.1,
       "title_original": "Bitcoin ETFs Snap Two-Week Losing Streak Despite Late-Week Slide",
       "cross_check": 1
     },
@@ -68,10 +68,10 @@
       "sentiment": 1.0,
       "bull_weight": 1.2,
       "bear_weight": 0.0,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T14:05:34.491740+00:00",
-      "effective_weight": 1.5,
+      "collected_at": "2026-10-25T15:05:41.831126+00:00",
+      "effective_weight": 1.0,
       "title_original": "PHP Flaw Shakes Internet, Bitcoin Flashes Bull Signal, and More – Weekly Recap",
       "cross_check": 2
     },
@@ -87,7 +87,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T14:05:34.491809+00:00",
+      "collected_at": "2026-10-25T15:05:41.831178+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitcoin Withstands Headwinds — Week in Review",
       "cross_check": 1
@@ -104,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T14:05:34.491887+00:00",
+      "collected_at": "2026-10-25T15:05:41.831235+00:00",
       "effective_weight": 1.0,
       "title_original": "Miner Weekly: Bitcoin Hashrate Shrugs off the AI Unplug, Regaining 1 ZH/s Level",
       "cross_check": 1
@@ -121,7 +121,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T14:05:34.775602+00:00",
+      "collected_at": "2026-10-25T15:05:42.145320+00:00",
       "effective_weight": 1.0,
       "title_original": "XRP to $0.98 or a ‘Face-Melting’ Rally? Analysts Clash on What Comes Next",
       "cross_check": 1
@@ -140,7 +140,7 @@
       "bear_weight": 3.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T14:05:34.682412+00:00",
+      "collected_at": "2026-10-25T15:05:41.999835+00:00",
       "effective_weight": 1.0,
       "title_original": "A 20-month Polkadot wallet breach reveals the dark side of faster crypto withdrawals",
       "cross_check": 1
@@ -157,26 +157,9 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T14:05:34.492212+00:00",
+      "collected_at": "2026-10-25T15:05:41.831474+00:00",
       "effective_weight": 0.8,
       "title_original": "Ripple Study Finds Banks Could Unlock $100M Beyond Crypto Custody",
-      "cross_check": 1
-    },
-    {
-      "title": "US Extradites Chinese National in $36.9M+ Crypto Scam With 174 Victims",
-      "url": "https://news.bitcoin.com/regulation-and-legal/us-extradites-chinese-national-in-36-9m-crypto-scam-with-174-victims/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-25T04:30:38+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-25T14:05:34.492281+00:00",
-      "effective_weight": 0.8,
-      "title_original": "US Extradites Chinese National in $36.9M+ Crypto Scam With 174 Victims",
       "cross_check": 1
     },
     {
@@ -191,7 +174,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T14:05:34.682487+00:00",
+      "collected_at": "2026-10-25T15:05:41.999884+00:00",
       "effective_weight": 0.8,
       "title_original": "Kraken wants to be your bank, but who will protect your money?",
       "cross_check": 1
@@ -208,9 +191,26 @@
       "bear_weight": 0.8,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-25T14:05:34.682560+00:00",
+      "collected_at": "2026-10-25T15:05:41.999947+00:00",
       "effective_weight": 0.8,
       "title_original": "Firedancer makes bounty hunters burn 1 SOL even for duplicate bug reports",
+      "cross_check": 1
+    },
+    {
+      "title": "Kraken drops Monero spending questions but keeps a $1,500 rolling 30-day withdrawal cap for individuals",
+      "url": "https://cryptoslate.com/kraken-drops-monero-spending-questions-but-keeps-a-1500-rolling-30-day-withdrawal-cap-for-individuals/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-24T19:00:37+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 4.0,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-25T15:05:42.000072+00:00",
+      "effective_weight": 0.8,
+      "title_original": "Kraken drops Monero spending questions but keeps a $1,500 rolling 30-day withdrawal cap for individuals",
       "cross_check": 1
     }
   ]
