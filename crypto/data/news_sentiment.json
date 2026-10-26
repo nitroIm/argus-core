@@ -1,18 +1,18 @@
 {
-  "generated_at": "2026-10-26T08:05:36.270340+00:00",
-  "total_news": 88,
-  "avg_sentiment": -0.326,
+  "generated_at": "2026-10-26T09:05:34.612992+00:00",
+  "total_news": 63,
+  "avg_sentiment": -0.412,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 15,
-  "bearish_count": 32,
-  "neutral_count": 41,
+  "bullish_count": 9,
+  "bearish_count": 21,
+  "neutral_count": 33,
   "fake_count": 0,
   "cross_confirmed": 3,
   "by_source": {
     "Cointelegraph": {
-      "total": 24,
+      "total": 25,
       "bull": 5,
-      "bear": 6
+      "bear": 7
     },
     "Decrypt": {
       "total": 17,
@@ -20,19 +20,14 @@
       "bear": 8
     },
     "Bitcoin.com": {
-      "total": 7,
+      "total": 6,
       "bull": 1,
-      "bear": 3
+      "bear": 2
     },
     "CryptoSlate": {
       "total": 8,
       "bull": 0,
       "bear": 3
-    },
-    "CryptoPotato": {
-      "total": 25,
-      "bull": 6,
-      "bear": 11
     },
     "ForkLog": {
       "total": 7,
@@ -53,7 +48,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-26T08:05:34.913536+00:00",
+      "collected_at": "2026-10-26T09:05:33.341024+00:00",
       "effective_weight": 1.3,
       "title_original": "Hong Kong names Nasdaq-listed Solana Company a strategic enterprise",
       "cross_check": 1
@@ -70,7 +65,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-26T08:05:35.134024+00:00",
+      "collected_at": "2026-10-26T09:05:33.535206+00:00",
       "effective_weight": 1.0,
       "title_original": "US Launches $5M Pacific Program to Hunt Illicit Crypto Funds",
       "cross_check": 1
@@ -87,43 +82,43 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-26T08:05:34.963418+00:00",
+      "collected_at": "2026-10-26T09:05:33.394842+00:00",
       "effective_weight": 0.88,
       "title_original": "Bitcoin ETFs Snap Two-Week Losing Streak Despite Late-Week Slide",
-      "cross_check": 1
+      "cross_check": 2
     },
     {
-      "title": "Bitcoin vs Ethereum ETFs: The Gap Is Getting Hard to Ignore",
-      "url": "https://cryptopotato.com/bitcoin-vs-ethereum-etfs-the-gap-is-getting-hard-to-ignore/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
+      "title": "SEC flags tokenization as high-risk area in 2027 market examinations",
+      "url": "https://cointelegraph.com/news/sec-adds-tokenized-securities-to-2027-examination-priorities?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
       "lang": "en",
-      "pub_date": "2026-10-25T18:37:13+00:00",
+      "pub_date": "2026-10-23T16:08:40+00:00",
       "sentiment": 1.0,
-      "bull_weight": 1.2,
+      "bull_weight": 1.0,
       "bear_weight": 0.0,
-      "freshness": 0.8,
+      "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-26T08:05:35.347704+00:00",
-      "effective_weight": 0.8,
-      "title_original": "Bitcoin vs Ethereum ETFs: The Gap Is Getting Hard to Ignore",
-      "cross_check": 1
+      "collected_at": "2026-10-26T09:05:33.341732+00:00",
+      "effective_weight": 0.65,
+      "title_original": "SEC flags tokenization as high-risk area in 2027 market examinations",
+      "cross_check": 2
     },
     {
-      "title": "Bitcoin to $75K Before a Massive Rally? Analysts See a Familiar Setup",
-      "url": "https://cryptopotato.com/bitcoin-to-75k-before-a-massive-rally-analysts-see-a-familiar-setup/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
+      "title": "Bitcoin seeks support above $81K as Brent crude oil hits highest level since March",
+      "url": "https://cointelegraph.com/markets/bitcoin-seeks-support-above-81k-as-brent-crude-oil-hits-highest-level-since-march?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
       "lang": "en",
-      "pub_date": "2026-10-25T16:10:43+00:00",
+      "pub_date": "2026-10-23T15:39:17+00:00",
       "sentiment": 1.0,
-      "bull_weight": 1.5,
+      "bull_weight": 1.0,
       "bear_weight": 0.0,
-      "freshness": 0.8,
+      "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-26T08:05:35.347846+00:00",
-      "effective_weight": 0.8,
-      "title_original": "Bitcoin to $75K Before a Massive Rally? Analysts See a Familiar Setup",
+      "collected_at": "2026-10-26T09:05:33.341802+00:00",
+      "effective_weight": 0.65,
+      "title_original": "Bitcoin seeks support above $81K as Brent crude oil hits highest level since March",
       "cross_check": 1
     }
   ],
@@ -140,7 +135,7 @@
       "bear_weight": 0.8,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-26T08:05:34.913705+00:00",
+      "collected_at": "2026-10-26T09:05:33.341190+00:00",
       "effective_weight": 1.04,
       "title_original": "Standard Chartered-led Anchorpoint says it’s not rushing retail stablecoin",
       "cross_check": 1
@@ -157,7 +152,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-26T08:05:35.134091+00:00",
+      "collected_at": "2026-10-26T09:05:33.535283+00:00",
       "effective_weight": 1.0,
       "title_original": "From Stripe to Bitcoin: Card Fraud Case Ends in Prison Sentence",
       "cross_check": 1
@@ -174,27 +169,10 @@
       "bear_weight": 3.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-26T08:05:35.134229+00:00",
+      "collected_at": "2026-10-26T09:05:33.535446+00:00",
       "effective_weight": 0.8,
       "title_original": "Tax Preparer Accused of Claiming Losses on Crypto Never Owned",
       "cross_check": 1
-    },
-    {
-      "title": "Bank of Israel Rejects Netanyahu’s Crypto Sanction-Evasion Plan",
-      "url": "https://news.bitcoin.com/crypto-news/bank-of-israel-rejects-netanyahus-crypto-sanction-evasion-plan/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-25T23:45:00+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 3.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-26T08:05:35.134387+00:00",
-      "effective_weight": 0.8,
-      "title_original": "Bank of Israel Rejects Netanyahu’s Crypto Sanction-Evasion Plan",
-      "cross_check": 2
     },
     {
       "title": "Initia hack drove its USDC bridge reserve down to $63 as withdrawals failed",
@@ -208,9 +186,26 @@
       "bear_weight": 4.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-26T08:05:35.241969+00:00",
+      "collected_at": "2026-10-26T09:05:33.639887+00:00",
       "effective_weight": 0.8,
       "title_original": "Initia hack drove its USDC bridge reserve down to $63 as withdrawals failed",
+      "cross_check": 1
+    },
+    {
+      "title": "How $37 million stolen from Americans moved through a Bahamas bank into Tether’s USDT",
+      "url": "https://cryptoslate.com/how-37-million-stolen-from-americans-moved-through-a-bahamas-bank-into-tethers-usdt/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-25T18:40:29+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-26T09:05:33.639974+00:00",
+      "effective_weight": 0.8,
+      "title_original": "How $37 million stolen from Americans moved through a Bahamas bank into Tether’s USDT",
       "cross_check": 1
     }
   ]
