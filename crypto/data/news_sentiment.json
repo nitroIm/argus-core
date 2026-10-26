@@ -1,26 +1,26 @@
 {
-  "generated_at": "2026-10-26T14:05:43.576458+00:00",
-  "total_news": 94,
-  "avg_sentiment": -0.47,
+  "generated_at": "2026-10-26T15:19:25.458698+00:00",
+  "total_news": 93,
+  "avg_sentiment": -0.481,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 16,
-  "bearish_count": 38,
-  "neutral_count": 40,
+  "bullish_count": 14,
+  "bearish_count": 37,
+  "neutral_count": 42,
   "fake_count": 0,
   "cross_confirmed": 7,
   "by_source": {
     "Cointelegraph": {
-      "total": 25,
+      "total": 24,
       "bull": 5,
       "bear": 8
     },
     "Decrypt": {
-      "total": 20,
-      "bull": 2,
+      "total": 19,
+      "bull": 1,
       "bear": 10
     },
     "Bitcoin.com": {
-      "total": 7,
+      "total": 8,
       "bull": 1,
       "bear": 3
     },
@@ -30,12 +30,12 @@
       "bear": 4
     },
     "CryptoPotato": {
-      "total": 28,
-      "bull": 7,
-      "bear": 11
+      "total": 27,
+      "bull": 6,
+      "bear": 10
     },
     "ForkLog": {
-      "total": 5,
+      "total": 6,
       "bull": 1,
       "bear": 2
     }
@@ -53,7 +53,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-26T14:05:41.514870+00:00",
+      "collected_at": "2026-10-26T15:19:23.448963+00:00",
       "effective_weight": 1.3,
       "title_original": "Aviva Investors launches tokenized share class of $29B Sterling fund on XRP Ledger",
       "cross_check": 1
@@ -70,7 +70,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-26T14:05:41.515082+00:00",
+      "collected_at": "2026-10-26T15:19:23.449125+00:00",
       "effective_weight": 1.04,
       "title_original": "Hong Kong names Nasdaq-listed Solana Company a strategic enterprise",
       "cross_check": 1
@@ -87,7 +87,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-26T14:05:42.339035+00:00",
+      "collected_at": "2026-10-26T15:19:24.230214+00:00",
       "effective_weight": 1.0,
       "title_original": "QNT Resumes Recent Bull Rally With 16% Surge, BTC Fights for $80K: Market Watch",
       "cross_check": 1
@@ -102,10 +102,10 @@
       "sentiment": 1.0,
       "bull_weight": 1.2,
       "bear_weight": 0.0,
-      "freshness": 1.0,
+      "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-26T14:05:42.339173+00:00",
-      "effective_weight": 1.0,
+      "collected_at": "2026-10-26T15:19:24.230320+00:00",
+      "effective_weight": 0.8,
       "title_original": "Franklin Templeton Files for ETFs That Reinvest Stock Dividends in Bitcoin",
       "cross_check": 1
     },
@@ -121,7 +121,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-26T14:05:42.339568+00:00",
+      "collected_at": "2026-10-26T15:19:24.230625+00:00",
       "effective_weight": 0.8,
       "title_original": "Bitcoin vs Ethereum ETFs: The Gap Is Getting Hard to Ignore",
       "cross_check": 1
@@ -138,28 +138,11 @@
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 0.8,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-26T14:05:41.514796+00:00",
-      "effective_weight": 1.95,
+      "collected_at": "2026-10-26T15:19:23.448905+00:00",
+      "effective_weight": 1.3,
       "title_original": "HOOD’s prediction markets to add $1.7B to revenue, exceed crypto by 2028: Bernstein",
-      "cross_check": 1
-    },
-    {
-      "title": "Bitcoin faces an inflation warning beneath steady US consumer sentiment",
-      "url": "https://cryptoslate.com/bitcoin-faces-an-inflation-warning-beneath-steady-us-consumer-sentiment/",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-26T14:00:14+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.2,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-26T14:05:42.134677+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Bitcoin faces an inflation warning beneath steady US consumer sentiment",
       "cross_check": 1
     },
     {
@@ -174,7 +157,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-26T14:05:41.514945+00:00",
+      "collected_at": "2026-10-26T15:19:23.449023+00:00",
       "effective_weight": 1.3,
       "title_original": "BTC price risks $80K loss into FOMC, earnings: Three things to know in Bitcoin this week",
       "cross_check": 2
@@ -191,7 +174,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-26T14:05:43.507447+00:00",
+      "collected_at": "2026-10-26T15:19:25.407608+00:00",
       "effective_weight": 1.2,
       "title_original": "Bloom возместит $947 000 пользователям после взлома Solana-кошельков",
       "cross_check": 1
@@ -208,9 +191,26 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-26T14:05:43.507526+00:00",
+      "collected_at": "2026-10-26T15:19:25.407666+00:00",
       "effective_weight": 1.2,
       "title_original": "Исследователь получил $2000 за взлом PHP в конкурсе Steal My Bitcoin",
+      "cross_check": 1
+    },
+    {
+      "title": "Bitcoin Dips Below $80,000 Ahead of Fed Decision, Midterms",
+      "url": "https://decrypt.co/381802/bitcoin-dips-below-80000-ahead-of-fed-decision-midterms",
+      "source": "Decrypt",
+      "source_weight": 1.1,
+      "lang": "en",
+      "pub_date": "2026-10-26T13:02:43+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.0,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-26T15:19:23.630433+00:00",
+      "effective_weight": 1.1,
+      "title_original": "Bitcoin Dips Below $80,000 Ahead of Fed Decision, Midterms",
       "cross_check": 1
     }
   ]
