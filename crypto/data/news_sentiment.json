@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-10-26T04:05:37.515910+00:00",
-  "total_news": 91,
-  "avg_sentiment": -0.384,
+  "generated_at": "2026-10-26T05:05:34.434361+00:00",
+  "total_news": 92,
+  "avg_sentiment": -0.344,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 15,
-  "bearish_count": 36,
-  "neutral_count": 40,
+  "bullish_count": 16,
+  "bearish_count": 35,
+  "neutral_count": 41,
   "fake_count": 0,
   "cross_confirmed": 3,
   "by_source": {
@@ -20,14 +20,14 @@
       "bear": 8
     },
     "Bitcoin.com": {
-      "total": 8,
-      "bull": 0,
+      "total": 9,
+      "bull": 1,
       "bear": 4
     },
     "CryptoSlate": {
       "total": 8,
       "bull": 0,
-      "bear": 5
+      "bear": 4
     },
     "CryptoPotato": {
       "total": 25,
@@ -42,6 +42,23 @@
   },
   "top_bullish": [
     {
+      "title": "US Launches $5M Pacific Program to Hunt Illicit Crypto Funds",
+      "url": "https://news.bitcoin.com/crypto-news/us-launches-5m-pacific-program-to-hunt-illicit-crypto-funds/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-26T04:30:01+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-26T05:05:33.487529+00:00",
+      "effective_weight": 1.5,
+      "title_original": "US Launches $5M Pacific Program to Hunt Illicit Crypto Funds",
+      "cross_check": 1
+    },
+    {
       "title": "Hong Kong names Nasdaq-listed Solana Company a strategic enterprise",
       "url": "https://cointelegraph.com/news/hong-kong-names-nasdaq-listed-solana-company-a-strategic-enterprise?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
       "source": "Cointelegraph",
@@ -51,10 +68,10 @@
       "sentiment": 1.0,
       "bull_weight": 1.0,
       "bear_weight": 0.0,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-26T04:05:35.493713+00:00",
-      "effective_weight": 1.95,
+      "collected_at": "2026-10-26T05:05:33.257650+00:00",
+      "effective_weight": 1.3,
       "title_original": "Hong Kong names Nasdaq-listed Solana Company a strategic enterprise",
       "cross_check": 1
     },
@@ -70,7 +87,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-26T04:05:35.592058+00:00",
+      "collected_at": "2026-10-26T05:05:33.316766+00:00",
       "effective_weight": 0.88,
       "title_original": "Bitcoin ETFs Snap Two-Week Losing Streak Despite Late-Week Slide",
       "cross_check": 1
@@ -87,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-26T04:05:36.642534+00:00",
+      "collected_at": "2026-10-26T05:05:33.688144+00:00",
       "effective_weight": 0.8,
       "title_original": "Bitcoin vs Ethereum ETFs: The Gap Is Getting Hard to Ignore",
       "cross_check": 1
@@ -104,47 +121,13 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-26T04:05:36.642642+00:00",
+      "collected_at": "2026-10-26T05:05:33.688414+00:00",
       "effective_weight": 0.8,
       "title_original": "Bitcoin to $75K Before a Massive Rally? Analysts See a Familiar Setup",
-      "cross_check": 1
-    },
-    {
-      "title": "XRP to $0.98 or a ‘Face-Melting’ Rally? Analysts Clash on What Comes Next",
-      "url": "https://cryptopotato.com/xrp-to-0-98-or-a-face-melting-rally-analysts-clash-on-what-comes-next/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-25T12:42:57+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.5,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-26T04:05:36.642701+00:00",
-      "effective_weight": 0.8,
-      "title_original": "XRP to $0.98 or a ‘Face-Melting’ Rally? Analysts Clash on What Comes Next",
       "cross_check": 1
     }
   ],
   "top_bearish": [
-    {
-      "title": "From Stripe to Bitcoin: Card Fraud Case Ends in Prison Sentence",
-      "url": "https://news.bitcoin.com/regulation-and-legal/from-stripe-to-bitcoin-card-fraud-case-ends-in-prison-sentence/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-26T03:30:25+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-26T04:05:35.771233+00:00",
-      "effective_weight": 1.5,
-      "title_original": "From Stripe to Bitcoin: Card Fraud Case Ends in Prison Sentence",
-      "cross_check": 1
-    },
     {
       "title": "Standard Chartered-led Anchorpoint says it’s not rushing retail stablecoin",
       "url": "https://cointelegraph.com/news/standard-chartered-led-anchorpoint-says-its-not-rushing-retail-stablecoin?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -157,9 +140,26 @@
       "bear_weight": 0.8,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-26T04:05:35.493853+00:00",
+      "collected_at": "2026-10-26T05:05:33.257846+00:00",
       "effective_weight": 1.3,
       "title_original": "Standard Chartered-led Anchorpoint says it’s not rushing retail stablecoin",
+      "cross_check": 1
+    },
+    {
+      "title": "From Stripe to Bitcoin: Card Fraud Case Ends in Prison Sentence",
+      "url": "https://news.bitcoin.com/regulation-and-legal/from-stripe-to-bitcoin-card-fraud-case-ends-in-prison-sentence/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-26T03:30:25+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-26T05:05:33.487603+00:00",
+      "effective_weight": 1.0,
+      "title_original": "From Stripe to Bitcoin: Card Fraud Case Ends in Prison Sentence",
       "cross_check": 1
     },
     {
@@ -174,7 +174,7 @@
       "bear_weight": 3.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-26T04:05:35.771346+00:00",
+      "collected_at": "2026-10-26T05:05:33.487750+00:00",
       "effective_weight": 1.0,
       "title_original": "Tax Preparer Accused of Claiming Losses on Crypto Never Owned",
       "cross_check": 1
@@ -191,7 +191,7 @@
       "bear_weight": 3.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-26T04:05:35.771449+00:00",
+      "collected_at": "2026-10-26T05:05:33.487890+00:00",
       "effective_weight": 1.0,
       "title_original": "Bank of Israel Rejects Netanyahu’s Crypto Sanction-Evasion Plan",
       "cross_check": 2
@@ -206,10 +206,10 @@
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 1.2,
-      "freshness": 1.0,
+      "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-26T04:05:35.771500+00:00",
-      "effective_weight": 1.0,
+      "collected_at": "2026-10-26T05:05:33.487959+00:00",
+      "effective_weight": 0.8,
       "title_original": "JPMorgan and Wall Street Giants Block AI Agents Over Security Fears",
       "cross_check": 1
     }
