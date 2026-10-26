@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-10-26T00:05:37.155459+00:00",
-  "total_news": 90,
-  "avg_sentiment": -0.443,
+  "generated_at": "2026-10-26T01:05:35.950836+00:00",
+  "total_news": 91,
+  "avg_sentiment": -0.464,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 14,
   "bearish_count": 38,
-  "neutral_count": 38,
+  "neutral_count": 39,
   "fake_count": 0,
   "cross_confirmed": 3,
   "by_source": {
@@ -20,7 +20,7 @@
       "bear": 8
     },
     "Bitcoin.com": {
-      "total": 7,
+      "total": 8,
       "bull": 0,
       "bear": 4
     },
@@ -42,23 +42,6 @@
   },
   "top_bullish": [
     {
-      "title": "Bitcoin vs Ethereum ETFs: The Gap Is Getting Hard to Ignore",
-      "url": "https://cryptopotato.com/bitcoin-vs-ethereum-etfs-the-gap-is-getting-hard-to-ignore/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-25T18:37:13+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-26T00:05:36.223896+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Bitcoin vs Ethereum ETFs: The Gap Is Getting Hard to Ignore",
-      "cross_check": 1
-    },
-    {
       "title": "Bitcoin ETFs Snap Two-Week Losing Streak Despite Late-Week Slide",
       "url": "https://decrypt.co/381777/bitcoin-etfs-snap-two-week-losing-streak-despite-late-week-slide",
       "source": "Decrypt",
@@ -70,10 +53,27 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-26T00:05:35.723097+00:00",
+      "collected_at": "2026-10-26T01:05:34.488336+00:00",
       "effective_weight": 0.88,
       "title_original": "Bitcoin ETFs Snap Two-Week Losing Streak Despite Late-Week Slide",
       "cross_check": 2
+    },
+    {
+      "title": "Bitcoin vs Ethereum ETFs: The Gap Is Getting Hard to Ignore",
+      "url": "https://cryptopotato.com/bitcoin-vs-ethereum-etfs-the-gap-is-getting-hard-to-ignore/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-25T18:37:13+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-26T01:05:34.979535+00:00",
+      "effective_weight": 0.8,
+      "title_original": "Bitcoin vs Ethereum ETFs: The Gap Is Getting Hard to Ignore",
+      "cross_check": 1
     },
     {
       "title": "Bitcoin to $75K Before a Massive Rally? Analysts See a Familiar Setup",
@@ -87,7 +87,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-26T00:05:36.224026+00:00",
+      "collected_at": "2026-10-26T01:05:34.979688+00:00",
       "effective_weight": 0.8,
       "title_original": "Bitcoin to $75K Before a Massive Rally? Analysts See a Familiar Setup",
       "cross_check": 1
@@ -104,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-26T00:05:36.224094+00:00",
+      "collected_at": "2026-10-26T01:05:34.979765+00:00",
       "effective_weight": 0.8,
       "title_original": "XRP to $0.98 or a ‘Face-Melting’ Rally? Analysts Clash on What Comes Next",
       "cross_check": 1
@@ -121,13 +121,30 @@
       "bear_weight": 0.0,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-26T00:05:35.623884+00:00",
+      "collected_at": "2026-10-26T01:05:34.403963+00:00",
       "effective_weight": 0.65,
       "title_original": "SEC flags tokenization as high-risk area in 2027 market examinations",
       "cross_check": 2
     }
   ],
   "top_bearish": [
+    {
+      "title": "Standard Chartered-led Anchorpoint says it’s not rushing retail stablecoin",
+      "url": "https://cointelegraph.com/news/standard-chartered-led-anchorpoint-says-its-not-rushing-retail-stablecoin?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-10-26T00:13:29+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 0.8,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-26T01:05:34.403418+00:00",
+      "effective_weight": 1.95,
+      "title_original": "Standard Chartered-led Anchorpoint says it’s not rushing retail stablecoin",
+      "cross_check": 1
+    },
     {
       "title": "Bank of Israel Rejects Netanyahu’s Crypto Sanction-Evasion Plan",
       "url": "https://news.bitcoin.com/crypto-news/bank-of-israel-rejects-netanyahus-crypto-sanction-evasion-plan/",
@@ -138,10 +155,10 @@
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 3.0,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-26T00:05:35.964257+00:00",
-      "effective_weight": 1.5,
+      "collected_at": "2026-10-26T01:05:34.722385+00:00",
+      "effective_weight": 1.0,
       "title_original": "Bank of Israel Rejects Netanyahu’s Crypto Sanction-Evasion Plan",
       "cross_check": 2
     },
@@ -157,7 +174,7 @@
       "bear_weight": 1.2,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-26T00:05:35.964340+00:00",
+      "collected_at": "2026-10-26T01:05:34.722456+00:00",
       "effective_weight": 1.0,
       "title_original": "JPMorgan and Wall Street Giants Block AI Agents Over Security Fears",
       "cross_check": 1
@@ -174,26 +191,9 @@
       "bear_weight": 4.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-26T00:05:36.084112+00:00",
+      "collected_at": "2026-10-26T01:05:34.826372+00:00",
       "effective_weight": 1.0,
       "title_original": "Initia hack drove its USDC bridge reserve down to $63 as withdrawals failed",
-      "cross_check": 1
-    },
-    {
-      "title": "How $37 million stolen from Americans moved through a Bahamas bank into Tether’s USDT",
-      "url": "https://cryptoslate.com/how-37-million-stolen-from-americans-moved-through-a-bahamas-bank-into-tethers-usdt/",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-25T18:40:29+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-26T00:05:36.084231+00:00",
-      "effective_weight": 1.0,
-      "title_original": "How $37 million stolen from Americans moved through a Bahamas bank into Tether’s USDT",
       "cross_check": 1
     },
     {
@@ -208,7 +208,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-26T00:05:36.223712+00:00",
+      "collected_at": "2026-10-26T01:05:34.979326+00:00",
       "effective_weight": 1.0,
       "title_original": "Arthur Hayes Dumps $22M in Crypto After Calling for $10K ETH: Here’s What He Sold",
       "cross_check": 1
