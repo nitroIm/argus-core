@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-10-26T17:05:43.958635+00:00",
+  "generated_at": "2026-10-26T18:05:43.888361+00:00",
   "total_news": 90,
-  "avg_sentiment": -0.447,
+  "avg_sentiment": -0.462,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 14,
   "bearish_count": 34,
@@ -11,18 +11,18 @@
   "by_source": {
     "Cointelegraph": {
       "total": 23,
-      "bull": 5,
-      "bear": 7
+      "bull": 4,
+      "bear": 8
     },
     "Decrypt": {
-      "total": 19,
+      "total": 20,
       "bull": 2,
-      "bear": 9
+      "bear": 10
     },
     "Bitcoin.com": {
-      "total": 6,
-      "bull": 0,
-      "bear": 3
+      "total": 5,
+      "bull": 1,
+      "bear": 1
     },
     "CryptoSlate": {
       "total": 8,
@@ -42,21 +42,21 @@
   },
   "top_bullish": [
     {
-      "title": "Aviva Investors launches tokenized share class of $29B Sterling fund on XRP Ledger",
-      "url": "https://cointelegraph.com/news/aviva-investors-launches-tokenized-share-class-of-sterling-fund-on-xrp-ledger?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
+      "title": "Bitcoin Price Struggles at $80K, but MEXC CEO Sees Bullish Signals",
+      "url": "https://news.bitcoin.com/market-updates/bitcoin-price-struggles-80k-mexc-ceo-sees-bullish-signals/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-10-26T11:39:27+00:00",
+      "pub_date": "2026-10-26T17:33:37+00:00",
       "sentiment": 1.0,
-      "bull_weight": 1.0,
+      "bull_weight": 1.2,
       "bear_weight": 0.0,
-      "freshness": 1.0,
+      "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-26T17:05:42.046471+00:00",
-      "effective_weight": 1.3,
-      "title_original": "Aviva Investors launches tokenized share class of $29B Sterling fund on XRP Ledger",
-      "cross_check": 2
+      "collected_at": "2026-10-26T18:05:42.222198+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Bitcoin Price Struggles at $80K, but MEXC CEO Sees Bullish Signals",
+      "cross_check": 1
     },
     {
       "title": "Tom Lee's Bitmine Keeps Buying Ethereum But Pivots to Record Share Buybacks",
@@ -70,10 +70,27 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-26T17:05:42.151475+00:00",
+      "collected_at": "2026-10-26T18:05:41.935999+00:00",
       "effective_weight": 1.1,
       "title_original": "Tom Lee's Bitmine Keeps Buying Ethereum But Pivots to Record Share Buybacks",
       "cross_check": 1
+    },
+    {
+      "title": "Aviva Investors launches tokenized share class of $29B Sterling fund on XRP Ledger",
+      "url": "https://cointelegraph.com/news/aviva-investors-launches-tokenized-share-class-of-sterling-fund-on-xrp-ledger?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-10-26T11:39:27+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-26T18:05:41.742790+00:00",
+      "effective_weight": 1.04,
+      "title_original": "Aviva Investors launches tokenized share class of $29B Sterling fund on XRP Ledger",
+      "cross_check": 2
     },
     {
       "title": "Hong Kong names Nasdaq-listed Solana Company a strategic enterprise",
@@ -87,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-26T17:05:42.046669+00:00",
+      "collected_at": "2026-10-26T18:05:41.742918+00:00",
       "effective_weight": 1.04,
       "title_original": "Hong Kong names Nasdaq-listed Solana Company a strategic enterprise",
       "cross_check": 1
@@ -102,32 +119,66 @@
       "sentiment": 1.0,
       "bull_weight": 4.2,
       "bear_weight": 0.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-26T17:05:42.788219+00:00",
-      "effective_weight": 1.0,
-      "title_original": "QNT Resumes Recent Bull Rally With 16% Surge, BTC Fights for $80K: Market Watch",
-      "cross_check": 1
-    },
-    {
-      "title": "Franklin Templeton Files for ETFs That Reinvest Stock Dividends in Bitcoin",
-      "url": "https://cryptopotato.com/franklin-templeton-files-for-etfs-that-reinvest-stock-dividends-in-bitcoin/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-26T08:45:00+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-26T17:05:42.788350+00:00",
+      "collected_at": "2026-10-26T18:05:42.722856+00:00",
       "effective_weight": 0.8,
-      "title_original": "Franklin Templeton Files for ETFs That Reinvest Stock Dividends in Bitcoin",
+      "title_original": "QNT Resumes Recent Bull Rally With 16% Surge, BTC Fights for $80K: Market Watch",
       "cross_check": 1
     }
   ],
   "top_bearish": [
+    {
+      "title": "NBA names Kalshi, Polymarket preferred exchanges, signs CFTC deal",
+      "url": "https://cointelegraph.com/news/nba-names-kalshi-polymarket-preferred-exchanges-signs-cftc-deal?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-10-26T17:46:09+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 0.8,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-26T18:05:41.742566+00:00",
+      "effective_weight": 1.95,
+      "title_original": "NBA names Kalshi, Polymarket preferred exchanges, signs CFTC deal",
+      "cross_check": 1
+    },
+    {
+      "title": "Bitcoin Wallet Fixes Critical Flaw That Redirected Funds to Attackers",
+      "url": "https://decrypt.co/381844/bitcoin-wallet-flaw-trick-users-paying-attackers",
+      "source": "Decrypt",
+      "source_weight": 1.1,
+      "lang": "en",
+      "pub_date": "2026-10-26T17:41:21+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 0.8,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-26T18:05:41.935954+00:00",
+      "effective_weight": 1.65,
+      "title_original": "Bitcoin Wallet Fixes Critical Flaw That Redirected Funds to Attackers",
+      "cross_check": 2
+    },
+    {
+      "title": "‘Incredibly Frustrating:’ Ethereum Foundation’s Latest ETH Sale Draws Criticism",
+      "url": "https://cryptopotato.com/incredibly-frustrating-ethereum-foundations-latest-eth-sale-draws-criticism/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-26T17:25:11+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 0.8,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-26T18:05:42.722535+00:00",
+      "effective_weight": 1.5,
+      "title_original": "‘Incredibly Frustrating:’ Ethereum Foundation’s Latest ETH Sale Draws Criticism",
+      "cross_check": 1
+    },
     {
       "title": "HOOD’s prediction markets to add $1.7B to revenue, exceed crypto by 2028: Bernstein",
       "url": "https://cointelegraph.com/news/prediction-markets-17b-robinhood-exceed-crypto-revenue-2028-bernstein?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -140,26 +191,9 @@
       "bear_weight": 0.8,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-26T17:05:42.046400+00:00",
+      "collected_at": "2026-10-26T18:05:41.742747+00:00",
       "effective_weight": 1.3,
       "title_original": "HOOD’s prediction markets to add $1.7B to revenue, exceed crypto by 2028: Bernstein",
-      "cross_check": 1
-    },
-    {
-      "title": "Bloom возместит $947 000 пользователям после взлома Solana-кошельков",
-      "url": "https://forklog.com/bloom-vozmestit-947-000-polzovatelyam-posle-vzloma-solana-koshelkov",
-      "source": "ForkLog",
-      "source_weight": 1.2,
-      "lang": "ru",
-      "pub_date": "2026-10-26T11:30:00+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-26T17:05:43.899037+00:00",
-      "effective_weight": 1.2,
-      "title_original": "Bloom возместит $947 000 пользователям после взлома Solana-кошельков",
       "cross_check": 1
     },
     {
@@ -174,43 +208,9 @@
       "bear_weight": 1.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-26T17:05:42.151594+00:00",
+      "collected_at": "2026-10-26T18:05:41.936073+00:00",
       "effective_weight": 1.1,
       "title_original": "Bitcoin Dips Below $80,000 Ahead of Fed Decision, Midterms",
-      "cross_check": 1
-    },
-    {
-      "title": "Bitcoin’s Bear Market Is Over, Galaxy Research Says: 'Now Is an Attractive Time to Buy",
-      "url": "https://decrypt.co/381786/bitcoin-bear-market-is-over-galaxy-research-says",
-      "source": "Decrypt",
-      "source_weight": 1.1,
-      "lang": "en",
-      "pub_date": "2026-10-26T13:01:02+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.2,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-26T17:05:42.151675+00:00",
-      "effective_weight": 1.1,
-      "title_original": "Bitcoin’s Bear Market Is Over, Galaxy Research Says: 'Now Is an Attractive Time to Buy",
-      "cross_check": 1
-    },
-    {
-      "title": "Morning Minute: Bitcoin Breaks Below $80,000 as Iran Fears Hit the Weekend",
-      "url": "https://decrypt.co/381797/morning-minute-bitcoin-breaks-below-80000-as-iran-fears-hit-the-weekend",
-      "source": "Decrypt",
-      "source_weight": 1.1,
-      "lang": "en",
-      "pub_date": "2026-10-26T12:16:12+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 2.2,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-26T17:05:42.151735+00:00",
-      "effective_weight": 1.1,
-      "title_original": "Morning Minute: Bitcoin Breaks Below $80,000 as Iran Fears Hit the Weekend",
       "cross_check": 1
     }
   ]
