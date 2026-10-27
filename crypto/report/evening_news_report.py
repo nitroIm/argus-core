@@ -1,8 +1,7 @@
 # ============================================================
-# ARGUS - EVENING NEWS REPORT v2.0 (VISUAL DYNAMICS)
+# ARGUS - EVENING NEWS REPORT v2.1
 # ------------------------------------------------------------
-# Динамические шкалы, автоматический заголовок, Top-3 новости.
-# Отправка ТОЛЬКО в TG-канал и VK.
+# Исправлено: хватает данных для EMA(50) и ATR.
 # ============================================================
 
 import os
@@ -131,15 +130,13 @@ def translate_top(items, n=3):
 # ============================================================
 # ДИНАМИЧЕСКИЕ ВИЗУАЛЬНЫЕ ШКАЛЫ
 # ============================================================
-def get_progress_bar(pct, length=15):
-    """Шкала от 0 до 100% (заполняется слева направо)"""
+def get_progress_bar(pct, length=12):
     filled = int(round(pct / 100 * length))
     filled = max(0, min(filled, length))
     return "▕" + "█" * filled + "░" * (length - filled) + "▏"
 
-def get_range_bar(price, low, high, length=11):
-    """Шкала положения цены между минимумом и максимумом"""
-    if high == low: return "▕░░░░░░░░░░░▏"
+def get_range_bar(price, low, high, length=12):
+    if high == low: return "▕░░░░░░░░░░░░▏"
     pct = (price - low) / (high - low) * 100
     filled = int(round(pct / 100 * length))
     filled = max(0, min(filled, length))
@@ -154,7 +151,8 @@ def fetch_btc_day_stats():
         conn = psycopg.connect(DB_URL, connect_timeout=30)
         with conn:
             with conn.cursor() as cur:
-                cur.execute("SELECT open_time, open, high, low, close, volume, taker_buy_volume FROM candles WHERE symbol=%s AND timeframe=%s AND market_type='spot' ORDER BY open_time DESC LIMIT 150", (SYMBOL, TIMEFRAME))
+                # Увеличили лимит до 250 свечей (около 60 часов), чтобы хватило на EMA 50
+                cur.execute("SELECT open_time, open, high, low, close, volume, taker_buy_volume FROM candles WHERE symbol=%s AND timeframe=%s AND market_type='spot' ORDER BY open_time DESC LIMIT 250", (SYMBOL, TIMEFRAME))
                 rows = list(reversed(cur.fetchall()))
         conn.close()
         
@@ -170,21 +168,19 @@ def fetch_btc_day_stats():
 
         if not day_rows: return None
 
-        # Цена
         open_p = float(day_rows[0][1])
         price = float(rows[-1][4])
         change_pct = (price - open_p) / open_p * 100 if open_p else 0
         high = max(float(r[2]) for r in day_rows)
         low = min(float(r[3]) for r in day_rows)
         
-        # Объёмы
         vol_total = sum(float(r[5]) for r in day_rows)
         vol_buy = sum(float(r[6]) for r in day_rows)
         vol_sell = vol_total - vol_buy
         buy_pct = (vol_buy / vol_total * 100) if vol_total else 50
         sell_pct = 100 - buy_pct
 
-        # Индикаторы (1ч)
+        # Сворачиваем в 1ч
         candles_1h = []
         for i in range(0, len(rows) - 3, 4):
             chunk = rows[i:i+4]
@@ -195,8 +191,10 @@ def fetch_btc_day_stats():
             candles_1h.append((h, l, c))
             
         closes_1h = [c[2] for c in candles_1h]
-        
-        # RSI 1h (упрощенный)
+        highs_1h = [c[0] for c in candles_1h]
+        lows_1h = [c[1] for c in candles_1h]
+
+        # RSI 1h
         rsi_1h = None
         if len(closes_1h) > 14:
             gains, losses = 0, 0
@@ -210,12 +208,24 @@ def fetch_btc_day_stats():
         # EMA 50 (1h)
         ema_50 = sum(closes_1h[-50:]) / 50 if len(closes_1h) >= 50 else None
 
+        # ATR 1h (упрощенный)
+        atr_1h = None
+        if len(candles_1h) > 14:
+            trs = []
+            for i in range(len(candles_1h)-14, len(candles_1h)):
+                if i == 0: continue
+                tr = max(highs_1h[i] - lows_1h[i], abs(highs_1h[i] - closes_1h[i-1]), abs(lows_1h[i] - closes_1h[i-1]))
+                trs.append(tr)
+            if trs: atr_1h = sum(trs) / len(trs)
+            
+        atr_pct = (atr_1h / price * 100) if atr_1h and price else 0
+
         return {
             "open": open_p, "price": price, "change_pct": change_pct,
             "high": high, "low": low,
             "vol_buy": vol_buy, "vol_sell": vol_sell,
             "buy_pct": buy_pct, "sell_pct": sell_pct,
-            "rsi": rsi_1h, "ema_50": ema_50
+            "rsi": rsi_1h, "ema_50": ema_50, "atr": atr_1h, "atr_pct": atr_pct
         }
     except Exception as e:
         log.error("fetch_btc: %s", e)
@@ -265,13 +275,9 @@ def build_report(data, top_items, top_ru, btc):
         # 3. Битва Объемов (Динамическая)
         lines.append("⚔️ <b>Битва объемов:</b>")
         
-        # Определяем вердикт
-        if btc["buy_pct"] > 53:
-            verdict = "Покупатели доминировали."
-        elif btc["sell_pct"] > 53:
-            verdict = "Продавцы доминировали."
-        else:
-            verdict = "Равенство сил."
+        if btc["buy_pct"] > 53: verdict = "Покупатели доминировали."
+        elif btc["sell_pct"] > 53: verdict = "Продавцы доминировали."
+        else: verdict = "Равенство сил."
 
         bar_buy = get_progress_bar(btc["buy_pct"])
         bar_sell = get_progress_bar(btc["sell_pct"])
@@ -291,6 +297,8 @@ def build_report(data, top_items, top_ru, btc):
         if btc["rsi"]:
             st = "нейтрально" if 30 < btc["rsi"] < 70 else ("перекупленность" if btc["rsi"] >= 70 else "перепроданность")
             lines.append(f"  • Сила (RSI): {btc['rsi']:.1f} — {st}")
+        if btc["atr"]:
+            lines.append(f"  • Волатильность (ATR): {fmt_price(btc['atr'])} ({btc['atr_pct']:.2f}%)")
         lines.append("")
 
     # 5. Главное за день (Top-3)
@@ -330,18 +338,15 @@ def main():
     data = load_json(SENTIMENT_FILE)
     history = load_json(SENT_HISTORY_FILE, {"entries": []})
     
-    # Чистим историю
     cutoff = datetime.now(timezone.utc) - timedelta(days=HISTORY_DAYS)
     history["entries"] = [e for e in history.get("entries", []) if datetime.fromisoformat(e["sent_at"]) >= cutoff]
     seen = {e["hash"] for e in history["entries"]}
 
-    # Берем новости
     all_top = data.get("top_bullish", []) + data.get("top_bearish", [])
     all_top.sort(key=lambda x: x.get("effective_weight", 0), reverse=True)
     fresh_items = filter_fresh(all_top, seen)[:3]
     top_ru = translate_top(fresh_items, 3)
     
-    # Считаем BTC
     btc = fetch_btc_day_stats()
 
     text_tg = build_report(data, fresh_items, top_ru, btc)
@@ -352,7 +357,6 @@ def main():
     if TG_CHANNEL_ID: send_telegram(text_tg, TG_CHANNEL_ID)
     if VK_GROUP_ID: send_vk(text_vk)
 
-    # Сохраняем историю
     for it in fresh_items:
         history["entries"].append({"hash": _title_hash(it.get("title_original", "")), "sent_at": datetime.now(timezone.utc).isoformat()})
     save_json(SENT_HISTORY_FILE, history)
