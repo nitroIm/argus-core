@@ -1,33 +1,33 @@
 {
-  "generated_at": "2026-10-27T20:05:39.350198+00:00",
+  "generated_at": "2026-10-27T21:05:40.036121+00:00",
   "total_news": 85,
-  "avg_sentiment": -0.108,
+  "avg_sentiment": -0.031,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
   "bullish_count": 15,
-  "bearish_count": 19,
-  "neutral_count": 51,
+  "bearish_count": 14,
+  "neutral_count": 56,
   "fake_count": 0,
-  "cross_confirmed": 7,
+  "cross_confirmed": 8,
   "by_source": {
     "Cointelegraph": {
-      "total": 19,
+      "total": 20,
       "bull": 6,
       "bear": 5
     },
     "Decrypt": {
       "total": 17,
       "bull": 2,
-      "bear": 5
+      "bear": 3
     },
     "Bitcoin.com": {
-      "total": 8,
+      "total": 7,
       "bull": 2,
-      "bear": 2
+      "bear": 0
     },
     "CryptoSlate": {
       "total": 9,
       "bull": 1,
-      "bear": 2
+      "bear": 1
     },
     "CryptoPotato": {
       "total": 21,
@@ -51,10 +51,10 @@
       "sentiment": 1.0,
       "bull_weight": 2.4,
       "bear_weight": 0.0,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-27T20:05:37.344984+00:00",
-      "effective_weight": 1.95,
+      "collected_at": "2026-10-27T21:05:37.508695+00:00",
+      "effective_weight": 1.3,
       "title_original": "Ripple, Robinhood expand partnership to bring RLUSD to retail and institutional markets",
       "cross_check": 3
     },
@@ -70,7 +70,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-27T20:05:37.345181+00:00",
+      "collected_at": "2026-10-27T21:05:37.508915+00:00",
       "effective_weight": 1.3,
       "title_original": "Janus Henderson, Centrifuge launch tokenized Nasdaq-100 fund on Stellar",
       "cross_check": 2
@@ -87,7 +87,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-27T20:05:37.345430+00:00",
+      "collected_at": "2026-10-27T21:05:37.509203+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin price analysis sees ‘strong rally’ as old coins become dormant",
       "cross_check": 2
@@ -104,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-27T20:05:37.345537+00:00",
+      "collected_at": "2026-10-27T21:05:37.509325+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin ETFs claw back $110M after $774M exit",
       "cross_check": 1
@@ -121,7 +121,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-27T20:05:37.345700+00:00",
+      "collected_at": "2026-10-27T21:05:37.509542+00:00",
       "effective_weight": 1.04,
       "title_original": "Injective launches onchain futures market tracking Nvidia GPU rental costs",
       "cross_check": 1
@@ -140,43 +140,9 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-27T20:05:37.345641+00:00",
+      "collected_at": "2026-10-27T21:05:37.509475+00:00",
       "effective_weight": 1.04,
       "title_original": "US OCC calls on community banks to become payment stablecoin issuers",
-      "cross_check": 1
-    },
-    {
-      "title": "Jason Calacanis Predicts Bitcoin Will Never Reclaim Its Price Peak—Here’s Why",
-      "url": "https://news.bitcoin.com/price-predictions/jason-calacanis-predicts-bitcoin-never-reclaim-price-peak/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-27T16:05:56+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 0.8,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-27T20:05:37.622865+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Jason Calacanis Predicts Bitcoin Will Never Reclaim Its Price Peak—Here’s Why",
-      "cross_check": 1
-    },
-    {
-      "title": "Crypto Casino Gamdom Faces $15M Bitcoin Ransom After Multimillion-Dollar Hack",
-      "url": "https://news.bitcoin.com/security/crypto-casino-gamdom-faces-15m-bitcoin-ransom-after-multimillion-dollar-hack/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-27T15:35:09+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-27T20:05:37.622922+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Crypto Casino Gamdom Faces $15M Bitcoin Ransom After Multimillion-Dollar Hack",
       "cross_check": 1
     },
     {
@@ -191,7 +157,7 @@
       "bear_weight": 3.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-27T20:05:37.997689+00:00",
+      "collected_at": "2026-10-27T21:05:38.021181+00:00",
       "effective_weight": 1.0,
       "title_original": "Lightning tightens invoice rules after reported attack made Bitcoin withdrawals look unpaid",
       "cross_check": 1
@@ -208,9 +174,43 @@
       "bear_weight": 2.3,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-27T20:05:37.398778+00:00",
+      "collected_at": "2026-10-27T21:05:37.611507+00:00",
       "effective_weight": 0.88,
       "title_original": "Canada’s Draft Stablecoin Rules Cap Redemption Fees at 1% and Ban Yield",
+      "cross_check": 1
+    },
+    {
+      "title": "This AI-Related Cryptocurrency Pumps and Dumps: Did Whales Know About the Move?",
+      "url": "https://cryptopotato.com/this-ai-related-cryptocurrency-pumps-and-dumps-did-whales-know-about-the-move/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-27T11:18:54+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-27T21:05:38.806697+00:00",
+      "effective_weight": 0.8,
+      "title_original": "This AI-Related Cryptocurrency Pumps and Dumps: Did Whales Know About the Move?",
+      "cross_check": 1
+    },
+    {
+      "title": "Bitcoin Has Lost 30,000 Wallets: Could That Be Good News for BTC?",
+      "url": "https://cryptopotato.com/bitcoin-has-lost-30000-wallets-could-that-be-good-news-for-btc/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-27T10:19:07+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-27T21:05:38.806759+00:00",
+      "effective_weight": 0.8,
+      "title_original": "Bitcoin Has Lost 30,000 Wallets: Could That Be Good News for BTC?",
       "cross_check": 1
     }
   ]
