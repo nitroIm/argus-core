@@ -1,23 +1,23 @@
 {
-  "generated_at": "2026-10-27T19:06:50.792141+00:00",
+  "generated_at": "2026-10-27T20:05:39.350198+00:00",
   "total_news": 85,
-  "avg_sentiment": -0.084,
+  "avg_sentiment": -0.108,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
-  "bullish_count": 14,
-  "bearish_count": 21,
-  "neutral_count": 50,
+  "bullish_count": 15,
+  "bearish_count": 19,
+  "neutral_count": 51,
   "fake_count": 0,
   "cross_confirmed": 7,
   "by_source": {
     "Cointelegraph": {
-      "total": 18,
-      "bull": 5,
+      "total": 19,
+      "bull": 6,
       "bear": 5
     },
     "Decrypt": {
-      "total": 18,
+      "total": 17,
       "bull": 2,
-      "bear": 7
+      "bear": 5
     },
     "Bitcoin.com": {
       "total": 8,
@@ -42,38 +42,21 @@
   },
   "top_bullish": [
     {
-      "title": "Two Solo Bitcoin Miners Hit the Jackpot Against Industrial Mining Giants",
-      "url": "https://news.bitcoin.com/mining/two-solo-bitcoin-miners-hit-jackpot-against-industrial-mining-giants/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
+      "title": "Ripple, Robinhood expand partnership to bring RLUSD to retail and institutional markets",
+      "url": "https://cointelegraph.com/news/ripple-robinhood-expand-partnership-rlusd-retail-institutional-markets?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
       "lang": "en",
-      "pub_date": "2026-10-27T19:05:36+00:00",
+      "pub_date": "2026-10-27T19:54:05+00:00",
       "sentiment": 1.0,
-      "bull_weight": 1.0,
+      "bull_weight": 2.4,
       "bear_weight": 0.0,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-27T19:06:49.650972+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Two Solo Bitcoin Miners Hit the Jackpot Against Industrial Mining Giants",
-      "cross_check": 1
-    },
-    {
-      "title": "Mexican Peso Stablecoin Gains Anchorage Custody on Ethereum and Beyond",
-      "url": "https://news.bitcoin.com/stablecoins/mexican-peso-stablecoin-gains-anchorage-custody-ethereum/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-27T18:35:13+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-27T19:06:49.651047+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Mexican Peso Stablecoin Gains Anchorage Custody on Ethereum and Beyond",
-      "cross_check": 1
+      "collected_at": "2026-10-27T20:05:37.344984+00:00",
+      "effective_weight": 1.95,
+      "title_original": "Ripple, Robinhood expand partnership to bring RLUSD to retail and institutional markets",
+      "cross_check": 3
     },
     {
       "title": "Janus Henderson, Centrifuge launch tokenized Nasdaq-100 fund on Stellar",
@@ -87,7 +70,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-27T19:06:49.403642+00:00",
+      "collected_at": "2026-10-27T20:05:37.345181+00:00",
       "effective_weight": 1.3,
       "title_original": "Janus Henderson, Centrifuge launch tokenized Nasdaq-100 fund on Stellar",
       "cross_check": 2
@@ -104,7 +87,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-27T19:06:49.404027+00:00",
+      "collected_at": "2026-10-27T20:05:37.345430+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin price analysis sees ‘strong rally’ as old coins become dormant",
       "cross_check": 2
@@ -121,30 +104,30 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-27T19:06:49.404164+00:00",
+      "collected_at": "2026-10-27T20:05:37.345537+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin ETFs claw back $110M after $774M exit",
+      "cross_check": 1
+    },
+    {
+      "title": "Injective launches onchain futures market tracking Nvidia GPU rental costs",
+      "url": "https://cointelegraph.com/news/injective-launches-onchain-futures-market-tracking-nvidia-gpu-rental-costs?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-10-26T21:23:32+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-27T20:05:37.345700+00:00",
+      "effective_weight": 1.04,
+      "title_original": "Injective launches onchain futures market tracking Nvidia GPU rental costs",
       "cross_check": 1
     }
   ],
   "top_bearish": [
-    {
-      "title": "Lightning tightens invoice rules after reported attack made Bitcoin withdrawals look unpaid",
-      "url": "https://cryptoslate.com/lightning-tightens-invoice-rules-after-reported-attack-made-bitcoin-withdrawals-look-unpaid/",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-27T19:00:10+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 3.0,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-27T19:06:49.740001+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Lightning tightens invoice rules after reported attack made Bitcoin withdrawals look unpaid",
-      "cross_check": 1
-    },
     {
       "title": "US OCC calls on community banks to become payment stablecoin issuers",
       "url": "https://cointelegraph.com/news/occ-community-banks-stablecoin-issuers-genius-act?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -157,7 +140,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-27T19:06:49.404293+00:00",
+      "collected_at": "2026-10-27T20:05:37.345641+00:00",
       "effective_weight": 1.04,
       "title_original": "US OCC calls on community banks to become payment stablecoin issuers",
       "cross_check": 1
@@ -174,7 +157,7 @@
       "bear_weight": 0.8,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-27T19:06:49.651391+00:00",
+      "collected_at": "2026-10-27T20:05:37.622865+00:00",
       "effective_weight": 1.0,
       "title_original": "Jason Calacanis Predicts Bitcoin Will Never Reclaim Its Price Peak—Here’s Why",
       "cross_check": 1
@@ -191,9 +174,26 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-27T19:06:49.651502+00:00",
+      "collected_at": "2026-10-27T20:05:37.622922+00:00",
       "effective_weight": 1.0,
       "title_original": "Crypto Casino Gamdom Faces $15M Bitcoin Ransom After Multimillion-Dollar Hack",
+      "cross_check": 1
+    },
+    {
+      "title": "Lightning tightens invoice rules after reported attack made Bitcoin withdrawals look unpaid",
+      "url": "https://cryptoslate.com/lightning-tightens-invoice-rules-after-reported-attack-made-bitcoin-withdrawals-look-unpaid/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-27T19:00:10+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 3.0,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-27T20:05:37.997689+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Lightning tightens invoice rules after reported attack made Bitcoin withdrawals look unpaid",
       "cross_check": 1
     },
     {
@@ -208,7 +208,7 @@
       "bear_weight": 2.3,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-27T19:06:49.475221+00:00",
+      "collected_at": "2026-10-27T20:05:37.398778+00:00",
       "effective_weight": 0.88,
       "title_original": "Canada’s Draft Stablecoin Rules Cap Redemption Fees at 1% and Ban Yield",
       "cross_check": 1
