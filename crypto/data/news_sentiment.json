@@ -1,26 +1,26 @@
 {
-  "generated_at": "2026-10-27T10:05:41.439076+00:00",
-  "total_news": 85,
-  "avg_sentiment": -0.296,
+  "generated_at": "2026-10-27T11:05:34.611434+00:00",
+  "total_news": 86,
+  "avg_sentiment": -0.313,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 17,
   "bearish_count": 28,
-  "neutral_count": 40,
+  "neutral_count": 41,
   "fake_count": 0,
-  "cross_confirmed": 4,
+  "cross_confirmed": 7,
   "by_source": {
     "Cointelegraph": {
-      "total": 20,
+      "total": 19,
       "bull": 4,
-      "bear": 7
+      "bear": 6
     },
     "Decrypt": {
-      "total": 15,
+      "total": 16,
       "bull": 3,
       "bear": 9
     },
     "Bitcoin.com": {
-      "total": 8,
+      "total": 7,
       "bull": 0,
       "bear": 2
     },
@@ -30,12 +30,12 @@
       "bear": 1
     },
     "CryptoPotato": {
-      "total": 24,
+      "total": 25,
       "bull": 6,
-      "bear": 7
+      "bear": 8
     },
     "ForkLog": {
-      "total": 9,
+      "total": 10,
       "bull": 1,
       "bear": 2
     }
@@ -53,7 +53,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-27T10:05:40.066520+00:00",
+      "collected_at": "2026-10-27T11:05:33.281373+00:00",
       "effective_weight": 1.3,
       "title_original": "Bitcoin ETFs claw back $110M after $774M exit",
       "cross_check": 1
@@ -70,7 +70,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-27T10:05:41.382992+00:00",
+      "collected_at": "2026-10-27T11:05:34.554466+00:00",
       "effective_weight": 1.2,
       "title_original": "Ripple получила окончательное разрешение на запуск трастового банка в США",
       "cross_check": 1
@@ -87,7 +87,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-27T10:05:40.066829+00:00",
+      "collected_at": "2026-10-27T11:05:33.281664+00:00",
       "effective_weight": 1.04,
       "title_original": "Injective launches onchain futures market tracking Nvidia GPU rental costs",
       "cross_check": 1
@@ -104,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-27T10:05:40.067189+00:00",
+      "collected_at": "2026-10-27T11:05:33.282053+00:00",
       "effective_weight": 1.04,
       "title_original": "Aviva Investors launches tokenized share class of $29B Sterling fund on XRP Ledger",
       "cross_check": 2
@@ -121,7 +121,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-27T10:05:40.124505+00:00",
+      "collected_at": "2026-10-27T11:05:33.359855+00:00",
       "effective_weight": 0.88,
       "title_original": "OpenAI Launches GPT-6.1 Terra, Its Half-Good AI Model at Half the Price",
       "cross_check": 1
@@ -129,20 +129,20 @@
   ],
   "top_bearish": [
     {
-      "title": "CoinDCX’s $16 million loss revives uncomfortable memories of FTX and Celsius",
-      "url": "https://cryptoslate.com/coindcxs-16-million-loss-revives-uncomfortable-memories-of-ftx-and-celsius/",
-      "source": "CryptoSlate",
+      "title": "Bitcoin Has Lost 30,000 Wallets: Could That Be Good News for BTC?",
+      "url": "https://cryptopotato.com/bitcoin-has-lost-30000-wallets-could-that-be-good-news-for-btc/",
+      "source": "CryptoPotato",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-10-27T10:00:59+00:00",
+      "pub_date": "2026-10-27T10:19:07+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 1.5,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-27T10:05:40.398466+00:00",
+      "collected_at": "2026-10-27T11:05:33.686218+00:00",
       "effective_weight": 1.5,
-      "title_original": "CoinDCX’s $16 million loss revives uncomfortable memories of FTX and Celsius",
+      "title_original": "Bitcoin Has Lost 30,000 Wallets: Could That Be Good News for BTC?",
       "cross_check": 1
     },
     {
@@ -157,7 +157,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-27T10:05:40.066758+00:00",
+      "collected_at": "2026-10-27T11:05:33.281592+00:00",
       "effective_weight": 1.04,
       "title_original": "US OCC calls on community banks to become payment stablecoin issuers",
       "cross_check": 1
@@ -174,7 +174,7 @@
       "bear_weight": 0.8,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-27T10:05:40.066896+00:00",
+      "collected_at": "2026-10-27T11:05:33.281733+00:00",
       "effective_weight": 1.04,
       "title_original": "NBA names Kalshi, Polymarket preferred exchanges, signs CFTC deal",
       "cross_check": 1
@@ -191,27 +191,27 @@
       "bear_weight": 0.8,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-27T10:05:40.067118+00:00",
+      "collected_at": "2026-10-27T11:05:33.281958+00:00",
       "effective_weight": 1.04,
       "title_original": "HOOD’s prediction markets to add $1.7B to revenue, exceed crypto by 2028: Bernstein",
       "cross_check": 1
     },
     {
-      "title": "BTC price risks $80K loss into FOMC, earnings: Three things to know in Bitcoin this week",
-      "url": "https://cointelegraph.com/markets/btc-price-risks-80k-loss-into-fomc-earnings-three-things-to-know-in-bitcoin-this-week?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
+      "title": "Solana Price Dips Under $100 as SOL Whale Is Quietly Dumping $49M",
+      "url": "https://news.bitcoin.com/altcoins/solana-whale-dumping-49m-sol-price-100/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-10-26T10:49:55+00:00",
+      "pub_date": "2026-10-27T08:30:51+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 1.5,
-      "freshness": 0.8,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-27T10:05:40.067263+00:00",
-      "effective_weight": 1.04,
-      "title_original": "BTC price risks $80K loss into FOMC, earnings: Three things to know in Bitcoin this week",
-      "cross_check": 2
+      "collected_at": "2026-10-27T11:05:33.506913+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Solana Price Dips Under $100 as SOL Whale Is Quietly Dumping $49M",
+      "cross_check": 1
     }
   ]
 }
