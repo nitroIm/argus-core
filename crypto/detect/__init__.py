@@ -1,1 +1,0 @@
-# ARGUS-Trader detect package
