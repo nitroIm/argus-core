@@ -1,11 +1,9 @@
 # ============================================================
-# ARGUS - SIGNAL REPORT (SENDER)
+# ARGUS - SIGNAL REPORT (SENDER v1.4.0)
 # ------------------------------------------------------------
-# Version: 1.0.0
-# Description: 
-#   Читает current_status.json.
-#   Если есть новый сигнал (sent_to_tg: False), отправляет
-#   его в Telegram (личку) и обновляет статус.
+# Читает opened_deals.json.
+# Если есть сделка (sent_to_tg: False), отправляет в TG 
+# и ставит флаг (sent_to_tg: True).
 # ============================================================
 
 import os
@@ -14,7 +12,7 @@ import logging
 import requests
 from pathlib import Path
 
-VERSION = "1.0.0"
+VERSION = "1.4.0"
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("crypto.signal_report")
@@ -22,8 +20,8 @@ log = logging.getLogger("crypto.signal_report")
 SCRIPT_DIR = Path(__file__).resolve().parent
 CRYPTO_ROOT = SCRIPT_DIR.parent
 
-# Путь к статусу (создается первым ботом)
-STATUS_FILE = CRYPTO_ROOT / "data" / "signals" / "current_status.json"
+# Читаем НОВЫЙ файл открытой сделки
+OPENED_DEALS_FILE = CRYPTO_ROOT / "data" / "signals" / "opened_deals.json"
 
 BOT_TOKEN = (
     os.getenv("TELEGRAM_BOT_TOKEN")
@@ -71,29 +69,25 @@ def fmt_price(p):
 def main():
     log.info(f"STARTING SIGNAL REPORT v{VERSION}")
     
-    # 1. Читаем статус
-    status = load_json(STATUS_FILE)
-    if not status or not status.get("in_pos"):
-        log.info("No active positions. Skipping.")
+    # 1. Читаем файл с открытой сделкой
+    deal = load_json(OPENED_DEALS_FILE, None)
+    
+    # Если файла нет или он пустой (null)
+    if not deal:
+        log.info("No open deals. Skipping.")
         return
 
     # 2. Проверяем, не отправляли ли уже
-    if status.get("sent_to_tg"):
-        log.info("Signal already sent to Telegram.")
+    if deal.get("sent_to_tg") == True:
+        log.info("Deal already sent to Telegram.")
         return
 
-    sig = status.get("signal")
-    if not sig:
-        log.warning("No signal data in status.")
-        return
-
-    # 3. Формируем сообщение
-    entry = float(sig['entry_price'])
-    tp = float(sig['tp'])
-    sl = float(sig['sl'])
+    # 3. Достаем данные напрямую (без вложенного "signal")
+    entry = float(deal['entry'])
+    tp = float(deal['tp'])
+    sl = float(deal['sl'])
     
-    # Считаем профит/лосс в процентах (для наглядности)
-    # Берем проценты из настроек модели, если они там есть. Если нет — считаем сами.
+    # Считаем проценты для красоты
     tp_pct = ((tp - entry) / entry) * 100
     sl_pct = ((entry - sl) / entry) * 100
 
@@ -107,9 +101,9 @@ def main():
     # 4. Отправляем в TG
     if send_telegram(text, CHAT_ID):
         log.info("Signal sent to Telegram successfully.")
-        # Ставим флаг, чтобы больше не отправлять
-        status["sent_to_tg"] = True
-        save_json(STATUS_FILE, status)
+        # Ставим флаг прямо в файле сделки
+        deal["sent_to_tg"] = True
+        save_json(OPENED_DEALS_FILE, deal)
     else:
         log.error("Failed to send TG message. Will try next time.")
 
