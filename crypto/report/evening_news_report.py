@@ -1,7 +1,8 @@
 # ============================================================
-# ARGUS - EVENING NEWS REPORT v2.1
+# ARGUS - EVENING NEWS REPORT v2.2 (PATH UPDATE)
 # ------------------------------------------------------------
-# Исправлено: хватает данных для EMA(50) и ATR.
+# v2.2: Путь к данным изменен на crypto/data/news/
+# v2.1: Исправлено: хватает данных для EMA(50) и ATR.
 # ============================================================
 
 import os
@@ -24,7 +25,8 @@ except ImportError:
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 CRYPTO_ROOT = SCRIPT_DIR.parent
-DATA_DIR = CRYPTO_ROOT / "data"
+# ИЗМЕНЕНИЕ ЗДЕСЬ: добавлена папка "news"
+DATA_DIR = CRYPTO_ROOT / "data" / "news"
 SENTIMENT_FILE = DATA_DIR / "news_sentiment.json"
 SENT_HISTORY_FILE = DATA_DIR / "news_sent_history_evening.json"
 
@@ -151,7 +153,6 @@ def fetch_btc_day_stats():
         conn = psycopg.connect(DB_URL, connect_timeout=30)
         with conn:
             with conn.cursor() as cur:
-                # Увеличили лимит до 250 свечей (около 60 часов), чтобы хватило на EMA 50
                 cur.execute("SELECT open_time, open, high, low, close, volume, taker_buy_volume FROM candles WHERE symbol=%s AND timeframe=%s AND market_type='spot' ORDER BY open_time DESC LIMIT 250", (SYMBOL, TIMEFRAME))
                 rows = list(reversed(cur.fetchall()))
         conn.close()
@@ -180,7 +181,6 @@ def fetch_btc_day_stats():
         buy_pct = (vol_buy / vol_total * 100) if vol_total else 50
         sell_pct = 100 - buy_pct
 
-        # Сворачиваем в 1ч
         candles_1h = []
         for i in range(0, len(rows) - 3, 4):
             chunk = rows[i:i+4]
@@ -194,7 +194,6 @@ def fetch_btc_day_stats():
         highs_1h = [c[0] for c in candles_1h]
         lows_1h = [c[1] for c in candles_1h]
 
-        # RSI 1h
         rsi_1h = None
         if len(closes_1h) > 14:
             gains, losses = 0, 0
@@ -205,10 +204,8 @@ def fetch_btc_day_stats():
             if losses == 0: rsi_1h = 100
             else: rsi_1h = 100 - (100 / (1 + (gains/14)/(losses/14)))
 
-        # EMA 50 (1h)
         ema_50 = sum(closes_1h[-50:]) / 50 if len(closes_1h) >= 50 else None
 
-        # ATR 1h (упрощенный)
         atr_1h = None
         if len(candles_1h) > 14:
             trs = []
@@ -247,7 +244,6 @@ def build_report(data, top_items, top_ru, btc):
     now = now_local()
     lines = []
 
-    # 1. Динамический заголовок
     if btc:
         if btc["change_pct"] > 0.2:
             header = "🐂 <b>Быки удержали инициативу: Итоги дня BTC</b>"
@@ -262,7 +258,6 @@ def build_report(data, top_items, top_ru, btc):
     lines.append(now.strftime("%d.%m %H:%M"))
     lines.append("")
 
-    # 2. Блок Цены и Позиции
     if btc:
         lines.append("💰 <b>Цена за день:</b>")
         lines.append(f"  Утром: {fmt_price(btc['open'])} → Вечером: {fmt_price(btc['price'])}")
@@ -272,7 +267,6 @@ def build_report(data, top_items, top_ru, btc):
         lines.append(f"  Мин `{fmt_price(btc['low'])}` {bar_price} Макс `{fmt_price(btc['high'])}`")
         lines.append("")
 
-        # 3. Битва Объемов (Динамическая)
         lines.append("⚔️ <b>Битва объемов:</b>")
         
         if btc["buy_pct"] > 53: verdict = "Покупатели доминировали."
@@ -289,7 +283,6 @@ def build_report(data, top_items, top_ru, btc):
         lines.append(f"  <i>Вердикт: {verdict}</i>")
         lines.append("")
 
-        # 4. Техническая картина
         lines.append("🩺 <b>Техническая картина (1ч):</b>")
         if btc["ema_50"]:
             trend = "выше EMA(50) — бычий настрой" if btc["price"] > btc["ema_50"] else "ниже EMA(50) — медвежий настрой"
@@ -301,7 +294,6 @@ def build_report(data, top_items, top_ru, btc):
             lines.append(f"  • Волатильность (ATR): {fmt_price(btc['atr'])} ({btc['atr_pct']:.2f}%)")
         lines.append("")
 
-    # 5. Главное за день (Top-3)
     if top_items:
         lines.append("📰 <b>Главное за день:</b>")
         for i, it in enumerate(top_items[:3]):
@@ -314,14 +306,12 @@ def build_report(data, top_items, top_ru, btc):
             else: lines.append(f"  • {t_esc}")
         lines.append("")
 
-    # 6. Уровни на завтра
     if btc:
         lines.append("🎯 <b>На завтра:</b>")
         lines.append(f"  • Сопротивление: {fmt_price(btc['high'])}")
         lines.append(f"  • Поддержка: {fmt_price(btc['low'])}")
         lines.append("")
 
-    # 7. Реклама и прощание
     lines.append("────────────────────")
     lines.append("🔥 <b>Хотите торговать на Bybit?</b>")
     lines.append("Бонусы до $1720 для новых пользователей:")
