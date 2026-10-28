@@ -140,7 +140,7 @@ def main():
 
     df = pd.DataFrame(rows, columns=['open_time', 'open', 'high', 'low', 'close', 'volume'])
     df['open_time'] = pd.to_datetime(df['open_time'], utc=True)
-    df.set_index('open_time', inplace=True)
+    df = df.set_index('open_time')
 
     # Склеиваем 15m в 1h (базу не трогаем!)
     df_1h = df.resample('1h').agg({
