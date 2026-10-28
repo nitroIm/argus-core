@@ -17,7 +17,8 @@ from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 CRYPTO_ROOT = SCRIPT_DIR.parent
-DATA_DIR = CRYPTO_ROOT / "data"
+# ИЗМЕНЕНИЕ: Теперь кэш сохраняется в папку news
+DATA_DIR = CRYPTO_ROOT / "data" / "news"
 CACHE_FILE = DATA_DIR / "news_translate_cache.json"
 
 logging.basicConfig(
