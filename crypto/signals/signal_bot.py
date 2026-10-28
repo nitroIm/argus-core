@@ -1,12 +1,8 @@
 # ============================================================
-# ARGUS - SIGNAL BOT (COLLECTOR)
+# ARGUS - SIGNAL BOT (SCOUT v3.1)
 # ------------------------------------------------------------
-# Version: 1.2.0
-# Description: 
-#   Читает модель best_params.json.
-#   Проверяет текущие данные из Aiven.
-#   Если условия совпали, записывает сигнал в current_status.json.
-#   Ничего не отправляет в Telegram (это делает report скрипт).
+# Ищет точку входа. Если находит, записывает сделку в 
+# opened_deals.json со статусом "не отправлено".
 # ============================================================
 
 import os
@@ -17,7 +13,7 @@ from datetime import datetime, timezone
 import psycopg
 import pandas as pd
 
-VERSION = "1.2.0"
+VERSION = "3.1.0"
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("crypto.signal_bot")
@@ -28,8 +24,10 @@ CRYPTO_ROOT = SCRIPT_DIR.parent
 # Пути
 MODEL_FILE = CRYPTO_ROOT / "data" / "models" / "best_params.json"
 SIGNALS_DIR = CRYPTO_ROOT / "data" / "signals"
-SIGNALS_DIR.mkdir(parents=True, exist_ok=True) # Создаст папку, если ее нет
-STATUS_FILE = SIGNALS_DIR / "current_status.json"
+SIGNALS_DIR.mkdir(parents=True, exist_ok=True)
+
+# ТОТ САМЫЙ ФАЙЛ
+OPENED_DEALS_FILE = SIGNALS_DIR / "opened_deals.json"
 
 DB_URL = (os.getenv("AIVEN_DB_URL") or "").strip()
 SYMBOL = "BTCUSDT"
@@ -89,10 +87,10 @@ def main():
     
     params = model_data["params"]
 
-    # 2. Проверяем, нет ли уже открытой сделки
-    status = load_json(STATUS_FILE, {"in_pos": False})
-    if status.get("in_pos"):
-        log.info("Already in position. Skipping signal search.")
+    # 2. Проверяем, нет ли уже открытой сделки (если файл не пустой)
+    current_deal = load_json(OPENED_DEALS_FILE, None)
+    if current_deal is not None:
+        log.info("Deal is already open. Sleeping.")
         return
 
     # 3. Идем в базу за свежими данными
@@ -138,32 +136,25 @@ def main():
     if params["use_volume_filter"] and not (current_vol > vol_sma):
         signal = False
 
-    # 6. Запись результата
+    # 6. Запись результата в opened_deals.json
     if signal:
-        log.info("🚀 SIGNAL FOUND! Opening virtual LONG position.")
+        log.info("🚀 SIGNAL FOUND! Opening deal.")
         
         tp_price = current_close * (1 + params["tp_pct"] / 100)
         sl_price = current_close * (1 - params["sl_pct"] / 100)
         
-        new_status = {
-            "in_pos": True,
-            "sent_to_tg": False, # Флаг для следующего скрипта (отправки)
-            "signal": {
-                "signal_id": datetime.now(timezone.utc).isoformat(),
-                "type": "LONG",
-                "entry_price": current_close,
-                "tp": tp_price,
-                "sl": sl_price,
-                "timestamp": datetime.now(timezone.utc).isoformat()
-            }
+        new_deal = {
+            "entry": current_close,
+            "tp": tp_price,
+            "sl": sl_price,
+            "open_time": datetime.now(timezone.utc).isoformat(),
+            "sent_to_tg": False
         }
-        save_json(STATUS_FILE, new_status)
+        
+        save_json(OPENED_DEALS_FILE, new_deal)
         log.info(f"Saved signal. Entry: {current_close:.2f}, TP: {tp_price:.2f}, SL: {sl_price:.2f}")
     else:
         log.info("No signal. Waiting.")
-        # Если позиции нет, просто обновляем статус, чтобы сохранить чистоту
-        if not status.get("in_pos"):
-            save_json(STATUS_FILE, {"in_pos": False, "signal": None, "sent_to_tg": False})
 
 if __name__ == "__main__":
     main()
