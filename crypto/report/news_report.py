@@ -1,6 +1,7 @@
 # ============================================================
-# ARGUS - NEWS REPORT v10.2
+# ARGUS - NEWS REPORT v10.3 (PATH UPDATE)
 # ------------------------------------------------------------
+# v10.3: Путь к данным изменен на crypto/data/news/
 # v10.2: Добавлена реферальная ссылка Bybit в конец отчета.
 # ============================================================
 
@@ -24,7 +25,8 @@ except ImportError:
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 CRYPTO_ROOT = SCRIPT_DIR.parent
-DATA_DIR = CRYPTO_ROOT / "data"
+# ИЗМЕНЕНИЕ ЗДЕСЬ: добавлена папка "news"
+DATA_DIR = CRYPTO_ROOT / "data" / "news"
 SENTIMENT_FILE = DATA_DIR / "news_sentiment.json"
 SENT_HISTORY_FILE = DATA_DIR / "news_sent_history.json"
 
@@ -494,7 +496,7 @@ def build_report(data, top_items, top_ru, btc):
 
 
 def main():
-    log.info("news report v10.2")
+    log.info("news report v10.3")
     local = now_local()
     log.info("local time: %s (hour=%d)", local.strftime("%H:%M"), local.hour)
     
