@@ -1,9 +1,7 @@
 name: ARGUS Signal Bot & Report
 
 on:
-  workflow_dispatch: # Запуск вручную для теста
-  # schedule:
-  #   - cron: '*/15 6-18 * * *' # Если решишь использовать встроенный крон GitHub (каждые 15 мин с 6 до 18 UTC)
+  workflow_dispatch: 
 
 permissions:
   contents: write
@@ -31,28 +29,27 @@ jobs:
           python -m pip install --upgrade pip
           pip install pandas "psycopg[binary]" requests
 
-      # 1. Ищем сигнал и пишем в JSON
+      # 1. Ищем сигнал и пишем в JSON (лежит в signals)
       - name: Run Signal Bot
         env:
           AIVEN_DB_URL: ${{ secrets.AIVEN_DB_URL }}
         run: python crypto/signals/signal_bot.py
 
-      # 2. Читаем JSON и отправляем в TG
+      # 2. Читаем JSON и отправляем в TG (лежит в report)
       - name: Run Signal Report
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: python crypto/signals/signal_bot_report.py
+        run: python crypto/report/signal_bot_report.py
 
-      # 3. Сохраняем обновленный статус (чтобы не дублировать сделку)
+      # 3. Сохраняем обновленный статус
       - name: Commit status
         run: |
           git config user.name "ARGUS Signals"
           git config user.email "signals@github.com"
           git add crypto/data/signals/current_status.json || true
           
-          # Если файл не изменился, прерываемся
           if git diff --staged --quiet; then
             echo "No changes in signal status"
             exit 0
