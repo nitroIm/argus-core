@@ -76,10 +76,15 @@ def main():
 
     text = ""
     if event["type"] == "ENTRY":
+        entry = float(event["entry"])
+        tp = float(event["tp"])
+        sl = float(event["sl"])
+        tp_pct = (tp - entry) / entry * 100
+        sl_pct = (sl - entry) / entry * 100
         text = "🚀 <b>ARGUS SIGNAL: ПОКУПКА BTC</b>\n\n"
-        text += f"🟢 <b>Вход:</b> {fmt(event['entry'])}\n"
-        text += f"🎯 <b>Тейк (TP):</b> {fmt(event['tp'])} (+8.0%)\n"
-        text += f"🛑 <b>Стоп (SL):</b> {fmt(event['sl'])} (-5.0%)\n\n"
+        text += f"🟢 <b>Вход:</b> {fmt(entry)}\n"
+        text += f"🎯 <b>Тейк (TP):</b> {fmt(tp)} ({tp_pct:+.2f}%)\n"
+        text += f"🛑 <b>Стоп (SL):</b> {fmt(sl)} ({sl_pct:+.2f}%)\n\n"
         text += get_stats_text()
     
     elif event["type"] == "CLOSE":
