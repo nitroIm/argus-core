@@ -1,8 +1,8 @@
 # ============================================================
-# ARGUS - SIGNAL BOT (SCOUT v3.2.0)
+# ARGUS - SIGNAL BOT (MONOLITH v5.0)
 # ------------------------------------------------------------
-# Ищет точку входа. Если находит, записывает сделку в 
-# opened_deals.json со статусом "не отправлено".
+# Ищет вход. Если сделка открыта — следит за TP/SL.
+# Ведет историю сделок и статистику работы.
 # ============================================================
 
 import os
@@ -13,30 +13,27 @@ from datetime import datetime, timezone
 import psycopg
 import pandas as pd
 
-VERSION = "3.2.0"
-
+VERSION = "5.0.0"
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("crypto.signal_bot")
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 CRYPTO_ROOT = SCRIPT_DIR.parent
-
-# Пути
 MODEL_FILE = CRYPTO_ROOT / "data" / "models" / "best_params.json"
 SIGNALS_DIR = CRYPTO_ROOT / "data" / "signals"
 SIGNALS_DIR.mkdir(parents=True, exist_ok=True)
 
-# ТОТ САМЫЙ ФАЙЛ
-OPENED_DEALS_FILE = SIGNALS_DIR / "opened_deals.json"
+OPENED_DEALS = SIGNALS_DIR / "opened_deals.json"
+CLOSED_DEALS = SIGNALS_DIR / "closed_deals.json"
+INFO_DEAL = SIGNALS_DIR / "info_deal.json"
+BOT_INFO = SIGNALS_DIR / "bot_info.json"
 
 DB_URL = (os.getenv("AIVEN_DB_URL") or "").strip()
 SYMBOL = "BTCUSDT"
-TIMEFRAME = "15m"
 
 def get_conn():
-    if not DB_URL:
-        raise RuntimeError("AIVEN_DB_URL not set")
-    return psycopg.connect(DB_URL, connect_timeout=30, application_name="argus-signal")
+    if not DB_URL: raise RuntimeError("AIVEN_DB_URL not set")
+    return psycopg.connect(DB_URL, connect_timeout=30)
 
 def load_json(path, default=None):
     if not path.exists(): return default if default is not None else {}
@@ -48,111 +45,106 @@ def save_json(path, data):
     with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
-# ============================================================
-# ИНДИКАТОРЫ
-# ============================================================
-def calculate_ema(series, period):
-    if len(series) < period: return None
-    return series.ewm(span=period, adjust=False).mean().iloc[-1]
+def calc_ema(s, p): return s.ewm(span=p, adjust=False).mean().iloc[-1] if len(s) >= p else None
+def calc_rsi(s, p=14):
+    if len(s) < p + 1: return None
+    d = s.diff(); g = (d.where(d > 0, 0)).rolling(window=p).mean(); l = (-d.where(d < 0, 0)).rolling(window=p).mean()
+    return (100 - (100 / (1 + g/l))).iloc[-1]
+def calc_macd(s):
+    if len(s) < 35: return None
+    return (s.ewm(span=12).mean() - s.ewm(span=26).mean()).ewm(span=9).mean().iloc[-1]
 
-def calculate_rsi(series, period=14):
-    if len(series) < period + 1: return None
-    delta = series.diff()
-    gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()
-    loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()
-    rs = gain / loss
-    rsi = 100 - (100 / (1 + rs))
-    return rsi.iloc[-1]
-
-def calculate_macd_hist(series, fast=12, slow=26, signal=9):
-    if len(series) < slow + signal: return None
-    ema_fast = series.ewm(span=fast, adjust=False).mean()
-    ema_slow = series.ewm(span=slow, adjust=False).mean()
-    macd_line = ema_fast - ema_slow
-    signal_line = macd_line.ewm(span=signal, adjust=False).mean()
-    hist = macd_line - signal_line
-    return hist.iloc[-1]
-
-# ============================================================
-# ЛОГИКА
-# ============================================================
 def main():
-    log.info(f"STARTING SIGNAL BOT v{VERSION}")
+    log.info(f"STARTING MONOLITH BOT v{VERSION}")
 
-    # 1. Загружаем модель
-    model_data = load_json(MODEL_FILE)
-    if not model_data or "params" not in model_data:
-        log.error("Model file not found. Run trainer first.")
-        return
-    
-    params = model_data["params"]
+    # Создаем файл с датой старта, если его нет
+    if not BOT_INFO.exists():
+        save_json(BOT_INFO, {"started_at": datetime.now(timezone.utc).isoformat()})
+        log.info("Bot start time recorded.")
 
-    # 2. СТРОГАЯ ПРОВЕРКА: Если есть словарь И в нём есть ключ 'entry'
-    current_deal = load_json(OPENED_DEALS_FILE, None)
+    current_deal = load_json(OPENED_DEALS, None)
+
+    # ==========================================
+    # ЛОГИКА 1: ЕСЛИ МЫ В СДЕЛКЕ (СЛЕДИМ)
+    # ==========================================
     if current_deal and "entry" in current_deal:
-        log.info("Deal is already open. Sleeping.")
+        log.info(f"In trade. Entry: {current_deal['entry']:.2f}")
+        
+        try:
+            conn = get_conn()
+            with conn.cursor() as cur:
+                cur.execute("SELECT high, low, close FROM candles WHERE symbol=%s AND timeframe='15m' AND market_type='spot' ORDER BY open_time DESC LIMIT 1", (SYMBOL,))
+                row = cur.fetchone()
+            conn.close()
+        except Exception as e: return log.error(f"DB error: {e}")
+
+        high, low, close = float(row[0]), float(row[1]), float(row[2])
+        
+        exit_reason, exit_price = None, close
+        if low <= current_deal["sl"]:
+            exit_reason, exit_price = "STOP_LOSS", current_deal["sl"]
+        elif high >= current_deal["tp"]:
+            exit_reason, exit_price = "TAKE_PROFIT", current_deal["tp"]
+
+        if exit_reason:
+            pnl_pct = (exit_price - current_deal["entry"]) / current_deal["entry"] * 100
+            pnl_usd = 100.0 * (pnl_pct / 100) 
+            
+            log.info(f"🔴 TRADE CLOSED: {exit_reason} | PnL: {pnl_pct:.2f}%")
+
+            # 1. Пишем в архив
+            closed = load_json(CLOSED_DEALS, [])
+            closed.append({
+                "entry": current_deal["entry"], "exit": exit_price,
+                "pnl_pct": round(pnl_pct, 2), "pnl_usd": round(pnl_usd, 2),
+                "reason": exit_reason, "close_time": datetime.now(timezone.utc).isoformat()
+            })
+            save_json(CLOSED_DEALS, closed)
+
+            # 2. Очищаем открытую
+            save_json(OPENED_DEALS, None)
+
+            # 3. Создаем событие для отправки
+            save_json(INFO_DEAL, {
+                "type": "CLOSE", "reason": exit_reason,
+                "pnl_pct": round(pnl_pct, 2), "pnl_usd": round(pnl_usd, 2),
+                "sent": False
+            })
         return
 
-    # 3. Идем в базу за свежими данными
+    # ==========================================
+    # ЛОГИКА 2: ЕСЛИ СДЕЛКИ НЕТ (ИЩЕМ)
+    # ==========================================
+    params = load_json(MODEL_FILE).get("params")
+    if not params: return log.error("No model found.")
+
     try:
         conn = get_conn()
         with conn.cursor() as cur:
-            cur.execute("""
-                SELECT open_time, close, volume 
-                FROM candles 
-                WHERE symbol=%s AND timeframe=%s AND market_type='spot'
-                ORDER BY open_time DESC LIMIT 100
-            """, (SYMBOL, TIMEFRAME))
+            cur.execute("SELECT close, volume FROM candles WHERE symbol=%s AND timeframe='15m' AND market_type='spot' ORDER BY open_time DESC LIMIT 100", (SYMBOL,))
             rows = list(reversed(cur.fetchall()))
         conn.close()
-    except Exception as e:
-        log.error(f"DB error: {e}")
-        return
+    except Exception as e: return log.error(f"DB error: {e}")
 
-    if len(rows) < 50:
-        log.error("Not enough candles in DB.")
-        return
+    df = pd.DataFrame(rows, columns=['close', 'volume'])
+    price = float(df['close'].iloc[-1])
+    rsi, macd = calc_rsi(df['close']), calc_macd(df['close'])
+    ema = calc_ema(df['close'], 50)
+    vol_sma, cur_vol = df['volume'].rolling(20).mean().iloc[-1], float(df['volume'].iloc[-1])
 
-    # 4. Считаем индикаторы
-    df = pd.DataFrame(rows, columns=['open_time', 'close', 'volume'])
-    
-    current_close = float(df['close'].iloc[-1])
-    rsi = calculate_rsi(df['close'])
-    macd_hist = calculate_macd_hist(df['close'])
-    ema_50 = calculate_ema(df['close'], 50)
-    vol_sma = df['volume'].rolling(window=20).mean().iloc[-1]
-    current_vol = float(df['volume'].iloc[-1])
+    log.info(f"Price: {price} | RSI: {rsi:.1f} | MACD: {macd:.2f}")
 
-    log.info(f"Price: {current_close} | RSI: {rsi:.1f} | MACD: {macd_hist:.2f}")
-
-    # 5. Проверка условий из модели
     signal = False
-    if macd_hist > 0 and (params["rsi_min"] < rsi < params["rsi_max"]):
-        signal = True
-        
-    if params["use_trend_filter"] and not (current_close > ema_50):
-        signal = False
-            
-    if params["use_volume_filter"] and not (current_vol > vol_sma):
-        signal = False
+    if macd > 0 and (params["rsi_min"] < rsi < params["rsi_max"]): signal = True
+    if params["use_trend_filter"] and not (price > ema): signal = False
+    if params["use_volume_filter"] and not (cur_vol > vol_sma): signal = False
 
-    # 6. Запись результата в opened_deals.json
     if signal:
         log.info("🚀 SIGNAL FOUND! Opening deal.")
+        tp, sl = price * (1 + params["tp_pct"] / 100), price * (1 - params["sl_pct"] / 100)
         
-        tp_price = current_close * (1 + params["tp_pct"] / 100)
-        sl_price = current_close * (1 - params["sl_pct"] / 100)
-        
-        new_deal = {
-            "entry": current_close,
-            "tp": tp_price,
-            "sl": sl_price,
-            "open_time": datetime.now(timezone.utc).isoformat(),
-            "sent_to_tg": False
-        }
-        
-        save_json(OPENED_DEALS_FILE, new_deal)
-        log.info(f"Saved signal. Entry: {current_close:.2f}, TP: {tp_price:.2f}, SL: {sl_price:.2f}")
+        save_json(OPENED_DEALS, {"entry": price, "tp": tp, "sl": sl, "open_time": datetime.now(timezone.utc).isoformat()})
+        save_json(INFO_DEAL, {"type": "ENTRY", "entry": price, "tp": tp, "sl": sl, "sent": False})
     else:
         log.info("No signal. Waiting.")
 
