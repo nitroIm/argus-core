@@ -1,14 +1,16 @@
 # ============================================================
-# ARGUS - EVENING REPORT v17.2
+# ARGUS - EVENING REPORT v17.3 (PANDAS 1H FIX)
 # ------------------------------------------------------------
 # Вечерний отчёт. Период 08:00 → 20:00 КЛГ.
 # Только BTC. Только Aiven DB. Только candles.
 # Только текст. Без графиков.
+# v17.3: RSI 1h теперь использует pandas.resample (точная склейка).
 # ============================================================
 
 import os
 import sys
 import requests
+import pandas as pd
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 
@@ -463,11 +465,15 @@ def fmt_indicators_block(candles):
     closes = [c["close"] for c in candles]
     r15 = rsi_series(closes, 14)[-1]
 
-    c1h = []
-    for i in range(0, len(candles) - 3, 4):
-        chunk = candles[i:i + 4]
-        c1h.append(chunk[-1]["close"])
-    r1h = rsi_series(c1h, 14)[-1] if c1h else None
+    # --- ИСПРАВЛЕНИЕ: Точная склейка 1h через pandas ---
+    df_temp = pd.DataFrame([{'timestamp': c['timestamp'], 'close': c['close']} for c in candles])
+    df_temp['timestamp'] = pd.to_datetime(df_temp['timestamp'], utc=True)
+    df_temp.set_index('timestamp', inplace=True)
+    df_1h = df_temp.resample('1h').agg({'close': 'last'}).dropna()
+    
+    c1h = df_1h['close'].tolist()
+    r1h = rsi_series(c1h, 14)[-1] if c1h and len(c1h) > 14 else None
+    # ---------------------------------------------------
 
     e9 = ema_series(closes, 9)[-1]
     e21 = ema_series(closes, 21)[-1]
@@ -615,7 +621,7 @@ def build_report_text(candles, stats):
 
 
 def main():
-    print("Evening report v17.1 - start")
+    print("Evening report v17.3 - start")
 
     stats = fetch_stats(SYMBOL)
     candles = fetch_candles(SYMBOL, 300)
