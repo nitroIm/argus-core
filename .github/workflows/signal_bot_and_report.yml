@@ -1,7 +1,7 @@
-name: ARGUS Signal Bot & Report
+name: ARGUS Signal Engine
 
 on:
-  workflow_dispatch: 
+  workflow_dispatch: # Запуск вручную для теста
 
 permissions:
   contents: write
@@ -29,13 +29,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install pandas "psycopg[binary]" requests
 
-      # 1. Ищем сигнал и пишем в JSON (лежит в signals)
+      # 1. Ищем сигнал (пишет в opened_deals.json)
       - name: Run Signal Bot
         env:
           AIVEN_DB_URL: ${{ secrets.AIVEN_DB_URL }}
         run: python crypto/signals/signal_bot.py
 
-      # 2. Читаем JSON и отправляем в TG (лежит в report)
+      # 2. Отправляем в Telegram (читает opened_deals.json)
       - name: Run Signal Report
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
@@ -43,23 +43,19 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python crypto/report/signal_bot_report.py
 
-      # 3. Сохраняем обновленный статус
+      # 3. Сохраняем изменения в файле
       - name: Commit status
         run: |
           git config user.name "ARGUS Signals"
           git config user.email "signals@github.com"
-          git add crypto/data/signals/current_status.json || true
+          git add crypto/data/signals/ || true
           
+          # Если файл не изменился (сигнала не было) — выходим
           if git diff --staged --quiet; then
             echo "No changes in signal status"
             exit 0
           fi
           
           git commit -m "ARGUS: signal status updated [skip ci]"
-          for i in 1 2 3; do
-            git pull --rebase --autostash origin main || true
-            if git push origin main; then
-              break
-            fi
-            sleep 5
-          done
+          git pull --rebase --autostash origin main || true
+          git push origin main
