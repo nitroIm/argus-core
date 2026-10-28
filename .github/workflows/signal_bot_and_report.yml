@@ -1,7 +1,7 @@
 name: ARGUS Signal Engine
 
 on:
-  workflow_dispatch: # Запуск вручную для теста
+  workflow_dispatch: 
 
 permissions:
   contents: write
@@ -29,13 +29,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install pandas "psycopg[binary]" requests
 
-      # 1. Ищем сигнал (пишет в opened_deals.json)
       - name: Run Signal Bot
         env:
           AIVEN_DB_URL: ${{ secrets.AIVEN_DB_URL }}
         run: python crypto/signals/signal_bot.py
 
-      # 2. Отправляем в Telegram (читает opened_deals.json)
       - name: Run Signal Report
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
@@ -43,23 +41,19 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python crypto/report/signal_bot_report.py
 
-      # 3. Сохраняем изменения (только если они есть)
       - name: Commit status
         run: |
           git config user.name "ARGUS Signals"
           git config user.email "signals@github.com"
           git add crypto/data/signals/ || true
-          
           if git diff --staged --quiet; then
-            echo "No changes in signal status (no signal or already sent)"
+            echo "No changes"
             exit 0
           fi
-          
           git commit -m "ARGUS: signal status updated [skip ci]"
           git pull --rebase --autostash origin main || true
           git push origin main
 
-      # 4. Уведомление об ошибке (сработает ТОЛЬКО если предыдущие шаги упали)
       - name: Notify on failure
         if: failure()
         env:
@@ -69,4 +63,4 @@ jobs:
           curl -s -X POST \
             "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
             -H "Content-Type: application/json" \
-            -d "{\"chat_id\": \"${TELEGRAM_CHAT_ID}\", \"text\": \"⚠️ <b>ARGUS Signal Engine упал!</b>\nПроверь логи в GitHub Actions: https://github.com/nitroUs/argus-core/actions\", \"parse_mode\": \"HTML\"}" || true
+            -d "{\"chat_id\": \"${TELEGRAM_CHAT_ID}\", \"text\": \"⚠️ <b>Сбой в: ${{ github.workflow }}</b>\nПроверь логи в GitHub Actions!\", \"parse_mode\": \"HTML\"}" || true
