@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-10-28T01:05:35.592830+00:00",
+  "generated_at": "2026-10-28T02:05:37.890845+00:00",
   "total_news": 83,
-  "avg_sentiment": -0.086,
+  "avg_sentiment": -0.051,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
   "bullish_count": 15,
   "bearish_count": 16,
@@ -42,6 +42,23 @@
   },
   "top_bullish": [
     {
+      "title": "OG.com and Crypto.com Launch 24/7 Crypto Perpetuals for US Traders",
+      "url": "https://news.bitcoin.com/featured/og-com-and-crypto-com-launch-24-7-crypto-perpetuals-for-us-traders/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-28T01:30:26+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-28T02:05:36.332309+00:00",
+      "effective_weight": 1.5,
+      "title_original": "OG.com and Crypto.com Launch 24/7 Crypto Perpetuals for US Traders",
+      "cross_check": 1
+    },
+    {
       "title": "VanEck launches diversified ETF combining stocks, bonds and Bitcoin exposure",
       "url": "https://cointelegraph.com/news/vaneck-launches-diversified-etf-combining-stocks-bonds-and-bitcoin-exposure?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
       "source": "Cointelegraph",
@@ -53,7 +70,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-28T01:05:33.675005+00:00",
+      "collected_at": "2026-10-28T02:05:35.853331+00:00",
       "effective_weight": 1.3,
       "title_original": "VanEck launches diversified ETF combining stocks, bonds and Bitcoin exposure",
       "cross_check": 1
@@ -68,10 +85,10 @@
       "sentiment": 1.0,
       "bull_weight": 2.4,
       "bear_weight": 0.0,
-      "freshness": 1.0,
+      "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-28T01:05:33.675227+00:00",
-      "effective_weight": 1.3,
+      "collected_at": "2026-10-28T02:05:35.853545+00:00",
+      "effective_weight": 1.04,
       "title_original": "Ripple, Robinhood expand partnership to bring RLUSD to retail and institutional markets",
       "cross_check": 2
     },
@@ -87,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-28T01:05:33.675399+00:00",
+      "collected_at": "2026-10-28T02:05:35.853711+00:00",
       "effective_weight": 1.04,
       "title_original": "Janus Henderson, Centrifuge launch tokenized Nasdaq-100 fund on Stellar",
       "cross_check": 2
@@ -104,27 +121,10 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-28T01:05:33.675661+00:00",
+      "collected_at": "2026-10-28T02:05:35.853956+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin price analysis sees ‘strong rally’ as old coins become dormant",
       "cross_check": 2
-    },
-    {
-      "title": "Bitcoin ETFs claw back $110M after $774M exit",
-      "url": "https://cointelegraph.com/markets/bitcoin-etf-rebound-110-million-btc-dip-below-80k?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-10-27T07:35:37+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-28T01:05:33.675764+00:00",
-      "effective_weight": 1.04,
-      "title_original": "Bitcoin ETFs claw back $110M after $774M exit",
-      "cross_check": 1
     }
   ],
   "top_bearish": [
@@ -138,10 +138,10 @@
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 1.2,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-28T01:05:34.057520+00:00",
-      "effective_weight": 1.5,
+      "collected_at": "2026-10-28T02:05:36.332371+00:00",
+      "effective_weight": 1.0,
       "title_original": "Bitcoin Eyes $125K as Galaxy Says Bear Market Has Ended",
       "cross_check": 1
     },
@@ -157,7 +157,7 @@
       "bear_weight": 1.2,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-28T01:05:34.057686+00:00",
+      "collected_at": "2026-10-28T02:05:36.332481+00:00",
       "effective_weight": 1.0,
       "title_original": "Ripple and C2FO Tap XRP Ledger to Turn Payment Delays Into Seconds",
       "cross_check": 2
@@ -174,7 +174,7 @@
       "bear_weight": 3.3,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-28T01:05:34.057761+00:00",
+      "collected_at": "2026-10-28T02:05:36.332536+00:00",
       "effective_weight": 1.0,
       "title_original": "CFTC Sues Utah, Warns Kalshi Crackdown Threatens Federal Oversight",
       "cross_check": 2
@@ -191,7 +191,7 @@
       "bear_weight": 1.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-28T01:05:34.197060+00:00",
+      "collected_at": "2026-10-28T02:05:36.504924+00:00",
       "effective_weight": 1.0,
       "title_original": "Polymarket reforms Bitcoin contracts and Binance trading spikes immediately drop",
       "cross_check": 1
@@ -208,7 +208,7 @@
       "bear_weight": 3.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-28T01:05:34.197251+00:00",
+      "collected_at": "2026-10-28T02:05:36.505103+00:00",
       "effective_weight": 0.8,
       "title_original": "Lightning tightens invoice rules after reported attack made Bitcoin withdrawals look unpaid",
       "cross_check": 1
