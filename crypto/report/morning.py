@@ -1,8 +1,9 @@
 # ============================================================
-# ARGUS - MORNING REPORT v15.6
+# ARGUS - MORNING REPORT v15.7
 # ------------------------------------------------------------
 # Только BTC. Только Aiven DB. Только таблица candles.
 # Текстовый отчёт. Без графиков.
+# v15.7: Проверка путей (не использует data/).
 # v15.6: исправлен знак минуса в изменении цены.
 #        исправлены Максимум/Минимум за период.
 # ============================================================
@@ -368,7 +369,6 @@ def fmt_day_block(s):
     line += " → " + fmt_price(s["close"])
     line += " | " + fmt_pct(s["change_pct"])
     
-    # ИСПРАВЛЕНИЕ: правильный знак минуса для USD
     sign = "+" if s["change_usd"] >= 0 else "-"
     line += " (" + sign + fmt_price(abs(s["change_usd"])) + ")"
     lines.append(line)
@@ -478,7 +478,7 @@ def fmt_extremes_block(s):
     if not s:
         lines.append("  нет данных")
         return lines
-    # ИСПРАВЛЕНИЕ: показываем реальный максимум и минимум за период
+
     lines.append(
         "  Максимум: " + fmt_pct(s["hi_pct"])
         + " в " + _to_local(s["hi_ts"]) + " КЛГ"
@@ -570,7 +570,7 @@ def build_report_text(candles, stats):
 
 
 def main():
-    print("Morning report v15.6 - start")
+    print("Morning report v15.7 - start")
 
     stats = fetch_stats(SYMBOL)
     candles = fetch_candles(SYMBOL, 300)
