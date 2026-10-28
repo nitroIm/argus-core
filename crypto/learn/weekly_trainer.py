@@ -1,14 +1,13 @@
 # ============================================================
 # ARGUS - WEEKLY TRAINER (MODEL OPTIMIZER)
 # ------------------------------------------------------------
-# Version: 1.0.0
+# Version: 1.1.0
 # Date: 2026-10-28
 # Description: 
-#   Обучает модель на исторических данных (Parquet).
+#   Скрещивает 6 лет истории (Parquet) со свежими данными (Aiven).
 #   Перебирает сетку параметров (Grid Search) для поиска 
 #   лучшей стратегии (RSI, TP, SL, фильтры тренда/объема).
 #   Сохраняет лучшие параметры в best_params.json.
-#   Запускается раз в неделю (по воскресеньям).
 # ============================================================
 
 import os
@@ -19,29 +18,26 @@ from pathlib import Path
 from datetime import datetime, timezone
 import numpy as np
 import pandas as pd
+import psycopg # НОВОЕ: для подключения к базе
 
-VERSION = "1.0.0"
+VERSION = "1.1.0"
 
-logging.basicConfig(
-    level=logging.INFO, 
-    format="%(asctime)s [%(levelname)s] %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("crypto.trainer")
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-# Путь к историческим данным (6 лет)
 DATA_FILE = SCRIPT_DIR.parent / "collect" / "vision_out" / "BTCUSDT_spot_1h.parquet"
-# Куда сохраняем результат обучения
 OUT_FILE = SCRIPT_DIR / "best_params.json" 
+
+DB_URL = (os.getenv("AIVEN_DB_URL") or "").strip()
 
 INITIAL_BALANCE = 100.0
 POSITION_NOTIONAL = 20.0
 FEE_RATE = 0.001
 
-# --- СЕТКА ПАРАМЕТРОВ (Что будет перебирать бот) ---
 PARAM_GRID = {
-    "use_trend_filter": [True, False],  # Фильтр по EMA50
-    "use_volume_filter": [True, False], # Фильтр по объему (SMA20)
+    "use_trend_filter": [True, False],
+    "use_volume_filter": [True, False],
     "rsi_min": [25, 30, 35],
     "rsi_max": [50, 55, 60, 70],
     "tp_pct": [2.0, 3.0, 5.0, 8.0, 15.0],
@@ -67,7 +63,6 @@ def calculate_macd(series, fast=12, slow=26, signal=9):
     return macd_line - signal_line
 
 def run_backtest(df, params):
-    """Прогоняет стратегию с конкретными настройками"""
     trades = []
     in_pos = False
     entry_price = 0.0
@@ -95,10 +90,7 @@ def run_backtest(df, params):
                 in_pos = False
         
         if not in_pos:
-            # 1. Базовая логика (MACD > 0 и RSI в диапазоне)
             signal = curr.macd_hist > 0 and (params["rsi_min"] < curr.rsi < params["rsi_max"])
-            
-            # 2. Дополнительные фильтры
             if params["use_trend_filter"]:
                 signal = signal and (curr.close > curr.ema_50)
             if params["use_volume_filter"]:
@@ -115,71 +107,115 @@ def run_backtest(df, params):
     pnls = np.array(trades)
     total_pnl = float(pnls.sum())
     
-    # Считаем максимальную просадку (Max Drawdown)
     cum = np.cumsum(pnls) + INITIAL_BALANCE
     peak = np.maximum.accumulate(cum)
     dd = (cum - peak) / peak * 100.0
     max_dd = float(dd.min()) if len(dd) else 0.0
     if max_dd == 0: max_dd = -0.1
 
-    # Оценка (Score): Профит делим на просадку. Чем выше, тем лучше.
     score = total_pnl / abs(max_dd)
-
     return {
-        "trades": n,
-        "pnl": round(total_pnl, 2),
+        "trades": n, "pnl": round(total_pnl, 2),
         "winrate": round(float((pnls > 0).mean()), 4),
-        "max_dd": round(max_dd, 2),
-        "score": round(score, 2)
+        "max_dd": round(max_dd, 2), "score": round(score, 2)
     }
+
+def fetch_fresh_candles():
+    """Идет в Aiven и забирает 15м свечи, сворачивая их в 1ч"""
+    if not DB_URL:
+        log.warning("AIVEN_DB_URL not set. Skipping fresh data.")
+        return pd.DataFrame()
+
+    try:
+        log.info("Connecting to Aiven for fresh data...")
+        conn = psycopg.connect(DB_URL, connect_timeout=30)
+        # Берем данные за последние 30 дней (чтобы точно захватить стык с parquet)
+        query = """
+            SELECT open_time, open, high, low, close, volume 
+            FROM candles 
+            WHERE symbol='BTCUSDT' AND timeframe='15m' AND market_type='spot'
+            AND open_time > NOW() - INTERVAL '30 days'
+            ORDER BY open_time ASC
+        """
+        df = pd.read_sql(query, conn)
+        conn.close()
+
+        if df.empty:
+            return df
+
+        # Конвертируем время
+        df['open_time'] = pd.to_datetime(df['open_time'], utc=True)
+        df.set_index('open_time', inplace=True)
+
+        # Сворачиваем 15m в 1h
+        df_1h = df.resample('1h').agg({
+            'open': 'first', 'high': 'max', 'low': 'min', 
+            'close': 'last', 'volume': 'sum'
+        }).dropna().reset_index()
+
+        log.info(f"Fetched {len(df_1h)} fresh 1h-candles from DB.")
+        return df_1h
+    except Exception as e:
+        log.error(f"Failed to fetch from DB: {e}")
+        return pd.DataFrame()
 
 def main():
     log.info(f"STARTING WEEKLY TRAINER v{VERSION}")
     
+    # 1. Загрузка ИСТОРИИ из Parquet
     if not DATA_FILE.exists():
         log.error(f"DATA FILE NOT FOUND: {DATA_FILE}")
         return
+    log.info("Loading historical data from Parquet...")
+    df_hist = pd.read_parquet(DATA_FILE)
+    df_hist['open_time'] = df_hist['open_time'].apply(lambda x: x / 1000 if x > 1e14 else x)
+    df_hist['open_time'] = pd.to_datetime(df_hist['open_time'], unit='ms', utc=True)
+    log.info(f"History loaded: {len(df_hist)} candles.")
 
-    # 1. Загрузка и подготовка данных
-    log.info("Loading historical data & calculating indicators...")
-    df = pd.read_parquet(DATA_FILE)
-    df['open_time'] = df['open_time'].apply(lambda x: x / 1000 if x > 1e14 else x)
-    df['open_time'] = pd.to_datetime(df['open_time'], unit='ms')
-    df = df.sort_values('open_time').reset_index(drop=True)
+    # 2. Загрузка СВЕЖИХ ДАННЫХ из Aiven
+    df_fresh = fetch_fresh_candles()
 
+    # 3. СКРЕЩИВАНИЕ (Merge)
+    log.info("Merging history and fresh data...")
+    if not df_fresh.empty:
+        df = pd.concat([df_hist, df_fresh])
+    else:
+        log.warning("No fresh data. Using only history.")
+        df = df_hist
+
+    # Убираем дубликаты (на всякий случай) и сортируем
+    df = df.drop_duplicates(subset=['open_time']).sort_values('open_time').reset_index(drop=True)
+    log.info(f"Total merged candles: {len(df)}")
+
+    # 4. Расчет индикаторов
     df['rsi'] = calculate_rsi(df['close'], 14)
     df['macd_hist'] = calculate_macd(df['close'], 12, 26, 9)
     df['ema_50'] = calculate_ema(df['close'], 50)
     df['vol_sma'] = df['volume'].rolling(window=20).mean()
     df = df.dropna().reset_index(drop=True)
     
-    log.info(f"Data loaded. Total candles: {len(df)}")
+    log.info(f"Data ready for training. Total rows: {len(df)}")
 
-    # 2. Генерация сетки
+    # 5. Обучение (Grid Search)
     keys, values = zip(*PARAM_GRID.items())
     combinations = [dict(zip(keys, v)) for v in itertools.product(*values)]
-    
     log.info(f"Testing {len(combinations)} combinations...")
     
     best_result = None
     best_params = None
 
-    # 3. Перебор комбинаций
     for idx, params in enumerate(combinations):
         res = run_backtest(df, params)
-        
-        # Если результат лучше предыдущего лучшего — запоминаем
         if res and (best_result is None or res["score"] > best_result["score"]):
             best_result = res
             best_params = params
-
-        if (idx + 1) % 100 == 0:
+        if (idx + 1) % 500 == 0:
             log.info(f"Checked {idx + 1}/{len(combinations)}...")
 
-    # 4. Сохранение результатов
+    # 6. Сохранение
     if best_params:
         log.info("=" * 50)
-        log.info("🏆 BEST STRATEGY FOUND:")
+        log.info("🏆 BEST STRATEGY FOUND (ON MERGED DATA):")
         for k, v in best_params.items():
             log.info(f"  {k}: {v}")
         log.info(f"📈 PnL: ${best_result['pnl']} | Winrate: {best_result['winrate']*100:.1f}% | Max DD: {best_result['max_dd']}%")
@@ -194,8 +230,6 @@ def main():
         with open(OUT_FILE, "w", encoding="utf-8") as f:
             json.dump(out_data, f, ensure_ascii=False, indent=2)
         log.info(f"Saved to {OUT_FILE}")
-    else:
-        log.info("No profitable combinations found.")
 
 if __name__ == "__main__":
     main()
