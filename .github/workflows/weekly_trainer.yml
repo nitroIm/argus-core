@@ -1,4 +1,4 @@
-name: Train ARGUS Model
+name: weekly trainer
 
 on:
   workflow_dispatch: # Запуск вручную
