@@ -1,6 +1,7 @@
 # ============================================================
-# ARGUS - NEWS REPORT v10.3 (PATH UPDATE)
+# ARGUS - NEWS REPORT v10.4 (PANDAS 1H RESAMPLE FIX)
 # ------------------------------------------------------------
+# v10.4: Склейка 15m в 1h через pandas.resample (точные RSI/ATR)
 # v10.3: Путь к данным изменен на crypto/data/news/
 # v10.2: Добавлена реферальная ссылка Bybit в конец отчета.
 # ============================================================
@@ -12,6 +13,7 @@ import json
 import hashlib
 import logging
 import requests
+import pandas as pd
 from datetime import datetime, timezone
 from datetime import timedelta
 from pathlib import Path
@@ -363,6 +365,7 @@ def fetch_btc_snapshot():
         conn.close()
         if len(rows) < 100:
             return None
+            
         last_24h = rows[-96:] if len(rows) >= 96 else rows
         high_24h = max(float(r[2]) for r in last_24h)
         low_24h = min(float(r[3]) for r in last_24h)
@@ -374,21 +377,23 @@ def fetch_btc_snapshot():
             if prev:
                 change_pct = (price - prev) / prev * 100
 
-        candles_1h = []
-        for i in range(0, len(rows) - 3, 4):
-            chunk = rows[i:i+4]
-            if len(chunk) < 4: continue
-            h = max(float(c[2]) for c in chunk)
-            l = min(float(c[3]) for c in chunk)
-            c = float(chunk[-1][4])
-            candles_1h.append((h, l, c))
-            
-        if len(candles_1h) < 15:
+        # --- ТОЧНАЯ СКЛЕЙКА В 1H ЧЕРЕЗ PANDAS ---
+        df = pd.DataFrame(rows, columns=['open_time', 'open', 'high', 'low', 'close', 'volume'])
+        df['open_time'] = pd.to_datetime(df['open_time'], utc=True)
+        df = df.set_index('open_time')
+        
+        df_1h = df.resample('1h').agg({
+            'open': 'first', 'high': 'max', 'low': 'min', 
+            'close': 'last', 'volume': 'sum'
+        }).dropna()
+        
+        if len(df_1h) < 15:
             return None
 
-        closes_1h = [c[2] for c in candles_1h]
-        highs_1h = [c[0] for c in candles_1h]
-        lows_1h = [c[1] for c in candles_1h]
+        closes_1h = df_1h['close'].tolist()
+        highs_1h = df_1h['high'].tolist()
+        lows_1h = df_1h['low'].tolist()
+        # -----------------------------------------
 
         rsi_1h = _rsi(closes_1h, 14)
         atr_1h = _atr(highs_1h, lows_1h, closes_1h, 14)
@@ -496,7 +501,7 @@ def build_report(data, top_items, top_ru, btc):
 
 
 def main():
-    log.info("news report v10.3")
+    log.info("news report v10.4")
     local = now_local()
     log.info("local time: %s (hour=%d)", local.strftime("%H:%M"), local.hour)
     
