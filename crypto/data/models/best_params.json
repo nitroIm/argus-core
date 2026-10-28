@@ -1,0 +1,20 @@
+{
+  "trainer_version": "1.1.0",
+  "updated_at": "2026-10-28T10:20:08.485213+00:00",
+  "params": {
+    "use_trend_filter": true,
+    "use_volume_filter": true,
+    "rsi_min": 25,
+    "rsi_max": 50,
+    "tp_pct": 8.0,
+    "sl_pct": 5.0,
+    "time_exit_h": 168
+  },
+  "metrics": {
+    "trades": 134,
+    "pnl": 25.38,
+    "winrate": 0.5448,
+    "max_dd": -4.3,
+    "score": 5.9
+  }
+}
