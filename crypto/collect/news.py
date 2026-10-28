@@ -1,6 +1,7 @@
 # ============================================================
-# ARGUS-Trader — NEWS ANALYZER v13.0 (CONTEXT & ANTI-FRAUD)
+# ARGUS-Trader — NEWS ANALYZER v13.1 (PATH UPDATE)
 # ------------------------------------------------------------
+# v13.1: Путь сохранения изменен на crypto/data/news/
 # v13.0:
 #  - Anti-fraud = позитив.
 #  - JPMorgan / JPM Coin / внедряет = позитив (принятие).
@@ -21,7 +22,8 @@ from urllib3.util.retry import Retry
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 CRYPTO_ROOT = SCRIPT_DIR.parent
-DATA_DIR = CRYPTO_ROOT / "data"
+# ИЗМЕНЕНИЕ: Теперь данные пишутся в папку news
+DATA_DIR = CRYPTO_ROOT / "data" / "news"
 
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -63,8 +65,6 @@ BULLISH_WEIGHTS = {
     "выкупают": 1.2, "закупаются": 1.2, "киты покупают": 1.5,
     "pro-crypto": 1.5, "bipartisan": 1.2, "bill passes": 1.8, "favorable": 1.2,
     "поддержка": 1.2, "двухпартийный": 1.2, "закон принят": 1.8,
-    
-    # НОВЫЕ ПОЗИТИВНЫЕ СЛОВА
     "внедряет": 1.2, "приходит": 1.2, "инструменты": 0.8, "привлекли": 1.5,
 }
 
@@ -93,38 +93,25 @@ BEARISH_WEIGHTS = {
 }
 
 CONTEXT_RULES = [
-    # --- ИСПРАВЛЕНИЕ: Anti-Fraud это ПОЗИТИВ ---
     (r"anti[- ]fraud|combat\s+fraud|борьба\s+с\s+мошенничеств|против\s+мошенничества", 2.0),
-    
-    # --- ИСПРАВЛЕНИЕ: JPMorgan / внедрение = ПРИНЯТИЕ ---
     (r"(jpm|jpmorgan)\s+(coin|ethereum|eth|blockchain)", 1.5),
     (r"(внедряет|приходит|запускает)\s+(инструменты|на|в)", 1.0),
-
-    # --- Ошибки из прошлого лога ---
     (r"(etf|fund|funds)\s+(lost|loss|outflow|shed|bleed)", -2.5),
     (r"(hangs?|hanging)\s+by\s+a\s+thread", -2.0),
     (r"halt(ed|s)?\s+(blockchain|network|chain)", -2.0),
     (r"convicted|guilty\s+of", -2.0),
     (r"shrink|shrank|shrunken", -1.5),
-
-    # --- Регуляторы ---
     (r"sec\s+(opens|approves|greenlights|allows|clears|permits)", 2.0),
     (r"sec\s+chair\s+(pushes|backs|supports)", 1.2),
     (r"sec\s+(sues|charges|blocks|rejects|bans|delays)", -2.0),
     (r"cftc\s+(sues|charges|blocks|rejects|bans)", -1.5),
-    
-    # --- Политика ---
     (r"(senate|congress|house)\s+(passes|approves|backs|supports)\s+(crypto|bitcoin|blockchain)", 2.0),
     (r"(senate|congress|house)\s+(rejects|blocks|opposes|cracks down on)\s+(crypto|bitcoin|blockchain)", -2.0),
-    
-    # --- ETF и Институционалы ---
     (r"etf\s+(inflows?|approval|approves|greenlight)", 1.5),
     (r"etf\s+outflows?", -1.5),
     (r"(adopts?|adoption\s+of)\s+bitcoin", 1.5),
     (r"country\s+adopts?\s+crypto", 1.5),
     (r"crypto\s+(ban|bans|banning)", -2.0),
-    
-    # --- Движение капитала и цены ---
     (r"all[- ]time\s+high", 1.8),
     (r"all[- ]time\s+low", -1.8),
     (r"new\s+high", 1.3),
@@ -143,6 +130,7 @@ CLICKBAIT_PATTERNS = [
     r"\b(AI|Bot|bot)\s*(says|predicts|reveals)", r"\b(top|best|worst)\s+\d+\b",
 ]
 
+# ИЗМЕНЕНИЕ: Пути теперь указывают на папку news
 SENTIMENT_FILE = DATA_DIR / "news_sentiment.json"
 NEWS_HISTORY_FILE = DATA_DIR / "news_history.json"
 
@@ -292,7 +280,7 @@ def fake_score(title, source_weight):
     return round(min(1.0, score), 2)
 
 def main():
-    print("📰 ARGUS-Trader NEWS ANALYZER v13.0")
+    print("📰 ARGUS-Trader NEWS ANALYZER v13.1")
     print("=" * 60)
     all_news = []
     seen_hashes = set()
