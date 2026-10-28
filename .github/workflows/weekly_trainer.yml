@@ -1,9 +1,9 @@
 name: Weekly trainer
 
 on:
-  workflow_dispatch: # Запуск вручную
+  workflow_dispatch: 
   # schedule:
-  #   - cron: '0 22 * * 0' # Расписание: каждое воскресенье в 22:00 UTC
+  #   - cron: '0 21 * * 0' # На случай, если решишь использовать встроенный крон GitHub
 
 permissions:
   contents: write
@@ -15,7 +15,7 @@ concurrency:
 jobs:
   train:
     runs-on: ubuntu-latest
-    timeout-minutes: 60 # Даем больше времени, чтобы обучение точно завершилось
+    timeout-minutes: 60
 
     steps:
       - uses: actions/checkout@v4
@@ -40,7 +40,7 @@ jobs:
         run: |
           git config user.name "ARGUS Trainer"
           git config user.email "trainer@github.com"
-          git add crypto/learn/best_params.json || true
+          git add crypto/data/models/best_params.json || true
           if git diff --staged --quiet; then
             echo "No changes in parameters"
             exit 0
@@ -58,4 +58,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: training-results
-          path: crypto/learn/best_params.json
+          path: crypto/data/models/best_params.json
