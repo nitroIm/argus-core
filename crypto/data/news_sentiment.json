@@ -1,16 +1,16 @@
 {
-  "generated_at": "2026-10-28T06:05:34.937037+00:00",
+  "generated_at": "2026-10-28T07:05:41.327292+00:00",
   "total_news": 84,
-  "avg_sentiment": 0.017,
+  "avg_sentiment": 0.079,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
-  "bullish_count": 16,
-  "bearish_count": 16,
+  "bullish_count": 17,
+  "bearish_count": 15,
   "neutral_count": 52,
   "fake_count": 0,
   "cross_confirmed": 7,
   "by_source": {
     "Cointelegraph": {
-      "total": 18,
+      "total": 19,
       "bull": 6,
       "bear": 3
     },
@@ -20,9 +20,9 @@
       "bear": 3
     },
     "Bitcoin.com": {
-      "total": 8,
+      "total": 7,
       "bull": 2,
-      "bear": 3
+      "bear": 2
     },
     "CryptoSlate": {
       "total": 8,
@@ -30,32 +30,32 @@
       "bear": 2
     },
     "CryptoPotato": {
-      "total": 22,
+      "total": 21,
       "bull": 5,
       "bear": 5
     },
     "ForkLog": {
-      "total": 12,
-      "bull": 1,
+      "total": 13,
+      "bull": 2,
       "bear": 0
     }
   },
   "top_bullish": [
     {
-      "title": "XRP Whales Now Control 68.5% of Supply, Highest Level Since 2022",
-      "url": "https://cryptopotato.com/xrp-whales-now-control-68-5-of-supply-highest-level-since-2022/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-28T05:06:05+00:00",
+      "title": "VanEck объединила акции, облигации и биткоин в одном ETF",
+      "url": "https://forklog.com/vaneck-obedinila-aktsii-obligatsii-i-bitkoin-v-odnom-etf",
+      "source": "ForkLog",
+      "source_weight": 1.2,
+      "lang": "ru",
+      "pub_date": "2026-10-28T06:30:00+00:00",
       "sentiment": 1.0,
-      "bull_weight": 1.0,
+      "bull_weight": 1.2,
       "bear_weight": 0.0,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-28T06:05:33.809684+00:00",
-      "effective_weight": 1.5,
-      "title_original": "XRP Whales Now Control 68.5% of Supply, Highest Level Since 2022",
+      "collected_at": "2026-10-28T07:05:41.279563+00:00",
+      "effective_weight": 1.8,
+      "title_original": "VanEck объединила акции, облигации и биткоин в одном ETF",
       "cross_check": 1
     },
     {
@@ -70,7 +70,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-28T06:05:33.176432+00:00",
+      "collected_at": "2026-10-28T07:05:39.198037+00:00",
       "effective_weight": 1.04,
       "title_original": "VanEck launches diversified ETF combining stocks, bonds and Bitcoin exposure",
       "cross_check": 1
@@ -87,7 +87,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-28T06:05:33.176563+00:00",
+      "collected_at": "2026-10-28T07:05:39.198236+00:00",
       "effective_weight": 1.04,
       "title_original": "Ripple, Robinhood expand partnership to bring RLUSD to retail and institutional markets",
       "cross_check": 2
@@ -104,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-28T06:05:33.176637+00:00",
+      "collected_at": "2026-10-28T07:05:39.198368+00:00",
       "effective_weight": 1.04,
       "title_original": "Janus Henderson, Centrifuge launch tokenized Nasdaq-100 fund on Stellar",
       "cross_check": 2
@@ -121,7 +121,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-28T06:05:33.176799+00:00",
+      "collected_at": "2026-10-28T07:05:39.198613+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin price analysis sees ‘strong rally’ as old coins become dormant",
       "cross_check": 2
@@ -140,7 +140,7 @@
       "bear_weight": 4.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-28T06:05:33.513945+00:00",
+      "collected_at": "2026-10-28T07:05:39.554553+00:00",
       "effective_weight": 1.0,
       "title_original": "Why Crypto Depositors Could Lose Everything in Bankruptcy",
       "cross_check": 1
@@ -155,29 +155,12 @@
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 1.2,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-28T06:05:33.514091+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Bitcoin Eyes $125K as Galaxy Says Bear Market Has Ended",
-      "cross_check": 1
-    },
-    {
-      "title": "Ripple and C2FO Tap XRP Ledger to Turn Payment Delays Into Seconds",
-      "url": "https://news.bitcoin.com/featured/ripple-c2fo-tap-xrp-ledger-turn-payment-delays-seconds/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-27T22:05:00+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.2,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-28T06:05:33.514160+00:00",
+      "collected_at": "2026-10-28T07:05:39.554816+00:00",
       "effective_weight": 0.8,
-      "title_original": "Ripple and C2FO Tap XRP Ledger to Turn Payment Delays Into Seconds",
-      "cross_check": 2
+      "title_original": "Bitcoin Eyes $125K as Galaxy Says Bear Market Has Ended",
+      "cross_check": 1
     },
     {
       "title": "Polymarket reforms Bitcoin contracts and Binance trading spikes immediately drop",
@@ -191,7 +174,7 @@
       "bear_weight": 1.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-28T06:05:33.649242+00:00",
+      "collected_at": "2026-10-28T07:05:39.737874+00:00",
       "effective_weight": 0.8,
       "title_original": "Polymarket reforms Bitcoin contracts and Binance trading spikes immediately drop",
       "cross_check": 1
@@ -208,9 +191,26 @@
       "bear_weight": 3.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-28T06:05:33.649347+00:00",
+      "collected_at": "2026-10-28T07:05:39.738042+00:00",
       "effective_weight": 0.8,
       "title_original": "Lightning tightens invoice rules after reported attack made Bitcoin withdrawals look unpaid",
+      "cross_check": 1
+    },
+    {
+      "title": "This AI-Related Cryptocurrency Pumps and Dumps: Did Whales Know About the Move?",
+      "url": "https://cryptopotato.com/this-ai-related-cryptocurrency-pumps-and-dumps-did-whales-know-about-the-move/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-27T11:18:54+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-28T07:05:40.204974+00:00",
+      "effective_weight": 0.8,
+      "title_original": "This AI-Related Cryptocurrency Pumps and Dumps: Did Whales Know About the Move?",
       "cross_check": 1
     }
   ]
