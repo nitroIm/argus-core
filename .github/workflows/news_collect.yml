@@ -43,9 +43,8 @@ jobs:
         run: |
           git config user.name "ARGUS"
           git config user.email "argus@github.com"
-          git add crypto/data/news_sentiment.json || true
-          git add crypto/data/news_history.json || true
-          git add crypto/data/news_translate_cache.json || true
+          # ИСПРАВЛЕНИЕ: Добавляем всю папку news, где теперь лежат файлы
+          git add crypto/data/news/ || true
           if git diff --staged --quiet; then
             echo "No changes"
             exit 0
@@ -59,6 +58,9 @@ jobs:
             sleep 5
           done
 
+      # ==========================================
+      # УНИВЕРСАЛЬНАЯ ЗАЩИТА ОТ ПАДЕНИЙ
+      # ==========================================
       - name: Notify on failure
         if: failure()
         env:
@@ -68,4 +70,4 @@ jobs:
           curl -s -X POST \
             "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
             -H "Content-Type: application/json" \
-            -d "{\"chat_id\": \"${TELEGRAM_CHAT_ID}\", \"text\": \"⚠️ News collect упал\", \"parse_mode\": \"HTML\"}" || true
+            -d "{\"chat_id\": \"${TELEGRAM_CHAT_ID}\", \"text\": \"⚠️ <b>Сбой в: ${{ github.workflow }}</b>\nПроверь логи в GitHub Actions!\", \"parse_mode\": \"HTML\"}" || true
