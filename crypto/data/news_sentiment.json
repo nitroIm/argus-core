@@ -1,18 +1,18 @@
 {
-  "generated_at": "2026-10-28T09:05:39.596213+00:00",
-  "total_news": 84,
-  "avg_sentiment": 0.144,
+  "generated_at": "2026-10-28T10:05:46.943961+00:00",
+  "total_news": 85,
+  "avg_sentiment": 0.137,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
-  "bullish_count": 19,
-  "bearish_count": 14,
-  "neutral_count": 51,
+  "bullish_count": 17,
+  "bearish_count": 13,
+  "neutral_count": 55,
   "fake_count": 0,
-  "cross_confirmed": 5,
+  "cross_confirmed": 7,
   "by_source": {
     "Cointelegraph": {
       "total": 20,
       "bull": 7,
-      "bear": 3
+      "bear": 2
     },
     "Decrypt": {
       "total": 16,
@@ -20,7 +20,7 @@
       "bear": 3
     },
     "Bitcoin.com": {
-      "total": 7,
+      "total": 8,
       "bull": 2,
       "bear": 2
     },
@@ -30,13 +30,13 @@
       "bear": 2
     },
     "CryptoPotato": {
-      "total": 21,
-      "bull": 6,
+      "total": 22,
+      "bull": 5,
       "bear": 4
     },
     "ForkLog": {
-      "total": 12,
-      "bull": 2,
+      "total": 11,
+      "bull": 1,
       "bear": 0
     }
   },
@@ -53,7 +53,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-28T09:05:39.546602+00:00",
+      "collected_at": "2026-10-28T10:05:46.902416+00:00",
       "effective_weight": 1.2,
       "title_original": "VanEck объединила акции, облигации и биткоин в одном ETF",
       "cross_check": 1
@@ -70,7 +70,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-28T09:05:38.082436+00:00",
+      "collected_at": "2026-10-28T10:05:44.014161+00:00",
       "effective_weight": 1.04,
       "title_original": "VanEck launches diversified ETF combining stocks, bonds and Bitcoin exposure",
       "cross_check": 1
@@ -87,7 +87,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-28T09:05:38.082637+00:00",
+      "collected_at": "2026-10-28T10:05:44.014334+00:00",
       "effective_weight": 1.04,
       "title_original": "Ripple, Robinhood expand partnership to bring RLUSD to retail and institutional markets",
       "cross_check": 2
@@ -104,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-28T09:05:38.082752+00:00",
+      "collected_at": "2026-10-28T10:05:44.014435+00:00",
       "effective_weight": 1.04,
       "title_original": "Janus Henderson, Centrifuge launch tokenized Nasdaq-100 fund on Stellar",
       "cross_check": 2
@@ -121,7 +121,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-28T09:05:38.082999+00:00",
+      "collected_at": "2026-10-28T10:05:44.014634+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin price analysis sees ‘strong rally’ as old coins become dormant",
       "cross_check": 3
@@ -140,7 +140,7 @@
       "bear_weight": 4.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-28T09:05:38.356723+00:00",
+      "collected_at": "2026-10-28T10:05:44.214704+00:00",
       "effective_weight": 1.0,
       "title_original": "Why Crypto Depositors Could Lose Everything in Bankruptcy",
       "cross_check": 1
@@ -157,10 +157,10 @@
       "bear_weight": 1.2,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-28T09:05:38.356961+00:00",
+      "collected_at": "2026-10-28T10:05:44.214902+00:00",
       "effective_weight": 0.8,
       "title_original": "Bitcoin Eyes $125K as Galaxy Says Bear Market Has Ended",
-      "cross_check": 1
+      "cross_check": 2
     },
     {
       "title": "Polymarket reforms Bitcoin contracts and Binance trading spikes immediately drop",
@@ -174,7 +174,7 @@
       "bear_weight": 1.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-28T09:05:38.465744+00:00",
+      "collected_at": "2026-10-28T10:05:44.478639+00:00",
       "effective_weight": 0.8,
       "title_original": "Polymarket reforms Bitcoin contracts and Binance trading spikes immediately drop",
       "cross_check": 1
@@ -191,7 +191,7 @@
       "bear_weight": 3.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-28T09:05:38.465933+00:00",
+      "collected_at": "2026-10-28T10:05:44.478803+00:00",
       "effective_weight": 0.8,
       "title_original": "Lightning tightens invoice rules after reported attack made Bitcoin withdrawals look unpaid",
       "cross_check": 1
@@ -208,7 +208,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-28T09:05:38.577662+00:00",
+      "collected_at": "2026-10-28T10:05:44.588111+00:00",
       "effective_weight": 0.8,
       "title_original": "This AI-Related Cryptocurrency Pumps and Dumps: Did Whales Know About the Move?",
       "cross_check": 1
