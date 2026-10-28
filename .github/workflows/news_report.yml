@@ -70,6 +70,9 @@ jobs:
             sleep 5
           done
 
+      # ==========================================
+      # УНИВЕРСАЛЬНАЯ ЗАЩИТА ОТ ПАДЕНИЙ
+      # ==========================================
       - name: Notify on failure
         if: failure()
         env:
@@ -79,4 +82,4 @@ jobs:
           curl -s -X POST \
             "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
             -H "Content-Type: application/json" \
-            -d "{\"chat_id\": \"${TELEGRAM_CHAT_ID}\", \"text\": \"⚠️ News report упал\", \"parse_mode\": \"HTML\"}" || true
+            -d "{\"chat_id\": \"${TELEGRAM_CHAT_ID}\", \"text\": \"⚠️ <b>Сбой в: ${{ github.workflow }}</b>\nПроверь логи в GitHub Actions!\", \"parse_mode\": \"HTML\"}" || true
