@@ -1,13 +1,13 @@
 # ============================================================
 # ARGUS - WEEKLY TRAINER (MODEL OPTIMIZER)
 # ------------------------------------------------------------
-# Version: 1.1.0
+# Version: 1.1.1
 # Date: 2026-10-28
 # Description: 
 #   Скрещивает 6 лет истории (Parquet) со свежими данными (Aiven).
 #   Перебирает сетку параметров (Grid Search) для поиска 
 #   лучшей стратегии (RSI, TP, SL, фильтры тренда/объема).
-#   Сохраняет лучшие параметры в best_params.json.
+#   Сохраняет лучшие параметры в crypto/data/models/best_params.json
 # ============================================================
 
 import os
@@ -18,16 +18,20 @@ from pathlib import Path
 from datetime import datetime, timezone
 import numpy as np
 import pandas as pd
-import psycopg # НОВОЕ: для подключения к базе
+import psycopg
 
-VERSION = "1.1.0"
+VERSION = "1.1.1"
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("crypto.trainer")
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 DATA_FILE = SCRIPT_DIR.parent / "collect" / "vision_out" / "BTCUSDT_spot_1h.parquet"
-OUT_FILE = SCRIPT_DIR / "best_params.json" 
+
+# ИЗМЕНЕНИЕ ПУТЕЙ: сохраняем в data/models
+DATA_DIR = SCRIPT_DIR.parent / "data" / "models"
+DATA_DIR.mkdir(parents=True, exist_ok=True)
+OUT_FILE = DATA_DIR / "best_params.json"
 
 DB_URL = (os.getenv("AIVEN_DB_URL") or "").strip()
 
@@ -129,7 +133,6 @@ def fetch_fresh_candles():
     try:
         log.info("Connecting to Aiven for fresh data...")
         conn = psycopg.connect(DB_URL, connect_timeout=30)
-        # Берем данные за последние 30 дней (чтобы точно захватить стык с parquet)
         query = """
             SELECT open_time, open, high, low, close, volume 
             FROM candles 
@@ -143,11 +146,9 @@ def fetch_fresh_candles():
         if df.empty:
             return df
 
-        # Конвертируем время
         df['open_time'] = pd.to_datetime(df['open_time'], utc=True)
         df.set_index('open_time', inplace=True)
 
-        # Сворачиваем 15m в 1h
         df_1h = df.resample('1h').agg({
             'open': 'first', 'high': 'max', 'low': 'min', 
             'close': 'last', 'volume': 'sum'
@@ -162,7 +163,6 @@ def fetch_fresh_candles():
 def main():
     log.info(f"STARTING WEEKLY TRAINER v{VERSION}")
     
-    # 1. Загрузка ИСТОРИИ из Parquet
     if not DATA_FILE.exists():
         log.error(f"DATA FILE NOT FOUND: {DATA_FILE}")
         return
@@ -172,10 +172,8 @@ def main():
     df_hist['open_time'] = pd.to_datetime(df_hist['open_time'], unit='ms', utc=True)
     log.info(f"History loaded: {len(df_hist)} candles.")
 
-    # 2. Загрузка СВЕЖИХ ДАННЫХ из Aiven
     df_fresh = fetch_fresh_candles()
 
-    # 3. СКРЕЩИВАНИЕ (Merge)
     log.info("Merging history and fresh data...")
     if not df_fresh.empty:
         df = pd.concat([df_hist, df_fresh])
@@ -183,11 +181,9 @@ def main():
         log.warning("No fresh data. Using only history.")
         df = df_hist
 
-    # Убираем дубликаты (на всякий случай) и сортируем
     df = df.drop_duplicates(subset=['open_time']).sort_values('open_time').reset_index(drop=True)
     log.info(f"Total merged candles: {len(df)}")
 
-    # 4. Расчет индикаторов
     df['rsi'] = calculate_rsi(df['close'], 14)
     df['macd_hist'] = calculate_macd(df['close'], 12, 26, 9)
     df['ema_50'] = calculate_ema(df['close'], 50)
@@ -196,7 +192,6 @@ def main():
     
     log.info(f"Data ready for training. Total rows: {len(df)}")
 
-    # 5. Обучение (Grid Search)
     keys, values = zip(*PARAM_GRID.items())
     combinations = [dict(zip(keys, v)) for v in itertools.product(*values)]
     log.info(f"Testing {len(combinations)} combinations...")
@@ -212,13 +207,12 @@ def main():
         if (idx + 1) % 500 == 0:
             log.info(f"Checked {idx + 1}/{len(combinations)}...")
 
-    # 6. Сохранение
     if best_params:
         log.info("=" * 50)
         log.info("🏆 BEST STRATEGY FOUND (ON MERGED DATA):")
         for k, v in best_params.items():
             log.info(f"  {k}: {v}")
-        log.info(f"📈 PnL: ${best_result['pnl']} | Winrate: {best_result['winrate']*100:.1f}% | Max DD: {best_result['max_dd']}%")
+        log.info(f"📈 PnL: ${best_result['pnl']} | Winrate: ${best_result['winrate']*100:.1f}% | Max DD: {best_result['max_dd']}%")
         log.info("=" * 50)
 
         out_data = {
