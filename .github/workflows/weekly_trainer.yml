@@ -1,4 +1,4 @@
-name: weekly trainer
+name: Weekly trainer
 
 on:
   workflow_dispatch: # Запуск вручную
@@ -7,6 +7,10 @@ on:
 
 permissions:
   contents: write
+
+concurrency:
+  group: argus-train-model
+  cancel-in-progress: false
 
 jobs:
   train:
@@ -25,9 +29,11 @@ jobs:
       - name: Install deps
         run: |
           python -m pip install --upgrade pip
-          pip install pandas numpy pyarrow fastparquet
+          pip install pandas numpy pyarrow fastparquet "psycopg[binary]"
 
       - name: Run Trainer
+        env:
+          AIVEN_DB_URL: ${{ secrets.AIVEN_DB_URL }}
         run: python crypto/learn/weekly_trainer.py
 
       - name: Commit best params
