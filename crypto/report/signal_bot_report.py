@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - SIGNAL REPORT (SENDER v1.4.0)
+# ARGUS - SIGNAL REPORT (SENDER v1.4.1)
 # ------------------------------------------------------------
 # Читает opened_deals.json.
 # Если есть сделка (sent_to_tg: False), отправляет в TG 
@@ -12,7 +12,7 @@ import logging
 import requests
 from pathlib import Path
 
-VERSION = "1.4.0"
+VERSION = "1.4.1"
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("crypto.signal_report")
@@ -72,17 +72,17 @@ def main():
     # 1. Читаем файл с открытой сделкой
     deal = load_json(OPENED_DEALS_FILE, None)
     
-    # Если файла нет или он пустой (null)
-    if not deal:
+    # 2. СТРОГАЯ ПРОВЕРКА: Если пусто ИЛИ нет ключа 'entry'
+    if not deal or "entry" not in deal:
         log.info("No open deals. Skipping.")
         return
 
-    # 2. Проверяем, не отправляли ли уже
+    # 3. Проверяем, не отправляли ли уже
     if deal.get("sent_to_tg") == True:
         log.info("Deal already sent to Telegram.")
         return
 
-    # 3. Достаем данные напрямую (без вложенного "signal")
+    # 4. Достаем данные
     entry = float(deal['entry'])
     tp = float(deal['tp'])
     sl = float(deal['sl'])
@@ -98,7 +98,7 @@ def main():
     text += f"🛑 Стоп-лосс:  {fmt_price(sl)} (-{sl_pct:.1f}%)\n\n"
     text += "<i>Открыта виртуальная сделка. Ждем закрытия.</i>"
 
-    # 4. Отправляем в TG
+    # 5. Отправляем в TG
     if send_telegram(text, CHAT_ID):
         log.info("Signal sent to Telegram successfully.")
         # Ставим флаг прямо в файле сделки
