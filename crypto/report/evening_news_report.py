@@ -1,8 +1,8 @@
 # ============================================================
-# ARGUS - EVENING NEWS REPORT v2.2 (PATH UPDATE)
+# ARGUS - EVENING NEWS REPORT v2.3 (MATH FIX)
 # ------------------------------------------------------------
-# v2.2: Путь к данным изменен на crypto/data/news/
-# v2.1: Исправлено: хватает данных для EMA(50) и ATR.
+# v2.3: Исправлены расчеты EMA, RSI и ATR (точные формулы).
+#       Добавлен pandas.resample для корректной склейки 1h.
 # ============================================================
 
 import os
@@ -12,6 +12,7 @@ import json
 import hashlib
 import logging
 import requests
+import pandas as pd
 from datetime import datetime, timezone
 from datetime import timedelta
 from pathlib import Path
@@ -25,7 +26,6 @@ except ImportError:
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 CRYPTO_ROOT = SCRIPT_DIR.parent
-# ИЗМЕНЕНИЕ ЗДЕСЬ: добавлена папка "news"
 DATA_DIR = CRYPTO_ROOT / "data" / "news"
 SENTIMENT_FILE = DATA_DIR / "news_sentiment.json"
 SENT_HISTORY_FILE = DATA_DIR / "news_sent_history_evening.json"
@@ -130,6 +130,29 @@ def translate_top(items, n=3):
     except Exception: return originals
 
 # ============================================================
+# ФУНКЦИИ РАСЧЕТА ИНДИКАТОРОВ (ТОЧНЫЕ)
+# ============================================================
+def calc_ema(series, period):
+    return series.ewm(span=period, adjust=False).mean().iloc[-1]
+
+def calc_rsi(series, period=14):
+    if len(series) < period + 1: return None
+    delta = series.diff()
+    gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()
+    loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()
+    rs = gain / loss
+    return (100 - (100 / (1 + rs))).iloc[-1]
+
+def calc_atr(df, period=14):
+    if len(df) < period + 1: return None
+    high_low = df['high'] - df['low']
+    high_close = (df['high'] - df['close'].shift()).abs()
+    low_close = (df['low'] - df['close'].shift()).abs()
+    tr = pd.concat([high_low, high_close, low_close], axis=1).max(axis=1)
+    atr = tr.rolling(window=period).mean()
+    return atr.iloc[-1]
+
+# ============================================================
 # ДИНАМИЧЕСКИЕ ВИЗУАЛЬНЫЕ ШКАЛЫ
 # ============================================================
 def get_progress_bar(pct, length=12):
@@ -153,7 +176,7 @@ def fetch_btc_day_stats():
         conn = psycopg.connect(DB_URL, connect_timeout=30)
         with conn:
             with conn.cursor() as cur:
-                cur.execute("SELECT open_time, open, high, low, close, volume, taker_buy_volume FROM candles WHERE symbol=%s AND timeframe=%s AND market_type='spot' ORDER BY open_time DESC LIMIT 250", (SYMBOL, TIMEFRAME))
+                cur.execute("SELECT open_time, open, high, low, close, volume, taker_buy_volume FROM candles WHERE symbol=%s AND timeframe=%s AND market_type='spot' ORDER BY open_time DESC LIMIT 400", (SYMBOL, TIMEFRAME))
                 rows = list(reversed(cur.fetchall()))
         conn.close()
         
@@ -181,40 +204,25 @@ def fetch_btc_day_stats():
         buy_pct = (vol_buy / vol_total * 100) if vol_total else 50
         sell_pct = 100 - buy_pct
 
-        candles_1h = []
-        for i in range(0, len(rows) - 3, 4):
-            chunk = rows[i:i+4]
-            if len(chunk) < 4: continue
-            h = max(float(c[2]) for c in chunk)
-            l = min(float(c[3]) for c in chunk)
-            c = float(chunk[-1][4])
-            candles_1h.append((h, l, c))
-            
-        closes_1h = [c[2] for c in candles_1h]
-        highs_1h = [c[0] for c in candles_1h]
-        lows_1h = [c[1] for c in candles_1h]
+        # --- ТОЧНАЯ СКЛЕЙКА В 1H ЧЕРЕЗ PANDAS ---
+        df = pd.DataFrame(rows, columns=['open_time', 'open', 'high', 'low', 'close', 'volume', 'taker_buy_volume'])
+        df['open_time'] = pd.to_datetime(df['open_time'], utc=True)
+        df = df.set_index('open_time')
+        
+        df_1h = df.resample('1h').agg({
+            'open': 'first', 'high': 'max', 'low': 'min', 
+            'close': 'last', 'volume': 'sum'
+        }).dropna()
 
-        rsi_1h = None
-        if len(closes_1h) > 14:
-            gains, losses = 0, 0
-            for i in range(1, 15):
-                d = closes_1h[-i] - closes_1h[-i-1]
-                if d >= 0: gains += d
-                else: losses -= d
-            if losses == 0: rsi_1h = 100
-            else: rsi_1h = 100 - (100 / (1 + (gains/14)/(losses/14)))
+        if len(df_1h) < 55:
+            return None
 
-        ema_50 = sum(closes_1h[-50:]) / 50 if len(closes_1h) >= 50 else None
+        closes_1h = df_1h['close']
 
-        atr_1h = None
-        if len(candles_1h) > 14:
-            trs = []
-            for i in range(len(candles_1h)-14, len(candles_1h)):
-                if i == 0: continue
-                tr = max(highs_1h[i] - lows_1h[i], abs(highs_1h[i] - closes_1h[i-1]), abs(lows_1h[i] - closes_1h[i-1]))
-                trs.append(tr)
-            if trs: atr_1h = sum(trs) / len(trs)
-            
+        rsi_1h = calc_rsi(closes_1h, 14)
+        ema_50 = calc_ema(closes_1h, 50)
+        atr_1h = calc_atr(df_1h, 14)
+        
         atr_pct = (atr_1h / price * 100) if atr_1h and price else 0
 
         return {
