@@ -1,16 +1,15 @@
 # ============================================================
-# ARGUS - MORNING REPORT v15.7
+# ARGUS - MORNING REPORT v15.8 (PANDAS 1H FIX)
 # ------------------------------------------------------------
 # Только BTC. Только Aiven DB. Только таблица candles.
 # Текстовый отчёт. Без графиков.
-# v15.7: Проверка путей (не использует data/).
-# v15.6: исправлен знак минуса в изменении цены.
-#        исправлены Максимум/Минимум за период.
+# v15.8: RSI 1h теперь использует pandas.resample (точная склейка).
 # ============================================================
 
 import os
 import sys
 import requests
+import pandas as pd
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 
@@ -434,11 +433,15 @@ def fmt_indicators_block(candles):
     closes = [c["close"] for c in candles]
     r15 = rsi_series(closes, 14)[-1]
 
-    c1h = []
-    for i in range(0, len(candles) - 3, 4):
-        chunk = candles[i:i + 4]
-        c1h.append(chunk[-1]["close"])
-    r1h = rsi_series(c1h, 14)[-1] if c1h else None
+    # --- ИСПРАВЛЕНИЕ: Точная склейка 1h через pandas ---
+    df_temp = pd.DataFrame([{'timestamp': c['timestamp'], 'close': c['close']} for c in candles])
+    df_temp['timestamp'] = pd.to_datetime(df_temp['timestamp'], utc=True)
+    df_temp.set_index('timestamp', inplace=True)
+    df_1h = df_temp.resample('1h').agg({'close': 'last'}).dropna()
+    
+    c1h = df_1h['close'].tolist()
+    r1h = rsi_series(c1h, 14)[-1] if c1h and len(c1h) > 14 else None
+    # ---------------------------------------------------
 
     e9 = ema_series(closes, 9)[-1]
     e21 = ema_series(closes, 21)[-1]
@@ -570,7 +573,7 @@ def build_report_text(candles, stats):
 
 
 def main():
-    print("Morning report v15.7 - start")
+    print("Morning report v15.8 - start")
 
     stats = fetch_stats(SYMBOL)
     candles = fetch_candles(SYMBOL, 300)
