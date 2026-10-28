@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - SIGNAL BOT (SCOUT v3.1)
+# ARGUS - SIGNAL BOT (SCOUT v3.2.0)
 # ------------------------------------------------------------
 # Ищет точку входа. Если находит, записывает сделку в 
 # opened_deals.json со статусом "не отправлено".
@@ -13,7 +13,7 @@ from datetime import datetime, timezone
 import psycopg
 import pandas as pd
 
-VERSION = "3.1.0"
+VERSION = "3.2.0"
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("crypto.signal_bot")
@@ -49,7 +49,7 @@ def save_json(path, data):
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 # ============================================================
-# ИНДИКАТОРЫ (аналогично тренеру)
+# ИНДИКАТОРЫ
 # ============================================================
 def calculate_ema(series, period):
     if len(series) < period: return None
@@ -87,9 +87,9 @@ def main():
     
     params = model_data["params"]
 
-    # 2. Проверяем, нет ли уже открытой сделки (если файл не пустой)
+    # 2. СТРОГАЯ ПРОВЕРКА: Если есть словарь И в нём есть ключ 'entry'
     current_deal = load_json(OPENED_DEALS_FILE, None)
-    if current_deal is not None:
+    if current_deal and "entry" in current_deal:
         log.info("Deal is already open. Sleeping.")
         return
 
