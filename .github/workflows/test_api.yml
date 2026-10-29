@@ -26,4 +26,4 @@ jobs:
       - name: Run Test APIs
         env:
           CMC_API_KEY: ${{ secrets.CMC_API_KEY }}
-        run: python test_api.py
+        run: python crypto/collect/test_api.py
