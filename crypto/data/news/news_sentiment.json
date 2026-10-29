@@ -1,46 +1,63 @@
 {
-  "generated_at": "2026-10-29T15:05:35.812174+00:00",
+  "generated_at": "2026-10-29T16:05:41.508018+00:00",
   "total_news": 93,
-  "avg_sentiment": 0.074,
+  "avg_sentiment": 0.109,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
-  "bullish_count": 20,
+  "bullish_count": 19,
   "bearish_count": 16,
-  "neutral_count": 57,
+  "neutral_count": 58,
   "fake_count": 0,
   "cross_confirmed": 9,
   "by_source": {
     "Cointelegraph": {
       "total": 21,
-      "bull": 7,
+      "bull": 8,
       "bear": 4
     },
     "Decrypt": {
-      "total": 20,
+      "total": 19,
       "bull": 4,
       "bear": 1
     },
     "Bitcoin.com": {
       "total": 5,
-      "bull": 1,
+      "bull": 0,
       "bear": 1
     },
     "CryptoSlate": {
-      "total": 9,
+      "total": 10,
       "bull": 1,
       "bear": 1
     },
     "CryptoPotato": {
-      "total": 28,
-      "bull": 7,
+      "total": 27,
+      "bull": 6,
       "bear": 9
     },
     "ForkLog": {
-      "total": 10,
+      "total": 11,
       "bull": 0,
       "bear": 0
     }
   },
   "top_bullish": [
+    {
+      "title": "Bitcoin price jumps to $81.5K as US GDP data beats expectations",
+      "url": "https://cointelegraph.com/markets/bitcoin-reaction-to-pce-data?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-10-29T15:39:54+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-29T16:05:39.459175+00:00",
+      "effective_weight": 1.95,
+      "title_original": "Bitcoin price jumps to $81.5K as US GDP data beats expectations",
+      "cross_check": 1
+    },
     {
       "title": "Unlimit founder backs Phase blockchain with $45M as mainnet launches",
       "url": "https://cointelegraph.com/news/unlimit-founder-phase-blockchain-mainnet-launches?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -53,7 +70,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-29T15:05:33.023274+00:00",
+      "collected_at": "2026-10-29T16:05:39.459684+00:00",
       "effective_weight": 1.3,
       "title_original": "Unlimit founder backs Phase blockchain with $45M as mainnet launches",
       "cross_check": 1
@@ -70,7 +87,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-29T15:05:33.023437+00:00",
+      "collected_at": "2026-10-29T16:05:39.459973+00:00",
       "effective_weight": 1.3,
       "title_original": "Bitcoin lending and yield could drive next wave of institutional demand, Rootstock says",
       "cross_check": 1
@@ -87,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-29T15:05:33.117127+00:00",
+      "collected_at": "2026-10-29T16:05:39.545071+00:00",
       "effective_weight": 1.1,
       "title_original": "Morning Minute: Hedge Funds Left the BTC ETF Trade and Sovereign Wealth Stepped In",
       "cross_check": 2
@@ -104,26 +121,9 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-29T15:05:33.023519+00:00",
+      "collected_at": "2026-10-29T16:05:39.460099+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin ETFs add $137M, pushing October back into the green",
-      "cross_check": 1
-    },
-    {
-      "title": "Your fridge could one day stake Ether, launch memecoins: CFTC chair",
-      "url": "https://cointelegraph.com/news/a-fridge-that-launches-memecoins-cftc-floats-ai-crypto-future?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-10-29T04:39:49+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-29T15:05:33.023555+00:00",
-      "effective_weight": 1.04,
-      "title_original": "Your fridge could one day stake Ether, launch memecoins: CFTC chair",
       "cross_check": 1
     }
   ],
@@ -140,7 +140,7 @@
       "bear_weight": 1.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-29T15:05:33.023108+00:00",
+      "collected_at": "2026-10-29T16:05:39.459412+00:00",
       "effective_weight": 1.3,
       "title_original": "Brazil’s Halloween eve crypto deadline brings more tricks than treats",
       "cross_check": 1
@@ -157,7 +157,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-29T15:05:33.023311+00:00",
+      "collected_at": "2026-10-29T16:05:39.459773+00:00",
       "effective_weight": 1.3,
       "title_original": "HTX agrees to halt unlawful UK crypto promotions after FCA case",
       "cross_check": 1
@@ -174,7 +174,7 @@
       "bear_weight": 2.3,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-29T15:05:33.023674+00:00",
+      "collected_at": "2026-10-29T16:05:39.460370+00:00",
       "effective_weight": 1.04,
       "title_original": "Crypto PAC spending before midterms possibly obscured after reported FEC hack",
       "cross_check": 1
@@ -191,7 +191,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-29T15:05:33.023710+00:00",
+      "collected_at": "2026-10-29T16:05:39.460453+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin price bounce rejected at 50-day trend line ahead of FOMC, earnings",
       "cross_check": 2
@@ -208,7 +208,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-29T15:05:33.437540+00:00",
+      "collected_at": "2026-10-29T16:05:39.786524+00:00",
       "effective_weight": 1.0,
       "title_original": "Google Builds Crypto Custody Security Platform for Banks",
       "cross_check": 1
