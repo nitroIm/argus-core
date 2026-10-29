@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - GLOBAL CRYPTO COLLECTOR
+# ARGUS - GLOBAL CRYPTO COLLECTOR (v1.0.1)
 # Path: crypto/collect/global_crypto.py
 # ============================================================
 
@@ -37,7 +37,6 @@ def collect_cmc(conn):
     
     data = r.json().get("data", {})
     
-    # ИСПРАВЛЕНИЕ: CMC отдает last_updated строкой, переводим в дату
     last_updated_str = data.get("last_updated")
     if last_updated_str:
         if last_updated_str.endswith('Z'):
@@ -143,16 +142,18 @@ def main():
     
     conn = get_conn()
     
-    # Жесткая защита: если хоть один сборщик падает с ошибкой, скрипт упадет целиком
     try:
+        # 1. Сбор каждый час (CMC и стейблы)
         collect_cmc(conn)
         collect_defillama(conn)
         
-        is_morning = (now_kly.hour == 7 and now_kly.minute >= 50)
-        is_evening = (now_kly.hour == 19 and now_kly.minute >= 50)
+        # 2. Утро (07:10 - 07:25) и Вечер (19:10 - 19:25)
+        # Окно в 15 минут защищает от задержек запуска GitHub.
+        is_morning = (now_kly.hour == 7 and 10 <= now_kly.minute < 25)
+        is_evening = (now_kly.hour == 19 and 10 <= now_kly.minute < 25)
         
         if is_morning or is_evening:
-            log.info("Morning/Evening time detected. Collecting network & F&G...")
+            log.info("Morning/Evening window detected. Collecting network & F&G...")
             collect_blockchain(conn)
             collect_fear_greed(conn)
         else:
