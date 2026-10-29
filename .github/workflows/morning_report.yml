@@ -4,11 +4,7 @@ on:
   workflow_dispatch: 
 
 permissions:
-  contents: write
-
-concurrency:
-  group: argus-morning-report
-  cancel-in-progress: false
+  contents: read
 
 jobs:
   report:
@@ -17,8 +13,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
 
       - uses: actions/setup-python@v5
         with:
@@ -36,19 +30,6 @@ jobs:
           BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python crypto/report/morning.py
-
-      - name: Commit status
-        run: |
-          git config user.name "ARGUS Reports"
-          git config user.email "reports@github.com"
-          git add crypto/data/ || true
-          if git diff --staged --quiet; then
-            echo "No changes"
-            exit 0
-          fi
-          git commit -m "ARGUS: morning report status updated [skip ci]"
-          git pull --rebase --autostash origin main || true
-          git push origin main
 
       - name: Notify on failure
         if: failure()
