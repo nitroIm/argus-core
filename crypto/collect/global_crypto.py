@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - GLOBAL CRYPTO COLLECTOR (v1.0.1)
+# ARGUS - GLOBAL CRYPTO COLLECTOR (v1.0.2)
 # Path: crypto/collect/global_crypto.py
 # ============================================================
 
@@ -75,7 +75,10 @@ def collect_defillama(conn):
     pegged_assets = data.get("peggedAssets", [])
     
     targets = ["USDT", "USDC", "DAI", "FDUSD", "TUSD"]
-    now_ts = datetime.now(timezone.utc)
+    
+    # ИСПРАВЛЕНИЕ ДУБЛЕЙ: Округляем время до начала часа (например, 01:00:00)
+    # Если скрипт запустится повторно в 01:10 или 01:15, время будет тем же, и дубль не запишется.
+    now_ts = datetime.now(timezone.utc).replace(minute=0, second=0, microsecond=0)
     
     with conn.cursor() as cur:
         for asset in pegged_assets:
@@ -148,7 +151,6 @@ def main():
         collect_defillama(conn)
         
         # 2. Утро (07:10 - 07:25) и Вечер (19:10 - 19:25)
-        # Окно в 15 минут защищает от задержек запуска GitHub.
         is_morning = (now_kly.hour == 7 and 10 <= now_kly.minute < 25)
         is_evening = (now_kly.hour == 19 and 10 <= now_kly.minute < 25)
         
