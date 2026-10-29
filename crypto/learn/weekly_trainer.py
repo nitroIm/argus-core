@@ -1,13 +1,7 @@
 # ============================================================
-# ARGUS - WEEKLY TRAINER (MODEL OPTIMIZER)
+# ARGUS - WEEKLY TRAINER (MODEL OPTIMIZER v2.0)
 # ------------------------------------------------------------
-# Version: 1.1.1
-# Date: 2026-10-28
-# Description: 
-#   Скрещивает 6 лет истории (Parquet) со свежими данными (Aiven).
-#   Перебирает сетку параметров (Grid Search) для поиска 
-#   лучшей стратегии (RSI, TP, SL, фильтры тренда/объема).
-#   Сохраняет лучшие параметры в crypto/data/models/best_params.json
+# Обучает две стратегии одновременно: LONG и SHORT.
 # ============================================================
 
 import os
@@ -20,15 +14,12 @@ import numpy as np
 import pandas as pd
 import psycopg
 
-VERSION = "1.1.1"
-
+VERSION = "2.0.0"
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("crypto.trainer")
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 DATA_FILE = SCRIPT_DIR.parent / "collect" / "vision_out" / "BTCUSDT_spot_1h.parquet"
-
-# ИЗМЕНЕНИЕ ПУТЕЙ: сохраняем в data/models
 DATA_DIR = SCRIPT_DIR.parent / "data" / "models"
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 OUT_FILE = DATA_DIR / "best_params.json"
@@ -39,11 +30,23 @@ INITIAL_BALANCE = 100.0
 POSITION_NOTIONAL = 20.0
 FEE_RATE = 0.001
 
-PARAM_GRID = {
+# Сетка для Лонга (покупка на откате)
+GRID_LONG = {
     "use_trend_filter": [True, False],
     "use_volume_filter": [True, False],
     "rsi_min": [25, 30, 35],
     "rsi_max": [50, 55, 60, 70],
+    "tp_pct": [2.0, 3.0, 5.0, 8.0, 15.0],
+    "sl_pct": [1.5, 2.0, 3.0, 5.0],
+    "time_exit_h": [24, 48, 72, 168]
+}
+
+# Сетка для Шорта (продажа на перекупленности)
+GRID_SHORT = {
+    "use_trend_filter": [True, False],
+    "use_volume_filter": [True, False],
+    "rsi_min": [50, 60, 70],
+    "rsi_max": [70, 80, 90],
     "tp_pct": [2.0, 3.0, 5.0, 8.0, 15.0],
     "sl_pct": [1.5, 2.0, 3.0, 5.0],
     "time_exit_h": [24, 48, 72, 168]
@@ -66,7 +69,7 @@ def calculate_macd(series, fast=12, slow=26, signal=9):
     signal_line = calculate_ema(macd_line, signal)
     return macd_line - signal_line
 
-def run_backtest(df, params):
+def run_backtest(df, params, side="long"):
     trades = []
     in_pos = False
     entry_price = 0.0
@@ -76,7 +79,11 @@ def run_backtest(df, params):
         if i == 0: continue
         
         if in_pos:
-            gross_pct = (curr.close - entry_price) / entry_price * 100.0
+            if side == "long":
+                gross_pct = (curr.close - entry_price) / entry_price * 100.0
+            else: # short
+                gross_pct = (entry_price - curr.close) / entry_price * 100.0
+
             bars_held = i - entry_idx
             
             exit_reason = None
@@ -94,9 +101,15 @@ def run_backtest(df, params):
                 in_pos = False
         
         if not in_pos:
-            signal = curr.macd_hist > 0 and (params["rsi_min"] < curr.rsi < params["rsi_max"])
-            if params["use_trend_filter"]:
-                signal = signal and (curr.close > curr.ema_50)
+            if side == "long":
+                signal = curr.macd_hist > 0 and (params["rsi_min"] < curr.rsi < params["rsi_max"])
+                if params["use_trend_filter"]:
+                    signal = signal and (curr.close > curr.ema_50)
+            else: # short
+                signal = curr.macd_hist < 0 and (params["rsi_min"] < curr.rsi < params["rsi_max"])
+                if params["use_trend_filter"]:
+                    signal = signal and (curr.close < curr.ema_50)
+
             if params["use_volume_filter"]:
                 signal = signal and (curr.volume > curr.vol_sma)
                 
@@ -125,13 +138,9 @@ def run_backtest(df, params):
     }
 
 def fetch_fresh_candles():
-    """Идет в Aiven и забирает 15м свечи, сворачивая их в 1ч"""
     if not DB_URL:
-        log.warning("AIVEN_DB_URL not set. Skipping fresh data.")
         return pd.DataFrame()
-
     try:
-        log.info("Connecting to Aiven for fresh data...")
         conn = psycopg.connect(DB_URL, connect_timeout=30)
         query = """
             SELECT open_time, open, high, low, close, volume 
@@ -142,23 +151,39 @@ def fetch_fresh_candles():
         """
         df = pd.read_sql(query, conn)
         conn.close()
-
-        if df.empty:
-            return df
-
+        if df.empty: return df
         df['open_time'] = pd.to_datetime(df['open_time'], utc=True)
         df.set_index('open_time', inplace=True)
-
         df_1h = df.resample('1h').agg({
             'open': 'first', 'high': 'max', 'low': 'min', 
             'close': 'last', 'volume': 'sum'
         }).dropna().reset_index()
-
-        log.info(f"Fetched {len(df_1h)} fresh 1h-candles from DB.")
         return df_1h
     except Exception as e:
         log.error(f"Failed to fetch from DB: {e}")
         return pd.DataFrame()
+
+def train_side(df, grid, side_name):
+    keys, values = zip(*grid.items())
+    combinations = [dict(zip(keys, v)) for v in itertools.product(*values)]
+    log.info(f"Testing {len(combinations)} combinations for {side_name}...")
+    
+    best_result = None
+    best_params = None
+
+    for idx, params in enumerate(combinations):
+        res = run_backtest(df, params, side=side_name.lower())
+        if res and (best_result is None or res["score"] > best_result["score"]):
+            best_result = res
+            best_params = params
+
+    if best_params:
+        log.info(f"🏆 BEST {side_name} STRATEGY FOUND:")
+        for k, v in best_params.items():
+            log.info(f"  {k}: {v}")
+        log.info(f"📈 PnL: ${best_result['pnl']} | Winrate: {best_result['winrate']*100:.1f}% | Max DD: {best_result['max_dd']}%")
+    
+    return best_params, best_result
 
 def main():
     log.info(f"STARTING WEEKLY TRAINER v{VERSION}")
@@ -170,20 +195,15 @@ def main():
     df_hist = pd.read_parquet(DATA_FILE)
     df_hist['open_time'] = df_hist['open_time'].apply(lambda x: x / 1000 if x > 1e14 else x)
     df_hist['open_time'] = pd.to_datetime(df_hist['open_time'], unit='ms', utc=True)
-    log.info(f"History loaded: {len(df_hist)} candles.")
-
+    
     df_fresh = fetch_fresh_candles()
-
-    log.info("Merging history and fresh data...")
     if not df_fresh.empty:
         df = pd.concat([df_hist, df_fresh])
     else:
-        log.warning("No fresh data. Using only history.")
         df = df_hist
 
     df = df.drop_duplicates(subset=['open_time']).sort_values('open_time').reset_index(drop=True)
-    log.info(f"Total merged candles: {len(df)}")
-
+    
     df['rsi'] = calculate_rsi(df['close'], 14)
     df['macd_hist'] = calculate_macd(df['close'], 12, 26, 9)
     df['ema_50'] = calculate_ema(df['close'], 50)
@@ -192,38 +212,21 @@ def main():
     
     log.info(f"Data ready for training. Total rows: {len(df)}")
 
-    keys, values = zip(*PARAM_GRID.items())
-    combinations = [dict(zip(keys, v)) for v in itertools.product(*values)]
-    log.info(f"Testing {len(combinations)} combinations...")
+    # Обучаем Лонг
+    params_long, metrics_long = train_side(df, GRID_LONG, "LONG")
+    # Обучаем Шорт
+    params_short, metrics_short = train_side(df, GRID_SHORT, "SHORT")
+
+    out_data = {
+        "trainer_version": VERSION,
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+        "long": {"params": params_long, "metrics": metrics_long},
+        "short": {"params": params_short, "metrics": metrics_short}
+    }
     
-    best_result = None
-    best_params = None
-
-    for idx, params in enumerate(combinations):
-        res = run_backtest(df, params)
-        if res and (best_result is None or res["score"] > best_result["score"]):
-            best_result = res
-            best_params = params
-        if (idx + 1) % 500 == 0:
-            log.info(f"Checked {idx + 1}/{len(combinations)}...")
-
-    if best_params:
-        log.info("=" * 50)
-        log.info("🏆 BEST STRATEGY FOUND (ON MERGED DATA):")
-        for k, v in best_params.items():
-            log.info(f"  {k}: {v}")
-        log.info(f"📈 PnL: ${best_result['pnl']} | Winrate: ${best_result['winrate']*100:.1f}% | Max DD: {best_result['max_dd']}%")
-        log.info("=" * 50)
-
-        out_data = {
-            "trainer_version": VERSION,
-            "updated_at": datetime.now(timezone.utc).isoformat(),
-            "params": best_params,
-            "metrics": best_result
-        }
-        with open(OUT_FILE, "w", encoding="utf-8") as f:
-            json.dump(out_data, f, ensure_ascii=False, indent=2)
-        log.info(f"Saved to {OUT_FILE}")
+    with open(OUT_FILE, "w", encoding="utf-8") as f:
+        json.dump(out_data, f, ensure_ascii=False, indent=2)
+    log.info(f"Saved to {OUT_FILE}")
 
 if __name__ == "__main__":
     main()
