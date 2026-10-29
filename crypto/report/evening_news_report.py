@@ -1,7 +1,8 @@
 # ============================================================
-# ARGUS - EVENING NEWS REPORT v2.4 (DECIMAL FIX)
+# ARGUS - EVENING NEWS REPORT v2.5 (MATH & DECIMAL FIX)
 # ------------------------------------------------------------
-# v2.4: Исправлена ошибка с типом Decimal (цены не пропадут).
+# v2.5: Исправлены формулы RSI и ATR (сглаживание Уайлдера).
+#       Исправлен баг с типом Decimal (цены не пропадут).
 # ============================================================
 
 import os
@@ -128,7 +129,7 @@ def translate_top(items, n=3):
     except Exception: return originals
 
 # ============================================================
-# ФУНКЦИИ РАСЧЕТА ИНДИКАТОРОВ (ТОЧНЫЕ)
+# ФУНКЦИИ РАСЧЕТА ИНДИКАТОРОВ (ТОЧНЫЕ, СГЛАЖИВАНИЕ УАЙЛДЕРА)
 # ============================================================
 def calc_ema(series, period):
     return series.ewm(span=period, adjust=False).mean().iloc[-1]
@@ -136,9 +137,14 @@ def calc_ema(series, period):
 def calc_rsi(series, period=14):
     if len(series) < period + 1: return None
     delta = series.diff()
-    gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()
-    loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()
-    rs = gain / loss
+    gain = delta.where(delta > 0, 0)
+    loss = -delta.where(delta < 0, 0)
+    
+    # Сглаживание Уайлдера (RMA) для RSI
+    avg_gain = gain.ewm(alpha=1/period, adjust=False).mean()
+    avg_loss = loss.ewm(alpha=1/period, adjust=False).mean()
+    
+    rs = avg_gain / avg_loss
     return (100 - (100 / (1 + rs))).iloc[-1]
 
 def calc_atr(df, period=14):
@@ -147,7 +153,9 @@ def calc_atr(df, period=14):
     high_close = (df['high'] - df['close'].shift()).abs()
     low_close = (df['low'] - df['close'].shift()).abs()
     tr = pd.concat([high_low, high_close, low_close], axis=1).max(axis=1)
-    atr = tr.rolling(window=period).mean()
+    
+    # Сглаживание Уайлдера (RMA) для ATR
+    atr = tr.ewm(alpha=1/period, adjust=False).mean()
     return atr.iloc[-1]
 
 # ============================================================
