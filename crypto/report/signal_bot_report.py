@@ -1,8 +1,5 @@
 # ============================================================
-# ARGUS - SIGNAL REPORT (SENDER v3.0)
-# ------------------------------------------------------------
-# Читает info_deal.json и отправляет события в Telegram.
-# Добавляет реальную статистику бота.
+# ARGUS - SIGNAL REPORT (SENDER v4.0 LONG & SHORT)
 # ============================================================
 
 import os
@@ -68,20 +65,29 @@ def get_stats_text():
     return text
 
 def main():
-    log.info("STARTING SIGNAL REPORT v3.0")
+    log.info("STARTING SIGNAL REPORT v4.0")
     
     event = load_json(INFO_DEAL, {})
     if not event or event.get("sent") == True:
         return log.info("No new events.")
 
     text = ""
+    deal_type = event.get("deal_type", "LONG") # Защита: по умолчанию LONG
+
     if event["type"] == "ENTRY":
         entry = float(event["entry"])
         tp = float(event["tp"])
         sl = float(event["sl"])
-        tp_pct = (tp - entry) / entry * 100
-        sl_pct = (sl - entry) / entry * 100
-        text = "🚀 <b>ARGUS SIGNAL: ПОКУПКА BTC</b>\n\n"
+        
+        if deal_type == "LONG":
+            tp_pct = (tp - entry) / entry * 100
+            sl_pct = (sl - entry) / entry * 100
+            text = "🚀 <b>ARGUS SIGNAL: ПОКУПКА BTC (LONG)</b>\n\n"
+        else:
+            tp_pct = (entry - tp) / entry * 100
+            sl_pct = (entry - sl) / entry * 100
+            text = "🩸 <b>ARGUS SIGNAL: ПРОДАЖА BTC (SHORT)</b>\n\n"
+
         text += f"🟢 <b>Вход:</b> {fmt(entry)}\n"
         text += f"🎯 <b>Тейк (TP):</b> {fmt(tp)} ({tp_pct:+.2f}%)\n"
         text += f"🛑 <b>Стоп (SL):</b> {fmt(sl)} ({sl_pct:+.2f}%)\n\n"
@@ -91,13 +97,18 @@ def main():
         pnl = event["pnl_usd"]
         sign = "+" if pnl >= 0 else ""
         status = "✅ УСПЕШНАЯ СДЕЛКА" if pnl > 0 else "❌ УБЫТОЧНАЯ СДЕЛКА"
-        text = f"🏁 <b>{status}</b>\n\n"
+        
+        if deal_type == "LONG":
+            text = f"🏁 <b>{status} (LONG)</b>\n\n"
+        else:
+            text = f"🏁 <b>{status} (SHORT)</b>\n\n"
+
         text += f"📊 Причина: {event['reason']}\n"
         text += f"💰 Результат: <b>{sign}{event['pnl_pct']}%</b> (на $100: <b>{sign}${pnl:.2f}</b>)\n\n"
         text += get_stats_text()
 
     if text and send_tg(text):
-        log.info(f"Sent {event['type']} to TG.")
+        log.info(f"Sent {event['type']} ({deal_type}) to TG.")
         event["sent"] = True
         save_json(INFO_DEAL, event)
 
