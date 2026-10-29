@@ -1,25 +1,10 @@
-# ============================================================
-# ARGUS - УТРЕННИЙ ОТЧЁТ РЫНКА
-# ------------------------------------------------------------
-# Только BTC. Только Aiven DB. Текстовый отчёт в Telegram.
-# Cron закомментирован — запуск из других источников.
-# ============================================================
-
 name: ARGUS Morning Report
 
 on:
-  workflow_dispatch:
-  repository_dispatch:
-    types: [run_morning]
-  # schedule:
-  #  - cron: '0 7 * * *'
+  workflow_dispatch: 
 
 permissions:
   contents: read
-
-concurrency:
-  group: argus-morning-report
-  cancel-in-progress: false
 
 jobs:
   report:
@@ -36,9 +21,9 @@ jobs:
       - name: Install deps
         run: |
           python -m pip install --upgrade pip
-          pip install "psycopg[binary]" requests
+          pip install pandas "psycopg[binary]" requests
 
-      - name: Morning report
+      - name: Run Morning Report
         env:
           AIVEN_DB_URL: ${{ secrets.AIVEN_DB_URL }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
@@ -46,9 +31,6 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python crypto/report/morning.py
 
-      # ==========================================
-      # УНИВЕРСАЛЬНАЯ ЗАЩИТА ОТ ПАДЕНИЙ
-      # ==========================================
       - name: Notify on failure
         if: failure()
         env:
