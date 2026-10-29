@@ -1,26 +1,26 @@
 {
-  "generated_at": "2026-10-29T16:05:41.508018+00:00",
-  "total_news": 93,
-  "avg_sentiment": 0.109,
+  "generated_at": "2026-10-29T17:05:35.783595+00:00",
+  "total_news": 90,
+  "avg_sentiment": 0.142,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
   "bullish_count": 19,
   "bearish_count": 16,
-  "neutral_count": 58,
+  "neutral_count": 55,
   "fake_count": 0,
-  "cross_confirmed": 9,
+  "cross_confirmed": 8,
   "by_source": {
     "Cointelegraph": {
-      "total": 21,
-      "bull": 8,
+      "total": 20,
+      "bull": 7,
       "bear": 4
     },
     "Decrypt": {
-      "total": 19,
-      "bull": 4,
+      "total": 20,
+      "bull": 5,
       "bear": 1
     },
     "Bitcoin.com": {
-      "total": 5,
+      "total": 4,
       "bull": 0,
       "bear": 1
     },
@@ -30,17 +30,34 @@
       "bear": 1
     },
     "CryptoPotato": {
-      "total": 27,
+      "total": 26,
       "bull": 6,
       "bear": 9
     },
     "ForkLog": {
-      "total": 11,
+      "total": 10,
       "bull": 0,
       "bear": 0
     }
   },
   "top_bullish": [
+    {
+      "title": "4M Bitcoin Bought Above $85K Could Cap Recovery: Glassnode",
+      "url": "https://decrypt.co/382161/4m-bitcoin-bought-above-85k-could-cap-recovery-glassnode",
+      "source": "Decrypt",
+      "source_weight": 1.1,
+      "lang": "en",
+      "pub_date": "2026-10-29T16:32:47+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-29T17:05:34.010887+00:00",
+      "effective_weight": 1.65,
+      "title_original": "4M Bitcoin Bought Above $85K Could Cap Recovery: Glassnode",
+      "cross_check": 1
+    },
     {
       "title": "Bitcoin price jumps to $81.5K as US GDP data beats expectations",
       "url": "https://cointelegraph.com/markets/bitcoin-reaction-to-pce-data?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -51,10 +68,10 @@
       "sentiment": 1.0,
       "bull_weight": 1.0,
       "bear_weight": 0.0,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-29T16:05:39.459175+00:00",
-      "effective_weight": 1.95,
+      "collected_at": "2026-10-29T17:05:33.944047+00:00",
+      "effective_weight": 1.3,
       "title_original": "Bitcoin price jumps to $81.5K as US GDP data beats expectations",
       "cross_check": 1
     },
@@ -70,7 +87,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-29T16:05:39.459684+00:00",
+      "collected_at": "2026-10-29T17:05:33.944586+00:00",
       "effective_weight": 1.3,
       "title_original": "Unlimit founder backs Phase blockchain with $45M as mainnet launches",
       "cross_check": 1
@@ -87,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-29T16:05:39.459973+00:00",
+      "collected_at": "2026-10-29T17:05:33.944851+00:00",
       "effective_weight": 1.3,
       "title_original": "Bitcoin lending and yield could drive next wave of institutional demand, Rootstock says",
       "cross_check": 1
@@ -104,27 +121,10 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-29T16:05:39.545071+00:00",
+      "collected_at": "2026-10-29T17:05:34.011091+00:00",
       "effective_weight": 1.1,
       "title_original": "Morning Minute: Hedge Funds Left the BTC ETF Trade and Sovereign Wealth Stepped In",
       "cross_check": 2
-    },
-    {
-      "title": "Bitcoin ETFs add $137M, pushing October back into the green",
-      "url": "https://cointelegraph.com/markets/bitcoin-etf-137-million-october-back-green?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-10-29T07:32:20+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-29T16:05:39.460099+00:00",
-      "effective_weight": 1.04,
-      "title_original": "Bitcoin ETFs add $137M, pushing October back into the green",
-      "cross_check": 1
     }
   ],
   "top_bearish": [
@@ -140,7 +140,7 @@
       "bear_weight": 1.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-29T16:05:39.459412+00:00",
+      "collected_at": "2026-10-29T17:05:33.944316+00:00",
       "effective_weight": 1.3,
       "title_original": "Brazil’s Halloween eve crypto deadline brings more tricks than treats",
       "cross_check": 1
@@ -157,7 +157,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-29T16:05:39.459773+00:00",
+      "collected_at": "2026-10-29T17:05:33.944652+00:00",
       "effective_weight": 1.3,
       "title_original": "HTX agrees to halt unlawful UK crypto promotions after FCA case",
       "cross_check": 1
@@ -174,27 +174,10 @@
       "bear_weight": 2.3,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-29T16:05:39.460370+00:00",
+      "collected_at": "2026-10-29T17:05:33.945273+00:00",
       "effective_weight": 1.04,
       "title_original": "Crypto PAC spending before midterms possibly obscured after reported FEC hack",
       "cross_check": 1
-    },
-    {
-      "title": "Bitcoin price bounce rejected at 50-day trend line ahead of FOMC, earnings",
-      "url": "https://cointelegraph.com/markets/bitcoin-price-bounce-rejected-at-50-day-trend-line-ahead-of-fomc-earnings?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-10-28T16:53:26+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-29T16:05:39.460453+00:00",
-      "effective_weight": 1.04,
-      "title_original": "Bitcoin price bounce rejected at 50-day trend line ahead of FOMC, earnings",
-      "cross_check": 2
     },
     {
       "title": "Google Builds Crypto Custody Security Platform for Banks",
@@ -208,9 +191,26 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-29T16:05:39.786524+00:00",
+      "collected_at": "2026-10-29T17:05:34.241071+00:00",
       "effective_weight": 1.0,
       "title_original": "Google Builds Crypto Custody Security Platform for Banks",
+      "cross_check": 1
+    },
+    {
+      "title": "China’s tech crash erased $480 billion. Bitcoin rose 27% over the same dates",
+      "url": "https://cryptoslate.com/chinas-near-40-tech-rout-contrasts-with-bitcoins-27-gain-over-the-same-dates/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-29T12:00:16+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 2.0,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-29T17:05:34.381032+00:00",
+      "effective_weight": 1.0,
+      "title_original": "China’s tech crash erased $480 billion. Bitcoin rose 27% over the same dates",
       "cross_check": 1
     }
   ]
