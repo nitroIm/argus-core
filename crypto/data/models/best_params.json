@@ -1,20 +1,40 @@
 {
-  "trainer_version": "1.1.1",
-  "updated_at": "2026-10-28T11:19:18.079729+00:00",
-  "params": {
-    "use_trend_filter": true,
-    "use_volume_filter": true,
-    "rsi_min": 25,
-    "rsi_max": 50,
-    "tp_pct": 8.0,
-    "sl_pct": 5.0,
-    "time_exit_h": 168
+  "trainer_version": "2.0.0",
+  "updated_at": "2026-10-29T16:56:16.446169+00:00",
+  "long": {
+    "params": {
+      "use_trend_filter": true,
+      "use_volume_filter": true,
+      "rsi_min": 25,
+      "rsi_max": 50,
+      "tp_pct": 8.0,
+      "sl_pct": 5.0,
+      "time_exit_h": 168
+    },
+    "metrics": {
+      "trades": 134,
+      "pnl": 25.38,
+      "winrate": 0.5448,
+      "max_dd": -4.3,
+      "score": 5.9
+    }
   },
-  "metrics": {
-    "trades": 134,
-    "pnl": 25.38,
-    "winrate": 0.5448,
-    "max_dd": -4.3,
-    "score": 5.9
+  "short": {
+    "params": {
+      "use_trend_filter": true,
+      "use_volume_filter": true,
+      "rsi_min": 60,
+      "rsi_max": 70,
+      "tp_pct": 2.0,
+      "sl_pct": 1.5,
+      "time_exit_h": 168
+    },
+    "metrics": {
+      "trades": 3,
+      "pnl": 0.53,
+      "winrate": 0.6667,
+      "max_dd": -0.1,
+      "score": 5.27
+    }
   }
 }
