@@ -1,9 +1,8 @@
 # ============================================================
-# ARGUS - NEWS REPORT v10.4 (PANDAS 1H RESAMPLE FIX)
+# ARGUS - NEWS REPORT v10.5 (DECIMAL TO FLOAT FIX)
 # ------------------------------------------------------------
-# v10.4: Склейка 15m в 1h через pandas.resample (точные RSI/ATR)
+# v10.5: Исправлена ошибка pandas с типом Decimal из БД.
 # v10.3: Путь к данным изменен на crypto/data/news/
-# v10.2: Добавлена реферальная ссылка Bybit в конец отчета.
 # ============================================================
 
 import os
@@ -27,7 +26,6 @@ except ImportError:
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 CRYPTO_ROOT = SCRIPT_DIR.parent
-# ИЗМЕНЕНИЕ ЗДЕСЬ: добавлена папка "news"
 DATA_DIR = CRYPTO_ROOT / "data" / "news"
 SENTIMENT_FILE = DATA_DIR / "news_sentiment.json"
 SENT_HISTORY_FILE = DATA_DIR / "news_sent_history.json"
@@ -363,7 +361,9 @@ def fetch_btc_snapshot():
                 )
                 rows = list(reversed(cur.fetchall()))
         conn.close()
-        if len(rows) < 100:
+        
+        # Требуется минимум 60 свечей (15 часов) для RSI(14) на 1h
+        if len(rows) < 60:
             return None
             
         last_24h = rows[-96:] if len(rows) >= 96 else rows
@@ -377,8 +377,10 @@ def fetch_btc_snapshot():
             if prev:
                 change_pct = (price - prev) / prev * 100
 
-        # --- ТОЧНАЯ СКЛЕЙКА В 1H ЧЕРЕЗ PANDAS ---
-        df = pd.DataFrame(rows, columns=['open_time', 'open', 'high', 'low', 'close', 'volume'])
+        # --- ФИКС: Переводим все значения из Decimal в float для pandas ---
+        rows_float = [(r[0], float(r[1]), float(r[2]), float(r[3]), float(r[4]), float(r[5])) for r in rows]
+        
+        df = pd.DataFrame(rows_float, columns=['open_time', 'open', 'high', 'low', 'close', 'volume'])
         df['open_time'] = pd.to_datetime(df['open_time'], utc=True)
         df = df.set_index('open_time')
         
@@ -393,7 +395,6 @@ def fetch_btc_snapshot():
         closes_1h = df_1h['close'].tolist()
         highs_1h = df_1h['high'].tolist()
         lows_1h = df_1h['low'].tolist()
-        # -----------------------------------------
 
         rsi_1h = _rsi(closes_1h, 14)
         atr_1h = _atr(highs_1h, lows_1h, closes_1h, 14)
@@ -461,6 +462,9 @@ def build_report(data, top_items, top_ru, btc):
         if parts:
             lines.append("  " + " | ".join(parts))
         lines.append("")
+    else:
+        lines.append("💰 <b>BTC</b> данные временно недоступны")
+        lines.append("")
 
     # --- НОВОСТИ ---
     lines.append("🎭 " + esc(mood))
@@ -501,7 +505,7 @@ def build_report(data, top_items, top_ru, btc):
 
 
 def main():
-    log.info("news report v10.4")
+    log.info("news report v10.5")
     local = now_local()
     log.info("local time: %s (hour=%d)", local.strftime("%H:%M"), local.hour)
     
