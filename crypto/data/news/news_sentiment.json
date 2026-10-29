@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-10-29T09:05:34.759930+00:00",
+  "generated_at": "2026-10-29T10:05:43.247673+00:00",
   "total_news": 91,
-  "avg_sentiment": 0.295,
+  "avg_sentiment": 0.284,
   "mood": "🟢 БЫЧЬЕ",
   "bullish_count": 22,
   "bearish_count": 11,
@@ -25,7 +25,7 @@
       "bear": 0
     },
     "CryptoSlate": {
-      "total": 5,
+      "total": 6,
       "bull": 1,
       "bear": 2
     },
@@ -35,29 +35,12 @@
       "bear": 5
     },
     "ForkLog": {
-      "total": 12,
+      "total": 11,
       "bull": 1,
       "bear": 0
     }
   },
   "top_bullish": [
-    {
-      "title": "Uniswap Adds 13,137 New Addresses in Its Biggest Growth Spike Since 2020",
-      "url": "https://cryptopotato.com/uniswap-adds-13137-new-addresses-in-its-biggest-growth-spike-since-2020/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-29T08:58:48+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-29T09:05:33.637300+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Uniswap Adds 13,137 New Addresses in Its Biggest Growth Spike Since 2020",
-      "cross_check": 1
-    },
     {
       "title": "Bitcoin ETFs add $137M, pushing October back into the green",
       "url": "https://cointelegraph.com/markets/bitcoin-etf-137-million-october-back-green?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -70,7 +53,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-29T09:05:32.301123+00:00",
+      "collected_at": "2026-10-29T10:05:41.492976+00:00",
       "effective_weight": 1.3,
       "title_original": "Bitcoin ETFs add $137M, pushing October back into the green",
       "cross_check": 1
@@ -87,7 +70,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-29T09:05:32.301214+00:00",
+      "collected_at": "2026-10-29T10:05:41.493137+00:00",
       "effective_weight": 1.3,
       "title_original": "Your fridge could one day stake Ether, launch memecoins: CFTC chair",
       "cross_check": 1
@@ -104,7 +87,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-29T09:05:32.301301+00:00",
+      "collected_at": "2026-10-29T10:05:41.493296+00:00",
       "effective_weight": 1.04,
       "title_original": "Canadian ‘crypto king’ case to go to jury as criminal trial winds down",
       "cross_check": 1
@@ -121,9 +104,26 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-29T09:05:32.301448+00:00",
+      "collected_at": "2026-10-29T10:05:41.493524+00:00",
       "effective_weight": 1.04,
       "title_original": "Google Cloud outlines MPC service for institutional Bitcoin custody",
+      "cross_check": 1
+    },
+    {
+      "title": "DTCC unit launches tokenization services",
+      "url": "https://cointelegraph.com/news/dtcc-subsidiary-launches-tokenization-services?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-10-28T13:19:00+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-29T10:05:41.493580+00:00",
+      "effective_weight": 1.04,
+      "title_original": "DTCC unit launches tokenization services",
       "cross_check": 1
     }
   ],
@@ -140,7 +140,7 @@
       "bear_weight": 2.3,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-29T09:05:32.301343+00:00",
+      "collected_at": "2026-10-29T10:05:41.493372+00:00",
       "effective_weight": 1.04,
       "title_original": "Crypto PAC spending before midterms possibly obscured after reported FEC hack",
       "cross_check": 1
@@ -157,7 +157,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-29T09:05:32.301382+00:00",
+      "collected_at": "2026-10-29T10:05:41.493446+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin price bounce rejected at 50-day trend line ahead of FOMC, earnings",
       "cross_check": 2
@@ -174,7 +174,7 @@
       "bear_weight": 0.8,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-29T09:05:33.637397+00:00",
+      "collected_at": "2026-10-29T10:05:42.091385+00:00",
       "effective_weight": 1.0,
       "title_original": "Pi Network (PI) vs. Cardano (ADA): 3 AIs Predict Which Could Perform Better in Q4",
       "cross_check": 1
@@ -191,7 +191,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-29T09:05:32.837129+00:00",
+      "collected_at": "2026-10-29T10:05:41.950938+00:00",
       "effective_weight": 0.8,
       "title_original": "Coinbase says it wasn’t breached, but hackers don’t need to steal crypto to hurt users",
       "cross_check": 1
@@ -208,7 +208,7 @@
       "bear_weight": 4.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-29T09:05:33.637488+00:00",
+      "collected_at": "2026-10-29T10:05:42.091528+00:00",
       "effective_weight": 0.8,
       "title_original": "Datavault AI Stock Plunges 50% as Bitcoin Withdrawal Stalls",
       "cross_check": 2
