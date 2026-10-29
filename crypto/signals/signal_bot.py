@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - SIGNAL BOT (MONOLITH v6.0 LONG & SHORT)
+# ARGUS - SIGNAL BOT (MONOLITH v6.1 TRAILING LONG & SHORT)
 # ============================================================
 
 import os
@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 import psycopg
 import pandas as pd
 
-VERSION = "6.0.0"
+VERSION = "6.1.0"
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("crypto.signal_bot")
 
@@ -27,6 +27,9 @@ BOT_INFO = SIGNALS_DIR / "bot_info.json"
 
 DB_URL = (os.getenv("AIVEN_DB_URL") or "").strip()
 SYMBOL = "BTCUSDT"
+
+TRAILING_ACTIVATION_PCT = 1.0  # Активация после +1% профита
+TRAILING_ATR_MULTIPLIER = 2.0  # Множитель ATR
 
 def get_conn():
     if not DB_URL: raise RuntimeError("AIVEN_DB_URL not set")
@@ -57,6 +60,15 @@ def calc_macd_hist(s):
     signal_line = macd_line.ewm(span=9).mean()
     return (macd_line - signal_line).iloc[-1]
 
+def calc_atr(df, period=14):
+    if len(df) < period + 1: return None
+    high_low = df['high'] - df['low']
+    high_close = (df['high'] - df['close'].shift()).abs()
+    low_close = (df['low'] - df['close'].shift()).abs()
+    tr = pd.concat([high_low, high_close, low_close], axis=1).max(axis=1)
+    atr = tr.ewm(alpha=1/period, adjust=False).mean()
+    return atr.iloc[-1]
+
 def main():
     log.info(f"STARTING MONOLITH BOT v{VERSION}")
 
@@ -68,27 +80,66 @@ def main():
     models = load_json(MODEL_FILE)
 
     # ==========================================
-    # ЛОГИКА 1: ЕСЛИ МЫ В СДЕЛКЕ (СЛЕДИМ)
+    # ЛОГИКА 1: ЕСЛИ МЫ В СДЕЛКЕ (СЛЕДИМ И ТРЕЙЛИМ)
     # ==========================================
     if current_deal and "entry" in current_deal:
-        # Защита для твоей текущей сделки: если нет ключа "type", считаем её LONG
-        deal_type = current_deal.get("type", "LONG")
-        log.info(f"In {deal_type} trade. Entry: {current_deal['entry']:.2f}")
+        deal_type = current_deal.get("type", "LONG") # Защита: по умолчанию LONG
+        log.info(f"In {deal_type} trade. Entry: {current_deal['entry']:.2f} | TP: {current_deal['tp']:.2f} | SL: {current_deal['sl']:.2f}")
         
         try:
             conn = get_conn()
             with conn.cursor() as cur:
-                cur.execute("SELECT high, low, close FROM candles WHERE symbol=%s AND timeframe='15m' AND market_type='spot' ORDER BY open_time DESC LIMIT 1", (SYMBOL,))
-                row = cur.fetchone()
+                cur.execute("SELECT open_time, open, high, low, close, volume FROM candles WHERE symbol=%s AND timeframe='15m' AND market_type='spot' ORDER BY open_time DESC LIMIT 200", (SYMBOL,))
+                rows = list(reversed(cur.fetchall()))
             conn.close()
         except Exception as e: return log.error(f"DB error: {e}")
 
-        high, low, close = float(row[0]), float(row[1]), float(row[2])
+        if len(rows) < 100:
+            return log.error("Not enough data for trailing check.")
+
+        high, low, close = float(rows[-1][2]), float(rows[-1][3]), float(rows[-1][4])
         
+        # --- ТРЕЙЛИНГ-СТОП ЛОГИКА ---
+        entry_price = float(current_deal["entry"])
+        current_sl = float(current_deal["sl"])
+        
+        # Проверяем, активен ли трейлинг (цена ушла в плюс на 1%)
+        trailing_active = False
+        if deal_type == "LONG" and close >= entry_price * (1 + TRAILING_ACTIVATION_PCT / 100):
+            trailing_active = True
+        elif deal_type == "SHORT" and close <= entry_price * (1 - TRAILING_ACTIVATION_PCT / 100):
+            trailing_active = True
+
+        if trailing_active:
+            # Считаем ATR на 1h для точности
+            rows_float = [(r[0], float(r[1]), float(r[2]), float(r[3]), float(r[4]), float(r[5])) for r in rows]
+            df = pd.DataFrame(rows_float, columns=['open_time', 'open', 'high', 'low', 'close', 'volume'])
+            df['open_time'] = pd.to_datetime(df['open_time'], utc=True)
+            df = df.set_index('open_time')
+            df_1h = df.resample('1h').agg({'open': 'first', 'high': 'max', 'low': 'min', 'close': 'last', 'volume': 'sum'}).dropna()
+            
+            atr = calc_atr(df_1h, 14)
+            
+            if atr:
+                if deal_type == "LONG":
+                    new_sl = close - (atr * TRAILING_ATR_MULTIPLIER)
+                    if new_sl > current_sl and new_sl > entry_price:
+                        current_deal["sl"] = new_sl
+                        save_json(OPENED_DEALS, current_deal)
+                        log.info(f"🔼 Trailing SL updated: {current_sl:.2f} -> {new_sl:.2f}")
+                        current_sl = new_sl
+                else: # SHORT
+                    new_sl = close + (atr * TRAILING_ATR_MULTIPLIER)
+                    if new_sl < current_sl and new_sl < entry_price:
+                        current_deal["sl"] = new_sl
+                        save_json(OPENED_DEALS, current_deal)
+                        log.info(f"🔽 Trailing SL updated: {current_sl:.2f} -> {new_sl:.2f}")
+                        current_sl = new_sl
+
+        # --- ПРОВЕРКА ВЫХОДА ---
         exit_reason, exit_price = None, close
         
-        # Проверка времени удержания
-        time_exit_h = 24 # дефолт
+        time_exit_h = 24
         if deal_type == "LONG" and models.get("long"):
             time_exit_h = models["long"]["params"].get("time_exit_h", 24)
         elif deal_type == "SHORT" and models.get("short"):
@@ -98,13 +149,15 @@ def main():
         time_held_h = (datetime.now(timezone.utc) - open_time).total_seconds() / 3600.0
         
         if deal_type == "LONG":
-            if low <= current_deal["sl"]:
-                exit_reason, exit_price = "STOP_LOSS", current_deal["sl"]
+            if low <= current_sl:
+                exit_reason = "TRAILING_STOP" if current_sl > entry_price else "STOP_LOSS"
+                exit_price = current_sl
             elif high >= current_deal["tp"]:
                 exit_reason, exit_price = "TAKE_PROFIT", current_deal["tp"]
         else: # SHORT
-            if high >= current_deal["sl"]:
-                exit_reason, exit_price = "STOP_LOSS", current_deal["sl"]
+            if high >= current_sl:
+                exit_reason = "TRAILING_STOP" if current_sl < entry_price else "STOP_LOSS"
+                exit_price = current_sl
             elif low <= current_deal["tp"]:
                 exit_reason, exit_price = "TAKE_PROFIT", current_deal["tp"]
 
@@ -113,9 +166,9 @@ def main():
 
         if exit_reason:
             if deal_type == "LONG":
-                pnl_pct = (exit_price - current_deal["entry"]) / current_deal["entry"] * 100
+                pnl_pct = (exit_price - entry_price) / entry_price * 100
             else:
-                pnl_pct = (current_deal["entry"] - exit_price) / current_deal["entry"] * 100
+                pnl_pct = (entry_price - exit_price) / entry_price * 100
             
             pnl_usd = 100.0 * (pnl_pct / 100) 
             
@@ -123,7 +176,7 @@ def main():
 
             closed = load_json(CLOSED_DEALS, [])
             closed.append({
-                "type": deal_type, "entry": current_deal["entry"], "exit": exit_price,
+                "type": deal_type, "entry": entry_price, "exit": exit_price,
                 "pnl_pct": round(pnl_pct, 2), "pnl_usd": round(pnl_usd, 2),
                 "reason": exit_reason, "close_time": datetime.now(timezone.utc).isoformat()
             })
@@ -154,7 +207,6 @@ def main():
         conn.close()
     except Exception as e: return log.error(f"DB error: {e}")
 
-    # ФИКС ДЛЯ PANDAS: перевод Decimal в float
     rows_float = [(r[0], float(r[1]), float(r[2]), float(r[3]), float(r[4]), float(r[5])) for r in rows]
     df = pd.DataFrame(rows_float, columns=['open_time', 'open', 'high', 'low', 'close', 'volume'])
     df['open_time'] = pd.to_datetime(df['open_time'], utc=True)
