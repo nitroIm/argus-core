@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-10-29T20:05:37.843758+00:00",
+  "generated_at": "2026-10-29T21:05:39.145964+00:00",
   "total_news": 89,
-  "avg_sentiment": -0.045,
+  "avg_sentiment": 0.109,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
-  "bullish_count": 17,
-  "bearish_count": 19,
-  "neutral_count": 53,
+  "bullish_count": 19,
+  "bearish_count": 18,
+  "neutral_count": 52,
   "fake_count": 0,
   "cross_confirmed": 2,
   "by_source": {
@@ -15,22 +15,22 @@
       "bear": 3
     },
     "Decrypt": {
-      "total": 18,
-      "bull": 5,
+      "total": 19,
+      "bull": 6,
       "bear": 1
     },
     "Bitcoin.com": {
-      "total": 6,
-      "bull": 0,
+      "total": 7,
+      "bull": 1,
       "bear": 3
     },
     "CryptoSlate": {
-      "total": 9,
+      "total": 8,
       "bull": 1,
-      "bear": 2
+      "bear": 1
     },
     "CryptoPotato": {
-      "total": 27,
+      "total": 26,
       "bull": 5,
       "bear": 10
     },
@@ -41,6 +41,40 @@
     }
   },
   "top_bullish": [
+    {
+      "title": "Coinbase Swings to $719 Million Q3 Profit on Crypto Gains",
+      "url": "https://decrypt.co/382188/coinbase-beats-719-million-q3-profit-crypto-gains",
+      "source": "Decrypt",
+      "source_weight": 1.1,
+      "lang": "en",
+      "pub_date": "2026-10-29T20:46:43+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 2.2,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-29T21:05:37.304121+00:00",
+      "effective_weight": 1.65,
+      "title_original": "Coinbase Swings to $719 Million Q3 Profit on Crypto Gains",
+      "cross_check": 2
+    },
+    {
+      "title": "Coinbase Swings to $719M Q3 Profit as Market Share, Subscribers Grow",
+      "url": "https://news.bitcoin.com/finance/coinbase-swings-719m-q3-profit-market-share-subscribers-grow/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-29T20:48:01+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-29T21:05:37.542506+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Coinbase Swings to $719M Q3 Profit as Market Share, Subscribers Grow",
+      "cross_check": 2
+    },
     {
       "title": "Bitcoin price jumps to $81.5K as US GDP data beats expectations",
       "url": "https://cointelegraph.com/markets/bitcoin-reaction-to-pce-data?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -53,7 +87,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-29T20:05:36.290761+00:00",
+      "collected_at": "2026-10-29T21:05:37.214232+00:00",
       "effective_weight": 1.3,
       "title_original": "Bitcoin price jumps to $81.5K as US GDP data beats expectations",
       "cross_check": 1
@@ -70,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-29T20:05:36.396819+00:00",
+      "collected_at": "2026-10-29T21:05:37.304336+00:00",
       "effective_weight": 1.1,
       "title_original": "4M Bitcoin Bought Above $85K Could Cap Recovery: Glassnode",
       "cross_check": 1
@@ -87,81 +121,13 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-29T20:05:36.291164+00:00",
+      "collected_at": "2026-10-29T21:05:37.214659+00:00",
       "effective_weight": 1.04,
       "title_original": "Unlimit founder backs Phase blockchain with $45M as mainnet launches",
-      "cross_check": 1
-    },
-    {
-      "title": "Bitcoin lending and yield could drive next wave of institutional demand, Rootstock says",
-      "url": "https://cointelegraph.com/news/bitcoin-lending-and-yield-could-drive-next-wave-of-institutional-demand-rootstock-says?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-10-29T12:00:00+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-29T20:05:36.291418+00:00",
-      "effective_weight": 1.04,
-      "title_original": "Bitcoin lending and yield could drive next wave of institutional demand, Rootstock says",
-      "cross_check": 2
-    },
-    {
-      "title": "Bitcoin ETFs add $137M, pushing October back into the green",
-      "url": "https://cointelegraph.com/markets/bitcoin-etf-137-million-october-back-green?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-10-29T07:32:20+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-29T20:05:36.291550+00:00",
-      "effective_weight": 1.04,
-      "title_original": "Bitcoin ETFs add $137M, pushing October back into the green",
       "cross_check": 1
     }
   ],
   "top_bearish": [
-    {
-      "title": "9 AI Models Predict Bitcoin’s Year-End Price, From $82K to $112K",
-      "url": "https://news.bitcoin.com/price-predictions/9-ai-models-predict-bitcoin-year-end-price-82482-112k/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-29T19:50:48+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 0.8,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-29T20:05:36.550057+00:00",
-      "effective_weight": 1.5,
-      "title_original": "9 AI Models Predict Bitcoin’s Year-End Price, From $82K to $112K",
-      "cross_check": 1
-    },
-    {
-      "title": "HTX Exits UK After FCA Settlement as KuCoin Abandons Russia and Belarus",
-      "url": "https://news.bitcoin.com/regulation-and-legal/htx-exits-uk-fca-settlement-kucoin-abandons-russia-belarus/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-29T19:11:16+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-29T20:05:36.550131+00:00",
-      "effective_weight": 1.5,
-      "title_original": "HTX Exits UK After FCA Settlement as KuCoin Abandons Russia and Belarus",
-      "cross_check": 2
-    },
     {
       "title": "Brazil’s Halloween eve crypto deadline brings more tricks than treats",
       "url": "https://cointelegraph.com/news/brazil-crypto-license-filing-deadline-hurdles-uncertainty?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -174,7 +140,7 @@
       "bear_weight": 1.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-29T20:05:36.290902+00:00",
+      "collected_at": "2026-10-29T21:05:37.214387+00:00",
       "effective_weight": 1.04,
       "title_original": "Brazil’s Halloween eve crypto deadline brings more tricks than treats",
       "cross_check": 1
@@ -191,10 +157,44 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-29T20:05:36.291225+00:00",
+      "collected_at": "2026-10-29T21:05:37.214722+00:00",
       "effective_weight": 1.04,
       "title_original": "HTX agrees to halt unlawful UK crypto promotions after FCA case",
       "cross_check": 1
+    },
+    {
+      "title": "9 AI Models Predict Bitcoin’s Year-End Price, From $82K to $112K",
+      "url": "https://news.bitcoin.com/price-predictions/9-ai-models-predict-bitcoin-year-end-price-82482-112k/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-29T19:50:48+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 0.8,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-29T21:05:37.542590+00:00",
+      "effective_weight": 1.0,
+      "title_original": "9 AI Models Predict Bitcoin’s Year-End Price, From $82K to $112K",
+      "cross_check": 1
+    },
+    {
+      "title": "HTX Exits UK After FCA Settlement as KuCoin Abandons Russia and Belarus",
+      "url": "https://news.bitcoin.com/regulation-and-legal/htx-exits-uk-fca-settlement-kucoin-abandons-russia-belarus/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-29T19:11:16+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-29T21:05:37.542661+00:00",
+      "effective_weight": 1.0,
+      "title_original": "HTX Exits UK After FCA Settlement as KuCoin Abandons Russia and Belarus",
+      "cross_check": 2
     },
     {
       "title": "Bitcoin Price Briefly Nears $82K, but Bears Warn of a Drop Toward $76K",
@@ -208,7 +208,7 @@
       "bear_weight": 2.2,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-29T20:05:36.550261+00:00",
+      "collected_at": "2026-10-29T21:05:37.542791+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitcoin Price Briefly Nears $82K, but Bears Warn of a Drop Toward $76K",
       "cross_check": 2
