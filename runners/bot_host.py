@@ -1,18 +1,15 @@
 # ============================================================
-# ARGUS - BOT HOST v5.0
+# ARGUS - BOT HOST v6.0 (CLEAN & BTC ONLY)
 # ------------------------------------------------------------
-# v5.0: только BTC 15m collector.
-#       Убран старый 4-coin binance_collect.
-#       /btc_on /btc_off /btc_status + кнопки.
+# Оставлен только сборщик BTC и базовое меню.
+# Книги, графики, обучение и старые базы удалены.
 # ============================================================
 
 import os
 import sys
-import base64
 import asyncio
 import logging
 import requests
-from datetime import datetime, timezone
 
 try:
     import psycopg
@@ -23,9 +20,7 @@ except ImportError:
 try:
     from aiogram import Bot, Dispatcher, types, F
     from aiogram.filters import Command
-    from aiogram.types import CallbackQuery
-    from aiogram.types import InlineKeyboardMarkup
-    from aiogram.types import InlineKeyboardButton
+    from aiogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
 except ImportError as e:
     print("ERR: aiogram not installed: " + str(e))
     sys.exit(1)
@@ -36,33 +31,12 @@ try:
 except ImportError:
     print("WARN: python-dotenv not installed")
 
-
 BOT_TOKEN = (os.getenv("BOT_TOKEN") or "").strip()
-GITHUB_PAT = (
-    os.getenv("GH_PAT")
-    or os.getenv("GITHUB_PAT")
-    or ""
-).strip()
-GITHUB_REPO = (os.getenv("GITHUB_REPO") or "").strip()
-GITHUB_REPO_BOOKS = (
-    os.getenv("GITHUB_REPO_BOOKS") or ""
-).strip()
+ADMIN_CHAT_ID = (os.getenv("ADMIN_CHAT_ID") or os.getenv("TELEGRAM_CHAT_ID") or "").strip()
 
 if not BOT_TOKEN:
     print("ERR: BOT_TOKEN not set")
     sys.exit(1)
-if not GITHUB_REPO:
-    print("ERR: GITHUB_REPO not set")
-    sys.exit(1)
-if not GITHUB_REPO_BOOKS:
-    print("WARN: GITHUB_REPO_BOOKS not set")
-
-
-def repo_of(kind):
-    if kind == "books":
-        return GITHUB_REPO_BOOKS or GITHUB_REPO
-    return GITHUB_REPO
-
 
 logging.basicConfig(
     level=logging.INFO,
@@ -70,17 +44,11 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 logger.info("BOT_TOKEN: " + str(len(BOT_TOKEN)))
-logger.info("REPO: " + GITHUB_REPO)
-logger.info("REPO_BOOKS: " + (GITHUB_REPO_BOOKS or "-"))
 logger.info("PSYCOPG_OK: " + str(PSYCOPG_OK))
+logger.info("ADMIN_CHAT_ID: " + (ADMIN_CHAT_ID or "NOT SET"))
 
-# ----- binance/ path for BTC collector -----
-SCRIPT_DIR = os.path.dirname(
-    os.path.abspath(__file__)
-)
-BINANCE_DIR = os.path.join(
-    SCRIPT_DIR, "binance"
-)
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+BINANCE_DIR = os.path.join(SCRIPT_DIR, "binance")
 if BINANCE_DIR not in sys.path:
     sys.path.insert(0, BINANCE_DIR)
 
@@ -92,980 +60,151 @@ except Exception as e:
     BTC_COLLECT_OK = False
     logger.warning("btc_data_binance: " + str(e))
 
-
-WORKFLOWS = {
-    "train": {"file": "train_model.yml", "repo": "core"},
-    "collect": {"file": "crypto_collect.yml", "repo": "core"},
-    "enrich": {"file": "crypto_enrich.yml", "repo": "core"},
-    "detect": {"file": "crypto_detect.yml", "repo": "core"},
-    "report_week": {"file": "crypto_reporter.yml", "repo": "core"},
-    "audio": {"file": "personal_audio.yml", "repo": "books"},
-}
-
+bot = Bot(token=BOT_TOKEN)
+dp = Dispatcher()
 
 # ============================================================
-# GITHUB HELPERS
+# МЕНЮ И КЛАВИАТУРЫ
 # ============================================================
+def kb_main():
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [
+            InlineKeyboardButton(text="🪙 Крипто", callback_data="menu:crypto"),
+            InlineKeyboardButton(text="🤖 Спросить", callback_data="menu:ask"),
+        ],
+        [
+            InlineKeyboardButton(text="📊 Статус", callback_data="menu:status"),
+        ],
+    ])
 
-def _gh_headers(accept="application/vnd.github+json"):
-    return {
-        "Accept": accept,
-        "Authorization": "Bearer " + GITHUB_PAT,
-        "X-GitHub-Api-Version": "2022-11-28",
-    }
+def kb_back(target="menu:main"):
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="Назад", callback_data=target)],
+    ])
 
+def kb_crypto():
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [
+            InlineKeyboardButton(text="BTC ON", callback_data="btc:on"),
+            InlineKeyboardButton(text="BTC OFF", callback_data="btc:off"),
+        ],
+        [
+            InlineKeyboardButton(text="BTC статус", callback_data="btc:status"),
+        ],
+        [
+            InlineKeyboardButton(text="Назад", callback_data="menu:main"),
+        ],
+    ])
 
-def gh_headers(accept="application/vnd.github+json"):
-    return _gh_headers(accept)
-
-
-def run_workflow(key, inputs=None):
-    wf = WORKFLOWS.get(key)
-    if not wf:
-        return False, "Unknown"
-    repo = repo_of(wf.get("repo", "core"))
-    url = "https://api.github.com/repos/"
-    url += repo
-    url += "/actions/workflows/"
-    url += wf["file"]
-    url += "/dispatches"
-    data = {"ref": "main"}
-    if inputs:
-        data["inputs"] = inputs
-    try:
-        r = requests.post(
-            url, headers=gh_headers(),
-            json=data, timeout=15,
-        )
-        if r.status_code in (200, 201, 204):
-            return True, "OK"
-        if r.status_code == 404:
-            return False, "not found"
-        if r.status_code == 403:
-            return False, "no scope"
-        return False, "HTTP " + str(r.status_code)
-    except Exception as e:
-        return False, str(e)
-
-
-def read_json(path, repo_kind="core"):
-    repo = repo_of(repo_kind)
-    url = "https://api.github.com/repos/"
-    url += repo
-    url += "/contents/"
-    url += path
-    headers = gh_headers("application/vnd.github.raw")
-    try:
-        r = requests.get(
-            url, headers=headers, timeout=15,
-        )
-        if r.status_code == 200:
-            return r.json()
-    except Exception:
-        pass
-    return {}
-
-
-def read_binary(path, repo_kind="core"):
-    repo = repo_of(repo_kind)
-    url = "https://api.github.com/repos/"
-    url += repo
-    url += "/contents/"
-    url += path
-    try:
-        r = requests.get(
-            url, headers=gh_headers(), timeout=20,
-        )
-        if r.status_code == 200:
-            data = r.json()
-            content = data.get("content", "")
-            if content:
-                return base64.b64decode(content)
-    except Exception:
-        pass
-    return None
-
-
-def list_dir(path, repo_kind="core"):
-    repo = repo_of(repo_kind)
-    url = "https://api.github.com/repos/"
-    url += repo
-    url += "/contents/"
-    url += path
-    try:
-        r = requests.get(
-            url, headers=gh_headers(), timeout=15,
-        )
-        if r.status_code == 200:
-            return r.json()
-    except Exception:
-        pass
-    return []
-
-
-def delete_file(path, sha, message="delete",
-                repo_kind="core"):
-    repo = repo_of(repo_kind)
-    url = "https://api.github.com/repos/"
-    url += repo
-    url += "/contents/"
-    url += path
-    data = {
-        "message": message,
-        "sha": sha,
-        "branch": "main",
-    }
-    try:
-        r = requests.delete(
-            url, headers=gh_headers(),
-            json=data, timeout=15,
-        )
-        return r.status_code in (200, 204)
-    except Exception:
-        return False
-
-
-def send_dispatch(event_type, payload,
-                  repo_kind="core"):
-    repo = repo_of(repo_kind)
-    url = "https://api.github.com/repos/"
-    url += repo
-    url += "/dispatches"
-    data = {
-        "event_type": event_type,
-        "client_payload": payload,
-    }
-    try:
-        r = requests.post(
-            url, headers=gh_headers(),
-            json=data, timeout=15,
-        )
-        return r.status_code == 204
-    except Exception:
-        return False
-
-
-# ============================================================
-# DB TEST
-# ============================================================
-
-def _mask_url(url):
-    if not url:
-        return "NOT SET"
-    try:
-        head, tail = url.split("@", 1)
-        if ":" in head:
-            user = head.rsplit(":", 1)[0]
-        else:
-            user = head
-        return user + "@***@" + tail[:40]
-    except Exception:
-        return "***"
-
-
-def _check_db(label, url):
-    lines = ["<b>" + label + "</b>"]
-    lines.append(_mask_url(url))
-    if not url:
-        lines.append("✗ env var NOT SET")
-        return lines, False
-    if not PSYCOPG_OK:
-        lines.append("✗ psycopg not installed")
-        return lines, False
-    try:
-        conn = psycopg.connect(
-            url, connect_timeout=15,
-            application_name="argus-dbtest",
-        )
-    except Exception as e:
-        lines.append("✗ connect: " + str(e)[:100])
-        return lines, False
-    try:
-        with conn.cursor() as cur:
-            cur.execute("SELECT 1")
-            cur.fetchone()
-            lines.append("✓ SELECT 1")
-            cur.execute(
-                "SELECT COUNT(*) FROM pg_tables "
-                "WHERE schemaname='public'"
-            )
-            n = cur.fetchone()[0]
-            lines.append("✓ tables: " + str(n))
-            cur.execute(
-                "SELECT market_type, COUNT(*) "
-                "FROM candles "
-                "WHERE symbol='BTCUSDT' "
-                "GROUP BY market_type"
-            )
-            for mt, cnt in cur.fetchall():
-                lines.append(
-                    "✓ BTCUSDT " + str(mt)
-                    + ": " + str(cnt)
-                )
-    except Exception as e:
-        lines.append("✗ query: " + str(e)[:100])
-        conn.close()
-        return lines, False
-    conn.close()
-    lines.append("✓ OK")
-    return lines, True
-
-
-def dbtest_report():
-    url1 = (os.getenv("AIVEN_DB_URL") or "").strip()
-    if not url1:
-        url1 = (os.getenv("ARGUS_DB_URL") or "").strip()
-    lines = ["🗄️ DB connectivity test", ""]
-    l1, ok1 = _check_db("AIVEN_DB", url1)
-    lines.extend(l1)
-    lines.append("")
-    if ok1:
-        lines.append("✅ OK")
-    else:
-        lines.append("⚠️ FAIL")
-    return "\n".join(lines)
-
-
-# ============================================================
-# HELPERS
-# ============================================================
-
-def fmt_price(p):
-    if p >= 1000:
-        return "$" + format(int(p), ",")
-    if p >= 1:
-        return "$" + format(p, ".2f")
-    return "$" + format(p, ".4f")
-
-
-def personal_books():
-    items = list_dir("personal_books", "books")
-    books = {}
-    for it in items:
-        n = it.get("name", "")
-        if not n.endswith(".pdf"):
-            continue
-        stem = n[:-4]
-        if stem.endswith("_RU"):
-            base = stem[:-3]
-            books.setdefault(base, {})["ru"] = n
-        else:
-            books.setdefault(stem, {})["en"] = n
-    return books
-
-
-def books_in_queue():
-    items = list_dir("books", "core")
-    result = []
-    for it in items:
-        n = it.get("name", "")
-        if n.endswith(".pdf") or n.endswith(".txt"):
-            result.append(n)
-    return result
-
-
-def trained_books():
-    s = read_json("data/summary.json", "core")
-    if not s:
-        return []
-    books = s.get("books", [])
-    result = []
-    for b in books:
-        result.append({
-            "file": b.get("file", "?"),
-            "chunks": b.get("chunks", 0),
-        })
-    return result
-
+def short_info():
+    return (
+        "🤖 <b>ARGUS System</b>\n\n"
+        "Система сбора данных и сигналов.\n"
+        "• Сбор BTC (15m)\n"
+        "• Сигналы (LONG/SHORT)\n\n"
+        "Выбери действие:"
+    )
 
 def btc_status_report():
     if not BTC_COLLECT_OK:
         return "❌ btc_data_binance not loaded"
     state = "🟢 ON" if btc_data_binance.is_enabled() else "🔴 OFF"
-    lines = ["🪙 BTC 15m collector"]
+    lines = ["🪙 <b>BTC 15m collector</b>"]
     lines.append("")
-    lines.append("state: " + state)
-    lines.append("flag: " + btc_data_binance.FLAG_FILE)
-    lines.append("symbol: " + btc_data_binance.SYMBOL)
-    lines.append("timeframe: " + btc_data_binance.TIMEFRAME)
+    lines.append(f"Состояние: {state}")
+    lines.append(f"Флаг: {btc_data_binance.FLAG_FILE}")
+    lines.append(f"Символ: {btc_data_binance.SYMBOL}")
+    lines.append(f"Таймфрейм: {btc_data_binance.TIMEFRAME}")
     return "\n".join(lines)
-
 
 def build_status():
-    lines = ["📊 ARGUS - статус", ""]
-    s = read_json("data/summary.json", "core")
-    if s:
-        lines.append("🏛️ ARGUS")
-        lines.append(
-            "📚 Книг: " + str(s.get("total_books", 0))
-        )
-        lines.append(
-            "📄 Чанков: " + str(s.get("total_chunks", 0))
-        )
-    else:
-        lines.append("🏛️ ARGUS: нет данных")
-    lines.append("")
-    lines.append(
-        "🪙 btc_collect: "
-        + ("ok" if BTC_COLLECT_OK else "fail")
-    )
-    lines.append(
-        "🗄️ psycopg: "
-        + ("ok" if PSYCOPG_OK else "fail")
-    )
+    lines = ["📊 <b>ARGUS Status</b>\n"]
+    lines.append("Сборщик: " + ("🟢 Работает" if BTC_COLLECT_OK else "🔴 Остановлен"))
+    lines.append("psycopg: " + ("🟢 OK" if PSYCOPG_OK else "🔴 Ошибка"))
+    if BTC_COLLECT_OK:
+        state = "🟢 ON" if btc_data_binance.is_enabled() else "🔴 OFF"
+        lines.append(f"BTC сбор: {state}")
     return "\n".join(lines)
 
-
-def short_info():
-    return (
-        "🏛️ ARGUS\n"
-        "Автономная система знаний и анализа.\n\n"
-        "Что умеет:\n"
-        "📚 Хранить знания из книг\n"
-        "🔍 Отвечать на вопросы (/ask)\n"
-        "📥 Искать и скачивать книги (/find)\n"
-        "🪙 Собирать данные BTC 15m\n"
-        "📈 Строить паттерны и прогнозы\n"
-        "🎧 Озвучивать книги\n\n"
-        "Выбирай кнопки внизу."
-    )
-
-
 # ============================================================
-# BOT
+# ХЕНДЛЕРЫ КОМАНД
 # ============================================================
-
-bot = Bot(token=BOT_TOKEN)
-dp = Dispatcher()
-
-
-def kb_main():
-    return InlineKeyboardMarkup(inline_keyboard=[
-        [
-            InlineKeyboardButton(
-                text="📚 Мои книги",
-                callback_data="menu:books",
-            ),
-            InlineKeyboardButton(
-                text="🎓 Train",
-                callback_data="menu:train",
-            ),
-        ],
-        [
-            InlineKeyboardButton(
-                text="💬 Спросить",
-                callback_data="menu:ask",
-            ),
-            InlineKeyboardButton(
-                text="🪙 Крипто",
-                callback_data="menu:crypto",
-            ),
-        ],
-        [
-            InlineKeyboardButton(
-                text="📊 Графики",
-                callback_data="charts:menu",
-            ),
-            InlineKeyboardButton(
-                text="📈 Статус",
-                callback_data="menu:status",
-            ),
-        ],
-        [
-            InlineKeyboardButton(
-                text="⚙️ Настройки",
-                callback_data="menu:settings",
-            ),
-        ],
-    ])
-
-
-def kb_back(target="menu:main"):
-    return InlineKeyboardMarkup(inline_keyboard=[
-        [
-            InlineKeyboardButton(
-                text="◀️ Назад",
-                callback_data=target,
-            ),
-        ],
-    ])
-
-
-def kb_crypto():
-    return InlineKeyboardMarkup(inline_keyboard=[
-        [
-            InlineKeyboardButton(
-                text="🟢 BTC ON",
-                callback_data="btc:on",
-            ),
-            InlineKeyboardButton(
-                text="🔴 BTC OFF",
-                callback_data="btc:off",
-            ),
-        ],
-        [
-            InlineKeyboardButton(
-                text="📊 BTC статус",
-                callback_data="btc:status",
-            ),
-        ],
-        [
-            InlineKeyboardButton(
-                text="🚨 Detect",
-                callback_data="action:detect",
-            ),
-            InlineKeyboardButton(
-                text="📊 Отчёт недели",
-                callback_data="report:week",
-            ),
-        ],
-        [
-            InlineKeyboardButton(
-                text="◀️ Назад",
-                callback_data="menu:main",
-            ),
-        ],
-    ])
-
-
-def kb_train():
-    return InlineKeyboardMarkup(inline_keyboard=[
-        [
-            InlineKeyboardButton(
-                text="📥 Очередь",
-                callback_data="train:queue",
-            ),
-            InlineKeyboardButton(
-                text="✅ Обучено",
-                callback_data="train:trained",
-            ),
-        ],
-        [
-            InlineKeyboardButton(
-                text="🚀 Запустить Train",
-                callback_data="train:start",
-            ),
-        ],
-        [
-            InlineKeyboardButton(
-                text="◀️ Назад",
-                callback_data="menu:main",
-            ),
-        ],
-    ])
-
-
-def kb_settings():
-    return InlineKeyboardMarkup(inline_keyboard=[
-        [
-            InlineKeyboardButton(
-                text="🔔 Уведомления (скоро)",
-                callback_data="settings:soon",
-            ),
-        ],
-        [
-            InlineKeyboardButton(
-                text="🌐 Язык (скоро)",
-                callback_data="settings:soon",
-            ),
-        ],
-        [
-            InlineKeyboardButton(
-                text="◀️ Назад",
-                callback_data="menu:main",
-            ),
-        ],
-    ])
-
-
-def kb_charts():
-    return InlineKeyboardMarkup(inline_keyboard=[
-        [
-            InlineKeyboardButton(
-                text="🪙 BTC свечи",
-                callback_data="charts:show:btc_candles",
-            ),
-        ],
-        [
-            InlineKeyboardButton(
-                text="🧩 BTC паттерн",
-                callback_data="charts:show:btc_pattern",
-            ),
-        ],
-        [
-            InlineKeyboardButton(
-                text="🧠 BTC Markov",
-                callback_data="charts:show:btc_markov",
-            ),
-        ],
-        [
-            InlineKeyboardButton(
-                text="◀️ Назад",
-                callback_data="menu:main",
-            ),
-        ],
-    ])
-
-
-def kb_books_list(books):
-    rows = []
-    for name in books[:10]:
-        rows.append([
-            InlineKeyboardButton(
-                text="📖 " + name[:35],
-                callback_data="book:view:" + name,
-            ),
-        ])
-    rows.append([
-        InlineKeyboardButton(
-            text="🔄 Обновить",
-            callback_data="menu:books",
-        ),
-    ])
-    rows.append([
-        InlineKeyboardButton(
-            text="◀️ Назад",
-            callback_data="menu:main",
-        ),
-    ])
-    return InlineKeyboardMarkup(inline_keyboard=rows)
-
-
-def kb_book_actions(name):
-    return InlineKeyboardMarkup(inline_keyboard=[
-        [
-            InlineKeyboardButton(
-                text="🎧 Аудио",
-                callback_data="book:audio:" + name,
-            ),
-            InlineKeyboardButton(
-                text="🗑 Удалить",
-                callback_data="book:del:" + name,
-            ),
-        ],
-        [
-            InlineKeyboardButton(
-                text="◀️ К списку",
-                callback_data="menu:books",
-            ),
-        ],
-    ])
-
-
-def kb_confirm(action, payload=""):
-    cb_yes = "confirm:" + action
-    if payload:
-        cb_yes += ":" + payload
-    return InlineKeyboardMarkup(inline_keyboard=[
-        [
-            InlineKeyboardButton(
-                text="✅ Да",
-                callback_data=cb_yes,
-            ),
-            InlineKeyboardButton(
-                text="❌ Отмена",
-                callback_data="menu:main",
-            ),
-        ],
-    ])
-
-
-# ============================================================
-# COMMANDS
-# ============================================================
-
 @dp.message(Command("start"))
 async def cmd_start(message: types.Message):
-    await message.answer(
-        short_info(), reply_markup=kb_main(),
-    )
-
+    await message.answer(short_info(), reply_markup=kb_main(), parse_mode="HTML")
 
 @dp.message(Command("panel"))
 async def cmd_panel(message: types.Message):
-    await message.answer(
-        "🏛️ Центр управления",
-        reply_markup=kb_main(),
-    )
-
+    await message.answer("Центр управления", reply_markup=kb_main())
 
 @dp.message(Command("ask"))
 async def cmd_ask(message: types.Message):
     q = message.text.replace("/ask", "", 1).strip()
     if not q:
-        await message.answer("Напиши: /ask вопрос")
+        await message.answer("Напиши: /ask твой вопрос")
         return
-    await message.answer("🔍 Ищу ответ... 30-60 сек")
-    send_dispatch("run_search", {
-        "query": q,
-        "chat_id": str(message.chat.id),
-    }, "core")
-
-
-@dp.message(Command("find"))
-async def cmd_find(message: types.Message):
-    t = message.text.replace("/find", "", 1).strip()
-    if not t:
-        await message.answer("Напиши: /find тема")
-        return
-    await message.answer("🔍 Ищу книги: " + t)
-    send_dispatch("personal_find", {
-        "topic": t,
-        "chat_id": str(message.chat.id),
-    }, "books")
-
-
-@dp.message(Command("findnext"))
-async def cmd_findnext(message: types.Message):
-    await message.answer("📖 Загружаю...")
-    send_dispatch("personal_next", {}, "books")
-
+    # Пока заглушка для будущего ИИ
+    await message.answer(f"🤖 <i>Принял вопрос:</i> {q}\n\n<i>(Интеграция с ИИ будет добавлена позже)</i>", parse_mode="HTML")
 
 @dp.message(Command("status"))
 async def cmd_status(message: types.Message):
-    await message.answer("⏳ Читаю...")
-    t = build_status()
-    await message.answer(
-        t, disable_web_page_preview=True,
-    )
-
+    await message.answer(build_status(), parse_mode="HTML")
 
 @dp.message(Command("crypto"))
 async def cmd_crypto(message: types.Message):
-    await message.answer(
-        "🪙 Crypto", reply_markup=kb_crypto(),
-    )
-
-
-@dp.message(Command("train"))
-async def cmd_train(message: types.Message):
-    await message.answer(
-        "🎓 Train ARGUS", reply_markup=kb_train(),
-    )
-
-
-@dp.message(Command("charts"))
-async def cmd_charts(message: types.Message):
-    await message.answer(
-        "📊 Графики", reply_markup=kb_charts(),
-    )
-
-
-@dp.message(Command("dbtest"))
-async def cmd_dbtest(message: types.Message):
-    await message.answer("🗄️ Проверяю DB...")
-    loop = asyncio.get_running_loop()
-    try:
-        text = await loop.run_in_executor(
-            None, dbtest_report,
-        )
-    except Exception as e:
-        await message.answer("❌ " + str(e)[:200])
-        return
-    if len(text) > 4000:
-        text = text[:3950] + "\n..."
-    await message.answer(text, parse_mode="HTML")
-
+    await message.answer("Управление сбором", reply_markup=kb_crypto())
 
 @dp.message(Command("btc_on"))
 async def cmd_btc_on(message: types.Message):
     if not BTC_COLLECT_OK:
-        await message.answer("❌ btc_data_binance not loaded")
+        await message.answer("btc_data_binance not loaded")
         return
     btc_data_binance.set_enabled(True)
     await message.answer("🟢 BTC 15m collector: ON")
 
-
 @dp.message(Command("btc_off"))
 async def cmd_btc_off(message: types.Message):
     if not BTC_COLLECT_OK:
-        await message.answer("❌ btc_data_binance not loaded")
+        await message.answer("btc_data_binance not loaded")
         return
     btc_data_binance.set_enabled(False)
     await message.answer("🔴 BTC 15m collector: OFF")
 
-
 @dp.message(Command("btc_status"))
 async def cmd_btc_status(message: types.Message):
     if not BTC_COLLECT_OK:
-        await message.answer("❌ btc_data_binance not loaded")
+        await message.answer("btc_data_binance not loaded")
         return
-    await message.answer(btc_status_report())
-
+    await message.answer(btc_status_report(), parse_mode="HTML")
 
 # ============================================================
-# CALLBACKS
+# ХЕНДЛЕРЫ КНОПОК
 # ============================================================
-
 @dp.callback_query(F.data == "menu:main")
 async def cb_main(cb: CallbackQuery):
-    await cb.message.edit_text(
-        short_info(), reply_markup=kb_main(),
-    )
+    await cb.message.edit_text(short_info(), reply_markup=kb_main(), parse_mode="HTML")
     await cb.answer()
 
-
-@dp.callback_query(F.data == "menu:books")
-async def cb_books(cb: CallbackQuery):
+@dp.callback_query(F.data == "menu:crypto")
+async def cb_crypto(cb: CallbackQuery):
+    await cb.message.edit_text("🪙 Управление сбором данных:", reply_markup=kb_crypto())
     await cb.answer()
-    books = personal_books()
-    if not books:
-        await cb.message.edit_text(
-            "📚 Мои книги\n\nПока пусто.\n"
-            "Найди через /find.",
-            reply_markup=kb_back(),
-        )
-        return
-    names = sorted(books.keys())
-    await cb.message.edit_text(
-        "📚 Мои книги (" + str(len(names)) + "):",
-        reply_markup=kb_books_list(names),
-    )
-
-
-@dp.callback_query(F.data.startswith("book:view:"))
-async def cb_book_view(cb: CallbackQuery):
-    name = cb.data.replace("book:view:", "", 1)
-    books = personal_books()
-    if name not in books:
-        await cb.answer("Не найдено", show_alert=True)
-        return
-    variants = books[name]
-    flags = []
-    if "ru" in variants:
-        flags.append("RU")
-    if "en" in variants:
-        flags.append("EN")
-    text = "📖 " + name + "\n"
-    text += "Форматы: " + " + ".join(flags)
-    await cb.message.edit_text(
-        text, reply_markup=kb_book_actions(name),
-    )
-    await cb.answer()
-
-
-@dp.callback_query(F.data.startswith("book:audio:"))
-async def cb_book_audio(cb: CallbackQuery):
-    name = cb.data.replace("book:audio:", "", 1)
-    await cb.answer("Запускаю...")
-    ok, msg = run_workflow("audio", {
-        "book": name,
-        "prefer": "ru",
-    })
-    if ok:
-        await cb.message.edit_text(
-            "🎧 Обрабатываю\n" + name
-            + "\n\nmp3 придёт автоматически.",
-            reply_markup=kb_book_actions(name),
-        )
-    else:
-        await cb.message.edit_text(
-            "❌ " + msg,
-            reply_markup=kb_book_actions(name),
-        )
-
-
-@dp.callback_query(F.data.startswith("book:del:"))
-async def cb_book_del(cb: CallbackQuery):
-    name = cb.data.replace("book:del:", "", 1)
-    await cb.message.edit_text(
-        "🗑 Удалить книгу?\n\n" + name,
-        reply_markup=kb_confirm("book_del", name),
-    )
-    await cb.answer()
-
-
-@dp.callback_query(
-    F.data.startswith("confirm:book_del:")
-)
-async def cb_confirm_book_del(cb: CallbackQuery):
-    name = cb.data.replace(
-        "confirm:book_del:", "", 1,
-    )
-    items = list_dir("personal_books", "books")
-    deleted = 0
-    for it in items:
-        fname = it.get("name", "")
-        if not fname.endswith(".pdf"):
-            continue
-        stem = fname[:-4]
-        base = stem[:-3] if stem.endswith("_RU") else stem
-        if base != name:
-            continue
-        ok = delete_file(
-            "personal_books/" + fname,
-            it.get("sha", ""),
-            message="delete: " + name,
-            repo_kind="books",
-        )
-        if ok:
-            deleted += 1
-    await cb.message.edit_text(
-        "✅ Удалено файлов: " + str(deleted),
-        reply_markup=kb_back("menu:books"),
-    )
-    await cb.answer()
-
-
-@dp.callback_query(F.data == "menu:train")
-async def cb_train(cb: CallbackQuery):
-    await cb.message.edit_text(
-        "🎓 Train ARGUS", reply_markup=kb_train(),
-    )
-    await cb.answer()
-
-
-@dp.callback_query(F.data == "train:queue")
-async def cb_train_queue(cb: CallbackQuery):
-    await cb.answer()
-    queue = books_in_queue()
-    if not queue:
-        text = "📥 Очередь\n\nПусто."
-    else:
-        text = "📥 В очереди: " + str(len(queue))
-        text += "\n\n"
-        for i, f in enumerate(queue[:20], 1):
-            text += str(i) + ". " + f + "\n"
-    await cb.message.edit_text(
-        text, reply_markup=kb_train(),
-    )
-
-
-@dp.callback_query(F.data == "train:trained")
-async def cb_train_trained(cb: CallbackQuery):
-    await cb.answer()
-    trained = trained_books()
-    if not trained:
-        text = "✅ Обучено\n\nПусто."
-    else:
-        total = len(trained)
-        text = "✅ Обучено: " + str(total) + "\n\n"
-        for i, b in enumerate(trained[:20], 1):
-            text += str(i) + ". " + b["file"]
-            text += " (" + str(b["chunks"]) + ")\n"
-        if total > 20:
-            text += "...и ещё " + str(total - 20)
-    if len(text) > 4000:
-        text = text[:3950] + "\n..."
-    await cb.message.edit_text(
-        text, reply_markup=kb_train(),
-    )
-
-
-@dp.callback_query(F.data == "train:start")
-async def cb_train_start(cb: CallbackQuery):
-    await cb.message.edit_text(
-        "⚠️ Запустить Train?\n\n5-30 минут.",
-        reply_markup=kb_confirm("train"),
-    )
-    await cb.answer()
-
-
-@dp.callback_query(F.data == "confirm:train")
-async def cb_confirm_train(cb: CallbackQuery):
-    await cb.answer("Запускаю...")
-    ok, msg = run_workflow("train")
-    if ok:
-        await cb.message.edit_text(
-            "✅ Train запущен",
-            reply_markup=kb_main(),
-        )
-    else:
-        await cb.message.edit_text(
-            "❌ " + msg, reply_markup=kb_main(),
-        )
-
 
 @dp.callback_query(F.data == "menu:ask")
 async def cb_ask(cb: CallbackQuery):
     await cb.message.edit_text(
-        "💬 Спросить ARGUS\n\nНапиши:\n/ask вопрос",
+        "🤖 <b>Спросить ARGUS</b>\n\nНапиши в чат:\n<code>/ask твой вопрос</code>",
         reply_markup=kb_back(),
+        parse_mode="HTML"
     )
     await cb.answer()
-
-
-@dp.callback_query(F.data == "menu:crypto")
-async def cb_crypto(cb: CallbackQuery):
-    await cb.message.edit_text(
-        "🪙 Crypto", reply_markup=kb_crypto(),
-    )
-    await cb.answer()
-
-
-@dp.callback_query(F.data == "menu:settings")
-async def cb_settings(cb: CallbackQuery):
-    await cb.message.edit_text(
-        "⚙️ Настройки\n\nВ разработке.",
-        reply_markup=kb_settings(),
-    )
-    await cb.answer()
-
-
-@dp.callback_query(F.data == "settings:soon")
-async def cb_settings_soon(cb: CallbackQuery):
-    await cb.answer("Скоро", show_alert=True)
-
 
 @dp.callback_query(F.data == "menu:status")
 async def cb_status(cb: CallbackQuery):
     await cb.answer("Читаю...")
-    t = build_status()
     await cb.message.edit_text(
-        t,
-        reply_markup=kb_back(),
-        disable_web_page_preview=True,
+        build_status(), reply_markup=kb_back(), parse_mode="HTML"
     )
-
-
-@dp.callback_query(F.data == "charts:menu")
-async def cb_charts_menu(cb: CallbackQuery):
-    await cb.message.edit_text(
-        "📊 Графики", reply_markup=kb_charts(),
-    )
-    await cb.answer()
-
-
-@dp.callback_query(F.data.startswith("charts:show:"))
-async def cb_charts_show(cb: CallbackQuery):
-    name = cb.data.replace("charts:show:", "", 1)
-    await cb.answer("Загружаю...")
-    path = "data/charts/" + name + ".png"
-    photo = read_binary(path, "core")
-    if not photo:
-        await cb.message.answer("⚠️ График не найден")
-        return
-    try:
-        url = "https://api.telegram.org/bot"
-        url += BOT_TOKEN + "/sendPhoto"
-        files = {"photo": (name + ".png", photo)}
-        data = {"chat_id": str(cb.from_user.id)}
-        requests.post(
-            url, data=data, files=files, timeout=30,
-        )
-    except Exception:
-        pass
-
-
-@dp.callback_query(F.data == "action:detect")
-async def cb_detect(cb: CallbackQuery):
-    await cb.answer("Запускаю...")
-    ok, msg = run_workflow("detect")
-    await cb.message.edit_text(
-        "✅ Detect" if ok else "❌ " + msg,
-        reply_markup=kb_crypto(),
-    )
-
-
-@dp.callback_query(F.data == "report:week")
-async def cb_report(cb: CallbackQuery):
-    await cb.answer("Запускаю...")
-    ok, msg = run_workflow("report_week")
-    await cb.message.edit_text(
-        "✅ Отчёт запущен" if ok else "❌ " + msg,
-        reply_markup=kb_crypto(),
-    )
-
 
 @dp.callback_query(F.data == "btc:on")
 async def cb_btc_on(cb: CallbackQuery):
@@ -1073,8 +212,7 @@ async def cb_btc_on(cb: CallbackQuery):
         await cb.answer("Модуль не загружен", show_alert=True)
         return
     btc_data_binance.set_enabled(True)
-    await cb.answer("🟢 BTC 15m collector ON")
-
+    await cb.answer("BTC 15m collector ON")
 
 @dp.callback_query(F.data == "btc:off")
 async def cb_btc_off(cb: CallbackQuery):
@@ -1082,195 +220,64 @@ async def cb_btc_off(cb: CallbackQuery):
         await cb.answer("Модуль не загружен", show_alert=True)
         return
     btc_data_binance.set_enabled(False)
-    await cb.answer("🔴 BTC 15m collector OFF")
-
+    await cb.answer("BTC 15m collector OFF")
 
 @dp.callback_query(F.data == "btc:status")
 async def cb_btc_status(cb: CallbackQuery):
     await cb.answer("Читаю...")
     await cb.message.edit_text(
-        btc_status_report(),
-        reply_markup=kb_crypto(),
+        btc_status_report(), reply_markup=kb_crypto(), parse_mode="HTML"
     )
-
-
-@dp.callback_query(F.data.startswith("personal_dl:"))
-async def cb_pdl(cb: CallbackQuery):
-    idx = cb.data.replace("personal_dl:", "")
-    await cb.answer("Запускаю...")
-    cand = read_json(
-        "data/personal_candidates.json", "books",
-    )
-    if not cand:
-        await cb.message.edit_text("❌ Нет списка")
-        return
-    items = cand.get("items", [])
-    try:
-        i = int(idx)
-    except ValueError:
-        await cb.answer("Ошибка", show_alert=True)
-        return
-    if i < 0 or i >= len(items):
-        await cb.answer("Вне диапазона", show_alert=True)
-        return
-    item = items[i]
-    url = item.get("url")
-    title = item.get("title", "book")
-    if not url:
-        await cb.message.edit_text("❌ Нет URL")
-        return
-    send_dispatch("personal_download", {
-        "url": url, "title": title,
-    }, "books")
-    await cb.message.edit_text(
-        "📥 Скачиваю\n\n" + title[:150]
-        + "\n\n⏳ 1-2 минуты."
-    )
-
-
-@dp.callback_query(
-    F.data.startswith("personal_reject:")
-)
-async def cb_personal_reject(cb: CallbackQuery):
-    await cb.answer("Отклонено")
-    try:
-        await cb.message.edit_reply_markup(
-            reply_markup=None,
-        )
-    except Exception:
-        pass
-
-
-@dp.callback_query(
-    F.data.startswith("personal_next:")
-)
-async def cb_pnext(cb: CallbackQuery):
-    await cb.answer("Загружаю...")
-    cand = read_json(
-        "data/personal_candidates.json", "books",
-    )
-    if not cand:
-        return
-    items = cand.get("items", [])
-    offset = cand.get("offset", 5)
-    total = len(items)
-    next_batch = items[offset:offset + 5]
-    if not next_batch:
-        await cb.message.edit_text("Больше нет книг")
-        return
-    for i, item in enumerate(next_batch):
-        real_i = offset + i
-        title = item.get("title", "?")[:200]
-        source = item.get("source", "?")
-        card = "<b>" + str(real_i + 1) + "/"
-        card += str(total) + "</b>\n"
-        card += "<b>" + title + "</b>\n\n"
-        card += "📡 " + source
-        kb = {
-            "inline_keyboard": [[
-                {
-                    "text": "✅ Скачать",
-                    "callback_data": "personal_dl:"
-                                     + str(real_i),
-                },
-                {
-                    "text": "❌ Отклонить",
-                    "callback_data":
-                        "personal_reject:"
-                        + str(real_i),
-                },
-            ]],
-        }
-        try:
-            url = "https://api.telegram.org/bot"
-            url += BOT_TOKEN + "/sendMessage"
-            requests.post(url, json={
-                "chat_id": cb.from_user.id,
-                "text": card,
-                "parse_mode": "HTML",
-                "reply_markup": kb,
-                "disable_web_page_preview": True,
-            }, timeout=15)
-        except Exception:
-            pass
-    try:
-        await cb.message.edit_reply_markup(
-            reply_markup=None,
-        )
-    except Exception:
-        pass
-
-
-@dp.callback_query(F.data.startswith("approve:"))
-async def cb_approve(cb: CallbackQuery):
-    sid = cb.data.replace("approve:", "")
-    ok = send_dispatch(
-        "approved_download", {"short_id": sid},
-        "core",
-    )
-    if ok:
-        await cb.message.edit_text(
-            cb.message.text + "\n\n✅ Скачиваю...",
-        )
-        await cb.answer("OK")
-    else:
-        await cb.answer("Ошибка", show_alert=True)
-
-
-@dp.callback_query(F.data.startswith("reject:"))
-async def cb_reject(cb: CallbackQuery):
-    await cb.message.edit_text(
-        cb.message.text + "\n\n❌ Отклонено",
-    )
-    await cb.answer("OK")
-
 
 # ============================================================
-# BTC 15m LOOP (background, every 15 min)
+# ФОНОВЫЙ СБОР ДАННЫХ (НЕ ТРОНУТ!)
 # ============================================================
 async def btc_loop():
     if not BTC_COLLECT_OK:
-        logger.warning(
-            "btc_loop: btc_data_binance not loaded"
-        )
+        logger.warning("btc_loop: btc_data_binance not loaded")
         return
     if not PSYCOPG_OK:
-        logger.warning(
-            "btc_loop: psycopg not installed"
-        )
+        logger.warning("btc_loop: psycopg not installed")
         return
 
     logger.info("btc_loop: started")
     loop = asyncio.get_running_loop()
-
-    await asyncio.sleep(180)
+    await asyncio.sleep(180) # Ждем 3 минуты при старте
 
     while True:
         try:
             if btc_data_binance.is_enabled():
                 logger.info("btc_loop: tick")
-                added = await loop.run_in_executor(
-                    None,
-                    btc_data_binance.collect_btc,
+                added, err = await loop.run_in_executor(
+                    None, btc_data_binance.collect_btc,
                 )
-                logger.info(
-                    "btc_loop: added=%d", added
-                )
+                logger.info("btc_loop: added=%d err=%s", added, err)
+                if err and ADMIN_CHAT_ID:
+                    try:
+                        await bot.send_message(
+                            chat_id=ADMIN_CHAT_ID,
+                            text="⚠️ BTC collector error\n\n" + str(err)[:3500],
+                        )
+                    except Exception as e:
+                        logger.error("notify err: %s", e)
             else:
                 logger.info("btc_loop: disabled, skip")
         except Exception as e:
             logger.error("btc_loop error: %s", e)
-        await asyncio.sleep(900)
+            if ADMIN_CHAT_ID:
+                try:
+                    await bot.send_message(
+                        chat_id=ADMIN_CHAT_ID,
+                        text="⚠️ btc_loop crash\n\n" + str(e)[:3500],
+                    )
+                except Exception:
+                    pass
+        await asyncio.sleep(900) # 15 минут
 
-
-# ============================================================
-# RUN
-# ============================================================
 async def main():
-    logger.info("ARGUS Bot Host v5.0 started")
+    logger.info("ARGUS Bot Host v6.0 started")
     asyncio.create_task(btc_loop())
     await dp.start_polling(bot)
-
 
 if __name__ == "__main__":
     try:
