@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - SIGNAL REPORT (SENDER v4.0 LONG & SHORT)
+# ARGUS - SIGNAL REPORT (SENDER v4.1 TRAILING)
 # ============================================================
 
 import os
@@ -65,14 +65,14 @@ def get_stats_text():
     return text
 
 def main():
-    log.info("STARTING SIGNAL REPORT v4.0")
+    log.info("STARTING SIGNAL REPORT v4.1")
     
     event = load_json(INFO_DEAL, {})
     if not event or event.get("sent") == True:
         return log.info("No new events.")
 
     text = ""
-    deal_type = event.get("deal_type", "LONG") # Защита: по умолчанию LONG
+    deal_type = event.get("deal_type", "LONG")
 
     if event["type"] == "ENTRY":
         entry = float(event["entry"])
@@ -96,14 +96,21 @@ def main():
     elif event["type"] == "CLOSE":
         pnl = event["pnl_usd"]
         sign = "+" if pnl >= 0 else ""
-        status = "✅ УСПЕШНАЯ СДЕЛКА" if pnl > 0 else "❌ УБЫТОЧНАЯ СДЕЛКА"
+        reason = event.get("reason", "")
+        
+        if reason == "TRAILING_STOP":
+            status = "🛡️ ТРЕЙЛИНГ-СТОП (Профит)"
+        elif pnl > 0:
+            status = "✅ УСПЕШНАЯ СДЕЛКА"
+        else:
+            status = "❌ УБЫТОЧНАЯ СДЕЛКА"
         
         if deal_type == "LONG":
             text = f"🏁 <b>{status} (LONG)</b>\n\n"
         else:
             text = f"🏁 <b>{status} (SHORT)</b>\n\n"
 
-        text += f"📊 Причина: {event['reason']}\n"
+        text += f"📊 Причина: {reason}\n"
         text += f"💰 Результат: <b>{sign}{event['pnl_pct']}%</b> (на $100: <b>{sign}${pnl:.2f}</b>)\n\n"
         text += get_stats_text()
 
