@@ -23,7 +23,7 @@ jobs:
           TG_CHANNEL_ID: ${{ secrets.TG_CHANNEL_ID }}
           VK_TOKEN: ${{ secrets.VK_TOKEN }}
           VK_GROUP_ID: ${{ secrets.VK_GROUP_ID }}
-        run: python crypto/report/evening_report.py
+        run: python crypto/report/evening.py
       - name: Save history
         run: |
           git config user.name "ARGUS"
