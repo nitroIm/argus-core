@@ -1,8 +1,7 @@
 # ============================================================
-# ARGUS - EVENING NEWS REPORT v2.3 (MATH FIX)
+# ARGUS - EVENING NEWS REPORT v2.4 (DECIMAL FIX)
 # ------------------------------------------------------------
-# v2.3: Исправлены расчеты EMA, RSI и ATR (точные формулы).
-#       Добавлен pandas.resample для корректной склейки 1h.
+# v2.4: Исправлена ошибка с типом Decimal (цены не пропадут).
 # ============================================================
 
 import os
@@ -48,7 +47,6 @@ VK_GROUP_ID = (os.getenv("VK_GROUP_ID") or "").strip()
 DB_URL = (os.getenv("AIVEN_DB_URL") or "").strip()
 
 TEST_MODE = (os.getenv("NEWS_TEST_MODE", "").strip().lower() in ("1", "true", "yes", "on"))
-
 MAX_MESSAGE_LEN = 3800
 MAX_VK_LEN = 15000
 HISTORY_DAYS = 7
@@ -204,8 +202,10 @@ def fetch_btc_day_stats():
         buy_pct = (vol_buy / vol_total * 100) if vol_total else 50
         sell_pct = 100 - buy_pct
 
-        # --- ТОЧНАЯ СКЛЕЙКА В 1H ЧЕРЕЗ PANDAS ---
-        df = pd.DataFrame(rows, columns=['open_time', 'open', 'high', 'low', 'close', 'volume', 'taker_buy_volume'])
+        # --- ФИКС: Перевод Decimal в float для pandas ---
+        rows_float = [(r[0], float(r[1]), float(r[2]), float(r[3]), float(r[4]), float(r[5]), float(r[6])) for r in rows]
+        
+        df = pd.DataFrame(rows_float, columns=['open_time', 'open', 'high', 'low', 'close', 'volume', 'taker_buy_volume'])
         df['open_time'] = pd.to_datetime(df['open_time'], utc=True)
         df = df.set_index('open_time')
         
