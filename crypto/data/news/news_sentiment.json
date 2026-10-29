@@ -1,17 +1,17 @@
 {
-  "generated_at": "2026-10-29T10:05:43.247673+00:00",
-  "total_news": 91,
-  "avg_sentiment": 0.284,
+  "generated_at": "2026-10-29T11:05:43.852917+00:00",
+  "total_news": 90,
+  "avg_sentiment": 0.223,
   "mood": "🟢 БЫЧЬЕ",
-  "bullish_count": 22,
-  "bearish_count": 11,
-  "neutral_count": 58,
+  "bullish_count": 21,
+  "bearish_count": 12,
+  "neutral_count": 57,
   "fake_count": 0,
-  "cross_confirmed": 11,
+  "cross_confirmed": 12,
   "by_source": {
     "Cointelegraph": {
-      "total": 21,
-      "bull": 9,
+      "total": 20,
+      "bull": 8,
       "bear": 3
     },
     "Decrypt": {
@@ -25,17 +25,17 @@
       "bear": 0
     },
     "CryptoSlate": {
-      "total": 6,
+      "total": 7,
       "bull": 1,
       "bear": 2
     },
     "CryptoPotato": {
       "total": 28,
       "bull": 7,
-      "bear": 5
+      "bear": 6
     },
     "ForkLog": {
-      "total": 11,
+      "total": 10,
       "bull": 1,
       "bear": 0
     }
@@ -53,7 +53,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-29T10:05:41.492976+00:00",
+      "collected_at": "2026-10-29T11:05:40.814446+00:00",
       "effective_weight": 1.3,
       "title_original": "Bitcoin ETFs add $137M, pushing October back into the green",
       "cross_check": 1
@@ -68,10 +68,10 @@
       "sentiment": 1.0,
       "bull_weight": 1.0,
       "bear_weight": 0.0,
-      "freshness": 1.0,
+      "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-29T10:05:41.493137+00:00",
-      "effective_weight": 1.3,
+      "collected_at": "2026-10-29T11:05:40.814553+00:00",
+      "effective_weight": 1.04,
       "title_original": "Your fridge could one day stake Ether, launch memecoins: CFTC chair",
       "cross_check": 1
     },
@@ -87,7 +87,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-29T10:05:41.493296+00:00",
+      "collected_at": "2026-10-29T11:05:40.814664+00:00",
       "effective_weight": 1.04,
       "title_original": "Canadian ‘crypto king’ case to go to jury as criminal trial winds down",
       "cross_check": 1
@@ -104,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-29T10:05:41.493524+00:00",
+      "collected_at": "2026-10-29T11:05:40.814826+00:00",
       "effective_weight": 1.04,
       "title_original": "Google Cloud outlines MPC service for institutional Bitcoin custody",
       "cross_check": 1
@@ -121,7 +121,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-29T10:05:41.493580+00:00",
+      "collected_at": "2026-10-29T11:05:40.814866+00:00",
       "effective_weight": 1.04,
       "title_original": "DTCC unit launches tokenization services",
       "cross_check": 1
@@ -140,7 +140,7 @@
       "bear_weight": 2.3,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-29T10:05:41.493372+00:00",
+      "collected_at": "2026-10-29T11:05:40.814716+00:00",
       "effective_weight": 1.04,
       "title_original": "Crypto PAC spending before midterms possibly obscured after reported FEC hack",
       "cross_check": 1
@@ -157,9 +157,26 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-29T10:05:41.493446+00:00",
+      "collected_at": "2026-10-29T11:05:40.814776+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin price bounce rejected at 50-day trend line ahead of FOMC, earnings",
+      "cross_check": 2
+    },
+    {
+      "title": "Bitcoin’s Post-FOMC Rollercoaster Continues as NEAR Dumps 8%: Market Watch",
+      "url": "https://cryptopotato.com/bitcoins-post-fomc-rollercoaster-continues-as-near-dumps-8-market-watch/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-29T10:05:37+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-29T11:05:42.793315+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Bitcoin’s Post-FOMC Rollercoaster Continues as NEAR Dumps 8%: Market Watch",
       "cross_check": 2
     },
     {
@@ -174,7 +191,7 @@
       "bear_weight": 0.8,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-29T10:05:42.091385+00:00",
+      "collected_at": "2026-10-29T11:05:42.793547+00:00",
       "effective_weight": 1.0,
       "title_original": "Pi Network (PI) vs. Cardano (ADA): 3 AIs Predict Which Could Perform Better in Q4",
       "cross_check": 1
@@ -191,27 +208,10 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-29T10:05:41.950938+00:00",
+      "collected_at": "2026-10-29T11:05:41.248842+00:00",
       "effective_weight": 0.8,
       "title_original": "Coinbase says it wasn’t breached, but hackers don’t need to steal crypto to hurt users",
       "cross_check": 1
-    },
-    {
-      "title": "Datavault AI Stock Plunges 50% as Bitcoin Withdrawal Stalls",
-      "url": "https://cryptopotato.com/datavault-ai-stock-plunges-50-as-bitcoin-withdrawal-stalls/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-28T22:40:26+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 4.5,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-29T10:05:42.091528+00:00",
-      "effective_weight": 0.8,
-      "title_original": "Datavault AI Stock Plunges 50% as Bitcoin Withdrawal Stalls",
-      "cross_check": 2
     }
   ]
 }
