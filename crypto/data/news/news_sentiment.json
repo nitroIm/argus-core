@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-10-29T22:05:34.897359+00:00",
+  "generated_at": "2026-10-29T23:05:40.394730+00:00",
   "total_news": 88,
-  "avg_sentiment": -0.102,
+  "avg_sentiment": -0.105,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
-  "bullish_count": 18,
-  "bearish_count": 20,
-  "neutral_count": 50,
+  "bullish_count": 19,
+  "bearish_count": 22,
+  "neutral_count": 47,
   "fake_count": 0,
-  "cross_confirmed": 1,
+  "cross_confirmed": 2,
   "by_source": {
     "Cointelegraph": {
       "total": 20,
@@ -21,7 +21,7 @@
     },
     "Bitcoin.com": {
       "total": 7,
-      "bull": 1,
+      "bull": 2,
       "bear": 4
     },
     "CryptoSlate": {
@@ -32,7 +32,7 @@
     "CryptoPotato": {
       "total": 26,
       "bull": 5,
-      "bear": 10
+      "bear": 12
     },
     "ForkLog": {
       "total": 9,
@@ -41,6 +41,23 @@
     }
   },
   "top_bullish": [
+    {
+      "title": "Strategy’s $21B Quarter Is Its Biggest Ever as Saylor Sees New Bitcoin Bull Run",
+      "url": "https://news.bitcoin.com/featured/strategys-21b-quarter-is-its-biggest-ever-as-saylor-sees-new-bitcoin-bull-run/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-29T22:41:27+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-29T23:05:38.928031+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Strategy’s $21B Quarter Is Its Biggest Ever as Saylor Sees New Bitcoin Bull Run",
+      "cross_check": 2
+    },
     {
       "title": "Coinbase Swings to $719 Million Q3 Profit on Crypto Gains",
       "url": "https://decrypt.co/382188/coinbase-beats-719-million-q3-profit-crypto-gains",
@@ -53,27 +70,10 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-29T22:05:32.916593+00:00",
+      "collected_at": "2026-10-29T23:05:38.710828+00:00",
       "effective_weight": 1.1,
       "title_original": "Coinbase Swings to $719 Million Q3 Profit on Crypto Gains",
       "cross_check": 2
-    },
-    {
-      "title": "4M Bitcoin Bought Above $85K Could Cap Recovery: Glassnode",
-      "url": "https://decrypt.co/382161/4m-bitcoin-bought-above-85k-could-cap-recovery-glassnode",
-      "source": "Decrypt",
-      "source_weight": 1.1,
-      "lang": "en",
-      "pub_date": "2026-10-29T16:32:47+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-29T22:05:32.916752+00:00",
-      "effective_weight": 1.1,
-      "title_original": "4M Bitcoin Bought Above $85K Could Cap Recovery: Glassnode",
-      "cross_check": 1
     },
     {
       "title": "Bitcoin price jumps to $81.5K as US GDP data beats expectations",
@@ -87,7 +87,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-29T22:05:32.816323+00:00",
+      "collected_at": "2026-10-29T23:05:38.640361+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin price jumps to $81.5K as US GDP data beats expectations",
       "cross_check": 1
@@ -104,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-29T22:05:32.816559+00:00",
+      "collected_at": "2026-10-29T23:05:38.640819+00:00",
       "effective_weight": 1.04,
       "title_original": "Unlimit founder backs Phase blockchain with $45M as mainnet launches",
       "cross_check": 1
@@ -121,7 +121,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-29T22:05:32.816702+00:00",
+      "collected_at": "2026-10-29T23:05:38.641115+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin lending and yield could drive next wave of institutional demand, Rootstock says",
       "cross_check": 2
@@ -129,7 +129,41 @@
   ],
   "top_bearish": [
     {
-      "title": "Binance investigates potential multibillion-dollar hack",
+      "title": "Binance Hacker Hunts for Exit Ramps as DeFi Exchanges Pause Markets",
+      "url": "https://decrypt.co/382194/binance-hack-exit-ramps-defi-exchange-ethereum",
+      "source": "Decrypt",
+      "source_weight": 1.1,
+      "lang": "en",
+      "pub_date": "2026-10-29T22:57:48+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-29T23:05:38.710679+00:00",
+      "effective_weight": 1.65,
+      "title_original": "Binance Hacker Hunts for Exit Ramps as DeFi Exchanges Pause Markets",
+      "cross_check": 1
+    },
+    {
+      "title": "Singapore Reports $3.5 Million in Losses From Tampered Ledger Crypto Wallets",
+      "url": "https://cryptopotato.com/singapore-reports-3-5-million-in-losses-from-tampered-ledger-crypto-wallets/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-29T22:07:05+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 3.8,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-29T23:05:39.187816+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Singapore Reports $3.5 Million in Losses From Tampered Ledger Crypto Wallets",
+      "cross_check": 1
+    },
+    {
+      "title": "Binance hit by $5.8B hack as Tether and Circle freeze billions",
       "url": "https://cointelegraph.com/news/binance-linked-wallet-faces-possible-exploit-blockchain-researcher-warns?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
       "source": "Cointelegraph",
       "source_weight": 1.3,
@@ -138,12 +172,12 @@
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 1.5,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-29T22:05:32.816162+00:00",
-      "effective_weight": 1.95,
-      "title_original": "Binance investigates potential multibillion-dollar hack",
-      "cross_check": 1
+      "collected_at": "2026-10-29T23:05:38.640060+00:00",
+      "effective_weight": 1.3,
+      "title_original": "Binance hit by $5.8B hack as Tether and Circle freeze billions",
+      "cross_check": 3
     },
     {
       "title": "Binance Drained of $5.5 Billion in Suspected Hack, Tether and Circle Freeze $1.8 Billion",
@@ -155,29 +189,12 @@
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 1.5,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-29T22:05:32.916554+00:00",
-      "effective_weight": 1.65,
+      "collected_at": "2026-10-29T23:05:38.710762+00:00",
+      "effective_weight": 1.1,
       "title_original": "Binance Drained of $5.5 Billion in Suspected Hack, Tether and Circle Freeze $1.8 Billion",
-      "cross_check": 1
-    },
-    {
-      "title": "Binance Founder Suggests Likely Hack as Billions in Crypto Leaves Exchange Wallets",
-      "url": "https://news.bitcoin.com/security/binance-founder-likely-hack-billions-crypto-leaves-exchange-wallets/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-29T21:33:23+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-29T22:05:33.192518+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Binance Founder Suggests Likely Hack as Billions in Crypto Leaves Exchange Wallets",
-      "cross_check": 1
+      "cross_check": 2
     },
     {
       "title": "Brazil’s Halloween eve crypto deadline brings more tricks than treats",
@@ -191,26 +208,9 @@
       "bear_weight": 1.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-29T22:05:32.816411+00:00",
+      "collected_at": "2026-10-29T23:05:38.640529+00:00",
       "effective_weight": 1.04,
       "title_original": "Brazil’s Halloween eve crypto deadline brings more tricks than treats",
-      "cross_check": 1
-    },
-    {
-      "title": "HTX agrees to halt unlawful UK crypto promotions after FCA case",
-      "url": "https://cointelegraph.com/news/htx-halt-unlawful-uk-crypto-promotions-fca?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-10-29T12:20:27+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-29T22:05:32.816593+00:00",
-      "effective_weight": 1.04,
-      "title_original": "HTX agrees to halt unlawful UK crypto promotions after FCA case",
       "cross_check": 1
     }
   ]
