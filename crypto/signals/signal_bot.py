@@ -1,19 +1,16 @@
 # ============================================================
-# ARGUS - SIGNAL BOT (MONOLITH v5.1)
-# ------------------------------------------------------------
-# Ищет вход. Если сделка открыта — следит за TP/SL и временем.
-# Синхронизирован с Тренером (1h свечи, MACD-гистограмма).
+# ARGUS - SIGNAL BOT (MONOLITH v6.0 LONG & SHORT)
 # ============================================================
 
 import os
 import json
 import logging
 from pathlib import Path
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 import psycopg
 import pandas as pd
 
-VERSION = "5.1.0"
+VERSION = "6.0.0"
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("crypto.signal_bot")
 
@@ -68,16 +65,15 @@ def main():
         log.info("Bot start time recorded.")
 
     current_deal = load_json(OPENED_DEALS, None)
-    params = load_json(MODEL_FILE).get("params")
-
-    if not params:
-        return log.error("No model found.")
+    models = load_json(MODEL_FILE)
 
     # ==========================================
     # ЛОГИКА 1: ЕСЛИ МЫ В СДЕЛКЕ (СЛЕДИМ)
     # ==========================================
     if current_deal and "entry" in current_deal:
-        log.info(f"In trade. Entry: {current_deal['entry']:.2f}")
+        # Защита для твоей текущей сделки: если нет ключа "type", считаем её LONG
+        deal_type = current_deal.get("type", "LONG")
+        log.info(f"In {deal_type} trade. Entry: {current_deal['entry']:.2f}")
         
         try:
             conn = get_conn()
@@ -91,36 +87,51 @@ def main():
         
         exit_reason, exit_price = None, close
         
-        # Проверка времени удержания (в часах)
+        # Проверка времени удержания
+        time_exit_h = 24 # дефолт
+        if deal_type == "LONG" and models.get("long"):
+            time_exit_h = models["long"]["params"].get("time_exit_h", 24)
+        elif deal_type == "SHORT" and models.get("short"):
+            time_exit_h = models["short"]["params"].get("time_exit_h", 24)
+
         open_time = datetime.fromisoformat(current_deal["open_time"])
         time_held_h = (datetime.now(timezone.utc) - open_time).total_seconds() / 3600.0
-        time_exit_h = params.get("time_exit_h", 24) # По умолчанию 24 часа, если нет в параметрах
         
-        if low <= current_deal["sl"]:
-            exit_reason, exit_price = "STOP_LOSS", current_deal["sl"]
-        elif high >= current_deal["tp"]:
-            exit_reason, exit_price = "TAKE_PROFIT", current_deal["tp"]
-        elif time_held_h >= time_exit_h:
+        if deal_type == "LONG":
+            if low <= current_deal["sl"]:
+                exit_reason, exit_price = "STOP_LOSS", current_deal["sl"]
+            elif high >= current_deal["tp"]:
+                exit_reason, exit_price = "TAKE_PROFIT", current_deal["tp"]
+        else: # SHORT
+            if high >= current_deal["sl"]:
+                exit_reason, exit_price = "STOP_LOSS", current_deal["sl"]
+            elif low <= current_deal["tp"]:
+                exit_reason, exit_price = "TAKE_PROFIT", current_deal["tp"]
+
+        if not exit_reason and time_held_h >= time_exit_h:
             exit_reason, exit_price = "TIME_EXIT", close
 
         if exit_reason:
-            pnl_pct = (exit_price - current_deal["entry"]) / current_deal["entry"] * 100
+            if deal_type == "LONG":
+                pnl_pct = (exit_price - current_deal["entry"]) / current_deal["entry"] * 100
+            else:
+                pnl_pct = (current_deal["entry"] - exit_price) / current_deal["entry"] * 100
+            
             pnl_usd = 100.0 * (pnl_pct / 100) 
             
-            log.info(f"🔴 TRADE CLOSED: {exit_reason} | PnL: {pnl_pct:.2f}%")
+            log.info(f"🔴 {deal_type} CLOSED: {exit_reason} | PnL: {pnl_pct:.2f}%")
 
             closed = load_json(CLOSED_DEALS, [])
             closed.append({
-                "entry": current_deal["entry"], "exit": exit_price,
+                "type": deal_type, "entry": current_deal["entry"], "exit": exit_price,
                 "pnl_pct": round(pnl_pct, 2), "pnl_usd": round(pnl_usd, 2),
                 "reason": exit_reason, "close_time": datetime.now(timezone.utc).isoformat()
             })
             save_json(CLOSED_DEALS, closed)
-
             save_json(OPENED_DEALS, None)
 
             save_json(INFO_DEAL, {
-                "type": "CLOSE", "reason": exit_reason,
+                "type": "CLOSE", "deal_type": deal_type, "reason": exit_reason,
                 "pnl_pct": round(pnl_pct, 2), "pnl_usd": round(pnl_usd, 2),
                 "sent": False
             })
@@ -129,20 +140,26 @@ def main():
     # ==========================================
     # ЛОГИКА 2: ЕСЛИ СДЕЛКИ НЕТ (ИЩЕМ)
     # ==========================================
+    if not models.get("long") or not models.get("short"):
+        return log.error("Models not found or outdated.")
+
+    params_long = models["long"]["params"]
+    params_short = models["short"]["params"]
+
     try:
         conn = get_conn()
         with conn.cursor() as cur:
-            # Берем много 15м свечей (100 часов = 400 свечей), чтобы склеить в 1h и посчитать EMA50
             cur.execute("SELECT open_time, open, high, low, close, volume FROM candles WHERE symbol=%s AND timeframe='15m' AND market_type='spot' ORDER BY open_time DESC LIMIT 400", (SYMBOL,))
             rows = list(reversed(cur.fetchall()))
         conn.close()
     except Exception as e: return log.error(f"DB error: {e}")
 
-    df = pd.DataFrame(rows, columns=['open_time', 'open', 'high', 'low', 'close', 'volume'])
+    # ФИКС ДЛЯ PANDAS: перевод Decimal в float
+    rows_float = [(r[0], float(r[1]), float(r[2]), float(r[3]), float(r[4]), float(r[5])) for r in rows]
+    df = pd.DataFrame(rows_float, columns=['open_time', 'open', 'high', 'low', 'close', 'volume'])
     df['open_time'] = pd.to_datetime(df['open_time'], utc=True)
     df = df.set_index('open_time')
 
-    # Склеиваем 15m в 1h (базу не трогаем!)
     df_1h = df.resample('1h').agg({
         'open': 'first', 'high': 'max', 'low': 'min', 
         'close': 'last', 'volume': 'sum'
@@ -151,9 +168,8 @@ def main():
     if len(df_1h) < 55:
         return log.error("Not enough data for 1h indicators.")
 
-    # Берем предпоследнюю свечу (последняя закрытая)
     last_closed_1h = df_1h.iloc[-2]
-    close_series = df_1h['close'].iloc[:-1] # Ряд без текущей формирующейся свечи
+    close_series = df_1h['close'].iloc[:-1] 
 
     price = float(last_closed_1h['close'])
     rsi = calc_rsi(close_series)
@@ -165,18 +181,30 @@ def main():
 
     log.info(f"1h Signal Check | Price: {price} | RSI: {rsi:.1f} | MACD Hist: {macd_hist:.2f}")
 
-    signal = False
-    if macd_hist > 0 and (params["rsi_min"] < rsi < params["rsi_max"]): signal = True
-    if params["use_trend_filter"] and not (price > ema): signal = False
-    if params["use_volume_filter"] and not (cur_vol > vol_sma): signal = False
+    signal_long = False
+    if macd_hist > 0 and (params_long["rsi_min"] < rsi < params_long["rsi_max"]): signal_long = True
+    if params_long["use_trend_filter"] and not (price > ema): signal_long = False
+    if params_long["use_volume_filter"] and not (cur_vol > vol_sma): signal_long = False
 
-    if signal:
-        log.info("🚀 SIGNAL FOUND! Opening deal.")
-        tp = price * (1 + params["tp_pct"] / 100)
-        sl = price * (1 - params["sl_pct"] / 100)
+    signal_short = False
+    if macd_hist < 0 and (params_short["rsi_min"] < rsi < params_short["rsi_max"]): signal_short = True
+    if params_short["use_trend_filter"] and not (price < ema): signal_short = False
+    if params_short["use_volume_filter"] and not (cur_vol > vol_sma): signal_short = False
+
+    if signal_long:
+        log.info("🚀 LONG SIGNAL FOUND! Opening deal.")
+        tp = price * (1 + params_long["tp_pct"] / 100)
+        sl = price * (1 - params_long["sl_pct"] / 100)
+        save_json(OPENED_DEALS, {"type": "LONG", "entry": price, "tp": tp, "sl": sl, "open_time": datetime.now(timezone.utc).isoformat()})
+        save_json(INFO_DEAL, {"type": "ENTRY", "deal_type": "LONG", "entry": price, "tp": tp, "sl": sl, "sent": False})
+    
+    elif signal_short:
+        log.info("🩸 SHORT SIGNAL FOUND! Opening deal.")
+        tp = price * (1 - params_short["tp_pct"] / 100)
+        sl = price * (1 + params_short["sl_pct"] / 100)
+        save_json(OPENED_DEALS, {"type": "SHORT", "entry": price, "tp": tp, "sl": sl, "open_time": datetime.now(timezone.utc).isoformat()})
+        save_json(INFO_DEAL, {"type": "ENTRY", "deal_type": "SHORT", "entry": price, "tp": tp, "sl": sl, "sent": False})
         
-        save_json(OPENED_DEALS, {"entry": price, "tp": tp, "sl": sl, "open_time": datetime.now(timezone.utc).isoformat()})
-        save_json(INFO_DEAL, {"type": "ENTRY", "entry": price, "tp": tp, "sl": sl, "sent": False})
     else:
         log.info("No signal. Waiting.")
 
