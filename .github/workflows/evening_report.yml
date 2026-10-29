@@ -1,26 +1,10 @@
-# ============================================================
-# ARGUS - вечерний отчёт
-# ------------------------------------------------------------
-# 18:00 UTC = 20:00 КЛГ
-# Только BTC. Только Aiven DB. Текстовый отчёт + 1 картинка.
-# Cron закомментирован — запуск из других источников.
-# ============================================================
-
 name: ARGUS Evening Report
 
 on:
-  workflow_dispatch:
-  repository_dispatch:
-    types: [run_evening]
-  # schedule:
-  #   - cron: '0 18 * * *'
+  workflow_dispatch: 
 
 permissions:
   contents: read
-
-concurrency:
-  group: argus-evening-report
-  cancel-in-progress: false
 
 jobs:
   report:
@@ -37,19 +21,17 @@ jobs:
       - name: Install deps
         run: |
           python -m pip install --upgrade pip
-          pip install "psycopg[binary]" requests matplotlib
+          pip install pandas "psycopg[binary]" requests
 
-      - name: Run report
+      - name: Run Evening Report
         env:
           AIVEN_DB_URL: ${{ secrets.AIVEN_DB_URL }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: python crypto/report/evening.py
+          TG_CHANNEL_ID: ${{ secrets.TG_CHANNEL_ID }}
+          VK_TOKEN: ${{ secrets.VK_TOKEN }}
+          VK_GROUP_ID: ${{ secrets.VK_GROUP_ID }}
+        run: python crypto/report/evening_report.py
 
-      # ==========================================
-      # УНИВЕРСАЛЬНАЯ ЗАЩИТА ОТ ПАДЕНИЙ
-      # ==========================================
       - name: Notify on failure
         if: failure()
         env:
