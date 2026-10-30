@@ -1,8 +1,5 @@
 # ============================================================
-# ARGUS - EVENING NEWS REPORT v2.5 (MATH & DECIMAL FIX)
-# ------------------------------------------------------------
-# v2.5: Исправлены формулы RSI и ATR (сглаживание Уайлдера).
-#       Исправлен баг с типом Decimal (цены не пропадут).
+# ARGUS - EVENING NEWS REPORT v3.0 (GLOBAL METRICS ADDED)
 # ============================================================
 
 import os
@@ -13,8 +10,7 @@ import hashlib
 import logging
 import requests
 import pandas as pd
-from datetime import datetime, timezone
-from datetime import timedelta
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -46,6 +42,7 @@ TG_CHANNEL_ID = (os.getenv("TG_CHANNEL_ID") or "").strip()
 VK_TOKEN = (os.getenv("VK_TOKEN") or "").strip()
 VK_GROUP_ID = (os.getenv("VK_GROUP_ID") or "").strip()
 DB_URL = (os.getenv("AIVEN_DB_URL") or "").strip()
+CMC_API_KEY = (os.getenv("CMC_API_KEY") or "").strip()
 
 TEST_MODE = (os.getenv("NEWS_TEST_MODE", "").strip().lower() in ("1", "true", "yes", "on"))
 MAX_MESSAGE_LEN = 3800
@@ -55,13 +52,11 @@ SYMBOL = "BTCUSDT"
 TIMEFRAME = "15m"
 TZ = ZoneInfo("Europe/Kaliningrad")
 
-def now_local():
-    return datetime.now(timezone.utc).astimezone(TZ)
+def now_local(): return datetime.now(timezone.utc).astimezone(TZ)
 
 def esc(s):
     if not s: return ""
-    s = str(s)
-    return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+    return str(s).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 def split_text(text, max_len):
     if len(text) <= max_len: return [text]
@@ -70,8 +65,7 @@ def split_text(text, max_len):
         if len(current) + len(line) + 1 > max_len:
             if current: parts.append(current)
             current = line
-        else:
-            current = current + "\n" + line if current else line
+        else: current = current + "\n" + line if current else line
     if current: parts.append(current)
     return parts
 
@@ -122,248 +116,247 @@ def filter_fresh(items, seen):
         if _title_hash(t) not in seen: out.append(it)
     return out
 
-def translate_top(items, n=3):
+def translate_top(items, n=5):
     if not items or not TRANSLATE_AVAILABLE: return []
     originals = [it.get("title_original") or it.get("title", "") for it in items[:n]]
     try: return translate_batch(originals)
     except Exception: return originals
 
 # ============================================================
-# ФУНКЦИИ РАСЧЕТА ИНДИКАТОРОВ (ТОЧНЫЕ, СГЛАЖИВАНИЕ УАЙЛДЕРА)
+# DB FETCHERS (LIVE & HISTORY)
 # ============================================================
-def calc_ema(series, period):
-    return series.ewm(span=period, adjust=False).mean().iloc[-1]
+def get_conn():
+    if not DB_URL: raise RuntimeError("AIVEN_DB_URL not set")
+    return psycopg.connect(DB_URL, connect_timeout=30, application_name="argus-evening-news")
 
-def calc_rsi(series, period=14):
-    if len(series) < period + 1: return None
-    delta = series.diff()
-    gain = delta.where(delta > 0, 0)
-    loss = -delta.where(delta < 0, 0)
-    
-    # Сглаживание Уайлдера (RMA) для RSI
-    avg_gain = gain.ewm(alpha=1/period, adjust=False).mean()
-    avg_loss = loss.ewm(alpha=1/period, adjust=False).mean()
-    
-    rs = avg_gain / avg_loss
-    return (100 - (100 / (1 + rs))).iloc[-1]
-
-def calc_atr(df, period=14):
-    if len(df) < period + 1: return None
-    high_low = df['high'] - df['low']
-    high_close = (df['high'] - df['close'].shift()).abs()
-    low_close = (df['low'] - df['close'].shift()).abs()
-    tr = pd.concat([high_low, high_close, low_close], axis=1).max(axis=1)
-    
-    # Сглаживание Уайлдера (RMA) для ATR
-    atr = tr.ewm(alpha=1/period, adjust=False).mean()
-    return atr.iloc[-1]
-
-# ============================================================
-# ДИНАМИЧЕСКИЕ ВИЗУАЛЬНЫЕ ШКАЛЫ
-# ============================================================
-def get_progress_bar(pct, length=12):
-    filled = int(round(pct / 100 * length))
-    filled = max(0, min(filled, length))
-    return "▕" + "█" * filled + "░" * (length - filled) + "▏"
-
-def get_range_bar(price, low, high, length=12):
-    if high == low: return "▕░░░░░░░░░░░░▏"
-    pct = (price - low) / (high - low) * 100
-    filled = int(round(pct / 100 * length))
-    filled = max(0, min(filled, length))
-    return "▕" + "█" * filled + "░" * (length - filled) + "▏"
-
-# ============================================================
-# СБОР ДАННЫХ ЗА ДЕНЬ
-# ============================================================
-def fetch_btc_day_stats():
+def fetch_btc_snapshot():
     if not PSYCOPG_OK or not DB_URL: return None
     try:
-        conn = psycopg.connect(DB_URL, connect_timeout=30)
-        with conn:
-            with conn.cursor() as cur:
-                cur.execute("SELECT open_time, open, high, low, close, volume, taker_buy_volume FROM candles WHERE symbol=%s AND timeframe=%s AND market_type='spot' ORDER BY open_time DESC LIMIT 400", (SYMBOL, TIMEFRAME))
-                rows = list(reversed(cur.fetchall()))
+        conn = get_conn()
+        with conn.cursor() as cur:
+            cur.execute("SELECT open_time, open, high, low, close, volume FROM candles WHERE symbol=%s AND timeframe=%s AND market_type='spot' ORDER BY open_time DESC LIMIT 400", (SYMBOL, TIMEFRAME))
+            rows = list(reversed(cur.fetchall()))
         conn.close()
-        
-        now_kly = now_local()
-        today_start_kly = now_kly.replace(hour=8, minute=0, second=0, microsecond=0)
-        today_start_utc = today_start_kly.astimezone(timezone.utc)
-
-        day_rows = []
-        for r in rows:
-            dt = r[0]
-            if dt.tzinfo is None: dt = dt.replace(tzinfo=timezone.utc)
-            if dt >= today_start_utc: day_rows.append(r)
-
-        if not day_rows: return None
-
-        open_p = float(day_rows[0][1])
+        if len(rows) < 60: return None
+        last_24h = rows[-96:] if len(rows) >= 96 else rows
+        high_24h, low_24h = max(float(r[2]) for r in last_24h), min(float(r[3]) for r in last_24h)
         price = float(rows[-1][4])
-        change_pct = (price - open_p) / open_p * 100 if open_p else 0
-        high = max(float(r[2]) for r in day_rows)
-        low = min(float(r[3]) for r in day_rows)
-        
-        vol_total = sum(float(r[5]) for r in day_rows)
-        vol_buy = sum(float(r[6]) for r in day_rows)
-        vol_sell = vol_total - vol_buy
-        buy_pct = (vol_buy / vol_total * 100) if vol_total else 50
-        sell_pct = 100 - buy_pct
+        change_pct = (price - float(rows[-96][4])) / float(rows[-96][4]) * 100 if len(rows) >= 96 and float(rows[-96][4]) else 0
 
-        # --- ФИКС: Перевод Decimal в float для pandas ---
-        rows_float = [(r[0], float(r[1]), float(r[2]), float(r[3]), float(r[4]), float(r[5]), float(r[6])) for r in rows]
-        
-        df = pd.DataFrame(rows_float, columns=['open_time', 'open', 'high', 'low', 'close', 'volume', 'taker_buy_volume'])
+        rows_float = [(r[0], float(r[1]), float(r[2]), float(r[3]), float(r[4]), float(r[5])) for r in rows]
+        df = pd.DataFrame(rows_float, columns=['open_time', 'open', 'high', 'low', 'close', 'volume'])
         df['open_time'] = pd.to_datetime(df['open_time'], utc=True)
         df = df.set_index('open_time')
+        df_1h = df.resample('1h').agg({'open': 'first', 'high': 'max', 'low': 'min', 'close': 'last', 'volume': 'sum'}).dropna()
         
-        df_1h = df.resample('1h').agg({
-            'open': 'first', 'high': 'max', 'low': 'min', 
-            'close': 'last', 'volume': 'sum'
-        }).dropna()
-
-        if len(df_1h) < 55:
-            return None
-
-        closes_1h = df_1h['close']
-
-        rsi_1h = calc_rsi(closes_1h, 14)
-        ema_50 = calc_ema(closes_1h, 50)
-        atr_1h = calc_atr(df_1h, 14)
+        if len(df_1h) < 15: return None
         
-        atr_pct = (atr_1h / price * 100) if atr_1h and price else 0
+        # ATR & RSI
+        closes_1h = df_1h['close'].tolist()
+        highs_1h = df_1h['high'].tolist()
+        lows_1h = df_1h['low'].tolist()
+        
+        # RSI
+        p = 14
+        rsi = None
+        if len(closes_1h) > p:
+            gains, losses = 0.0, 0.0
+            for i in range(1, p+1):
+                d = closes_1h[i] - closes_1h[i-1]
+                if d >= 0: gains += d
+                else: losses -= d
+            ag, al = gains/p, losses/p
+            for i in range(p+1, len(closes_1h)):
+                d = closes_1h[i] - closes_1h[i-1]
+                ag = (ag*(p-1) + (d if d>0 else 0))/p
+                al = (al*(p-1) + (-d if d<0 else 0))/p
+            rsi = 100 - 100/(1 + (ag/al if al>0 else 999))
+            
+        # ATR
+        atr = None
+        if len(highs_1h) > p:
+            trs = [max(highs_1h[i]-lows_1h[i], abs(highs_1h[i]-closes_1h[i-1]), abs(lows_1h[i]-closes_1h[i-1])) for i in range(1, len(highs_1h))]
+            a = sum(trs[:p])/p
+            for i in range(p, len(trs)):
+                a = (a*(p-1) + trs[i])/p
+            atr = a
 
-        return {
-            "open": open_p, "price": price, "change_pct": change_pct,
-            "high": high, "low": low,
-            "vol_buy": vol_buy, "vol_sell": vol_sell,
-            "buy_pct": buy_pct, "sell_pct": sell_pct,
-            "rsi": rsi_1h, "ema_50": ema_50, "atr": atr_1h, "atr_pct": atr_pct
-        }
+        return {"price": price, "change_pct": change_pct, "high_24h": high_24h, "low_24h": low_24h, "rsi": rsi, "atr": atr}
     except Exception as e:
         log.error("fetch_btc: %s", e)
         return None
 
-def fmt_price(p):
-    return "$" + format(int(p), ",") if p >= 1000 else "$" + format(p, ".2f")
+def fetch_live_cmc():
+    if not CMC_API_KEY: return None
+    url = "https://pro-api.coinmarketcap.com/v1/global-metrics/quotes/latest"
+    headers = {"X-CMC_PRO_API_KEY": CMC_API_KEY, "Accept": "application/json"}
+    try:
+        r = requests.get(url, headers=headers, timeout=15)
+        if r.status_code == 200:
+            data = r.json().get("data", {})
+            quote_usd = data.get("quote", {}).get("USD", {})
+            return {"btc_dominance": float(data.get("btc_dominance", 0)), "total_market_cap": float(quote_usd.get("total_market_cap", 0)), "stablecoin_market_cap": float(quote_usd.get("stablecoin_market_cap", 0))}
+    except Exception: pass
+    return None
 
-def fmt_pct(v):
-    return format(v, "+.2f") + "%"
+def fetch_prev_global_metrics(hours_ago=12):
+    try:
+        conn = get_conn()
+        with conn.cursor() as cur:
+            cur.execute(f"SELECT btc_dominance, total_market_cap, stablecoin_market_cap FROM global_metrics WHERE last_updated <= NOW() - INTERVAL '{hours_ago} hours' ORDER BY last_updated DESC LIMIT 1")
+            prev_row = cur.fetchone()
+        conn.close()
+        if not prev_row: return None
+        return {"btc_dominance": float(prev_row[0]), "total_market_cap": float(prev_row[1]), "stablecoin_market_cap": float(prev_row[2])}
+    except Exception: return None
 
-def fmt_btc(v):
-    return format(v, ",.1f") + " BTC"
+def fetch_network_sentiment(hours_ago=12):
+    try:
+        conn = get_conn()
+        with conn.cursor() as cur:
+            cur.execute("SELECT value, classification FROM fear_greed ORDER BY timestamp DESC LIMIT 1")
+            fng_cur = cur.fetchone()
+            cur.execute(f"SELECT value FROM fear_greed WHERE timestamp <= NOW() - INTERVAL '{hours_ago} hours' ORDER BY timestamp DESC LIMIT 1")
+            fng_prev = cur.fetchone()
+            cur.execute("SELECT chart_name, value FROM btc_network WHERE chart_name IN ('hash-rate', 'difficulty') ORDER BY chart_time DESC LIMIT 2")
+            net_cur = dict(cur.fetchall())
+            cur.execute(f"SELECT chart_name, value FROM btc_network WHERE chart_name IN ('hash-rate', 'difficulty') AND chart_time <= NOW() - INTERVAL '{hours_ago} hours' ORDER BY chart_time DESC LIMIT 2")
+            net_prev = dict(cur.fetchall())
+        conn.close()
+        return {"fng": (fng_cur, fng_prev), "network": (net_cur, net_prev)}
+    except Exception: return None
+
+def fetch_stablecoins():
+    try:
+        conn = get_conn()
+        with conn.cursor() as cur:
+            cur.execute("SELECT symbol, price FROM stablecoins WHERE symbol IN ('USDT', 'USDC', 'DAI') ORDER BY timestamp DESC LIMIT 3")
+            res = dict(cur.fetchall())
+        conn.close()
+        return res
+    except Exception: return {}
 
 # ============================================================
-# ОТЧЕТ
+# FORMATTING
 # ============================================================
-def build_report(data, top_items, top_ru, btc):
+def fmt_price(p): return "$" + format(int(p), ",") if p >= 1000 else "$" + format(p, ".2f")
+def fmt_usd(v):
+    if v is None: return "?"
+    a = abs(v)
+    sign = "-" if v < 0 else ""
+    if a >= 1e12: return sign + "$" + format(a / 1e12, ".2f") + "T"
+    if a >= 1e9: return sign + "$" + format(a / 1e9, ".2f") + "B"
+    if a >= 1e6: return sign + "$" + format(a / 1e6, ".2f") + "M"
+    if a >= 1e3: return sign + "$" + format(a / 1e3, ".1f") + "K"
+    return sign + "$" + format(a, ".2f")
+def fmt_pct(v): return format(v, "+.2f") + "%" if v is not None else "?"
+
+def calc_delta(cur, prev, is_pct=False, is_money=False):
+    if prev is None or cur is None: return "(нет данных)"
+    if prev == 0: return "(⏸️ 0)"
+    diff = cur - prev
+    sign = "🔼" if diff > 0 else "🔽" if diff < 0 else "⏸️"
+    if diff == 0: return f"({sign} 0)"
+    if is_pct: return f"({sign} {diff:+.2f}%)"
+    if is_money: return f"({sign} {fmt_usd(diff)})"
+    return f"({sign} {diff:+g})"
+
+def build_report(data, top_items, top_ru, btc, live_cmc, prev_g_metrics, n_sentiment, stables):
     now = now_local()
-    lines = []
+    mood, avg, total = data.get("mood", "Неизвестно"), data.get("avg_sentiment", 0.0), data.get("total_news", 0)
+    
+    lines = ["📰 <b>ARGUS — Новости</b>", f"🌙 Добрый вечер! {now.strftime('%d.%m.%Y, %H:%M')}", ""]
 
     if btc:
-        if btc["change_pct"] > 0.2:
-            header = "🐂 <b>Быки удержали инициативу: Итоги дня BTC</b>"
-        elif btc["change_pct"] < -0.2:
-            header = "🐻 <b>Медведи продавили рынок: Итоги дня BTC</b>"
-        else:
-            header = "😐 <b>Боковик: Итоги дня BTC</b>"
-    else:
-        header = "🌙 <b>ARGUS — Вечерний дайджест</b>"
+        lines.append(f"💰 <b>BTC</b> {fmt_price(btc['price'])} | {fmt_pct(btc['change_pct'])} 24ч")
+        lines.append(f"  Макс: {fmt_price(btc['high_24h'])} | Мин: {fmt_price(btc['low_24h'])}")
+        parts = []
+        if btc["rsi"]: parts.append(f"RSI(1ч): {btc['rsi']:.1f}")
+        if btc["atr"]: parts.append(f"ATR(1ч): {fmt_price(btc['atr'])}")
+        if parts: lines.append("  " + " | ".join(parts))
+        lines.append("")
 
-    lines.append(header)
-    lines.append(now.strftime("%d.%m %H:%M"))
+    lines.append("🌍 <b>Глобальный рынок</b>")
+    if live_cmc:
+        mcap, dom, stbl_mcap = live_cmc["total_market_cap"], live_cmc["btc_dominance"], live_cmc["stablecoin_market_cap"]
+        d_mcap = calc_delta(mcap, prev_g_metrics["total_market_cap"], is_money=True) if prev_g_metrics else "(нет данных)"
+        d_dom = calc_delta(dom, prev_g_metrics["btc_dominance"], is_pct=True) if prev_g_metrics else "(нет данных)"
+        usdt = stables.get("USDT")
+        usdt_s = f"${usdt:.3f} ✅" if usdt and 0.99 <= float(usdt) <= 1.01 else f"${usdt:.3f} ⚠️" if usdt else "?"
+        
+        lines.append(f"  Капитализация: {fmt_usd(mcap)} {d_mcap}")
+        lines.append(f"  Доминация BTC: {dom:.2f}% {d_dom}")
+        lines.append(f"  Стейблкоины: {fmt_usd(stbl_mcap)} (USDT {usdt_s})")
+    else:
+        lines.append("  ⚠️ CMC не отвечает")
     lines.append("")
 
-    if btc:
-        lines.append("💰 <b>Цена за день:</b>")
-        lines.append(f"  Утром: {fmt_price(btc['open'])} → Вечером: {fmt_price(btc['price'])}")
-        lines.append(f"  Изменение: <b>{fmt_pct(btc['change_pct'])}</b>")
-        
-        bar_price = get_range_bar(btc["price"], btc["low"], btc["high"])
-        lines.append(f"  Мин `{fmt_price(btc['low'])}` {bar_price} Макс `{fmt_price(btc['high'])}`")
-        lines.append("")
+    lines.append("🌐 <b>Сеть и Сентимент</b>")
+    if n_sentiment:
+        fng_cur, fng_prev = n_sentiment["fng"]
+        net_cur, net_prev = n_sentiment["network"]
+        if fng_cur: lines.append(f"  Страх/Жадность: {fng_cur[0]} ({fng_cur[1]})")
+        else: lines.append("  Страх/Жадность: (нет данных)")
+        if net_cur.get("hash-rate"):
+            hr = float(net_cur["hash-rate"]) / 1e6
+            lines.append(f"  Хешрейт: {hr:.0f} EH/s (⏸️ 0)")
+        else: lines.append("  Сеть BTC: (нет данных)")
+    else:
+        lines.append("  ❌ Данные недоступны")
+    lines.append("")
 
-        lines.append("⚔️ <b>Битва объемов:</b>")
-        
-        if btc["buy_pct"] > 53: verdict = "Покупатели доминировали."
-        elif btc["sell_pct"] > 53: verdict = "Продавцы доминировали."
-        else: verdict = "Равенство сил."
-
-        bar_buy = get_progress_bar(btc["buy_pct"])
-        bar_sell = get_progress_bar(btc["sell_pct"])
-
-        lines.append(f"  🟢 Покупки: {fmt_btc(btc['vol_buy'])} ({btc['buy_pct']:.1f}%)")
-        lines.append(f"  {bar_buy}")
-        lines.append(f"  🔴 Продажи: {fmt_btc(btc['vol_sell'])} ({btc['sell_pct']:.1f}%)")
-        lines.append(f"  {bar_sell}")
-        lines.append(f"  <i>Вердикт: {verdict}</i>")
-        lines.append("")
-
-        lines.append("🩺 <b>Техническая картина (1ч):</b>")
-        if btc["ema_50"]:
-            trend = "выше EMA(50) — бычий настрой" if btc["price"] > btc["ema_50"] else "ниже EMA(50) — медвежий настрой"
-            lines.append(f"  • Тренд: Цена {trend}")
-        if btc["rsi"]:
-            st = "нейтрально" if 30 < btc["rsi"] < 70 else ("перекупленность" if btc["rsi"] >= 70 else "перепроданность")
-            lines.append(f"  • Сила (RSI): {btc['rsi']:.1f} — {st}")
-        if btc["atr"]:
-            lines.append(f"  • Волатильность (ATR): {fmt_price(btc['atr'])} ({btc['atr_pct']:.2f}%)")
-        lines.append("")
+    lines.append(f"🎭 {esc(mood)}")
+    lines.append(f"📊 Сентимент: <b>{format(avg, '+.3f')}</b> | Всего: {total}")
+    lines.append("")
 
     if top_items:
-        lines.append("📰 <b>Главное за день:</b>")
-        for i, it in enumerate(top_items[:3]):
-            title = it.get("title_original") or it.get("title", "")
-            if i < len(top_ru): title = top_ru[i]
+        lines.append("🔥 <b>Главные новости:</b>")
+        for i, it in enumerate(top_items):
+            title = top_ru[i] if i < len(top_ru) else (it.get("title_original") or it.get("title", ""))
             url = it.get("url") or it.get("link") or ""
             t_esc = esc(title[:180])
-            
-            if url: lines.append(f"  • <a href=\"{esc(url)}\">{t_esc}</a>")
-            else: lines.append(f"  • {t_esc}")
+            lines.append(f"  • <a href=\"{esc(url)}\">{t_esc}</a>" if url else f"  • {t_esc}")
         lines.append("")
-
-    if btc:
-        lines.append("🎯 <b>На завтра:</b>")
-        lines.append(f"  • Сопротивление: {fmt_price(btc['high'])}")
-        lines.append(f"  • Поддержка: {fmt_price(btc['low'])}")
-        lines.append("")
+    else:
+        lines.append("Новых важных новостей нет.\n")
 
     lines.append("────────────────────")
     lines.append("🔥 <b>Хотите торговать на Bybit?</b>")
-    lines.append("Бонусы до $1720 для новых пользователей:")
-    lines.append("<a href=\"https://www.bybit.com/invite?ref=JV3355&medium=referral&utm_campaign=evergreen\">👉 Забрать бонус на Bybit</a>")
-    lines.append("")
-    lines.append("<i>Хорошего вечера! До встречи завтра утром.</i>")
+    lines.append("  Регистрируйтесь по ссылке и получайте бонусы до $1720:")
+    lines.append("  <a href=\"https://www.bybit.com/invite?ref=JV3355&medium=referral&utm_campaign=evergreen\">👉 Забрать бонус на Bybit</a>\n")
+    lines.append("<i>Настроение — один из факторов прогноза ARGUS.</i>")
     
     return "\n".join(lines)
 
 def main():
-    log.info("evening news report start")
+    log.info("evening news report v3.0")
     if not SENTIMENT_FILE.exists(): return
 
     data = load_json(SENTIMENT_FILE)
     history = load_json(SENT_HISTORY_FILE, {"entries": []})
-    
     cutoff = datetime.now(timezone.utc) - timedelta(days=HISTORY_DAYS)
     history["entries"] = [e for e in history.get("entries", []) if datetime.fromisoformat(e["sent_at"]) >= cutoff]
     seen = {e["hash"] for e in history["entries"]}
 
     all_top = data.get("top_bullish", []) + data.get("top_bearish", [])
     all_top.sort(key=lambda x: x.get("effective_weight", 0), reverse=True)
-    fresh_items = filter_fresh(all_top, seen)[:3]
-    top_ru = translate_top(fresh_items, 3)
+    top_5 = filter_fresh(all_top, seen)[:5]
+    top_ru = translate_top(top_5, 5)
     
-    btc = fetch_btc_day_stats()
+    btc = fetch_btc_snapshot()
+    live_cmc = fetch_live_cmc()
+    prev_g_metrics = fetch_prev_global_metrics(hours_ago=12)
+    n_sentiment = fetch_network_sentiment(hours_ago=12)
+    stables = fetch_stablecoins()
 
-    text_tg = build_report(data, fresh_items, top_ru, btc)
+    text_tg = build_report(data, top_5, top_ru, btc, live_cmc, prev_g_metrics, n_sentiment, stables)
     text_vk = to_plain(text_tg)
 
     log.info("sending evening report to TG Channel and VK...")
-    
     if TG_CHANNEL_ID: send_telegram(text_tg, TG_CHANNEL_ID)
     if VK_GROUP_ID: send_vk(text_vk)
 
-    for it in fresh_items:
+    for it in top_5:
         history["entries"].append({"hash": _title_hash(it.get("title_original", "")), "sent_at": datetime.now(timezone.utc).isoformat()})
     save_json(SENT_HISTORY_FILE, history)
     log.info("evening report sent")
