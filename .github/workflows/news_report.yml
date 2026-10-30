@@ -24,6 +24,7 @@ jobs:
           TG_CHANNEL_ID: ${{ secrets.TG_CHANNEL_ID }}
           VK_TOKEN: ${{ secrets.VK_TOKEN }}
           VK_GROUP_ID: ${{ secrets.VK_GROUP_ID }}
+          CMC_API_KEY: ${{ secrets.CMC_API_KEY }}
         run: python crypto/report/news_report.py
       - name: Save history
         run: |
