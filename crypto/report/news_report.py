@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - NEWS REPORT v11.1 (LIVE CMC, 5 NEWS, NO BARS)
+# ARGUS - NEWS REPORT v11.2 (SQUARE BARS)
 # ============================================================
 
 import os
@@ -152,7 +152,7 @@ def translate_top(items, n=5):
     except Exception: return originals
 
 # ============================================================
-# DB FETCHERS
+# DB FETCHERS & HELPERS
 # ============================================================
 def get_conn():
     if not DB_URL: raise RuntimeError("AIVEN_DB_URL not set")
@@ -207,7 +207,6 @@ def fetch_btc_snapshot():
         closes_1h, highs_1h, lows_1h = df_1h['close'].tolist(), df_1h['high'].tolist(), df_1h['low'].tolist()
         rsi_1h = _rsi(closes_1h, 14)
         atr_1h = _atr(highs_1h, lows_1h, closes_1h, 14)
-        atr_pct = (atr_1h / price * 100) if atr_1h and price else 0
         return {"price": price, "change_pct": change_pct, "high_24h": high_24h, "low_24h": low_24h, "rsi": rsi_1h, "atr": atr_1h}
     except Exception as e:
         log.error("fetch_btc: %s", e)
@@ -268,7 +267,7 @@ def fetch_stablecoins():
     except Exception: return {}
 
 # ============================================================
-# FORMATTING
+# FORMATTING & BARS
 # ============================================================
 def fmt_price(p): return "$" + format(int(p), ",") if p >= 1000 else "$" + format(p, ".2f")
 def fmt_usd(v):
@@ -292,6 +291,19 @@ def calc_delta(cur, prev, is_pct=False, is_money=False):
     if is_money: return f"({sign} {fmt_usd(diff)})"
     return f"({sign} {diff:+g})"
 
+# НОВЫЕ КВАДРАТНЫЕ ПОЛОСКИ
+def get_progress_bar(pct, length=12):
+    filled = int(round(pct / 100 * length))
+    filled = max(0, min(filled, length))
+    return "🟩" * filled + "⬜" * (length - filled)
+
+def get_range_bar(price, low, high, length=12):
+    if high == low: return "⬜" * length
+    pct = (price - low) / (high - low) * 100
+    filled = int(round(pct / 100 * length))
+    filled = max(0, min(filled, length))
+    return "🟩" * filled + "⬜" * (length - filled)
+
 def build_report(data, top_items, top_ru, btc, live_cmc, prev_g_metrics, n_sentiment, stables):
     now = now_local()
     mood = data.get("mood", "Неизвестно")
@@ -306,7 +318,10 @@ def build_report(data, top_items, top_ru, btc, live_cmc, prev_g_metrics, n_senti
 
     if btc:
         lines.append(f"💰 <b>BTC</b> {fmt_price(btc['price'])} | {fmt_pct(btc['change_pct'])} 24ч")
-        lines.append(f"  Макс: {fmt_price(btc['high_24h'])} | Мин: {fmt_price(btc['low_24h'])}")
+        
+        bar_price = get_range_bar(btc['price'], btc['low_24h'], btc['high_24h'])
+        lines.append(f"  Мин {fmt_price(btc['low_24h'])} {bar_price} Макс {fmt_price(btc['high_24h'])}")
+        
         parts = []
         if btc["rsi"]: parts.append(f"RSI(1ч): {btc['rsi']:.1f}")
         if btc["atr"]: parts.append(f"ATR(1ч): {fmt_price(btc['atr'])}")
@@ -366,7 +381,7 @@ def build_report(data, top_items, top_ru, btc, live_cmc, prev_g_metrics, n_senti
     return "\n".join(lines)
 
 def main():
-    log.info("news report v11.1")
+    log.info("news report v11.2")
     if not should_send_personal() and not should_send_group(): return log.info("skip")
     if not SENTIMENT_FILE.exists(): return log.error("no sentiment file")
 
