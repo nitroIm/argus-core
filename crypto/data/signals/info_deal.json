@@ -1,7 +1,8 @@
 {
-  "type": "ENTRY",
-  "entry": 80997.32,
-  "tp": 87477.10560000001,
-  "sl": 76947.454,
+  "type": "CLOSE",
+  "deal_type": "LONG",
+  "reason": "STOP_LOSS",
+  "pnl_pct": -5.0,
+  "pnl_usd": -5.0,
   "sent": true
 }
