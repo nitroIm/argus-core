@@ -1,18 +1,18 @@
 {
-  "generated_at": "2026-10-30T22:05:38.055344+00:00",
+  "generated_at": "2026-10-30T23:05:35.838796+00:00",
   "total_news": 93,
-  "avg_sentiment": -0.665,
+  "avg_sentiment": -0.687,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 10,
+  "bullish_count": 9,
   "bearish_count": 48,
-  "neutral_count": 35,
+  "neutral_count": 36,
   "fake_count": 0,
-  "cross_confirmed": 27,
+  "cross_confirmed": 25,
   "by_source": {
     "Cointelegraph": {
       "total": 23,
-      "bull": 1,
-      "bear": 13
+      "bull": 0,
+      "bear": 14
     },
     "Decrypt": {
       "total": 21,
@@ -20,12 +20,12 @@
       "bear": 11
     },
     "Bitcoin.com": {
-      "total": 10,
+      "total": 9,
       "bull": 1,
-      "bear": 6
+      "bear": 5
     },
     "CryptoSlate": {
-      "total": 6,
+      "total": 7,
       "bull": 1,
       "bear": 2
     },
@@ -51,10 +51,10 @@
       "sentiment": 1.0,
       "bull_weight": 1.0,
       "bear_weight": 0.0,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-30T22:05:36.612489+00:00",
-      "effective_weight": 1.5,
+      "collected_at": "2026-10-30T23:05:34.228980+00:00",
+      "effective_weight": 1.0,
       "title_original": "Uniswap launches TJAR fee tool, but only fast searchers capture the hidden arbitrage profit",
       "cross_check": 1
     },
@@ -70,7 +70,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-30T22:05:37.041857+00:00",
+      "collected_at": "2026-10-30T23:05:34.763155+00:00",
       "effective_weight": 1.0,
       "title_original": "Michael Saylor Sees Next Bitcoin Bull Market Beginning as Strategy Reports $19.5B in Q3 Net Income",
       "cross_check": 2
@@ -87,7 +87,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-30T22:05:37.988240+00:00",
+      "collected_at": "2026-10-30T23:05:35.786866+00:00",
       "effective_weight": 0.96,
       "title_original": "Чистая прибыль Coinbase выросла на 66% на фоне развития рынков предсказаний",
       "cross_check": 1
@@ -104,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-30T22:05:36.526891+00:00",
+      "collected_at": "2026-10-30T23:05:34.039234+00:00",
       "effective_weight": 0.8,
       "title_original": "Bitcoin ETFs Add $441M in 4 Days as Zcash Streak Hits Day 8",
       "cross_check": 1
@@ -121,13 +121,30 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-30T22:05:37.042178+00:00",
+      "collected_at": "2026-10-30T23:05:34.763403+00:00",
       "effective_weight": 0.8,
       "title_original": "Important Ripple News and XRP Price Update: October 30",
       "cross_check": 1
     }
   ],
   "top_bearish": [
+    {
+      "title": "Binance hackers raced to move billions before it could be frozen",
+      "url": "https://cointelegraph.com/magazine/binance-hackers-raced-to-move-billions-before-could-be-frozen?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-10-30T22:00:00+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-30T23:05:33.708277+00:00",
+      "effective_weight": 1.3,
+      "title_original": "Binance hackers raced to move billions before it could be frozen",
+      "cross_check": 2
+    },
     {
       "title": "Binance Hack Shows Why Offshore Exchanges Need US Oversight, CFTC Chair Says",
       "url": "https://decrypt.co/382285/binance-hack-why-offshore-exchanges-need-us-oversight-cftc-chair",
@@ -138,46 +155,12 @@
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 1.5,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-30T22:05:36.289901+00:00",
-      "effective_weight": 1.65,
-      "title_original": "Binance Hack Shows Why Offshore Exchanges Need US Oversight, CFTC Chair Says",
-      "cross_check": 3
-    },
-    {
-      "title": "A16z, Uniswap Warn Illinois Crypto Tax Rules Could Effectively Ban DeFi",
-      "url": "https://news.bitcoin.com/regulation-and-legal/a16z-uniswap-warn-illinois-crypto-tax-rules-ban-defi/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-30T21:05:59+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-30T22:05:36.526452+00:00",
-      "effective_weight": 1.5,
-      "title_original": "A16z, Uniswap Warn Illinois Crypto Tax Rules Could Effectively Ban DeFi",
-      "cross_check": 1
-    },
-    {
-      "title": "Bitcoin risks worst October in 12 years as tech sell-off spreads to gold",
-      "url": "https://cointelegraph.com/markets/bitcoin-risks-worst-october-in-12-years-as-tech-sell-off-spreads-to-gold?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-10-30T16:06:28+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-30T22:05:36.216633+00:00",
-      "effective_weight": 1.3,
-      "title_original": "Bitcoin risks worst October in 12 years as tech sell-off spreads to gold",
-      "cross_check": 1
+      "collected_at": "2026-10-30T23:05:33.838254+00:00",
+      "effective_weight": 1.1,
+      "title_original": "Binance Hack Shows Why Offshore Exchanges Need US Oversight, CFTC Chair Says",
+      "cross_check": 3
     },
     {
       "title": "Worried About Crypto Hacks? Buy Bitcoin Proxies in Stock Market Instead, Say Wall Street Firms",
@@ -191,7 +174,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-30T22:05:36.289986+00:00",
+      "collected_at": "2026-10-30T23:05:33.838316+00:00",
       "effective_weight": 1.1,
       "title_original": "Worried About Crypto Hacks? Buy Bitcoin Proxies in Stock Market Instead, Say Wall Street Firms",
       "cross_check": 1
@@ -208,10 +191,27 @@
       "bear_weight": 3.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-30T22:05:36.290050+00:00",
+      "collected_at": "2026-10-30T23:05:33.838364+00:00",
       "effective_weight": 1.1,
       "title_original": "Binance Hack: Why Bitcoin Didn't Crash Like It Did in 2018",
       "cross_check": 8
+    },
+    {
+      "title": "Secret Service, FBI Join Binance Hack Probe as Circle Freezes $823 Million",
+      "url": "https://decrypt.co/382268/secret-service-fbi-binance-hack-probe",
+      "source": "Decrypt",
+      "source_weight": 1.1,
+      "lang": "en",
+      "pub_date": "2026-10-30T17:50:26+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-30T23:05:33.838463+00:00",
+      "effective_weight": 1.1,
+      "title_original": "Secret Service, FBI Join Binance Hack Probe as Circle Freezes $823 Million",
+      "cross_check": 3
     }
   ]
 }
