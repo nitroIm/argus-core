@@ -35,6 +35,7 @@ jobs:
           VK_TOKEN: ${{ secrets.VK_TOKEN }}
           VK_GROUP_ID: ${{ secrets.VK_GROUP_ID }}
           AIVEN_DB_URL: ${{ secrets.AIVEN_DB_URL }}
+          CMC_API_KEY: ${{ secrets.CMC_API_KEY }}
           # NEWS_TEST_MODE: "1"
         run: python crypto/report/evening_news_report.py
 
