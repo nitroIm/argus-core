@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - NEWS REPORT v11.2 (SQUARE BARS)
+# ARGUS - NEWS REPORT v11.3 (SQUARE BARS, 5 NEWS)
 # ============================================================
 
 import os
@@ -187,7 +187,7 @@ def fetch_btc_snapshot():
     try:
         conn = get_conn()
         with conn.cursor() as cur:
-            cur.execute("SELECT open_time, open, high, low, close, volume FROM candles WHERE symbol=%s AND timeframe=%s AND market_type='spot' ORDER BY open_time DESC LIMIT 400", (SYMBOL, TIMEFRAME))
+            cur.execute("SELECT open_time, open, high, low, close, volume, taker_buy_volume FROM candles WHERE symbol=%s AND timeframe=%s AND market_type='spot' ORDER BY open_time DESC LIMIT 400", (SYMBOL, TIMEFRAME))
             rows = list(reversed(cur.fetchall()))
         conn.close()
         if len(rows) < 60: return None
@@ -195,6 +195,11 @@ def fetch_btc_snapshot():
         high_24h, low_24h = max(float(r[2]) for r in last_24h), min(float(r[3]) for r in last_24h)
         price = float(rows[-1][4])
         change_pct = (price - float(rows[-96][4])) / float(rows[-96][4]) * 100 if len(rows) >= 96 and float(rows[-96][4]) else 0
+        
+        vol_btc = sum(float(r[5]) for r in last_24h)
+        taker_buy = sum(float(r[6]) for r in last_24h)
+        buy_pct = (taker_buy / vol_btc * 100) if vol_btc else 50
+        sell_pct = 100 - buy_pct
 
         import pandas as pd
         rows_float = [(r[0], float(r[1]), float(r[2]), float(r[3]), float(r[4]), float(r[5])) for r in rows]
@@ -207,7 +212,7 @@ def fetch_btc_snapshot():
         closes_1h, highs_1h, lows_1h = df_1h['close'].tolist(), df_1h['high'].tolist(), df_1h['low'].tolist()
         rsi_1h = _rsi(closes_1h, 14)
         atr_1h = _atr(highs_1h, lows_1h, closes_1h, 14)
-        return {"price": price, "change_pct": change_pct, "high_24h": high_24h, "low_24h": low_24h, "rsi": rsi_1h, "atr": atr_1h}
+        return {"price": price, "change_pct": change_pct, "high_24h": high_24h, "low_24h": low_24h, "rsi": rsi_1h, "atr": atr_1h, "vol_btc": vol_btc, "buy_pct": buy_pct, "sell_pct": sell_pct, "taker_buy": taker_buy}
     except Exception as e:
         log.error("fetch_btc: %s", e)
         return None
@@ -246,14 +251,10 @@ def fetch_network_sentiment(hours_ago=24):
         with conn.cursor() as cur:
             cur.execute("SELECT value, classification FROM fear_greed ORDER BY timestamp DESC LIMIT 1")
             fng_cur = cur.fetchone()
-            cur.execute(f"SELECT value FROM fear_greed WHERE timestamp <= NOW() - INTERVAL '{hours_ago} hours' ORDER BY timestamp DESC LIMIT 1")
-            fng_prev = cur.fetchone()
             cur.execute("SELECT chart_name, value FROM btc_network WHERE chart_name IN ('hash-rate', 'difficulty') ORDER BY chart_time DESC LIMIT 2")
             net_cur = dict(cur.fetchall())
-            cur.execute(f"SELECT chart_name, value FROM btc_network WHERE chart_name IN ('hash-rate', 'difficulty') AND chart_time <= NOW() - INTERVAL '{hours_ago} hours' ORDER BY chart_time DESC LIMIT 2")
-            net_prev = dict(cur.fetchall())
         conn.close()
-        return {"fng": (fng_cur, fng_prev), "network": (net_cur, net_prev)}
+        return {"fng": (fng_cur, None), "network": (net_cur, None)}
     except Exception: return None
 
 def fetch_stablecoins():
@@ -267,7 +268,7 @@ def fetch_stablecoins():
     except Exception: return {}
 
 # ============================================================
-# FORMATTING & BARS
+# FORMATTING
 # ============================================================
 def fmt_price(p): return "$" + format(int(p), ",") if p >= 1000 else "$" + format(p, ".2f")
 def fmt_usd(v):
@@ -279,6 +280,7 @@ def fmt_usd(v):
     if a >= 1e6: return sign + "$" + format(a / 1e6, ".2f") + "M"
     if a >= 1e3: return sign + "$" + format(a / 1e3, ".1f") + "K"
     return sign + "$" + format(a, ".2f")
+def fmt_btc(v): return format(v, ",.1f") + " BTC" if v >= 1000 else format(v, ".2f") + " BTC"
 def fmt_pct(v): return format(v, "+.2f") + "%" if v is not None else "?"
 
 def calc_delta(cur, prev, is_pct=False, is_money=False):
@@ -290,19 +292,6 @@ def calc_delta(cur, prev, is_pct=False, is_money=False):
     if is_pct: return f"({sign} {diff:+.2f}%)"
     if is_money: return f"({sign} {fmt_usd(diff)})"
     return f"({sign} {diff:+g})"
-
-# НОВЫЕ КВАДРАТНЫЕ ПОЛОСКИ
-def get_progress_bar(pct, length=12):
-    filled = int(round(pct / 100 * length))
-    filled = max(0, min(filled, length))
-    return "🟩" * filled + "⬜" * (length - filled)
-
-def get_range_bar(price, low, high, length=12):
-    if high == low: return "⬜" * length
-    pct = (price - low) / (high - low) * 100
-    filled = int(round(pct / 100 * length))
-    filled = max(0, min(filled, length))
-    return "🟩" * filled + "⬜" * (length - filled)
 
 def build_report(data, top_items, top_ru, btc, live_cmc, prev_g_metrics, n_sentiment, stables):
     now = now_local()
@@ -318,14 +307,25 @@ def build_report(data, top_items, top_ru, btc, live_cmc, prev_g_metrics, n_senti
 
     if btc:
         lines.append(f"💰 <b>BTC</b> {fmt_price(btc['price'])} | {fmt_pct(btc['change_pct'])} 24ч")
-        
-        bar_price = get_range_bar(btc['price'], btc['low_24h'], btc['high_24h'])
-        lines.append(f"  Мин {fmt_price(btc['low_24h'])} {bar_price} Макс {fmt_price(btc['high_24h'])}")
-        
+        lines.append(f"  Макс: {fmt_price(btc['high_24h'])} | Мин: {fmt_price(btc['low_24h'])}")
         parts = []
         if btc["rsi"]: parts.append(f"RSI(1ч): {btc['rsi']:.1f}")
         if btc["atr"]: parts.append(f"ATR(1ч): {fmt_price(btc['atr'])}")
         if parts: lines.append("  " + " | ".join(parts))
+        lines.append("")
+        
+        # Полоски объемов
+        bar_len = 12
+        b_buy = int(round(btc["buy_pct"] / 100 * bar_len))
+        bar_buy = "🟩" * b_buy + "⬜" * (bar_len - b_buy)
+        b_sell = int(round(btc["sell_pct"] / 100 * bar_len))
+        bar_sell = "🟥" * b_sell + "⬜" * (bar_len - b_sell)
+        
+        lines.append("⚔️ <b>Битва объемов:</b>")
+        lines.append(f"  🟢 Покупки: {fmt_btc(btc['taker_buy'])} ({btc['buy_pct']:.1f}%)")
+        lines.append(f"  {bar_buy}")
+        lines.append(f"  🔴 Продажи: {fmt_btc(btc['vol_btc'] - btc['taker_buy'])} ({btc['sell_pct']:.1f}%)")
+        lines.append(f"  {bar_sell}")
         lines.append("")
 
     lines.append("🌍 <b>Глобальный рынок</b>")
@@ -381,7 +381,7 @@ def build_report(data, top_items, top_ru, btc, live_cmc, prev_g_metrics, n_senti
     return "\n".join(lines)
 
 def main():
-    log.info("news report v11.2")
+    log.info("news report v11.3")
     if not should_send_personal() and not should_send_group(): return log.info("skip")
     if not SENTIMENT_FILE.exists(): return log.error("no sentiment file")
 
