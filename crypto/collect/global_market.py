@@ -1,16 +1,11 @@
 # ============================================================
-# ARGUS - GLOBAL MARKETS TEST (YAHOO FINANCE)
+# ARGUS - GLOBAL MARKETS TEST (YAHOO FINANCE) FIX
 # Path: crypto/collect/global_market.py
 # ============================================================
 
 import sys
 import logging
-
-try:
-    import yfinance as yf
-except ImportError:
-    print("ERR: yfinance not installed")
-    sys.exit(1)
+import yfinance as yf
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("test_yahoo")
@@ -29,13 +24,19 @@ def test_ticker(ticker):
             log.warning(f"⚠️ {ticker}: Нет данных (пустой ответ)")
             return
         
-        # Берем последнюю строку
-        last_row = data.iloc[-1]
-        close_price = last_row['Close']
-        volume = last_row['Volume']
+        # ИСПРАВЛЕНИЕ: Принудительно превращаем таблицу в одномерный массив чисел
+        close_values = data['Close'].values.flatten()
+        close_price = float(close_values[-1])
+        
+        # Объем может быть не у всех (например, у индексов)
+        volume = 0
+        if 'Volume' in data.columns:
+            volume_values = data['Volume'].values.flatten()
+            volume = float(volume_values[-1])
+        
         date = data.index[-1].strftime('%Y-%m-%d %H:%M')
         
-        log.info(f"✅ {ticker}: Цена {close_price:.2f} | Объем {volume} | Время {date}")
+        log.info(f"✅ {ticker}: Цена {close_price:.2f} | Объем {volume:.0f} | Время {date}")
     except Exception as e:
         log.error(f"❌ {ticker}: Ошибка - {str(e)}")
 
