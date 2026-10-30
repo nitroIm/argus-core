@@ -1,18 +1,18 @@
 {
-  "generated_at": "2026-10-30T05:05:37.160172+00:00",
-  "total_news": 89,
-  "avg_sentiment": -0.34,
+  "generated_at": "2026-10-30T06:05:38.785815+00:00",
+  "total_news": 91,
+  "avg_sentiment": -0.375,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 16,
-  "bearish_count": 27,
-  "neutral_count": 46,
+  "bullish_count": 17,
+  "bearish_count": 30,
+  "neutral_count": 44,
   "fake_count": 0,
-  "cross_confirmed": 3,
+  "cross_confirmed": 5,
   "by_source": {
     "Cointelegraph": {
-      "total": 21,
+      "total": 22,
       "bull": 5,
-      "bear": 6
+      "bear": 8
     },
     "Decrypt": {
       "total": 19,
@@ -21,13 +21,13 @@
     },
     "Bitcoin.com": {
       "total": 8,
-      "bull": 1,
-      "bear": 4
+      "bull": 2,
+      "bear": 3
     },
     "CryptoSlate": {
-      "total": 6,
+      "total": 7,
       "bull": 0,
-      "bear": 3
+      "bear": 4
     },
     "CryptoPotato": {
       "total": 26,
@@ -37,10 +37,27 @@
     "ForkLog": {
       "total": 9,
       "bull": 0,
-      "bear": 0
+      "bear": 1
     }
   },
   "top_bullish": [
+    {
+      "title": "Securitize Defends Tokenization Against Critics With Full-Page WSJ Ad",
+      "url": "https://news.bitcoin.com/finance/securitize-defends-tokenization-against-critics-full-page-wsj-ad/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-30T05:30:55+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-30T06:05:37.313720+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Securitize Defends Tokenization Against Critics With Full-Page WSJ Ad",
+      "cross_check": 1
+    },
     {
       "title": "Bitcoin price jumps to $81.5K as US GDP data beats expectations",
       "url": "https://cointelegraph.com/markets/bitcoin-reaction-to-pce-data?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -53,7 +70,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-30T05:05:35.729462+00:00",
+      "collected_at": "2026-10-30T06:05:36.880799+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin price jumps to $81.5K as US GDP data beats expectations",
       "cross_check": 1
@@ -70,7 +87,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-30T05:05:35.729879+00:00",
+      "collected_at": "2026-10-30T06:05:36.881147+00:00",
       "effective_weight": 1.04,
       "title_original": "Unlimit founder backs Phase blockchain with $45M as mainnet launches",
       "cross_check": 1
@@ -87,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-30T05:05:35.730137+00:00",
+      "collected_at": "2026-10-30T06:05:36.881382+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin lending and yield could drive next wave of institutional demand, Rootstock says",
       "cross_check": 2
@@ -104,45 +121,79 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-30T05:05:35.730262+00:00",
+      "collected_at": "2026-10-30T06:05:36.881492+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin ETFs add $137M, pushing October back into the green",
-      "cross_check": 1
-    },
-    {
-      "title": "Coinbase Swings to $719 Million Q3 Profit on Crypto Gains",
-      "url": "https://decrypt.co/382188/coinbase-beats-719-million-q3-profit-crypto-gains",
-      "source": "Decrypt",
-      "source_weight": 1.1,
-      "lang": "en",
-      "pub_date": "2026-10-29T20:46:43+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 2.2,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-30T05:05:35.800858+00:00",
-      "effective_weight": 0.88,
-      "title_original": "Coinbase Swings to $719 Million Q3 Profit on Crypto Gains",
       "cross_check": 1
     }
   ],
   "top_bearish": [
     {
-      "title": "Bitcoin Crashes to $76K, $1.5B Liquidated After Crypto’s Biggest Hack",
-      "url": "https://cryptopotato.com/bitcoin-crashes-to-76k-1-5b-liquidated-after-cryptos-biggest-hack/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
+      "title": "Strategy eyes more Bitcoin buys as Saylor touts $30B credit capacity",
+      "url": "https://cointelegraph.com/news/strategy-30-billion-digital-credit-capacity-bitcoin-buys?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
       "lang": "en",
-      "pub_date": "2026-10-30T04:38:54+00:00",
+      "pub_date": "2026-10-30T05:53:07+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 3.5,
+      "bear_weight": 0.8,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-30T05:05:36.235935+00:00",
+      "collected_at": "2026-10-30T06:05:36.880263+00:00",
+      "effective_weight": 1.95,
+      "title_original": "Strategy eyes more Bitcoin buys as Saylor touts $30B credit capacity",
+      "cross_check": 2
+    },
+    {
+      "title": "North Korea linked to $6.3B Binance hack by crypto investigators",
+      "url": "https://cointelegraph.com/news/north-korea-linked-to-63b-binance-hack-by-crypto-investigators?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-10-30T05:51:41+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-30T06:05:36.880342+00:00",
+      "effective_weight": 1.95,
+      "title_original": "North Korea linked to $6.3B Binance hack by crypto investigators",
+      "cross_check": 3
+    },
+    {
+      "title": "Binance оценила последствия взлома в $6,3 млрд",
+      "url": "https://forklog.com/news/binance-otsenila-posledstviya-vzloma-v-6-3-mlrd",
+      "source": "ForkLog",
+      "source_weight": 1.2,
+      "lang": "ru",
+      "pub_date": "2026-10-30T05:36:02+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-30T06:05:38.726639+00:00",
+      "effective_weight": 1.8,
+      "title_original": "Binance оценила последствия взлома в $6,3 млрд",
+      "cross_check": 1
+    },
+    {
+      "title": "Binance hack began with a $296 million XRP drain after 36-hour preparation",
+      "url": "https://cryptoslate.com/binance-hack-began-with-a-296-million-xrp-drain-after-36-hour-preparation/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-30T05:40:52+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-30T06:05:37.460786+00:00",
       "effective_weight": 1.5,
-      "title_original": "Bitcoin Crashes to $76K, $1.5B Liquidated After Crypto’s Biggest Hack",
+      "title_original": "Binance hack began with a $296 million XRP drain after 36-hour preparation",
       "cross_check": 1
     },
     {
@@ -157,60 +208,9 @@
       "bear_weight": 2.3,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-30T05:05:35.728960+00:00",
+      "collected_at": "2026-10-30T06:05:36.880408+00:00",
       "effective_weight": 1.3,
       "title_original": "Binance hack could accelerate shift to DEXs: Standard Chartered",
-      "cross_check": 1
-    },
-    {
-      "title": "Binance points to engineer’s hacked laptop in $6.3B breach",
-      "url": "https://cointelegraph.com/news/binance-hack-may-involve-private-key-misuse-not-theft-blockaid-ceo?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-10-30T00:11:26+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-30T05:05:35.729050+00:00",
-      "effective_weight": 1.3,
-      "title_original": "Binance points to engineer’s hacked laptop in $6.3B breach",
-      "cross_check": 1
-    },
-    {
-      "title": "Binance hack rattles markets as BNB falls 8%, Bitcoin nears $77K",
-      "url": "https://cointelegraph.com/markets/binance-hack-rattles-crypto-markets-bnb-bitcoin-slide?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-10-29T23:24:21+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 2.5,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-30T05:05:35.729127+00:00",
-      "effective_weight": 1.3,
-      "title_original": "Binance hack rattles markets as BNB falls 8%, Bitcoin nears $77K",
-      "cross_check": 1
-    },
-    {
-      "title": "Brazil’s Halloween eve crypto deadline brings more tricks than treats",
-      "url": "https://cointelegraph.com/news/brazil-crypto-license-filing-deadline-hurdles-uncertainty?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-10-29T13:30:00+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-30T05:05:35.729626+00:00",
-      "effective_weight": 1.04,
-      "title_original": "Brazil’s Halloween eve crypto deadline brings more tricks than treats",
       "cross_check": 1
     }
   ]
