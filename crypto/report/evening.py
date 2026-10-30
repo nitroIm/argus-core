@@ -1,9 +1,8 @@
 # ============================================================
-# ARGUS - EVENING REPORT v17.4 (GLOBAL METRICS ADDED)
+# ARGUS - EVENING REPORT v17.4.1 (DECIMAL FIX)
 # ------------------------------------------------------------
 # Вечерний отчёт. Период 08:00 → 20:00 КЛГ.
-# v17.4: Добавлены Глобальный рынок, Сеть, Сентимент.
-#        Сравнение показателей происходит с утренними данными.
+# v17.4.1: Исправлена ошибка TypeError с типом Decimal.
 # ============================================================
 
 import os
@@ -207,7 +206,6 @@ def fetch_global_metrics():
             with conn.cursor() as cur:
                 cur.execute("SELECT btc_dominance, total_market_cap, stablecoin_market_cap FROM global_metrics ORDER BY last_updated DESC LIMIT 1")
                 cur_row = cur.fetchone()
-                # Сравниваем с утренними данными (12 часов назад)
                 cur.execute("SELECT btc_dominance, total_market_cap, stablecoin_market_cap FROM global_metrics WHERE last_updated <= NOW() - INTERVAL '12 hours' ORDER BY last_updated DESC LIMIT 1")
                 prev_row = cur.fetchone()
         if not cur_row: return None
@@ -220,13 +218,11 @@ def fetch_network_sentiment():
     try:
         with get_conn() as conn:
             with conn.cursor() as cur:
-                # Fear & Greed (сравниваем с утренним)
                 cur.execute("SELECT value, classification FROM fear_greed ORDER BY timestamp DESC LIMIT 1")
                 fng_cur = cur.fetchone()
                 cur.execute("SELECT value FROM fear_greed WHERE timestamp <= NOW() - INTERVAL '12 hours' ORDER BY timestamp DESC LIMIT 1")
                 fng_prev = cur.fetchone()
 
-                # Network (сравниваем с утренним)
                 cur.execute("SELECT chart_name, value FROM btc_network WHERE chart_name IN ('hash-rate', 'difficulty', 'miners-revenue') ORDER BY chart_time DESC LIMIT 3")
                 net_cur = dict(cur.fetchall())
                 
@@ -375,7 +371,7 @@ def fmt_global_market(data, stables):
     
     stbl_mcap = float(cur[2])
     usdt_price = stables.get("USDT")
-    usdt_str = f"USDT: ${usdt_price:.3f} ✅" if usdt_price and 0.99 <= usdt_price <= 1.01 else f"USDT: ${usdt_price:.3f} ⚠️" if usdt_price else "USDT: ?"
+    usdt_str = f"USDT: ${usdt_price:.3f} ✅" if usdt_price and 0.99 <= float(usdt_price) <= 1.01 else f"USDT: ${usdt_price:.3f} ⚠️" if usdt_price else "USDT: ?"
     lines.append(f"  Стейблкоины: {fmt_usd(stbl_mcap)} ({usdt_str})")
     return lines
 
@@ -386,9 +382,9 @@ def fmt_network_sentiment(data):
     
     fng_cur, fng_prev = data["fng"]
     if fng_cur:
-        val = fng_cur[0]
+        val = int(fng_cur[0])
         cls = fng_cur[1]
-        prev_val = fng_prev[0] if fng_prev else None
+        prev_val = int(fng_prev[0]) if fng_prev else None
         delta = calc_delta(val, prev_val) if prev_val is not None else "(нет данных)"
         lines.append(f"  Страх/Жадность: {val} ({cls}) {delta}")
     else:
@@ -398,23 +394,24 @@ def fmt_network_sentiment(data):
     if net_cur:
         hr = net_cur.get("hash-rate")
         if hr:
-            hr_eh = hr / 1e6
+            hr_eh = float(hr) / 1e6
             prev_hr = net_prev.get("hash-rate")
-            d_hr = calc_delta(hr_eh, prev_hr / 1e6, is_pct=True) if prev_hr else "(нет данных)"
+            d_hr = calc_delta(hr_eh, float(prev_hr) / 1e6, is_pct=True) if prev_hr else "(нет данных)"
             lines.append(f"  Хешрейт: {hr_eh:.0f} EH/s {d_hr}")
             
         diff = net_cur.get("difficulty")
         if diff:
-            diff_t = diff / 1e12
+            diff_t = float(diff) / 1e12
             prev_diff = net_prev.get("difficulty")
-            d_diff = calc_delta(diff_t, prev_diff / 1e12, is_pct=True) if prev_diff else "(нет данных)"
+            d_diff = calc_delta(diff_t, float(prev_diff) / 1e12, is_pct=True) if prev_diff else "(нет данных)"
             lines.append(f"  Сложность: {diff_t:.1f} T {d_diff}")
             
         rev = net_cur.get("miners-revenue")
         if rev:
+            rev_f = float(rev)
             prev_rev = net_prev.get("miners-revenue")
-            d_rev = calc_delta(rev, prev_rev, is_pct=True) if prev_rev else "(нет данных)"
-            lines.append(f"  Доход майнеров: {fmt_usd(rev)} {d_rev}")
+            d_rev = calc_delta(rev_f, float(prev_rev), is_pct=True) if prev_rev else "(нет данных)"
+            lines.append(f"  Доход майнеров: {fmt_usd(rev_f)} {d_rev}")
     else:
         lines.append("  Сеть BTC: (нет данных)")
             
@@ -536,7 +533,7 @@ def build_report_text(candles, stats, g_metrics, n_sentiment, stables):
 
 
 def main():
-    print("Evening report v17.4 - start")
+    print("Evening report v17.4.1 - start")
     stats = fetch_stats(SYMBOL)
     candles = fetch_candles(SYMBOL, 300)
     g_metrics = fetch_global_metrics()
