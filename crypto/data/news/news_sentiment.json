@@ -1,18 +1,18 @@
 {
-  "generated_at": "2026-10-30T00:05:48.199517+00:00",
+  "generated_at": "2026-10-30T01:05:40.331889+00:00",
   "total_news": 88,
-  "avg_sentiment": -0.19,
+  "avg_sentiment": -0.238,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 19,
-  "bearish_count": 25,
+  "bullish_count": 18,
+  "bearish_count": 26,
   "neutral_count": 44,
   "fake_count": 0,
   "cross_confirmed": 6,
   "by_source": {
     "Cointelegraph": {
       "total": 21,
-      "bull": 6,
-      "bear": 4
+      "bull": 5,
+      "bear": 5
     },
     "Decrypt": {
       "total": 19,
@@ -53,7 +53,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-30T00:05:46.492098+00:00",
+      "collected_at": "2026-10-30T01:05:38.449816+00:00",
       "effective_weight": 1.1,
       "title_original": "Coinbase Swings to $719 Million Q3 Profit on Crypto Gains",
       "cross_check": 2
@@ -70,7 +70,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-30T00:05:46.441372+00:00",
+      "collected_at": "2026-10-30T01:05:38.336821+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin price jumps to $81.5K as US GDP data beats expectations",
       "cross_check": 1
@@ -87,7 +87,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-30T00:05:46.441693+00:00",
+      "collected_at": "2026-10-30T01:05:38.337209+00:00",
       "effective_weight": 1.04,
       "title_original": "Unlimit founder backs Phase blockchain with $45M as mainnet launches",
       "cross_check": 1
@@ -104,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-30T00:05:46.441889+00:00",
+      "collected_at": "2026-10-30T01:05:38.337440+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin lending and yield could drive next wave of institutional demand, Rootstock says",
       "cross_check": 2
@@ -121,13 +121,47 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-30T00:05:46.441981+00:00",
+      "collected_at": "2026-10-30T01:05:38.337553+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin ETFs add $137M, pushing October back into the green",
       "cross_check": 1
     }
   ],
   "top_bearish": [
+    {
+      "title": "Binance hack may involve private key ‘misuse,’ not theft: Blockaid CEO",
+      "url": "https://cointelegraph.com/news/binance-hack-may-involve-private-key-misuse-not-theft-blockaid-ceo?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-10-30T00:11:26+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-30T01:05:38.336446+00:00",
+      "effective_weight": 1.95,
+      "title_original": "Binance hack may involve private key ‘misuse,’ not theft: Blockaid CEO",
+      "cross_check": 1
+    },
+    {
+      "title": "Inside the $5.8B Binance Hack: What’s Confirmed and What Isn’t",
+      "url": "https://news.bitcoin.com/security/inside-the-5-8b-binance-hack-whats-confirmed-and-what-isnt/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-10-30T00:41:03+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-30T01:05:38.667283+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Inside the $5.8B Binance Hack: What’s Confirmed and What Isn’t",
+      "cross_check": 1
+    },
     {
       "title": "Binance hack rattles crypto markets as BNB falls 7%, Bitcoin slides",
       "url": "https://cointelegraph.com/markets/binance-hack-rattles-crypto-markets-bnb-bitcoin-slide?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -138,29 +172,12 @@
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 2.5,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-30T00:05:46.441112+00:00",
-      "effective_weight": 1.95,
+      "collected_at": "2026-10-30T01:05:38.336532+00:00",
+      "effective_weight": 1.3,
       "title_original": "Binance hack rattles crypto markets as BNB falls 7%, Bitcoin slides",
       "cross_check": 3
-    },
-    {
-      "title": "Trump’s crypto firm joins Tether, Circle, and Ripple in $2.6 billion stablecoin freeze as Binance hack outflows near $6 billion",
-      "url": "https://cryptoslate.com/trumps-crypto-firm-joins-tether-circle-and-ripple-in-2-6-billion-stablecoin-freeze-as-binance-hack-outflows-near-6-billion/",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-29T23:50:05+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 6.1,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-30T00:05:46.870769+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Trump’s crypto firm joins Tether, Circle, and Ripple in $2.6 billion stablecoin freeze as Binance hack outflows near $6 billion",
-      "cross_check": 5
     },
     {
       "title": "Binance Hacker Hunts for Exit Ramps as DeFi Exchanges Pause Markets",
@@ -174,7 +191,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-30T00:05:46.491991+00:00",
+      "collected_at": "2026-10-30T01:05:38.449586+00:00",
       "effective_weight": 1.1,
       "title_original": "Binance Hacker Hunts for Exit Ramps as DeFi Exchanges Pause Markets",
       "cross_check": 1
@@ -191,27 +208,10 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-30T00:05:46.492052+00:00",
+      "collected_at": "2026-10-30T01:05:38.449714+00:00",
       "effective_weight": 1.1,
       "title_original": "Binance Drained of $5.5 Billion in Suspected Hack, Tether and Circle Freeze $1.8 Billion",
       "cross_check": 3
-    },
-    {
-      "title": "Brazil’s Halloween eve crypto deadline brings more tricks than treats",
-      "url": "https://cointelegraph.com/news/brazil-crypto-license-filing-deadline-hurdles-uncertainty?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-10-29T13:30:00+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-30T00:05:46.441487+00:00",
-      "effective_weight": 1.04,
-      "title_original": "Brazil’s Halloween eve crypto deadline brings more tricks than treats",
-      "cross_check": 1
     }
   ]
 }
