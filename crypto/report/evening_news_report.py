@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - EVENING NEWS REPORT v3.0 (GLOBAL METRICS ADDED)
+# ARGUS - EVENING NEWS REPORT v3.1 (LIVE CMC, 5 NEWS, NO BARS)
 # ============================================================
 
 import os
@@ -123,7 +123,7 @@ def translate_top(items, n=5):
     except Exception: return originals
 
 # ============================================================
-# DB FETCHERS (LIVE & HISTORY)
+# DB FETCHERS
 # ============================================================
 def get_conn():
     if not DB_URL: raise RuntimeError("AIVEN_DB_URL not set")
@@ -151,12 +151,10 @@ def fetch_btc_snapshot():
         
         if len(df_1h) < 15: return None
         
-        # ATR & RSI
         closes_1h = df_1h['close'].tolist()
         highs_1h = df_1h['high'].tolist()
         lows_1h = df_1h['low'].tolist()
         
-        # RSI
         p = 14
         rsi = None
         if len(closes_1h) > p:
@@ -172,7 +170,6 @@ def fetch_btc_snapshot():
                 al = (al*(p-1) + (-d if d<0 else 0))/p
             rsi = 100 - 100/(1 + (ag/al if al>0 else 999))
             
-        # ATR
         atr = None
         if len(highs_1h) > p:
             trs = [max(highs_1h[i]-lows_1h[i], abs(highs_1h[i]-closes_1h[i-1]), abs(lows_1h[i]-closes_1h[i-1])) for i in range(1, len(highs_1h))]
@@ -293,13 +290,13 @@ def build_report(data, top_items, top_ru, btc, live_cmc, prev_g_metrics, n_senti
 
     lines.append("🌐 <b>Сеть и Сентимент</b>")
     if n_sentiment:
-        fng_cur, fng_prev = n_sentiment["fng"]
-        net_cur, net_prev = n_sentiment["network"]
+        fng_cur, _ = n_sentiment["fng"]
+        net_cur, _ = n_sentiment["network"]
         if fng_cur: lines.append(f"  Страх/Жадность: {fng_cur[0]} ({fng_cur[1]})")
         else: lines.append("  Страх/Жадность: (нет данных)")
         if net_cur.get("hash-rate"):
             hr = float(net_cur["hash-rate"]) / 1e6
-            lines.append(f"  Хешрейт: {hr:.0f} EH/s (⏸️ 0)")
+            lines.append(f"  Хешрейт: {hr:.0f} EH/s")
         else: lines.append("  Сеть BTC: (нет данных)")
     else:
         lines.append("  ❌ Данные недоступны")
@@ -329,7 +326,7 @@ def build_report(data, top_items, top_ru, btc, live_cmc, prev_g_metrics, n_senti
     return "\n".join(lines)
 
 def main():
-    log.info("evening news report v3.0")
+    log.info("evening news report v3.1")
     if not SENTIMENT_FILE.exists(): return
 
     data = load_json(SENTIMENT_FILE)
