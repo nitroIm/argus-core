@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - EVENING NEWS REPORT v3.1 (LIVE CMC, 5 NEWS, NO BARS)
+# ARGUS - EVENING NEWS REPORT v3.2 (SQUARE BARS)
 # ============================================================
 
 import os
@@ -123,7 +123,7 @@ def translate_top(items, n=5):
     except Exception: return originals
 
 # ============================================================
-# DB FETCHERS
+# DB FETCHERS & HELPERS
 # ============================================================
 def get_conn():
     if not DB_URL: raise RuntimeError("AIVEN_DB_URL not set")
@@ -234,7 +234,7 @@ def fetch_stablecoins():
     except Exception: return {}
 
 # ============================================================
-# FORMATTING
+# FORMATTING & BARS
 # ============================================================
 def fmt_price(p): return "$" + format(int(p), ",") if p >= 1000 else "$" + format(p, ".2f")
 def fmt_usd(v):
@@ -258,6 +258,19 @@ def calc_delta(cur, prev, is_pct=False, is_money=False):
     if is_money: return f"({sign} {fmt_usd(diff)})"
     return f"({sign} {diff:+g})"
 
+# НОВЫЕ КВАДРАТНЫЕ ПОЛОСКИ
+def get_progress_bar(pct, length=12):
+    filled = int(round(pct / 100 * length))
+    filled = max(0, min(filled, length))
+    return "🟩" * filled + "⬜" * (length - filled)
+
+def get_range_bar(price, low, high, length=12):
+    if high == low: return "⬜" * length
+    pct = (price - low) / (high - low) * 100
+    filled = int(round(pct / 100 * length))
+    filled = max(0, min(filled, length))
+    return "🟩" * filled + "⬜" * (length - filled)
+
 def build_report(data, top_items, top_ru, btc, live_cmc, prev_g_metrics, n_sentiment, stables):
     now = now_local()
     mood, avg, total = data.get("mood", "Неизвестно"), data.get("avg_sentiment", 0.0), data.get("total_news", 0)
@@ -266,7 +279,10 @@ def build_report(data, top_items, top_ru, btc, live_cmc, prev_g_metrics, n_senti
 
     if btc:
         lines.append(f"💰 <b>BTC</b> {fmt_price(btc['price'])} | {fmt_pct(btc['change_pct'])} 24ч")
-        lines.append(f"  Макс: {fmt_price(btc['high_24h'])} | Мин: {fmt_price(btc['low_24h'])}")
+        
+        bar_price = get_range_bar(btc['price'], btc['low_24h'], btc['high_24h'])
+        lines.append(f"  Мин {fmt_price(btc['low_24h'])} {bar_price} Макс {fmt_price(btc['high_24h'])}")
+        
         parts = []
         if btc["rsi"]: parts.append(f"RSI(1ч): {btc['rsi']:.1f}")
         if btc["atr"]: parts.append(f"ATR(1ч): {fmt_price(btc['atr'])}")
@@ -326,7 +342,7 @@ def build_report(data, top_items, top_ru, btc, live_cmc, prev_g_metrics, n_senti
     return "\n".join(lines)
 
 def main():
-    log.info("evening news report v3.1")
+    log.info("evening news report v3.2")
     if not SENTIMENT_FILE.exists(): return
 
     data = load_json(SENTIMENT_FILE)
