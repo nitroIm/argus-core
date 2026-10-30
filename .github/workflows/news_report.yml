@@ -25,7 +25,7 @@ jobs:
           VK_TOKEN: ${{ secrets.VK_TOKEN }}
           VK_GROUP_ID: ${{ secrets.VK_GROUP_ID }}
           CMC_API_KEY: ${{ secrets.CMC_API_KEY }}
-          NEWS_TEST_MODE: "1"
+          # NEWS_TEST_MODE: "1"
         run: python crypto/report/news_report.py
       - name: Save history
         run: |
