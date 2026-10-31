@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - NEWS REPORT v12.1 (VK DEBUG)
+# ARGUS - NEWS REPORT v12.3 (GROUPS ONLY & 20 BARS)
 # Path: crypto/report/news_report.py
 # ============================================================
 
@@ -37,7 +37,6 @@ except Exception as e:
     def translate_batch(t): return t
 
 BOT_TOKEN = (os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("BOT_TOKEN") or "").strip()
-CHAT_ID = (os.getenv("TELEGRAM_CHAT_ID") or "").strip()
 TG_CHANNEL_ID = (os.getenv("TG_CHANNEL_ID") or "").strip()
 VK_TOKEN = (os.getenv("VK_TOKEN") or "").strip()
 VK_GROUP_ID = (os.getenv("VK_GROUP_ID") or "").strip()
@@ -53,7 +52,6 @@ TIMEFRAME = "15m"
 TZ = ZoneInfo("Europe/Kaliningrad")
 
 def now_local(): return datetime.now(timezone.utc).astimezone(TZ)
-def should_send_personal(): return True if TEST_MODE else now_local().hour == 9
 def should_send_group(): return True if TEST_MODE else now_local().hour == 9
 
 def esc(s):
@@ -88,7 +86,6 @@ def upload_photo_to_vk(photo_bytes):
         return None
     try:
         gid = VK_GROUP_ID.replace("-", "")
-        # 1. Получаем сервер
         url = f"https://api.vk.com/method/photos.getWallUploadServer?group_id={gid}&access_token={VK_TOKEN}&v=5.199"
         r = requests.get(url, timeout=20).json()
         
@@ -97,8 +94,6 @@ def upload_photo_to_vk(photo_bytes):
             return None
             
         upload_url = r["response"]["upload_url"]
-        
-        # 2. Загружаем фото
         files = {'photo': ('chart.png', photo_bytes)}
         r = requests.post(upload_url, files=files, timeout=30).json()
         
@@ -106,7 +101,6 @@ def upload_photo_to_vk(photo_bytes):
             log.error(f"VK Upload Error: {r}")
             return None
             
-        # 3. Сохраняем фото
         url = "https://api.vk.com/method/photos.saveWallPhoto"
         params = {"group_id": gid, "photo": r["photo"], "server": r["server"], "hash": r["hash"], "access_token": VK_TOKEN, "v": "5.199"}
         res = requests.post(url, data=params, timeout=20).json()
@@ -132,17 +126,10 @@ def send_vk(text, photo_attachment=None):
             "message": text[:MAX_VK_LEN], 
             "access_token": VK_TOKEN, "v": "5.199"
         }
-        if photo_attachment:
-            params["attachments"] = photo_attachment
-            
+        if photo_attachment: params["attachments"] = photo_attachment
         r = requests.post(url, data=params, timeout=30)
-        if "error" in r.json():
-            log.error(f"VK wall.post Error: {r.json()['error']}")
-            return False
-        return True
-    except Exception as e:
-        log.error(f"VK wall.post Exception: {e}")
-        return False
+        return "error" not in r.json()
+    except Exception: return False
 
 def to_plain(text):
     text = re.sub(r"<a href=\"([^\"]+)\">([^<]+)</a>", r"\2 (\1)", text)
@@ -418,7 +405,7 @@ def build_report(data, top_items, top_ru, btc, live_cmc, prev_g_metrics, n_senti
         if parts: lines.append("  " + " | ".join(parts))
         lines.append("")
         
-        bar_len = 12
+        bar_len = 20
         b_buy = int(round(btc["buy_pct"] / 100 * bar_len))
         bar_buy = "🟩" * b_buy + "⬜" * (bar_len - b_buy)
         b_sell = int(round(btc["sell_pct"] / 100 * bar_len))
@@ -483,8 +470,9 @@ def build_report(data, top_items, top_ru, btc, live_cmc, prev_g_metrics, n_senti
     return "\n".join(lines)
 
 def main():
-    log.info("news report v12.1")
-    if not should_send_personal() and not should_send_group(): return log.info("skip")
+    log.info("news report v12.3")
+    if not should_send_group(): return log.info("skip")
+
     if not SENTIMENT_FILE.exists(): return log.error("no sentiment file")
 
     data = load_json(SENTIMENT_FILE)
@@ -506,15 +494,12 @@ def main():
     text_vk = to_plain(text_tg)
 
     sent_any = False
-    if should_send_personal() and send_telegram(text_tg, CHAT_ID): sent_any = True
+    if TG_CHANNEL_ID: send_telegram(text_tg, TG_CHANNEL_ID)
     
-    if should_send_group():
-        if TG_CHANNEL_ID: send_telegram(text_tg, TG_CHANNEL_ID)
-        
-        photo_buf = generate_chart_image()
-        photo_att = upload_photo_to_vk(photo_buf) if photo_buf else None
-        
-        if send_vk(text_vk, photo_att): sent_any = True
+    photo_buf = generate_chart_image()
+    photo_att = upload_photo_to_vk(photo_buf) if photo_buf else None
+    
+    if send_vk(text_vk, photo_att): sent_any = True
 
     if sent_any:
         for it in top_5: add_sent_hash(history, _title_hash(it.get("title_original") or it.get("title", "")))
