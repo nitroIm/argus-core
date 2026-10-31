@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - NEWS REPORT v12.0 (VK CHART INTEGRATION)
+# ARGUS - NEWS REPORT v12.1 (VK DEBUG)
 # Path: crypto/report/news_report.py
 # ============================================================
 
@@ -83,28 +83,38 @@ def send_telegram(text, chat_id):
     return ok_all
 
 def upload_photo_to_vk(photo_bytes):
-    if not VK_TOKEN or not VK_GROUP_ID: return None
+    if not VK_TOKEN or not VK_GROUP_ID: 
+        log.error("VK: No token or group ID")
+        return None
     try:
         gid = VK_GROUP_ID.replace("-", "")
         # 1. Получаем сервер
         url = f"https://api.vk.com/method/photos.getWallUploadServer?group_id={gid}&access_token={VK_TOKEN}&v=5.199"
         r = requests.get(url, timeout=20).json()
-        if "error" in r: return None
+        
+        if "error" in r: 
+            log.error(f"VK getWallUploadServer Error: {r['error']}")
+            return None
+            
         upload_url = r["response"]["upload_url"]
         
         # 2. Загружаем фото
         files = {'photo': ('chart.png', photo_bytes)}
         r = requests.post(upload_url, files=files, timeout=30).json()
         
+        if "error" in r:
+            log.error(f"VK Upload Error: {r}")
+            return None
+            
         # 3. Сохраняем фото
         url = "https://api.vk.com/method/photos.saveWallPhoto"
-        params = {
-            "group_id": gid, "photo": r["photo"], 
-            "server": r["server"], "hash": r["hash"],
-            "access_token": VK_TOKEN, "v": "5.199"
-        }
+        params = {"group_id": gid, "photo": r["photo"], "server": r["server"], "hash": r["hash"], "access_token": VK_TOKEN, "v": "5.199"}
         res = requests.post(url, data=params, timeout=20).json()
-        if "error" in res: return None
+        
+        if "error" in res: 
+            log.error(f"VK saveWallPhoto Error: {res['error']}")
+            return None
+            
         saved = res["response"][0]
         return f"photo{saved['owner_id']}_{saved['id']}"
     except Exception as e:
@@ -126,8 +136,13 @@ def send_vk(text, photo_attachment=None):
             params["attachments"] = photo_attachment
             
         r = requests.post(url, data=params, timeout=30)
-        return "error" not in r.json()
-    except Exception: return False
+        if "error" in r.json():
+            log.error(f"VK wall.post Error: {r.json()['error']}")
+            return False
+        return True
+    except Exception as e:
+        log.error(f"VK wall.post Exception: {e}")
+        return False
 
 def to_plain(text):
     text = re.sub(r"<a href=\"([^\"]+)\">([^<]+)</a>", r"\2 (\1)", text)
@@ -295,7 +310,6 @@ def fetch_btc_snapshot():
         buy_pct = (taker_buy / vol_btc * 100) if vol_btc else 50
         sell_pct = 100 - buy_pct
 
-        import pandas as pd
         rows_float = [(r[0], float(r[1]), float(r[2]), float(r[3]), float(r[4]), float(r[5])) for r in rows]
         df = pd.DataFrame(rows_float, columns=['open_time', 'open', 'high', 'low', 'close', 'volume'])
         df['open_time'] = pd.to_datetime(df['open_time'], utc=True)
@@ -469,7 +483,7 @@ def build_report(data, top_items, top_ru, btc, live_cmc, prev_g_metrics, n_senti
     return "\n".join(lines)
 
 def main():
-    log.info("news report v12.0")
+    log.info("news report v12.1")
     if not should_send_personal() and not should_send_group(): return log.info("skip")
     if not SENTIMENT_FILE.exists(): return log.error("no sentiment file")
 
@@ -497,7 +511,6 @@ def main():
     if should_send_group():
         if TG_CHANNEL_ID: send_telegram(text_tg, TG_CHANNEL_ID)
         
-        # Генерируем картинку только для ВК
         photo_buf = generate_chart_image()
         photo_att = upload_photo_to_vk(photo_buf) if photo_buf else None
         
