@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - CHART TEST (CURRENT PRICE LINE)
+# ARGUS - CHART TEST (CURRENT PRICE LINE FIX)
 # Path: crypto/collect/chart_test.py
 # ============================================================
 
@@ -89,7 +89,7 @@ def main():
         'figure.titlesize': 16
     }
 
-    # Стиль (Тёмный)
+    # Стиль (Тёмный) + ПЕРЕНОС ОСЕЙ ВПРАВО
     mc = mpf.make_marketcolors(up='#26a69a', down='#ef5350', edge='inherit', wick='inherit', volume='in')
     s = mpf.make_mpf_style(
         marketcolors=mc, 
@@ -98,10 +98,10 @@ def main():
         figcolor='#131722', 
         gridcolor='#2a2e39', 
         gridstyle='--',
-        rc=rc
+        rc=rc,
+        y_on_right=True # <--- ТЕПЕРЬ ЗДЕСЬ
     )
 
-    # Только MACD
     apds = [
         mpf.make_addplot(macd_hist, type='bar', color=macd_colors, panel=2),
         mpf.make_addplot(macd_line, color='#FFD700', panel=2, width=1),
@@ -110,7 +110,7 @@ def main():
 
     title = "BTC/USDT | 1D"
     
-    # Генерируем график (добавили hlines для пунктирной линии цены)
+    # Генерируем график (убрали y_on_right отсюда)
     fig, axes = mpf.plot(
         df_1d, type='candle', style=s, 
         title=title, ylabel='', ylabel_lower='',
@@ -118,8 +118,7 @@ def main():
         addplot=apds,
         panel_ratios=(6, 1.5, 2), 
         figsize=(10, 10), 
-        y_on_right=True,
-        hlines=dict(hlines=[last_close], colors=[last_color], linestyles=['--'], linewidths=[1]), # <--- Линия
+        hlines=dict(hlines=[last_close], colors=[last_color], linestyles=['--'], linewidths=[1]),
         returnfig=True
     )
     
@@ -129,7 +128,6 @@ def main():
 
     # Рисуем плашку с ценой на правой оси
     ax_main = axes[0]
-    # Текст с ценой
     ax_main.text(1.005, last_close, f' {last_close:,.2f} ', 
                  transform=ax_main.get_yaxis_transform(), 
                  va='center', ha='left', 
