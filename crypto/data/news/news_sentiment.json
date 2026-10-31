@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-10-31T00:05:37.131648+00:00",
+  "generated_at": "2026-10-31T01:05:34.239772+00:00",
   "total_news": 93,
-  "avg_sentiment": -0.687,
+  "avg_sentiment": -0.695,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 9,
-  "bearish_count": 49,
-  "neutral_count": 35,
+  "bearish_count": 50,
+  "neutral_count": 34,
   "fake_count": 0,
-  "cross_confirmed": 25,
+  "cross_confirmed": 24,
   "by_source": {
     "Cointelegraph": {
       "total": 23,
@@ -27,7 +27,7 @@
     "CryptoSlate": {
       "total": 7,
       "bull": 1,
-      "bear": 2
+      "bear": 3
     },
     "CryptoPotato": {
       "total": 25,
@@ -53,7 +53,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-31T00:05:35.802631+00:00",
+      "collected_at": "2026-10-31T01:05:32.910233+00:00",
       "effective_weight": 1.0,
       "title_original": "Uniswap launches TJAR fee tool, but only fast searchers capture the hidden arbitrage profit",
       "cross_check": 1
@@ -70,7 +70,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-31T00:05:37.069529+00:00",
+      "collected_at": "2026-10-31T01:05:34.202845+00:00",
       "effective_weight": 0.96,
       "title_original": "Чистая прибыль Coinbase выросла на 66% на фоне развития рынков предсказаний",
       "cross_check": 1
@@ -87,7 +87,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-31T00:05:35.665352+00:00",
+      "collected_at": "2026-10-31T01:05:32.766396+00:00",
       "effective_weight": 0.8,
       "title_original": "Bitcoin ETFs Add $441M in 4 Days as Zcash Streak Hits Day 8",
       "cross_check": 1
@@ -104,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-31T00:05:35.963535+00:00",
+      "collected_at": "2026-10-31T01:05:33.087925+00:00",
       "effective_weight": 0.8,
       "title_original": "Michael Saylor Sees Next Bitcoin Bull Market Beginning as Strategy Reports $19.5B in Q3 Net Income",
       "cross_check": 2
@@ -121,7 +121,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-31T00:05:35.963819+00:00",
+      "collected_at": "2026-10-31T01:05:33.088121+00:00",
       "effective_weight": 0.8,
       "title_original": "Important Ripple News and XRP Price Update: October 30",
       "cross_check": 1
@@ -129,20 +129,20 @@
   ],
   "top_bearish": [
     {
-      "title": "Binance Prepares to Resume Withdrawals, Unveils $6.3B Hack Recovery Plan",
-      "url": "https://news.bitcoin.com/security/binance-prepares-to-resume-withdrawals-unveils-6-3b-hack-recovery-plan/",
-      "source": "Bitcoin.com",
+      "title": "Maple locks $280M in XRP collateral and upcoming maturity dates threaten liquidations",
+      "url": "https://cryptoslate.com/maple-locks-280m-in-xrp-collateral-and-upcoming-maturity-dates-threaten-liquidations/",
+      "source": "CryptoSlate",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-10-30T23:05:47+00:00",
+      "pub_date": "2026-10-31T00:10:43+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 4.5,
+      "bear_weight": 1.2,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-31T00:05:35.664924+00:00",
+      "collected_at": "2026-10-31T01:05:32.910145+00:00",
       "effective_weight": 1.5,
-      "title_original": "Binance Prepares to Resume Withdrawals, Unveils $6.3B Hack Recovery Plan",
+      "title_original": "Maple locks $280M in XRP collateral and upcoming maturity dates threaten liquidations",
       "cross_check": 1
     },
     {
@@ -157,7 +157,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-31T00:05:35.317369+00:00",
+      "collected_at": "2026-10-31T01:05:32.443794+00:00",
       "effective_weight": 1.3,
       "title_original": "Binance hackers raced to move billions before it could be frozen",
       "cross_check": 2
@@ -174,7 +174,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-31T00:05:35.420577+00:00",
+      "collected_at": "2026-10-31T01:05:32.578842+00:00",
       "effective_weight": 1.1,
       "title_original": "Binance Hack Shows Why Offshore Exchanges Need US Oversight, CFTC Chair Says",
       "cross_check": 3
@@ -191,27 +191,27 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-31T00:05:35.420650+00:00",
+      "collected_at": "2026-10-31T01:05:32.578889+00:00",
       "effective_weight": 1.1,
       "title_original": "Worried About Crypto Hacks? Buy Bitcoin Proxies in Stock Market Instead, Say Wall Street Firms",
       "cross_check": 1
     },
     {
-      "title": "Binance Hack: Why Bitcoin Didn't Crash Like It Did in 2018",
-      "url": "https://decrypt.co/382257/binance-hack-why-bitcoin-didnt-crash",
-      "source": "Decrypt",
-      "source_weight": 1.1,
+      "title": "Bitcoin risks worst October in 12 years as tech sell-off spreads to gold",
+      "url": "https://cointelegraph.com/markets/bitcoin-risks-worst-october-in-12-years-as-tech-sell-off-spreads-to-gold?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
       "lang": "en",
-      "pub_date": "2026-10-30T18:45:03+00:00",
+      "pub_date": "2026-10-30T16:06:28+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 3.5,
-      "freshness": 1.0,
+      "bear_weight": 1.5,
+      "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-31T00:05:35.420706+00:00",
-      "effective_weight": 1.1,
-      "title_original": "Binance Hack: Why Bitcoin Didn't Crash Like It Did in 2018",
-      "cross_check": 8
+      "collected_at": "2026-10-31T01:05:32.444073+00:00",
+      "effective_weight": 1.04,
+      "title_original": "Bitcoin risks worst October in 12 years as tech sell-off spreads to gold",
+      "cross_check": 1
     }
   ]
 }
