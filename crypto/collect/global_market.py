@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - GLOBAL MARKETS COLLECTOR (v1.0.0)
+# ARGUS - GLOBAL MARKETS COLLECTOR (v1.0.1)
 # Path: crypto/collect/global_market.py
 # ============================================================
 
@@ -16,7 +16,7 @@ log = logging.getLogger("global_market")
 
 DB_URL = (os.getenv("AIVEN_DB_URL") or "").strip()
 
-# Справочник названий и стран (так как в yfinance их нет)
+# Справочник названий и стран (ДОБАВЛЕНА ЕВРОПА)
 TICKER_META = {
     "^N225": {"name": "Nikkei 225", "country": "Japan"},
     "^HSI": {"name": "Hang Seng", "country": "Hong Kong"},
@@ -29,9 +29,18 @@ TICKER_META = {
     "^KLSE": {"name": "KLCI", "country": "Malaysia"},
     "^SET.BK": {"name": "SET Index", "country": "Thailand"},
     "^BSESN": {"name": "BSE Sensex", "country": "India"},
+    
+    # ЕВРОПА
+    "^GDAXI": {"name": "DAX", "country": "Germany"},
+    "^FTSE": {"name": "FTSE 100", "country": "UK"},
+    "^FCHI": {"name": "CAC 40", "country": "France"},
+    
+    # США
     "^GSPC": {"name": "S&P 500", "country": "US"},
     "^IXIC": {"name": "NASDAQ Composite", "country": "US"},
     "^VIX": {"name": "CBOE Volatility Index", "country": "US"},
+    
+    # ГЛОБАЛЬНЫЕ
     "DX-Y.NYB": {"name": "US Dollar Index", "country": "Global"},
     "GC=F": {"name": "Gold Futures", "country": "Global"},
     "CL=F": {"name": "Crude Oil Futures", "country": "Global"},
