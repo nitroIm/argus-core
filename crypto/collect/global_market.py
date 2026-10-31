@@ -1,209 +1,165 @@
 # ============================================================
-# ARGUS - GLOBAL MARKET MORNING REPORT (v1.0.2)
-# Path: crypto/report/global_market_morning.py
+# ARGUS - GLOBAL MARKETS COLLECTOR (v1.0.1)
+# Path: crypto/collect/global_market.py
 # ============================================================
 
 import os
 import sys
-import requests
+import time
+import logging
 from datetime import datetime, timezone
-from zoneinfo import ZoneInfo
 import psycopg
+import yfinance as yf
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+log = logging.getLogger("global_market")
 
 DB_URL = (os.getenv("AIVEN_DB_URL") or "").strip()
-BOT_TOKEN = (os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("BOT_TOKEN") or "").strip()
-CHAT_ID = (os.getenv("TELEGRAM_CHAT_ID") or "").strip()
 
-TZ = ZoneInfo("Europe/Kaliningrad")
-
-TICKER_NAMES = {
-    "^N225": "Nikkei 225", "^HSI": "Hang Seng", "000001.SS": "Shanghai Comp",
-    "399001.SZ": "Shenzhen Comp", "^KS11": "KOSPI", "^TWII": "TAIEX",
-    "^STI": "Straits Times", "^JKSE": "IDX Comp", "^KLSE": "KLCI",
-    "^SET.BK": "SET Index", "^BSESN": "BSE Sensex",
-    "^GDAXI": "DAX", "^FTSE": "FTSE 100", "^FCHI": "CAC 40",
-    "^GSPC": "S&P 500", "^IXIC": "NASDAQ", "^VIX": "VIX (Страх)",
-    "DX-Y.NYB": "DXY (Доллар)", "GC=F": "Золото", "CL=F": "Нефть"
+# Справочник названий и стран
+TICKER_META = {
+    "^N225": {"name": "Nikkei 225", "country": "Japan"},
+    "^HSI": {"name": "Hang Seng", "country": "Hong Kong"},
+    "000001.SS": {"name": "Shanghai Composite", "country": "China"},
+    "399001.SZ": {"name": "Shenzhen Component", "country": "China"},
+    "^KS11": {"name": "KOSPI", "country": "South Korea"},
+    "^TWII": {"name": "TAIEX", "country": "Taiwan"},
+    "^STI": {"name": "Straits Times", "country": "Singapore"},
+    "^JKSE": {"name": "IDX Composite", "country": "Indonesia"},
+    "^KLSE": {"name": "KLCI", "country": "Malaysia"},
+    "^SET.BK": {"name": "SET Index", "country": "Thailand"},
+    "^BSESN": {"name": "BSE Sensex", "country": "India"},
+    
+    # ЕВРОПА
+    "^GDAXI": {"name": "DAX", "country": "Germany"},
+    "^FTSE": {"name": "FTSE 100", "country": "UK"},
+    "^FCHI": {"name": "CAC 40", "country": "France"},
+    
+    # США
+    "^GSPC": {"name": "S&P 500", "country": "US"},
+    "^IXIC": {"name": "NASDAQ Composite", "country": "US"},
+    "^VIX": {"name": "CBOE Volatility Index", "country": "US"},
+    
+    # ГЛОБАЛЬНЫЕ
+    "DX-Y.NYB": {"name": "US Dollar Index", "country": "Global"},
+    "GC=F": {"name": "Gold Futures", "country": "Global"},
+    "CL=F": {"name": "Crude Oil Futures", "country": "Global"},
 }
 
 def get_conn():
-    if not DB_URL: raise RuntimeError("AIVEN_DB_URL not set")
-    return psycopg.connect(DB_URL, connect_timeout=30, application_name="argus-global-report")
-
-def add_hours(time_str, hours_to_add):
-    h, m = map(int, time_str.split(':'))
-    h = (h + hours_to_add) % 24
-    return f"{h:02d}:{m:02d}"
-
-def get_missing_data_reason(h_row, now_utc):
-    ticker, region, tz, open_utc, close_utc, lunch_start, lunch_end, trading_days = h_row
-    current_day = now_utc.isoweekday()
-    allowed_days = [1, 2, 3, 4, 5] if trading_days == "1-5" else [7, 1, 2, 3, 4] if trading_days == "0-4" else [1, 2, 3, 4, 5]
-    
-    if current_day not in allowed_days:
-        return "(выходной)"
-        
-    current_time = now_utc.strftime("%H:%M")
-    is_overnight = open_utc > close_utc
-    
-    if not is_overnight:
-        if current_time < open_utc:
-            open_kld = add_hours(open_utc, 2)
-            return f"(откроется в {open_kld} КЛГ)"
-        elif current_time >= close_utc:
-            return "(закрыт)"
-        else:
-            if lunch_start and lunch_end and (lunch_start <= current_time < lunch_end):
-                return "(обеденный перерыв)"
-            return "(торгуется, ожидание)"
-    else:
-        if close_utc <= current_time < open_utc:
-            open_kld = add_hours(open_utc, 2)
-            return f"(откроется в {open_kld} КЛГ)"
-        else:
-            return "(торгуется, ожидание)"
+    if not DB_URL:
+        raise RuntimeError("AIVEN_DB_URL not set")
+    return psycopg.connect(DB_URL, connect_timeout=30, application_name="argus-global-market")
 
 def is_market_open(market_row, now_utc):
     ticker, region, tz, open_utc, close_utc, lunch_start, lunch_end, trading_days = market_row
+    
     current_day = now_utc.isoweekday()
-    allowed_days = [1, 2, 3, 4, 5] if trading_days == "1-5" else [7, 1, 2, 3, 4] if trading_days == "0-4" else [1, 2, 3, 4, 5]
-    if current_day not in allowed_days: return False
+    allowed_days = []
+    if trading_days == "1-5":
+        allowed_days = [1, 2, 3, 4, 5]
+    elif trading_days == "0-4":
+        allowed_days = [7, 1, 2, 3, 4]
+    else:
+        allowed_days = [1, 2, 3, 4, 5]
+        
+    if current_day not in allowed_days:
+        return False
+        
     current_time = now_utc.strftime("%H:%M")
+    
     if open_utc > close_utc:
         is_time_open = current_time >= open_utc or current_time < close_utc
     else:
         is_time_open = open_utc <= current_time < close_utc
-    if not is_time_open: return False
-    if lunch_start and lunch_end and (lunch_start <= current_time < lunch_end): return False
+        
+    if not is_time_open:
+        return False
+        
+    if lunch_start and lunch_end:
+        if lunch_start <= current_time < lunch_end:
+            return False
+            
     return True
 
-def fetch_data():
+def main():
+    log.info("STARTING GLOBAL MARKET COLLECTOR")
+    now_utc = datetime.now(timezone.utc)
+    log.info(f"Current UTC time: {now_utc.strftime('%Y-%m-%d %H:%M:%S')}")
+
     try:
         conn = get_conn()
-        with conn.cursor() as cur:
-            cur.execute("SELECT ticker, region, timezone, open_utc, close_utc, lunch_start_utc, lunch_end_utc, trading_days FROM market_hours")
-            hours = {r[0]: r for r in cur.fetchall()}
-            
-            cur.execute("""
-                SELECT ticker, name, region, country,
-                       (array_agg(close ORDER BY open_time DESC))[1] as current_price,
-                       (array_agg(open ORDER BY open_time ASC))[1] as day_open
-                FROM market_indices
-                WHERE open_time >= NOW() - INTERVAL '7 days'
-                GROUP BY ticker, name, region, country
-            """)
-            indices = {r[0]: r for r in cur.fetchall()}
-        conn.close()
-        return hours, indices
     except Exception as e:
-        print(f"DB Error: {e}")
+        log.error(f"DB Connection Error: {e}")
         sys.exit(1)
 
-def build_report(hours, indices):
-    now_utc = datetime.now(timezone.utc)
-    now_kld = now_utc.astimezone(TZ)
-    
-    lines = [
-        "🌍 <b>ARGUS — Global Market (Утро)</b>",
-        f"📅 {now_kld.strftime('%d.%m.%Y, %H:%M')} КЛГ",
-        ""
-    ]
+    has_error = False
 
-    regions = {
-        "Asia": {"flag": "🌏 Азия", "lines": []},
-        "Europe": {"flag": "🇪🇺 Европа", "lines": []},
-        "US": {"flag": "🇺🇸 США", "lines": []},
-        "Global": {"flag": "💵 Сырье и Валюта", "lines": []}
-    }
-
-    for ticker, h_row in hours.items():
-        region = h_row[1]
-        if region not in regions: continue
-        
-        idx = indices.get(ticker)
-        disp_name = TICKER_NAMES.get(ticker, ticker)
-        
-        if idx:
-            curr_price = float(idx[4])
-            day_open = float(idx[5])
-            pct = ((curr_price - day_open) / day_open * 100) if day_open else 0
-            arrow = "🔼" if pct > 0 else "🔽" if pct < 0 else "⏸️"
-            line = f"  {disp_name}: {curr_price:,.2f} ({arrow} {pct:+.1f}%)"
-        else:
-            reason = get_missing_data_reason(h_row, now_utc)
-            line = f"  {disp_name}: нет данных {reason}"
-            
-        regions[region]["lines"].append(line)
-
-    for r_key in ["Asia", "Europe", "US", "Global"]:
-        r_data = regions[r_key]
-        if not r_data["lines"]: continue
-        
-        sample_ticker = next((t for t, h in hours.items() if h[1] == r_key), None)
-        if sample_ticker:
-            h = hours[sample_ticker]
-            open_kld = add_hours(h[3], 2)
-            close_kld = add_hours(h[4], 2)
-            is_open = is_market_open(h, now_utc)
-            
-            # Улучшенный статус для заголовка
-            is_trading_day = now_utc.isoweekday() in ([1,2,3,4,5] if h[7]=="1-5" else [7,1,2,3,4])
-            if not is_trading_day:
-                status = "🔴 Выходной"
-            elif is_open:
-                status = "🟢 Открыт"
-            else:
-                status = "🔴 Закрыт"
-            
-            time_str = "(Торги: 24/5)" if r_key == "Global" else f"(Торги: {open_kld} - {close_kld} КЛГ)"
-            lines.append(f"{r_data['flag']} {time_str} {status}:")
-        else:
-            lines.append(f"{r_data['flag']}:")
-            
-        lines.extend(r_data["lines"])
-        lines.append("")
-
-    sp500 = indices.get("^GSPC")
-    dxy = indices.get("DX-Y.NYB")
-    
-    if sp500 and dxy:
-        sp_pct = ((float(sp500[4]) - float(sp500[5])) / float(sp500[5]) * 100) if float(sp500[5]) else 0
-        dxy_pct = ((float(dxy[4]) - float(dxy[5])) / float(dxy[5]) * 100) if float(dxy[5]) else 0
-        
-        lines.append("────────────────────")
-        lines.append("💡 <b>Макро-контекст:</b>")
-        
-        if sp_pct > 0 and dxy_pct < 0:
-            lines.append("  Рынок в режиме <b>Risk-On</b> (аппетит к риску растет).")
-            lines.append("  S&P 500 растет, доллар слабеет — благоприятный")
-            lines.append("  фон для роста криптовалют.")
-        elif sp_pct < 0 and dxy_pct > 0:
-            lines.append("  Рынок в режиме <b>Risk-Off</b> (уход от рисков).")
-            lines.append("  S&P 500 падает, доллар укрепляется — инвесторы")
-            lines.append("  уходят в защитные активы, давление на крипту.")
-        else:
-            lines.append("  Смешанный фон. Рынки разнонаправлены,")
-            lines.append("  явного перевеса быков или медведей нет.")
-
-    return "\n".join(lines)
-
-def send_message(text):
-    if not BOT_TOKEN or not CHAT_ID:
-        print("no token/chat")
-        return False
-    url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
     try:
-        r = requests.post(url, json={"chat_id": CHAT_ID, "text": text, "parse_mode": "HTML", "disable_web_page_preview": True}, timeout=20)
-        return r.status_code == 200
+        with conn.cursor() as cur:
+            cur.execute("SELECT ticker, region, timezone, open_utc, close_utc, lunch_start_utc, lunch_end_utc, trading_days FROM market_hours")
+            markets = cur.fetchall()
+            
+        if not markets:
+            log.error("No market hours found in DB!")
+            sys.exit(1)
+            
+        log.info(f"Checking {len(markets)} tickers...")
+        
+        for m in markets:
+            ticker = m[0]
+            if not is_market_open(m, now_utc):
+                log.info(f"  ⏸️ {ticker}: Market closed. Skipping.")
+                continue
+                
+            log.info(f"  ⏳ {ticker}: Market open. Fetching...")
+            
+            try:
+                df = yf.download(ticker, period="1d", interval="1h", progress=False)
+                if df.empty:
+                    raise Exception("Empty dataframe returned")
+                    
+                open_price = float(df['Open'].values.flatten()[-1])
+                high_price = float(df['High'].values.flatten()[-1])
+                low_price = float(df['Low'].values.flatten()[-1])
+                close_price = float(df['Close'].values.flatten()[-1])
+                volume = float(df['Volume'].values.flatten()[-1]) if 'Volume' in df.columns else 0.0
+                
+                open_time = df.index[-1].to_pydatetime()
+                if open_time.tzinfo is None:
+                    open_time = open_time.replace(tzinfo=timezone.utc)
+                else:
+                    open_time = open_time.astimezone(timezone.utc)
+                
+                meta = TICKER_META.get(ticker, {"name": ticker, "country": "Unknown"})
+                
+                with conn.cursor() as cur:
+                    cur.execute("""
+                        INSERT INTO market_indices (ticker, name, region, country, timezone, open_time, open, high, low, close, volume, is_open)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        ON CONFLICT DO NOTHING
+                    """, (ticker, meta["name"], m[1], meta["country"], m[2], open_time, open_price, high_price, low_price, close_price, volume, True))
+                conn.commit()
+                log.info(f"  ✅ {ticker}: Saved (Time: {open_time.strftime('%H:%M')}, Close: {close_price})")
+                
+            except Exception as e:
+                log.error(f"  ❌ {ticker}: Fetch/Save error - {e}")
+                conn.rollback()
+                has_error = True
+                
+            time.sleep(0.5)
+            
     except Exception as e:
-        print(f"Send error: {e}")
-        return False
+        log.error(f"General Error: {e}")
+        has_error = True
+    finally:
+        conn.close()
 
-def main():
-    hours, indices = fetch_data()
-    text = build_report(hours, indices)
-    print(f"Report len: {len(text)}")
-    send_message(text)
+    if has_error:
+        log.error("Collector finished with errors. Triggering failure alert.")
+        sys.exit(1)
+        
+    log.info("DONE SUCCESSFULLY.")
 
 if __name__ == "__main__":
     main()
