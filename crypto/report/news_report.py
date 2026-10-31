@@ -1,5 +1,6 @@
 # ============================================================
-# ARGUS - NEWS REPORT v11.3 (SQUARE BARS, 5 NEWS)
+# ARGUS - NEWS REPORT v12.0 (VK CHART INTEGRATION)
+# Path: crypto/report/news_report.py
 # ============================================================
 
 import os
@@ -9,15 +10,13 @@ import json
 import hashlib
 import logging
 import requests
+import io
+import pandas as pd
+import psycopg
+import mplfinance as mpf
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
-
-try:
-    import psycopg
-    PSYCOPG_OK = True
-except ImportError:
-    PSYCOPG_OK = False
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 CRYPTO_ROOT = SCRIPT_DIR.parent
@@ -83,13 +82,49 @@ def send_telegram(text, chat_id):
         except Exception: ok_all = False
     return ok_all
 
-def send_vk(text):
+def upload_photo_to_vk(photo_bytes):
+    if not VK_TOKEN or not VK_GROUP_ID: return None
+    try:
+        gid = VK_GROUP_ID.replace("-", "")
+        # 1. Получаем сервер
+        url = f"https://api.vk.com/method/photos.getWallUploadServer?group_id={gid}&access_token={VK_TOKEN}&v=5.199"
+        r = requests.get(url, timeout=20).json()
+        if "error" in r: return None
+        upload_url = r["response"]["upload_url"]
+        
+        # 2. Загружаем фото
+        files = {'photo': ('chart.png', photo_bytes)}
+        r = requests.post(upload_url, files=files, timeout=30).json()
+        
+        # 3. Сохраняем фото
+        url = "https://api.vk.com/method/photos.saveWallPhoto"
+        params = {
+            "group_id": gid, "photo": r["photo"], 
+            "server": r["server"], "hash": r["hash"],
+            "access_token": VK_TOKEN, "v": "5.199"
+        }
+        res = requests.post(url, data=params, timeout=20).json()
+        if "error" in res: return None
+        saved = res["response"][0]
+        return f"photo{saved['owner_id']}_{saved['id']}"
+    except Exception as e:
+        log.error(f"VK Photo Upload Error: {e}")
+        return None
+
+def send_vk(text, photo_attachment=None):
     if not VK_TOKEN or not VK_GROUP_ID: return False
     try:
         gid = VK_GROUP_ID.strip()
         owner_id = gid if gid.startswith("-") else "-" + gid
         url = "https://api.vk.com/method/wall.post"
-        params = {"owner_id": owner_id, "from_group": 1, "message": text[:MAX_VK_LEN], "access_token": VK_TOKEN, "v": "5.199"}
+        params = {
+            "owner_id": owner_id, "from_group": 1, 
+            "message": text[:MAX_VK_LEN], 
+            "access_token": VK_TOKEN, "v": "5.199"
+        }
+        if photo_attachment:
+            params["attachments"] = photo_attachment
+            
         r = requests.post(url, data=params, timeout=30)
         return "error" not in r.json()
     except Exception: return False
@@ -152,11 +187,71 @@ def translate_top(items, n=5):
     except Exception: return originals
 
 # ============================================================
-# DB FETCHERS & HELPERS
+# CHART & DB FETCHERS
 # ============================================================
 def get_conn():
     if not DB_URL: raise RuntimeError("AIVEN_DB_URL not set")
     return psycopg.connect(DB_URL, connect_timeout=30, application_name="argus-news")
+
+def generate_chart_image():
+    try:
+        conn = get_conn()
+        with conn.cursor() as cur:
+            cur.execute("SELECT open_time, open, high, low, close, volume FROM candles WHERE symbol='BTCUSDT' AND timeframe='15m' AND market_type='spot' ORDER BY open_time ASC")
+            rows = cur.fetchall()
+        conn.close()
+        
+        if len(rows) < 100: return None
+        
+        df = pd.DataFrame(rows, columns=['open_time', 'open', 'high', 'low', 'close', 'volume'])
+        df['open_time'] = pd.to_datetime(df['open_time'], utc=True)
+        df.set_index('open_time', inplace=True)
+        df = df.astype(float)
+        
+        df_1d = df.resample('1D').agg({'open': 'first', 'high': 'max', 'low': 'min', 'close': 'last', 'volume': 'sum'}).dropna().tail(45)
+        
+        if len(df_1d) < 15: return None
+
+        exp12 = df_1d['close'].ewm(span=12, adjust=False).mean()
+        exp26 = df_1d['close'].ewm(span=26, adjust=False).mean()
+        macd_line = exp12 - exp26
+        signal_line = macd_line.ewm(span=9, adjust=False).mean()
+        macd_hist = macd_line - signal_line
+        macd_colors = ['#26a69a' if val >= 0 else '#ef5350' for val in macd_hist]
+
+        last_close = df_1d['close'].iloc[-1]
+        last_open = df_1d['open'].iloc[-1]
+        last_color = '#26a69a' if last_close >= last_open else '#ef5350'
+        
+        max_price = df_1d['high'].max()
+        min_price = df_1d['low'].min()
+        padding = (max_price - min_price) * 0.10
+        ymin, ymax = min_price - padding, max_price + padding
+
+        rc = {'axes.labelsize': 12, 'ytick.labelsize': 12, 'xtick.labelsize': 10, 'axes.titlesize': 16, 'figure.titlesize': 16}
+        mc = mpf.make_marketcolors(up='#26a69a', down='#ef5350', edge='inherit', wick='inherit', volume='in')
+        s = mpf.make_mpf_style(marketcolors=mc, base_mpf_style='nightclouds', facecolor='#131722', figcolor='#131722', gridcolor='#2a2e39', gridstyle='--', rc=rc, y_on_right=True)
+
+        apds = [
+            mpf.make_addplot(macd_hist, type='bar', color=macd_colors, panel=2),
+            mpf.make_addplot(macd_line, color='#FFD700', panel=2, width=1),
+            mpf.make_addplot(signal_line, color='#9370DB', panel=2, width=1)
+        ]
+
+        fig, axes = mpf.plot(df_1d, type='candle', style=s, title="BTC/USDT | 1D", ylabel='', ylabel_lower='', volume=True, addplot=apds, panel_ratios=(6, 1.5, 2), figsize=(10, 10), ylim=(ymin, ymax), hlines=dict(hlines=[last_close], colors=[last_color], linestyle='--', linewidths=[1]), returnfig=True)
+        fig.subplots_adjust(hspace=0.25, right=0.85)
+        
+        fig.text(0.5, 0.5, 'ARGUS', alpha=0.1, fontsize=80, ha='center', va='center', color='white', rotation=30)
+        ax_main = axes[0]
+        ax_main.text(1.005, last_close, f' {last_close:,.2f} ', transform=ax_main.get_yaxis_transform(), va='center', ha='left', color='black', bbox=dict(boxstyle="round,pad=0.3", fc=last_color, ec=last_color, lw=1), fontsize=10, fontweight='bold')
+
+        buf = io.BytesIO()
+        fig.savefig(buf, format='png', dpi=150, bbox_inches='tight')
+        buf.seek(0)
+        return buf
+    except Exception as e:
+        log.error(f"Chart Gen Error: {e}")
+        return None
 
 def _rsi(closes, period=14):
     if len(closes) < period + 1: return None
@@ -183,7 +278,6 @@ def _atr(highs, lows, closes, period=14):
     return a
 
 def fetch_btc_snapshot():
-    if not PSYCOPG_OK or not DB_URL: return None
     try:
         conn = get_conn()
         with conn.cursor() as cur:
@@ -226,11 +320,7 @@ def fetch_live_cmc():
         if r.status_code == 200:
             data = r.json().get("data", {})
             quote_usd = data.get("quote", {}).get("USD", {})
-            return {
-                "btc_dominance": float(data.get("btc_dominance", 0)),
-                "total_market_cap": float(quote_usd.get("total_market_cap", 0)),
-                "stablecoin_market_cap": float(quote_usd.get("stablecoin_market_cap", 0))
-            }
+            return {"btc_dominance": float(data.get("btc_dominance", 0)), "total_market_cap": float(quote_usd.get("total_market_cap", 0)), "stablecoin_market_cap": float(quote_usd.get("stablecoin_market_cap", 0))}
     except Exception: pass
     return None
 
@@ -251,10 +341,14 @@ def fetch_network_sentiment(hours_ago=24):
         with conn.cursor() as cur:
             cur.execute("SELECT value, classification FROM fear_greed ORDER BY timestamp DESC LIMIT 1")
             fng_cur = cur.fetchone()
+            cur.execute(f"SELECT value FROM fear_greed WHERE timestamp <= NOW() - INTERVAL '{hours_ago} hours' ORDER BY timestamp DESC LIMIT 1")
+            fng_prev = cur.fetchone()
             cur.execute("SELECT chart_name, value FROM btc_network WHERE chart_name IN ('hash-rate', 'difficulty') ORDER BY chart_time DESC LIMIT 2")
             net_cur = dict(cur.fetchall())
+            cur.execute(f"SELECT chart_name, value FROM btc_network WHERE chart_name IN ('hash-rate', 'difficulty') AND chart_time <= NOW() - INTERVAL '{hours_ago} hours' ORDER BY chart_time DESC LIMIT 2")
+            net_prev = dict(cur.fetchall())
         conn.close()
-        return {"fng": (fng_cur, None), "network": (net_cur, None)}
+        return {"fng": (fng_cur, fng_prev), "network": (net_cur, net_prev)}
     except Exception: return None
 
 def fetch_stablecoins():
@@ -268,7 +362,7 @@ def fetch_stablecoins():
     except Exception: return {}
 
 # ============================================================
-# FORMATTING
+# FORMATTING & BARS
 # ============================================================
 def fmt_price(p): return "$" + format(int(p), ",") if p >= 1000 else "$" + format(p, ".2f")
 def fmt_usd(v):
@@ -299,11 +393,7 @@ def build_report(data, top_items, top_ru, btc, live_cmc, prev_g_metrics, n_senti
     avg = data.get("avg_sentiment", 0.0)
     total = data.get("total_news", 0)
     
-    lines = [
-        "📰 <b>ARGUS — Новости</b>",
-        f"☕ Доброе утро! {now.strftime('%d.%m.%Y, %H:%M')}",
-        ""
-    ]
+    lines = ["📰 <b>ARGUS — Новости</b>", f"☕ Доброе утро! {now.strftime('%d.%m.%Y, %H:%M')}", ""]
 
     if btc:
         lines.append(f"💰 <b>BTC</b> {fmt_price(btc['price'])} | {fmt_pct(btc['change_pct'])} 24ч")
@@ -314,7 +404,6 @@ def build_report(data, top_items, top_ru, btc, live_cmc, prev_g_metrics, n_senti
         if parts: lines.append("  " + " | ".join(parts))
         lines.append("")
         
-        # Полоски объемов
         bar_len = 12
         b_buy = int(round(btc["buy_pct"] / 100 * bar_len))
         bar_buy = "🟩" * b_buy + "⬜" * (bar_len - b_buy)
@@ -335,7 +424,6 @@ def build_report(data, top_items, top_ru, btc, live_cmc, prev_g_metrics, n_senti
         d_dom = calc_delta(dom, prev_g_metrics["btc_dominance"], is_pct=True) if prev_g_metrics else "(нет данных)"
         usdt = stables.get("USDT")
         usdt_s = f"${usdt:.3f} ✅" if usdt and 0.99 <= float(usdt) <= 1.01 else f"${usdt:.3f} ⚠️" if usdt else "?"
-        
         lines.append(f"  Капитализация: {fmt_usd(mcap)} {d_mcap}")
         lines.append(f"  Доминация BTC: {dom:.2f}% {d_dom}")
         lines.append(f"  Стейблкоины: {fmt_usd(stbl_mcap)} (USDT {usdt_s})")
@@ -381,7 +469,7 @@ def build_report(data, top_items, top_ru, btc, live_cmc, prev_g_metrics, n_senti
     return "\n".join(lines)
 
 def main():
-    log.info("news report v11.3")
+    log.info("news report v12.0")
     if not should_send_personal() and not should_send_group(): return log.info("skip")
     if not SENTIMENT_FILE.exists(): return log.error("no sentiment file")
 
@@ -405,9 +493,15 @@ def main():
 
     sent_any = False
     if should_send_personal() and send_telegram(text_tg, CHAT_ID): sent_any = True
+    
     if should_send_group():
         if TG_CHANNEL_ID: send_telegram(text_tg, TG_CHANNEL_ID)
-        if send_vk(text_vk): sent_any = True
+        
+        # Генерируем картинку только для ВК
+        photo_buf = generate_chart_image()
+        photo_att = upload_photo_to_vk(photo_buf) if photo_buf else None
+        
+        if send_vk(text_vk, photo_att): sent_any = True
 
     if sent_any:
         for it in top_5: add_sent_hash(history, _title_hash(it.get("title_original") or it.get("title", "")))
@@ -415,5 +509,4 @@ def main():
         log.info("report sent")
 
 if __name__ == "__main__":
-    import pandas as pd
     main()
