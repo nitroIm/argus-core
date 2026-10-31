@@ -1,6 +1,6 @@
 # ============================================================
-# ARGUS - GLOBAL MARKET EVENING REPORT (v1.0.2)
-# Path: crypto/report/global_market_evening.py
+# ARGUS - GLOBAL MARKET MORNING REPORT (v1.0.3)
+# Path: crypto/report/global_market_morning.py
 # ============================================================
 
 import os
@@ -104,7 +104,7 @@ def build_report(hours, indices):
     now_kld = now_utc.astimezone(TZ)
     
     lines = [
-        "🌍 <b>ARGUS — Global Market (Вечер)</b>",
+        "🌍 <b>ARGUS — Global Market (Утро)</b>",
         f"📅 {now_kld.strftime('%d.%m.%Y, %H:%M')} КЛГ",
         ""
     ]
@@ -128,7 +128,14 @@ def build_report(hours, indices):
             day_open = float(idx[5])
             pct = ((curr_price - day_open) / day_open * 100) if day_open else 0
             arrow = "🔼" if pct > 0 else "🔽" if pct < 0 else "⏸️"
-            line = f"  {disp_name}: {curr_price:,.2f} ({arrow} {pct:+.1f}%)"
+            
+            # Форматирование в зависимости от актива
+            if ticker in ("GC=F", "CL=F"):
+                price_str = f"${curr_price:,.2f}"
+            else:
+                price_str = f"{curr_price:,.2f} п."
+                
+            line = f"  {disp_name}: {price_str} ({arrow} {pct:+.1f}%)"
         else:
             reason = get_missing_data_reason(h_row, now_utc)
             line = f"  {disp_name}: нет данных {reason}"
