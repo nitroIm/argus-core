@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - CHART TEST (CURRENT PRICE LINE FIX)
+# ARGUS - CHART TEST (FINAL FIX)
 # Path: crypto/collect/chart_test.py
 # ============================================================
 
@@ -72,15 +72,12 @@ def main():
     signal_line = macd_line.ewm(span=9, adjust=False).mean()
     macd_hist = macd_line - signal_line
 
-    # Красим MACD
     macd_colors = ['#26a69a' if val >= 0 else '#ef5350' for val in macd_hist]
 
-    # Данные для текущей цены (последняя свеча)
     last_close = df_1d['close'].iloc[-1]
     last_open = df_1d['open'].iloc[-1]
     last_color = '#26a69a' if last_close >= last_open else '#ef5350'
 
-    # Увеличенные шрифты
     rc = {
         'axes.labelsize': 12, 
         'ytick.labelsize': 12, 
@@ -89,7 +86,6 @@ def main():
         'figure.titlesize': 16
     }
 
-    # Стиль (Тёмный) + ПЕРЕНОС ОСЕЙ ВПРАВО
     mc = mpf.make_marketcolors(up='#26a69a', down='#ef5350', edge='inherit', wick='inherit', volume='in')
     s = mpf.make_mpf_style(
         marketcolors=mc, 
@@ -98,8 +94,7 @@ def main():
         figcolor='#131722', 
         gridcolor='#2a2e39', 
         gridstyle='--',
-        rc=rc,
-        y_on_right=True # <--- ТЕПЕРЬ ЗДЕСЬ
+        rc=rc
     )
 
     apds = [
@@ -110,7 +105,6 @@ def main():
 
     title = "BTC/USDT | 1D"
     
-    # Генерируем график (убрали y_on_right отсюда)
     fig, axes = mpf.plot(
         df_1d, type='candle', style=s, 
         title=title, ylabel='', ylabel_lower='',
@@ -118,17 +112,22 @@ def main():
         addplot=apds,
         panel_ratios=(6, 1.5, 2), 
         figsize=(10, 10), 
-        hlines=dict(hlines=[last_close], colors=[last_color], linestyles=['--'], linewidths=[1]),
+        hlines=dict(hlines=[last_close], colors=[last_color], linestyle='--', linewidths=[1]), # Теперь linestyle
         returnfig=True
     )
     
-    # Водяной знак
+    # Переносим ВСЕ оси вправо вручную
+    for ax in axes:
+        if ax is not None:
+            ax.yaxis.tick_right()
+            ax.yaxis.set_label_position("right")
+
     fig.text(0.5, 0.5, 'ARGUS', alpha=0.1, fontsize=80, ha='center', va='center', color='white', rotation=30)
     fig.text(0.5, 0.02, 'ARGUS — автономная система анализа', alpha=0.6, fontsize=10, ha='center', va='bottom', color='gray')
 
-    # Рисуем плашку с ценой на правой оси
+    # Плашка с ценой (сдвинута вправо, так как ось теперь справа)
     ax_main = axes[0]
-    ax_main.text(1.005, last_close, f' {last_close:,.2f} ', 
+    ax_main.text(1.02, last_close, f' {last_close:,.2f} ', 
                  transform=ax_main.get_yaxis_transform(), 
                  va='center', ha='left', 
                  color='black', 
