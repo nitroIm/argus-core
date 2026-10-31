@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - CHART TEST (DARK THEME)
+# ARGUS - CHART TEST (LIVE DB ONLY)
 # Path: crypto/collect/chart_test.py
 # ============================================================
 
@@ -38,9 +38,8 @@ def send_telegram_photo(photo_bytes, caption):
         return False
 
 def main():
-    log.info("STARTING CHART GENERATOR")
+    log.info("STARTING CHART GENERATOR (LIVE DB)")
     
-    # 1. Загружаем данные (берем максимум для 1D)
     try:
         conn = get_conn()
         with conn.cursor() as cur:
@@ -51,14 +50,14 @@ def main():
         log.error(f"DB Error: {e}")
         sys.exit(1)
         
-    if len(rows) < 1000:
-        log.error("Not enough 15m data to build 1D chart")
+    if len(rows) < 100:
+        log.error("Not enough data in DB")
         sys.exit(1)
 
-    # 2. Подготовка датафрейма
+    # Подготовка датафрейма
     df = pd.DataFrame(rows, columns=['open_time', 'open', 'high', 'low', 'close', 'volume'])
     df['open_time'] = pd.to_datetime(df['open_time'], utc=True)
-    df = df.set_index('open_time')
+    df.set_index('open_time', inplace=True)
     df = df.astype(float)
     
     # Склеиваем в 1D (Дневки)
@@ -67,16 +66,11 @@ def main():
         'close': 'last', 'volume': 'sum'
     }).dropna()
     
-    if len(df_1d) < 100:
-        log.error("Not enough 1D candles to calculate EMA(99)")
-        sys.exit(1)
-        
-    log.info(f"Got {len(df_1d)} daily candles.")
+    log.info(f"Got {len(df_1d)} daily candles from Aiven DB.")
 
-    # 3. Считаем индикаторы
+    # Считаем индикаторы (только те, для которых хватает данных)
     df_1d['ema7'] = df_1d['close'].ewm(span=7, adjust=False).mean()
     df_1d['ema25'] = df_1d['close'].ewm(span=25, adjust=False).mean()
-    df_1d['ema99'] = df_1d['close'].ewm(span=99, adjust=False).mean()
     
     # MACD
     exp12 = df_1d['close'].ewm(span=12, adjust=False).mean()
@@ -92,7 +86,7 @@ def main():
     rs = gain / loss
     df_1d['rsi'] = 100 - (100 / (1 + rs))
 
-    # 4. Настройка стиля (Тёмный)
+    # Настройка стиля (Тёмный)
     mc = mpf.make_marketcolors(
         up='#26a69a', down='#ef5350', edge='inherit', wick='inherit', volume='in'
     )
@@ -105,11 +99,10 @@ def main():
         gridstyle='--'
     )
 
-    # 5. Дополнительные графики
+    # Дополнительные графики (убрали EMA99)
     apds = [
         mpf.make_addplot(df_1d['ema7'], color='#FFD700', panel=0, width=1),
         mpf.make_addplot(df_1d['ema25'], color='#FF69B4', panel=0, width=1),
-        mpf.make_addplot(df_1d['ema99'], color='#9370DB', panel=0, width=1),
         
         mpf.make_addplot(macd_hist, type='bar', color='dimgray', panel=2),
         mpf.make_addplot(macd_line, color='#FFD700', panel=2, width=1),
@@ -118,9 +111,8 @@ def main():
         mpf.make_addplot(df_1d['rsi'], color='#FFD700', panel=3, width=1)
     ]
 
-    # 6. Сохраняем в память (без создания лишних файлов на диске)
     buf = io.BytesIO()
-    title = f"BTC/USDT | 1D | Binance\nPrice: ${df_1d['close'].iloc[-1]:,.2f}"
+    title = f"BTC/USDT | 1D | Binance (Live DB)\nPrice: ${df_1d['close'].iloc[-1]:,.2f}"
     
     log.info("Generating chart...")
     mpf.plot(
@@ -135,9 +127,8 @@ def main():
     
     buf.seek(0)
     
-    # 7. Отправляем
     log.info("Sending to Telegram...")
-    caption = f"📊 <b>Тест графика (1D)</b>\n🕯️ Свечи: {len(df_1d)} дн.\n<b>Индикаторы:</b> EMA(7,25,99), MACD, RSI"
+    caption = f"📊 <b>Тест графика (1D из Live DB)</b>\n🕯️ Свечи: {len(df_1d)} дн. (все, что есть в базе)\n<b>Индикаторы:</b> EMA(7,25), MACD, RSI"
     if send_telegram_photo(buf, caption):
         log.info("Photo sent successfully!")
     else:
