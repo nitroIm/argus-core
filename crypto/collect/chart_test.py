@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - CHART TEST (WATERMARK & CLEAN LOOK)
+# ARGUS - CHART TEST (WATERMARK & CLEAN LOOK) FIX
 # Path: crypto/collect/chart_test.py
 # ============================================================
 
@@ -86,12 +86,26 @@ def main():
     rsi_30 = pd.Series(30, index=df_1d.index)
     rsi_70 = pd.Series(70, index=df_1d.index)
 
-    # Стиль (Тёмный)
-    mc = mpf.make_marketcolors(up='#26a69a', down='#ef5350', edge='inherit', wick='inherit', volume='in')
-    s = mpf.make_mpf_style(marketcolors=mc, base_mpf_style='nightclouds', facecolor='#131722', figcolor='#131722', gridcolor='#2a2e39', gridstyle='--')
+    # Увеличенные шрифты (Правильное размещение!)
+    rc = {
+        'axes.labelsize': 12, 
+        'ytick.labelsize': 12, 
+        'xtick.labelsize': 10, 
+        'axes.titlesize': 16, 
+        'figure.titlesize': 16
+    }
 
-    # Увеличенные шрифты
-    rc = {'axes.labelsize': 12, 'ytick.labelsize': 12, 'xtick.labelsize': 10, 'axes.titlesize': 16, 'figure.titlesize': 16}
+    # Стиль (Тёмный + передаем шрифты)
+    mc = mpf.make_marketcolors(up='#26a69a', down='#ef5350', edge='inherit', wick='inherit', volume='in')
+    s = mpf.make_mpf_style(
+        marketcolors=mc, 
+        base_mpf_style='nightclouds', 
+        facecolor='#131722', 
+        figcolor='#131722', 
+        gridcolor='#2a2e39', 
+        gridstyle='--',
+        rc=rc # <--- ВОТ СЮДА ПЕРЕНЕСЛИ
+    )
 
     apds = [
         mpf.make_addplot(macd_hist, type='bar', color=macd_colors, panel=2),
@@ -112,7 +126,6 @@ def main():
         addplot=apds,
         panel_ratios=(5, 1.5, 2, 2),
         figsize=(10, 12), 
-        rc=rc,
         returnfig=True
     )
     
