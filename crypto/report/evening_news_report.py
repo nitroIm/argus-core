@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - EVENING NEWS REPORT v4.3 (VK NO-WRAP BARS)
+# ARGUS - EVENING NEWS REPORT v4.4 (TRUE VK BARS FIX)
 # Path: crypto/report/evening_news_report.py
 # ============================================================
 
@@ -333,7 +333,7 @@ def fetch_stablecoins():
     except Exception: return {}
 
 # ============================================================
-# FORMATTING
+# FORMATTING & BARS (NEW BLOCK CHARACTERS)
 # ============================================================
 def fmt_price(p): return "$" + format(int(p), ",") if p >= 1000 else "$" + format(p, ".2f")
 def fmt_usd(v):
@@ -374,10 +374,11 @@ def build_report(data, top_items, top_ru, btc, live_cmc, prev_g_metrics, n_senti
         lines.append("")
         
         bar_len = 20
+        # ИСПОЛЬЗУЕМ УЗКИЕ БЛОКИ
         b_buy = int(round(btc["buy_pct"] / 100 * bar_len))
-        bar_buy = "🟩" * b_buy + "⬜" * (bar_len - b_buy)
+        bar_buy = "█" * b_buy + "░" * (bar_len - b_buy)
         b_sell = int(round(btc["sell_pct"] / 100 * bar_len))
-        bar_sell = "🟥" * b_sell + "⬜" * (bar_len - b_sell)
+        bar_sell = "█" * b_sell + "░" * (bar_len - b_sell)
         
         lines.append("⚔️ <b>Битва объемов:</b>")
         lines.append(f"  🟢 Покупки: {fmt_btc(btc['taker_buy'])} ({btc['buy_pct']:.1f}%)")
@@ -439,7 +440,7 @@ def build_report(data, top_items, top_ru, btc, live_cmc, prev_g_metrics, n_senti
     return "\n".join(lines)
 
 def main():
-    log.info("evening news report v4.3")
+    log.info("evening news report v4.4")
     if not SENTIMENT_FILE.exists(): return
 
     data = load_json(SENTIMENT_FILE)
