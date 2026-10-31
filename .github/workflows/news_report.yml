@@ -1,21 +1,28 @@
 name: ARGUS News Report
+
 on:
   workflow_dispatch: 
+
 permissions:
   contents: write
+
 jobs:
   report:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+
       - name: Install deps
         run: |
           python -m pip install --upgrade pip
-          pip install pandas "psycopg[binary]" requests
+          pip install pandas mplfinance "psycopg[binary]" requests
+
       - name: Run News Report
         env:
           AIVEN_DB_URL: ${{ secrets.AIVEN_DB_URL }}
@@ -25,8 +32,9 @@ jobs:
           VK_TOKEN: ${{ secrets.VK_TOKEN }}
           VK_GROUP_ID: ${{ secrets.VK_GROUP_ID }}
           CMC_API_KEY: ${{ secrets.CMC_API_KEY }}
-          # NEWS_TEST_MODE: "1"
+          NEWS_TEST_MODE: "1"
         run: python crypto/report/news_report.py
+
       - name: Save history
         run: |
           git config user.name "ARGUS"
@@ -36,6 +44,7 @@ jobs:
           git commit -m "Update news history [skip ci]"
           git pull --rebase --autostash origin main || true
           git push origin main
+
       - name: Notify on failure
         if: failure()
         env:
