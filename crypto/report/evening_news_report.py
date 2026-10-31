@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - EVENING NEWS REPORT v4.0 (VK CHART INTEGRATION)
+# ARGUS - EVENING NEWS REPORT v4.2 (GROUPS ONLY & VK CHART)
 # Path: crypto/report/evening_news_report.py
 # ============================================================
 
@@ -79,21 +79,34 @@ def send_telegram(text, chat_id):
     return ok_all
 
 def upload_photo_to_vk(photo_bytes):
-    if not VK_TOKEN or not VK_GROUP_ID: return None
+    if not VK_TOKEN or not VK_GROUP_ID: 
+        log.error("VK: No token or group ID")
+        return None
     try:
         gid = VK_GROUP_ID.replace("-", "")
         url = f"https://api.vk.com/method/photos.getWallUploadServer?group_id={gid}&access_token={VK_TOKEN}&v=5.199"
         r = requests.get(url, timeout=20).json()
-        if "error" in r: return None
-        upload_url = r["response"]["upload_url"]
         
+        if "error" in r: 
+            log.error(f"VK getWallUploadServer Error: {r['error']}")
+            return None
+            
+        upload_url = r["response"]["upload_url"]
         files = {'photo': ('chart.png', photo_bytes)}
         r = requests.post(upload_url, files=files, timeout=30).json()
         
+        if "error" in r:
+            log.error(f"VK Upload Error: {r}")
+            return None
+            
         url = "https://api.vk.com/method/photos.saveWallPhoto"
         params = {"group_id": gid, "photo": r["photo"], "server": r["server"], "hash": r["hash"], "access_token": VK_TOKEN, "v": "5.199"}
         res = requests.post(url, data=params, timeout=20).json()
-        if "error" in res: return None
+        
+        if "error" in res: 
+            log.error(f"VK saveWallPhoto Error: {res['error']}")
+            return None
+            
         saved = res["response"][0]
         return f"photo{saved['owner_id']}_{saved['id']}"
     except Exception as e:
@@ -106,7 +119,11 @@ def send_vk(text, photo_attachment=None):
         gid = VK_GROUP_ID.strip()
         owner_id = gid if gid.startswith("-") else "-" + gid
         url = "https://api.vk.com/method/wall.post"
-        params = {"owner_id": owner_id, "from_group": 1, "message": text[:MAX_VK_LEN], "access_token": VK_TOKEN, "v": "5.199"}
+        params = {
+            "owner_id": owner_id, "from_group": 1, 
+            "message": text[:MAX_VK_LEN], 
+            "access_token": VK_TOKEN, "v": "5.199"
+        }
         if photo_attachment: params["attachments"] = photo_attachment
         r = requests.post(url, data=params, timeout=30)
         return "error" not in r.json()
@@ -356,7 +373,7 @@ def build_report(data, top_items, top_ru, btc, live_cmc, prev_g_metrics, n_senti
         if parts: lines.append("  " + " | ".join(parts))
         lines.append("")
         
-        bar_len = 12
+        bar_len = 20
         b_buy = int(round(btc["buy_pct"] / 100 * bar_len))
         bar_buy = "🟩" * b_buy + "⬜" * (bar_len - b_buy)
         b_sell = int(round(btc["sell_pct"] / 100 * bar_len))
@@ -422,7 +439,7 @@ def build_report(data, top_items, top_ru, btc, live_cmc, prev_g_metrics, n_senti
     return "\n".join(lines)
 
 def main():
-    log.info("evening news report v4.0")
+    log.info("evening news report v4.2")
     if not SENTIMENT_FILE.exists(): return
 
     data = load_json(SENTIMENT_FILE)
@@ -448,7 +465,6 @@ def main():
     log.info("sending evening report to TG Channel and VK...")
     if TG_CHANNEL_ID: send_telegram(text_tg, TG_CHANNEL_ID)
     
-    # Генерируем картинку только для ВК
     photo_buf = generate_chart_image()
     photo_att = upload_photo_to_vk(photo_buf) if photo_buf else None
     
