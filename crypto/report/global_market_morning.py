@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - GLOBAL MARKET MORNING REPORT (v1.0.2)
+# ARGUS - GLOBAL MARKET MORNING REPORT (v1.0.3)
 # Path: crypto/report/global_market_morning.py
 # ============================================================
 
@@ -128,7 +128,14 @@ def build_report(hours, indices):
             day_open = float(idx[5])
             pct = ((curr_price - day_open) / day_open * 100) if day_open else 0
             arrow = "🔼" if pct > 0 else "🔽" if pct < 0 else "⏸️"
-            line = f"  {disp_name}: {curr_price:,.2f} ({arrow} {pct:+.1f}%)"
+            
+            # Форматирование в зависимости от актива
+            if ticker in ("GC=F", "CL=F"):
+                price_str = f"${curr_price:,.2f}"
+            else:
+                price_str = f"{curr_price:,.2f} п."
+                
+            line = f"  {disp_name}: {price_str} ({arrow} {pct:+.1f}%)"
         else:
             reason = get_missing_data_reason(h_row, now_utc)
             line = f"  {disp_name}: нет данных {reason}"
@@ -146,7 +153,6 @@ def build_report(hours, indices):
             close_kld = add_hours(h[4], 2)
             is_open = is_market_open(h, now_utc)
             
-            # Улучшенный статус для заголовка
             is_trading_day = now_utc.isoweekday() in ([1,2,3,4,5] if h[7]=="1-5" else [7,1,2,3,4])
             if not is_trading_day:
                 status = "🔴 Выходной"
