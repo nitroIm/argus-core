@@ -237,9 +237,35 @@
     Перерыв: нет
     Дни: Mon-Fri
 
+--- ЕВРОПА ---
+
+13. ^GDAXI (DAX)
+    Страна: Germany
+    Таймзона: Europe/Berlin (UTC+1/+2)
+    Торги UTC: 08:00 - 16:30 (лето)
+    Торги UTC: 09:00 - 17:30 (зима)
+    Перерыв: нет
+    Дни: Mon-Fri
+
+14. ^FTSE (FTSE 100)
+    Страна: UK
+    Таймзона: Europe/London (UTC+0/+1)
+    Торги UTC: 08:00 - 16:30 (лето)
+    Торги UTC: 09:00 - 17:30 (зима)
+    Перерыв: нет
+    Дни: Mon-Fri
+
+15. ^FCHI (CAC 40)
+    Страна: France
+    Таймзона: Europe/Paris (UTC+1/+2)
+    Торги UTC: 08:00 - 16:30 (лето)
+    Торги UTC: 09:00 - 17:30 (зима)
+    Перерыв: нет
+    Дни: Mon-Fri
+
 --- США ---
 
-13. ^GSPC (S&P 500)
+16. ^GSPC (S&P 500)
     Страна: US
     Таймзона: America/New_York (UTC-5/-4)
     Торги UTC: 14:30 - 21:00 (лето)
@@ -247,14 +273,14 @@
     Перерыв: нет
     Дни: Mon-Fri
 
-14. ^IXIC (NASDAQ Composite)
+17. ^IXIC (NASDAQ Composite)
     Страна: US
     Таймзона: America/New_York (UTC-5/-4)
     Торги UTC: 14:30 - 21:00 (лето)
     Торги UTC: 15:30 - 22:00 (зима)
     Дни: Mon-Fri
 
-15. ^VIX (CBOE Volatility Index)
+18. ^VIX (CBOE Volatility Index)
     Страна: US
     Таймзона: America/New_York (UTC-5/-4)
     Торги UTC: 14:30 - 21:00 (лето)
@@ -263,21 +289,21 @@
 
 --- ГЛОБАЛЬНЫЕ ---
 
-16. DX-Y.NYB (US Dollar Index)
+19. DX-Y.NYB (US Dollar Index)
     Страна: Global
     Таймзона: America/New_York (UTC-5/-4)
     Торги UTC: 00:00 - 21:00
     Перерыв: нет (24/5)
     Дни: Mon-Fri
 
-17. GC=F (Gold Futures)
+20. GC=F (Gold Futures)
     Страна: Global
     Таймзона: America/New_York
     Торги UTC: 23:00 - 22:00 (след. день)
     Перерыв UTC: 21:00 - 22:00
     Дни: Mon-Fri
 
-18. CL=F (Crude Oil Futures)
+21. CL=F (Crude Oil Futures)
     Страна: Global
     Таймзона: America/New_York
     Торги UTC: 23:00 - 22:00 (след. день)
@@ -298,6 +324,10 @@ Cron: */15 0-10 * * 1-5
 --- ИНДИЯ ---
 Cron: */15 3-10 * * 1-5
 Покрывает: ^BSESN
+
+--- ЕВРОПА ---
+Cron: */15 7-17 * * 1-5
+Покрывает: ^GDAXI, ^FTSE, ^FCHI
 
 --- США (S&P, Nasdaq, VIX) ---
 Cron: */15 13-21 * * 1-5   (лето)
@@ -342,7 +372,7 @@ zoneinfo (встроена в Python 3.9+)
 yfinance ставит паузу 0.5 сек между запросами
 
 Расчёт при сборе каждые 15 минут:
-- 18 индексов
+- 21 индекс
 - 11 азиатских часов (00:00-10:00 UTC) = 40 циклов
 - Расход: 11 индексов × 40 циклов = 440 запросов/день
 - Это близко к лимиту 500
