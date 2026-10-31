@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-10-31T02:05:32.744442+00:00",
+  "generated_at": "2026-10-31T03:05:36.336090+00:00",
   "total_news": 93,
-  "avg_sentiment": -0.693,
+  "avg_sentiment": -0.689,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 9,
   "bearish_count": 50,
@@ -53,7 +53,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-31T02:05:31.534314+00:00",
+      "collected_at": "2026-10-31T03:05:35.040631+00:00",
       "effective_weight": 1.0,
       "title_original": "Uniswap launches TJAR fee tool, but only fast searchers capture the hidden arbitrage profit",
       "cross_check": 1
@@ -70,7 +70,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-31T02:05:32.707731+00:00",
+      "collected_at": "2026-10-31T03:05:36.282553+00:00",
       "effective_weight": 0.96,
       "title_original": "Чистая прибыль Coinbase выросла на 66% на фоне развития рынков предсказаний",
       "cross_check": 1
@@ -87,7 +87,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-31T02:05:31.416307+00:00",
+      "collected_at": "2026-10-31T03:05:34.860471+00:00",
       "effective_weight": 0.8,
       "title_original": "Bitcoin ETFs Add $441M in 4 Days as Zcash Streak Hits Day 8",
       "cross_check": 1
@@ -104,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-31T02:05:31.679428+00:00",
+      "collected_at": "2026-10-31T03:05:35.172183+00:00",
       "effective_weight": 0.8,
       "title_original": "Michael Saylor Sees Next Bitcoin Bull Market Beginning as Strategy Reports $19.5B in Q3 Net Income",
       "cross_check": 2
@@ -121,7 +121,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-31T02:05:31.679617+00:00",
+      "collected_at": "2026-10-31T03:05:35.172431+00:00",
       "effective_weight": 0.8,
       "title_original": "Important Ripple News and XRP Price Update: October 30",
       "cross_check": 1
@@ -140,7 +140,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-31T02:05:31.153198+00:00",
+      "collected_at": "2026-10-31T03:05:34.535374+00:00",
       "effective_weight": 1.3,
       "title_original": "Binance hackers raced to move billions before it could be frozen",
       "cross_check": 3
@@ -157,27 +157,10 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-10-31T02:05:31.232681+00:00",
+      "collected_at": "2026-10-31T03:05:34.646902+00:00",
       "effective_weight": 1.1,
       "title_original": "Binance Hack Shows Why Offshore Exchanges Need US Oversight, CFTC Chair Says",
       "cross_check": 3
-    },
-    {
-      "title": "Worried About Crypto Hacks? Buy Bitcoin Proxies in Stock Market Instead, Say Wall Street Firms",
-      "url": "https://decrypt.co/382282/crypto-hacks-buy-bitcoin-proxies-stock-market-wall-street",
-      "source": "Decrypt",
-      "source_weight": 1.1,
-      "lang": "en",
-      "pub_date": "2026-10-30T20:06:03+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-31T02:05:31.232727+00:00",
-      "effective_weight": 1.1,
-      "title_original": "Worried About Crypto Hacks? Buy Bitcoin Proxies in Stock Market Instead, Say Wall Street Firms",
-      "cross_check": 1
     },
     {
       "title": "Bitcoin risks worst October in 12 years as tech sell-off spreads to gold",
@@ -191,7 +174,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-31T02:05:31.153474+00:00",
+      "collected_at": "2026-10-31T03:05:34.535913+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin risks worst October in 12 years as tech sell-off spreads to gold",
       "cross_check": 1
@@ -208,10 +191,27 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-31T02:05:31.153599+00:00",
+      "collected_at": "2026-10-31T03:05:34.536079+00:00",
       "effective_weight": 1.04,
       "title_original": "FBI and Secret Service join response to Binance’s $6.3B hack",
       "cross_check": 2
+    },
+    {
+      "title": "Binance says it holds $5B in matching tokens to cover hack losses",
+      "url": "https://cointelegraph.com/news/binance-5-billion-replacement-crypto-in-custody?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-10-30T12:41:43+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 4.5,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-31T03:05:34.536129+00:00",
+      "effective_weight": 1.04,
+      "title_original": "Binance says it holds $5B in matching tokens to cover hack losses",
+      "cross_check": 5
     }
   ]
 }
