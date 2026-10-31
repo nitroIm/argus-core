@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-10-31T03:05:36.336090+00:00",
+  "generated_at": "2026-10-31T04:05:35.093461+00:00",
   "total_news": 93,
-  "avg_sentiment": -0.689,
+  "avg_sentiment": -0.722,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 9,
+  "bullish_count": 8,
   "bearish_count": 50,
-  "neutral_count": 34,
+  "neutral_count": 35,
   "fake_count": 0,
   "cross_confirmed": 26,
   "by_source": {
@@ -21,7 +21,7 @@
     },
     "Bitcoin.com": {
       "total": 9,
-      "bull": 1,
+      "bull": 0,
       "bear": 6
     },
     "CryptoSlate": {
@@ -42,23 +42,6 @@
   },
   "top_bullish": [
     {
-      "title": "Uniswap launches TJAR fee tool, but only fast searchers capture the hidden arbitrage profit",
-      "url": "https://cryptoslate.com/uniswap-launches-tjar-fee-tool-but-only-fast-searchers-capture-the-hidden-arbitrage-profit/",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-30T21:40:32+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-31T03:05:35.040631+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Uniswap launches TJAR fee tool, but only fast searchers capture the hidden arbitrage profit",
-      "cross_check": 1
-    },
-    {
       "title": "Чистая прибыль Coinbase выросла на 66% на фоне развития рынков предсказаний",
       "url": "https://forklog.com/chistaya-pribyl-coinbase-vyrosla-na-66-na-fone-razvitiya-rynkov-predskazaniy",
       "source": "ForkLog",
@@ -70,26 +53,26 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-31T03:05:36.282553+00:00",
+      "collected_at": "2026-10-31T04:05:35.026142+00:00",
       "effective_weight": 0.96,
       "title_original": "Чистая прибыль Coinbase выросла на 66% на фоне развития рынков предсказаний",
       "cross_check": 1
     },
     {
-      "title": "Bitcoin ETFs Add $441M in 4 Days as Zcash Streak Hits Day 8",
-      "url": "https://news.bitcoin.com/bitcoin-etf/bitcoin-etfs-add-441m-4-days-zcash-streak-hits-day-8/",
-      "source": "Bitcoin.com",
+      "title": "Uniswap launches TJAR fee tool, but only fast searchers capture the hidden arbitrage profit",
+      "url": "https://cryptoslate.com/uniswap-launches-tjar-fee-tool-but-only-fast-searchers-capture-the-hidden-arbitrage-profit/",
+      "source": "CryptoSlate",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-10-30T16:05:35+00:00",
+      "pub_date": "2026-10-30T21:40:32+00:00",
       "sentiment": 1.0,
-      "bull_weight": 1.2,
+      "bull_weight": 1.0,
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-31T03:05:34.860471+00:00",
+      "collected_at": "2026-10-31T04:05:34.009670+00:00",
       "effective_weight": 0.8,
-      "title_original": "Bitcoin ETFs Add $441M in 4 Days as Zcash Streak Hits Day 8",
+      "title_original": "Uniswap launches TJAR fee tool, but only fast searchers capture the hidden arbitrage profit",
       "cross_check": 1
     },
     {
@@ -104,7 +87,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-31T03:05:35.172183+00:00",
+      "collected_at": "2026-10-31T04:05:34.124169+00:00",
       "effective_weight": 0.8,
       "title_original": "Michael Saylor Sees Next Bitcoin Bull Market Beginning as Strategy Reports $19.5B in Q3 Net Income",
       "cross_check": 2
@@ -121,10 +104,27 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-31T03:05:35.172431+00:00",
+      "collected_at": "2026-10-31T04:05:34.124495+00:00",
       "effective_weight": 0.8,
       "title_original": "Important Ripple News and XRP Price Update: October 30",
       "cross_check": 1
+    },
+    {
+      "title": "Coinbase Swings to $719 Million Q3 Profit on Crypto Gains",
+      "url": "https://decrypt.co/382188/coinbase-beats-719-million-q3-profit-crypto-gains",
+      "source": "Decrypt",
+      "source_weight": 1.1,
+      "lang": "en",
+      "pub_date": "2026-10-29T20:46:43+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 2.2,
+      "bear_weight": 0.0,
+      "freshness": 0.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-31T04:05:33.737697+00:00",
+      "effective_weight": 0.55,
+      "title_original": "Coinbase Swings to $719 Million Q3 Profit on Crypto Gains",
+      "cross_check": 2
     }
   ],
   "top_bearish": [
@@ -138,28 +138,11 @@
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 1.5,
-      "freshness": 1.0,
+      "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-31T03:05:34.535374+00:00",
-      "effective_weight": 1.3,
+      "collected_at": "2026-10-31T04:05:33.661086+00:00",
+      "effective_weight": 1.04,
       "title_original": "Binance hackers raced to move billions before it could be frozen",
-      "cross_check": 3
-    },
-    {
-      "title": "Binance Hack Shows Why Offshore Exchanges Need US Oversight, CFTC Chair Says",
-      "url": "https://decrypt.co/382285/binance-hack-why-offshore-exchanges-need-us-oversight-cftc-chair",
-      "source": "Decrypt",
-      "source_weight": 1.1,
-      "lang": "en",
-      "pub_date": "2026-10-30T21:16:04+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-10-31T03:05:34.646902+00:00",
-      "effective_weight": 1.1,
-      "title_original": "Binance Hack Shows Why Offshore Exchanges Need US Oversight, CFTC Chair Says",
       "cross_check": 3
     },
     {
@@ -174,7 +157,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-31T03:05:34.535913+00:00",
+      "collected_at": "2026-10-31T04:05:33.661544+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin risks worst October in 12 years as tech sell-off spreads to gold",
       "cross_check": 1
@@ -191,7 +174,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-31T03:05:34.536079+00:00",
+      "collected_at": "2026-10-31T04:05:33.661749+00:00",
       "effective_weight": 1.04,
       "title_original": "FBI and Secret Service join response to Binance’s $6.3B hack",
       "cross_check": 2
@@ -208,9 +191,26 @@
       "bear_weight": 4.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-31T03:05:34.536129+00:00",
+      "collected_at": "2026-10-31T04:05:33.661812+00:00",
       "effective_weight": 1.04,
       "title_original": "Binance says it holds $5B in matching tokens to cover hack losses",
+      "cross_check": 5
+    },
+    {
+      "title": "Bitcoin price metrics hint at rebound as $1.6B liquidations follow Binance hack",
+      "url": "https://cointelegraph.com/markets/bitcoin-price-metrics-hint-at-rebound-as-16b-liquidations-follow-binance-hack?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-10-30T11:29:23+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 3.7,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-10-31T04:05:33.661881+00:00",
+      "effective_weight": 1.04,
+      "title_original": "Bitcoin price metrics hint at rebound as $1.6B liquidations follow Binance hack",
       "cross_check": 5
     }
   ]
