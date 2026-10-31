@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - CHART TEST (LIVE DB ONLY)
+# ARGUS - CHART TEST (WATERMARK & CLEAN LOOK)
 # Path: crypto/collect/chart_test.py
 # ============================================================
 
@@ -23,13 +23,13 @@ def get_conn():
     if not DB_URL: raise RuntimeError("AIVEN_DB_URL not set")
     return psycopg.connect(DB_URL, connect_timeout=30, application_name="argus-chart")
 
-def send_telegram_photo(photo_bytes, caption):
+def send_telegram_photo(photo_bytes):
     if not BOT_TOKEN or not CHAT_ID:
         log.error("No TG token or chat_id")
         return False
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendPhoto"
     files = {'photo': ('chart.png', photo_bytes)}
-    data = {'chat_id': CHAT_ID, 'caption': caption, 'parse_mode': 'HTML'}
+    data = {'chat_id': CHAT_ID}
     try:
         r = requests.post(url, files=files, data=data, timeout=20)
         return r.status_code == 200
@@ -38,7 +38,7 @@ def send_telegram_photo(photo_bytes, caption):
         return False
 
 def main():
-    log.info("STARTING CHART GENERATOR (LIVE DB)")
+    log.info("STARTING CHART GENERATOR")
     
     try:
         conn = get_conn()
@@ -54,82 +54,81 @@ def main():
         log.error("Not enough data in DB")
         sys.exit(1)
 
-    # Подготовка датафрейма
     df = pd.DataFrame(rows, columns=['open_time', 'open', 'high', 'low', 'close', 'volume'])
     df['open_time'] = pd.to_datetime(df['open_time'], utc=True)
     df.set_index('open_time', inplace=True)
     df = df.astype(float)
     
-    # Склеиваем в 1D (Дневки)
+    # Склеиваем в 1D
     df_1d = df.resample('1D').agg({
         'open': 'first', 'high': 'max', 'low': 'min', 
         'close': 'last', 'volume': 'sum'
     }).dropna()
-    
-    log.info(f"Got {len(df_1d)} daily candles from Aiven DB.")
 
-    # Считаем индикаторы (только те, для которых хватает данных)
-    df_1d['ema7'] = df_1d['close'].ewm(span=7, adjust=False).mean()
-    df_1d['ema25'] = df_1d['close'].ewm(span=25, adjust=False).mean()
-    
-    # MACD
+    # Считаем MACD
     exp12 = df_1d['close'].ewm(span=12, adjust=False).mean()
     exp26 = df_1d['close'].ewm(span=26, adjust=False).mean()
     macd_line = exp12 - exp26
     signal_line = macd_line.ewm(span=9, adjust=False).mean()
     macd_hist = macd_line - signal_line
-    
-    # RSI
+
+    # Красим MACD
+    macd_colors = ['#26a69a' if val >= 0 else '#ef5350' for val in macd_hist]
+
+    # Считаем RSI
     delta = df_1d['close'].diff()
     gain = (delta.where(delta > 0, 0)).rolling(window=14).mean()
     loss = (-delta.where(delta < 0, 0)).rolling(window=14).mean()
     rs = gain / loss
     df_1d['rsi'] = 100 - (100 / (1 + rs))
+    
+    # Линии для RSI (30 и 70)
+    rsi_30 = pd.Series(30, index=df_1d.index)
+    rsi_70 = pd.Series(70, index=df_1d.index)
 
-    # Настройка стиля (Тёмный)
-    mc = mpf.make_marketcolors(
-        up='#26a69a', down='#ef5350', edge='inherit', wick='inherit', volume='in'
-    )
-    s = mpf.make_mpf_style(
-        marketcolors=mc, 
-        base_mpf_style='nightclouds', 
-        facecolor='#131722', 
-        figcolor='#131722', 
-        gridcolor='#2a2e39',
-        gridstyle='--'
-    )
+    # Стиль (Тёмный)
+    mc = mpf.make_marketcolors(up='#26a69a', down='#ef5350', edge='inherit', wick='inherit', volume='in')
+    s = mpf.make_mpf_style(marketcolors=mc, base_mpf_style='nightclouds', facecolor='#131722', figcolor='#131722', gridcolor='#2a2e39', gridstyle='--')
 
-    # Дополнительные графики (убрали EMA99)
+    # Увеличенные шрифты
+    rc = {'axes.labelsize': 12, 'ytick.labelsize': 12, 'xtick.labelsize': 10, 'axes.titlesize': 16, 'figure.titlesize': 16}
+
     apds = [
-        mpf.make_addplot(df_1d['ema7'], color='#FFD700', panel=0, width=1),
-        mpf.make_addplot(df_1d['ema25'], color='#FF69B4', panel=0, width=1),
-        
-        mpf.make_addplot(macd_hist, type='bar', color='dimgray', panel=2),
+        mpf.make_addplot(macd_hist, type='bar', color=macd_colors, panel=2),
         mpf.make_addplot(macd_line, color='#FFD700', panel=2, width=1),
         mpf.make_addplot(signal_line, color='#9370DB', panel=2, width=1),
-        
-        mpf.make_addplot(df_1d['rsi'], color='#FFD700', panel=3, width=1)
+        mpf.make_addplot(df_1d['rsi'], color='#FFD700', panel=3, ylim=(0, 100)),
+        mpf.make_addplot(rsi_30, color='gray', panel=3, linestyle='--', width=0.5),
+        mpf.make_addplot(rsi_70, color='gray', panel=3, linestyle='--', width=0.5)
     ]
 
-    buf = io.BytesIO()
-    title = f"BTC/USDT | 1D | Binance (Live DB)\nPrice: ${df_1d['close'].iloc[-1]:,.2f}"
+    title = "BTC/USDT | 1D"
     
-    log.info("Generating chart...")
-    mpf.plot(
+    # Генерируем график и получаем фигуру для добавления водяного знака
+    fig, axes = mpf.plot(
         df_1d, type='candle', style=s, 
         title=title, ylabel='', ylabel_lower='',
         volume=True, 
         addplot=apds,
-        panel_ratios=(6, 1.5, 2, 2),
-        figsize=(12, 14),
-        savefig=dict(fname=buf, dpi=150, bbox_inches='tight')
+        panel_ratios=(5, 1.5, 2, 2),
+        figsize=(10, 12), 
+        rc=rc,
+        returnfig=True
     )
     
+    # Добавляем водяной знак ARGUS по центру (полупрозрачный)
+    fig.text(0.5, 0.5, 'ARGUS', alpha=0.1, fontsize=80, ha='center', va='center', color='white', rotation=30)
+    
+    # Добавляем подпись внизу экрана
+    fig.text(0.5, 0.02, 'ARGUS — автономная система анализа', alpha=0.6, fontsize=10, ha='center', va='bottom', color='gray')
+
+    # Сохраняем в память
+    buf = io.BytesIO()
+    fig.savefig(buf, format='png', dpi=150, bbox_inches='tight')
     buf.seek(0)
     
     log.info("Sending to Telegram...")
-    caption = f"📊 <b>Тест графика (1D из Live DB)</b>\n🕯️ Свечи: {len(df_1d)} дн. (все, что есть в базе)\n<b>Индикаторы:</b> EMA(7,25), MACD, RSI"
-    if send_telegram_photo(buf, caption):
+    if send_telegram_photo(buf):
         log.info("Photo sent successfully!")
     else:
         log.error("Failed to send photo.")
