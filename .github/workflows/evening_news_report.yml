@@ -25,7 +25,7 @@ jobs:
       - name: Install deps
         run: |
           python -m pip install --upgrade pip
-          pip install pandas requests "psycopg[binary]"
+          pip install pandas mplfinance requests "psycopg[binary]"
 
       - name: Report news
         env:
@@ -36,10 +36,10 @@ jobs:
           VK_GROUP_ID: ${{ secrets.VK_GROUP_ID }}
           AIVEN_DB_URL: ${{ secrets.AIVEN_DB_URL }}
           CMC_API_KEY: ${{ secrets.CMC_API_KEY }}
-          # NEWS_TEST_MODE: "1"
+          NEWS_TEST_MODE: "1"
         run: python crypto/report/evening_news_report.py
 
-      - name: Commit
+      - name: Commit history
         run: |
           git config user.name "ARGUS"
           git config user.email "argus@github.com"
@@ -61,4 +61,4 @@ jobs:
           curl -s -X POST \
             "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
             -H "Content-Type: application/json" \
-            -d "{\"chat_id\": \"${TELEGRAM_CHAT_ID}\", \"text\": \"⚠️ <b>Сбой в: ${{ github.workflow }}</b>\nПроверь логи в GitHub Actions!\", \"parse_mode\": \"HTML\"}" || true
+            -d "{\"chat_id\": \"${TELEGRAM_CHAT_ID}\", \"text\": \"⚠️ <b>Сбой в: ${{ github.workflow }}</b>\nПроверь логи!\", \"parse_mode\": \"HTML\"}" || true
