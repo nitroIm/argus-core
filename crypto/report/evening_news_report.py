@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - EVENING NEWS REPORT v4.2 (GROUPS ONLY & VK CHART)
+# ARGUS - EVENING NEWS REPORT v4.3 (VK NO-WRAP BARS)
 # Path: crypto/report/evening_news_report.py
 # ============================================================
 
@@ -439,7 +439,7 @@ def build_report(data, top_items, top_ru, btc, live_cmc, prev_g_metrics, n_senti
     return "\n".join(lines)
 
 def main():
-    log.info("evening news report v4.2")
+    log.info("evening news report v4.3")
     if not SENTIMENT_FILE.exists(): return
 
     data = load_json(SENTIMENT_FILE)
