@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - SCHEMA GLOBAL MARKETS (v1.0.0)
+# ARGUS - SCHEMA GLOBAL MARKETS (v1.0.1)
 # Path: crypto/binance/schema_global_markets.py
 # ============================================================
 
@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS market_hours (
 );
 """
 
-# Данные для таблицы market_hours (17 инструментов)
+# Данные для таблицы market_hours (20 инструментов)
 MARKET_HOURS_DATA = [
     # АЗИЯ
     ("^N225", "Asia", "Asia/Tokyo", "00:00", "06:00", "02:30", "03:30", "1-5"), # Nikkei 225
@@ -52,6 +52,11 @@ MARKET_HOURS_DATA = [
     ("^KLSE", "Asia", "Asia/Kuala_Lumpur", "01:00", "09:00", "04:30", "06:30", "1-5"), # KLCI
     ("^SET.BK", "Asia", "Asia/Bangkok", "02:30", "09:30", "05:30", "07:00", "1-5"), # SET Index
     ("^BSESN", "Asia", "Asia/Kolkata", "03:45", "10:00", None, None, "1-5"), # BSE Sensex
+
+    # ЕВРОПА (Добавлено)
+    ("^GDAXI", "Europe", "Europe/Berlin", "08:00", "16:30", None, None, "1-5"), # DAX
+    ("^FTSE", "Europe", "Europe/London", "08:00", "16:30", None, None, "1-5"), # FTSE 100
+    ("^FCHI", "Europe", "Europe/Paris", "08:00", "16:30", None, None, "1-5"), # CAC 40
     
     # США
     ("^GSPC", "US", "America/New_York", "14:30", "21:00", None, None, "1-5"), # S&P 500 (лето)
@@ -73,17 +78,23 @@ def main():
     conn = psycopg.connect(DB_URL, connect_timeout=15)
     
     with conn.cursor() as cur:
-        print("Creating tables...")
+        print("Creating tables (if not exists)...")
         cur.execute(SQL_CREATE)
         
-        print("Clearing market_hours...")
-        cur.execute("TRUNCATE TABLE market_hours;")
-        
-        print("Inserting market hours...")
+        print("Updating market_hours (adding missing Europe)...")
         for row in MARKET_HOURS_DATA:
+            # Используем ON CONFLICT DO UPDATE, чтобы ничего не удалять, а только обновлять/добавлять
             cur.execute("""
                 INSERT INTO market_hours (ticker, region, timezone, open_utc, close_utc, lunch_start_utc, lunch_end_utc, trading_days)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                ON CONFLICT (ticker) DO UPDATE SET
+                    region = EXCLUDED.region,
+                    timezone = EXCLUDED.timezone,
+                    open_utc = EXCLUDED.open_utc,
+                    close_utc = EXCLUDED.close_utc,
+                    lunch_start_utc = EXCLUDED.lunch_start_utc,
+                    lunch_end_utc = EXCLUDED.lunch_end_utc,
+                    trading_days = EXCLUDED.trading_days
             """, row)
             
         # Проверка
@@ -93,8 +104,8 @@ def main():
     conn.commit()
     conn.close()
 
-    print(f"OK: схема глобальных рынков готова")
-    print(f"Загружено торговых расписаний: {count}")
+    print(f"OK: схема глобальных рынков обновлена")
+    print(f"Всего торговых расписаний в базе: {count}")
 
 if __name__ == "__main__":
     main()
