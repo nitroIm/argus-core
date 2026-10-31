@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - CHART TEST (FINAL FIX)
+# ARGUS - CHART TEST (FIXED SPACING)
 # Path: crypto/collect/chart_test.py
 # ============================================================
 
@@ -94,7 +94,8 @@ def main():
         figcolor='#131722', 
         gridcolor='#2a2e39', 
         gridstyle='--',
-        rc=rc
+        rc=rc,
+        y_on_right=True # Встроенный перенос осей
     )
 
     apds = [
@@ -112,22 +113,19 @@ def main():
         addplot=apds,
         panel_ratios=(6, 1.5, 2), 
         figsize=(10, 10), 
-        hlines=dict(hlines=[last_close], colors=[last_color], linestyle='--', linewidths=[1]), # Теперь linestyle
+        hlines=dict(hlines=[last_close], colors=[last_color], linestyle='--', linewidths=[1]),
         returnfig=True
     )
     
-    # Переносим ВСЕ оси вправо вручную
-    for ax in axes:
-        if ax is not None:
-            ax.yaxis.tick_right()
-            ax.yaxis.set_label_position("right")
+    # ДОБАВЛЯЕМ ОТСТУП МЕЖДУ ПАНЕЛЯМИ (чтобы цифры не слипались)
+    fig.subplots_adjust(hspace=0.25, right=0.85)
 
     fig.text(0.5, 0.5, 'ARGUS', alpha=0.1, fontsize=80, ha='center', va='center', color='white', rotation=30)
     fig.text(0.5, 0.02, 'ARGUS — автономная система анализа', alpha=0.6, fontsize=10, ha='center', va='bottom', color='gray')
 
-    # Плашка с ценой (сдвинута вправо, так как ось теперь справа)
+    # Плашка с ценой (сдвинута ближе, чтобы не обрезалась)
     ax_main = axes[0]
-    ax_main.text(1.02, last_close, f' {last_close:,.2f} ', 
+    ax_main.text(1.005, last_close, f' {last_close:,.2f} ', 
                  transform=ax_main.get_yaxis_transform(), 
                  va='center', ha='left', 
                  color='black', 
