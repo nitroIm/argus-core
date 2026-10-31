@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - GLOBAL MARKET MORNING REPORT (v1.0.0)
+# ARGUS - GLOBAL MARKET MORNING REPORT (v1.0.2)
 # Path: crypto/report/global_market_morning.py
 # ============================================================
 
@@ -16,9 +16,52 @@ CHAT_ID = (os.getenv("TELEGRAM_CHAT_ID") or "").strip()
 
 TZ = ZoneInfo("Europe/Kaliningrad")
 
+TICKER_NAMES = {
+    "^N225": "Nikkei 225", "^HSI": "Hang Seng", "000001.SS": "Shanghai Comp",
+    "399001.SZ": "Shenzhen Comp", "^KS11": "KOSPI", "^TWII": "TAIEX",
+    "^STI": "Straits Times", "^JKSE": "IDX Comp", "^KLSE": "KLCI",
+    "^SET.BK": "SET Index", "^BSESN": "BSE Sensex",
+    "^GDAXI": "DAX", "^FTSE": "FTSE 100", "^FCHI": "CAC 40",
+    "^GSPC": "S&P 500", "^IXIC": "NASDAQ", "^VIX": "VIX (Страх)",
+    "DX-Y.NYB": "DXY (Доллар)", "GC=F": "Золото", "CL=F": "Нефть"
+}
+
 def get_conn():
     if not DB_URL: raise RuntimeError("AIVEN_DB_URL not set")
     return psycopg.connect(DB_URL, connect_timeout=30, application_name="argus-global-report")
+
+def add_hours(time_str, hours_to_add):
+    h, m = map(int, time_str.split(':'))
+    h = (h + hours_to_add) % 24
+    return f"{h:02d}:{m:02d}"
+
+def get_missing_data_reason(h_row, now_utc):
+    ticker, region, tz, open_utc, close_utc, lunch_start, lunch_end, trading_days = h_row
+    current_day = now_utc.isoweekday()
+    allowed_days = [1, 2, 3, 4, 5] if trading_days == "1-5" else [7, 1, 2, 3, 4] if trading_days == "0-4" else [1, 2, 3, 4, 5]
+    
+    if current_day not in allowed_days:
+        return "(выходной)"
+        
+    current_time = now_utc.strftime("%H:%M")
+    is_overnight = open_utc > close_utc
+    
+    if not is_overnight:
+        if current_time < open_utc:
+            open_kld = add_hours(open_utc, 2)
+            return f"(откроется в {open_kld} КЛГ)"
+        elif current_time >= close_utc:
+            return "(закрыт)"
+        else:
+            if lunch_start and lunch_end and (lunch_start <= current_time < lunch_end):
+                return "(обеденный перерыв)"
+            return "(торгуется, ожидание)"
+    else:
+        if close_utc <= current_time < open_utc:
+            open_kld = add_hours(open_utc, 2)
+            return f"(откроется в {open_kld} КЛГ)"
+        else:
+            return "(торгуется, ожидание)"
 
 def is_market_open(market_row, now_utc):
     ticker, region, tz, open_utc, close_utc, lunch_start, lunch_end, trading_days = market_row
@@ -34,11 +77,6 @@ def is_market_open(market_row, now_utc):
     if lunch_start and lunch_end and (lunch_start <= current_time < lunch_end): return False
     return True
 
-def add_hours(time_str, hours_to_add):
-    h, m = map(int, time_str.split(':'))
-    h = (h + hours_to_add) % 24
-    return f"{h:02d}:{m:02d}"
-
 def fetch_data():
     try:
         conn = get_conn()
@@ -51,17 +89,15 @@ def fetch_data():
                        (array_agg(close ORDER BY open_time DESC))[1] as current_price,
                        (array_agg(open ORDER BY open_time ASC))[1] as day_open
                 FROM market_indices
-                WHERE open_time >= NOW() - INTERVAL '48 hours'
+                WHERE open_time >= NOW() - INTERVAL '7 days'
                 GROUP BY ticker, name, region, country
             """)
-            indices = cur.fetchall()
+            indices = {r[0]: r for r in cur.fetchall()}
         conn.close()
         return hours, indices
     except Exception as e:
         print(f"DB Error: {e}")
-        sys.exit(1) # Падаем, чтобы сработала защита в yml
-
-def fmt_price(p): return f"{p:,.2f}"
+        sys.exit(1)
 
 def build_report(hours, indices):
     now_utc = datetime.now(timezone.utc)
@@ -80,49 +116,46 @@ def build_report(hours, indices):
         "Global": {"flag": "💵 Сырье и Валюта", "lines": []}
     }
 
-    # Собираем данные
-    for idx in indices:
-        ticker, name, region, country, curr_price, day_open = idx
-        if not curr_price or not day_open: continue
+    for ticker, h_row in hours.items():
+        region = h_row[1]
+        if region not in regions: continue
         
-        curr_price = float(curr_price)
-        day_open = float(day_open)
-        pct = ((curr_price - day_open) / day_open * 100) if day_open else 0
+        idx = indices.get(ticker)
+        disp_name = TICKER_NAMES.get(ticker, ticker)
         
-        arrow = "🔼" if pct > 0 else "🔽" if pct < 0 else "⏸️"
-        
-        # Красивое имя для VIX и DXY
-        disp_name = name
-        if ticker == "^VIX": disp_name = "VIX (Страх)"
-        elif ticker == "DX-Y.NYB": disp_name = "DXY (Индекс доллара)"
-        elif ticker == "^GDAXI": disp_name = "DAX (Германия)"
-        elif ticker == "^FTSE": disp_name = "FTSE 100 (UK)"
-        elif ticker == "^FCHI": disp_name = "CAC 40 (Франция)"
-
-        line = f"  {disp_name}: {fmt_price(curr_price)} ({arrow} {pct:+.1f}%)"
+        if idx:
+            curr_price = float(idx[4])
+            day_open = float(idx[5])
+            pct = ((curr_price - day_open) / day_open * 100) if day_open else 0
+            arrow = "🔼" if pct > 0 else "🔽" if pct < 0 else "⏸️"
+            line = f"  {disp_name}: {curr_price:,.2f} ({arrow} {pct:+.1f}%)"
+        else:
+            reason = get_missing_data_reason(h_row, now_utc)
+            line = f"  {disp_name}: нет данных {reason}"
+            
         regions[region]["lines"].append(line)
 
-    # Формируем текст с заголовками и статусами
     for r_key in ["Asia", "Europe", "US", "Global"]:
         r_data = regions[r_key]
         if not r_data["lines"]: continue
         
-        # Берем первый тикер региона для проверки времени
-        sample_ticker = next((i[0] for i in indices if i[2] == r_key), None)
-        if sample_ticker and sample_ticker in hours:
+        sample_ticker = next((t for t, h in hours.items() if h[1] == r_key), None)
+        if sample_ticker:
             h = hours[sample_ticker]
-            open_kld = add_hours(h[3], 2) # UTC+2
+            open_kld = add_hours(h[3], 2)
             close_kld = add_hours(h[4], 2)
-            
-            # Проверяем, открыт ли регион (по первому тикеру)
             is_open = is_market_open(h, now_utc)
-            status = "🟢 Открыт" if is_open else "🔴 Закрыт"
             
-            if r_key == "Global":
-                time_str = "(Торги: 24/5)"
+            # Улучшенный статус для заголовка
+            is_trading_day = now_utc.isoweekday() in ([1,2,3,4,5] if h[7]=="1-5" else [7,1,2,3,4])
+            if not is_trading_day:
+                status = "🔴 Выходной"
+            elif is_open:
+                status = "🟢 Открыт"
             else:
-                time_str = f"(Торги: {open_kld} - {close_kld} КЛГ)"
-                
+                status = "🔴 Закрыт"
+            
+            time_str = "(Торги: 24/5)" if r_key == "Global" else f"(Торги: {open_kld} - {close_kld} КЛГ)"
             lines.append(f"{r_data['flag']} {time_str} {status}:")
         else:
             lines.append(f"{r_data['flag']}:")
@@ -130,9 +163,8 @@ def build_report(hours, indices):
         lines.extend(r_data["lines"])
         lines.append("")
 
-    # Макро-контекст
-    sp500 = next((i for i in indices if i[0] == "^GSPC"), None)
-    dxy = next((i for i in indices if i[0] == "DX-Y.NYB"), None)
+    sp500 = indices.get("^GSPC")
+    dxy = indices.get("DX-Y.NYB")
     
     if sp500 and dxy:
         sp_pct = ((float(sp500[4]) - float(sp500[5])) / float(sp500[5]) * 100) if float(sp500[5]) else 0
