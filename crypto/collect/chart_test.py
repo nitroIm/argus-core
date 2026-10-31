@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - CHART TEST (WATERMARK & CLEAN LOOK) FIX
+# ARGUS - CHART TEST (CURRENT PRICE LINE)
 # Path: crypto/collect/chart_test.py
 # ============================================================
 
@@ -75,18 +75,12 @@ def main():
     # Красим MACD
     macd_colors = ['#26a69a' if val >= 0 else '#ef5350' for val in macd_hist]
 
-    # Считаем RSI
-    delta = df_1d['close'].diff()
-    gain = (delta.where(delta > 0, 0)).rolling(window=14).mean()
-    loss = (-delta.where(delta < 0, 0)).rolling(window=14).mean()
-    rs = gain / loss
-    df_1d['rsi'] = 100 - (100 / (1 + rs))
-    
-    # Линии для RSI (30 и 70)
-    rsi_30 = pd.Series(30, index=df_1d.index)
-    rsi_70 = pd.Series(70, index=df_1d.index)
+    # Данные для текущей цены (последняя свеча)
+    last_close = df_1d['close'].iloc[-1]
+    last_open = df_1d['open'].iloc[-1]
+    last_color = '#26a69a' if last_close >= last_open else '#ef5350'
 
-    # Увеличенные шрифты (Правильное размещение!)
+    # Увеличенные шрифты
     rc = {
         'axes.labelsize': 12, 
         'ytick.labelsize': 12, 
@@ -95,7 +89,7 @@ def main():
         'figure.titlesize': 16
     }
 
-    # Стиль (Тёмный + передаем шрифты)
+    # Стиль (Тёмный)
     mc = mpf.make_marketcolors(up='#26a69a', down='#ef5350', edge='inherit', wick='inherit', volume='in')
     s = mpf.make_mpf_style(
         marketcolors=mc, 
@@ -104,38 +98,45 @@ def main():
         figcolor='#131722', 
         gridcolor='#2a2e39', 
         gridstyle='--',
-        rc=rc # <--- ВОТ СЮДА ПЕРЕНЕСЛИ
+        rc=rc
     )
 
+    # Только MACD
     apds = [
         mpf.make_addplot(macd_hist, type='bar', color=macd_colors, panel=2),
         mpf.make_addplot(macd_line, color='#FFD700', panel=2, width=1),
-        mpf.make_addplot(signal_line, color='#9370DB', panel=2, width=1),
-        mpf.make_addplot(df_1d['rsi'], color='#FFD700', panel=3, ylim=(0, 100)),
-        mpf.make_addplot(rsi_30, color='gray', panel=3, linestyle='--', width=0.5),
-        mpf.make_addplot(rsi_70, color='gray', panel=3, linestyle='--', width=0.5)
+        mpf.make_addplot(signal_line, color='#9370DB', panel=2, width=1)
     ]
 
     title = "BTC/USDT | 1D"
     
-    # Генерируем график и получаем фигуру для добавления водяного знака
+    # Генерируем график (добавили hlines для пунктирной линии цены)
     fig, axes = mpf.plot(
         df_1d, type='candle', style=s, 
         title=title, ylabel='', ylabel_lower='',
         volume=True, 
         addplot=apds,
-        panel_ratios=(5, 1.5, 2, 2),
-        figsize=(10, 12), 
+        panel_ratios=(6, 1.5, 2), 
+        figsize=(10, 10), 
+        y_on_right=True,
+        hlines=dict(hlines=[last_close], colors=[last_color], linestyles=['--'], linewidths=[1]), # <--- Линия
         returnfig=True
     )
     
-    # Добавляем водяной знак ARGUS по центру (полупрозрачный)
+    # Водяной знак
     fig.text(0.5, 0.5, 'ARGUS', alpha=0.1, fontsize=80, ha='center', va='center', color='white', rotation=30)
-    
-    # Добавляем подпись внизу экрана
     fig.text(0.5, 0.02, 'ARGUS — автономная система анализа', alpha=0.6, fontsize=10, ha='center', va='bottom', color='gray')
 
-    # Сохраняем в память
+    # Рисуем плашку с ценой на правой оси
+    ax_main = axes[0]
+    # Текст с ценой
+    ax_main.text(1.005, last_close, f' {last_close:,.2f} ', 
+                 transform=ax_main.get_yaxis_transform(), 
+                 va='center', ha='left', 
+                 color='black', 
+                 bbox=dict(boxstyle="round,pad=0.3", fc=last_color, ec=last_color, lw=1),
+                 fontsize=10, fontweight='bold')
+
     buf = io.BytesIO()
     fig.savefig(buf, format='png', dpi=150, bbox_inches='tight')
     buf.seek(0)
