@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - CHART TEST (FIXED SPACING)
+# ARGUS - CHART TEST (DYNAMIC PADDING & WINDOW)
 # Path: crypto/collect/chart_test.py
 # ============================================================
 
@@ -65,6 +65,9 @@ def main():
         'close': 'last', 'volume': 'sum'
     }).dropna()
 
+    # СКОЛЬЗЯЩЕЕ ОКНО: оставляем только последние 45 дней для графика
+    df_1d = df_1d.tail(45)
+
     # Считаем MACD
     exp12 = df_1d['close'].ewm(span=12, adjust=False).mean()
     exp26 = df_1d['close'].ewm(span=26, adjust=False).mean()
@@ -77,6 +80,14 @@ def main():
     last_close = df_1d['close'].iloc[-1]
     last_open = df_1d['open'].iloc[-1]
     last_color = '#26a69a' if last_close >= last_open else '#ef5350'
+
+    # ДИНАМИЧЕСКИЙ РАСЧЕТ ГРАНИЦ (Чтобы не пробивало потолок)
+    max_price = df_1d['high'].max()
+    min_price = df_1d['low'].min()
+    price_range = max_price - min_price
+    padding = price_range * 0.10 # 10% отступа сверху и снизу
+    ymin = min_price - padding
+    ymax = max_price + padding
 
     rc = {
         'axes.labelsize': 12, 
@@ -95,7 +106,7 @@ def main():
         gridcolor='#2a2e39', 
         gridstyle='--',
         rc=rc,
-        y_on_right=True # Встроенный перенос осей
+        y_on_right=True
     )
 
     apds = [
@@ -113,17 +124,16 @@ def main():
         addplot=apds,
         panel_ratios=(6, 1.5, 2), 
         figsize=(10, 10), 
+        ylim=(ymin, ymax), # <--- Применяем рассчитанные границы
         hlines=dict(hlines=[last_close], colors=[last_color], linestyle='--', linewidths=[1]),
         returnfig=True
     )
     
-    # ДОБАВЛЯЕМ ОТСТУП МЕЖДУ ПАНЕЛЯМИ (чтобы цифры не слипались)
     fig.subplots_adjust(hspace=0.25, right=0.85)
 
     fig.text(0.5, 0.5, 'ARGUS', alpha=0.1, fontsize=80, ha='center', va='center', color='white', rotation=30)
     fig.text(0.5, 0.02, 'ARGUS — автономная система анализа', alpha=0.6, fontsize=10, ha='center', va='bottom', color='gray')
 
-    # Плашка с ценой (сдвинута ближе, чтобы не обрезалась)
     ax_main = axes[0]
     ax_main.text(1.005, last_close, f' {last_close:,.2f} ', 
                  transform=ax_main.get_yaxis_transform(), 
