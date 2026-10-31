@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-10-31T08:05:39.460977+00:00",
-  "total_news": 92,
-  "avg_sentiment": -0.72,
+  "generated_at": "2026-10-31T09:05:36.605113+00:00",
+  "total_news": 93,
+  "avg_sentiment": -0.743,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 8,
-  "bearish_count": 50,
-  "neutral_count": 34,
+  "bullish_count": 7,
+  "bearish_count": 51,
+  "neutral_count": 35,
   "fake_count": 0,
-  "cross_confirmed": 24,
+  "cross_confirmed": 23,
   "by_source": {
     "Cointelegraph": {
       "total": 23,
@@ -22,7 +22,7 @@
     "Bitcoin.com": {
       "total": 8,
       "bull": 0,
-      "bear": 5
+      "bear": 4
     },
     "CryptoSlate": {
       "total": 8,
@@ -31,13 +31,13 @@
     },
     "CryptoPotato": {
       "total": 24,
-      "bull": 3,
-      "bear": 14
+      "bull": 2,
+      "bear": 15
     },
     "ForkLog": {
-      "total": 8,
+      "total": 9,
       "bull": 1,
-      "bear": 2
+      "bear": 3
     }
   },
   "top_bullish": [
@@ -53,7 +53,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-31T08:05:39.395183+00:00",
+      "collected_at": "2026-10-31T09:05:36.555251+00:00",
       "effective_weight": 0.96,
       "title_original": "Чистая прибыль Coinbase выросла на 66% на фоне развития рынков предсказаний",
       "cross_check": 1
@@ -70,7 +70,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-31T08:05:38.380212+00:00",
+      "collected_at": "2026-10-31T09:05:35.577879+00:00",
       "effective_weight": 0.8,
       "title_original": "Uniswap launches TJAR fee tool, but only fast searchers capture the hidden arbitrage profit",
       "cross_check": 1
@@ -87,7 +87,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-31T08:05:38.494352+00:00",
+      "collected_at": "2026-10-31T09:05:35.680017+00:00",
       "effective_weight": 0.8,
       "title_original": "Michael Saylor Sees Next Bitcoin Bull Market Beginning as Strategy Reports $19.5B in Q3 Net Income",
       "cross_check": 2
@@ -104,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-31T08:05:38.494690+00:00",
+      "collected_at": "2026-10-31T09:05:35.680255+00:00",
       "effective_weight": 0.8,
       "title_original": "Important Ripple News and XRP Price Update: October 30",
       "cross_check": 1
@@ -121,7 +121,7 @@
       "bear_weight": 0.0,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-31T08:05:38.103142+00:00",
+      "collected_at": "2026-10-31T09:05:35.327627+00:00",
       "effective_weight": 0.55,
       "title_original": "Coinbase Swings to $719 Million Q3 Profit on Crypto Gains",
       "cross_check": 2
@@ -129,38 +129,38 @@
   ],
   "top_bearish": [
     {
-      "title": "Israel Extradites Suspect to US Over $2.8M Crypto Hack",
-      "url": "https://news.bitcoin.com/regulation-and-legal/israel-extradites-suspect-to-us-over-2-8m-crypto-hack/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-10-31T07:30:55+00:00",
+      "title": "Взлом Binance поднял вопрос о двойных стандартах при заморозке украденной криптовалюты",
+      "url": "https://forklog.com/news/vzlom-binance-podnyal-vopros-o-dvojnyh-standartah-pri-zamorozke-ukradennoj-kriptovalyuty",
+      "source": "ForkLog",
+      "source_weight": 1.2,
+      "lang": "ru",
+      "pub_date": "2026-10-31T08:40:51+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 1.5,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-31T08:05:38.286210+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Israel Extradites Suspect to US Over $2.8M Crypto Hack",
+      "collected_at": "2026-10-31T09:05:36.555062+00:00",
+      "effective_weight": 1.8,
+      "title_original": "Взлом Binance поднял вопрос о двойных стандартах при заморозке украденной криптовалюты",
       "cross_check": 1
     },
     {
-      "title": "Westpac limits crypto exchange deposits driven by fraud rules",
-      "url": "https://cryptoslate.com/westpac-limits-crypto-exchange-deposits-driven-by-fraud-rules/",
-      "source": "CryptoSlate",
+      "title": "Why Didn’t Bitcoin Crash Harder After the Binance Hack? CZ Weighs In",
+      "url": "https://cryptopotato.com/why-didnt-bitcoin-crash-harder-after-the-binance-hack-cz-weighs-in/",
+      "source": "CryptoPotato",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-10-31T07:50:36+00:00",
+      "pub_date": "2026-10-31T08:45:15+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 1.5,
+      "bear_weight": 3.5,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-10-31T08:05:38.379922+00:00",
+      "collected_at": "2026-10-31T09:05:35.679603+00:00",
       "effective_weight": 1.5,
-      "title_original": "Westpac limits crypto exchange deposits driven by fraud rules",
-      "cross_check": 1
+      "title_original": "Why Didn’t Bitcoin Crash Harder After the Binance Hack? CZ Weighs In",
+      "cross_check": 10
     },
     {
       "title": "Binance hackers raced to move billions before it could be frozen",
@@ -174,7 +174,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-31T08:05:38.031654+00:00",
+      "collected_at": "2026-10-31T09:05:35.263065+00:00",
       "effective_weight": 1.04,
       "title_original": "Binance hackers raced to move billions before it could be frozen",
       "cross_check": 3
@@ -191,7 +191,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-31T08:05:38.032181+00:00",
+      "collected_at": "2026-10-31T09:05:35.263407+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin risks worst October in 12 years as tech sell-off spreads to gold",
       "cross_check": 1
@@ -208,7 +208,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-10-31T08:05:38.032396+00:00",
+      "collected_at": "2026-10-31T09:05:35.263568+00:00",
       "effective_weight": 1.04,
       "title_original": "FBI and Secret Service join response to Binance’s $6.3B hack",
       "cross_check": 2
