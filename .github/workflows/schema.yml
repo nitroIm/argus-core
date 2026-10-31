@@ -26,7 +26,7 @@ jobs:
       - name: Run Schema Init
         env:
           AIVEN_DB_URL: ${{ secrets.AIVEN_DB_URL }}
-        run: python crypto/binance/schema_global_markets.py
+        run: python crypto/binance/schema_global_market.py
 
       - name: Notify on failure
         if: failure()
