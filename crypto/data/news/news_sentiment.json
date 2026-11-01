@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-11-01T21:05:45.346329+00:00",
-  "total_news": 102,
-  "avg_sentiment": -0.739,
+  "generated_at": "2026-11-01T22:05:39.864206+00:00",
+  "total_news": 103,
+  "avg_sentiment": -0.748,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 8,
-  "bearish_count": 57,
+  "bearish_count": 58,
   "neutral_count": 37,
   "fake_count": 0,
-  "cross_confirmed": 34,
+  "cross_confirmed": 36,
   "by_source": {
     "Cointelegraph": {
       "total": 27,
@@ -20,9 +20,9 @@
       "bear": 12
     },
     "Bitcoin.com": {
-      "total": 8,
+      "total": 9,
       "bull": 1,
-      "bear": 5
+      "bear": 6
     },
     "CryptoSlate": {
       "total": 8,
@@ -53,7 +53,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T21:05:44.029467+00:00",
+      "collected_at": "2026-11-01T22:05:38.457222+00:00",
       "effective_weight": 1.0,
       "title_original": "OneKey founder warns BlackRock’s Bitcoin ETF could be a North Korean target",
       "cross_check": 1
@@ -70,7 +70,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T21:05:44.128481+00:00",
+      "collected_at": "2026-11-01T22:05:38.645986+00:00",
       "effective_weight": 1.0,
       "title_original": "Here’s How Much Binance Users Withdrew as Bitcoin Bulls Spot an FTX-Era Signal",
       "cross_check": 1
@@ -87,7 +87,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T21:05:43.971338+00:00",
+      "collected_at": "2026-11-01T22:05:38.260108+00:00",
       "effective_weight": 0.8,
       "title_original": "Even More Orange: Saylor Sees Bitcoin Bull Run, Hints at More Buying",
       "cross_check": 3
@@ -104,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T21:05:45.288652+00:00",
+      "collected_at": "2026-11-01T22:05:39.780599+00:00",
       "effective_weight": 0.6,
       "title_original": "Чистая прибыль Coinbase выросла на 66% на фоне развития рынков предсказаний",
       "cross_check": 1
@@ -121,7 +121,7 @@
       "bear_weight": 0.0,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T21:05:43.614547+00:00",
+      "collected_at": "2026-11-01T22:05:37.979371+00:00",
       "effective_weight": 0.55,
       "title_original": "Coinbase Swings to $719 Million Q3 Profit on Crypto Gains",
       "cross_check": 1
@@ -129,21 +129,21 @@
   ],
   "top_bearish": [
     {
-      "title": "CZ Praises US Authorities for Halting $6B Binance Hack Fallout",
-      "url": "https://news.bitcoin.com/security/cz-praises-us-authorities-for-halting-6b-binance-hack-fallout/",
+      "title": "Crypto Weekly: Binance Hack Deepens Crypto Rout as Market Cap Falls to $2.7T",
+      "url": "https://news.bitcoin.com/market-updates/crypto-weekly-binance-hack-deepens-crypto-rout-as-market-cap-falls-to-2-7t/",
       "source": "Bitcoin.com",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-11-01T20:29:05+00:00",
+      "pub_date": "2026-11-01T21:30:25+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 4.0,
+      "bear_weight": 2.5,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T21:05:43.971029+00:00",
+      "collected_at": "2026-11-01T22:05:38.259597+00:00",
       "effective_weight": 1.5,
-      "title_original": "CZ Praises US Authorities for Halting $6B Binance Hack Fallout",
-      "cross_check": 1
+      "title_original": "Crypto Weekly: Binance Hack Deepens Crypto Rout as Market Cap Falls to $2.7T",
+      "cross_check": 6
     },
     {
       "title": "Итоги недели: взлом Binance на $6,3 млрд, ставка ФРС и падение биткоина ниже $77 000",
@@ -157,27 +157,10 @@
       "bear_weight": 2.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T21:05:45.288164+00:00",
+      "collected_at": "2026-11-01T22:05:39.779816+00:00",
       "effective_weight": 1.2,
       "title_original": "Итоги недели: взлом Binance на $6,3 млрд, ставка ФРС и падение биткоина ниже $77 000",
       "cross_check": 1
-    },
-    {
-      "title": "Tracked Binance wallets record $2.5 billion in outflows as withdrawals reopen after hack",
-      "url": "https://cryptoslate.com/tracked-binance-wallets-record-2-5-billion-in-outflows-as-withdrawals-reopen-after-hack/",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-01T21:00:31+00:00",
-      "sentiment": -0.767,
-      "bull_weight": 1.2,
-      "bear_weight": 9.1,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-01T21:05:44.029308+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Tracked Binance wallets record $2.5 billion in outflows as withdrawals reopen after hack",
-      "cross_check": 15
     },
     {
       "title": "Binance says phase one of withdrawals opens after $6.3B hack",
@@ -191,10 +174,27 @@
       "bear_weight": 4.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T21:05:43.510212+00:00",
+      "collected_at": "2026-11-01T22:05:37.836382+00:00",
       "effective_weight": 1.04,
       "title_original": "Binance says phase one of withdrawals opens after $6.3B hack",
       "cross_check": 13
+    },
+    {
+      "title": "CZ Praises US Authorities for Halting $6B Binance Hack Fallout",
+      "url": "https://news.bitcoin.com/security/cz-praises-us-authorities-for-halting-6b-binance-hack-fallout/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-01T20:29:05+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 4.0,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-01T22:05:38.259666+00:00",
+      "effective_weight": 1.0,
+      "title_original": "CZ Praises US Authorities for Halting $6B Binance Hack Fallout",
+      "cross_check": 1
     },
     {
       "title": "Thorchain Glitch Blocks Binance Hack Route as FBI Presses Nodes",
@@ -208,7 +208,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T21:05:43.971075+00:00",
+      "collected_at": "2026-11-01T22:05:38.259730+00:00",
       "effective_weight": 1.0,
       "title_original": "Thorchain Glitch Blocks Binance Hack Route as FBI Presses Nodes",
       "cross_check": 3
