@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-11-01T14:05:41.060444+00:00",
+  "generated_at": "2026-11-01T15:05:35.504564+00:00",
   "total_news": 100,
-  "avg_sentiment": -0.731,
+  "avg_sentiment": -0.691,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 9,
   "bearish_count": 50,
@@ -21,13 +21,13 @@
     },
     "Bitcoin.com": {
       "total": 7,
-      "bull": 1,
-      "bear": 2
+      "bull": 2,
+      "bear": 1
     },
     "CryptoSlate": {
       "total": 8,
-      "bull": 3,
-      "bear": 4
+      "bull": 2,
+      "bear": 5
     },
     "CryptoPotato": {
       "total": 27,
@@ -42,6 +42,23 @@
   },
   "top_bullish": [
     {
+      "title": "Even More Orange: Saylor Sees Bitcoin Bull Run, Hints at More Buying",
+      "url": "https://news.bitcoin.com/featured/even-more-orange-saylor-sees-bitcoin-bull-run-hints-at-more-buying/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-01T15:01:02+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-01T15:05:34.256481+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Even More Orange: Saylor Sees Bitcoin Bull Run, Hints at More Buying",
+      "cross_check": 4
+    },
+    {
       "title": "Anchorpoint Taps Solana to Launch HKDAP Regulated Stablecoin",
       "url": "https://news.bitcoin.com/stablecoins/anchorpoint-taps-solana-to-launch-hkdap-regulated-stablecoin/",
       "source": "Bitcoin.com",
@@ -53,7 +70,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T14:05:40.035442+00:00",
+      "collected_at": "2026-11-01T15:05:34.256893+00:00",
       "effective_weight": 0.8,
       "title_original": "Anchorpoint Taps Solana to Launch HKDAP Regulated Stablecoin",
       "cross_check": 1
@@ -70,7 +87,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T14:05:40.078830+00:00",
+      "collected_at": "2026-11-01T15:05:34.331756+00:00",
       "effective_weight": 0.8,
       "title_original": "Solana’s reward records leave stakers with a gap in validator fee data",
       "cross_check": 1
@@ -87,10 +104,10 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T14:05:40.079000+00:00",
+      "collected_at": "2026-11-01T15:05:34.331995+00:00",
       "effective_weight": 0.8,
       "title_original": "Saylor calls new Bitcoin bull market, but Strategy’s own numbers reveal a costly problem",
-      "cross_check": 3
+      "cross_check": 4
     },
     {
       "title": "Чистая прибыль Coinbase выросла на 66% на фоне развития рынков предсказаний",
@@ -104,47 +121,13 @@
       "bear_weight": 0.0,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T14:05:41.005113+00:00",
+      "collected_at": "2026-11-01T15:05:35.425051+00:00",
       "effective_weight": 0.6,
       "title_original": "Чистая прибыль Coinbase выросла на 66% на фоне развития рынков предсказаний",
-      "cross_check": 1
-    },
-    {
-      "title": "Coinbase Swings to $719 Million Q3 Profit on Crypto Gains",
-      "url": "https://decrypt.co/382188/coinbase-beats-719-million-q3-profit-crypto-gains",
-      "source": "Decrypt",
-      "source_weight": 1.1,
-      "lang": "en",
-      "pub_date": "2026-10-29T20:46:43+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 2.2,
-      "bear_weight": 0.0,
-      "freshness": 0.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-01T14:05:39.906337+00:00",
-      "effective_weight": 0.55,
-      "title_original": "Coinbase Swings to $719 Million Q3 Profit on Crypto Gains",
       "cross_check": 1
     }
   ],
   "top_bearish": [
-    {
-      "title": "Zero-token withdrawals let a hacker drain 97 million CORE from Bitcoin staking platform b14g",
-      "url": "https://cryptoslate.com/zero-token-withdrawals-let-a-hacker-drain-97-million-core-from-bitcoin-staking-platform-b14g/",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-01T13:20:52+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 4.5,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-01T14:05:40.078630+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Zero-token withdrawals let a hacker drain 97 million CORE from Bitcoin staking platform b14g",
-      "cross_check": 1
-    },
     {
       "title": "Binance says phase one of withdrawals opens after $6.3B hack",
       "url": "https://cointelegraph.com/news/binance-says-phase-one-of-withdrawals-opens-after-63b-hack?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -157,27 +140,10 @@
       "bear_weight": 4.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T14:05:39.860352+00:00",
+      "collected_at": "2026-11-01T15:05:33.996329+00:00",
       "effective_weight": 1.3,
       "title_original": "Binance says phase one of withdrawals opens after $6.3B hack",
-      "cross_check": 11
-    },
-    {
-      "title": "ФБР обвинило хакеров из КНДР во взломе Binance на $6 млрд",
-      "url": "https://forklog.com/news/fbr-obvinilo-hakerov-iz-kndr-vo-vzlome-binance-na-6-mlrd",
-      "source": "ForkLog",
-      "source_weight": 1.2,
-      "lang": "ru",
-      "pub_date": "2026-11-01T08:13:11+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-01T14:05:41.004767+00:00",
-      "effective_weight": 1.2,
-      "title_original": "ФБР обвинило хакеров из КНДР во взломе Binance на $6 млрд",
-      "cross_check": 1
+      "cross_check": 10
     },
     {
       "title": "Binance says 90% of stolen assets replenished, targets Sunday withdrawals",
@@ -191,7 +157,7 @@
       "bear_weight": 3.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T14:05:39.860455+00:00",
+      "collected_at": "2026-11-01T15:05:33.996476+00:00",
       "effective_weight": 1.04,
       "title_original": "Binance says 90% of stolen assets replenished, targets Sunday withdrawals",
       "cross_check": 3
@@ -208,10 +174,44 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T14:05:39.860501+00:00",
+      "collected_at": "2026-11-01T15:05:33.996551+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin held up better than expected after Binance hack, Strive CEO says",
-      "cross_check": 12
+      "cross_check": 11
+    },
+    {
+      "title": "Zero-token withdrawals let a hacker drain 97 million CORE from Bitcoin staking platform b14g",
+      "url": "https://cryptoslate.com/zero-token-withdrawals-let-a-hacker-drain-97-million-core-from-bitcoin-staking-platform-b14g/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-01T13:20:52+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 4.5,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-01T15:05:34.331497+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Zero-token withdrawals let a hacker drain 97 million CORE from Bitcoin staking platform b14g",
+      "cross_check": 1
+    },
+    {
+      "title": "FBI blames North Korea for $6 billion Binance hack, urges THORChain to block stolen funds",
+      "url": "https://cryptoslate.com/fbi-blames-north-korea-for-6-billion-binance-hack-urges-thorchain-to-block-stolen-funds/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-01T12:20:43+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 3.3,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-01T15:05:34.331573+00:00",
+      "effective_weight": 1.0,
+      "title_original": "FBI blames North Korea for $6 billion Binance hack, urges THORChain to block stolen funds",
+      "cross_check": 7
     }
   ]
 }
