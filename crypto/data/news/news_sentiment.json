@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-01T10:05:34.991749+00:00",
-  "total_news": 101,
-  "avg_sentiment": -0.731,
+  "generated_at": "2026-11-01T11:05:38.404587+00:00",
+  "total_news": 102,
+  "avg_sentiment": -0.736,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 9,
-  "bearish_count": 56,
-  "neutral_count": 36,
+  "bearish_count": 54,
+  "neutral_count": 39,
   "fake_count": 0,
   "cross_confirmed": 34,
   "by_source": {
@@ -22,7 +22,7 @@
     "Bitcoin.com": {
       "total": 9,
       "bull": 1,
-      "bear": 6
+      "bear": 5
     },
     "CryptoSlate": {
       "total": 8,
@@ -32,32 +32,15 @@
     "CryptoPotato": {
       "total": 27,
       "bull": 2,
-      "bear": 11
+      "bear": 10
     },
     "ForkLog": {
-      "total": 9,
+      "total": 10,
       "bull": 1,
       "bear": 6
     }
   },
   "top_bullish": [
-    {
-      "title": "Anchorpoint Taps Solana to Launch HKDAP Regulated Stablecoin",
-      "url": "https://news.bitcoin.com/stablecoins/anchorpoint-taps-solana-to-launch-hkdap-regulated-stablecoin/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-01T04:30:24+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-01T10:05:33.652056+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Anchorpoint Taps Solana to Launch HKDAP Regulated Stablecoin",
-      "cross_check": 1
-    },
     {
       "title": "Solana’s reward records leave stakers with a gap in validator fee data",
       "url": "https://cryptoslate.com/solanas-reward-records-leave-stakers-with-a-gap-in-validator-fee-data/",
@@ -70,9 +53,26 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T10:05:33.818149+00:00",
+      "collected_at": "2026-11-01T11:05:37.234201+00:00",
       "effective_weight": 1.0,
       "title_original": "Solana’s reward records leave stakers with a gap in validator fee data",
+      "cross_check": 1
+    },
+    {
+      "title": "Anchorpoint Taps Solana to Launch HKDAP Regulated Stablecoin",
+      "url": "https://news.bitcoin.com/stablecoins/anchorpoint-taps-solana-to-launch-hkdap-regulated-stablecoin/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-01T04:30:24+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-01T11:05:37.104572+00:00",
+      "effective_weight": 0.8,
+      "title_original": "Anchorpoint Taps Solana to Launch HKDAP Regulated Stablecoin",
       "cross_check": 1
     },
     {
@@ -87,7 +87,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T10:05:33.818292+00:00",
+      "collected_at": "2026-11-01T11:05:37.234359+00:00",
       "effective_weight": 0.8,
       "title_original": "Saylor calls new Bitcoin bull market, but Strategy’s own numbers reveal a costly problem",
       "cross_check": 3
@@ -104,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T10:05:34.947753+00:00",
+      "collected_at": "2026-11-01T11:05:38.356219+00:00",
       "effective_weight": 0.6,
       "title_original": "Чистая прибыль Coinbase выросла на 66% на фоне развития рынков предсказаний",
       "cross_check": 1
@@ -121,7 +121,7 @@
       "bear_weight": 0.0,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T10:05:33.462319+00:00",
+      "collected_at": "2026-11-01T11:05:36.859252+00:00",
       "effective_weight": 0.55,
       "title_original": "Coinbase Swings to $719 Million Q3 Profit on Crypto Gains",
       "cross_check": 1
@@ -138,12 +138,12 @@
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 4.5,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T10:05:33.174688+00:00",
-      "effective_weight": 1.95,
+      "collected_at": "2026-11-01T11:05:36.757304+00:00",
+      "effective_weight": 1.3,
       "title_original": "Binance says phase one of withdrawals opens after $6.3B hack",
-      "cross_check": 12
+      "cross_check": 11
     },
     {
       "title": "ФБР обвинило хакеров из КНДР во взломе Binance на $6 млрд",
@@ -157,7 +157,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T10:05:34.947448+00:00",
+      "collected_at": "2026-11-01T11:05:38.355891+00:00",
       "effective_weight": 1.2,
       "title_original": "ФБР обвинило хакеров из КНДР во взломе Binance на $6 млрд",
       "cross_check": 1
@@ -174,7 +174,7 @@
       "bear_weight": 3.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T10:05:33.174780+00:00",
+      "collected_at": "2026-11-01T11:05:36.757402+00:00",
       "effective_weight": 1.04,
       "title_original": "Binance says 90% of stolen assets replenished, targets Sunday withdrawals",
       "cross_check": 3
@@ -191,10 +191,10 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T10:05:33.174820+00:00",
+      "collected_at": "2026-11-01T11:05:36.757445+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin held up better than expected after Binance hack, Strive CEO says",
-      "cross_check": 15
+      "cross_check": 14
     },
     {
       "title": "Texas brothers sentenced to 15 years in prison for armed crypto robbery, kidnapping",
@@ -208,7 +208,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T10:05:33.174933+00:00",
+      "collected_at": "2026-11-01T11:05:36.757567+00:00",
       "effective_weight": 1.04,
       "title_original": "Texas brothers sentenced to 15 years in prison for armed crypto robbery, kidnapping",
       "cross_check": 2
