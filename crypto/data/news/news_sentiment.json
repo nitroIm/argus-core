@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-01T16:05:36.750950+00:00",
-  "total_news": 100,
-  "avg_sentiment": -0.675,
+  "generated_at": "2026-11-01T17:05:37.600057+00:00",
+  "total_news": 102,
+  "avg_sentiment": -0.648,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 9,
+  "bullish_count": 10,
   "bearish_count": 51,
-  "neutral_count": 40,
+  "neutral_count": 41,
   "fake_count": 0,
   "cross_confirmed": 32,
   "by_source": {
@@ -22,11 +22,11 @@
     "Bitcoin.com": {
       "total": 7,
       "bull": 2,
-      "bear": 1
+      "bear": 0
     },
     "CryptoSlate": {
-      "total": 7,
-      "bull": 1,
+      "total": 8,
+      "bull": 2,
       "bear": 5
     },
     "CryptoPotato": {
@@ -35,12 +35,29 @@
       "bear": 11
     },
     "ForkLog": {
-      "total": 11,
+      "total": 12,
       "bull": 1,
-      "bear": 6
+      "bear": 7
     }
   },
   "top_bullish": [
+    {
+      "title": "OneKey founder warns BlackRock’s Bitcoin ETF could be a North Korean target",
+      "url": "https://cryptoslate.com/onekey-founder-warns-blackrocks-bitcoin-etf-could-be-a-north-korean-target/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-01T16:30:46+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-01T17:05:36.578649+00:00",
+      "effective_weight": 1.5,
+      "title_original": "OneKey founder warns BlackRock’s Bitcoin ETF could be a North Korean target",
+      "cross_check": 1
+    },
     {
       "title": "Even More Orange: Saylor Sees Bitcoin Bull Run, Hints at More Buying",
       "url": "https://news.bitcoin.com/featured/even-more-orange-saylor-sees-bitcoin-bull-run-hints-at-more-buying/",
@@ -53,7 +70,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T16:05:35.587951+00:00",
+      "collected_at": "2026-11-01T17:05:36.505413+00:00",
       "effective_weight": 1.0,
       "title_original": "Even More Orange: Saylor Sees Bitcoin Bull Run, Hints at More Buying",
       "cross_check": 3
@@ -70,7 +87,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T16:05:35.588323+00:00",
+      "collected_at": "2026-11-01T17:05:36.505775+00:00",
       "effective_weight": 0.8,
       "title_original": "Anchorpoint Taps Solana to Launch HKDAP Regulated Stablecoin",
       "cross_check": 1
@@ -87,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T16:05:35.683766+00:00",
+      "collected_at": "2026-11-01T17:05:36.579074+00:00",
       "effective_weight": 0.8,
       "title_original": "Solana’s reward records leave stakers with a gap in validator fee data",
       "cross_check": 1
@@ -104,30 +121,30 @@
       "bear_weight": 0.0,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T16:05:36.670647+00:00",
+      "collected_at": "2026-11-01T17:05:37.516979+00:00",
       "effective_weight": 0.6,
       "title_original": "Чистая прибыль Coinbase выросла на 66% на фоне развития рынков предсказаний",
-      "cross_check": 1
-    },
-    {
-      "title": "Coinbase Swings to $719 Million Q3 Profit on Crypto Gains",
-      "url": "https://decrypt.co/382188/coinbase-beats-719-million-q3-profit-crypto-gains",
-      "source": "Decrypt",
-      "source_weight": 1.1,
-      "lang": "en",
-      "pub_date": "2026-10-29T20:46:43+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 2.2,
-      "bear_weight": 0.0,
-      "freshness": 0.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-01T16:05:35.408588+00:00",
-      "effective_weight": 0.55,
-      "title_original": "Coinbase Swings to $719 Million Q3 Profit on Crypto Gains",
       "cross_check": 1
     }
   ],
   "top_bearish": [
+    {
+      "title": "Итоги недели: взлом Binance на $6,3 млрд, ставка ФРС и падение биткоина ниже $77 000",
+      "url": "https://forklog.com/news/itogi-nedeli-vzlom-binance-na-6-3-mlrd-stavka-frs-i-padenie-bitkoina-nizhe-77-000",
+      "source": "ForkLog",
+      "source_weight": 1.2,
+      "lang": "ru",
+      "pub_date": "2026-11-01T16:32:08+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 2.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-01T17:05:37.516271+00:00",
+      "effective_weight": 1.8,
+      "title_original": "Итоги недели: взлом Binance на $6,3 млрд, ставка ФРС и падение биткоина ниже $77 000",
+      "cross_check": 1
+    },
     {
       "title": "Binance says phase one of withdrawals opens after $6.3B hack",
       "url": "https://cointelegraph.com/news/binance-says-phase-one-of-withdrawals-opens-after-63b-hack?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -140,7 +157,7 @@
       "bear_weight": 4.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T16:05:35.350042+00:00",
+      "collected_at": "2026-11-01T17:05:36.126421+00:00",
       "effective_weight": 1.04,
       "title_original": "Binance says phase one of withdrawals opens after $6.3B hack",
       "cross_check": 11
@@ -157,7 +174,7 @@
       "bear_weight": 4.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T16:05:35.683522+00:00",
+      "collected_at": "2026-11-01T17:05:36.578815+00:00",
       "effective_weight": 1.0,
       "title_original": "Zero-token withdrawals let a hacker drain 97 million CORE from Bitcoin staking platform b14g",
       "cross_check": 1
@@ -174,7 +191,7 @@
       "bear_weight": 3.3,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T16:05:35.683605+00:00",
+      "collected_at": "2026-11-01T17:05:36.578892+00:00",
       "effective_weight": 1.0,
       "title_original": "FBI blames North Korea for $6 billion Binance hack, urges THORChain to block stolen funds",
       "cross_check": 7
@@ -191,27 +208,10 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T16:05:36.670095+00:00",
+      "collected_at": "2026-11-01T17:05:37.516472+00:00",
       "effective_weight": 0.96,
       "title_original": "ФБР обвинило хакеров из КНДР во взломе Binance на $6 млрд",
       "cross_check": 1
-    },
-    {
-      "title": "XRP Hit First in Binance Hack: Five Wallets Drained in About Four Minutes",
-      "url": "https://news.bitcoin.com/security/xrp-hit-first-in-binance-hack-five-wallets-drained-in-about-four-minutes/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-01T03:15:09+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-01T16:05:35.588678+00:00",
-      "effective_weight": 0.8,
-      "title_original": "XRP Hit First in Binance Hack: Five Wallets Drained in About Four Minutes",
-      "cross_check": 3
     }
   ]
 }
