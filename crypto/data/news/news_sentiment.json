@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-11-01T19:05:38.585520+00:00",
-  "total_news": 101,
-  "avg_sentiment": -0.675,
+  "generated_at": "2026-11-01T20:05:40.097586+00:00",
+  "total_news": 102,
+  "avg_sentiment": -0.698,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 9,
-  "bearish_count": 54,
+  "bearish_count": 55,
   "neutral_count": 38,
   "fake_count": 0,
-  "cross_confirmed": 34,
+  "cross_confirmed": 35,
   "by_source": {
     "Cointelegraph": {
       "total": 27,
@@ -20,9 +20,9 @@
       "bear": 12
     },
     "Bitcoin.com": {
-      "total": 7,
+      "total": 8,
       "bull": 1,
-      "bear": 3
+      "bear": 4
     },
     "CryptoSlate": {
       "total": 8,
@@ -42,23 +42,6 @@
   },
   "top_bullish": [
     {
-      "title": "Here’s How Much Binance Users Withdrew as Bitcoin Bulls Spot an FTX-Era Signal",
-      "url": "https://cryptopotato.com/heres-how-much-binance-users-withdrew-as-bitcoin-bulls-spot-an-ftx-era-signal/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-01T18:36:49+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-01T19:05:37.303106+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Here’s How Much Binance Users Withdrew as Bitcoin Bulls Spot an FTX-Era Signal",
-      "cross_check": 1
-    },
-    {
       "title": "Even More Orange: Saylor Sees Bitcoin Bull Run, Hints at More Buying",
       "url": "https://news.bitcoin.com/featured/even-more-orange-saylor-sees-bitcoin-bull-run-hints-at-more-buying/",
       "source": "Bitcoin.com",
@@ -70,7 +53,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T19:05:36.971455+00:00",
+      "collected_at": "2026-11-01T20:05:38.513738+00:00",
       "effective_weight": 1.0,
       "title_original": "Even More Orange: Saylor Sees Bitcoin Bull Run, Hints at More Buying",
       "cross_check": 3
@@ -87,9 +70,26 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T19:05:37.128091+00:00",
+      "collected_at": "2026-11-01T20:05:38.692198+00:00",
       "effective_weight": 1.0,
       "title_original": "OneKey founder warns BlackRock’s Bitcoin ETF could be a North Korean target",
+      "cross_check": 1
+    },
+    {
+      "title": "Here’s How Much Binance Users Withdrew as Bitcoin Bulls Spot an FTX-Era Signal",
+      "url": "https://cryptopotato.com/heres-how-much-binance-users-withdrew-as-bitcoin-bulls-spot-an-ftx-era-signal/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-01T18:36:49+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-01T20:05:38.882345+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Here’s How Much Binance Users Withdrew as Bitcoin Bulls Spot an FTX-Era Signal",
       "cross_check": 1
     },
     {
@@ -104,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T19:05:37.128435+00:00",
+      "collected_at": "2026-11-01T20:05:38.692586+00:00",
       "effective_weight": 0.8,
       "title_original": "Solana’s reward records leave stakers with a gap in validator fee data",
       "cross_check": 1
@@ -121,7 +121,7 @@
       "bear_weight": 0.0,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T19:05:38.513143+00:00",
+      "collected_at": "2026-11-01T20:05:40.013257+00:00",
       "effective_weight": 0.6,
       "title_original": "Чистая прибыль Coinbase выросла на 66% на фоне развития рынков предсказаний",
       "cross_check": 1
@@ -129,38 +129,38 @@
   ],
   "top_bearish": [
     {
-      "title": "BTCC Exchange Supports Red Eagle Foundation’s 2026 Charity Golf Season Finale, Featuring Ashley Cole as Headline Guest",
-      "url": "https://news.bitcoin.com/press-releases/btcc-exchange-supports-red-eagle-foundations-2026-charity-golf-season-finale-featuring-ashley-cole-as-headline-guest/",
+      "title": "Thorchain Glitch Blocks Binance Hack Route as FBI Presses Nodes",
+      "url": "https://news.bitcoin.com/crypto-news/thorchain-glitch-blocks-binance-hack-route-as-fbi-presses-nodes/",
       "source": "Bitcoin.com",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-11-01T19:04:22+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 0.8,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-01T19:05:36.971204+00:00",
-      "effective_weight": 1.5,
-      "title_original": "BTCC Exchange Supports Red Eagle Foundation’s 2026 Charity Golf Season Finale, Featuring Ashley Cole as Headline Guest",
-      "cross_check": 1
-    },
-    {
-      "title": "North Korea’s $1.4B Bitcoin Haul From Binance Hack Remains Untouched",
-      "url": "https://news.bitcoin.com/featured/north-koreas-1-4b-bitcoin-haul-from-binance-hack-remains-untouched/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-01T18:20:35+00:00",
+      "pub_date": "2026-11-01T19:30:37+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 1.5,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T19:05:36.971276+00:00",
+      "collected_at": "2026-11-01T20:05:38.512923+00:00",
       "effective_weight": 1.5,
-      "title_original": "North Korea’s $1.4B Bitcoin Haul From Binance Hack Remains Untouched",
-      "cross_check": 13
+      "title_original": "Thorchain Glitch Blocks Binance Hack Route as FBI Presses Nodes",
+      "cross_check": 3
+    },
+    {
+      "title": "Crypto scammers used SEC’s website to lure investors into alleged $130 million fraud",
+      "url": "https://cryptoslate.com/crypto-scammers-used-secs-website-to-lure-investors-into-alleged-130-million-fraud/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-01T20:00:49+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 3.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-01T20:05:38.692041+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Crypto scammers used SEC’s website to lure investors into alleged $130 million fraud",
+      "cross_check": 1
     },
     {
       "title": "Итоги недели: взлом Binance на $6,3 млрд, ставка ФРС и падение биткоина ниже $77 000",
@@ -174,7 +174,7 @@
       "bear_weight": 2.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T19:05:38.512523+00:00",
+      "collected_at": "2026-11-01T20:05:40.012496+00:00",
       "effective_weight": 1.2,
       "title_original": "Итоги недели: взлом Binance на $6,3 млрд, ставка ФРС и падение биткоина ниже $77 000",
       "cross_check": 1
@@ -191,27 +191,27 @@
       "bear_weight": 4.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T19:05:36.636111+00:00",
+      "collected_at": "2026-11-01T20:05:38.047596+00:00",
       "effective_weight": 1.04,
       "title_original": "Binance says phase one of withdrawals opens after $6.3B hack",
       "cross_check": 12
     },
     {
-      "title": "Binance Processes $4.65B in Withdrawals Across 15 Networks After Hack",
-      "url": "https://news.bitcoin.com/security/binance-processes-4-65b-in-withdrawals-across-15-networks-after-hack/",
+      "title": "BTCC Exchange Supports Red Eagle Foundation’s 2026 Charity Golf Season Finale, Featuring Ashley Cole as Headline Guest",
+      "url": "https://news.bitcoin.com/press-releases/btcc-exchange-supports-red-eagle-foundations-2026-charity-golf-season-finale-featuring-ashley-cole-as-headline-guest/",
       "source": "Bitcoin.com",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-11-01T17:20:11+00:00",
+      "pub_date": "2026-11-01T19:04:22+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 4.5,
+      "bear_weight": 0.8,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T19:05:36.971333+00:00",
+      "collected_at": "2026-11-01T20:05:38.513147+00:00",
       "effective_weight": 1.0,
-      "title_original": "Binance Processes $4.65B in Withdrawals Across 15 Networks After Hack",
-      "cross_check": 8
+      "title_original": "BTCC Exchange Supports Red Eagle Foundation’s 2026 Charity Golf Season Finale, Featuring Ashley Cole as Headline Guest",
+      "cross_check": 1
     }
   ]
 }
