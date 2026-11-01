@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-11-01T11:05:38.404587+00:00",
-  "total_news": 102,
-  "avg_sentiment": -0.736,
+  "generated_at": "2026-11-01T12:05:34.894089+00:00",
+  "total_news": 101,
+  "avg_sentiment": -0.73,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 9,
-  "bearish_count": 54,
-  "neutral_count": 39,
+  "bearish_count": 52,
+  "neutral_count": 40,
   "fake_count": 0,
-  "cross_confirmed": 34,
+  "cross_confirmed": 33,
   "by_source": {
     "Cointelegraph": {
       "total": 28,
@@ -20,14 +20,14 @@
       "bear": 12
     },
     "Bitcoin.com": {
-      "total": 9,
+      "total": 8,
       "bull": 1,
-      "bear": 5
+      "bear": 4
     },
     "CryptoSlate": {
       "total": 8,
       "bull": 3,
-      "bear": 4
+      "bear": 3
     },
     "CryptoPotato": {
       "total": 27,
@@ -42,23 +42,6 @@
   },
   "top_bullish": [
     {
-      "title": "Solana’s reward records leave stakers with a gap in validator fee data",
-      "url": "https://cryptoslate.com/solanas-reward-records-leave-stakers-with-a-gap-in-validator-fee-data/",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-01T05:10:57+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-01T11:05:37.234201+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Solana’s reward records leave stakers with a gap in validator fee data",
-      "cross_check": 1
-    },
-    {
       "title": "Anchorpoint Taps Solana to Launch HKDAP Regulated Stablecoin",
       "url": "https://news.bitcoin.com/stablecoins/anchorpoint-taps-solana-to-launch-hkdap-regulated-stablecoin/",
       "source": "Bitcoin.com",
@@ -70,9 +53,26 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T11:05:37.104572+00:00",
+      "collected_at": "2026-11-01T12:05:33.759288+00:00",
       "effective_weight": 0.8,
       "title_original": "Anchorpoint Taps Solana to Launch HKDAP Regulated Stablecoin",
+      "cross_check": 1
+    },
+    {
+      "title": "Solana’s reward records leave stakers with a gap in validator fee data",
+      "url": "https://cryptoslate.com/solanas-reward-records-leave-stakers-with-a-gap-in-validator-fee-data/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-01T05:10:57+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-01T12:05:33.874760+00:00",
+      "effective_weight": 0.8,
+      "title_original": "Solana’s reward records leave stakers with a gap in validator fee data",
       "cross_check": 1
     },
     {
@@ -87,7 +87,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T11:05:37.234359+00:00",
+      "collected_at": "2026-11-01T12:05:33.875015+00:00",
       "effective_weight": 0.8,
       "title_original": "Saylor calls new Bitcoin bull market, but Strategy’s own numbers reveal a costly problem",
       "cross_check": 3
@@ -104,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T11:05:38.356219+00:00",
+      "collected_at": "2026-11-01T12:05:34.815006+00:00",
       "effective_weight": 0.6,
       "title_original": "Чистая прибыль Coinbase выросла на 66% на фоне развития рынков предсказаний",
       "cross_check": 1
@@ -121,7 +121,7 @@
       "bear_weight": 0.0,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T11:05:36.859252+00:00",
+      "collected_at": "2026-11-01T12:05:33.541671+00:00",
       "effective_weight": 0.55,
       "title_original": "Coinbase Swings to $719 Million Q3 Profit on Crypto Gains",
       "cross_check": 1
@@ -140,7 +140,7 @@
       "bear_weight": 4.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T11:05:36.757304+00:00",
+      "collected_at": "2026-11-01T12:05:33.460219+00:00",
       "effective_weight": 1.3,
       "title_original": "Binance says phase one of withdrawals opens after $6.3B hack",
       "cross_check": 11
@@ -157,7 +157,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T11:05:38.355891+00:00",
+      "collected_at": "2026-11-01T12:05:34.814452+00:00",
       "effective_weight": 1.2,
       "title_original": "ФБР обвинило хакеров из КНДР во взломе Binance на $6 млрд",
       "cross_check": 1
@@ -174,7 +174,7 @@
       "bear_weight": 3.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T11:05:36.757402+00:00",
+      "collected_at": "2026-11-01T12:05:33.460379+00:00",
       "effective_weight": 1.04,
       "title_original": "Binance says 90% of stolen assets replenished, targets Sunday withdrawals",
       "cross_check": 3
@@ -191,10 +191,10 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T11:05:36.757445+00:00",
+      "collected_at": "2026-11-01T12:05:33.460454+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin held up better than expected after Binance hack, Strive CEO says",
-      "cross_check": 14
+      "cross_check": 13
     },
     {
       "title": "Texas brothers sentenced to 15 years in prison for armed crypto robbery, kidnapping",
@@ -208,7 +208,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T11:05:36.757567+00:00",
+      "collected_at": "2026-11-01T12:05:33.460690+00:00",
       "effective_weight": 1.04,
       "title_original": "Texas brothers sentenced to 15 years in prison for armed crypto robbery, kidnapping",
       "cross_check": 2
