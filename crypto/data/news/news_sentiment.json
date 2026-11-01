@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-11-01T02:05:36.791689+00:00",
+  "generated_at": "2026-11-01T03:05:36.503982+00:00",
   "total_news": 100,
-  "avg_sentiment": -0.804,
+  "avg_sentiment": -0.8,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 7,
   "bearish_count": 57,
@@ -53,7 +53,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T02:05:35.762967+00:00",
+      "collected_at": "2026-11-01T03:05:35.021358+00:00",
       "effective_weight": 0.8,
       "title_original": "Saylor calls new Bitcoin bull market, but Strategy’s own numbers reveal a costly problem",
       "cross_check": 3
@@ -70,7 +70,7 @@
       "bear_weight": 0.0,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T02:05:36.711845+00:00",
+      "collected_at": "2026-11-01T03:05:36.430392+00:00",
       "effective_weight": 0.6,
       "title_original": "Чистая прибыль Coinbase выросла на 66% на фоне развития рынков предсказаний",
       "cross_check": 1
@@ -87,7 +87,7 @@
       "bear_weight": 0.0,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T02:05:35.520156+00:00",
+      "collected_at": "2026-11-01T03:05:34.634147+00:00",
       "effective_weight": 0.55,
       "title_original": "Coinbase Swings to $719 Million Q3 Profit on Crypto Gains",
       "cross_check": 1
@@ -104,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T02:05:35.520357+00:00",
+      "collected_at": "2026-11-01T03:05:34.634321+00:00",
       "effective_weight": 0.55,
       "title_original": "4M Bitcoin Bought Above $85K Could Cap Recovery: Glassnode",
       "cross_check": 1
@@ -121,47 +121,13 @@
       "bear_weight": 0.0,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T02:05:35.864921+00:00",
+      "collected_at": "2026-11-01T03:05:35.213320+00:00",
       "effective_weight": 0.5,
       "title_original": "Michael Saylor Sees Next Bitcoin Bull Market Beginning as Strategy Reports $19.5B in Q3 Net Income",
       "cross_check": 4
     }
   ],
   "top_bearish": [
-    {
-      "title": "Michael Saylor Sees Stronger Crypto Security After Binance’s $6.3 Billion Hack",
-      "url": "https://news.bitcoin.com/security/michael-saylor-sees-stronger-crypto-security-after-binances-6-3-billion-hack/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-01T01:45:19+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-01T02:05:35.685936+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Michael Saylor Sees Stronger Crypto Security After Binance’s $6.3 Billion Hack",
-      "cross_check": 16
-    },
-    {
-      "title": "Bitcoin’s recovery faces rising derivatives exposure and $643 million in ETF outflows",
-      "url": "https://cryptoslate.com/bitcoins-recovery-faces-rising-derivatives-exposure-and-643-million-in-etf-outflows/",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-01T01:10:55+00:00",
-      "sentiment": -0.755,
-      "bull_weight": 1.2,
-      "bear_weight": 8.6,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-01T02:05:35.762799+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Bitcoin’s recovery faces rising derivatives exposure and $643 million in ETF outflows",
-      "cross_check": 1
-    },
     {
       "title": "Binance says 90% of stolen assets replenished, targets Sunday withdrawals",
       "url": "https://cointelegraph.com/news/binance-hack-90-percent-replenished?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -174,7 +140,7 @@
       "bear_weight": 3.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T02:05:35.452113+00:00",
+      "collected_at": "2026-11-01T03:05:34.529698+00:00",
       "effective_weight": 1.04,
       "title_original": "Binance says 90% of stolen assets replenished, targets Sunday withdrawals",
       "cross_check": 2
@@ -191,7 +157,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T02:05:35.452201+00:00",
+      "collected_at": "2026-11-01T03:05:34.529780+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin held up better than expected after Binance hack, Strive CEO says",
       "cross_check": 17
@@ -208,10 +174,44 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T02:05:35.452420+00:00",
+      "collected_at": "2026-11-01T03:05:34.529990+00:00",
       "effective_weight": 1.04,
       "title_original": "Texas brothers sentenced to 15 years in prison for armed crypto robbery, kidnapping",
       "cross_check": 2
+    },
+    {
+      "title": "Michael Saylor Sees Stronger Crypto Security After Binance’s $6.3 Billion Hack",
+      "url": "https://news.bitcoin.com/security/michael-saylor-sees-stronger-crypto-security-after-binances-6-3-billion-hack/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-01T01:45:19+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-01T03:05:34.856848+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Michael Saylor Sees Stronger Crypto Security After Binance’s $6.3 Billion Hack",
+      "cross_check": 16
+    },
+    {
+      "title": "Trump Speaks on $6.3B Binance Hack as FBI Confirms North Korea",
+      "url": "https://news.bitcoin.com/featured/trump-speaks-on-6-3b-binance-hack-as-fbi-confirms-north-korea/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-01T00:30:07+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-01T03:05:34.856933+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Trump Speaks on $6.3B Binance Hack as FBI Confirms North Korea",
+      "cross_check": 4
     }
   ]
 }
