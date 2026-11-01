@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-01T08:05:35.130567+00:00",
-  "total_news": 102,
-  "avg_sentiment": -0.73,
+  "generated_at": "2026-11-01T09:05:32.398875+00:00",
+  "total_news": 101,
+  "avg_sentiment": -0.736,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 9,
   "bearish_count": 55,
-  "neutral_count": 38,
+  "neutral_count": 37,
   "fake_count": 0,
   "cross_confirmed": 33,
   "by_source": {
@@ -22,7 +22,7 @@
     "Bitcoin.com": {
       "total": 10,
       "bull": 1,
-      "bear": 7
+      "bear": 6
     },
     "CryptoSlate": {
       "total": 8,
@@ -35,9 +35,9 @@
       "bear": 11
     },
     "ForkLog": {
-      "total": 10,
+      "total": 9,
       "bull": 1,
-      "bear": 5
+      "bear": 6
     }
   },
   "top_bullish": [
@@ -53,7 +53,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T08:05:33.847004+00:00",
+      "collected_at": "2026-11-01T09:05:30.984549+00:00",
       "effective_weight": 1.0,
       "title_original": "Anchorpoint Taps Solana to Launch HKDAP Regulated Stablecoin",
       "cross_check": 1
@@ -70,7 +70,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T08:05:33.975093+00:00",
+      "collected_at": "2026-11-01T09:05:31.175619+00:00",
       "effective_weight": 1.0,
       "title_original": "Solana’s reward records leave stakers with a gap in validator fee data",
       "cross_check": 1
@@ -87,7 +87,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T08:05:33.975255+00:00",
+      "collected_at": "2026-11-01T09:05:31.176101+00:00",
       "effective_weight": 0.8,
       "title_original": "Saylor calls new Bitcoin bull market, but Strategy’s own numbers reveal a costly problem",
       "cross_check": 3
@@ -104,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T08:05:35.077476+00:00",
+      "collected_at": "2026-11-01T09:05:32.354486+00:00",
       "effective_weight": 0.6,
       "title_original": "Чистая прибыль Coinbase выросла на 66% на фоне развития рынков предсказаний",
       "cross_check": 1
@@ -121,13 +121,30 @@
       "bear_weight": 0.0,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T08:05:33.618015+00:00",
+      "collected_at": "2026-11-01T09:05:30.793074+00:00",
       "effective_weight": 0.55,
       "title_original": "Coinbase Swings to $719 Million Q3 Profit on Crypto Gains",
       "cross_check": 1
     }
   ],
   "top_bearish": [
+    {
+      "title": "ФБР обвинило хакеров из КНДР во взломе Binance на $6 млрд",
+      "url": "https://forklog.com/news/fbr-obvinilo-hakerov-iz-kndr-vo-vzlome-binance-na-6-mlrd",
+      "source": "ForkLog",
+      "source_weight": 1.2,
+      "lang": "ru",
+      "pub_date": "2026-11-01T08:13:11+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-01T09:05:32.354204+00:00",
+      "effective_weight": 1.8,
+      "title_original": "ФБР обвинило хакеров из КНДР во взломе Binance на $6 млрд",
+      "cross_check": 1
+    },
     {
       "title": "Binance says 90% of stolen assets replenished, targets Sunday withdrawals",
       "url": "https://cointelegraph.com/news/binance-hack-90-percent-replenished?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -140,7 +157,7 @@
       "bear_weight": 3.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T08:05:33.525260+00:00",
+      "collected_at": "2026-11-01T09:05:30.703445+00:00",
       "effective_weight": 1.04,
       "title_original": "Binance says 90% of stolen assets replenished, targets Sunday withdrawals",
       "cross_check": 2
@@ -157,7 +174,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T08:05:33.525336+00:00",
+      "collected_at": "2026-11-01T09:05:30.703489+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin held up better than expected after Binance hack, Strive CEO says",
       "cross_check": 15
@@ -174,7 +191,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T08:05:33.525550+00:00",
+      "collected_at": "2026-11-01T09:05:30.703606+00:00",
       "effective_weight": 1.04,
       "title_original": "Texas brothers sentenced to 15 years in prison for armed crypto robbery, kidnapping",
       "cross_check": 2
@@ -191,27 +208,10 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-01T08:05:33.847049+00:00",
+      "collected_at": "2026-11-01T09:05:30.984593+00:00",
       "effective_weight": 1.0,
       "title_original": "XRP Hit First in Binance Hack: Five Wallets Drained in About Four Minutes",
       "cross_check": 3
-    },
-    {
-      "title": "Binance Starts Withdrawal Recovery as FBI Blames North Korea for $6B+ Hack",
-      "url": "https://cryptopotato.com/binance-starts-withdrawal-recovery-as-fbi-blames-north-korea-for-6b-hack/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-01T06:30:41+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 4.5,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-01T08:05:34.094268+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Binance Starts Withdrawal Recovery as FBI Blames North Korea for $6B+ Hack",
-      "cross_check": 6
     }
   ]
 }
