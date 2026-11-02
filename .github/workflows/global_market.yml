@@ -14,6 +14,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Check script exists
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          if [ ! -f crypto/collect/global_market.py ]; then
+            echo "::error::Файл crypto/collect/global_market.py не найден"
+            curl -s -X POST \
+              "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+              -H "Content-Type: application/json" \
+              -d "{\"chat_id\": \"${TELEGRAM_CHAT_ID}\", \"text\": \"🚫 ARGUS Global Market: файл не найден — crypto/collect/global_market.py\\nЛог: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\", \"parse_mode\": \"HTML\"}" || true
+            exit 1
+          fi
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
@@ -34,7 +48,15 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
+          ALERT_FILE="crypto/data/temp/global_market.txt"
+          if [ -f "$ALERT_FILE" ]; then
+            TEXT=$(cat "$ALERT_FILE")
+          else
+            TEXT="⚠️ ARGUS Global Market: сбой до запуска скрипта
+          Лог: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          fi
+          PAYLOAD=$(python3 -c "import json,sys; print(json.dumps({'chat_id': sys.argv[1], 'text': sys.argv[2]}))" "${TELEGRAM_CHAT_ID}" "$TEXT")
           curl -s -X POST \
             "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
             -H "Content-Type: application/json" \
-            -d "{\"chat_id\": \"${TELEGRAM_CHAT_ID}\", \"text\": \"⚠️ <b>Сбой в: ${{ github.workflow }}</b>\nПроверь логи в GitHub Actions!\", \"parse_mode\": \"HTML\"}" || true
+            -d "$PAYLOAD" || true
