@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-11-02T06:05:35.116568+00:00",
-  "total_news": 102,
-  "avg_sentiment": -0.613,
+  "generated_at": "2026-11-02T07:05:37.865972+00:00",
+  "total_news": 100,
+  "avg_sentiment": -0.621,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 11,
-  "bearish_count": 52,
+  "bearish_count": 50,
   "neutral_count": 39,
   "fake_count": 0,
   "cross_confirmed": 28,
@@ -20,14 +20,14 @@
       "bear": 12
     },
     "Bitcoin.com": {
-      "total": 8,
+      "total": 7,
       "bull": 3,
-      "bear": 2
+      "bear": 1
     },
     "CryptoSlate": {
-      "total": 8,
+      "total": 7,
       "bull": 1,
-      "bear": 5
+      "bear": 4
     },
     "CryptoPotato": {
       "total": 27,
@@ -42,23 +42,6 @@
   },
   "top_bullish": [
     {
-      "title": "Ripple (XRP) ETFs Beat Every Major Rival in October: But Two Problems Remain",
-      "url": "https://cryptopotato.com/ripple-xrp-etfs-beat-every-major-rival-in-october-but-two-problems-remain/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-02T05:07:04+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-02T06:05:34.147764+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Ripple (XRP) ETFs Beat Every Major Rival in October: But Two Problems Remain",
-      "cross_check": 1
-    },
-    {
       "title": "Blackrock, JPMorgan and Visa Bolster Grayscale’s Crypto Growth Case",
       "url": "https://news.bitcoin.com/featured/blackrock-jpmorgan-and-visa-bolster-grayscales-crypto-growth-case/",
       "source": "Bitcoin.com",
@@ -70,9 +53,26 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-02T06:05:33.964327+00:00",
+      "collected_at": "2026-11-02T07:05:36.242920+00:00",
       "effective_weight": 1.0,
       "title_original": "Blackrock, JPMorgan and Visa Bolster Grayscale’s Crypto Growth Case",
+      "cross_check": 1
+    },
+    {
+      "title": "Ripple (XRP) ETFs Beat Every Major Rival in October: But Two Problems Remain",
+      "url": "https://cryptopotato.com/ripple-xrp-etfs-beat-every-major-rival-in-october-but-two-problems-remain/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-02T05:07:04+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-02T07:05:36.614412+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Ripple (XRP) ETFs Beat Every Major Rival in October: But Two Problems Remain",
       "cross_check": 1
     },
     {
@@ -85,10 +85,10 @@
       "sentiment": 1.0,
       "bull_weight": 1.2,
       "bear_weight": 0.0,
-      "freshness": 1.0,
+      "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-02T06:05:33.964398+00:00",
-      "effective_weight": 1.0,
+      "collected_at": "2026-11-02T07:05:36.242988+00:00",
+      "effective_weight": 0.8,
       "title_original": "Ripple CEO Sees XRP as Institutional Gold Standard Within 5 Years",
       "cross_check": 1
     },
@@ -104,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-02T06:05:33.964637+00:00",
+      "collected_at": "2026-11-02T07:05:36.243124+00:00",
       "effective_weight": 0.8,
       "title_original": "Bitcoin Mining Revenue Hits 11-Month High Despite Brutal Hashprice Decline",
       "cross_check": 2
@@ -121,7 +121,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-02T06:05:34.044607+00:00",
+      "collected_at": "2026-11-02T07:05:36.440318+00:00",
       "effective_weight": 0.8,
       "title_original": "OneKey founder warns BlackRock’s Bitcoin ETF could be a North Korean target",
       "cross_check": 1
@@ -140,7 +140,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-02T06:05:33.781038+00:00",
+      "collected_at": "2026-11-02T07:05:35.871351+00:00",
       "effective_weight": 1.3,
       "title_original": "Bank of Korea probes financial firms’ exposure to crypto risks",
       "cross_check": 1
@@ -157,7 +157,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-02T06:05:33.781286+00:00",
+      "collected_at": "2026-11-02T07:05:35.871583+00:00",
       "effective_weight": 1.04,
       "title_original": "THORChain founder rejects freeze request, CZ thanks Secret Service: Hodler’s Digest",
       "cross_check": 1
@@ -174,7 +174,7 @@
       "bear_weight": 4.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-02T06:05:33.781418+00:00",
+      "collected_at": "2026-11-02T07:05:35.871703+00:00",
       "effective_weight": 1.04,
       "title_original": "Binance says phase one of withdrawals opens after $6.3B hack",
       "cross_check": 13
@@ -191,7 +191,7 @@
       "bear_weight": 2.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-02T06:05:35.032617+00:00",
+      "collected_at": "2026-11-02T07:05:37.787697+00:00",
       "effective_weight": 0.96,
       "title_original": "Итоги недели: взлом Binance на $6,3 млрд, ставка ФРС и падение биткоина ниже $77 000",
       "cross_check": 1
@@ -208,7 +208,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-02T06:05:35.032819+00:00",
+      "collected_at": "2026-11-02T07:05:37.787891+00:00",
       "effective_weight": 0.96,
       "title_original": "ФБР обвинило хакеров из КНДР во взломе Binance на $6 млрд",
       "cross_check": 1
