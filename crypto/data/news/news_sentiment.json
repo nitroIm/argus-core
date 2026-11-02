@@ -1,18 +1,18 @@
 {
-  "generated_at": "2026-11-02T09:05:37.047869+00:00",
-  "total_news": 100,
-  "avg_sentiment": -0.736,
+  "generated_at": "2026-11-02T10:05:53.261345+00:00",
+  "total_news": 101,
+  "avg_sentiment": -0.745,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 8,
   "bearish_count": 50,
-  "neutral_count": 42,
+  "neutral_count": 43,
   "fake_count": 0,
-  "cross_confirmed": 26,
+  "cross_confirmed": 25,
   "by_source": {
     "Cointelegraph": {
       "total": 28,
       "bull": 0,
-      "bear": 16
+      "bear": 15
     },
     "Decrypt": {
       "total": 20,
@@ -22,17 +22,17 @@
     "Bitcoin.com": {
       "total": 7,
       "bull": 2,
-      "bear": 2
+      "bear": 3
     },
     "CryptoSlate": {
-      "total": 7,
+      "total": 8,
       "bull": 1,
-      "bear": 3
+      "bear": 4
     },
     "CryptoPotato": {
       "total": 27,
       "bull": 2,
-      "bear": 11
+      "bear": 10
     },
     "ForkLog": {
       "total": 11,
@@ -53,7 +53,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-02T09:05:35.779675+00:00",
+      "collected_at": "2026-11-02T10:05:51.660598+00:00",
       "effective_weight": 1.0,
       "title_original": "Ripple (XRP) ETFs Beat Every Major Rival in October: But Two Problems Remain",
       "cross_check": 1
@@ -70,7 +70,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-02T09:05:35.495740+00:00",
+      "collected_at": "2026-11-02T10:05:51.046587+00:00",
       "effective_weight": 0.8,
       "title_original": "Blackrock, JPMorgan and Visa Bolster Grayscale’s Crypto Growth Case",
       "cross_check": 1
@@ -87,7 +87,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-02T09:05:35.495807+00:00",
+      "collected_at": "2026-11-02T10:05:51.046663+00:00",
       "effective_weight": 0.8,
       "title_original": "Ripple CEO Sees XRP as Institutional Gold Standard Within 5 Years",
       "cross_check": 1
@@ -104,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-02T09:05:35.626939+00:00",
+      "collected_at": "2026-11-02T10:05:51.329887+00:00",
       "effective_weight": 0.8,
       "title_original": "OneKey founder warns BlackRock’s Bitcoin ETF could be a North Korean target",
       "cross_check": 1
@@ -121,7 +121,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-02T09:05:35.779938+00:00",
+      "collected_at": "2026-11-02T10:05:51.660827+00:00",
       "effective_weight": 0.8,
       "title_original": "Here’s How Much Binance Users Withdrew as Bitcoin Bulls Spot an FTX-Era Signal",
       "cross_check": 1
@@ -129,20 +129,37 @@
   ],
   "top_bearish": [
     {
-      "title": "Binance Has Shed $16B Since The Hack as Its Proof Lands Tuesday",
-      "url": "https://news.bitcoin.com/exchanges/binance-sheds-15-7b-proof-of-reserves-tuesday/",
+      "title": "Hyeperliquid’s Top Two Traders Are Betting $1B on Crypto Falling",
+      "url": "https://news.bitcoin.com/defi/hyperliquid-top-traders-short-1-billion/",
       "source": "Bitcoin.com",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-11-02T08:30:41+00:00",
+      "pub_date": "2026-11-02T09:30:14+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-02T10:05:51.046224+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Hyeperliquid’s Top Two Traders Are Betting $1B on Crypto Falling",
+      "cross_check": 1
+    },
+    {
+      "title": "Polygon brings US banking access to Solana’s $15 billion stablecoin market",
+      "url": "https://cryptoslate.com/polygon-brings-us-banking-access-to-solanas-15-billion-stablecoin-market/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-02T10:00:53+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 1.5,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-02T09:05:35.495464+00:00",
+      "collected_at": "2026-11-02T10:05:51.329324+00:00",
       "effective_weight": 1.5,
-      "title_original": "Binance Has Shed $16B Since The Hack as Its Proof Lands Tuesday",
+      "title_original": "Polygon brings US banking access to Solana’s $15 billion stablecoin market",
       "cross_check": 1
     },
     {
@@ -155,10 +172,10 @@
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 1.5,
-      "freshness": 1.0,
+      "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-02T09:05:35.170924+00:00",
-      "effective_weight": 1.3,
+      "collected_at": "2026-11-02T10:05:50.516966+00:00",
+      "effective_weight": 1.04,
       "title_original": "Bank of Korea probes financial firms’ exposure to crypto risks",
       "cross_check": 1
     },
@@ -174,43 +191,26 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-02T09:05:35.171166+00:00",
+      "collected_at": "2026-11-02T10:05:50.517210+00:00",
       "effective_weight": 1.04,
       "title_original": "THORChain founder rejects freeze request, CZ thanks Secret Service: Hodler’s Digest",
       "cross_check": 1
     },
     {
-      "title": "Binance says phase one of withdrawals opens after $6.3B hack",
-      "url": "https://cointelegraph.com/news/binance-says-phase-one-of-withdrawals-opens-after-63b-hack?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-11-01T09:38:18+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 4.5,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-02T09:05:35.171305+00:00",
-      "effective_weight": 1.04,
-      "title_original": "Binance says phase one of withdrawals opens after $6.3B hack",
-      "cross_check": 13
-    },
-    {
-      "title": "Binance Hacker Moves All $293M in Stolen XRP as $242M Slips out Through Tron",
-      "url": "https://news.bitcoin.com/security/binance-hacker-moves-293m-stolen-xrp/",
+      "title": "Binance Has Shed $16B Since The Hack as Its Proof Lands Tuesday",
+      "url": "https://news.bitcoin.com/exchanges/binance-sheds-15-7b-proof-of-reserves-tuesday/",
       "source": "Bitcoin.com",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-11-02T07:30:33+00:00",
+      "pub_date": "2026-11-02T08:30:41+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-02T09:05:35.495538+00:00",
+      "collected_at": "2026-11-02T10:05:51.046297+00:00",
       "effective_weight": 1.0,
-      "title_original": "Binance Hacker Moves All $293M in Stolen XRP as $242M Slips out Through Tron",
+      "title_original": "Binance Has Shed $16B Since The Hack as Its Proof Lands Tuesday",
       "cross_check": 1
     }
   ]
