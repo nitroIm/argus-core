@@ -1,8 +1,7 @@
 # ============================================================
-# ARGUS - MORNING REPORT v16.1 (NETWORK FIX)
+# ARGUS - MORNING REPORT v16.2 (NETWORK FIX 2)
 # ------------------------------------------------------------
-# v16.1: Исправлен блок "Сеть и Сентимент". 
-# Теперь показывается дата обновления и корректная дельта.
+# v16.2: Если нет предыдущих данных по сети, пишем (0.00%)
 # ============================================================
 
 import os
@@ -195,7 +194,6 @@ def fetch_network_sentiment():
                 cur.execute("SELECT value FROM fear_greed WHERE timestamp <= NOW() - INTERVAL '23 hours' ORDER BY timestamp DESC LIMIT 1")
                 fng_prev = cur.fetchone()
                 
-                # НОВЫЙ ЗАПРОС: берем 2 последние уникальные точки для каждого графика
                 cur.execute("""
                     SELECT chart_name, value, chart_time 
                     FROM (
@@ -352,7 +350,7 @@ def fmt_network_sentiment(data):
             hr = float(net_cur["hash-rate"]["value"])
             hr_eh = hr / 1e6
             prev_hr_val = float(net_prev["hash-rate"]["value"]) if "hash-rate" in net_prev else None
-            d_hr = calc_delta(hr_eh, prev_hr_val / 1e6 if prev_hr_val else None, is_pct=True) if prev_hr_val else "(нет данных)"
+            d_hr = calc_delta(hr_eh, prev_hr_val / 1e6 if prev_hr_val else None, is_pct=True) if prev_hr_val else "(0.00%)"
             ts = net_cur["hash-rate"]["time"].astimezone(TZ).strftime("%d.%m")
             lines.append(f"  Хешрейт: {hr_eh:.0f} EH/s {d_hr} (на {ts})")
             
@@ -361,7 +359,7 @@ def fmt_network_sentiment(data):
             diff = float(net_cur["difficulty"]["value"])
             diff_t = diff / 1e12
             prev_diff_val = float(net_prev["difficulty"]["value"]) if "difficulty" in net_prev else None
-            d_diff = calc_delta(diff_t, prev_diff_val / 1e12 if prev_diff_val else None, is_pct=True) if prev_diff_val else "(нет данных)"
+            d_diff = calc_delta(diff_t, prev_diff_val / 1e12 if prev_diff_val else None, is_pct=True) if prev_diff_val else "(0.00%)"
             ts = net_cur["difficulty"]["time"].astimezone(TZ).strftime("%d.%m")
             lines.append(f"  Сложность: {diff_t:.1f} T {d_diff} (на {ts})")
             
@@ -369,7 +367,7 @@ def fmt_network_sentiment(data):
         if "miners-revenue" in net_cur:
             rev_f = float(net_cur["miners-revenue"]["value"])
             prev_rev_val = float(net_prev["miners-revenue"]["value"]) if "miners-revenue" in net_prev else None
-            d_rev = calc_delta(rev_f, prev_rev_val, is_money=True) if prev_rev_val else "(нет данных)"
+            d_rev = calc_delta(rev_f, prev_rev_val, is_money=True) if prev_rev_val else "(0.00%)"
             ts = net_cur["miners-revenue"]["time"].astimezone(TZ).strftime("%d.%m")
             lines.append(f"  Доход майнеров: {fmt_usd(rev_f)} {d_rev} (на {ts})")
     else:
@@ -459,7 +457,7 @@ def build_report_text(candles, stats, live_cmc, prev_g_metrics, n_sentiment, sta
     return "\n".join(lines)
 
 def main():
-    print("Morning report v16.1 - start")
+    print("Morning report v16.2 - start")
     stats = fetch_stats(SYMBOL)
     candles = fetch_candles(SYMBOL, 300)
     live_cmc = fetch_live_cmc()
