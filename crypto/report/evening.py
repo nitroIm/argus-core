@@ -1,7 +1,8 @@
 # ============================================================
-# ARGUS - EVENING REPORT v17.5 (LIVE CMC)
+# ARGUS - EVENING REPORT v17.6 (NETWORK FIX)
 # ------------------------------------------------------------
-# v17.5: Живой запрос к CMC для капитализации и доминации.
+# v17.6: Исправлен блок "Сеть и Сентимент". 
+# Теперь показывается дата обновления и корректная дельта.
 # ============================================================
 
 import os
@@ -204,12 +205,32 @@ def fetch_network_sentiment():
                 fng_cur = cur.fetchone()
                 cur.execute("SELECT value FROM fear_greed WHERE timestamp <= NOW() - INTERVAL '12 hours' ORDER BY timestamp DESC LIMIT 1")
                 fng_prev = cur.fetchone()
-                cur.execute("SELECT chart_name, value FROM btc_network WHERE chart_name IN ('hash-rate', 'difficulty', 'miners-revenue') ORDER BY chart_time DESC LIMIT 3")
-                net_cur = dict(cur.fetchall())
-                cur.execute("SELECT chart_name, value FROM btc_network WHERE chart_name IN ('hash-rate', 'difficulty', 'miners-revenue') AND chart_time <= NOW() - INTERVAL '12 hours' ORDER BY chart_time DESC LIMIT 3")
-                net_prev = dict(cur.fetchall())
+                
+                # НОВЫЙ ЗАПРОС: берем 2 последние уникальные точки для каждого графика
+                cur.execute("""
+                    SELECT chart_name, value, chart_time 
+                    FROM (
+                        SELECT chart_name, value, chart_time, 
+                               ROW_NUMBER() OVER (PARTITION BY chart_name ORDER BY chart_time DESC) as rn
+                        FROM btc_network 
+                        WHERE chart_name IN ('hash-rate', 'difficulty', 'miners-revenue')
+                    ) sub 
+                    WHERE rn <= 2
+                    ORDER BY chart_name, chart_time DESC
+                """)
+                rows = cur.fetchall()
+                
+                net_cur = {}
+                net_prev = {}
+                for chart_name, val, ts in rows:
+                    if chart_name not in net_cur:
+                        net_cur[chart_name] = {"value": val, "time": ts}
+                    else:
+                        net_prev[chart_name] = {"value": val, "time": ts}
+                        
         return {"fng": (fng_cur, fng_prev), "network": (net_cur, net_prev)}
-    except Exception:
+    except Exception as e:
+        print(f"fetch_network_sentiment err: {e}")
         return None
 
 def fetch_stablecoins():
@@ -264,10 +285,10 @@ def filter_day(candles):
 
 def calc_delta(cur, prev, is_pct=False, is_money=False):
     if prev is None or cur is None: return "(нет данных)"
-    if prev == 0: return "(⏸️ 0)"
+    if prev == 0: return "(0.00%)" if is_pct else "(0)"
     diff = cur - prev
-    sign = "🔼" if diff > 0 else "🔽" if diff < 0 else "⏸️"
-    if diff == 0: return f"({sign} 0)"
+    if diff == 0: return "(0.00%)" if is_pct else "(0)"
+    sign = "🔼" if diff > 0 else "🔽"
     if is_pct: return f"({sign} {diff:+.2f}%)"
     if is_money: return f"({sign} {fmt_usd(diff)})"
     return f"({sign} {diff:+g})"
@@ -348,26 +369,34 @@ def fmt_network_sentiment(data):
         lines.append(f"  Страх/Жадность: {val} ({cls}) {delta}")
     else:
         lines.append("  Страх/Жадность: (нет данных)")
+        
     net_cur, net_prev = data["network"]
     if net_cur:
-        hr = net_cur.get("hash-rate")
-        if hr:
-            hr_eh = float(hr) / 1e6
-            prev_hr = net_prev.get("hash-rate")
-            d_hr = calc_delta(hr_eh, float(prev_hr) / 1e6, is_pct=True) if prev_hr else "(нет данных)"
-            lines.append(f"  Хешрейт: {hr_eh:.0f} EH/s {d_hr}")
-        diff = net_cur.get("difficulty")
-        if diff:
-            diff_t = float(diff) / 1e12
-            prev_diff = net_prev.get("difficulty")
-            d_diff = calc_delta(diff_t, float(prev_diff) / 1e12, is_pct=True) if prev_diff else "(нет данных)"
-            lines.append(f"  Сложность: {diff_t:.1f} T {d_diff}")
-        rev = net_cur.get("miners-revenue")
-        if rev:
-            rev_f = float(rev)
-            prev_rev = net_prev.get("miners-revenue")
-            d_rev = calc_delta(rev_f, float(prev_rev), is_pct=True) if prev_rev else "(нет данных)"
-            lines.append(f"  Доход майнеров: {fmt_usd(rev_f)} {d_rev}")
+        # Хешрейт
+        if "hash-rate" in net_cur:
+            hr = float(net_cur["hash-rate"]["value"])
+            hr_eh = hr / 1e6
+            prev_hr_val = float(net_prev["hash-rate"]["value"]) if "hash-rate" in net_prev else None
+            d_hr = calc_delta(hr_eh, prev_hr_val / 1e6 if prev_hr_val else None, is_pct=True) if prev_hr_val else "(нет данных)"
+            ts = net_cur["hash-rate"]["time"].astimezone(TZ).strftime("%d.%m")
+            lines.append(f"  Хешрейт: {hr_eh:.0f} EH/s {d_hr} (на {ts})")
+            
+        # Сложность
+        if "difficulty" in net_cur:
+            diff = float(net_cur["difficulty"]["value"])
+            diff_t = diff / 1e12
+            prev_diff_val = float(net_prev["difficulty"]["value"]) if "difficulty" in net_prev else None
+            d_diff = calc_delta(diff_t, prev_diff_val / 1e12 if prev_diff_val else None, is_pct=True) if prev_diff_val else "(нет данных)"
+            ts = net_cur["difficulty"]["time"].astimezone(TZ).strftime("%d.%m")
+            lines.append(f"  Сложность: {diff_t:.1f} T {d_diff} (на {ts})")
+            
+        # Доход майнеров
+        if "miners-revenue" in net_cur:
+            rev_f = float(net_cur["miners-revenue"]["value"])
+            prev_rev_val = float(net_prev["miners-revenue"]["value"]) if "miners-revenue" in net_prev else None
+            d_rev = calc_delta(rev_f, prev_rev_val, is_money=True) if prev_rev_val else "(нет данных)"
+            ts = net_cur["miners-revenue"]["time"].astimezone(TZ).strftime("%d.%m")
+            lines.append(f"  Доход майнеров: {fmt_usd(rev_f)} {d_rev} (на {ts})")
     else:
         lines.append("  Сеть BTC: (нет данных)")
     return lines
@@ -458,7 +487,7 @@ def build_report_text(candles, stats, live_cmc, prev_g_metrics, n_sentiment, sta
     return "\n".join(lines)
 
 def main():
-    print("Evening report v17.5 - start")
+    print("Evening report v17.6 - start")
     stats = fetch_stats(SYMBOL)
     candles = fetch_candles(SYMBOL, 300)
     live_cmc = fetch_live_cmc()
