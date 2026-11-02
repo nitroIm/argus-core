@@ -1,18 +1,18 @@
 {
-  "generated_at": "2026-11-02T08:05:40.892697+00:00",
-  "total_news": 74,
-  "avg_sentiment": -0.704,
+  "generated_at": "2026-11-02T09:05:37.047869+00:00",
+  "total_news": 100,
+  "avg_sentiment": -0.736,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 8,
-  "bearish_count": 40,
-  "neutral_count": 26,
+  "bearish_count": 50,
+  "neutral_count": 42,
   "fake_count": 0,
-  "cross_confirmed": 22,
+  "cross_confirmed": 26,
   "by_source": {
     "Cointelegraph": {
       "total": 28,
       "bull": 0,
-      "bear": 17
+      "bear": 16
     },
     "Decrypt": {
       "total": 20,
@@ -21,21 +21,43 @@
     },
     "Bitcoin.com": {
       "total": 7,
-      "bull": 3,
-      "bear": 1
+      "bull": 2,
+      "bear": 2
     },
     "CryptoSlate": {
       "total": 7,
       "bull": 1,
-      "bear": 4
+      "bear": 3
+    },
+    "CryptoPotato": {
+      "total": 27,
+      "bull": 2,
+      "bear": 11
     },
     "ForkLog": {
-      "total": 12,
-      "bull": 1,
+      "total": 11,
+      "bull": 0,
       "bear": 6
     }
   },
   "top_bullish": [
+    {
+      "title": "Ripple (XRP) ETFs Beat Every Major Rival in October: But Two Problems Remain",
+      "url": "https://cryptopotato.com/ripple-xrp-etfs-beat-every-major-rival-in-october-but-two-problems-remain/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-02T05:07:04+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-02T09:05:35.779675+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Ripple (XRP) ETFs Beat Every Major Rival in October: But Two Problems Remain",
+      "cross_check": 1
+    },
     {
       "title": "Blackrock, JPMorgan and Visa Bolster Grayscale’s Crypto Growth Case",
       "url": "https://news.bitcoin.com/featured/blackrock-jpmorgan-and-visa-bolster-grayscales-crypto-growth-case/",
@@ -48,7 +70,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-02T08:05:39.443464+00:00",
+      "collected_at": "2026-11-02T09:05:35.495740+00:00",
       "effective_weight": 0.8,
       "title_original": "Blackrock, JPMorgan and Visa Bolster Grayscale’s Crypto Growth Case",
       "cross_check": 1
@@ -65,26 +87,9 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-02T08:05:39.443530+00:00",
+      "collected_at": "2026-11-02T09:05:35.495807+00:00",
       "effective_weight": 0.8,
       "title_original": "Ripple CEO Sees XRP as Institutional Gold Standard Within 5 Years",
-      "cross_check": 1
-    },
-    {
-      "title": "Bitcoin Mining Revenue Hits 11-Month High Despite Brutal Hashprice Decline",
-      "url": "https://news.bitcoin.com/mining/bitcoin-mining-revenue-hits-11-month-high-despite-brutal-hashprice-decline/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-01T22:30:50+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-02T08:05:39.443683+00:00",
-      "effective_weight": 0.8,
-      "title_original": "Bitcoin Mining Revenue Hits 11-Month High Despite Brutal Hashprice Decline",
       "cross_check": 1
     },
     {
@@ -99,63 +104,46 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-02T08:05:39.588332+00:00",
+      "collected_at": "2026-11-02T09:05:35.626939+00:00",
       "effective_weight": 0.8,
       "title_original": "OneKey founder warns BlackRock’s Bitcoin ETF could be a North Korean target",
       "cross_check": 1
     },
     {
-      "title": "Чистая прибыль Coinbase выросла на 66% на фоне развития рынков предсказаний",
-      "url": "https://forklog.com/chistaya-pribyl-coinbase-vyrosla-na-66-na-fone-razvitiya-rynkov-predskazaniy",
-      "source": "ForkLog",
-      "source_weight": 1.2,
-      "lang": "ru",
-      "pub_date": "2026-10-30T10:20:59+00:00",
+      "title": "Here’s How Much Binance Users Withdrew as Bitcoin Bulls Spot an FTX-Era Signal",
+      "url": "https://cryptopotato.com/heres-how-much-binance-users-withdrew-as-bitcoin-bulls-spot-an-ftx-era-signal/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-01T18:36:49+00:00",
       "sentiment": 1.0,
-      "bull_weight": 1.0,
+      "bull_weight": 1.2,
       "bear_weight": 0.0,
-      "freshness": 0.5,
+      "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-02T08:05:40.849915+00:00",
-      "effective_weight": 0.6,
-      "title_original": "Чистая прибыль Coinbase выросла на 66% на фоне развития рынков предсказаний",
+      "collected_at": "2026-11-02T09:05:35.779938+00:00",
+      "effective_weight": 0.8,
+      "title_original": "Here’s How Much Binance Users Withdrew as Bitcoin Bulls Spot an FTX-Era Signal",
       "cross_check": 1
     }
   ],
   "top_bearish": [
     {
-      "title": "Binance Hacker Moves All $293M in Stolen XRP as $242M Slips out Through Tron",
-      "url": "https://news.bitcoin.com/security/binance-hacker-moves-293m-stolen-xrp/",
+      "title": "Binance Has Shed $16B Since The Hack as Its Proof Lands Tuesday",
+      "url": "https://news.bitcoin.com/exchanges/binance-sheds-15-7b-proof-of-reserves-tuesday/",
       "source": "Bitcoin.com",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-11-02T07:30:33+00:00",
+      "pub_date": "2026-11-02T08:30:41+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 1.5,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-02T08:05:39.443259+00:00",
+      "collected_at": "2026-11-02T09:05:35.495464+00:00",
       "effective_weight": 1.5,
-      "title_original": "Binance Hacker Moves All $293M in Stolen XRP as $242M Slips out Through Tron",
+      "title_original": "Binance Has Shed $16B Since The Hack as Its Proof Lands Tuesday",
       "cross_check": 1
-    },
-    {
-      "title": "Bitcoin ETFs sink into October outflows with $643M exit after Binance hack",
-      "url": "https://cointelegraph.com/markets/bitcoin-etfs-october-red-binance-hack-outflows?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-11-02T07:50:36+00:00",
-      "sentiment": -0.671,
-      "bull_weight": 1.2,
-      "bear_weight": 6.1,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-02T08:05:38.957685+00:00",
-      "effective_weight": 1.95,
-      "title_original": "Bitcoin ETFs sink into October outflows with $643M exit after Binance hack",
-      "cross_check": 9
     },
     {
       "title": "Bank of Korea probes financial firms’ exposure to crypto risks",
@@ -169,7 +157,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-02T08:05:38.957870+00:00",
+      "collected_at": "2026-11-02T09:05:35.170924+00:00",
       "effective_weight": 1.3,
       "title_original": "Bank of Korea probes financial firms’ exposure to crypto risks",
       "cross_check": 1
@@ -186,7 +174,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-02T08:05:38.958108+00:00",
+      "collected_at": "2026-11-02T09:05:35.171166+00:00",
       "effective_weight": 1.04,
       "title_original": "THORChain founder rejects freeze request, CZ thanks Secret Service: Hodler’s Digest",
       "cross_check": 1
@@ -203,10 +191,27 @@
       "bear_weight": 4.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-02T08:05:38.958244+00:00",
+      "collected_at": "2026-11-02T09:05:35.171305+00:00",
       "effective_weight": 1.04,
       "title_original": "Binance says phase one of withdrawals opens after $6.3B hack",
-      "cross_check": 11
+      "cross_check": 13
+    },
+    {
+      "title": "Binance Hacker Moves All $293M in Stolen XRP as $242M Slips out Through Tron",
+      "url": "https://news.bitcoin.com/security/binance-hacker-moves-293m-stolen-xrp/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-02T07:30:33+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-02T09:05:35.495538+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Binance Hacker Moves All $293M in Stolen XRP as $242M Slips out Through Tron",
+      "cross_check": 1
     }
   ]
 }
