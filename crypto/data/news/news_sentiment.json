@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-11-02T19:05:51.403940+00:00",
+  "generated_at": "2026-11-02T20:05:47.480146+00:00",
   "total_news": 103,
-  "avg_sentiment": -0.571,
+  "avg_sentiment": -0.66,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 8,
-  "bearish_count": 47,
-  "neutral_count": 48,
+  "bearish_count": 49,
+  "neutral_count": 46,
   "fake_count": 0,
-  "cross_confirmed": 30,
+  "cross_confirmed": 31,
   "by_source": {
     "Cointelegraph": {
       "total": 27,
@@ -22,7 +22,7 @@
     "Bitcoin.com": {
       "total": 9,
       "bull": 0,
-      "bear": 4
+      "bear": 5
     },
     "CryptoSlate": {
       "total": 9,
@@ -32,7 +32,7 @@
     "CryptoPotato": {
       "total": 29,
       "bull": 6,
-      "bear": 10
+      "bear": 11
     },
     "ForkLog": {
       "total": 9,
@@ -53,7 +53,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-02T19:05:50.324639+00:00",
+      "collected_at": "2026-11-02T20:05:46.410577+00:00",
       "effective_weight": 1.0,
       "title_original": "Ethereum (ETH) Whales Buy Like ‘Crazy:’ Price Rally Incoming?",
       "cross_check": 1
@@ -70,7 +70,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-02T19:05:50.324687+00:00",
+      "collected_at": "2026-11-02T20:05:46.410627+00:00",
       "effective_weight": 1.0,
       "title_original": "BitMine’s ETH Stash Hits 6.06 Million as Tom Lee Reaffirms Crypto Bull Market Is Still Alive",
       "cross_check": 1
@@ -87,7 +87,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-02T19:05:50.324756+00:00",
+      "collected_at": "2026-11-02T20:05:46.410698+00:00",
       "effective_weight": 0.8,
       "title_original": "Strategy Resumes Bitcoin Accumulation by Adding 810 BTC",
       "cross_check": 2
@@ -104,63 +104,97 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-02T19:05:50.324955+00:00",
+      "collected_at": "2026-11-02T20:05:46.410888+00:00",
       "effective_weight": 0.8,
       "title_original": "Ripple (XRP) ETFs Beat Every Major Rival in October: But Two Problems Remain",
       "cross_check": 1
     },
     {
-      "title": "BNB’s $99 million ETF inflows came almost entirely before Binance’s hack",
-      "url": "https://cryptoslate.com/bnbs-99-million-etf-inflows-came-almost-entirely-before-binances-hack/",
-      "source": "CryptoSlate",
+      "title": "Here’s How Much Binance Users Withdrew as Bitcoin Bulls Spot an FTX-Era Signal",
+      "url": "https://cryptopotato.com/heres-how-much-binance-users-withdrew-as-bitcoin-bulls-spot-an-ftx-era-signal/",
+      "source": "CryptoPotato",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-11-02T18:40:47+00:00",
-      "sentiment": 0.432,
-      "bull_weight": 6.3,
-      "bear_weight": 2.5,
-      "freshness": 1.5,
+      "pub_date": "2026-11-01T18:36:49+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-02T19:05:50.103247+00:00",
-      "effective_weight": 1.5,
-      "title_original": "BNB’s $99 million ETF inflows came almost entirely before Binance’s hack",
-      "cross_check": 2
+      "collected_at": "2026-11-02T20:05:46.411011+00:00",
+      "effective_weight": 0.5,
+      "title_original": "Here’s How Much Binance Users Withdrew as Bitcoin Bulls Spot an FTX-Era Signal",
+      "cross_check": 1
     }
   ],
   "top_bearish": [
     {
-      "title": "North Korea Is Laundering Binance Hack Loot at One New Wallet Every 25 Seconds",
-      "url": "https://decrypt.co/382355/north-korea-laundering-binance-hack-loot-new-wallet-every-25-seconds",
+      "title": "Tom Lee Calls Bottom on AI Stock Selloff, Citing Tight Supply and Crypto Resilience",
+      "url": "https://decrypt.co/382357/tom-lee-calls-bottom-ai-stock-selloff-crypto",
       "source": "Decrypt",
       "source_weight": 1.1,
       "lang": "en",
-      "pub_date": "2026-11-02T18:46:03+00:00",
+      "pub_date": "2026-11-02T19:46:02+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 1.5,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-02T19:05:49.638878+00:00",
+      "collected_at": "2026-11-02T20:05:45.775294+00:00",
       "effective_weight": 1.65,
-      "title_original": "North Korea Is Laundering Binance Hack Loot at One New Wallet Every 25 Seconds",
-      "cross_check": 5
+      "title_original": "Tom Lee Calls Bottom on AI Stock Selloff, Citing Tight Supply and Crypto Resilience",
+      "cross_check": 1
     },
     {
-      "title": "Crucial Binance Warning Concerning All Users: Details Inside",
-      "url": "https://cryptopotato.com/crucial-binance-warning-concerning-all-users-details-inside/",
+      "title": "Binance May Have Lost Around Half of 5-Year Profits to Fines and Hacks: Analysis",
+      "url": "https://news.bitcoin.com/opinion-and-analysis/binance-lost-half-5-year-profits-fines-hacks-analyst/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-02T19:57:16+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 3.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-02T20:05:46.054866+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Binance May Have Lost Around Half of 5-Year Profits to Fines and Hacks: Analysis",
+      "cross_check": 1
+    },
+    {
+      "title": "Binance Hack Sends Crypto Fear and Greed Index Crashing to 30",
+      "url": "https://cryptopotato.com/binance-hack-sends-crypto-fear-and-greed-index-crashing-to-30/",
       "source": "CryptoPotato",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-11-02T18:55:53+00:00",
+      "pub_date": "2026-11-02T19:48:44+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 1.2,
+      "bear_weight": 4.7,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-02T19:05:50.324367+00:00",
+      "collected_at": "2026-11-02T20:05:46.410274+00:00",
       "effective_weight": 1.5,
-      "title_original": "Crucial Binance Warning Concerning All Users: Details Inside",
-      "cross_check": 1
+      "title_original": "Binance Hack Sends Crypto Fear and Greed Index Crashing to 30",
+      "cross_check": 2
+    },
+    {
+      "title": "Mercado Bitcoin wallets keep moving funds after $46M hack",
+      "url": "https://cointelegraph.com/news/mercado-bitcoin-hack?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-11-02T19:05:35+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-02T20:05:45.680033+00:00",
+      "effective_weight": 1.3,
+      "title_original": "Mercado Bitcoin wallets keep moving funds after $46M hack",
+      "cross_check": 8
     },
     {
       "title": "Биржа Mercado Bitcoin приостановила операции после инцидента безопасности",
@@ -174,44 +208,10 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-02T19:05:51.358753+00:00",
+      "collected_at": "2026-11-02T20:05:47.433735+00:00",
       "effective_weight": 1.2,
       "title_original": "Биржа Mercado Bitcoin приостановила операции после инцидента безопасности",
       "cross_check": 1
-    },
-    {
-      "title": "Brazil's Largest Exchange Mercado Bitcoin Halts Withdrawals After $40 Million Hack",
-      "url": "https://decrypt.co/382341/mercado-bitcoin-halts-withdrawals-40-million-hack",
-      "source": "Decrypt",
-      "source_weight": 1.1,
-      "lang": "en",
-      "pub_date": "2026-11-02T16:46:03+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 6.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-02T19:05:49.638933+00:00",
-      "effective_weight": 1.1,
-      "title_original": "Brazil's Largest Exchange Mercado Bitcoin Halts Withdrawals After $40 Million Hack",
-      "cross_check": 10
-    },
-    {
-      "title": "Morning Minute: Binance Hack Leads to Mass Outflows While FBI Opens Probe",
-      "url": "https://decrypt.co/382332/morning-minute-the-binance-hack-leads-to-mass-outflows-while-fbi-opens-probe",
-      "source": "Decrypt",
-      "source_weight": 1.1,
-      "lang": "en",
-      "pub_date": "2026-11-02T13:34:02+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 6.1,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-02T19:05:49.639009+00:00",
-      "effective_weight": 1.1,
-      "title_original": "Morning Minute: Binance Hack Leads to Mass Outflows While FBI Opens Probe",
-      "cross_check": 7
     }
   ]
 }
