@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - SOCIAL REPORT (v1.2.0) - WITH ER, REACH & ANTI-DUPLICATE
+# ARGUS - SOCIAL REPORT (v1.2.1) - WITH NAMES
 # Path: crypto/report/social_report.py
 # ============================================================
 
@@ -33,22 +33,23 @@ def load_json(path):
         with open(path, "r", encoding="utf-8") as f: return json.load(f)
     except Exception: return None
 
-def analyze_platform(data, name, is_tg=False):
-    if not data or not data.get("history"): return f"🔹 <b>{name}</b>: Нет данных\n"
+def analyze_platform(data, default_name, is_tg=False):
+    if not data or not data.get("history"): return f"🔹 <b>{default_name}</b>: Нет данных\n"
     
     history = data["history"]
     today_data = next((h for h in history if h["date"] == today_str), history[-1] if history else None)
+    if not today_data: return f"🔹 <b>{default_name}</b>: Пустая история\n"
     
-    if not today_data: return f"🔹 <b>{name}</b>: Пустая история\n"
+    # Берем название из данных или дефолтное
+    platform_name = today_data.get("name", default_name)
     
     prev_data = next((h for h in reversed(history) if h["date"] < today_data["date"]), None)
-    
     subs = today_data.get("subscribers", 0)
     delta_subs = subs - prev_data["subscribers"] if prev_data else 0
     sign = "+" if delta_subs >= 0 else ""
     
     posts = today_data.get("posts", [])
-    lines = [f"🔹 <b>{name}</b>"]
+    lines = [f"🔹 <b>{platform_name}</b>"]
     lines.append(f"  👥 Подписчики: {subs} (<b>{sign}{delta_subs}</b> за день)")
     
     if posts:
@@ -70,7 +71,6 @@ def analyze_platform(data, name, is_tg=False):
         lines.append(f"  🏆 Лучший: {best['type'].capitalize()} ({best['time']}) — {best['views']} просм.")
         lines.append(f"  📉 Слабый: {worst['type'].capitalize()} ({worst['time']}) — {worst['views']} просм.")
         
-        # Разбивка по типам
         types_stats = {}
         for p in posts:
             t = p.get("type", "other").capitalize()
@@ -82,7 +82,6 @@ def analyze_platform(data, name, is_tg=False):
         for t, stat in types_stats.items():
             avg_t_views = int(stat["views"] / stat["count"])
             lines.append(f"     - {t}: {avg_t_views} просм. ({stat['count']} шт.)")
-            
     else:
         lines.append("  📝 За сегодня постов не было.")
         
@@ -103,7 +102,6 @@ def send_report(text):
 def main():
     log.info(f"STARTING REPORTER | Date: {today_str}")
     
-    # Защита от дублей
     if MARKER_FILE.exists():
         try:
             with open(MARKER_FILE, "r") as f:
@@ -120,10 +118,8 @@ def main():
     lines.append(analyze_platform(tg_data, "Telegram", is_tg=True))
     
     text = "".join(lines)
-    
     if send_report(text):
-        with open(MARKER_FILE, "w") as f:
-            f.write(today_str)
+        with open(MARKER_FILE, "w") as f: f.write(today_str)
         log.info("Marker saved.")
 
 if __name__ == "__main__":
