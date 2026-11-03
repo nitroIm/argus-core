@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-03T02:05:40.045347+00:00",
+  "generated_at": "2026-11-03T03:05:40.447008+00:00",
   "total_news": 103,
-  "avg_sentiment": -0.662,
+  "avg_sentiment": -0.622,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 10,
+  "bullish_count": 11,
   "bearish_count": 49,
-  "neutral_count": 44,
+  "neutral_count": 43,
   "fake_count": 0,
   "cross_confirmed": 33,
   "by_source": {
@@ -26,7 +26,7 @@
     },
     "CryptoSlate": {
       "total": 10,
-      "bull": 2,
+      "bull": 3,
       "bear": 4
     },
     "CryptoPotato": {
@@ -42,20 +42,20 @@
   },
   "top_bullish": [
     {
-      "title": "Arthur Hayes wants to hedge AI compute bills, but FLOP token swings could change the cost",
-      "url": "https://cryptoslate.com/arthur-hayes-wants-to-hedge-ai-compute-bills-but-flop-token-swings-could-change-the-cost/",
+      "title": "Binance can cut a winning Bitcoin hedge even when customer assets are backed",
+      "url": "https://cryptoslate.com/binance-can-cut-a-winning-bitcoin-hedge-even-when-customer-assets-are-backed/",
       "source": "CryptoSlate",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-11-02T20:40:01+00:00",
+      "pub_date": "2026-11-03T02:10:33+00:00",
       "sentiment": 1.0,
       "bull_weight": 1.2,
       "bear_weight": 0.0,
-      "freshness": 1.0,
+      "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-03T02:05:38.937257+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Arthur Hayes wants to hedge AI compute bills, but FLOP token swings could change the cost",
+      "collected_at": "2026-11-03T03:05:39.404772+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Binance can cut a winning Bitcoin hedge even when customer assets are backed",
       "cross_check": 1
     },
     {
@@ -70,9 +70,26 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-03T02:05:39.045947+00:00",
+      "collected_at": "2026-11-03T03:05:39.531390+00:00",
       "effective_weight": 1.0,
       "title_original": "Stolen Binance Funds Drive DeFi Protocol Revenue Gains: Investigator",
+      "cross_check": 1
+    },
+    {
+      "title": "Arthur Hayes wants to hedge AI compute bills, but FLOP token swings could change the cost",
+      "url": "https://cryptoslate.com/arthur-hayes-wants-to-hedge-ai-compute-bills-but-flop-token-swings-could-change-the-cost/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-02T20:40:01+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-03T03:05:39.405228+00:00",
+      "effective_weight": 0.8,
+      "title_original": "Arthur Hayes wants to hedge AI compute bills, but FLOP token swings could change the cost",
       "cross_check": 1
     },
     {
@@ -87,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-03T02:05:39.046702+00:00",
+      "collected_at": "2026-11-03T03:05:39.532137+00:00",
       "effective_weight": 0.8,
       "title_original": "Ethereum (ETH) Whales Buy Like ‘Crazy:’ Price Rally Incoming?",
       "cross_check": 1
@@ -104,30 +121,30 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-03T02:05:39.046788+00:00",
+      "collected_at": "2026-11-03T03:05:39.532222+00:00",
       "effective_weight": 0.8,
       "title_original": "BitMine’s ETH Stash Hits 6.06 Million as Tom Lee Reaffirms Crypto Bull Market Is Still Alive",
-      "cross_check": 2
-    },
-    {
-      "title": "Strategy Resumes Bitcoin Accumulation by Adding 810 BTC",
-      "url": "https://cryptopotato.com/strategy-resumes-bitcoin-accumulation-by-adding-810-btc/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-02T13:05:44+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-03T02:05:39.046914+00:00",
-      "effective_weight": 0.8,
-      "title_original": "Strategy Resumes Bitcoin Accumulation by Adding 810 BTC",
       "cross_check": 2
     }
   ],
   "top_bearish": [
+    {
+      "title": "Tether Says It Froze Over $1.5B From Binance Hack Within 30 Minutes",
+      "url": "https://news.bitcoin.com/security/tether-says-it-froze-over-1-5b-from-binance-hack-within-30-minutes/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-03T02:30:17+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-03T03:05:39.329515+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Tether Says It Froze Over $1.5B From Binance Hack Within 30 Minutes",
+      "cross_check": 5
+    },
     {
       "title": "South Korea urges exchanges to boost cold storage after Binance hack",
       "url": "https://cointelegraph.com/news/south-korea-urges-exchanges-to-boost-cold-storage-after-binance-hack?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -138,10 +155,10 @@
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 1.5,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-03T02:05:38.574395+00:00",
-      "effective_weight": 1.95,
+      "collected_at": "2026-11-03T03:05:39.083708+00:00",
+      "effective_weight": 1.3,
       "title_original": "South Korea urges exchanges to boost cold storage after Binance hack",
       "cross_check": 14
     },
@@ -157,7 +174,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-03T02:05:38.574480+00:00",
+      "collected_at": "2026-11-03T03:05:39.083799+00:00",
       "effective_weight": 1.3,
       "title_original": "North Korea denies role in $6.3B Binance hack, points finger at US",
       "cross_check": 6
@@ -174,7 +191,7 @@
       "bear_weight": 1.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-03T02:05:38.574633+00:00",
+      "collected_at": "2026-11-03T03:05:39.083953+00:00",
       "effective_weight": 1.3,
       "title_original": "New Jersey drops Coinbase staking order ahead of crypto’s midterm test",
       "cross_check": 1
@@ -191,27 +208,10 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-03T02:05:38.645330+00:00",
+      "collected_at": "2026-11-03T03:05:39.143089+00:00",
       "effective_weight": 1.1,
       "title_original": "Mystery $106 Million Crypto Theft Hits EU Entity Days After Binance Hack",
       "cross_check": 17
-    },
-    {
-      "title": "Mercado Bitcoin wallets show post-hack transfers after $46M theft",
-      "url": "https://cointelegraph.com/news/mercado-bitcoin-hack?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-11-02T19:05:35+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-03T02:05:38.574988+00:00",
-      "effective_weight": 1.04,
-      "title_original": "Mercado Bitcoin wallets show post-hack transfers after $46M theft",
-      "cross_check": 8
     }
   ]
 }
