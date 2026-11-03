@@ -41,3 +41,14 @@ jobs:
           git commit -m "Update social stats [skip ci]"
           git pull --rebase --autostash origin main || true
           git push origin main
+
+      - name: Notify on failure
+        if: failure()
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          curl -s -X POST \
+            "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            -H "Content-Type: application/json" \
+            -d "{\"chat_id\": \"${TELEGRAM_CHAT_ID}\", \"text\": \"⚠️ ARGUS Social Collector упал\nЛог: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\", \"parse_mode\": \"HTML\"}" || true
