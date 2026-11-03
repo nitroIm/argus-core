@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - SOCIAL STATS COLLECTOR (v1.0.4) - ONLY COLLECT
+# ARGUS - SOCIAL STATS COLLECTOR (v1.0.5) - WITH ARCHIVE
 # Path: crypto/collect/collect_social_stats.py
 # ============================================================
 
@@ -28,6 +28,8 @@ DATA_DIR = Path("crypto/data/social_stats")
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 VK_FILE = DATA_DIR / "vk.json"
 TG_FILE = DATA_DIR / "tg.json"
+VK_ARCHIVE = DATA_DIR / "vk_archive.json"
+TG_ARCHIVE = DATA_DIR / "tg_archive.json"
 
 VK_TOKEN = (os.getenv("VK_TOKEN") or "").strip()
 VK_GROUP_ID = (os.getenv("VK_GROUP_ID") or "").strip()
@@ -36,11 +38,11 @@ TG_API_HASH = (os.getenv("TG_API_HASH") or "").strip()
 TG_SESSION = (os.getenv("TG_SESSION") or "").strip()
 TG_CHANNEL_ID = (os.getenv("TG_CHANNEL_ID") or "").strip()
 
-def load_json(path):
-    if not path.exists(): return {"platform": path.stem, "history": []}
+def load_json(path, default):
+    if not path.exists(): return default
     try:
         with open(path, "r", encoding="utf-8") as f: return json.load(f)
-    except Exception: return {"platform": path.stem, "history": []}
+    except Exception: return default
 
 def save_json(path, data):
     with open(path, "w", encoding="utf-8") as f:
@@ -52,6 +54,40 @@ def detect_post_type(text):
     if "утро" in text or "утренний" in text: return "morning"
     if "вечер" in text or "вечерний" in text: return "evening"
     return "other"
+
+def archive_old_data(main_file, archive_file):
+    """Если в истории больше 30 дней, старый день уходит в архив."""
+    data = load_json(main_file, {"platform": main_file.stem, "history": []})
+    
+    if len(data["history"]) > 30:
+        oldest = data["history"].pop(0) # Забираем самый старый день
+        month_key = oldest["date"][:7] # "YYYY-MM"
+        
+        archive = load_json(archive_file, {"platform": archive_file.stem, "archive": []})
+        
+        # Ищем, есть ли уже запись за этот месяц
+        month_record = next((m for m in archive["archive"] if m["month"] == month_key), None)
+        
+        if not month_record:
+            month_record = {
+                "month": month_key,
+                "subscribers_start": oldest["subscribers"],
+                "subscribers_end": oldest["subscribers"],
+                "total_posts": 0,
+                "total_views": 0,
+                "days_collected": 0
+            }
+            archive["archive"].append(month_record)
+        
+        # Обновляем статистику месяца
+        month_record["subscribers_end"] = oldest["subscribers"]
+        month_record["total_posts"] += len(oldest["posts"])
+        month_record["total_views"] += sum(p.get("views", 0) for p in oldest["posts"])
+        month_record["days_collected"] += 1
+        
+        save_json(archive_file, archive)
+        save_json(main_file, data)
+        log.info(f"Archived {oldest['date']} into {month_key}. History size now: {len(data['history'])}")
 
 def get_vk_stats():
     log.info("Collecting VK stats...")
@@ -69,7 +105,6 @@ def get_vk_stats():
             groups = resp.get("groups", []) if isinstance(resp, dict) else resp
             if groups and isinstance(groups, list):
                 subs = groups[0].get("members_count", 0)
-                log.info(f"VK: Found {subs} subscribers.")
     except Exception as e:
         log.error(f"VK Error (subs): {e}")
 
@@ -89,7 +124,6 @@ def get_vk_stats():
                         "reposts": item.get("reposts", {}).get("count", 0),
                         "comments": item.get("comments", {}).get("count", 0)
                     })
-            log.info(f"VK: Found {len(posts)} posts for today.")
     except Exception as e:
         log.error(f"VK Error (posts): {e}")
 
@@ -131,7 +165,6 @@ async def get_tg_stats():
                         "forwards": msg.forwards if msg.forwards else 0,
                         "likes": sum(r.count for r in msg.reactions.results) if msg.reactions else 0
                     })
-            log.info(f"TG: Found {len(posts)} posts for today.")
     except Exception as e:
         log.error(f"Telethon error: {e}")
         return None
@@ -143,19 +176,25 @@ def main():
     
     vk_data = get_vk_stats()
     if vk_data:
-        data = load_json(VK_FILE)
+        data = load_json(VK_FILE, {"platform": "vk", "history": []})
         data["history"] = [h for h in data["history"] if h.get("date") != today_str]
         data["history"].append(vk_data)
         save_json(VK_FILE, data)
         log.info("VK stats saved.")
+        archive_old_data(VK_FILE, VK_ARCHIVE)
     
     tg_data = asyncio.run(get_tg_stats())
     if tg_data:
-        data = load_json(TG_FILE)
+        data = load_json(TG_FILE, {"platform": "tg", "history": []})
         data["history"] = [h for h in data["history"] if h.get("date") != today_str]
         data["history"].append(tg_data)
         save_json(TG_FILE, data)
         log.info("TG stats saved.")
+        archive_old_data(TG_FILE, TG_ARCHIVE)
+
+    if not vk_data and not tg_data:
+        log.error("Both platforms failed. Exiting with error.")
+        sys.exit(1)
 
     log.info("DONE COLLECTOR.")
 
