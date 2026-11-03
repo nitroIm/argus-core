@@ -1,36 +1,36 @@
 {
-  "generated_at": "2026-11-03T19:09:16.167889+00:00",
-  "total_news": 104,
-  "avg_sentiment": -0.626,
+  "generated_at": "2026-11-03T20:07:35.485801+00:00",
+  "total_news": 105,
+  "avg_sentiment": -0.667,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 11,
-  "bearish_count": 48,
+  "bearish_count": 49,
   "neutral_count": 45,
   "fake_count": 0,
-  "cross_confirmed": 24,
+  "cross_confirmed": 20,
   "by_source": {
     "Cointelegraph": {
       "total": 26,
       "bull": 2,
-      "bear": 11
+      "bear": 12
     },
     "Decrypt": {
-      "total": 20,
+      "total": 21,
       "bull": 2,
-      "bear": 11
+      "bear": 10
     },
     "Bitcoin.com": {
-      "total": 7,
+      "total": 8,
       "bull": 0,
       "bear": 5
     },
     "CryptoSlate": {
       "total": 9,
       "bull": 0,
-      "bear": 4
+      "bear": 5
     },
     "CryptoPotato": {
-      "total": 28,
+      "total": 27,
       "bull": 7,
       "bear": 11
     },
@@ -51,28 +51,11 @@
       "sentiment": 1.0,
       "bull_weight": 1.0,
       "bear_weight": 0.0,
-      "freshness": 1.0,
+      "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-03T19:09:14.025156+00:00",
-      "effective_weight": 1.3,
+      "collected_at": "2026-11-03T20:07:33.302813+00:00",
+      "effective_weight": 1.04,
       "title_original": "Moscow Exchange to launch Bitcoin, Ether and USDT trading in December",
-      "cross_check": 1
-    },
-    {
-      "title": "Ethereum Privacy Network Aztec Rolls Out Major Security and Speed Upgrade",
-      "url": "https://decrypt.co/382387/ethereum-privacy-network-aztec-security-speed-upgrade",
-      "source": "Decrypt",
-      "source_weight": 1.1,
-      "lang": "en",
-      "pub_date": "2026-11-03T14:01:02+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-03T19:09:14.141854+00:00",
-      "effective_weight": 1.1,
-      "title_original": "Ethereum Privacy Network Aztec Rolls Out Major Security and Speed Upgrade",
       "cross_check": 1
     },
     {
@@ -87,9 +70,26 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-03T19:09:14.025356+00:00",
+      "collected_at": "2026-11-03T20:07:33.303012+00:00",
       "effective_weight": 1.04,
       "title_original": "ARK buys $17M in Coinbase, Circle shares while trimming Bullish",
+      "cross_check": 1
+    },
+    {
+      "title": "Ethereum Privacy Network Aztec Rolls Out Major Security and Speed Upgrade",
+      "url": "https://decrypt.co/382387/ethereum-privacy-network-aztec-security-speed-upgrade",
+      "source": "Decrypt",
+      "source_weight": 1.1,
+      "lang": "en",
+      "pub_date": "2026-11-03T14:01:02+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-03T20:07:33.425846+00:00",
+      "effective_weight": 0.88,
+      "title_original": "Ethereum Privacy Network Aztec Rolls Out Major Security and Speed Upgrade",
       "cross_check": 1
     },
     {
@@ -104,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-03T19:09:14.897817+00:00",
+      "collected_at": "2026-11-03T20:07:34.139448+00:00",
       "effective_weight": 0.8,
       "title_original": "US Midterms Are Here: History Points to a Stock Rally but Trouble for Bitcoin",
       "cross_check": 1
@@ -121,7 +121,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-03T19:09:14.897958+00:00",
+      "collected_at": "2026-11-03T20:07:34.139588+00:00",
       "effective_weight": 0.8,
       "title_original": "Stolen Binance Funds Drive DeFi Protocol Revenue Gains: Investigator",
       "cross_check": 1
@@ -129,21 +129,38 @@
   ],
   "top_bearish": [
     {
-      "title": "Brazil's Biggest Bitcoin Exchange Says It Will Refund Users After a $40 Million Hack",
-      "url": "https://decrypt.co/382459/brazil-mercado-bitcoin-will-refund-users-40-million-hack",
-      "source": "Decrypt",
-      "source_weight": 1.1,
+      "title": "US midterms: Prediction markets favor Democrats in key crypto races",
+      "url": "https://cointelegraph.com/news/us-midterm-prediction-markets?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
       "lang": "en",
-      "pub_date": "2026-11-03T18:16:03+00:00",
+      "pub_date": "2026-11-03T19:38:19+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 1.5,
+      "bear_weight": 0.8,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-03T19:09:14.141718+00:00",
-      "effective_weight": 1.65,
-      "title_original": "Brazil's Biggest Bitcoin Exchange Says It Will Refund Users After a $40 Million Hack",
-      "cross_check": 7
+      "collected_at": "2026-11-03T20:07:33.302554+00:00",
+      "effective_weight": 1.95,
+      "title_original": "US midterms: Prediction markets favor Democrats in key crypto races",
+      "cross_check": 1
+    },
+    {
+      "title": "Binance says thinly traded tokens are delaying full replacement of stolen assets",
+      "url": "https://cryptoslate.com/binance-says-thinly-traded-tokens-are-delaying-full-replacement-of-stolen-assets/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-03T19:10:35+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.2,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-03T20:07:33.891805+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Binance says thinly traded tokens are delaying full replacement of stolen assets",
+      "cross_check": 1
     },
     {
       "title": "Binance traces $6.3B hack to fake job interviews, compromised AI tool",
@@ -157,7 +174,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-03T19:09:14.024988+00:00",
+      "collected_at": "2026-11-03T20:07:33.302654+00:00",
       "effective_weight": 1.3,
       "title_original": "Binance traces $6.3B hack to fake job interviews, compromised AI tool",
       "cross_check": 2
@@ -174,7 +191,7 @@
       "bear_weight": 1.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-03T19:09:14.025042+00:00",
+      "collected_at": "2026-11-03T20:07:33.302702+00:00",
       "effective_weight": 1.3,
       "title_original": "Bitcoin price defends $76K lows as analysts see stocks pricing in ‘political gridlock’",
       "cross_check": 1
@@ -191,26 +208,9 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-03T19:09:16.122209+00:00",
+      "collected_at": "2026-11-03T20:07:35.440836+00:00",
       "effective_weight": 1.2,
       "title_original": "Взлом Binance на $6,34 млрд начался с фальшивого собеседования",
-      "cross_check": 1
-    },
-    {
-      "title": "Liquid Network восстановила полное обеспечение L-BTC после взлома на $320 млн",
-      "url": "https://forklog.com/news/liquid-network-vosstanovila-polnoe-obespechenie-l-btc-posle-vzloma-na-320-mln",
-      "source": "ForkLog",
-      "source_weight": 1.2,
-      "lang": "ru",
-      "pub_date": "2026-11-03T13:45:30+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-03T19:09:16.122253+00:00",
-      "effective_weight": 1.2,
-      "title_original": "Liquid Network восстановила полное обеспечение L-BTC после взлома на $320 млн",
       "cross_check": 1
     }
   ]
