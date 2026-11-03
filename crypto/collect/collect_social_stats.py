@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - SOCIAL STATS COLLECTOR (v1.0.5) - WITH ARCHIVE
+# ARGUS - SOCIAL STATS COLLECTOR (v1.0.6) - WITH ARCHIVE & COMMENTS
 # Path: crypto/collect/collect_social_stats.py
 # ============================================================
 
@@ -56,16 +56,14 @@ def detect_post_type(text):
     return "other"
 
 def archive_old_data(main_file, archive_file):
-    """Если в истории больше 30 дней, старый день уходит в архив."""
+    """Если в истории больше 30 дней, старый день сжимается в месячную сводку."""
     data = load_json(main_file, {"platform": main_file.stem, "history": []})
     
     if len(data["history"]) > 30:
-        oldest = data["history"].pop(0) # Забираем самый старый день
-        month_key = oldest["date"][:7] # "YYYY-MM"
+        oldest = data["history"].pop(0)
+        month_key = oldest["date"][:7]
         
         archive = load_json(archive_file, {"platform": archive_file.stem, "archive": []})
-        
-        # Ищем, есть ли уже запись за этот месяц
         month_record = next((m for m in archive["archive"] if m["month"] == month_key), None)
         
         if not month_record:
@@ -79,7 +77,6 @@ def archive_old_data(main_file, archive_file):
             }
             archive["archive"].append(month_record)
         
-        # Обновляем статистику месяца
         month_record["subscribers_end"] = oldest["subscribers"]
         month_record["total_posts"] += len(oldest["posts"])
         month_record["total_views"] += sum(p.get("views", 0) for p in oldest["posts"])
@@ -87,7 +84,7 @@ def archive_old_data(main_file, archive_file):
         
         save_json(archive_file, archive)
         save_json(main_file, data)
-        log.info(f"Archived {oldest['date']} into {month_key}. History size now: {len(data['history'])}")
+        log.info(f"Archived {oldest['date']} into {month_key}. History size: {len(data['history'])}")
 
 def get_vk_stats():
     log.info("Collecting VK stats...")
@@ -163,7 +160,8 @@ async def get_tg_stats():
                         "time": dt.strftime("%H:%M"),
                         "views": msg.views if msg.views else 0,
                         "forwards": msg.forwards if msg.forwards else 0,
-                        "likes": sum(r.count for r in msg.reactions.results) if msg.reactions else 0
+                        "likes": sum(r.count for r in msg.reactions.results) if msg.reactions else 0,
+                        "comments": msg.replies.replies if msg.replies else 0
                     })
     except Exception as e:
         log.error(f"Telethon error: {e}")
