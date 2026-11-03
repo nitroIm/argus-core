@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - GLOBAL MARKETS COLLECTOR (v1.1.0)
+# ARGUS - GLOBAL MARKETS COLLECTOR (v1.2.0)
 # Path: crypto/collect/global_market.py
 # ============================================================
 
@@ -16,6 +16,11 @@ log = logging.getLogger("global_market")
 
 DB_URL = (os.getenv("AIVEN_DB_URL") or "").strip()
 ALERT_PATH = "crypto/data/temp/global_market.txt"
+
+# Буфер после открытия рынка (в минутах).
+# Если рынок открылся меньше OPEN_BUFFER_MIN минут назад, скрипт его пропускает,
+# чтобы дать Yahoo время сформировать первую свечу. Заберём на следующем запуске cron.
+OPEN_BUFFER_MIN = 30
 
 # Справочник названий и стран
 TICKER_META = {
@@ -51,7 +56,20 @@ def get_conn():
     return psycopg.connect(DB_URL, connect_timeout=30, application_name="argus-global-market")
 
 
+def time_to_minutes(t):
+    """'HH:MM' или datetime.time -> минуты от начала суток."""
+    if isinstance(t, str):
+        h, m = t.split(":")
+        return int(h) * 60 + int(m)
+    # datetime.time
+    return t.hour * 60 + t.minute
+
+
 def is_market_open(market_row, now_utc):
+    """
+    Возвращает (is_open: bool, reason: str|None).
+    reason = None (открыт), "weekend", "closed", "buffer", "lunch".
+    """
     ticker, region, tz, open_utc, close_utc, lunch_start, lunch_end, trading_days = market_row
 
     current_day = now_utc.isoweekday()
@@ -63,23 +81,43 @@ def is_market_open(market_row, now_utc):
         allowed_days = [1, 2, 3, 4, 5]
 
     if current_day not in allowed_days:
-        return False
+        return False, "weekend"
 
     current_time = now_utc.strftime("%H:%M")
 
+    # Грубая проверка попадания в торговое окно (как было раньше)
     if open_utc > close_utc:
         is_time_open = current_time >= open_utc or current_time < close_utc
     else:
         is_time_open = open_utc <= current_time < close_utc
 
     if not is_time_open:
-        return False
+        return False, "closed"
+
+    # Буфер после открытия: рынок открылся только что -> пропускаем
+    cur_min = time_to_minutes(current_time)
+    open_min = time_to_minutes(open_utc)
+    close_min = time_to_minutes(close_utc)
+
+    if open_min <= close_min:
+        # обычный внутридневной рынок
+        if open_min <= cur_min < open_min + OPEN_BUFFER_MIN:
+            return False, "buffer"
+    else:
+        # рынок через полночь (open > close)
+        if cur_min >= open_min and cur_min < open_min + OPEN_BUFFER_MIN:
+            return False, "buffer"
+        # буфер, переходящий через 00:00
+        if open_min + OPEN_BUFFER_MIN > 1440:
+            end_buf = open_min + OPEN_BUFFER_MIN - 1440
+            if cur_min < end_buf:
+                return False, "buffer"
 
     if lunch_start and lunch_end:
         if lunch_start <= current_time < lunch_end:
-            return False
+            return False, "lunch"
 
-    return True
+    return True, None
 
 
 def classify_error(err_text):
@@ -134,6 +172,7 @@ def main():
     log.info("STARTING GLOBAL MARKET COLLECTOR")
     now_utc = datetime.now(timezone.utc)
     log.info(f"Current UTC time: {now_utc.strftime('%Y-%m-%d %H:%M:%S')}")
+    log.info(f"Open buffer: {OPEN_BUFFER_MIN} min (skip markets that opened less than this ago)")
 
     try:
         conn = get_conn()
@@ -166,8 +205,17 @@ def main():
 
         for m in markets:
             ticker = m[0]
-            if not is_market_open(m, now_utc):
-                log.info(f"  ⏸️ {ticker}: Market closed. Skipping.")
+            is_open, reason = is_market_open(m, now_utc)
+
+            if not is_open:
+                if reason == "buffer":
+                    log.info(f"  ⏸️ {ticker}: Market just opened ({OPEN_BUFFER_MIN}min buffer). Skipping.")
+                elif reason == "weekend":
+                    log.info(f"  ⏸️ {ticker}: Weekend. Skipping.")
+                elif reason == "lunch":
+                    log.info(f"  ⏸️ {ticker}: Lunch break. Skipping.")
+                else:
+                    log.info(f"  ⏸️ {ticker}: Market closed. Skipping.")
                 continue
 
             opened += 1
