@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - SOCIAL STATS COLLECTOR (v1.0.6) - WITH ARCHIVE & COMMENTS
+# ARGUS - SOCIAL STATS COLLECTOR (v1.0.7) - WITH GROUP NAMES
 # Path: crypto/collect/collect_social_stats.py
 # ============================================================
 
@@ -56,32 +56,19 @@ def detect_post_type(text):
     return "other"
 
 def archive_old_data(main_file, archive_file):
-    """Если в истории больше 30 дней, старый день сжимается в месячную сводку."""
     data = load_json(main_file, {"platform": main_file.stem, "history": []})
-    
     if len(data["history"]) > 30:
         oldest = data["history"].pop(0)
         month_key = oldest["date"][:7]
-        
         archive = load_json(archive_file, {"platform": archive_file.stem, "archive": []})
         month_record = next((m for m in archive["archive"] if m["month"] == month_key), None)
-        
         if not month_record:
-            month_record = {
-                "month": month_key,
-                "subscribers_start": oldest["subscribers"],
-                "subscribers_end": oldest["subscribers"],
-                "total_posts": 0,
-                "total_views": 0,
-                "days_collected": 0
-            }
+            month_record = {"month": month_key, "subscribers_start": oldest["subscribers"], "subscribers_end": oldest["subscribers"], "total_posts": 0, "total_views": 0, "days_collected": 0}
             archive["archive"].append(month_record)
-        
         month_record["subscribers_end"] = oldest["subscribers"]
         month_record["total_posts"] += len(oldest["posts"])
         month_record["total_views"] += sum(p.get("views", 0) for p in oldest["posts"])
         month_record["days_collected"] += 1
-        
         save_json(archive_file, archive)
         save_json(main_file, data)
         log.info(f"Archived {oldest['date']} into {month_key}. History size: {len(data['history'])}")
@@ -93,6 +80,7 @@ def get_vk_stats():
     gid = VK_GROUP_ID.replace("-", "")
     subs = 0
     posts = []
+    group_name = "VK Group"
 
     try:
         url = f"https://api.vk.com/method/groups.getById?group_id={gid}&fields=members_count&access_token={VK_TOKEN}&v=5.199"
@@ -102,6 +90,7 @@ def get_vk_stats():
             groups = resp.get("groups", []) if isinstance(resp, dict) else resp
             if groups and isinstance(groups, list):
                 subs = groups[0].get("members_count", 0)
+                group_name = groups[0].get("name", f"VK {gid}")
     except Exception as e:
         log.error(f"VK Error (subs): {e}")
 
@@ -124,7 +113,7 @@ def get_vk_stats():
     except Exception as e:
         log.error(f"VK Error (posts): {e}")
 
-    return {"date": today_str, "subscribers": subs, "posts": posts}
+    return {"date": today_str, "name": group_name, "subscribers": subs, "posts": posts}
 
 async def get_tg_stats():
     log.info("Collecting TG stats...")
@@ -132,6 +121,7 @@ async def get_tg_stats():
 
     posts = []
     subs = 0
+    channel_name = "TG Channel"
     
     try:
         async with TelegramClient(StringSession(TG_SESSION), TG_API_ID, TG_API_HASH) as client:
@@ -146,6 +136,8 @@ async def get_tg_stats():
                 fallback_name = TG_CHANNEL_ID if not TG_CHANNEL_ID.lstrip('-').isdigit() else "@Crypto_and_m0ney"
                 if not fallback_name.startswith("@"): fallback_name = "@" + fallback_name
                 channel = await client.get_entity(fallback_name)
+            
+            channel_name = getattr(channel, 'title', f"TG {TG_CHANNEL_ID}")
             
             full_channel = await client(GetFullChannelRequest(channel=channel))
             subs = full_channel.full_chat.participants_count
@@ -167,7 +159,7 @@ async def get_tg_stats():
         log.error(f"Telethon error: {e}")
         return None
 
-    return {"date": today_str, "subscribers": subs, "posts": posts}
+    return {"date": today_str, "name": channel_name, "subscribers": subs, "posts": posts}
 
 def main():
     log.info(f"STARTING COLLECTOR | Date: {today_str}")
