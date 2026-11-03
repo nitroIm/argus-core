@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - SOCIAL REPORT (v1.0.0)
+# ARGUS - SOCIAL REPORT (v1.1.0)
 # Path: crypto/report/social_report.py
 # ============================================================
 
@@ -33,11 +33,13 @@ def load_json(path):
     except Exception: return None
 
 def analyze_platform(data, name):
-    if not data or not data.get("history"): return f"⚪️ <b>{name}</b>: Нет данных\n"
+    if not data or not data.get("history"): return f"🔹 <b>{name}</b>: Нет данных\n"
     
-    # Берем сегодняшний день (или последний доступный)
     history = data["history"]
-    today_data = next((h for h in history if h["date"] == today_str), history[-1])
+    today_data = next((h for h in history if h["date"] == today_str), history[-1] if history else None)
+    
+    if not today_data: return f"🔹 <b>{name}</b>: Пустая история\n"
+    
     prev_data = next((h for h in reversed(history) if h["date"] < today_data["date"]), None)
     
     subs = today_data.get("subscribers", 0)
@@ -51,7 +53,7 @@ def analyze_platform(data, name):
     if posts:
         total_views = sum(p.get("views", 0) for p in posts)
         avg_views = int(total_views / len(posts))
-        lines.append(f"  👁 Средний охват: {avg_views} просмотров ({len(posts)} постов)")
+        lines.append(f"  👁 Средний охват: {avg_views} просм. ({len(posts)} постов)")
         
         best = max(posts, key=lambda x: x.get("views", 0))
         worst = min(posts, key=lambda x: x.get("views", 0))
