@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - SOCIAL REPORT (v1.1.0)
+# ARGUS - SOCIAL REPORT (v1.2.0) - WITH ER, REACH & ANTI-DUPLICATE
 # Path: crypto/report/social_report.py
 # ============================================================
 
@@ -22,6 +22,7 @@ today_str = now_local.strftime("%Y-%m-%d")
 DATA_DIR = Path("crypto/data/social_stats")
 VK_FILE = DATA_DIR / "vk.json"
 TG_FILE = DATA_DIR / "tg.json"
+MARKER_FILE = DATA_DIR / "last_report.txt"
 
 BOT_TOKEN = (os.getenv("TELEGRAM_BOT_TOKEN") or "").strip()
 CHAT_ID = (os.getenv("TELEGRAM_CHAT_ID") or "").strip()
@@ -32,7 +33,7 @@ def load_json(path):
         with open(path, "r", encoding="utf-8") as f: return json.load(f)
     except Exception: return None
 
-def analyze_platform(data, name):
+def analyze_platform(data, name, is_tg=False):
     if not data or not data.get("history"): return f"🔹 <b>{name}</b>: Нет данных\n"
     
     history = data["history"]
@@ -53,39 +54,77 @@ def analyze_platform(data, name):
     if posts:
         total_views = sum(p.get("views", 0) for p in posts)
         avg_views = int(total_views / len(posts))
-        lines.append(f"  👁 Средний охват: {avg_views} просм. ({len(posts)} постов)")
+        reach_pct = (avg_views / subs * 100) if subs > 0 else 0
+        
+        total_engagements = sum(
+            p.get("likes", 0) + p.get("comments", 0) + (p.get("forwards", 0) if is_tg else p.get("reposts", 0)) 
+            for p in posts
+        )
+        er_pct = (total_engagements / total_views * 100) if total_views > 0 else 0
+        
+        lines.append(f"  👁 Средний охват: {avg_views} просм. ({reach_pct:.1f}% от подписчиков)")
+        lines.append(f"  ❤️ ER (вовлеченность): {er_pct:.2f}%")
         
         best = max(posts, key=lambda x: x.get("views", 0))
         worst = min(posts, key=lambda x: x.get("views", 0))
-        
         lines.append(f"  🏆 Лучший: {best['type'].capitalize()} ({best['time']}) — {best['views']} просм.")
         lines.append(f"  📉 Слабый: {worst['type'].capitalize()} ({worst['time']}) — {worst['views']} просм.")
+        
+        # Разбивка по типам
+        types_stats = {}
+        for p in posts:
+            t = p.get("type", "other").capitalize()
+            if t not in types_stats: types_stats[t] = {"views": 0, "count": 0}
+            types_stats[t]["views"] += p.get("views", 0)
+            types_stats[t]["count"] += 1
+        
+        lines.append("  📊 По типам контента:")
+        for t, stat in types_stats.items():
+            avg_t_views = int(stat["views"] / stat["count"])
+            lines.append(f"     - {t}: {avg_t_views} просм. ({stat['count']} шт.)")
+            
     else:
         lines.append("  📝 За сегодня постов не было.")
         
     return "\n".join(lines) + "\n"
 
 def send_report(text):
-    if not BOT_TOKEN or not CHAT_ID: return
+    if not BOT_TOKEN or not CHAT_ID: return False
     try:
         url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
-        requests.post(url, json={"chat_id": CHAT_ID, "text": text, "parse_mode": "HTML", "disable_web_page_preview": True}, timeout=20)
-        log.info("Report sent.")
+        r = requests.post(url, json={"chat_id": CHAT_ID, "text": text, "parse_mode": "HTML", "disable_web_page_preview": True}, timeout=20)
+        if r.status_code == 200:
+            log.info("Report sent.")
+            return True
     except Exception as e:
         log.error(f"Failed to send report: {e}")
+    return False
 
 def main():
     log.info(f"STARTING REPORTER | Date: {today_str}")
     
+    # Защита от дублей
+    if MARKER_FILE.exists():
+        try:
+            with open(MARKER_FILE, "r") as f:
+                if f.read().strip() == today_str:
+                    log.info("Report already sent today. Skipping.")
+                    return
+        except Exception: pass
+        
     vk_data = load_json(VK_FILE)
     tg_data = load_json(TG_FILE)
     
     lines = [f"📊 <b>Статистика соцсетей за {now_local.strftime('%d.%m.%Y')}</b>\n"]
-    lines.append(analyze_platform(vk_data, "ВКонтакте"))
-    lines.append(analyze_platform(tg_data, "Telegram"))
+    lines.append(analyze_platform(vk_data, "ВКонтакте", is_tg=False))
+    lines.append(analyze_platform(tg_data, "Telegram", is_tg=True))
     
     text = "".join(lines)
-    send_report(text)
+    
+    if send_report(text):
+        with open(MARKER_FILE, "w") as f:
+            f.write(today_str)
+        log.info("Marker saved.")
 
 if __name__ == "__main__":
     main()
