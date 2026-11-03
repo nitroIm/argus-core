@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - TEST FIAT RATES COLLECTOR
+# ARGUS - TEST FIAT RATES COLLECTOR (v1.1.0) - RAPIRA
 # Path: crypto/collect/test_fiat_rates.py
 # ============================================================
 
@@ -36,27 +36,33 @@ def get_cbr_usd():
         log.error(f"CBR Error: {e}")
         return None
 
-def get_usdt_rub():
-    """Получает курс USDT/RUB от CoinGecko."""
-    log.info("Fetching USDT/RUB from CoinGecko...")
+def get_rapira_usdt_rub():
+    """Получает курс USDT/RUB с биржи Rapira."""
+    log.info("Fetching USDT/RUB from Rapira...")
     try:
-        url = "https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=rub"
+        url = "https://api.rapira.net/open/market/rates"
         r = requests.get(url, timeout=15)
         r.raise_for_status()
         data = r.json()
         
-        rate = data.get("tether", {}).get("rub")
-        if rate:
-            return {"rate": rate}
+        # Ищем в ответе пару USDT/RUB
+        for item in data.get("data", []):
+            if item.get("symbol") == "USDT/RUB":
+                price = item.get("close") or item.get("askPrice") or item.get("bidPrice")
+                if price:
+                    return {"rate": float(price)}
+        
+        log.warning("USDT/RUB pair not found in Rapira response")
+        return None
     except Exception as e:
-        log.error(f"CoinGecko Error: {e}")
+        log.error(f"Rapira Error: {e}")
         return None
 
 def main():
-    log.info("STARTING FIAT RATES TEST")
+    log.info("STARTING FIAT RATES TEST (RAPIRA)")
     
     usd_data = get_cbr_usd()
-    usdt_data = get_usdt_rub()
+    usdt_data = get_rapira_usdt_rub()
     
     print("\n" + "="*40)
     print("РЕЗУЛЬТАТЫ ТЕСТА:")
@@ -69,7 +75,7 @@ def main():
         print("USD/RUB: ❌ Ошибка получения")
         
     if usdt_data:
-        print(f"USDT/RUB (CoinGecko): {usdt_data['rate']:.2f} руб.")
+        print(f"USDT/RUB (Rapira): {usdt_data['rate']:.2f} руб.")
     else:
         print("USDT/RUB: ❌ Ошибка получения")
         
