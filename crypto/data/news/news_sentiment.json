@@ -1,31 +1,31 @@
 {
-  "generated_at": "2026-11-04T18:05:49.017438+00:00",
-  "total_news": 106,
-  "avg_sentiment": -0.453,
+  "generated_at": "2026-11-04T19:05:52.568947+00:00",
+  "total_news": 103,
+  "avg_sentiment": -0.526,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 15,
+  "bullish_count": 13,
   "bearish_count": 40,
-  "neutral_count": 51,
+  "neutral_count": 50,
   "fake_count": 0,
   "cross_confirmed": 22,
   "by_source": {
     "Cointelegraph": {
-      "total": 24,
-      "bull": 4,
-      "bear": 9
+      "total": 23,
+      "bull": 3,
+      "bear": 10
     },
     "Decrypt": {
-      "total": 21,
-      "bull": 1,
-      "bear": 6
-    },
-    "Bitcoin.com": {
-      "total": 9,
+      "total": 20,
       "bull": 1,
       "bear": 5
     },
-    "CryptoSlate": {
+    "Bitcoin.com": {
       "total": 9,
+      "bull": 0,
+      "bear": 5
+    },
+    "CryptoSlate": {
+      "total": 8,
       "bull": 1,
       "bear": 6
     },
@@ -58,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-04T18:05:46.846240+00:00",
+      "collected_at": "2026-11-04T19:05:49.845032+00:00",
       "effective_weight": 1.3,
       "title_original": "Bitcoin hits $80.5K as US stocks rally on midterm election results",
       "cross_check": 1
@@ -73,28 +73,11 @@
       "sentiment": 1.0,
       "bull_weight": 1.0,
       "bear_weight": 0.0,
-      "freshness": 1.0,
+      "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-04T18:05:46.846417+00:00",
-      "effective_weight": 1.3,
+      "collected_at": "2026-11-04T19:05:49.845192+00:00",
+      "effective_weight": 1.04,
       "title_original": "Canton’s CC rises 4% as SEC staff view it as ‘digital commodity’",
-      "cross_check": 2
-    },
-    {
-      "title": "Crypto Regulation Outlook Shifts After Democrats Win Congress",
-      "url": "https://bitcoinist.com/crypto-regulation-outlook-shifts-after-democrats-win-congress/",
-      "source": "Bitcoinist",
-      "source_weight": 0.9,
-      "lang": "en",
-      "pub_date": "2026-11-04T17:23:10+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
-      "freshness": 1.5,
-      "fake_score": 0.1,
-      "collected_at": "2026-11-04T18:05:48.076656+00:00",
-      "effective_weight": 1.215,
-      "title_original": "Crypto Regulation Outlook Shifts After Democrats Win Congress",
       "cross_check": 2
     },
     {
@@ -109,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-04T18:05:47.453407+00:00",
+      "collected_at": "2026-11-04T19:05:50.413250+00:00",
       "effective_weight": 1.0,
       "title_original": "Why rising XRP whale counts are a fake bullish signal",
       "cross_check": 1
@@ -126,13 +109,64 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-04T18:05:47.644923+00:00",
+      "collected_at": "2026-11-04T19:05:50.650155+00:00",
       "effective_weight": 1.0,
       "title_original": "NEAR Mobile Hits #1 in Finance App Rankings and Charts Across 38 Countries as NEAR Ecosystem Gains Momentum",
       "cross_check": 1
+    },
+    {
+      "title": "Crypto Regulation Outlook Shifts After Democrats Win Congress",
+      "url": "https://bitcoinist.com/crypto-regulation-outlook-shifts-after-democrats-win-congress/",
+      "source": "Bitcoinist",
+      "source_weight": 0.9,
+      "lang": "en",
+      "pub_date": "2026-11-04T17:23:10+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 1.0,
+      "fake_score": 0.1,
+      "collected_at": "2026-11-04T19:05:51.462637+00:00",
+      "effective_weight": 0.81,
+      "title_original": "Crypto Regulation Outlook Shifts After Democrats Win Congress",
+      "cross_check": 2
     }
   ],
   "top_bearish": [
+    {
+      "title": "Bitcoin rockets above $80,000 for first time since Binance hack despite Democrats sweep, but a historical crash looms",
+      "url": "https://cryptoslate.com/bitcoin-rockets-above-80000-for-first-time-since-binance-hack-despite-democrats-sweep-but-a-historical-crash-looms/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-04T18:20:58+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 3.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-04T19:05:50.413017+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Bitcoin rockets above $80,000 for first time since Binance hack despite Democrats sweep, but a historical crash looms",
+      "cross_check": 6
+    },
+    {
+      "title": "Circle’s ARC token sale lifts earnings as lower yields weigh on USDC income",
+      "url": "https://cointelegraph.com/news/circles-arc-token-sale-earnings-yields-usdc-income?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-11-04T18:02:42+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.0,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-04T19:05:49.844967+00:00",
+      "effective_weight": 1.3,
+      "title_original": "Circle’s ARC token sale lifts earnings as lower yields weigh on USDC income",
+      "cross_check": 1
+    },
     {
       "title": "Связанные со взломом Binance средства снова пошли через THORChain",
       "url": "https://forklog.com/svyazannye-so-vzlomom-binance-sredstva-snova-poshli-cherez-thorchain",
@@ -145,7 +179,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-04T18:05:48.952588+00:00",
+      "collected_at": "2026-11-04T19:05:52.506854+00:00",
       "effective_weight": 1.2,
       "title_original": "Связанные со взломом Binance средства снова пошли через THORChain",
       "cross_check": 1
@@ -162,10 +196,10 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-04T18:05:46.846481+00:00",
+      "collected_at": "2026-11-04T19:05:49.845255+00:00",
       "effective_weight": 1.04,
       "title_original": "Binance hack may be ‘temporary setback’ for crypto, Grayscale’s Pandl says",
-      "cross_check": 6
+      "cross_check": 4
     },
     {
       "title": "Binance hackers move 81% of stolen Solana, route funds via THORChain",
@@ -179,44 +213,10 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-04T18:05:46.846589+00:00",
+      "collected_at": "2026-11-04T19:05:49.845370+00:00",
       "effective_weight": 1.04,
       "title_original": "Binance hackers move 81% of stolen Solana, route funds via THORChain",
       "cross_check": 2
-    },
-    {
-      "title": "Bitcoin bounces from 7-week low under $76K as Democrats sweep Congress",
-      "url": "https://cointelegraph.com/markets/bitcoin-bounces-from-7-week-low-under-76k-as-democrats-eye-congress-sweep?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-11-04T07:25:47+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-04T18:05:46.846673+00:00",
-      "effective_weight": 1.04,
-      "title_original": "Bitcoin bounces from 7-week low under $76K as Democrats sweep Congress",
-      "cross_check": 2
-    },
-    {
-      "title": "ZachXBT identifies French bank as alleged victim of $133M crypto theft",
-      "url": "https://cointelegraph.com/news/zachxbt-french-bank-credit-mutuel-arkea-133m-crypto-theft?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-11-04T03:35:30+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-04T18:05:46.846771+00:00",
-      "effective_weight": 1.04,
-      "title_original": "ZachXBT identifies French bank as alleged victim of $133M crypto theft",
-      "cross_check": 4
     }
   ]
 }
