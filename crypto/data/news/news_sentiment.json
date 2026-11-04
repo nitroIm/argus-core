@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-03T23:05:43.073335+00:00",
-  "total_news": 111,
-  "avg_sentiment": -0.623,
+  "generated_at": "2026-11-04T00:05:56.561490+00:00",
+  "total_news": 110,
+  "avg_sentiment": -0.576,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 12,
-  "bearish_count": 54,
-  "neutral_count": 45,
+  "bullish_count": 13,
+  "bearish_count": 53,
+  "neutral_count": 44,
   "fake_count": 0,
   "cross_confirmed": 28,
   "by_source": {
@@ -15,14 +15,14 @@
       "bear": 12
     },
     "Decrypt": {
-      "total": 19,
+      "total": 18,
       "bull": 1,
       "bear": 9
     },
     "Bitcoin.com": {
       "total": 8,
-      "bull": 1,
-      "bear": 5
+      "bull": 2,
+      "bear": 4
     },
     "CryptoSlate": {
       "total": 9,
@@ -47,6 +47,23 @@
   },
   "top_bullish": [
     {
+      "title": "Tron Founder Justin Sun Seeks Sanctions Against Trump-Backed World Liberty Financial",
+      "url": "https://news.bitcoin.com/regulation-and-legal/tron-founder-justin-sun-sanctions-trump-backed-world-liberty-financial/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-03T23:15:39+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-04T00:05:54.753142+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Tron Founder Justin Sun Seeks Sanctions Against Trump-Backed World Liberty Financial",
+      "cross_check": 1
+    },
+    {
       "title": "Moscow Exchange to launch Bitcoin, Ether and USDT trading in December",
       "url": "https://cointelegraph.com/news/moscow-exchange-bitcoin-ether-usdt-trading-december?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
       "source": "Cointelegraph",
@@ -58,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-03T23:05:41.547865+00:00",
+      "collected_at": "2026-11-04T00:05:53.541336+00:00",
       "effective_weight": 1.04,
       "title_original": "Moscow Exchange to launch Bitcoin, Ether and USDT trading in December",
       "cross_check": 1
@@ -75,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-03T23:05:41.548222+00:00",
+      "collected_at": "2026-11-04T00:05:53.541632+00:00",
       "effective_weight": 1.04,
       "title_original": "ARK buys $17M in Coinbase, Circle shares while trimming Bullish",
       "cross_check": 1
@@ -92,7 +109,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-03T23:05:42.068699+00:00",
+      "collected_at": "2026-11-04T00:05:55.201638+00:00",
       "effective_weight": 1.0,
       "title_original": "NEAR Governance Approves Major Supply Cut – But Token Slides 7%",
       "cross_check": 1
@@ -109,47 +126,13 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-03T23:05:41.614960+00:00",
+      "collected_at": "2026-11-04T00:05:53.708490+00:00",
       "effective_weight": 0.88,
       "title_original": "Ethereum Privacy Network Aztec Rolls Out Major Security and Speed Upgrade",
-      "cross_check": 1
-    },
-    {
-      "title": "ETH/BTC Ratio Nears 0.03 as Ethereum Gains on Bitcoin",
-      "url": "https://bitcoinist.com/eth-btc-ratio-nears-03-ethereum-gains/",
-      "source": "Bitcoinist",
-      "source_weight": 0.9,
-      "lang": "en",
-      "pub_date": "2026-11-03T19:45:16+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
-      "freshness": 1.0,
-      "fake_score": 0.1,
-      "collected_at": "2026-11-03T23:05:42.217666+00:00",
-      "effective_weight": 0.81,
-      "title_original": "ETH/BTC Ratio Nears 0.03 as Ethereum Gains on Bitcoin",
       "cross_check": 1
     }
   ],
   "top_bearish": [
-    {
-      "title": "Binance relied on AI to fight fraud before hackers exploited internal tool in $6 billion theft",
-      "url": "https://cryptoslate.com/binance-relied-on-ai-to-fight-fraud-before-hackers-exploited-internal-tool-in-6-billion-theft/",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-03T22:30:31+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 4.5,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-03T23:05:41.938816+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Binance relied on AI to fight fraud before hackers exploited internal tool in $6 billion theft",
-      "cross_check": 1
-    },
     {
       "title": "US midterms: Prediction markets favor Democrats in key crypto races",
       "url": "https://cointelegraph.com/news/us-midterm-prediction-markets?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -162,7 +145,7 @@
       "bear_weight": 0.8,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-03T23:05:41.547477+00:00",
+      "collected_at": "2026-11-04T00:05:53.540979+00:00",
       "effective_weight": 1.3,
       "title_original": "US midterms: Prediction markets favor Democrats in key crypto races",
       "cross_check": 1
@@ -179,27 +162,10 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-03T23:05:41.614734+00:00",
+      "collected_at": "2026-11-04T00:05:53.708289+00:00",
       "effective_weight": 1.1,
       "title_original": "Brazil's Biggest Bitcoin Exchange Says It Will Refund Users After a $40 Million Hack",
       "cross_check": 6
-    },
-    {
-      "title": "Five Ways North Korea Breaks Into Crypto Firms—and How Binance Was Hacked",
-      "url": "https://decrypt.co/382420/five-ways-north-korea-breaks-into-crypto-firms-and-how-binance-was-hacked",
-      "source": "Decrypt",
-      "source_weight": 1.1,
-      "lang": "en",
-      "pub_date": "2026-11-03T17:30:54+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-03T23:05:41.614892+00:00",
-      "effective_weight": 1.1,
-      "title_original": "Five Ways North Korea Breaks Into Crypto Firms—and How Binance Was Hacked",
-      "cross_check": 8
     },
     {
       "title": "Binance traces $6.3B hack to fake job interviews, compromised AI tool",
@@ -213,10 +179,44 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-03T23:05:41.547627+00:00",
+      "collected_at": "2026-11-04T00:05:53.541115+00:00",
       "effective_weight": 1.04,
       "title_original": "Binance traces $6.3B hack to fake job interviews, compromised AI tool",
       "cross_check": 2
+    },
+    {
+      "title": "Bitcoin price defends $76K lows as analysts see stocks pricing in ‘political gridlock’",
+      "url": "https://cointelegraph.com/markets/bitcoin-price-defends-76k-lows-as-analysis-sees-stocks-pricing-in-political-gridlock?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-11-03T15:44:42+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.0,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-04T00:05:53.541193+00:00",
+      "effective_weight": 1.04,
+      "title_original": "Bitcoin price defends $76K lows as analysts see stocks pricing in ‘political gridlock’",
+      "cross_check": 1
+    },
+    {
+      "title": "France postpones 2027 budget vote, crypto exit-tax proposals scrapped",
+      "url": "https://cointelegraph.com/news/france-postpones-2027-budget-vote-reject-crypto-exit-tax?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-11-03T10:49:26+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-04T00:05:53.541519+00:00",
+      "effective_weight": 1.04,
+      "title_original": "France postpones 2027 budget vote, crypto exit-tax proposals scrapped",
+      "cross_check": 1
     }
   ]
 }
