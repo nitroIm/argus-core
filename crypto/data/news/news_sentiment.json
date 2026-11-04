@@ -1,17 +1,17 @@
 {
-  "generated_at": "2026-11-04T02:05:43.775028+00:00",
-  "total_news": 110,
-  "avg_sentiment": -0.547,
+  "generated_at": "2026-11-04T03:05:39.492503+00:00",
+  "total_news": 111,
+  "avg_sentiment": -0.445,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 14,
-  "bearish_count": 50,
+  "bullish_count": 16,
+  "bearish_count": 49,
   "neutral_count": 46,
   "fake_count": 0,
   "cross_confirmed": 29,
   "by_source": {
     "Cointelegraph": {
-      "total": 25,
-      "bull": 2,
+      "total": 26,
+      "bull": 3,
       "bear": 11
     },
     "Decrypt": {
@@ -21,8 +21,8 @@
     },
     "Bitcoin.com": {
       "total": 9,
-      "bull": 3,
-      "bear": 3
+      "bull": 4,
+      "bear": 2
     },
     "CryptoSlate": {
       "total": 9,
@@ -47,6 +47,40 @@
   },
   "top_bullish": [
     {
+      "title": "US midterms election 2026 live: Crypto-backed Andy Barr wins Kentucky Senate seat",
+      "url": "https://cointelegraph.com/news/us-midterms-2026-live-results-and-what-they-mean-for-crypto?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-11-04T02:20:00+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-04T03:05:37.560178+00:00",
+      "effective_weight": 1.95,
+      "title_original": "US midterms election 2026 live: Crypto-backed Andy Barr wins Kentucky Senate seat",
+      "cross_check": 2
+    },
+    {
+      "title": "XRP Millionaire Wallets Hit 2026 High Despite Price Weakness",
+      "url": "https://news.bitcoin.com/market-updates/xrp-millionaire-wallets-hit-2026-high-despite-price-weakness/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-04T02:30:04+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-04T03:05:37.868765+00:00",
+      "effective_weight": 1.5,
+      "title_original": "XRP Millionaire Wallets Hit 2026 High Despite Price Weakness",
+      "cross_check": 1
+    },
+    {
       "title": "Moscow Exchange to launch Bitcoin, Ether and USDT trading in December",
       "url": "https://cointelegraph.com/news/moscow-exchange-bitcoin-ether-usdt-trading-december?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
       "source": "Cointelegraph",
@@ -58,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-04T02:05:41.749573+00:00",
+      "collected_at": "2026-11-04T03:05:37.560680+00:00",
       "effective_weight": 1.04,
       "title_original": "Moscow Exchange to launch Bitcoin, Ether and USDT trading in December",
       "cross_check": 2
@@ -75,7 +109,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-04T02:05:41.749756+00:00",
+      "collected_at": "2026-11-04T03:05:37.560937+00:00",
       "effective_weight": 1.04,
       "title_original": "ARK buys $17M in Coinbase, Circle shares while trimming Bullish",
       "cross_check": 1
@@ -92,64 +126,13 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-04T02:05:42.042996+00:00",
+      "collected_at": "2026-11-04T03:05:37.868930+00:00",
       "effective_weight": 1.0,
       "title_original": "Moscow Exchange Confirms Dec. 1 Crypto Trading Launch With Bitcoin, Ether, USDT",
       "cross_check": 2
-    },
-    {
-      "title": "Tron Founder Justin Sun Seeks Sanctions Against Trump-Backed World Liberty Financial",
-      "url": "https://news.bitcoin.com/regulation-and-legal/tron-founder-justin-sun-sanctions-trump-backed-world-liberty-financial/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-03T23:15:39+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-04T02:05:42.043035+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Tron Founder Justin Sun Seeks Sanctions Against Trump-Backed World Liberty Financial",
-      "cross_check": 1
-    },
-    {
-      "title": "NEAR Governance Approves Major Supply Cut – But Token Slides 7%",
-      "url": "https://cryptopotato.com/near-governance-approves-major-supply-cut-but-token-slides-7/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-03T20:58:48+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.5,
-      "bear_weight": 0.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-04T02:05:42.355026+00:00",
-      "effective_weight": 1.0,
-      "title_original": "NEAR Governance Approves Major Supply Cut – But Token Slides 7%",
-      "cross_check": 1
     }
   ],
   "top_bearish": [
-    {
-      "title": "Mercado Bitcoin Vows to Cover Customer Losses After Massive Hack",
-      "url": "https://news.bitcoin.com/crypto-news/mercado-bitcoin-vows-to-cover-customer-losses-after-massive-hack/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-04T01:30:35+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 4.5,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-04T02:05:42.042909+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Mercado Bitcoin Vows to Cover Customer Losses After Massive Hack",
-      "cross_check": 6
-    },
     {
       "title": "US midterms: Prediction markets favor Democrats in key crypto races",
       "url": "https://cointelegraph.com/news/us-midterm-prediction-markets?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -162,7 +145,7 @@
       "bear_weight": 0.8,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-04T02:05:41.749357+00:00",
+      "collected_at": "2026-11-04T03:05:37.560400+00:00",
       "effective_weight": 1.04,
       "title_original": "US midterms: Prediction markets favor Democrats in key crypto races",
       "cross_check": 1
@@ -179,7 +162,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-04T02:05:41.749440+00:00",
+      "collected_at": "2026-11-04T03:05:37.560505+00:00",
       "effective_weight": 1.04,
       "title_original": "Binance traces $6.3B hack to fake job interviews, compromised AI tool",
       "cross_check": 1
@@ -196,7 +179,7 @@
       "bear_weight": 1.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-04T02:05:41.749486+00:00",
+      "collected_at": "2026-11-04T03:05:37.560575+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin price defends $76K lows as analysts see stocks pricing in ‘political gridlock’",
       "cross_check": 1
@@ -213,9 +196,26 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-04T02:05:41.749688+00:00",
+      "collected_at": "2026-11-04T03:05:37.560843+00:00",
       "effective_weight": 1.04,
       "title_original": "France postpones 2027 budget vote, crypto exit-tax proposals scrapped",
+      "cross_check": 1
+    },
+    {
+      "title": "Bitcoin price threatens $77.7K support loss with recent buyers underwater",
+      "url": "https://cointelegraph.com/markets/bitcoin-price-support-loss-recent-buyers-underwater?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-11-03T10:04:05+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-04T03:05:37.560892+00:00",
+      "effective_weight": 1.04,
+      "title_original": "Bitcoin price threatens $77.7K support loss with recent buyers underwater",
       "cross_check": 1
     }
   ]
