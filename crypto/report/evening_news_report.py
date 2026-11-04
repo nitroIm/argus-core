@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - EVENING NEWS REPORT v4.4 (TRUE VK BARS FIX)
+# ARGUS - EVENING NEWS REPORT v4.5 (FIAT + VK BULLETPROOF)
 # Path: crypto/report/evening_news_report.py
 # ============================================================
 
@@ -14,6 +14,7 @@ import io
 import pandas as pd
 import psycopg
 import mplfinance as mpf
+from PIL import Image
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -50,6 +51,12 @@ SYMBOL = "BTCUSDT"
 TIMEFRAME = "15m"
 TZ = ZoneInfo("Europe/Kaliningrad")
 
+# Защита от блокировок ВК (маскировка под браузер)
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Accept": "application/json"
+}
+
 def now_local(): return datetime.now(timezone.utc).astimezone(TZ)
 
 def esc(s):
@@ -78,39 +85,90 @@ def send_telegram(text, chat_id):
         except Exception: ok_all = False
     return ok_all
 
+# ============================================================
+# FIAT RATES (PROTECTED)
+# ============================================================
+def get_cbr_usd():
+    try:
+        r = requests.get("https://www.cbr-xml-daily.ru/daily_json.js", timeout=10)
+        data = r.json()
+        usd = data.get("Valute", {}).get("USD", {})
+        cur = usd.get("Value")
+        prev = usd.get("Previous")
+        if cur and prev:
+            change = cur - prev
+            pct = (change / prev) * 100
+            return {"rate": cur, "change": change, "pct": pct}
+    except Exception as e:
+        log.error(f"CBR Error: {e}")
+    return None
+
+def get_rapira_usdt():
+    try:
+        r = requests.get("https://api.rapira.net/open/market/rates", timeout=10)
+        data = r.json()
+        for item in data.get("data", []):
+            if item.get("symbol") == "USDT/RUB":
+                price = item.get("close") or item.get("askPrice")
+                if price: return float(price)
+    except Exception as e:
+        log.error(f"Rapira Error: {e}")
+    return None
+
+# ============================================================
+# VK UPLOADER (BULLETPROOF)
+# ============================================================
 def upload_photo_to_vk(photo_bytes):
     if not VK_TOKEN or not VK_GROUP_ID: 
         log.error("VK: No token or group ID")
         return None
+    
     try:
         gid = VK_GROUP_ID.replace("-", "")
-        url = f"https://api.vk.com/method/photos.getWallUploadServer?group_id={gid}&access_token={VK_TOKEN}&v=5.199"
-        r = requests.get(url, timeout=20).json()
+        url = "https://api.vk.com/method/photos.getWallUploadServer"
         
-        if "error" in r: 
-            log.error(f"VK getWallUploadServer Error: {r['error']}")
+        # 1. Получаем сервер (POST + Headers)
+        r = requests.post(url, data={"group_id": gid, "access_token": VK_TOKEN, "v": "5.199"}, headers=HEADERS, timeout=20)
+        if r.status_code != 200:
+            log.error(f"VK getWallUploadServer HTTP Error {r.status_code}: {r.text[:200]}")
             return None
             
-        upload_url = r["response"]["upload_url"]
-        files = {'photo': ('chart.png', photo_bytes)}
-        r = requests.post(upload_url, files=files, timeout=30).json()
-        
-        if "error" in r:
-            log.error(f"VK Upload Error: {r}")
+        r_data = r.json()
+        if "error" in r_data: 
+            log.error(f"VK getWallUploadServer Error: {r_data['error']}")
             return None
             
+        upload_url = r_data["response"]["upload_url"]
+        
+        # 2. Загружаем файл (JPEG)
+        files = {'photo': ('chart.jpg', photo_bytes.getvalue(), 'image/jpeg')}
+        r = requests.post(upload_url, files=files, timeout=30)
+        if r.status_code != 200:
+            log.error(f"VK Upload HTTP Error {r.status_code}: {r.text[:200]}")
+            return None
+            
+        r_upload = r.json()
+        if not r_upload.get("photo"):
+            log.error(f"VK Upload Error: {r_upload}")
+            return None
+            
+        # 3. Сохраняем на стене
         url = "https://api.vk.com/method/photos.saveWallPhoto"
-        params = {"group_id": gid, "photo": r["photo"], "server": r["server"], "hash": r["hash"], "access_token": VK_TOKEN, "v": "5.199"}
-        res = requests.post(url, data=params, timeout=20).json()
-        
-        if "error" in res: 
-            log.error(f"VK saveWallPhoto Error: {res['error']}")
+        params = {"group_id": gid, "photo": r_upload["photo"], "server": r_upload["server"], "hash": r_upload["hash"], "access_token": VK_TOKEN, "v": "5.199"}
+        res = requests.post(url, data=params, headers=HEADERS, timeout=20)
+        if res.status_code != 200:
+            log.error(f"VK saveWallPhoto HTTP Error {res.status_code}: {res.text[:200]}")
             return None
             
-        saved = res["response"][0]
+        res_data = res.json()
+        if "error" in res_data: 
+            log.error(f"VK saveWallPhoto Error: {res_data['error']}")
+            return None
+            
+        saved = res_data["response"][0]
         return f"photo{saved['owner_id']}_{saved['id']}"
     except Exception as e:
-        log.error(f"VK Photo Upload Error: {e}")
+        log.error(f"VK Photo Upload Critical Error: {e}")
         return None
 
 def send_vk(text, photo_attachment=None):
@@ -125,9 +183,16 @@ def send_vk(text, photo_attachment=None):
             "access_token": VK_TOKEN, "v": "5.199"
         }
         if photo_attachment: params["attachments"] = photo_attachment
-        r = requests.post(url, data=params, timeout=30)
+        r = requests.post(url, data=params, headers=HEADERS, timeout=30)
+        
+        if r.status_code != 200:
+            log.error(f"VK Wall Post HTTP Error {r.status_code}: {r.text[:200]}")
+            return False
+            
         return "error" not in r.json()
-    except Exception: return False
+    except Exception as e: 
+        log.error(f"VK Wall Post Error: {e}")
+        return False
 
 def to_plain(text):
     text = re.sub(r"<a href=\"([^\"]+)\">([^<]+)</a>", r"\2 (\1)", text)
@@ -219,10 +284,17 @@ def generate_chart_image():
         ax_main = axes[0]
         ax_main.text(1.005, last_close, f' {last_close:,.2f} ', transform=ax_main.get_yaxis_transform(), va='center', ha='left', color='black', bbox=dict(boxstyle="round,pad=0.3", fc=last_color, ec=last_color, lw=1), fontsize=10, fontweight='bold')
 
+        # Сохраняем как PNG в память
         buf = io.BytesIO()
         fig.savefig(buf, format='png', dpi=150, bbox_inches='tight')
         buf.seek(0)
-        return buf
+        
+        # Конвертируем в JPEG для ВК (убираем прозрачность)
+        img = Image.open(buf).convert('RGB')
+        out_buf = io.BytesIO()
+        img.save(out_buf, format='JPEG', quality=95)
+        out_buf.seek(0)
+        return out_buf
     except Exception as e:
         log.error(f"Chart Gen Error: {e}")
         return None
@@ -358,7 +430,7 @@ def calc_delta(cur, prev, is_pct=False, is_money=False):
     if is_money: return f"({sign} {fmt_usd(diff)})"
     return f"({sign} {diff:+g})"
 
-def build_report(data, top_items, top_ru, btc, live_cmc, prev_g_metrics, n_sentiment, stables):
+def build_report(data, top_items, top_ru, btc, live_cmc, prev_g_metrics, n_sentiment, stables, fiat_cbr, fiat_rapira):
     now = now_local()
     mood, avg, total = data.get("mood", "Неизвестно"), data.get("avg_sentiment", 0.0), data.get("total_news", 0)
     
@@ -373,8 +445,8 @@ def build_report(data, top_items, top_ru, btc, live_cmc, prev_g_metrics, n_senti
         if parts: lines.append("  " + " | ".join(parts))
         lines.append("")
         
-        bar_len = 20
-        # ИСПОЛЬЗУЕМ УЗКИЕ БЛОКИ
+        # УМЕНЬШЕННЫЕ ПОЛОСКИ (15 ВМЕСТО 20)
+        bar_len = 15
         b_buy = int(round(btc["buy_pct"] / 100 * bar_len))
         bar_buy = "█" * b_buy + "░" * (bar_len - b_buy)
         b_sell = int(round(btc["sell_pct"] / 100 * bar_len))
@@ -400,6 +472,15 @@ def build_report(data, top_items, top_ru, btc, live_cmc, prev_g_metrics, n_senti
         lines.append(f"  Стейблкоины: {fmt_usd(stbl_mcap)} (USDT {usdt_s})")
     else:
         lines.append("  ⚠️ CMC не отвечает")
+        
+    # ВСТАВЛЯЕМ БЛОК КУРСОВ ВАЛЮТ
+    if fiat_cbr or fiat_rapira:
+        lines.append("")
+        lines.append("💵 <b>Валюты</b>")
+        if fiat_cbr:
+            lines.append(f"  USD/RUB: {fiat_cbr['rate']:.2f} ({fiat_cbr['change']:+.2f})")
+        if fiat_rapira:
+            lines.append(f"  USDT/RUB: {fiat_rapira:.2f}")
     lines.append("")
 
     lines.append("🌐 <b>Сеть и Сентимент</b>")
@@ -440,13 +521,18 @@ def build_report(data, top_items, top_ru, btc, live_cmc, prev_g_metrics, n_senti
     return "\n".join(lines)
 
 def main():
-    log.info("evening news report v4.4")
+    log.info("evening news report v4.5")
     if not SENTIMENT_FILE.exists(): return
 
     data = load_json(SENTIMENT_FILE)
     history = load_json(SENT_HISTORY_FILE, {"entries": []})
     cutoff = datetime.now(timezone.utc) - timedelta(days=HISTORY_DAYS)
-    history["entries"] = [e for e in history.get("entries", []) if datetime.fromisoformat(e["sent_at"]) >= cutoff]
+    
+    try:
+        history["entries"] = [e for e in history.get("entries", []) if datetime.fromisoformat(e["sent_at"]) >= cutoff]
+    except Exception:
+        history["entries"] = []
+        
     seen = {e["hash"] for e in history["entries"]}
 
     all_top = data.get("top_bullish", []) + data.get("top_bearish", [])
@@ -459,8 +545,12 @@ def main():
     prev_g_metrics = fetch_prev_global_metrics(hours_ago=12)
     n_sentiment = fetch_network_sentiment(hours_ago=12)
     stables = fetch_stablecoins()
+    
+    # ПОЛУЧАЕМ КУРСЫ ВАЛЮТ
+    fiat_cbr = get_cbr_usd()
+    fiat_rapira = get_rapira_usdt()
 
-    text_tg = build_report(data, top_5, top_ru, btc, live_cmc, prev_g_metrics, n_sentiment, stables)
+    text_tg = build_report(data, top_5, top_ru, btc, live_cmc, prev_g_metrics, n_sentiment, stables, fiat_cbr, fiat_rapira)
     text_vk = to_plain(text_tg)
 
     log.info("sending evening report to TG Channel and VK...")
