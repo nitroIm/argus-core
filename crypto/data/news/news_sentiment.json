@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-11-04T16:05:43.915531+00:00",
-  "total_news": 104,
-  "avg_sentiment": -0.478,
+  "generated_at": "2026-11-04T17:05:56.520603+00:00",
+  "total_news": 105,
+  "avg_sentiment": -0.533,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 15,
-  "bearish_count": 41,
-  "neutral_count": 48,
+  "bullish_count": 14,
+  "bearish_count": 42,
+  "neutral_count": 49,
   "fake_count": 0,
-  "cross_confirmed": 19,
+  "cross_confirmed": 20,
   "by_source": {
     "Cointelegraph": {
       "total": 24,
@@ -15,32 +15,32 @@
       "bear": 9
     },
     "Decrypt": {
-      "total": 20,
+      "total": 21,
       "bull": 1,
-      "bear": 8
+      "bear": 7
     },
     "Bitcoin.com": {
       "total": 8,
       "bull": 1,
-      "bear": 5
+      "bear": 6
     },
     "CryptoSlate": {
       "total": 9,
       "bull": 1,
-      "bear": 5
+      "bear": 6
     },
     "CryptoPotato": {
-      "total": 26,
+      "total": 25,
       "bull": 6,
-      "bear": 9
+      "bear": 8
     },
     "Bitcoinist": {
       "total": 7,
-      "bull": 2,
-      "bear": 1
+      "bull": 1,
+      "bear": 2
     },
     "ForkLog": {
-      "total": 10,
+      "total": 11,
       "bull": 0,
       "bear": 4
     }
@@ -56,10 +56,10 @@
       "sentiment": 1.0,
       "bull_weight": 1.5,
       "bear_weight": 0.0,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-04T16:05:41.573099+00:00",
-      "effective_weight": 1.95,
+      "collected_at": "2026-11-04T17:05:54.137501+00:00",
+      "effective_weight": 1.3,
       "title_original": "Bitcoin hits $80.5K as US stocks rally on midterm election results",
       "cross_check": 1
     },
@@ -75,26 +75,9 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-04T16:05:41.573325+00:00",
+      "collected_at": "2026-11-04T17:05:54.137741+00:00",
       "effective_weight": 1.3,
       "title_original": "Canton’s CC rises 4% as SEC staff view it as ‘digital commodity’",
-      "cross_check": 2
-    },
-    {
-      "title": "Canton Coin Rises After SEC Classifies It as a Digital Commodity",
-      "url": "https://bitcoinist.com/canton-coin-rises-after-sec-classifies-it-as-a-digital-commodity/",
-      "source": "Bitcoinist",
-      "source_weight": 0.9,
-      "lang": "en",
-      "pub_date": "2026-11-04T15:15:26+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
-      "freshness": 1.5,
-      "fake_score": 0.1,
-      "collected_at": "2026-11-04T16:05:42.746210+00:00",
-      "effective_weight": 1.215,
-      "title_original": "Canton Coin Rises After SEC Classifies It as a Digital Commodity",
       "cross_check": 2
     },
     {
@@ -109,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-04T16:05:42.268994+00:00",
+      "collected_at": "2026-11-04T17:05:54.661157+00:00",
       "effective_weight": 1.0,
       "title_original": "Why rising XRP whale counts are a fake bullish signal",
       "cross_check": 1
@@ -126,62 +109,62 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-04T16:05:42.483684+00:00",
+      "collected_at": "2026-11-04T17:05:55.215581+00:00",
       "effective_weight": 1.0,
       "title_original": "NEAR Mobile Hits #1 in Finance App Rankings and Charts Across 38 Countries as NEAR Ecosystem Gains Momentum",
       "cross_check": 1
+    },
+    {
+      "title": "Canton Coin Rises After SEC Classifies It as a Digital Commodity",
+      "url": "https://bitcoinist.com/canton-coin-rises-after-sec-classifies-it-as-a-digital-commodity/",
+      "source": "Bitcoinist",
+      "source_weight": 0.9,
+      "lang": "en",
+      "pub_date": "2026-11-04T15:15:26+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 1.0,
+      "fake_score": 0.1,
+      "collected_at": "2026-11-04T17:05:55.473220+00:00",
+      "effective_weight": 0.81,
+      "title_original": "Canton Coin Rises After SEC Classifies It as a Digital Commodity",
+      "cross_check": 2
     }
   ],
   "top_bearish": [
     {
-      "title": "Связанные со взломом Binance средства снова пошли через THORChain",
-      "url": "https://forklog.com/svyazannye-so-vzlomom-binance-sredstva-snova-poshli-cherez-thorchain",
-      "source": "ForkLog",
-      "source_weight": 1.2,
-      "lang": "ru",
-      "pub_date": "2026-11-04T15:40:00+00:00",
+      "title": "Coinbase Says 99% of Customer Assets in Cold Storage After $6.3B Binance Hack",
+      "url": "https://news.bitcoin.com/exchanges/coinbase-99-percent-customer-assets-cold-storage-after-binance-hack/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-04T16:30:24+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 1.5,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-04T16:05:43.837024+00:00",
-      "effective_weight": 1.8,
-      "title_original": "Связанные со взломом Binance средства снова пошли через THORChain",
-      "cross_check": 1
-    },
-    {
-      "title": "Credit Mutuel Arkea Cyberattack: $133M Traced to Crypto Exchanges",
-      "url": "https://news.bitcoin.com/security/credit-mutuel-arkea-cyberattack-133m-traced-crypto-exchanges/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-04T15:30:45+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 0.8,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-04T16:05:42.101254+00:00",
+      "collected_at": "2026-11-04T17:05:54.506903+00:00",
       "effective_weight": 1.5,
-      "title_original": "Credit Mutuel Arkea Cyberattack: $133M Traced to Crypto Exchanges",
-      "cross_check": 2
+      "title_original": "Coinbase Says 99% of Customer Assets in Cold Storage After $6.3B Binance Hack",
+      "cross_check": 6
     },
     {
-      "title": "Evernorth’s XRP funding plan could raise $18 million less at lower share price",
-      "url": "https://cryptoslate.com/evernorths-xrp-funding-clears-a-hurdle-as-weaker-shares-reduce-what-it-could-raise/",
+      "title": "Bitcoin miners’ daily revenue per unit of computing power falls 8.7%",
+      "url": "https://cryptoslate.com/bitcoins-mining-hedge-market-prices-a-winter-pause-after-difficultys-16-rebound/",
       "source": "CryptoSlate",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-11-04T15:50:35+00:00",
+      "pub_date": "2026-11-04T16:50:39+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 1.0,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-04T16:05:42.268860+00:00",
+      "collected_at": "2026-11-04T17:05:54.660929+00:00",
       "effective_weight": 1.5,
-      "title_original": "Evernorth’s XRP funding plan could raise $18 million less at lower share price",
+      "title_original": "Bitcoin miners’ daily revenue per unit of computing power falls 8.7%",
       "cross_check": 1
     },
     {
@@ -196,26 +179,43 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-04T16:05:41.573400+00:00",
+      "collected_at": "2026-11-04T17:05:54.137826+00:00",
       "effective_weight": 1.3,
       "title_original": "Binance hack may be ‘temporary setback’ for crypto, Grayscale’s Pandl says",
       "cross_check": 7
     },
     {
-      "title": "Judge Orders Bitcoin Wallet Returned to Family of Convicted Canadian Killer",
-      "url": "https://decrypt.co/382484/judge-orders-bitcoin-wallet-returned-to-family-of-convicted-canadian-killer",
-      "source": "Decrypt",
-      "source_weight": 1.1,
+      "title": "Bitcoin Defies Selling Pressure as $75K Holds the Line",
+      "url": "https://bitcoinist.com/bitcoin-defies-selling-pressure-as-75k-holds-the-line/",
+      "source": "Bitcoinist",
+      "source_weight": 0.9,
       "lang": "en",
-      "pub_date": "2026-11-04T10:35:01+00:00",
+      "pub_date": "2026-11-04T16:08:09+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 3.8,
+      "bear_weight": 1.2,
+      "freshness": 1.5,
+      "fake_score": 0.1,
+      "collected_at": "2026-11-04T17:05:55.473126+00:00",
+      "effective_weight": 1.215,
+      "title_original": "Bitcoin Defies Selling Pressure as $75K Holds the Line",
+      "cross_check": 1
+    },
+    {
+      "title": "Связанные со взломом Binance средства снова пошли через THORChain",
+      "url": "https://forklog.com/svyazannye-so-vzlomom-binance-sredstva-snova-poshli-cherez-thorchain",
+      "source": "ForkLog",
+      "source_weight": 1.2,
+      "lang": "ru",
+      "pub_date": "2026-11-04T15:40:00+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-04T16:05:41.688869+00:00",
-      "effective_weight": 1.1,
-      "title_original": "Judge Orders Bitcoin Wallet Returned to Family of Convicted Canadian Killer",
+      "collected_at": "2026-11-04T17:05:56.435336+00:00",
+      "effective_weight": 1.2,
+      "title_original": "Связанные со взломом Binance средства снова пошли через THORChain",
       "cross_check": 1
     }
   ]
