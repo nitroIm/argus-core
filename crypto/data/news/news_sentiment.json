@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-11-04T08:06:59.913753+00:00",
+  "generated_at": "2026-11-04T09:05:44.685592+00:00",
   "total_news": 107,
-  "avg_sentiment": -0.543,
+  "avg_sentiment": -0.613,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 14,
-  "bearish_count": 49,
+  "bullish_count": 12,
+  "bearish_count": 51,
   "neutral_count": 44,
   "fake_count": 0,
-  "cross_confirmed": 26,
+  "cross_confirmed": 28,
   "by_source": {
     "Cointelegraph": {
       "total": 23,
@@ -21,17 +21,17 @@
     },
     "Bitcoin.com": {
       "total": 9,
-      "bull": 3,
-      "bear": 1
+      "bull": 2,
+      "bear": 2
     },
     "CryptoSlate": {
-      "total": 8,
+      "total": 9,
       "bull": 0,
-      "bear": 4
+      "bear": 5
     },
     "CryptoPotato": {
       "total": 27,
-      "bull": 7,
+      "bull": 6,
       "bear": 12
     },
     "Bitcoinist": {
@@ -40,7 +40,7 @@
       "bear": 5
     },
     "ForkLog": {
-      "total": 14,
+      "total": 13,
       "bull": 0,
       "bear": 6
     }
@@ -58,44 +58,10 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-04T08:05:35.665449+00:00",
+      "collected_at": "2026-11-04T09:05:42.876454+00:00",
       "effective_weight": 1.04,
       "title_original": "Moscow Exchange to launch Bitcoin, Ether and USDT trading in December",
       "cross_check": 2
-    },
-    {
-      "title": "ARK buys $17M in Coinbase, Circle shares while trimming Bullish",
-      "url": "https://cointelegraph.com/news/ark-buys-coinbase-circle-trims-bullish?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-11-03T08:35:13+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-04T08:05:35.665627+00:00",
-      "effective_weight": 1.04,
-      "title_original": "ARK buys $17M in Coinbase, Circle shares while trimming Bullish",
-      "cross_check": 1
-    },
-    {
-      "title": "XRP Millionaire Wallets Hit 2026 High Despite Price Weakness",
-      "url": "https://news.bitcoin.com/market-updates/xrp-millionaire-wallets-hit-2026-high-despite-price-weakness/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-04T02:30:04+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-04T08:05:36.024826+00:00",
-      "effective_weight": 1.0,
-      "title_original": "XRP Millionaire Wallets Hit 2026 High Despite Price Weakness",
-      "cross_check": 1
     },
     {
       "title": "XRP Bull Eyes $5-$8 in 2027 Despite Short-Term Headwinds",
@@ -109,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-04T08:06:58.577287+00:00",
+      "collected_at": "2026-11-04T09:05:43.336626+00:00",
       "effective_weight": 1.0,
       "title_original": "XRP Bull Eyes $5-$8 in 2027 Despite Short-Term Headwinds",
       "cross_check": 1
@@ -126,13 +92,64 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-04T08:05:35.761534+00:00",
+      "collected_at": "2026-11-04T09:05:42.931972+00:00",
       "effective_weight": 0.88,
       "title_original": "Ethereum Privacy Network Aztec Rolls Out Major Security and Speed Upgrade",
       "cross_check": 1
+    },
+    {
+      "title": "XRP Millionaire Wallets Hit 2026 High Despite Price Weakness",
+      "url": "https://news.bitcoin.com/market-updates/xrp-millionaire-wallets-hit-2026-high-despite-price-weakness/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-04T02:30:04+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-04T09:05:43.104140+00:00",
+      "effective_weight": 0.8,
+      "title_original": "XRP Millionaire Wallets Hit 2026 High Despite Price Weakness",
+      "cross_check": 1
+    },
+    {
+      "title": "Moscow Exchange Confirms Dec. 1 Crypto Trading Launch With Bitcoin, Ether, USDT",
+      "url": "https://news.bitcoin.com/exchanges/moscow-exchange-dec-1-crypto-trading-bitcoin-ether-usdt/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-04T00:15:31+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-04T09:05:43.104348+00:00",
+      "effective_weight": 0.8,
+      "title_original": "Moscow Exchange Confirms Dec. 1 Crypto Trading Launch With Bitcoin, Ether, USDT",
+      "cross_check": 2
     }
   ],
   "top_bearish": [
+    {
+      "title": "Grayscale Reveals a Silver Lining in Binance’s $6 Billion Hack",
+      "url": "https://news.bitcoin.com/security/grayscale-reveals-a-silver-lining-in-binances-6-billion-hack/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-04T08:30:30+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-04T09:05:43.103783+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Grayscale Reveals a Silver Lining in Binance’s $6 Billion Hack",
+      "cross_check": 2
+    },
     {
       "title": "Bitcoin bounces from 7-week low under $76K as Democrats sweep Congress",
       "url": "https://cointelegraph.com/markets/bitcoin-bounces-from-7-week-low-under-76k-as-democrats-eye-congress-sweep?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -143,10 +160,10 @@
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 1.0,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-04T08:05:35.664987+00:00",
-      "effective_weight": 1.95,
+      "collected_at": "2026-11-04T09:05:42.875574+00:00",
+      "effective_weight": 1.3,
       "title_original": "Bitcoin bounces from 7-week low under $76K as Democrats sweep Congress",
       "cross_check": 2
     },
@@ -162,7 +179,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-04T08:05:35.665114+00:00",
+      "collected_at": "2026-11-04T09:05:42.875802+00:00",
       "effective_weight": 1.3,
       "title_original": "ZachXBT identifies French bank as alleged victim of $133M crypto theft",
       "cross_check": 3
@@ -179,7 +196,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-04T08:06:59.868840+00:00",
+      "collected_at": "2026-11-04T09:05:44.597120+00:00",
       "effective_weight": 1.2,
       "title_original": "Mercado Bitcoin пообещала возместить потери после взлома",
       "cross_check": 2
@@ -196,26 +213,9 @@
       "bear_weight": 0.8,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-04T08:05:35.665226+00:00",
+      "collected_at": "2026-11-04T09:05:42.876055+00:00",
       "effective_weight": 1.04,
       "title_original": "US midterms: Prediction markets favor Democrats in key crypto races",
-      "cross_check": 1
-    },
-    {
-      "title": "Binance traces $6.3B hack to fake job interviews, compromised AI tool",
-      "url": "https://cointelegraph.com/news/binance-fake-job-interviews-compromised-ai-tool-hack?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-11-03T16:44:06+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-04T08:05:35.665315+00:00",
-      "effective_weight": 1.04,
-      "title_original": "Binance traces $6.3B hack to fake job interviews, compromised AI tool",
       "cross_check": 1
     }
   ]
