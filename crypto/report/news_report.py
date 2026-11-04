@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - NEWS REPORT v12.7 (VK JPEG FIX)
+# ARGUS - NEWS REPORT v12.8 (VK SAFE JSON)
 # Path: crypto/report/news_report.py
 # ============================================================
 
@@ -85,35 +85,51 @@ def upload_photo_to_vk(photo_bytes):
     if not VK_TOKEN or not VK_GROUP_ID: 
         log.error("VK: No token or group ID")
         return None
+    
+    def safe_json(response):
+        try:
+            return response.json()
+        except ValueError:
+            log.error(f"VK returned non-JSON (HTTP {response.status_code}): {response.text[:200]}")
+            return None
+
     try:
         gid = VK_GROUP_ID.replace("-", "")
         url = f"https://api.vk.com/method/photos.getWallUploadServer?group_id={gid}&access_token={VK_TOKEN}&v=5.199"
-        r = requests.get(url, timeout=20).json()
         
-        if "error" in r: 
-            log.error(f"VK getWallUploadServer Error: {r['error']}")
+        r = requests.get(url, timeout=20)
+        r_data = safe_json(r)
+        if not r_data or "error" in r_data:
+            if r_data and "error" in r_data:
+                log.error(f"VK getWallUploadServer Error: {r_data['error']}")
             return None
             
-        upload_url = r["response"]["upload_url"]
-        files = {'photo': ('chart.jpg', photo_bytes.getvalue(), 'image/jpeg')}
-        r = requests.post(upload_url, files=files, timeout=30).json()
+        upload_url = r_data["response"]["upload_url"]
         
-        if not r.get("photo"):
-            log.error(f"VK upload returned empty photo: {r}")
+        files = {'photo': ('chart.jpg', photo_bytes.getvalue(), 'image/jpeg')}
+        r = requests.post(upload_url, files=files, timeout=30)
+        r_upload = safe_json(r)
+        
+        if not r_upload or not r_upload.get("photo"):
+            log.error(f"VK upload returned empty photo or bad JSON.")
             return None
             
         url = "https://api.vk.com/method/photos.saveWallPhoto"
-        params = {"group_id": gid, "photo": r["photo"], "server": r["server"], "hash": r["hash"], "access_token": VK_TOKEN, "v": "5.199"}
-        res = requests.post(url, data=params, timeout=20).json()
+        params = {"group_id": gid, "photo": r_upload["photo"], "server": r_upload["server"], "hash": r_upload["hash"], "access_token": VK_TOKEN, "v": "5.199"}
         
-        if "error" in res: 
-            log.error(f"VK saveWallPhoto Error: {res['error']}")
+        res = requests.post(url, data=params, timeout=20)
+        res_data = safe_json(res)
+        
+        if not res_data or "error" in res_data: 
+            if res_data and "error" in res_data:
+                log.error(f"VK saveWallPhoto Error: {res_data['error']}")
             return None
             
-        saved = res["response"][0]
+        saved = res_data["response"][0]
         return f"photo{saved['owner_id']}_{saved['id']}"
+        
     except Exception as e:
-        log.error(f"VK Photo Upload Error: {e}")
+        log.error(f"VK Photo Upload Critical Error: {e}")
         return None
 
 def send_vk(text, photo_attachment=None):
@@ -209,7 +225,7 @@ def generate_chart_image():
         
         df = pd.DataFrame(rows, columns=['open_time', 'open', 'high', 'low', 'close', 'volume'])
         df['open_time'] = pd.to_datetime(df['open_time'], utc=True)
-        df.set_index('open_time', inplace=True)
+        df = df.set_index('open_time')
         df = df.astype(float)
         
         df_1d = df.resample('1D').agg({'open': 'first', 'high': 'max', 'low': 'min', 'close': 'last', 'volume': 'sum'}).dropna().tail(45)
@@ -253,7 +269,6 @@ def generate_chart_image():
         fig.savefig(buf, format='png', dpi=150, bbox_inches='tight')
         buf.seek(0)
         
-        # Конвертация в JPEG для VK
         img = Image.open(buf).convert('RGB')
         out_buf = io.BytesIO()
         img.save(out_buf, format='JPEG', quality=95)
@@ -478,7 +493,7 @@ def build_report(data, top_items, top_ru, btc, live_cmc, prev_g_metrics, n_senti
     return "\n".join(lines)
 
 def main():
-    log.info("news report v12.7")
+    log.info("news report v12.8")
     if not should_send_group(): return log.info("skip")
 
     if not SENTIMENT_FILE.exists(): return log.error("no sentiment file")
