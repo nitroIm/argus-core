@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - SIGNAL REPORT v5.0 (EVENT QUEUE)
+# ARGUS - SIGNAL REPORT v5.1 (VIRTUAL BALANCE)
 # Path: crypto/report/signal_bot_report.py
 # ============================================================
 
@@ -46,8 +46,13 @@ def get_stats_text(mode):
     wins = sum(1 for t in closed if t.get("pnl_usd", 0) > 0)
     losses = total - wins
     winrate = (wins / total * 100) if total > 0 else 0
-    total_pnl = sum(t.get("pnl_usd", 0) for t in closed)
+    
+    # Берем реальный баланс, если нет - 100
+    balance = info.get("balance", 100.0)
+    start_balance = info.get("start_balance", 100.0)
+    total_pnl = balance - start_balance
     pnl_sign = "+" if total_pnl >= 0 else ""
+    
     start = info.get("started_at", "?")
     if start != "?": start = datetime.fromisoformat(start).strftime("%d.%m %H:%M")
 
@@ -56,10 +61,10 @@ def get_stats_text(mode):
             f"📅 Работает с: {start}\n"
             f"📈 Сделок: {total} ({wins} ✅ / {losses} ❌)\n"
             f"🎯 Винрейт: <b>{winrate:.1f}%</b>\n"
-            f"💰 Общий PnL: <b>{pnl_sign}${total_pnl:.2f}</b>")
+            f"💰 Баланс: <b>${balance:.2f}</b> (PnL: <b>{pnl_sign}${total_pnl:.2f}</b>)")
 
 def main():
-    log.info("STARTING SIGNAL REPORT v5.0")
+    log.info("STARTING SIGNAL REPORT v5.1")
     
     queue = load_json(INFO_DEAL, [])
     if not isinstance(queue, list) or not queue:
@@ -82,9 +87,16 @@ def main():
             text = f"{mode_tag} <b>Трейлинг-стоп (LONG)</b>\n\n🛑 <b>Новый стоп:</b> {fmt(event['new_sl'])} ({event['sl_pct']:+.2f}%)\n\n"
         
         elif event["type"] == "CLOSE":
-            pnl, sign = event["pnl_usd"], "+" if event["pnl_usd"] >= 0 else ""
+            pnl = event["pnl_usd"]
+            sign = "+" if pnl >= 0 else ""
             status = "🛡️ ТРЕЙЛИНГ-СТОП" if event["reason"] == "TRAILING_STOP" else ("✅ УСПЕХ" if pnl > 0 else "❌ УБЫТОК")
-            text = f"{mode_tag} <b>{status} ({deal_type})</b>\n\n📊 Причина: {event['reason']}\n💰 Результат: <b>{sign}{event['pnl_pct']}%</b> (на $100: <b>{sign}${pnl:.2f}</b>)\n\n"
+            
+            # Достаем новый баланс из события
+            new_bal = event.get("new_balance", 0)
+            text = (f"{mode_tag} <b>{status} ({deal_type})</b>\n\n"
+                    f"📊 Причина: {event['reason']}\n"
+                    f"💰 Результат: <b>{sign}{event['pnl_pct']}%</b> (<b>{sign}${pnl:.2f}</b>)\n"
+                    f"💼 Баланс: <b>${new_bal:.2f}</b>\n\n")
 
         text += get_stats_text(event.get("mode", "swing"))
         
@@ -93,7 +105,7 @@ def main():
             sent_any = True
 
     if sent_any:
-        save_json(INFO_DEAL, []) # Очищаем очередь
+        save_json(INFO_DEAL, [])
         log.info("Queue cleared.")
 
 if __name__ == "__main__":
