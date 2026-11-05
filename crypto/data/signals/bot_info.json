@@ -14,12 +14,12 @@
   "score_archive": [],
   "intraday": {
     "weights": {
-      "macd": 1.0,
-      "ema": 1.0,
-      "volume": 1.0,
-      "rsi_low": 1.0,
-      "rsi_mid": 1.0,
-      "rsi_high": 1.0
+      "macd": 1.05,
+      "ema": 1.05,
+      "volume": 1.05,
+      "rsi_low": 0.95,
+      "rsi_mid": 0.95,
+      "rsi_high": 0.95
     },
     "threshold": 2.0,
     "score_history": [
@@ -28,7 +28,8 @@
         "score": 3.0
       }
     ],
-    "score_archive": []
+    "score_archive": [],
+    "last_close_ts": "2026-11-05T16:46:13.324423+00:00"
   },
   "swing": {
     "weights": {

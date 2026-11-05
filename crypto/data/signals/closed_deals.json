@@ -7,5 +7,15 @@
     "pnl_usd": -5.0,
     "reason": "STOP_LOSS",
     "close_time": "2026-10-30T14:01:16.755680+00:00"
+  },
+  {
+    "type": "SHORT",
+    "entry": 76901.98,
+    "exit": 76132.9602,
+    "pnl_pct": 1.0,
+    "pnl_usd": 1.0,
+    "reason": "TAKE_PROFIT",
+    "mode": "intraday",
+    "close_time": "2026-11-05T16:46:13.324106+00:00"
   }
 ]
