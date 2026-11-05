@@ -1,6 +1,6 @@
 {
-  "trainer_version": "3.0.0",
-  "updated_at": "2026-11-05T10:02:18.988191+00:00",
+  "trainer_version": "3.1.0",
+  "updated_at": "2026-11-05T10:30:47.366427+00:00",
   "long": {
     "params": {
       "use_trend_filter": true,
@@ -38,5 +38,57 @@
       "score": 5.27
     },
     "source": "model_base"
+  },
+  "all_scores": {
+    "long": {
+      "model_rf": {
+        "trades": 29686,
+        "pnl": -1020.26,
+        "winrate": 0.4639,
+        "max_dd": -503.9,
+        "score": -2.02,
+        "accuracy": 0.516
+      },
+      "model_base": {
+        "trades": 134,
+        "pnl": 25.38,
+        "winrate": 0.5448,
+        "max_dd": -4.3,
+        "score": 5.9
+      },
+      "model_xgb": {
+        "trades": 26061,
+        "pnl": -788.0,
+        "winrate": 0.4651,
+        "max_dd": -450.2,
+        "score": -1.75,
+        "accuracy": 0.5138
+      }
+    },
+    "short": {
+      "model_rf": {
+        "trades": 14590,
+        "pnl": -1026.65,
+        "winrate": 0.452,
+        "max_dd": -723.03,
+        "score": -1.42,
+        "accuracy": 0.516
+      },
+      "model_base": {
+        "trades": 3,
+        "pnl": 0.53,
+        "winrate": 0.6667,
+        "max_dd": -0.1,
+        "score": 5.27
+      },
+      "model_xgb": {
+        "trades": 18215,
+        "pnl": -1084.39,
+        "winrate": 0.4512,
+        "max_dd": -785.86,
+        "score": -1.38,
+        "accuracy": 0.5138
+      }
+    }
   }
 }
