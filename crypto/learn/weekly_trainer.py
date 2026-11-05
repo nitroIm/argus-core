@@ -1,56 +1,32 @@
 # ============================================================
-# ARGUS - WEEKLY TRAINER (MODEL OPTIMIZER v2.0)
-# ------------------------------------------------------------
-# Обучает две стратегии одновременно: LONG и SHORT.
+# ARGUS - WEEKLY TRAINER ORCHESTRATOR (v3.0.0)
+# Path: crypto/learn/weekly_trainer.py
 # ============================================================
 
 import os
 import json
 import logging
-import itertools
+import importlib.util
 from pathlib import Path
 from datetime import datetime, timezone
-import numpy as np
 import pandas as pd
+import numpy as np
 import psycopg
+import warnings
 
-VERSION = "2.0.0"
+# Подавляем шумный варнинг pandas про SQLAlchemy
+warnings.filterwarnings("ignore", message=".*SQLAlchemy.*")
+
+VERSION = "3.0.0"
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("crypto.trainer")
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 DATA_FILE = SCRIPT_DIR.parent / "collect" / "vision_out" / "BTCUSDT_spot_1h.parquet"
-DATA_DIR = SCRIPT_DIR.parent / "data" / "models"
-DATA_DIR.mkdir(parents=True, exist_ok=True)
-OUT_FILE = DATA_DIR / "best_params.json"
+MODEL_OUT_FILE = SCRIPT_DIR.parent / "data" / "models" / "best_params.json"
+MODEL_OUT_FILE.parent.mkdir(parents=True, exist_ok=True)
 
 DB_URL = (os.getenv("AIVEN_DB_URL") or "").strip()
-
-INITIAL_BALANCE = 100.0
-POSITION_NOTIONAL = 20.0
-FEE_RATE = 0.001
-
-# Сетка для Лонга (покупка на откате)
-GRID_LONG = {
-    "use_trend_filter": [True, False],
-    "use_volume_filter": [True, False],
-    "rsi_min": [25, 30, 35],
-    "rsi_max": [50, 55, 60, 70],
-    "tp_pct": [2.0, 3.0, 5.0, 8.0, 15.0],
-    "sl_pct": [1.5, 2.0, 3.0, 5.0],
-    "time_exit_h": [24, 48, 72, 168]
-}
-
-# Сетка для Шорта (продажа на перекупленности)
-GRID_SHORT = {
-    "use_trend_filter": [True, False],
-    "use_volume_filter": [True, False],
-    "rsi_min": [50, 60, 70],
-    "rsi_max": [70, 80, 90],
-    "tp_pct": [2.0, 3.0, 5.0, 8.0, 15.0],
-    "sl_pct": [1.5, 2.0, 3.0, 5.0],
-    "time_exit_h": [24, 48, 72, 168]
-}
 
 def calculate_ema(series, period):
     return series.ewm(span=period, adjust=False).mean()
@@ -69,77 +45,8 @@ def calculate_macd(series, fast=12, slow=26, signal=9):
     signal_line = calculate_ema(macd_line, signal)
     return macd_line - signal_line
 
-def run_backtest(df, params, side="long"):
-    trades = []
-    in_pos = False
-    entry_price = 0.0
-    entry_idx = 0
-
-    for i, curr in enumerate(df.itertuples()):
-        if i == 0: continue
-        
-        if in_pos:
-            if side == "long":
-                gross_pct = (curr.close - entry_price) / entry_price * 100.0
-            else: # short
-                gross_pct = (entry_price - curr.close) / entry_price * 100.0
-
-            bars_held = i - entry_idx
-            
-            exit_reason = None
-            if gross_pct <= -params["sl_pct"]:
-                exit_reason = "STOP_LOSS"
-            elif gross_pct >= params["tp_pct"]:
-                exit_reason = "TAKE_PROFIT"
-            elif bars_held >= params["time_exit_h"]:
-                exit_reason = "TIME_EXIT"
-                
-            if exit_reason:
-                net_pct = gross_pct - (FEE_RATE * 200)
-                pnl_usd = POSITION_NOTIONAL * (net_pct / 100.0)
-                trades.append(pnl_usd)
-                in_pos = False
-        
-        if not in_pos:
-            if side == "long":
-                signal = curr.macd_hist > 0 and (params["rsi_min"] < curr.rsi < params["rsi_max"])
-                if params["use_trend_filter"]:
-                    signal = signal and (curr.close > curr.ema_50)
-            else: # short
-                signal = curr.macd_hist < 0 and (params["rsi_min"] < curr.rsi < params["rsi_max"])
-                if params["use_trend_filter"]:
-                    signal = signal and (curr.close < curr.ema_50)
-
-            if params["use_volume_filter"]:
-                signal = signal and (curr.volume > curr.vol_sma)
-                
-            if signal:
-                in_pos = True
-                entry_price = curr.close
-                entry_idx = i
-
-    n = len(trades)
-    if n == 0: return None
-
-    pnls = np.array(trades)
-    total_pnl = float(pnls.sum())
-    
-    cum = np.cumsum(pnls) + INITIAL_BALANCE
-    peak = np.maximum.accumulate(cum)
-    dd = (cum - peak) / peak * 100.0
-    max_dd = float(dd.min()) if len(dd) else 0.0
-    if max_dd == 0: max_dd = -0.1
-
-    score = total_pnl / abs(max_dd)
-    return {
-        "trades": n, "pnl": round(total_pnl, 2),
-        "winrate": round(float((pnls > 0).mean()), 4),
-        "max_dd": round(max_dd, 2), "score": round(score, 2)
-    }
-
 def fetch_fresh_candles():
-    if not DB_URL:
-        return pd.DataFrame()
+    if not DB_URL: return pd.DataFrame()
     try:
         conn = psycopg.connect(DB_URL, connect_timeout=30)
         query = """
@@ -153,7 +60,7 @@ def fetch_fresh_candles():
         conn.close()
         if df.empty: return df
         df['open_time'] = pd.to_datetime(df['open_time'], utc=True)
-        df.set_index('open_time', inplace=True)
+        df = df.set_index('open_time')
         df_1h = df.resample('1h').agg({
             'open': 'first', 'high': 'max', 'low': 'min', 
             'close': 'last', 'volume': 'sum'
@@ -163,31 +70,28 @@ def fetch_fresh_candles():
         log.error(f"Failed to fetch from DB: {e}")
         return pd.DataFrame()
 
-def train_side(df, grid, side_name):
-    keys, values = zip(*grid.items())
-    combinations = [dict(zip(keys, v)) for v in itertools.product(*values)]
-    log.info(f"Testing {len(combinations)} combinations for {side_name}...")
-    
-    best_result = None
-    best_params = None
-
-    for idx, params in enumerate(combinations):
-        res = run_backtest(df, params, side=side_name.lower())
-        if res and (best_result is None or res["score"] > best_result["score"]):
-            best_result = res
-            best_params = params
-
-    if best_params:
-        log.info(f"🏆 BEST {side_name} STRATEGY FOUND:")
-        for k, v in best_params.items():
-            log.info(f"  {k}: {v}")
-        log.info(f"📈 PnL: ${best_result['pnl']} | Winrate: {best_result['winrate']*100:.1f}% | Max DD: {best_result['max_dd']}%")
-    
-    return best_params, best_result
+def load_models():
+    """Сканирует папку crypto/learn/ на наличие файлов model_*.py"""
+    models = []
+    for file_path in SCRIPT_DIR.glob("model_*.py"):
+        model_name = file_path.stem
+        try:
+            spec = importlib.util.spec_from_file_location(model_name, file_path)
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            if hasattr(module, "train"):
+                models.append((model_name, module))
+                log.info(f"Loaded model: {model_name}")
+            else:
+                log.warning(f"Model {model_name} skipped: no 'train' function.")
+        except Exception as e:
+            log.error(f"Failed to load model {model_name}: {e}")
+    return models
 
 def main():
-    log.info(f"STARTING WEEKLY TRAINER v{VERSION}")
+    log.info(f"STARTING WEEKLY TRAINER ORCHESTRATOR v{VERSION}")
     
+    # 1. Подготовка данных
     if not DATA_FILE.exists():
         log.error(f"DATA FILE NOT FOUND: {DATA_FILE}")
         return
@@ -197,36 +101,60 @@ def main():
     df_hist['open_time'] = pd.to_datetime(df_hist['open_time'], unit='ms', utc=True)
     
     df_fresh = fetch_fresh_candles()
-    if not df_fresh.empty:
-        df = pd.concat([df_hist, df_fresh])
-    else:
-        df = df_hist
-
+    df = pd.concat([df_hist, df_fresh]) if not df_fresh.empty else df_hist
     df = df.drop_duplicates(subset=['open_time']).sort_values('open_time').reset_index(drop=True)
     
+    # 2. Предрасчет общих индикаторов
     df['rsi'] = calculate_rsi(df['close'], 14)
     df['macd_hist'] = calculate_macd(df['close'], 12, 26, 9)
     df['ema_50'] = calculate_ema(df['close'], 50)
     df['vol_sma'] = df['volume'].rolling(window=20).mean()
     df = df.dropna().reset_index(drop=True)
     
-    log.info(f"Data ready for training. Total rows: {len(df)}")
+    log.info(f"Data ready. Total rows: {len(df)}")
 
-    # Обучаем Лонг
-    params_long, metrics_long = train_side(df, GRID_LONG, "LONG")
-    # Обучаем Шорт
-    params_short, metrics_short = train_side(df, GRID_SHORT, "SHORT")
+    # 3. Загрузка моделей
+    models = load_models()
+    if not models:
+        log.error("No models found! Create model_base.py or similar.")
+        return
 
+    # 4. Поиск лучших параметров для LONG и SHORT
+    results = {"long": None, "short": None}
+
+    for side in ["long", "short"]:
+        log.info(f"--- Searching best model for {side.upper()} ---")
+        best_score = -99999
+        best_model_data = None
+
+        for model_name, module in models:
+            try:
+                log.info(f"Running {model_name} for {side.upper()}...")
+                res = module.train(df, side=side)
+                
+                if res and res.get("metrics") and res["metrics"].get("score", -99999) > best_score:
+                    best_score = res["metrics"]["score"]
+                    res["source"] = model_name
+                    best_model_data = res
+                    log.info(f"🏆 New best found! {model_name} with score: {best_score}")
+            except Exception as e:
+                log.error(f"Model {model_name} crashed on {side}: {e}")
+                continue
+
+        if best_model_data:
+            results[side] = best_model_data
+
+    # 5. Сохранение результатов
     out_data = {
         "trainer_version": VERSION,
         "updated_at": datetime.now(timezone.utc).isoformat(),
-        "long": {"params": params_long, "metrics": metrics_long},
-        "short": {"params": params_short, "metrics": metrics_short}
+        "long": results["long"],
+        "short": results["short"]
     }
     
-    with open(OUT_FILE, "w", encoding="utf-8") as f:
+    with open(MODEL_OUT_FILE, "w", encoding="utf-8") as f:
         json.dump(out_data, f, ensure_ascii=False, indent=2)
-    log.info(f"Saved to {OUT_FILE}")
+    log.info(f"Saved to {MODEL_OUT_FILE}")
 
 if __name__ == "__main__":
     main()
