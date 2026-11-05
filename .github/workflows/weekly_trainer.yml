@@ -3,7 +3,7 @@ name: Weekly trainer
 on:
   workflow_dispatch: 
   # schedule:
-  #   - cron: '0 21 * * 0' # На случай, если решишь использовать встроенный крон GitHub
+  #   - cron: '0 21 * * 0'
 
 permissions:
   contents: write
@@ -48,6 +48,8 @@ jobs:
       - name: Run Trainer
         env:
           AIVEN_DB_URL: ${{ secrets.AIVEN_DB_URL }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python crypto/learn/weekly_trainer.py
 
       - name: Commit best params
@@ -67,7 +69,7 @@ jobs:
             fi
             sleep 5
           done
-          
+
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
