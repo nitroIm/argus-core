@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - CORRELATION ANALYZER (v1.0)
+# ARGUS - CORRELATION ANALYZER (v1.1)
 # Path: crypto/intel/correlation.py
 # ============================================================
 
@@ -40,24 +40,34 @@ def save_json(path, data):
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 def fetch_all_data():
-    """Собирает абсолютно все данные из базы (только чтение) и приводит к часовому таймфрейму."""
+    """Собирает абсолютно все данные из базы и приводит к часовому таймфрейму."""
     log.info("Fetching ALL data from DB...")
     conn = get_conn()
     dfs = []
 
-    # 1. BTC Candles (1h, spot)
+    # 1. BTC Candles (15m -> resample to 1h)
     try:
         query = """
-            SELECT open_time, close as BTC_Close 
+            SELECT open_time, open, high, low, close, volume 
             FROM candles 
-            WHERE symbol='BTCUSDT' AND timeframe='1h' AND market_type='spot'
+            WHERE symbol='BTCUSDT' AND timeframe='15m' AND market_type='spot'
             AND open_time > NOW() - INTERVAL '90 days'
+            ORDER BY open_time ASC
         """
         df = pd.read_sql(query, conn)
-        df['open_time'] = pd.to_datetime(df['open_time'], utc=True)
-        df = df.set_index('open_time')
-        dfs.append(df)
-        log.info(f"  Candles: {len(df)} rows")
+        if not df.empty:
+            df['open_time'] = pd.to_datetime(df['open_time'], utc=True)
+            df = df.set_index('open_time')
+            # Конвертируем 15m в 1h
+            df_1h = df.resample('1h').agg({
+                'open': 'first', 'high': 'max', 'low': 'min', 
+                'close': 'last', 'volume': 'sum'
+            }).dropna()
+            df_1h = df_1h.rename(columns={'close': 'BTC_Close'})
+            dfs.append(df_1h[['BTC_Close']])
+            log.info(f"  Candles: {len(df_1h)} rows (1h)")
+        else:
+            log.error("  Candles: No data found in DB!")
     except Exception as e:
         log.error(f"Failed to fetch candles: {e}")
 
@@ -119,7 +129,6 @@ def fetch_all_data():
         df['timestamp'] = pd.to_datetime(df['timestamp'], utc=True)
         df_pivot = df.pivot(index='timestamp', columns='symbol', values='circulating')
         df_pivot = df_pivot.resample('1h').last()
-        # Переименуем колонки, чтобы не было конфликтов
         df_pivot = df_pivot.add_prefix('Stable_')
         dfs.append(df_pivot)
         log.info(f"  Stablecoins: {len(df_pivot.columns)} assets")
@@ -128,16 +137,24 @@ def fetch_all_data():
 
     conn.close()
 
+    if not dfs:
+        return pd.DataFrame()
+
     # Объединяем всё по времени
     log.info("Merging and aligning data...")
     merged = pd.concat(dfs, axis=1)
     
+    # Сортируем по времени
+    merged = merged.sort_index()
+    
     # Заполняем пропуски вперед (для выходных на фондовых рынках)
     merged = merged.ffill()
     
-    # Удаляем строки, где нет BTC (базовый актив)
+    # Удаляем строки, где нет BTC
     if 'BTC_Close' in merged.columns:
         merged = merged.dropna(subset=['BTC_Close'])
+    else:
+        log.error("BTC_Close missing after merge!")
     
     return merged
 
@@ -150,7 +167,7 @@ def calculate_correlations(df):
         log.error("BTC_Close not found in data!")
         return results
 
-    # Логарифмические возвраты для стационарности
+    # Логарифмические возвраты
     returns = df.pct_change().dropna()
     if returns.empty: 
         return results
@@ -163,13 +180,10 @@ def calculate_correlations(df):
         
         best_corr = 0
         best_lag = 0
-        # Ограничиваем словарь лагов, чтобы не раздувать JSON
         all_lags = {}
 
         # Ищем лаг от -24 до +24 часов
         for lag in range(-LAG_RANGE, LAG_RANGE + 1):
-            # Если lag > 0: Target ведет, BTC отстает на lag часов
-            # Если lag < 0: BTC ведет, Target отстает на |lag| часов
             corr = btc_returns.corr(target_returns.shift(lag))
             
             if pd.notna(corr):
