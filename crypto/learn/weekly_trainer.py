@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - WEEKLY TRAINER ORCHESTRATOR (v3.0.1 - ATR FIX)
+# ARGUS - WEEKLY TRAINER ORCHESTRATOR (v3.1.0 - EXTENDED FEATURES)
 # Path: crypto/learn/weekly_trainer.py
 # ============================================================
 
@@ -14,10 +14,9 @@ import numpy as np
 import psycopg
 import warnings
 
-# Подавляем шумный варнинг pandas про SQLAlchemy
 warnings.filterwarnings("ignore", message=".*SQLAlchemy.*")
 
-VERSION = "3.0.1"
+VERSION = "3.1.0"
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("crypto.trainer")
 
@@ -46,7 +45,6 @@ def calculate_macd(series, fast=12, slow=26, signal=9):
     return macd_line - signal_line
 
 def calculate_atr(df, period=14):
-    """Расчет Average True Range для ML-моделей."""
     high_low = df['high'] - df['low']
     high_close = (df['high'] - df['close'].shift()).abs()
     low_close = (df['low'] - df['close'].shift()).abs()
@@ -58,7 +56,7 @@ def fetch_fresh_candles():
     try:
         conn = psycopg.connect(DB_URL, connect_timeout=30)
         query = """
-            SELECT open_time, open, high, low, close, volume 
+            SELECT open_time, open, high, low, close, volume, taker_buy_volume, count
             FROM candles 
             WHERE symbol='BTCUSDT' AND timeframe='15m' AND market_type='spot'
             AND open_time > NOW() - INTERVAL '30 days'
@@ -71,7 +69,8 @@ def fetch_fresh_candles():
         df = df.set_index('open_time')
         df_1h = df.resample('1h').agg({
             'open': 'first', 'high': 'max', 'low': 'min', 
-            'close': 'last', 'volume': 'sum'
+            'close': 'last', 'volume': 'sum',
+            'taker_buy_volume': 'sum', 'count': 'sum'
         }).dropna().reset_index()
         return df_1h
     except Exception as e:
@@ -79,7 +78,6 @@ def fetch_fresh_candles():
         return pd.DataFrame()
 
 def load_models():
-    """Сканирует папку crypto/learn/ на наличие файлов model_*.py"""
     models = []
     for file_path in SCRIPT_DIR.glob("model_*.py"):
         model_name = file_path.stem
@@ -99,7 +97,6 @@ def load_models():
 def main():
     log.info(f"STARTING WEEKLY TRAINER ORCHESTRATOR v{VERSION}")
     
-    # 1. Подготовка данных
     if not DATA_FILE.exists():
         log.error(f"DATA FILE NOT FOUND: {DATA_FILE}")
         return
@@ -108,58 +105,86 @@ def main():
     df_hist['open_time'] = df_hist['open_time'].apply(lambda x: x / 1000 if x > 1e14 else x)
     df_hist['open_time'] = pd.to_datetime(df_hist['open_time'], unit='ms', utc=True)
     
+    # Добавляем недостающие колонки в историю, если их нет
+    if 'taker_buy_volume' not in df_hist.columns:
+        df_hist['taker_buy_volume'] = df_hist['volume'] * 0.5
+    if 'count' not in df_hist.columns:
+        df_hist['count'] = 100
+    
     df_fresh = fetch_fresh_candles()
     df = pd.concat([df_hist, df_fresh]) if not df_fresh.empty else df_hist
     df = df.drop_duplicates(subset=['open_time']).sort_values('open_time').reset_index(drop=True)
     
-    # 2. Предрасчет общих индикаторов (ДОБАВЛЕН ATR)
+    # === РАСШИРЕННЫЙ НАБОР ИНДИКАТОРОВ ===
+    log.info("Calculating indicators...")
     df['rsi'] = calculate_rsi(df['close'], 14)
+    df['rsi_7'] = calculate_rsi(df['close'], 7)
+    df['rsi_21'] = calculate_rsi(df['close'], 21)
     df['macd_hist'] = calculate_macd(df['close'], 12, 26, 9)
     df['ema_50'] = calculate_ema(df['close'], 50)
+    df['ema_20'] = calculate_ema(df['close'], 20)
+    df['ema_200'] = calculate_ema(df['close'], 200)
     df['vol_sma'] = df['volume'].rolling(window=20).mean()
-    df['atr'] = calculate_atr(df, 14)  # <--- ТЕПЕРЬ ML-МОДЕЛИ НАЙДУТ ATR
+    
+    # Множественные ATR для разных горизонтов волатильности
+    df['atr_7'] = calculate_atr(df, 7)
+    df['atr_14'] = calculate_atr(df, 14)
+    df['atr_50'] = calculate_atr(df, 50)
+    df['atr_100'] = calculate_atr(df, 100)
+    
+    # Дополнительные признаки
+    df['buy_ratio'] = df['taker_buy_volume'] / df['volume'].replace(0, 1)
+    df['avg_trade_size'] = df['volume'] / df['count'].replace(0, 1)
+    df['price_change_1h'] = df['close'].pct_change(1)
+    df['price_change_4h'] = df['close'].pct_change(4)
+    df['price_change_24h'] = df['close'].pct_change(24)
     
     df = df.dropna().reset_index(drop=True)
-    
     log.info(f"Data ready. Total rows: {len(df)}")
 
-    # 3. Загрузка моделей
     models = load_models()
     if not models:
-        log.error("No models found! Create model_base.py or similar.")
+        log.error("No models found!")
         return
 
-    # 4. Поиск лучших параметров для LONG и SHORT
     results = {"long": None, "short": None}
+    model_scores = {}  # Для лога всех результатов
 
     for side in ["long", "short"]:
         log.info(f"--- Searching best model for {side.upper()} ---")
         best_score = -99999
         best_model_data = None
+        model_scores[side] = {}
 
         for model_name, module in models:
             try:
                 log.info(f"Running {model_name} for {side.upper()}...")
                 res = module.train(df, side=side)
                 
-                if res and res.get("metrics") and res["metrics"].get("score", -99999) > best_score:
-                    best_score = res["metrics"]["score"]
-                    res["source"] = model_name
-                    best_model_data = res
-                    log.info(f"🏆 New best found! {model_name} with score: {best_score}")
+                if res and res.get("metrics"):
+                    sc = res["metrics"].get("score", -99999)
+                    model_scores[side][model_name] = res["metrics"]
+                    log.info(f"  → {model_name} score: {sc}")
+                    
+                    if sc > best_score:
+                        best_score = sc
+                        res["source"] = model_name
+                        best_model_data = res
+                        log.info(f"🏆 New best! {model_name} with score: {sc}")
             except Exception as e:
                 log.error(f"Model {model_name} crashed on {side}: {e}")
+                model_scores[side][model_name] = {"error": str(e)}
                 continue
 
         if best_model_data:
             results[side] = best_model_data
 
-    # 5. Сохранение результатов
     out_data = {
         "trainer_version": VERSION,
         "updated_at": datetime.now(timezone.utc).isoformat(),
         "long": results["long"],
-        "short": results["short"]
+        "short": results["short"],
+        "all_scores": model_scores
     }
     
     with open(MODEL_OUT_FILE, "w", encoding="utf-8") as f:
