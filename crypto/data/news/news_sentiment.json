@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-11-05T19:05:38.650553+00:00",
+  "generated_at": "2026-11-05T20:05:39.765515+00:00",
   "total_news": 99,
-  "avg_sentiment": -0.362,
+  "avg_sentiment": -0.387,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 15,
-  "bearish_count": 30,
-  "neutral_count": 54,
+  "bullish_count": 14,
+  "bearish_count": 32,
+  "neutral_count": 53,
   "fake_count": 0,
-  "cross_confirmed": 20,
+  "cross_confirmed": 30,
   "by_source": {
     "Cointelegraph": {
       "total": 20,
@@ -16,23 +16,23 @@
     },
     "Decrypt": {
       "total": 20,
-      "bull": 2,
-      "bear": 3
+      "bull": 3,
+      "bear": 2
     },
     "Bitcoin.com": {
       "total": 8,
-      "bull": 1,
-      "bear": 5
+      "bull": 0,
+      "bear": 6
     },
     "CryptoSlate": {
       "total": 8,
-      "bull": 2,
-      "bear": 3
+      "bull": 1,
+      "bear": 4
     },
     "CryptoPotato": {
       "total": 25,
       "bull": 5,
-      "bear": 7
+      "bear": 8
     },
     "Bitcoinist": {
       "total": 8,
@@ -47,6 +47,23 @@
   },
   "top_bullish": [
     {
+      "title": "Zcash Upgrade Could Lock $16 Million in Crypto Forever",
+      "url": "https://decrypt.co/382663/zcash-upgrade-could-lock-16-million-crypto",
+      "source": "Decrypt",
+      "source_weight": 1.1,
+      "lang": "en",
+      "pub_date": "2026-11-05T19:46:03+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-05T20:05:37.912257+00:00",
+      "effective_weight": 1.65,
+      "title_original": "Zcash Upgrade Could Lock $16 Million in Crypto Forever",
+      "cross_check": 1
+    },
+    {
       "title": "Trump-Backed American Bitcoin Turns a Profit as Bitcoin Rise Lifts Books",
       "url": "https://decrypt.co/382633/trump-american-bitcoin-q3-profit-bitcoin-lifts-books",
       "source": "Decrypt",
@@ -56,10 +73,10 @@
       "sentiment": 1.0,
       "bull_weight": 1.0,
       "bear_weight": 0.0,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-05T19:05:36.790843+00:00",
-      "effective_weight": 1.65,
+      "collected_at": "2026-11-05T20:05:37.912329+00:00",
+      "effective_weight": 1.1,
       "title_original": "Trump-Backed American Bitcoin Turns a Profit as Bitcoin Rise Lifts Books",
       "cross_check": 2
     },
@@ -75,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-05T19:05:36.790929+00:00",
+      "collected_at": "2026-11-05T20:05:37.912408+00:00",
       "effective_weight": 1.1,
       "title_original": "Solana Labs’ Leap Launches Mobile App for Trading Tokenized Stocks and Crypto",
       "cross_check": 1
@@ -92,7 +109,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-05T19:05:36.686445+00:00",
+      "collected_at": "2026-11-05T20:05:37.799920+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin, Ether ETFs draw $128M as crypto rebounds after midterms",
       "cross_check": 5
@@ -109,30 +126,47 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-05T19:05:37.368154+00:00",
+      "collected_at": "2026-11-05T20:05:38.326953+00:00",
       "effective_weight": 1.0,
       "title_original": "Treasury’s cash plan points to a possible December liquidity window for Bitcoin",
-      "cross_check": 1
-    },
-    {
-      "title": "Ethereum (ETH) Price Analysis: Why Reclaiming $2.5K Is Do-or-Die for the Bulls",
-      "url": "https://cryptopotato.com/ethereum-eth-price-analysis-why-reclaiming-2-5k-is-do-or-die-for-the-bulls/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-05T14:45:04+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-05T19:05:37.562122+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Ethereum (ETH) Price Analysis: Why Reclaiming $2.5K Is Do-or-Die for the Bulls",
       "cross_check": 1
     }
   ],
   "top_bearish": [
+    {
+      "title": "Thailand Targets Crypto Exchange Bitget With Criminal Complaint, Imminent Ban",
+      "url": "https://news.bitcoin.com/regulation-and-legal/thailand-targets-bitget-criminal-complaint-imminent-ban/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-05T19:15:18+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-05T20:05:38.119375+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Thailand Targets Crypto Exchange Bitget With Criminal Complaint, Imminent Ban",
+      "cross_check": 3
+    },
+    {
+      "title": "Polygon Eyes Hard Fork to Recover 70.49 Million POL Stolen in Polymarket and Binance Hacks",
+      "url": "https://cryptopotato.com/polygon-eyes-hard-fork-to-recover-70-49-million-pol-stolen-in-polymarket-and-binance-hacks/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-05T19:38:34+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-05T20:05:38.485545+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Polygon Eyes Hard Fork to Recover 70.49 Million POL Stolen in Polymarket and Binance Hacks",
+      "cross_check": 3
+    },
     {
       "title": "Fed, OCC check US banks after Binance hack as experts flag security risks",
       "url": "https://cointelegraph.com/news/fed-occ-check-us-banks-binance-hack-security-risks?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -143,63 +177,12 @@
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 3.0,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-05T19:05:36.685839+00:00",
-      "effective_weight": 1.95,
+      "collected_at": "2026-11-05T20:05:37.799353+00:00",
+      "effective_weight": 1.3,
       "title_original": "Fed, OCC check US banks after Binance hack as experts flag security risks",
       "cross_check": 6
-    },
-    {
-      "title": "Eric Trump’s American Bitcoin Banks $126M Profit—But ABTC Shares Dive",
-      "url": "https://news.bitcoin.com/mining/eric-trumps-american-bitcoin-banks-126m-abtc-shares-dive/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-05T18:22:35+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-05T19:05:37.078966+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Eric Trump’s American Bitcoin Banks $126M Profit—But ABTC Shares Dive",
-      "cross_check": 2
-    },
-    {
-      "title": "Bitcoin crashes below $76,000 as AI bubble fears wipe $2.5 trillion from Wall Street",
-      "url": "https://cryptoslate.com/bitcoin-crashes-below-76000-as-ai-bubble-fears-wipe-2-5-trillion-from-wall-street/",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-05T18:50:46+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 4.2,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-05T19:05:37.367846+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Bitcoin crashes below $76,000 as AI bubble fears wipe $2.5 trillion from Wall Street",
-      "cross_check": 1
-    },
-    {
-      "title": "Ethereum (ETH) Pumps and Dumps: The Next Potential Targets Revealed",
-      "url": "https://cryptopotato.com/ethereum-eth-jumps-5-daily-the-next-potential-targets-revealed/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-05T18:22:13+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-05T19:05:37.561763+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Ethereum (ETH) Pumps and Dumps: The Next Potential Targets Revealed",
-      "cross_check": 1
     },
     {
       "title": "South Korea seeks 4th crypto tax delay, targets 2029 start",
@@ -213,10 +196,27 @@
       "bear_weight": 1.2,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-05T19:05:36.686305+00:00",
+      "collected_at": "2026-11-05T20:05:37.799790+00:00",
       "effective_weight": 1.04,
       "title_original": "South Korea seeks 4th crypto tax delay, targets 2029 start",
-      "cross_check": 4
+      "cross_check": 5
+    },
+    {
+      "title": "France budget rejection sidelines stablecoin tax, wallet reporting",
+      "url": "https://cointelegraph.com/news/france-rejects-budget-revenue-sidelines-crypto-amendments?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-11-05T09:04:42+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-05T20:05:37.799857+00:00",
+      "effective_weight": 1.04,
+      "title_original": "France budget rejection sidelines stablecoin tax, wallet reporting",
+      "cross_check": 1
     }
   ]
 }
