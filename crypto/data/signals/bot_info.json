@@ -4,7 +4,10 @@
     "macd": 1.0,
     "rsi": 1.0,
     "ema": 1.0,
-    "volume": 1.0
+    "volume": 1.0,
+    "rsi_low": 1.0,
+    "rsi_mid": 1.0,
+    "rsi_high": 1.0
   },
   "threshold": 3.0
 }
