@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - SIGNAL BOT (ADAPTIVE THRESHOLD v8.1)
+# ARGUS - SIGNAL BOT (ADAPTIVE + ARCHIVE v8.2)
 # Path: crypto/signals/signal_bot.py
 # ============================================================
 
@@ -9,13 +9,13 @@ import logging
 import base64
 import pickle
 from pathlib import Path
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import psycopg
 import pandas as pd
 import numpy as np
 import xgboost as xgb
 
-VERSION = "8.1.0"
+VERSION = "8.2.0"
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("crypto.signal_bot")
 
@@ -42,10 +42,11 @@ LEARN_STEP = 0.05
 MIN_WEIGHT = 0.1
 MAX_WEIGHT = 2.0
 
-# Настройки адаптивного порога
-HISTORY_LIMIT = 672  # 7 дней * 24 часа * 4 (15 мин)
-PERCENTILE = 90      # Берем топ 10% сигналов
-MIN_ADAPTIVE_THRESHOLD = 1.5 # Если ниже, не входим вообще
+HISTORY_DAYS = 7
+HISTORY_LIMIT = HISTORY_DAYS * 24 * 4 # 15-минутные замеры
+PERCENTILE = 90
+MIN_ADAPTIVE_THRESHOLD = 1.5
+ARCHIVE_DAYS = 365
 
 def get_conn():
     if not DB_URL: raise RuntimeError("AIVEN_DB_URL not set")
@@ -86,6 +87,7 @@ def ensure_weights(bot_info):
         if k not in weights: weights[k] = default_val
     bot_info["weights"] = weights
     if "score_history" not in bot_info: bot_info["score_history"] = []
+    if "score_archive" not in bot_info: bot_info["score_archive"] = []
     if "threshold" not in bot_info: bot_info["threshold"] = DEFAULT_THRESHOLD
     if "started_at" not in bot_info: bot_info["started_at"] = datetime.now(timezone.utc).isoformat()
     save_json(BOT_INFO, bot_info)
@@ -129,6 +131,76 @@ def get_features_for_ml(df_1h, feature_cols):
     df = df.dropna()
     return df[feature_cols].iloc[[-1]].values
 
+def archive_and_clean_history(bot_info):
+    """Сжимает старые данные (старше 7 дней) в дневной архив и чистит сырые данные."""
+    now = datetime.now(timezone.utc)
+    history = bot_info.get("score_history", [])
+    archive = bot_info.get("score_archive", [])
+    
+    cutoff = now - timedelta(days=HISTORY_DAYS)
+    
+    fresh_entries = []
+    old_entries = []
+    
+    for entry in history:
+        ts_str = entry.get("ts") if isinstance(entry, dict) else None
+        if ts_str:
+            try:
+                ts = datetime.fromisoformat(ts_str)
+                if ts.tzinfo is None: ts = ts.replace(tzinfo=timezone.utc)
+                if ts >= cutoff: fresh_entries.append(entry)
+                else: old_entries.append(entry)
+            except Exception:
+                fresh_entries.append(entry) # Если формат битый, оставляем как есть
+        else:
+            # Если старый формат (просто float), то считаем его старым
+            old_entries.append({"ts": "2020-01-01T00:00:00+00:00", "score": float(entry)})
+            
+    if old_entries:
+        # Группируем старые записи по дате
+        by_date = {}
+        for e in old_entries:
+            date_str = e["ts"][:10] # YYYY-MM-DD
+            if date_str not in by_date: by_date[date_str] = []
+            by_date[date_str].append(e["score"])
+            
+        # Считаем метрики по сделкам для winrate
+        closed_deals = load_json(CLOSED_DEALS, [])
+        
+        for date_str, scores in by_date.items():
+            # Ищем, нет ли уже записи за этот день
+            day_record = next((a for a in archive if a["date"] == date_str), None)
+            
+            # Считаем метрики закрытых сделок в этот день
+            day_trades = [d for d in closed_deals if d.get("close_time", "").startswith(date_str)]
+            trades_count = len(day_trades)
+            winrate = sum(1 for d in day_trades if d.get("pnl_pct", 0) > 0) / trades_count if trades_count > 0 else 0.0
+            
+            if not day_record:
+                day_record = {
+                    "date": date_str,
+                    "avg_score": 0,
+                    "max_score": 0,
+                    "min_score": 0,
+                    "trades_count": trades_count,
+                    "winrate": round(winrate, 2)
+                }
+                archive.append(day_record)
+                
+            day_record["avg_score"] = round(float(np.mean(scores)), 2)
+            day_record["max_score"] = round(float(np.max(scores)), 2)
+            day_record["min_score"] = round(float(np.min(scores)), 2)
+            
+        # Ограничиваем архив по дням
+        archive.sort(key=lambda x: x["date"], reverse=True)
+        archive = archive[:ARCHIVE_DAYS]
+        
+        log.info(f"📦 Archived {len(old_entries)} old scores into {len(by_date)} daily records. History now: {len(fresh_entries)}")
+        
+    bot_info["score_history"] = fresh_entries
+    bot_info["score_archive"] = archive
+    return bot_info
+
 def main():
     log.info(f"STARTING ADAPTIVE BOT v{VERSION}")
 
@@ -141,10 +213,9 @@ def main():
     if not models.get("long") or not models.get("short"):
         return log.error("Models not found.")
 
-    # ==========================================
-    # ЛОГИКА 1: ЕСЛИ МЫ В СДЕЛКЕ (СЛЕДИМ И ТРЕЙЛИМ)
-    # ==========================================
+    # ЛОГИКА 1: ЕСЛИ МЫ В СДЕЛКЕ
     if current_deal and "entry" in current_deal:
+        # ... (код трейлинга и закрытия сделки без изменений) ...
         deal_type = current_deal.get("type", "LONG")
         log.info(f"In {deal_type} trade. Entry: {current_deal['entry']:.2f} | TP: {current_deal['tp']:.2f} | SL: {current_deal['sl']:.2f}")
         
@@ -233,9 +304,7 @@ def main():
             save_json(INFO_DEAL, {"type": "CLOSE", "deal_type": deal_type, "reason": exit_reason, "pnl_pct": round(pnl_pct, 2), "pnl_usd": round(pnl_usd, 2), "sent": False})
         return
 
-    # ==========================================
-    # ЛОГИКА 2: ПОИСК СИГНАЛА (ADAPTIVE THRESHOLD)
-    # ==========================================
+    # ЛОГИКА 2: ПОИСК СИГНАЛА
     source_long = models["long"].get("source", "model_base")
     source_short = models["short"].get("source", "model_base")
 
@@ -255,6 +324,7 @@ def main():
 
     if len(df_1h) < 55: return log.error("Not enough data.")
 
+    # ... (расчет индикаторов без изменений) ...
     close_series = df_1h['close']
     df_1h['rsi'] = 100 - 100 / (1 + close_series.diff().where(close_series.diff() > 0, 0).rolling(14).mean() / (-close_series.diff().where(close_series.diff() < 0, 0)).rolling(14).mean())
     df_1h['rsi_7'] = 100 - 100 / (1 + close_series.diff().where(close_series.diff() > 0, 0).rolling(7).mean() / (-close_series.diff().where(close_series.diff() < 0, 0)).rolling(7).mean())
@@ -284,7 +354,7 @@ def main():
     vol_sma = float(last_closed_1h['vol_sma'])
     cur_vol = float(last_closed_1h['volume'])
 
-    # --- ОЦЕНКА LONG ---
+    # ... (оценка LONG/SHORT без изменений) ...
     score_long = 0.0
     active_long = []
     prob_long = 0.0
@@ -316,9 +386,8 @@ def main():
         except Exception as e:
             log.error(f"ML Prediction failed: {e}")
             prob_long = 0.0
-        score_long = prob_long * 10 # Приводим вероятность к шкале баллов (0.6 -> 6.0)
+        score_long = prob_long * 10
 
-    # --- ОЦЕНКА SHORT ---
     score_short = 0.0
     active_short = []
     prob_short = 0.0
@@ -353,30 +422,29 @@ def main():
         score_short = prob_short * 10
 
     # ==========================================
-    # АДАПТИВНЫЙ ПОРОГ ВХОДА
+    # АДАПТИВНЫЙ ПОРОГ И АРХИВАЦИЯ
     # ==========================================
     max_score_today = max(score_long, score_short)
     
-    # Записываем в историю
+    # Добавляем запись с текущим временем
+    now_iso = datetime.now(timezone.utc).isoformat()
     score_history = bot_info.get("score_history", [])
-    score_history.append(max_score_today)
-    if len(score_history) > HISTORY_LIMIT:
-        score_history = score_history[-HISTORY_LIMIT:]
+    score_history.append({"ts": now_iso, "score": max_score_today})
     
     bot_info["score_history"] = score_history
-    save_json(BOT_INFO, bot_info)
-
-    # Считаем динамический порог (90-й процентиль)
-    if len(score_history) > 50:
-        adaptive_threshold = float(np.percentile(score_history, PERCENTILE))
-        # Защита: порог не должен быть слишком низким или слишком высоким
+    bot_info = archive_and_clean_history(bot_info)
+    
+    # Достаем только значения score для расчета порога
+    fresh_scores = [e["score"] for e in bot_info["score_history"] if "score" in e]
+    
+    if len(fresh_scores) > 50:
+        adaptive_threshold = float(np.percentile(fresh_scores, PERCENTILE))
         adaptive_threshold = max(MIN_ADAPTIVE_THRESHOLD, min(4.5, adaptive_threshold))
     else:
         adaptive_threshold = DEFAULT_THRESHOLD
 
     log.info(f"Price: {price:.1f} | RSI: {rsi:.1f} | LONG: {score_long:.2f} | SHORT: {score_short:.2f} | Adapt. Threshold: {adaptive_threshold:.2f}")
 
-    # Логика входа (убран жесткий перевес одной стороны)
     if score_long >= adaptive_threshold and score_long > score_short:
         log.info(f"🚀 LONG SIGNAL! (Score: {score_long:.2f} >= {adaptive_threshold:.2f})")
         tp = price * (1 + models["long"]["params"].get("tp_pct", 5.0) / 100)
