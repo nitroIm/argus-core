@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - NEWS REPORT v13.1 (FIAT + BARS FIX)
+# ARGUS - NEWS REPORT v13.2 (VK DEBUG)
 # Path: crypto/report/news_report.py
 # ============================================================
 
@@ -94,12 +94,10 @@ def get_cbr_usd():
         r = requests.get("https://www.cbr-xml-daily.ru/daily_json.js", timeout=10)
         data = r.json()
         usd = data.get("Valute", {}).get("USD", {})
-        cur = usd.get("Value")
-        prev = usd.get("Previous")
+        cur, prev = usd.get("Value"), usd.get("Previous")
         if cur and prev:
             change = cur - prev
-            pct = (change / prev) * 100
-            return {"rate": cur, "change": change, "pct": pct}
+            return {"rate": cur, "change": change, "pct": (change / prev) * 100}
     except Exception as e:
         log.error(f"CBR Error: {e}")
     return None
@@ -117,37 +115,65 @@ def get_rapira_usdt():
     return None
 
 # ============================================================
-# VK UPLOADER
+# VK UPLOADER (DEBUG MODE)
 # ============================================================
 def upload_photo_to_vk(photo_bytes):
+    print(">>> VK UPLOAD START")
     if not VK_TOKEN or not VK_GROUP_ID: 
+        print(">>> VK ERROR: Empty VK_TOKEN or VK_GROUP_ID")
         return None
+    
     try:
         gid = VK_GROUP_ID.replace("-", "")
         url = "https://api.vk.com/method/photos.getWallUploadServer"
+        print(f">>> VK: Getting server for gid={gid}")
+        
         r = requests.post(url, data={"group_id": gid, "access_token": VK_TOKEN, "v": "5.199"}, headers=HEADERS, timeout=20)
-        if r.status_code != 200: return None
+        
+        if r.status_code != 200:
+            print(f">>> VK ERROR HTTP: {r.status_code} - {r.text[:200]}")
+            return None
+            
         r_data = r.json()
-        if "error" in r_data: return None
+        if "error" in r_data: 
+            print(f">>> VK API ERROR: {r_data['error']}")
+            return None
             
         upload_url = r_data["response"]["upload_url"]
+        print(">>> VK: Uploading file...")
+        
         files = {'photo': ('chart.jpg', photo_bytes.getvalue(), 'image/jpeg')}
         r = requests.post(upload_url, files=files, timeout=30)
-        if r.status_code != 200: return None
-        r_upload = r.json()
-        if not r_upload.get("photo"): return None
+        
+        if r.status_code != 200:
+            print(f">>> VK UPLOAD ERROR HTTP: {r.status_code} - {r.text[:200]}")
+            return None
             
+        r_upload = r.json()
+        if not r_upload.get("photo"):
+            print(f">>> VK UPLOAD ERROR: Empty photo field. Response: {r_upload}")
+            return None
+            
+        print(">>> VK: Saving photo...")
         url = "https://api.vk.com/method/photos.saveWallPhoto"
         params = {"group_id": gid, "photo": r_upload["photo"], "server": r_upload["server"], "hash": r_upload["hash"], "access_token": VK_TOKEN, "v": "5.199"}
         res = requests.post(url, data=params, headers=HEADERS, timeout=20)
-        if res.status_code != 200: return None
+        
+        if res.status_code != 200:
+            print(f">>> VK SAVE ERROR HTTP: {res.status_code} - {res.text[:200]}")
+            return None
+            
         res_data = res.json()
-        if "error" in res_data: return None
+        if "error" in res_data: 
+            print(f">>> VK SAVE API ERROR: {res_data['error']}")
+            return None
             
         saved = res_data["response"][0]
+        print(f">>> VK SUCCESS: photo{saved['owner_id']}_{saved['id']}")
         return f"photo{saved['owner_id']}_{saved['id']}"
+        
     except Exception as e:
-        log.error(f"VK Photo Upload Error: {e}")
+        print(f">>> VK CRITICAL ERROR: {e}")
         return None
 
 def send_vk(text, photo_attachment=None):
@@ -160,7 +186,9 @@ def send_vk(text, photo_attachment=None):
         if photo_attachment: params["attachments"] = photo_attachment
         r = requests.post(url, data=params, headers=HEADERS, timeout=30)
         return "error" not in r.json()
-    except Exception: return False
+    except Exception as e: 
+        print(f">>> VK WALL POST ERROR: {e}")
+        return False
 
 def to_plain(text):
     text = re.sub(r"<a href=\"([^\"]+)\">([^<]+)</a>", r"\2 (\1)", text)
@@ -400,7 +428,7 @@ def fetch_stablecoins():
     except Exception: return {}
 
 # ============================================================
-# FORMATTING & BARS (SHORTENED TO 15)
+# FORMATTING & BARS
 # ============================================================
 def fmt_price(p): return "$" + format(int(p), ",") if p >= 1000 else "$" + format(p, ".2f")
 def fmt_usd(v):
@@ -442,7 +470,7 @@ def build_report(data, top_items, top_ru, btc, live_cmc, prev_g_metrics, n_senti
         if parts: lines.append("  " + " | ".join(parts))
         lines.append("")
         
-        bar_len = 15 # <--- УМЕНЬШИЛИ ДЛИНУ ПОЛОСОК
+        bar_len = 15
         b_buy = int(round(btc["buy_pct"] / 100 * bar_len))
         bar_buy = "█" * b_buy + "░" * (bar_len - b_buy)
         b_sell = int(round(btc["sell_pct"] / 100 * bar_len))
@@ -468,7 +496,6 @@ def build_report(data, top_items, top_ru, btc, live_cmc, prev_g_metrics, n_senti
     else:
         lines.append("  ⚠️ CMC не отвечает")
         
-    # ВСТАВЛЯЕМ БЛОК КУРСОВ
     if fiat_cbr or fiat_rapira:
         lines.append("")
         lines.append("💵 <b>Валюты</b>")
@@ -516,7 +543,7 @@ def build_report(data, top_items, top_ru, btc, live_cmc, prev_g_metrics, n_senti
     return "\n".join(lines)
 
 def main():
-    log.info("news report v13.1")
+    log.info("news report v13.2")
     if not should_send_group(): return log.info("skip")
 
     if not SENTIMENT_FILE.exists(): return log.error("no sentiment file")
