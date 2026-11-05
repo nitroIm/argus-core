@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - XGBOOST MODEL v2.0 (Extended Features)
+# ARGUS - XGBOOST MODEL v3.0 (Pack to Base64)
 # Path: crypto/learn/model_xgb.py
 # ============================================================
 
@@ -7,6 +7,7 @@ import logging
 import numpy as np
 import pandas as pd
 import xgboost as xgb
+import base64
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import TimeSeriesSplit
 
@@ -20,7 +21,6 @@ HORIZON = 24
 def prepare_features(df):
     data = df.copy()
     
-    # Нормализуем цены в проценты для стабильности
     data['rsi_norm'] = data['rsi'] / 100.0
     data['rsi_7_norm'] = data['rsi_7'] / 100.0
     data['rsi_21_norm'] = data['rsi_21'] / 100.0
@@ -39,7 +39,6 @@ def prepare_features(df):
     data['pc4'] = data['price_change_4h']
     data['pc24'] = data['price_change_24h']
     
-    # Лаги
     base_features = ['rsi_norm', 'macd_norm', 'ema50_diff', 'ema20_diff', 'ema200_diff',
                      'vol_ratio', 'atr14_pct', 'atr50_pct', 'buy_ratio', 'avg_trade_norm',
                      'pc1', 'pc4', 'pc24']
@@ -59,101 +58,78 @@ def prepare_features(df):
 def walk_forward_validate(data, feature_cols, side):
     n_splits = 5
     tscv = TimeSeriesSplit(n_splits=n_splits)
-    
     X = data[feature_cols].values
     y = data['target'].values
-    
     all_predictions = []
     all_indices = []
     
     for train_idx, test_idx in tscv.split(X):
-        X_train, X_test = X[train_idx], X[test_idx]
-        y_train, y_test = y[train_idx], y[test_idx]
-        
-        if len(np.unique(y_train)) < 2:
-            continue
-        
-        model = xgb.XGBClassifier(
-            n_estimators=200,
-            max_depth=5,
-            learning_rate=0.03,
-            subsample=0.85,
-            colsample_bytree=0.85,
-            min_child_weight=3,
-            use_label_encoder=False,
-            eval_metric='logloss',
-            random_state=42
-        )
-        model.fit(X_train, y_train)
-        
-        preds = model.predict(X_test)
-        all_predictions.extend(preds)
+        if len(np.unique(y[train_idx])) < 2: continue
+        model = xgb.XGBClassifier(n_estimators=200, max_depth=5, learning_rate=0.03, 
+                                  subsample=0.85, colsample_bytree=0.85, min_child_weight=3,
+                                  eval_metric='logloss', random_state=42)
+        model.fit(X[train_idx], y[train_idx])
+        all_predictions.extend(model.predict(X[test_idx]))
         all_indices.extend(test_idx)
     
-    if not all_predictions:
-        return None
-    
-    actual = y[all_indices]
-    acc = accuracy_score(actual, all_predictions)
+    if not all_predictions: return None, None
     
     trades = []
     for i, idx in enumerate(all_indices):
         row = data.iloc[idx]
         pred = all_predictions[i]
-        
         if side == "long" and pred == 1:
-            entry = row['close']
             future = data.iloc[idx+1:idx+HORIZON+1]['close']
             if len(future) < HORIZON: continue
-            pnl_pct = (future.iloc[-1] - entry) / entry * 100 - (FEE_RATE * 200)
+            pnl_pct = (future.iloc[-1] - row['close']) / row['close'] * 100 - (FEE_RATE * 200)
             trades.append(POSITION_NOTIONAL * (pnl_pct / 100))
         elif side == "short" and pred == 0:
-            entry = row['close']
             future = data.iloc[idx+1:idx+HORIZON+1]['close']
             if len(future) < HORIZON: continue
-            pnl_pct = (entry - future.iloc[-1]) / entry * 100 - (FEE_RATE * 200)
+            pnl_pct = (row['close'] - future.iloc[-1]) / row['close'] * 100 - (FEE_RATE * 200)
             trades.append(POSITION_NOTIONAL * (pnl_pct / 100))
     
-    if not trades:
-        return None
-    
+    if not trades: return None, None
     trades = np.array(trades)
     total_pnl = trades.sum()
     winrate = (trades > 0).mean()
-    
     cum = np.cumsum(trades) + INITIAL_BALANCE
     peak = np.maximum.accumulate(cum)
     dd = (cum - peak) / peak * 100
     max_dd = dd.min() if len(dd) else 0
     if max_dd == 0: max_dd = -0.1
-    
     score = total_pnl / abs(max_dd)
     
-    return {
-        "trades": len(trades),
-        "pnl": round(total_pnl, 2),
-        "winrate": round(float(winrate), 4),
-        "max_dd": round(float(max_dd), 2),
-        "score": round(float(score), 2),
-        "accuracy": round(float(acc), 4)
-    }
+    metrics = {"trades": len(trades), "pnl": round(float(total_pnl), 2), "winrate": round(float(winrate), 4),
+               "max_dd": round(float(max_dd), 2), "score": round(float(score), 2)}
+    
+    # Обучаем финальную модель на всех данных для сохранения
+    final_model = xgb.XGBClassifier(n_estimators=200, max_depth=5, learning_rate=0.03, 
+                                    subsample=0.85, colsample_bytree=0.85, min_child_weight=3,
+                                    eval_metric='logloss', random_state=42)
+    final_model.fit(X, y)
+    
+    return metrics, final_model
 
 def train(df, side="long"):
     try:
         data, feature_cols = prepare_features(df)
         if len(data) < 2000:
-            log.warning(f"Not enough data for XGBoost ({len(data)} rows)")
             return None
         
-        metrics = walk_forward_validate(data, feature_cols, side)
-        if not metrics:
+        metrics, model = walk_forward_validate(data, feature_cols, side)
+        if not metrics or model is None:
             return None
+        
+        # Упаковка модели в Base64 строку
+        raw_model = model.get_booster().save_raw()
+        model_b64 = base64.b64encode(raw_model).decode('utf-8')
         
         return {
             "params": {
                 "model_type": "xgboost",
-                "horizon": HORIZON,
-                "n_features": len(feature_cols)
+                "features": feature_cols,
+                "model_b64": model_b64
             },
             "metrics": metrics
         }
