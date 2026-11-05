@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - SIGNAL BOT (UNIVERSAL v8.0)
+# ARGUS - SIGNAL BOT (ADAPTIVE THRESHOLD v8.1)
 # Path: crypto/signals/signal_bot.py
 # ============================================================
 
@@ -15,7 +15,7 @@ import pandas as pd
 import numpy as np
 import xgboost as xgb
 
-VERSION = "8.0.0"
+VERSION = "8.1.0"
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("crypto.signal_bot")
 
@@ -41,8 +41,11 @@ DEFAULT_THRESHOLD = 3.0
 LEARN_STEP = 0.05
 MIN_WEIGHT = 0.1
 MAX_WEIGHT = 2.0
-MIN_THRESHOLD = 2.0
-MAX_THRESHOLD = 4.5
+
+# Настройки адаптивного порога
+HISTORY_LIMIT = 672  # 7 дней * 24 часа * 4 (15 мин)
+PERCENTILE = 90      # Берем топ 10% сигналов
+MIN_ADAPTIVE_THRESHOLD = 1.5 # Если ниже, не входим вообще
 
 def get_conn():
     if not DB_URL: raise RuntimeError("AIVEN_DB_URL not set")
@@ -82,6 +85,7 @@ def ensure_weights(bot_info):
     for k, default_val in DEFAULT_WEIGHTS.items():
         if k not in weights: weights[k] = default_val
     bot_info["weights"] = weights
+    if "score_history" not in bot_info: bot_info["score_history"] = []
     if "threshold" not in bot_info: bot_info["threshold"] = DEFAULT_THRESHOLD
     if "started_at" not in bot_info: bot_info["started_at"] = datetime.now(timezone.utc).isoformat()
     save_json(BOT_INFO, bot_info)
@@ -97,16 +101,11 @@ def update_weights(bot_info, active_signals, pnl_pct):
         else: weights[k] -= (LEARN_STEP * direction)
         weights[k] = max(MIN_WEIGHT, min(MAX_WEIGHT, round(weights[k], 2)))
     bot_info["weights"] = weights
-    if pnl_pct > 0:
-        bot_info["threshold"] = max(MIN_THRESHOLD, round(bot_info.get("threshold", DEFAULT_THRESHOLD) - 0.05, 2))
-    else:
-        bot_info["threshold"] = min(MAX_THRESHOLD, round(bot_info.get("threshold", DEFAULT_THRESHOLD) + 0.05, 2))
-    log.info(f"🧠 BRAIN UPDATED | Profit: {pnl_pct:+.2f}% | Threshold: {bot_info['threshold']:.2f}")
-    log.info(f"🧠 WEIGHTS: {weights}")
+    save_json(BOT_INFO, bot_info)
+    log.info(f"🧠 BRAIN UPDATED | Profit: {pnl_pct:+.2f}% | New Weights: {weights}")
     return bot_info
 
 def get_features_for_ml(df_1h, feature_cols):
-    """Подготовка фичей для ML-модели (должна совпадать с тем, что в модели)."""
     df = df_1h.copy()
     df['rsi_norm'] = df['rsi'] / 100.0
     df['rsi_7_norm'] = df['rsi_7'] / 100.0
@@ -124,16 +123,14 @@ def get_features_for_ml(df_1h, feature_cols):
     df['pc1'] = df['price_change_1h']
     df['pc4'] = df['price_change_4h']
     df['pc24'] = df['price_change_24h']
-    
     for lag in [1, 3, 6, 12, 24]:
         for f in ['rsi_norm', 'macd_norm', 'ema50_diff', 'vol_ratio', 'buy_ratio']:
             df[f'{f}_lag{lag}'] = df[f].shift(lag)
-            
     df = df.dropna()
     return df[feature_cols].iloc[[-1]].values
 
 def main():
-    log.info(f"STARTING UNIVERSAL BOT v{VERSION}")
+    log.info(f"STARTING ADAPTIVE BOT v{VERSION}")
 
     bot_info = load_json(BOT_INFO, {})
     bot_info = ensure_weights(bot_info)
@@ -159,8 +156,7 @@ def main():
             conn.close()
         except Exception as e: return log.error(f"DB error: {e}")
 
-        if len(rows) < 100:
-            return log.error("Not enough data for trailing check.")
+        if len(rows) < 100: return log.error("Not enough data for trailing.")
 
         high, low, close = float(rows[-1][2]), float(rows[-1][3]), float(rows[-1][4])
         entry_price = float(current_deal["entry"])
@@ -225,7 +221,6 @@ def main():
             
             log.info(f"🔴 {deal_type} CLOSED: {exit_reason} | PnL: {pnl_pct:.2f}%")
 
-            # Обучение только для базовой модели (ML не обучается на ходу)
             if models["long"].get("source") == "model_base" or models["short"].get("source") == "model_base":
                 active_sigs = current_deal.get("active_signals", [])
                 bot_info = update_weights(bot_info, active_sigs, pnl_pct)
@@ -239,7 +234,7 @@ def main():
         return
 
     # ==========================================
-    # ЛОГИКА 2: ПОИСК СИГНАЛА (DYNAMIC/ML)
+    # ЛОГИКА 2: ПОИСК СИГНАЛА (ADAPTIVE THRESHOLD)
     # ==========================================
     source_long = models["long"].get("source", "model_base")
     source_short = models["short"].get("source", "model_base")
@@ -260,8 +255,6 @@ def main():
 
     if len(df_1h) < 55: return log.error("Not enough data.")
 
-    # Считаем индикаторы для 1h
-    df_1h['rsi'] = df_1h['close'].apply(lambda x: x) # Заглушка, ниже ручной расчет
     close_series = df_1h['close']
     df_1h['rsi'] = 100 - 100 / (1 + close_series.diff().where(close_series.diff() > 0, 0).rolling(14).mean() / (-close_series.diff().where(close_series.diff() < 0, 0)).rolling(14).mean())
     df_1h['rsi_7'] = 100 - 100 / (1 + close_series.diff().where(close_series.diff() > 0, 0).rolling(7).mean() / (-close_series.diff().where(close_series.diff() < 0, 0)).rolling(7).mean())
@@ -283,7 +276,7 @@ def main():
     df_1h['price_change_24h'] = close_series.pct_change(24)
     df_1h = df_1h.dropna()
 
-    last_closed_1h = df_1h.iloc[-1] # Берем последнюю закрытую свечу
+    last_closed_1h = df_1h.iloc[-1]
     price = float(last_closed_1h['close'])
     rsi = float(last_closed_1h['rsi'])
     macd_hist = float(last_closed_1h['macd_hist'])
@@ -302,9 +295,7 @@ def main():
         if cur_vol > vol_sma: score_long += bot_info["weights"]["volume"]; active_long.append("volume")
         if rsi < 30: score_long += bot_info["weights"]["rsi_low"]; active_long.append("rsi_low")
         elif rsi < 70: score_long += bot_info["weights"]["rsi_mid"]; active_long.append("rsi_mid")
-        signal_long = score_long >= bot_info["threshold"]
     else:
-        # ML логика
         try:
             if source_long == "model_xgb":
                 model_b64 = models["long"]["params"]["model_b64"]
@@ -312,8 +303,6 @@ def main():
                 raw_model = base64.b64decode(model_b64)
                 booster = xgb.Booster()
                 booster.load_model(bytearray(raw_model))
-                # xgb Booster требует DMatrix для предсказания, но проще через sklearn API, если сохраняли его
-                # Для простоты перезагрузим как sklearn (если упаковали через get_booster().save_raw(), то используем Booster)
                 X_ml = get_features_for_ml(df_1h, feature_cols)
                 dmat = xgb.DMatrix(X_ml)
                 prob_long = booster.predict(dmat)[0]
@@ -323,12 +312,11 @@ def main():
                 raw_model = base64.b64decode(model_b64)
                 model = pickle.loads(raw_model)
                 X_ml = get_features_for_ml(df_1h, feature_cols)
-                prob_long = model.predict_proba(X_ml)[0][1] # вероятность класса 1 (лонг)
+                prob_long = model.predict_proba(X_ml)[0][1]
         except Exception as e:
             log.error(f"ML Prediction failed: {e}")
             prob_long = 0.0
-            
-        signal_long = prob_long > 0.65 # Порог уверенности для лонга
+        score_long = prob_long * 10 # Приводим вероятность к шкале баллов (0.6 -> 6.0)
 
     # --- ОЦЕНКА SHORT ---
     score_short = 0.0
@@ -341,9 +329,7 @@ def main():
         if cur_vol > vol_sma: score_short += bot_info["weights"]["volume"]; active_short.append("volume")
         if rsi > 70: score_short += bot_info["weights"]["rsi_high"]; active_short.append("rsi_high")
         elif rsi > 30: score_short += bot_info["weights"]["rsi_mid"]; active_short.append("rsi_mid")
-        signal_short = score_short >= bot_info["threshold"]
     else:
-        # ML логика
         try:
             if source_short == "model_xgb":
                 model_b64 = models["short"]["params"]["model_b64"]
@@ -353,37 +339,53 @@ def main():
                 booster.load_model(bytearray(raw_model))
                 X_ml = get_features_for_ml(df_1h, feature_cols)
                 dmat = xgb.DMatrix(X_ml)
-                # Для шорта мы хотим, чтобы вероятность лонга была низкой
-                prob_short = 1.0 - booster.predict(dmat)[0] 
+                prob_short = 1.0 - booster.predict(dmat)[0]
             elif source_short == "model_rf":
                 model_b64 = models["short"]["params"]["model_b64"]
                 feature_cols = models["short"]["params"]["features"]
                 raw_model = base64.b64decode(model_b64)
                 model = pickle.loads(raw_model)
                 X_ml = get_features_for_ml(df_1h, feature_cols)
-                prob_short = model.predict_proba(X_ml)[0][0] # вероятность класса 0 (шорт)
+                prob_short = model.predict_proba(X_ml)[0][0]
         except Exception as e:
             log.error(f"ML Prediction failed: {e}")
             prob_short = 0.0
-            
-        signal_short = prob_short > 0.65
+        score_short = prob_short * 10
 
-    log.info(f"Price: {price:.1f} | RSI: {rsi:.1f} | LONG src: {source_long} | SHORT src: {source_short}")
-    if source_long == "model_base": log.info(f"LONG Score: {score_long:.2f} | Threshold: {bot_info['threshold']:.2f}")
-    else: log.info(f"LONG ML Prob: {prob_long:.3f}")
-    if source_short == "model_base": log.info(f"SHORT Score: {score_short:.2f}")
-    else: log.info(f"SHORT ML Prob: {prob_short:.3f}")
+    # ==========================================
+    # АДАПТИВНЫЙ ПОРОГ ВХОДА
+    # ==========================================
+    max_score_today = max(score_long, score_short)
+    
+    # Записываем в историю
+    score_history = bot_info.get("score_history", [])
+    score_history.append(max_score_today)
+    if len(score_history) > HISTORY_LIMIT:
+        score_history = score_history[-HISTORY_LIMIT:]
+    
+    bot_info["score_history"] = score_history
+    save_json(BOT_INFO, bot_info)
 
-    # Открытие позиции
-    if signal_long and not signal_short:
-        log.info("🚀 LONG SIGNAL!")
+    # Считаем динамический порог (90-й процентиль)
+    if len(score_history) > 50:
+        adaptive_threshold = float(np.percentile(score_history, PERCENTILE))
+        # Защита: порог не должен быть слишком низким или слишком высоким
+        adaptive_threshold = max(MIN_ADAPTIVE_THRESHOLD, min(4.5, adaptive_threshold))
+    else:
+        adaptive_threshold = DEFAULT_THRESHOLD
+
+    log.info(f"Price: {price:.1f} | RSI: {rsi:.1f} | LONG: {score_long:.2f} | SHORT: {score_short:.2f} | Adapt. Threshold: {adaptive_threshold:.2f}")
+
+    # Логика входа (убран жесткий перевес одной стороны)
+    if score_long >= adaptive_threshold and score_long > score_short:
+        log.info(f"🚀 LONG SIGNAL! (Score: {score_long:.2f} >= {adaptive_threshold:.2f})")
         tp = price * (1 + models["long"]["params"].get("tp_pct", 5.0) / 100)
         sl = price * (1 - models["long"]["params"].get("sl_pct", 2.0) / 100)
         deal = {"type": "LONG", "entry": price, "tp": tp, "sl": sl, "open_time": datetime.now(timezone.utc).isoformat(), "active_signals": active_long if source_long == "model_base" else []}
         save_json(OPENED_DEALS, deal)
         save_json(INFO_DEAL, {"type": "ENTRY", "deal_type": "LONG", "entry": price, "tp": tp, "sl": sl, "sent": False})
-    elif signal_short and not signal_long:
-        log.info("🩸 SHORT SIGNAL!")
+    elif score_short >= adaptive_threshold and score_short > score_long:
+        log.info(f"🩸 SHORT SIGNAL! (Score: {score_short:.2f} >= {adaptive_threshold:.2f})")
         tp = price * (1 - models["short"]["params"].get("tp_pct", 5.0) / 100)
         sl = price * (1 + models["short"]["params"].get("sl_pct", 2.0) / 100)
         deal = {"type": "SHORT", "entry": price, "tp": tp, "sl": sl, "open_time": datetime.now(timezone.utc).isoformat(), "active_signals": active_short if source_short == "model_base" else []}
