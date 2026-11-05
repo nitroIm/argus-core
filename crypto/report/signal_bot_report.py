@@ -1,12 +1,9 @@
 # ============================================================
-# ARGUS - SIGNAL REPORT (SENDER v4.2 TRAILING UPDATE)
+# ARGUS - SIGNAL REPORT v5.0 (EVENT QUEUE)
 # Path: crypto/report/signal_bot_report.py
 # ============================================================
 
-import os
-import json
-import logging
-import requests
+import os, json, logging, requests
 from pathlib import Path
 from datetime import datetime
 
@@ -41,96 +38,63 @@ def send_tg(text):
 
 def fmt(p): return "$" + format(int(p), ",") if p >= 1000 else "$" + format(p, ".2f")
 
-def get_stats_text():
-    info = load_json(BOT_INFO, {})
-    closed = load_json(CLOSED_DEALS, [])
+def get_stats_text(mode):
+    info = load_json(BOT_INFO, {}).get(mode, {})
+    closed = [t for t in load_json(CLOSED_DEALS, []) if t.get("mode") == mode]
     
-    start_date = "?"
-    if info.get("started_at"):
-        dt = datetime.fromisoformat(info["started_at"])
-        start_date = dt.strftime("%d.%m.%Y %H:%M")
-
     total = len(closed)
     wins = sum(1 for t in closed if t.get("pnl_usd", 0) > 0)
     losses = total - wins
     winrate = (wins / total * 100) if total > 0 else 0
     total_pnl = sum(t.get("pnl_usd", 0) for t in closed)
     pnl_sign = "+" if total_pnl >= 0 else ""
+    start = info.get("started_at", "?")
+    if start != "?": start = datetime.fromisoformat(start).strftime("%d.%m %H:%M")
 
-    text = "────────────────────\n"
-    text += "📊 <b>Статистика бота:</b>\n"
-    text += f"📅 Работает с: {start_date}\n"
-    text += f"📈 Сделок: {total} ({wins} ✅ / {losses} ❌)\n"
-    text += f"🎯 Винрейт (факт): <b>{winrate:.1f}%</b>\n"
-    text += f"💰 Общий PnL: <b>{pnl_sign}${total_pnl:.2f}</b>"
-    return text
+    return (f"────────────────────\n"
+            f"📊 <b>Статистика {mode.upper()}:</b>\n"
+            f"📅 Работает с: {start}\n"
+            f"📈 Сделок: {total} ({wins} ✅ / {losses} ❌)\n"
+            f"🎯 Винрейт: <b>{winrate:.1f}%</b>\n"
+            f"💰 Общий PnL: <b>{pnl_sign}${total_pnl:.2f}</b>")
 
 def main():
-    log.info("STARTING SIGNAL REPORT v4.2")
+    log.info("STARTING SIGNAL REPORT v5.0")
     
-    event = load_json(INFO_DEAL, {})
-    if not event or event.get("sent") == True:
-        return log.info("No new events.")
-
-    text = ""
-    deal_type = event.get("deal_type", "LONG")
-
-    if event["type"] == "ENTRY":
-        entry = float(event["entry"])
-        tp = float(event["tp"])
-        sl = float(event["sl"])
+    queue = load_json(INFO_DEAL, [])
+    if not isinstance(queue, list) or not queue:
+        return log.info("No new events in queue.")
         
-        if deal_type == "LONG":
-            tp_pct = (tp - entry) / entry * 100
-            sl_pct = (sl - entry) / entry * 100
-            text = "🚀 <b>ARGUS SIGNAL: ПОКУПКА BTC (LONG)</b>\n\n"
-        else:
-            tp_pct = (entry - tp) / entry * 100
-            sl_pct = (entry - sl) / entry * 100
-            text = "🩸 <b>ARGUS SIGNAL: ПРОДАЖА BTC (SHORT)</b>\n\n"
-
-        text += f"🟢 <b>Вход:</b> {fmt(entry)}\n"
-        text += f"🎯 <b>Тейк (TP):</b> {fmt(tp)} ({tp_pct:+.2f}%)\n"
-        text += f"🛑 <b>Стоп (SL):</b> {fmt(sl)} ({sl_pct:+.2f}%)\n\n"
-        text += get_stats_text()
-    
-    elif event["type"] == "UPDATE":
-        new_sl = float(event["new_sl"])
-        sl_pct = float(event["sl_pct"])
+    sent_any = False
+    for event in queue:
+        mode_tag = "⚡️ [ИНТРАДЕЙ]" if event.get("mode") == "intraday" else "🌊 [СВИНГ]"
+        deal_type = event.get("deal_type", "LONG")
+        text = ""
         
-        if deal_type == "LONG":
-            text = f"🛡️ <b>ARGUS UPDATE: Трейлинг-стоп (LONG)</b>\n\n"
-        else:
-            text = f"🛡️ <b>ARGUS UPDATE: Трейлинг-стоп (SHORT)</b>\n\n"
-            
-        text += f"🛑 <b>Новый стоп:</b> {fmt(new_sl)} ({sl_pct:+.2f}%)\n\n"
-        text += get_stats_text()
-    
-    elif event["type"] == "CLOSE":
-        pnl = event["pnl_usd"]
-        sign = "+" if pnl >= 0 else ""
-        reason = event.get("reason", "")
+        if event["type"] == "ENTRY":
+            entry, tp, sl = float(event["entry"]), float(event["tp"]), float(event["sl"])
+            if deal_type == "LONG":
+                text = f"{mode_tag} <b>ПОКУПКА BTC (LONG)</b>\n\n🟢 <b>Вход:</b> {fmt(entry)}\n🎯 <b>Тейк:</b> {fmt(tp)} ({(tp-entry)/entry*100:+.2f}%)\n🛑 <b>Стоп:</b> {fmt(sl)} ({(sl-entry)/entry*100:+.2f}%)\n\n"
+            else:
+                text = f"{mode_tag} <b>ПРОДАЖА BTC (SHORT)</b>\n\n🟢 <b>Вход:</b> {fmt(entry)}\n🎯 <b>Тейк:</b> {fmt(tp)} ({(entry-tp)/entry*100:+.2f}%)\n🛑 <b>Стоп:</b> {fmt(sl)} ({(entry-sl)/entry*100:+.2f}%)\n\n"
         
-        if reason == "TRAILING_STOP":
-            status = "🛡️ ТРЕЙЛИНГ-СТОП (Профит)"
-        elif pnl > 0:
-            status = "✅ УСПЕШНАЯ СДЕЛКА"
-        else:
-            status = "❌ УБЫТОЧНАЯ СДЕЛКА"
+        elif event["type"] == "UPDATE":
+            text = f"{mode_tag} <b>Трейлинг-стоп (LONG)</b>\n\n🛑 <b>Новый стоп:</b> {fmt(event['new_sl'])} ({event['sl_pct']:+.2f}%)\n\n"
         
-        if deal_type == "LONG":
-            text = f"🏁 <b>{status} (LONG)</b>\n\n"
-        else:
-            text = f"🏁 <b>{status} (SHORT)</b>\n\n"
+        elif event["type"] == "CLOSE":
+            pnl, sign = event["pnl_usd"], "+" if event["pnl_usd"] >= 0 else ""
+            status = "🛡️ ТРЕЙЛИНГ-СТОП" if event["reason"] == "TRAILING_STOP" else ("✅ УСПЕХ" if pnl > 0 else "❌ УБЫТОК")
+            text = f"{mode_tag} <b>{status} ({deal_type})</b>\n\n📊 Причина: {event['reason']}\n💰 Результат: <b>{sign}{event['pnl_pct']}%</b> (на $100: <b>{sign}${pnl:.2f}</b>)\n\n"
 
-        text += f"📊 Причина: {reason}\n"
-        text += f"💰 Результат: <b>{sign}{event['pnl_pct']}%</b> (на $100: <b>{sign}${pnl:.2f}</b>)\n\n"
-        text += get_stats_text()
+        text += get_stats_text(event.get("mode", "swing"))
+        
+        if send_tg(text):
+            log.info(f"Sent {event['type']} ({event.get('mode')}) to TG.")
+            sent_any = True
 
-    if text and send_tg(text):
-        log.info(f"Sent {event['type']} ({deal_type}) to TG.")
-        event["sent"] = True
-        save_json(INFO_DEAL, event)
+    if sent_any:
+        save_json(INFO_DEAL, []) # Очищаем очередь
+        log.info("Queue cleared.")
 
 if __name__ == "__main__":
     main()
