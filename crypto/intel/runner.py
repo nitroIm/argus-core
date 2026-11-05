@@ -1,6 +1,6 @@
 # ============================================================
-# ARGUS - INTEL RUNNER (v1.0.0)
-# Path: crypto/intel/run_intel.py
+# ARGUS - INTEL RUNNER (v1.1.1)
+# Path: crypto/intel/runner.py
 # ============================================================
 
 import os
@@ -15,11 +15,10 @@ log = logging.getLogger("intel_runner")
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 
-# Сюда мы будем добавлять файлы по мере их создания. 
-# Порядок в списке = порядок выполнения.
+# Сюда добавляем файлы по мере их создания.
 PIPELINE = [
-    "correlation_analyzer.py",
-    # "news_analyzer.py",
+    "correlation.py",
+    # "news.py",
     # "brain.py"
 ]
 
@@ -33,11 +32,10 @@ def run_script(script_name):
     start_time = datetime.now(timezone.utc)
     
     try:
-        # Запускаем скрипт в том же окружении (с теми же секретами и путями)
         result = subprocess.run(
             [sys.executable, str(path)], 
             check=True, 
-            capture_output=False # Вывод скрипта идет прямо в общий лог
+            capture_output=False
         )
         elapsed = (datetime.now(timezone.utc) - start_time).total_seconds()
         log.info(f"✅ Модуль {script_name} успешно отработал за {elapsed:.1f} сек.")
