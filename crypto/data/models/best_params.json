@@ -1,6 +1,6 @@
 {
-  "trainer_version": "2.0.0",
-  "updated_at": "2026-11-01T19:14:13.030910+00:00",
+  "trainer_version": "3.0.0",
+  "updated_at": "2026-11-05T10:02:18.988191+00:00",
   "long": {
     "params": {
       "use_trend_filter": true,
@@ -17,7 +17,8 @@
       "winrate": 0.5448,
       "max_dd": -4.3,
       "score": 5.9
-    }
+    },
+    "source": "model_base"
   },
   "short": {
     "params": {
@@ -35,6 +36,7 @@
       "winrate": 0.6667,
       "max_dd": -0.1,
       "score": 5.27
-    }
+    },
+    "source": "model_base"
   }
 }
