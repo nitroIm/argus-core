@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - NEWS REPORT v13.2 (VK DEBUG)
+# ARGUS - NEWS REPORT v13.3 (VK RETRY & BYPASS)
 # Path: crypto/report/news_report.py
 # ============================================================
 
@@ -115,7 +115,7 @@ def get_rapira_usdt():
     return None
 
 # ============================================================
-# VK UPLOADER (DEBUG MODE)
+# VK UPLOADER (RETRY & RANDOM FILENAME)
 # ============================================================
 def upload_photo_to_vk(photo_bytes):
     print(">>> VK UPLOAD START")
@@ -123,58 +123,75 @@ def upload_photo_to_vk(photo_bytes):
         print(">>> VK ERROR: Empty VK_TOKEN or VK_GROUP_ID")
         return None
     
-    try:
-        gid = VK_GROUP_ID.replace("-", "")
-        url = "https://api.vk.com/method/photos.getWallUploadServer"
-        print(f">>> VK: Getting server for gid={gid}")
-        
-        r = requests.post(url, data={"group_id": gid, "access_token": VK_TOKEN, "v": "5.199"}, headers=HEADERS, timeout=20)
-        
-        if r.status_code != 200:
-            print(f">>> VK ERROR HTTP: {r.status_code} - {r.text[:200]}")
-            return None
+    gid = VK_GROUP_ID.replace("-", "")
+    img_data = photo_bytes.getvalue()
+    print(f">>> VK: Image size = {len(img_data)} bytes")
+
+    upload_headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "*/*"
+    }
+
+    import random, string, time
+
+    for attempt in range(1, 4):
+        try:
+            print(f">>> VK: Attempt {attempt}/3 - Getting server...")
+            url = "https://api.vk.com/method/photos.getWallUploadServer"
+            r = requests.post(url, data={"group_id": gid, "access_token": VK_TOKEN, "v": "5.199"}, headers=HEADERS, timeout=20)
             
-        r_data = r.json()
-        if "error" in r_data: 
-            print(f">>> VK API ERROR: {r_data['error']}")
-            return None
+            if r.status_code != 200:
+                print(f">>> VK ERROR HTTP: {r.status_code} - {r.text[:200]}")
+                continue
+                
+            r_data = r.json()
+            if "error" in r_data: 
+                print(f">>> VK API ERROR: {r_data['error']}")
+                return None # Token error
             
-        upload_url = r_data["response"]["upload_url"]
-        print(">>> VK: Uploading file...")
-        
-        files = {'photo': ('chart.jpg', photo_bytes.getvalue(), 'image/jpeg')}
-        r = requests.post(upload_url, files=files, timeout=30)
-        
-        if r.status_code != 200:
-            print(f">>> VK UPLOAD ERROR HTTP: {r.status_code} - {r.text[:200]}")
-            return None
+            upload_url = r_data["response"]["upload_url"]
             
-        r_upload = r.json()
-        if not r_upload.get("photo"):
-            print(f">>> VK UPLOAD ERROR: Empty photo field. Response: {r_upload}")
-            return None
+            # Случайное имя файла для обхода кэша ВК
+            fname = ''.join(random.choices(string.ascii_lowercase + string.digits, k=8)) + '.jpg'
+            files = {'photo': (fname, img_data, 'image/jpeg')}
             
-        print(">>> VK: Saving photo...")
-        url = "https://api.vk.com/method/photos.saveWallPhoto"
-        params = {"group_id": gid, "photo": r_upload["photo"], "server": r_upload["server"], "hash": r_upload["hash"], "access_token": VK_TOKEN, "v": "5.199"}
-        res = requests.post(url, data=params, headers=HEADERS, timeout=20)
-        
-        if res.status_code != 200:
-            print(f">>> VK SAVE ERROR HTTP: {res.status_code} - {res.text[:200]}")
-            return None
+            print(f">>> VK: Uploading file as {fname}...")
+            r = requests.post(upload_url, files=files, headers=upload_headers, timeout=30)
             
-        res_data = res.json()
-        if "error" in res_data: 
-            print(f">>> VK SAVE API ERROR: {res_data['error']}")
-            return None
+            if r.status_code != 200:
+                print(f">>> VK UPLOAD ERROR HTTP: {r.status_code} - {r.text[:200]}")
+                continue
+                
+            r_upload = r.json()
+            if not r_upload.get("photo"):
+                print(f">>> VK UPLOAD ERROR: Empty photo field. Response: {r_upload}")
+                time.sleep(3)
+                continue
+                
+            print(">>> VK: Saving photo...")
+            url = "https://api.vk.com/method/photos.saveWallPhoto"
+            params = {"group_id": gid, "photo": r_upload["photo"], "server": r_upload["server"], "hash": r_upload["hash"], "access_token": VK_TOKEN, "v": "5.199"}
+            res = requests.post(url, data=params, headers=HEADERS, timeout=20)
             
-        saved = res_data["response"][0]
-        print(f">>> VK SUCCESS: photo{saved['owner_id']}_{saved['id']}")
-        return f"photo{saved['owner_id']}_{saved['id']}"
-        
-    except Exception as e:
-        print(f">>> VK CRITICAL ERROR: {e}")
-        return None
+            if res.status_code != 200:
+                print(f">>> VK SAVE ERROR HTTP: {res.status_code} - {res.text[:200]}")
+                continue
+                
+            res_data = res.json()
+            if "error" in res_data: 
+                print(f">>> VK SAVE API ERROR: {res_data['error']}")
+                continue
+                
+            saved = res_data["response"][0]
+            print(f">>> VK SUCCESS: photo{saved['owner_id']}_{saved['id']}")
+            return f"photo{saved['owner_id']}_{saved['id']}"
+            
+        except Exception as e:
+            print(f">>> VK CRITICAL ERROR on attempt {attempt}: {e}")
+            time.sleep(3)
+
+    print(">>> VK UPLOAD FAILED after all attempts.")
+    return None
 
 def send_vk(text, photo_attachment=None):
     if not VK_TOKEN or not VK_GROUP_ID: return False
@@ -543,7 +560,7 @@ def build_report(data, top_items, top_ru, btc, live_cmc, prev_g_metrics, n_senti
     return "\n".join(lines)
 
 def main():
-    log.info("news report v13.2")
+    log.info("news report v13.3")
     if not should_send_group(): return log.info("skip")
 
     if not SENTIMENT_FILE.exists(): return log.error("no sentiment file")
