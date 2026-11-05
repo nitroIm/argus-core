@@ -22,7 +22,12 @@
       "rsi_high": 1.0
     },
     "threshold": 2.0,
-    "score_history": [],
+    "score_history": [
+      {
+        "ts": "2026-11-05T16:31:17.365663+00:00",
+        "score": 3.0
+      }
+    ],
     "score_archive": []
   },
   "swing": {
@@ -35,7 +40,12 @@
       "rsi_high": 1.0
     },
     "threshold": 2.0,
-    "score_history": [],
+    "score_history": [
+      {
+        "ts": "2026-11-05T16:31:17.396022+00:00",
+        "score": 3.0
+      }
+    ],
     "score_archive": []
   }
 }
