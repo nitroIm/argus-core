@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - SIGNAL BOT (DYNAMIC WEIGHTS & RSI ZONES v7.1)
+# ARGUS - SIGNAL BOT (DYNAMIC WEIGHTS & RSI ZONES v7.2)
 # Path: crypto/signals/signal_bot.py
 # ============================================================
 
@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 import psycopg
 import pandas as pd
 
-VERSION = "7.1.0"
+VERSION = "7.2.0"
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("crypto.signal_bot")
 
@@ -34,7 +34,6 @@ TRAILING_ACTIVATION_PCT = 1.0
 TRAILING_ATR_MULTIPLIER = 2.0
 
 # --- КОНСТАНТЫ ОБУЧЕНИЯ ---
-# Теперь RSI разбит на 3 зоны с независимыми весами
 DEFAULT_WEIGHTS = {
     "macd": 1.0, 
     "ema": 1.0, 
@@ -88,15 +87,35 @@ def calc_atr(df, period=14):
     atr = tr.ewm(alpha=1/period, adjust=False).mean()
     return atr.iloc[-1]
 
+def ensure_weights(bot_info):
+    """Защита: если в старом bot_info.json нет новых ключей, добавляем их с дефолтными значениями."""
+    weights = bot_info.get("weights", {})
+    changed = False
+    for k, default_val in DEFAULT_WEIGHTS.items():
+        if k not in weights:
+            weights[k] = default_val
+            changed = True
+    
+    bot_info["weights"] = weights
+    
+    if "threshold" not in bot_info:
+        bot_info["threshold"] = DEFAULT_THRESHOLD
+        changed = True
+        
+    if "started_at" not in bot_info:
+        bot_info["started_at"] = datetime.now(timezone.utc).isoformat()
+        changed = True
+
+    if changed:
+        save_json(BOT_INFO, bot_info)
+        log.info("🧠 bot_info.json updated with new default weights.")
+
+    return bot_info
+
 def update_weights(bot_info, active_signals, pnl_pct):
     """Динамическое обучение: корректировка весов всех индикаторов, включая зоны RSI."""
-    weights = bot_info.get("weights", DEFAULT_WEIGHTS.copy())
-    
-    # Защита: если в старом bot_info.json нет новых ключей RSI, добавляем их
-    for k in DEFAULT_WEIGHTS:
-        if k not in weights:
-            weights[k] = DEFAULT_WEIGHTS[k]
-
+    bot_info = ensure_weights(bot_info)
+    weights = bot_info["weights"]
     direction = 1 if pnl_pct > 0 else -1
     
     if pnl_pct == 0: return bot_info
@@ -107,12 +126,10 @@ def update_weights(bot_info, active_signals, pnl_pct):
         else:
             weights[k] -= (LEARN_STEP * direction)
             
-        # Ограничители
         weights[k] = max(MIN_WEIGHT, min(MAX_WEIGHT, round(weights[k], 2)))
     
     bot_info["weights"] = weights
     
-    # Адаптивный порог
     if pnl_pct > 0:
         bot_info["threshold"] = max(MIN_THRESHOLD, round(bot_info.get("threshold", DEFAULT_THRESHOLD) - 0.05, 2))
     else:
@@ -126,12 +143,7 @@ def main():
     log.info(f"STARTING DYNAMIC BOT v{VERSION}")
 
     bot_info = load_json(BOT_INFO, {})
-    if "weights" not in bot_info:
-        bot_info["weights"] = DEFAULT_WEIGHTS.copy()
-        bot_info["threshold"] = DEFAULT_THRESHOLD
-        bot_info["started_at"] = datetime.now(timezone.utc).isoformat()
-        save_json(BOT_INFO, bot_info)
-        log.info("Initialized bot_info.json with default weights.")
+    bot_info = ensure_weights(bot_info)  # Принудительная инициализация
 
     current_deal = load_json(OPENED_DEALS, None)
     models = load_json(MODEL_FILE)
@@ -258,8 +270,8 @@ def main():
 
     params_long = models["long"]["params"]
     params_short = models["short"]["params"]
-    weights = bot_info.get("weights", DEFAULT_WEIGHTS)
-    threshold = bot_info.get("threshold", DEFAULT_THRESHOLD)
+    weights = bot_info["weights"]
+    threshold = bot_info["threshold"]
 
     try:
         conn = get_conn()
@@ -306,7 +318,6 @@ def main():
             score_long += weights["rsi_low"]; active_long.append("rsi_low")
         elif rsi < 70:
             score_long += weights["rsi_mid"]; active_long.append("rsi_mid")
-        # Если RSI > 70 (перекуп), для лонга не даем баллов
 
     # --- ОЦЕНКА SHORT ---
     score_short = 0.0
@@ -325,7 +336,6 @@ def main():
             score_short += weights["rsi_high"]; active_short.append("rsi_high")
         elif rsi > 30:
             score_short += weights["rsi_mid"]; active_short.append("rsi_mid")
-        # Если RSI < 30 (перепродан), для шорта не даем баллов
 
     log.info(f"1h Check | Price: {price:.1f} | RSI: {rsi:.1f} | LONG Score: {score_long:.2f} | SHORT Score: {score_short:.2f} | Threshold: {threshold:.2f}")
 
