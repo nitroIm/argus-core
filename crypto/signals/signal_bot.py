@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - SIGNAL BOT (DYNAMIC WEIGHTS v7.0)
+# ARGUS - SIGNAL BOT (DYNAMIC WEIGHTS & RSI ZONES v7.1)
 # Path: crypto/signals/signal_bot.py
 # ============================================================
 
@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 import psycopg
 import pandas as pd
 
-VERSION = "7.0.0"
+VERSION = "7.1.0"
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("crypto.signal_bot")
 
@@ -34,13 +34,21 @@ TRAILING_ACTIVATION_PCT = 1.0
 TRAILING_ATR_MULTIPLIER = 2.0
 
 # --- КОНСТАНТЫ ОБУЧЕНИЯ ---
-DEFAULT_WEIGHTS = {"macd": 1.0, "rsi": 1.0, "ema": 1.0, "volume": 1.0}
+# Теперь RSI разбит на 3 зоны с независимыми весами
+DEFAULT_WEIGHTS = {
+    "macd": 1.0, 
+    "ema": 1.0, 
+    "volume": 1.0,
+    "rsi_low": 1.0,   # RSI < 30
+    "rsi_mid": 1.0,   # 30 <= RSI <= 70
+    "rsi_high": 1.0   # RSI > 70
+}
 DEFAULT_THRESHOLD = 3.0
 LEARN_STEP = 0.05
 MIN_WEIGHT = 0.1
 MAX_WEIGHT = 2.0
 MIN_THRESHOLD = 2.0
-MAX_THRESHOLD = 3.8
+MAX_THRESHOLD = 4.5
 
 def get_conn():
     if not DB_URL: raise RuntimeError("AIVEN_DB_URL not set")
@@ -81,20 +89,25 @@ def calc_atr(df, period=14):
     return atr.iloc[-1]
 
 def update_weights(bot_info, active_signals, pnl_pct):
-    """Динамическое обучение бота: корректировка весов на основе результата сделки."""
+    """Динамическое обучение: корректировка весов всех индикаторов, включая зоны RSI."""
     weights = bot_info.get("weights", DEFAULT_WEIGHTS.copy())
+    
+    # Защита: если в старом bot_info.json нет новых ключей RSI, добавляем их
+    for k in DEFAULT_WEIGHTS:
+        if k not in weights:
+            weights[k] = DEFAULT_WEIGHTS[k]
+
     direction = 1 if pnl_pct > 0 else -1
     
-    if pnl_pct == 0: return bot_info # Не учимся на нулевых сделках
+    if pnl_pct == 0: return bot_info
 
-    all_keys = ["macd", "rsi", "ema", "volume"]
-    for k in all_keys:
+    for k in weights.keys():
         if k in active_signals:
             weights[k] += (LEARN_STEP * direction)
         else:
             weights[k] -= (LEARN_STEP * direction)
             
-        # Ограничители весов
+        # Ограничители
         weights[k] = max(MIN_WEIGHT, min(MAX_WEIGHT, round(weights[k], 2)))
     
     bot_info["weights"] = weights
@@ -286,8 +299,14 @@ def main():
         score_long += weights["ema"]; active_long.append("ema")
     if cur_vol > vol_sma:
         score_long += weights["volume"]; active_long.append("volume")
-    if rsi is not None and 25 < rsi < 75:
-        score_long += weights["rsi"]; active_long.append("rsi")
+    
+    # --- ЛОГИКА RSI ЗОН ДЛЯ LONG ---
+    if rsi is not None:
+        if rsi < 30:
+            score_long += weights["rsi_low"]; active_long.append("rsi_low")
+        elif rsi < 70:
+            score_long += weights["rsi_mid"]; active_long.append("rsi_mid")
+        # Если RSI > 70 (перекуп), для лонга не даем баллов
 
     # --- ОЦЕНКА SHORT ---
     score_short = 0.0
@@ -299,8 +318,14 @@ def main():
         score_short += weights["ema"]; active_short.append("ema")
     if cur_vol > vol_sma:
         score_short += weights["volume"]; active_short.append("volume")
-    if rsi is not None and 25 < rsi < 75:
-        score_short += weights["rsi"]; active_short.append("rsi")
+        
+    # --- ЛОГИКА RSI ЗОН ДЛЯ SHORT ---
+    if rsi is not None:
+        if rsi > 70:
+            score_short += weights["rsi_high"]; active_short.append("rsi_high")
+        elif rsi > 30:
+            score_short += weights["rsi_mid"]; active_short.append("rsi_mid")
+        # Если RSI < 30 (перепродан), для шорта не даем баллов
 
     log.info(f"1h Check | Price: {price:.1f} | RSI: {rsi:.1f} | LONG Score: {score_long:.2f} | SHORT Score: {score_short:.2f} | Threshold: {threshold:.2f}")
 
