@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - WEEKLY TRAINER REPORT (v1.0)
+# ARGUS - WEEKLY TRAINER REPORT (v2.0)
 # Path: crypto/report/weekly_trainer_report.py
 # ============================================================
 
@@ -32,45 +32,48 @@ def send_tg(text):
     return r.status_code == 200
 
 def build_report(data):
-    lines = ["🏋️ <b>ARGUS TRAINER: Обучение завершено</b>", ""]
+    start = data.get("data_start", "?")
+    end = data.get("data_end", "?")
+    rows = data.get("total_rows", 0)
+    
+    lines = ["🏋️ <b>ARGUS TRAINER: Обучение завершено</b>"]
+    lines.append(f"📅 Период данных: {start} — {end} ({rows} свечей)\n")
     
     for mode in ["intraday", "swing"]:
         mode_name = "⚡️ INTRADAY" if mode == "intraday" else "🌊 SWING"
         lines.append(f"<b>{mode_name}</b>")
         
         for side in ["long", "short"]:
-            d = data.get(mode, {}).get(side, {})
-            if not d or not d.get("params"):
-                lines.append(f"  {side.upper()}: ❌ нет данных")
+            winner = data.get(mode, {}).get(side, {})
+            win_source = winner.get("source", "unknown") if winner else None
+            
+            lines.append(f"  <b>{side.upper()}</b>:")
+            
+            scores = data.get("all_scores", {}).get(mode, {}).get(side, {})
+            if not scores:
+                lines.append("    ❌ нет данных")
                 continue
                 
-            p = d["params"]
-            m = d["metrics"]
-            source = d.get("source", "unknown")
+            # Сортируем модели по score (успешные выше, упавшие внизу)
+            sorted_models = sorted(
+                scores.items(), 
+                key=lambda x: x[1].get("score", -99999) if "error" not in x[1] else -999999, 
+                reverse=True
+            )
             
-            lines.append(f"  <b>{side.upper()}</b>: {source}")
-            lines.append(f"    Score: {m.get('score', 0):.2f} | WR: {m.get('winrate', 0)*100:.1f}% | PnL: ${m.get('pnl', 0):+.2f} | Trades: {m.get('trades', 0)}")
-            
-            if source == "model_base":
-                lines.append(f"    RSI: {p.get('rsi_min', '?')}-{p.get('rsi_max', '?')} | TP: {p.get('tp_pct', '?')}% | SL: {p.get('sl_pct', '?')}% | Time: {p.get('time_exit_h', '?')}h")
+            for model_name, metrics in sorted_models:
+                prefix = "🏆 " if model_name == win_source else "   "
+                
+                if "error" in metrics:
+                    lines.append(f"    {prefix}{model_name}: ❌ Ошибка: {metrics['error']}")
+                else:
+                    sc = metrics.get("score", 0)
+                    wr = metrics.get("winrate", 0) * 100
+                    pnl = metrics.get("pnl", 0)
+                    trades = metrics.get("trades", 0)
+                    lines.append(f"    {prefix}{model_name}: Score {sc:.2f} | WR {wr:.1f}% | PnL ${pnl:+.2f} | Сделок: {trades}")
         lines.append("")
-
-    all_scores = data.get("all_scores", {})
-    if all_scores:
-        lines.append("────────────────────")
-        lines.append("<b>Все модели (score):</b>")
-        for mode in ["intraday", "swing"]:
-            for side in ["long", "short"]:
-                scores = all_scores.get(mode, {}).get(side, {})
-                if not scores: continue
-                parts = []
-                for model_name, metrics in scores.items():
-                    if "error" in metrics:
-                        parts.append(f"{model_name}: ❌")
-                    else:
-                        parts.append(f"{model_name}: {metrics.get('score', 0):.2f}")
-                lines.append(f"  {mode.upper()}/{side.upper()}: " + " | ".join(parts))
-    
+        
     return "\n".join(lines)
 
 def main():
