@@ -1,14 +1,10 @@
 name: ARGUS Signal Engine
 
 on:
-  workflow_dispatch: 
+  workflow_dispatch:
 
 permissions:
   contents: write
-
-concurrency:
-  group: argus-signal-engine
-  cancel-in-progress: false
 
 jobs:
   run_signals:
@@ -20,6 +16,20 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Check script exists
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          if [ ! -f crypto/signals/signal_bot.py ]; then
+            echo "::error::Файл crypto/signals/signal_bot.py не найден"
+            curl -s -X POST \
+              "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+              -H "Content-Type: application/json" \
+              -d "{\"chat_id\": \"${TELEGRAM_CHAT_ID}\", \"text\": \"🚫 ARGUS Signal Engine: файл не найден\\nЛог: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\", \"parse_mode\": \"HTML\"}" || true
+            exit 1
+          fi
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
@@ -27,7 +37,7 @@ jobs:
       - name: Install deps
         run: |
           python -m pip install --upgrade pip
-          pip install pandas "psycopg[binary]" requests
+          pip install pandas "psycopg[binary]" requests xgboost scikit-learn scipy
 
       - name: Run Signal Bot
         env:
@@ -37,11 +47,11 @@ jobs:
       - name: Run Signal Report
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python crypto/report/signal_bot_report.py
 
-      - name: Commit status
+      - name: Commit signals
         run: |
           git config user.name "ARGUS Signals"
           git config user.email "signals@github.com"
@@ -63,4 +73,4 @@ jobs:
           curl -s -X POST \
             "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
             -H "Content-Type: application/json" \
-            -d "{\"chat_id\": \"${TELEGRAM_CHAT_ID}\", \"text\": \"⚠️ <b>Сбой в: ${{ github.workflow }}</b>\nПроверь логи в GitHub Actions!\", \"parse_mode\": \"HTML\"}" || true
+            -d "{\"chat_id\": \"${TELEGRAM_CHAT_ID}\", \"text\": \"⚠️ ARGUS Signal Engine упал\nЛог: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\", \"parse_mode\": \"HTML\"}" || true
