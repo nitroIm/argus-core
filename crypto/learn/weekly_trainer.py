@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - WEEKLY TRAINER ORCHESTRATOR (v3.0.0)
+# ARGUS - WEEKLY TRAINER ORCHESTRATOR (v3.0.1 - ATR FIX)
 # Path: crypto/learn/weekly_trainer.py
 # ============================================================
 
@@ -17,7 +17,7 @@ import warnings
 # Подавляем шумный варнинг pandas про SQLAlchemy
 warnings.filterwarnings("ignore", message=".*SQLAlchemy.*")
 
-VERSION = "3.0.0"
+VERSION = "3.0.1"
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("crypto.trainer")
 
@@ -44,6 +44,14 @@ def calculate_macd(series, fast=12, slow=26, signal=9):
     macd_line = ema_fast - ema_slow
     signal_line = calculate_ema(macd_line, signal)
     return macd_line - signal_line
+
+def calculate_atr(df, period=14):
+    """Расчет Average True Range для ML-моделей."""
+    high_low = df['high'] - df['low']
+    high_close = (df['high'] - df['close'].shift()).abs()
+    low_close = (df['low'] - df['close'].shift()).abs()
+    tr = pd.concat([high_low, high_close, low_close], axis=1).max(axis=1)
+    return tr.rolling(window=period).mean()
 
 def fetch_fresh_candles():
     if not DB_URL: return pd.DataFrame()
@@ -104,11 +112,13 @@ def main():
     df = pd.concat([df_hist, df_fresh]) if not df_fresh.empty else df_hist
     df = df.drop_duplicates(subset=['open_time']).sort_values('open_time').reset_index(drop=True)
     
-    # 2. Предрасчет общих индикаторов
+    # 2. Предрасчет общих индикаторов (ДОБАВЛЕН ATR)
     df['rsi'] = calculate_rsi(df['close'], 14)
     df['macd_hist'] = calculate_macd(df['close'], 12, 26, 9)
     df['ema_50'] = calculate_ema(df['close'], 50)
     df['vol_sma'] = df['volume'].rolling(window=20).mean()
+    df['atr'] = calculate_atr(df, 14)  # <--- ТЕПЕРЬ ML-МОДЕЛИ НАЙДУТ ATR
+    
     df = df.dropna().reset_index(drop=True)
     
     log.info(f"Data ready. Total rows: {len(df)}")
