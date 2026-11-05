@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - RANDOM FOREST MODEL v3.1 (Fixed Backtest)
+# ARGUS - RANDOM FOREST MODEL v4.0 (MODE AWARE)
 # Path: crypto/learn/model_rf.py
 # ============================================================
 
@@ -15,10 +15,9 @@ log = logging.getLogger("model_rf")
 
 INITIAL_BALANCE = 100.0
 POSITION_NOTIONAL = 20.0
-FEE_RATE = 0.0005
-HORIZON = 8
+FEE_RATE = 0.001
 
-def prepare_features(df):
+def prepare_features(df, horizon):
     data = df.copy()
     data['rsi_norm'] = data['rsi'] / 100.0
     data['rsi_7_norm'] = data['rsi_7'] / 100.0
@@ -32,21 +31,20 @@ def prepare_features(df):
     data['atr14_pct'] = data['atr_14'] / data['close']
     data['atr50_pct'] = data['atr_50'] / data['close']
     data['atr100_pct'] = data['atr_100'] / data['close']
-    data['buy_ratio'] = data['buy_ratio']
     data['avg_trade_norm'] = data['avg_trade_size'] / data['volume'].rolling(20).mean()
     data['pc1'] = data['price_change_1h']
     data['pc4'] = data['price_change_4h']
     data['pc24'] = data['price_change_24h']
     
     base_features = ['rsi_norm', 'macd_norm', 'ema50_diff', 'ema20_diff', 'ema200_diff',
-                     'vol_ratio', 'atr14_pct', 'atr50_pct', 'buy_ratio', 'avg_trade_norm',
-                     'pc1', 'pc4', 'pc24']
+                     'vol_ratio', 'atr14_pct', 'atr50_pct', 'avg_trade_norm',
+                     'pc1', 'pc4', 'pc24', 'buy_ratio']
     
     for lag in [1, 3, 6, 12, 24]:
         for f in ['rsi_norm', 'macd_norm', 'ema50_diff', 'vol_ratio', 'buy_ratio']:
             data[f'{f}_lag{lag}'] = data[f].shift(lag)
     
-    data['target'] = (data['close'].shift(-HORIZON) > data['close']).astype(int)
+    data['target'] = (data['close'].shift(-horizon) > data['close']).astype(int)
     
     feature_cols = base_features + \
                    [f'{f}_lag{l}' for l in [1,3,6,12,24] for f in ['rsi_norm', 'macd_norm', 'ema50_diff', 'vol_ratio', 'buy_ratio']]
@@ -54,7 +52,7 @@ def prepare_features(df):
     data = data.dropna()
     return data, feature_cols
 
-def walk_forward_validate(data, feature_cols, side):
+def walk_forward_validate(data, feature_cols, side, horizon):
     n_splits = 5
     tscv = TimeSeriesSplit(n_splits=n_splits)
     X = data[feature_cols].values
@@ -78,7 +76,7 @@ def walk_forward_validate(data, feature_cols, side):
         if pd.isna(prob): continue
         
         if in_pos:
-            if i - entry_idx >= HORIZON:
+            if i - entry_idx >= horizon:
                 exit_price = data.iloc[i]['close']
                 if side == "long":
                     pnl_pct = (exit_price - entry_price) / entry_price * 100
@@ -118,18 +116,19 @@ def walk_forward_validate(data, feature_cols, side):
     
     return metrics, final_model
 
-def train(df, side="long"):
+def train(df, side="long", mode="swing"):
     try:
-        data, feature_cols = prepare_features(df)
+        horizon = 4 if mode == "intraday" else 24
+        data, feature_cols = prepare_features(df, horizon)
         if len(data) < 2000: return None
-        metrics, model = walk_forward_validate(data, feature_cols, side)
+        metrics, model = walk_forward_validate(data, feature_cols, side, horizon)
         if not metrics or model is None: return None
         
         raw_model = pickle.dumps(model)
         model_b64 = base64.b64encode(raw_model).decode('utf-8')
         
         return {
-            "params": {"model_type": "random_forest", "features": feature_cols, "model_b64": model_b64},
+            "params": {"model_type": "random_forest", "horizon": horizon, "features": feature_cols, "model_b64": model_b64},
             "metrics": metrics
         }
     except Exception as e:
