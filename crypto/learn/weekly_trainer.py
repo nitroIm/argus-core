@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - WEEKLY TRAINER ORCHESTRATOR v4.0 (DUAL MODE)
+# ARGUS - WEEKLY TRAINER ORCHESTRATOR v4.1 (WITH REPORT)
 # Path: crypto/learn/weekly_trainer.py
 # ============================================================
 
@@ -7,6 +7,7 @@ import os
 import json
 import logging
 import importlib.util
+import subprocess
 from pathlib import Path
 from datetime import datetime, timezone
 import pandas as pd
@@ -16,7 +17,7 @@ import warnings
 
 warnings.filterwarnings("ignore", message=".*SQLAlchemy.*")
 
-VERSION = "4.0.0"
+VERSION = "4.1.0"
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("crypto.trainer")
 
@@ -28,18 +29,21 @@ MODEL_OUT_FILE.parent.mkdir(parents=True, exist_ok=True)
 DB_URL = (os.getenv("AIVEN_DB_URL") or "").strip()
 
 def calculate_ema(series, period): return series.ewm(span=period, adjust=False).mean()
+
 def calculate_rsi(series, period=14):
     delta = series.diff()
     gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()
     loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()
     rs = gain / loss
     return 100 - (100 / (1 + rs))
+
 def calculate_macd(series, fast=12, slow=26, signal=9):
     ema_fast = calculate_ema(series, fast)
     ema_slow = calculate_ema(series, slow)
     macd_line = ema_fast - ema_slow
     signal_line = calculate_ema(macd_line, signal)
     return macd_line - signal_line
+
 def calculate_atr(df, period=14):
     high_low = df['high'] - df['low']
     high_close = (df['high'] - df['close'].shift()).abs()
@@ -74,6 +78,8 @@ def load_models():
             if hasattr(module, "train"):
                 models.append((model_name, module))
                 log.info(f"Loaded model: {model_name}")
+            else:
+                log.warning(f"Model {model_name} skipped: no 'train' function.")
         except Exception as e:
             log.error(f"Failed to load model {model_name}: {e}")
     return models
@@ -81,7 +87,9 @@ def load_models():
 def main():
     log.info(f"STARTING WEEKLY TRAINER ORCHESTRATOR v{VERSION}")
     
-    if not DATA_FILE.exists(): return log.error(f"DATA FILE NOT FOUND: {DATA_FILE}")
+    if not DATA_FILE.exists(): 
+        log.error(f"DATA FILE NOT FOUND: {DATA_FILE}")
+        return
     
     log.info("Loading historical data...")
     df_hist = pd.read_parquet(DATA_FILE)
@@ -117,7 +125,9 @@ def main():
     log.info(f"Data ready. Total rows: {len(df)}")
 
     models = load_models()
-    if not models: return log.error("No models found!")
+    if not models: 
+        log.error("No models found!")
+        return
 
     out_data = {
         "trainer_version": VERSION,
@@ -157,6 +167,13 @@ def main():
     with open(MODEL_OUT_FILE, "w", encoding="utf-8") as f:
         json.dump(out_data, f, ensure_ascii=False, indent=2)
     log.info(f"Saved to {MODEL_OUT_FILE}")
+
+    # --- ЗАПУСК ОТЧЁТА ---
+    try:
+        log.info("Running weekly_trainer_report...")
+        subprocess.run(["python", "crypto/report/weekly_trainer_report.py"], check=False)
+    except Exception as e:
+        log.error(f"Report failed: {e}")
 
 if __name__ == "__main__":
     main()
