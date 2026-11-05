@@ -1,5 +1,6 @@
 # ============================================================
-# ARGUS - SIGNAL BOT (MONOLITH v6.1 TRAILING LONG & SHORT)
+# ARGUS - SIGNAL BOT (DYNAMIC WEIGHTS v7.0)
+# Path: crypto/signals/signal_bot.py
 # ============================================================
 
 import os
@@ -10,7 +11,7 @@ from datetime import datetime, timezone
 import psycopg
 import pandas as pd
 
-VERSION = "6.1.0"
+VERSION = "7.0.0"
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("crypto.signal_bot")
 
@@ -28,8 +29,18 @@ BOT_INFO = SIGNALS_DIR / "bot_info.json"
 DB_URL = (os.getenv("AIVEN_DB_URL") or "").strip()
 SYMBOL = "BTCUSDT"
 
-TRAILING_ACTIVATION_PCT = 1.0  # Активация после +1% профита
-TRAILING_ATR_MULTIPLIER = 2.0  # Множитель ATR
+# --- КОНСТАНТЫ ТРЕЙЛИНГА ---
+TRAILING_ACTIVATION_PCT = 1.0
+TRAILING_ATR_MULTIPLIER = 2.0
+
+# --- КОНСТАНТЫ ОБУЧЕНИЯ ---
+DEFAULT_WEIGHTS = {"macd": 1.0, "rsi": 1.0, "ema": 1.0, "volume": 1.0}
+DEFAULT_THRESHOLD = 3.0
+LEARN_STEP = 0.05
+MIN_WEIGHT = 0.1
+MAX_WEIGHT = 2.0
+MIN_THRESHOLD = 2.0
+MAX_THRESHOLD = 3.8
 
 def get_conn():
     if not DB_URL: raise RuntimeError("AIVEN_DB_URL not set")
@@ -69,12 +80,45 @@ def calc_atr(df, period=14):
     atr = tr.ewm(alpha=1/period, adjust=False).mean()
     return atr.iloc[-1]
 
-def main():
-    log.info(f"STARTING MONOLITH BOT v{VERSION}")
+def update_weights(bot_info, active_signals, pnl_pct):
+    """Динамическое обучение бота: корректировка весов на основе результата сделки."""
+    weights = bot_info.get("weights", DEFAULT_WEIGHTS.copy())
+    direction = 1 if pnl_pct > 0 else -1
+    
+    if pnl_pct == 0: return bot_info # Не учимся на нулевых сделках
 
-    if not BOT_INFO.exists():
-        save_json(BOT_INFO, {"started_at": datetime.now(timezone.utc).isoformat()})
-        log.info("Bot start time recorded.")
+    all_keys = ["macd", "rsi", "ema", "volume"]
+    for k in all_keys:
+        if k in active_signals:
+            weights[k] += (LEARN_STEP * direction)
+        else:
+            weights[k] -= (LEARN_STEP * direction)
+            
+        # Ограничители весов
+        weights[k] = max(MIN_WEIGHT, min(MAX_WEIGHT, round(weights[k], 2)))
+    
+    bot_info["weights"] = weights
+    
+    # Адаптивный порог
+    if pnl_pct > 0:
+        bot_info["threshold"] = max(MIN_THRESHOLD, round(bot_info.get("threshold", DEFAULT_THRESHOLD) - 0.05, 2))
+    else:
+        bot_info["threshold"] = min(MAX_THRESHOLD, round(bot_info.get("threshold", DEFAULT_THRESHOLD) + 0.05, 2))
+
+    log.info(f"🧠 BRAIN UPDATED | Profit: {pnl_pct:+.2f}% | New Threshold: {bot_info['threshold']:.2f}")
+    log.info(f"🧠 NEW WEIGHTS: {weights}")
+    return bot_info
+
+def main():
+    log.info(f"STARTING DYNAMIC BOT v{VERSION}")
+
+    bot_info = load_json(BOT_INFO, {})
+    if "weights" not in bot_info:
+        bot_info["weights"] = DEFAULT_WEIGHTS.copy()
+        bot_info["threshold"] = DEFAULT_THRESHOLD
+        bot_info["started_at"] = datetime.now(timezone.utc).isoformat()
+        save_json(BOT_INFO, bot_info)
+        log.info("Initialized bot_info.json with default weights.")
 
     current_deal = load_json(OPENED_DEALS, None)
     models = load_json(MODEL_FILE)
@@ -83,7 +127,7 @@ def main():
     # ЛОГИКА 1: ЕСЛИ МЫ В СДЕЛКЕ (СЛЕДИМ И ТРЕЙЛИМ)
     # ==========================================
     if current_deal and "entry" in current_deal:
-        deal_type = current_deal.get("type", "LONG") # Защита: по умолчанию LONG
+        deal_type = current_deal.get("type", "LONG")
         log.info(f"In {deal_type} trade. Entry: {current_deal['entry']:.2f} | TP: {current_deal['tp']:.2f} | SL: {current_deal['sl']:.2f}")
         
         try:
@@ -99,11 +143,10 @@ def main():
 
         high, low, close = float(rows[-1][2]), float(rows[-1][3]), float(rows[-1][4])
         
-        # --- ТРЕЙЛИНГ-СТОП ЛОГИКА ---
         entry_price = float(current_deal["entry"])
         current_sl = float(current_deal["sl"])
         
-        # Проверяем, активен ли трейлинг (цена ушла в плюс на 1%)
+        # --- ТРЕЙЛИНГ ---
         trailing_active = False
         if deal_type == "LONG" and close >= entry_price * (1 + TRAILING_ACTIVATION_PCT / 100):
             trailing_active = True
@@ -111,7 +154,6 @@ def main():
             trailing_active = True
 
         if trailing_active:
-            # Считаем ATR на 1h для точности
             rows_float = [(r[0], float(r[1]), float(r[2]), float(r[3]), float(r[4]), float(r[5])) for r in rows]
             df = pd.DataFrame(rows_float, columns=['open_time', 'open', 'high', 'low', 'close', 'volume'])
             df['open_time'] = pd.to_datetime(df['open_time'], utc=True)
@@ -128,7 +170,7 @@ def main():
                         save_json(OPENED_DEALS, current_deal)
                         log.info(f"🔼 Trailing SL updated: {current_sl:.2f} -> {new_sl:.2f}")
                         current_sl = new_sl
-                else: # SHORT
+                else:
                     new_sl = close + (atr * TRAILING_ATR_MULTIPLIER)
                     if new_sl < current_sl and new_sl < entry_price:
                         current_deal["sl"] = new_sl
@@ -154,7 +196,7 @@ def main():
                 exit_price = current_sl
             elif high >= current_deal["tp"]:
                 exit_reason, exit_price = "TAKE_PROFIT", current_deal["tp"]
-        else: # SHORT
+        else:
             if high >= current_sl:
                 exit_reason = "TRAILING_STOP" if current_sl < entry_price else "STOP_LOSS"
                 exit_price = current_sl
@@ -174,6 +216,12 @@ def main():
             
             log.info(f"🔴 {deal_type} CLOSED: {exit_reason} | PnL: {pnl_pct:.2f}%")
 
+            # --- ОБУЧЕНИЕ ---
+            active_sigs = current_deal.get("active_signals", [])
+            bot_info = update_weights(bot_info, active_sigs, pnl_pct)
+            save_json(BOT_INFO, bot_info)
+
+            # --- ЗАПИСЬ ИСТОРИИ ---
             closed = load_json(CLOSED_DEALS, [])
             closed.append({
                 "type": deal_type, "entry": entry_price, "exit": exit_price,
@@ -185,19 +233,20 @@ def main():
 
             save_json(INFO_DEAL, {
                 "type": "CLOSE", "deal_type": deal_type, "reason": exit_reason,
-                "pnl_pct": round(pnl_pct, 2), "pnl_usd": round(pnl_usd, 2),
-                "sent": False
+                "pnl_pct": round(pnl_pct, 2), "pnl_usd": round(pnl_usd, 2), "sent": False
             })
         return
 
     # ==========================================
-    # ЛОГИКА 2: ЕСЛИ СДЕЛКИ НЕТ (ИЩЕМ)
+    # ЛОГИКА 2: ПОИСК СИГНАЛА (DYNAMIC SCORE)
     # ==========================================
     if not models.get("long") or not models.get("short"):
         return log.error("Models not found or outdated.")
 
     params_long = models["long"]["params"]
     params_short = models["short"]["params"]
+    weights = bot_info.get("weights", DEFAULT_WEIGHTS)
+    threshold = bot_info.get("threshold", DEFAULT_THRESHOLD)
 
     try:
         conn = get_conn()
@@ -212,10 +261,7 @@ def main():
     df['open_time'] = pd.to_datetime(df['open_time'], utc=True)
     df = df.set_index('open_time')
 
-    df_1h = df.resample('1h').agg({
-        'open': 'first', 'high': 'max', 'low': 'min', 
-        'close': 'last', 'volume': 'sum'
-    }).dropna()
+    df_1h = df.resample('1h').agg({'open': 'first', 'high': 'max', 'low': 'min', 'close': 'last', 'volume': 'sum'}).dropna()
 
     if len(df_1h) < 55:
         return log.error("Not enough data for 1h indicators.")
@@ -227,34 +273,53 @@ def main():
     rsi = calc_rsi(close_series)
     macd_hist = calc_macd_hist(close_series)
     ema = calc_ema(close_series, 50)
-    
     vol_sma = df_1h['volume'].iloc[:-1].rolling(20).mean().iloc[-1]
     cur_vol = float(last_closed_1h['volume'])
 
-    log.info(f"1h Signal Check | Price: {price} | RSI: {rsi:.1f} | MACD Hist: {macd_hist:.2f}")
+    # --- ОЦЕНКА LONG ---
+    score_long = 0.0
+    active_long = []
+    
+    if macd_hist is not None and macd_hist > 0:
+        score_long += weights["macd"]; active_long.append("macd")
+    if ema is not None and price > ema:
+        score_long += weights["ema"]; active_long.append("ema")
+    if cur_vol > vol_sma:
+        score_long += weights["volume"]; active_long.append("volume")
+    if rsi is not None and 25 < rsi < 75:
+        score_long += weights["rsi"]; active_long.append("rsi")
 
-    signal_long = False
-    if macd_hist > 0 and (params_long["rsi_min"] < rsi < params_long["rsi_max"]): signal_long = True
-    if params_long["use_trend_filter"] and not (price > ema): signal_long = False
-    if params_long["use_volume_filter"] and not (cur_vol > vol_sma): signal_long = False
+    # --- ОЦЕНКА SHORT ---
+    score_short = 0.0
+    active_short = []
 
-    signal_short = False
-    if macd_hist < 0 and (params_short["rsi_min"] < rsi < params_short["rsi_max"]): signal_short = True
-    if params_short["use_trend_filter"] and not (price < ema): signal_short = False
-    if params_short["use_volume_filter"] and not (cur_vol > vol_sma): signal_short = False
+    if macd_hist is not None and macd_hist < 0:
+        score_short += weights["macd"]; active_short.append("macd")
+    if ema is not None and price < ema:
+        score_short += weights["ema"]; active_short.append("ema")
+    if cur_vol > vol_sma:
+        score_short += weights["volume"]; active_short.append("volume")
+    if rsi is not None and 25 < rsi < 75:
+        score_short += weights["rsi"]; active_short.append("rsi")
 
-    if signal_long:
-        log.info("🚀 LONG SIGNAL FOUND! Opening deal.")
+    log.info(f"1h Check | Price: {price:.1f} | RSI: {rsi:.1f} | LONG Score: {score_long:.2f} | SHORT Score: {score_short:.2f} | Threshold: {threshold:.2f}")
+
+    if score_long >= threshold and score_long > score_short:
+        log.info(f"🚀 LONG SIGNAL FOUND! Score: {score_long:.2f}")
         tp = price * (1 + params_long["tp_pct"] / 100)
         sl = price * (1 - params_long["sl_pct"] / 100)
-        save_json(OPENED_DEALS, {"type": "LONG", "entry": price, "tp": tp, "sl": sl, "open_time": datetime.now(timezone.utc).isoformat()})
+        
+        deal = {"type": "LONG", "entry": price, "tp": tp, "sl": sl, "open_time": datetime.now(timezone.utc).isoformat(), "active_signals": active_long}
+        save_json(OPENED_DEALS, deal)
         save_json(INFO_DEAL, {"type": "ENTRY", "deal_type": "LONG", "entry": price, "tp": tp, "sl": sl, "sent": False})
     
-    elif signal_short:
-        log.info("🩸 SHORT SIGNAL FOUND! Opening deal.")
+    elif score_short >= threshold and score_short > score_long:
+        log.info(f"🩸 SHORT SIGNAL FOUND! Score: {score_short:.2f}")
         tp = price * (1 - params_short["tp_pct"] / 100)
         sl = price * (1 + params_short["sl_pct"] / 100)
-        save_json(OPENED_DEALS, {"type": "SHORT", "entry": price, "tp": tp, "sl": sl, "open_time": datetime.now(timezone.utc).isoformat()})
+        
+        deal = {"type": "SHORT", "entry": price, "tp": tp, "sl": sl, "open_time": datetime.now(timezone.utc).isoformat(), "active_signals": active_short}
+        save_json(OPENED_DEALS, deal)
         save_json(INFO_DEAL, {"type": "ENTRY", "deal_type": "SHORT", "entry": price, "tp": tp, "sl": sl, "sent": False})
         
     else:
