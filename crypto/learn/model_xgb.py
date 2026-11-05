@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - XGBOOST MODEL (Walk-Forward)
+# ARGUS - XGBOOST MODEL v2.0 (Extended Features)
 # Path: crypto/learn/model_xgb.py
 # ============================================================
 
@@ -15,38 +15,48 @@ log = logging.getLogger("model_xgb")
 INITIAL_BALANCE = 100.0
 POSITION_NOTIONAL = 20.0
 FEE_RATE = 0.001
-HORIZON = 24  # предсказываем движение через 24 часа (1 день)
+HORIZON = 24
 
 def prepare_features(df):
-    """Создает признаки для ML-модели на основе индикаторов."""
     data = df.copy()
     
-    # Признаки (features)
-    data['rsi'] = data['rsi'] / 100.0  # нормализация
-    data['macd_norm'] = data['macd_hist'] / data['close']  # MACD относительно цены
-    data['ema_diff'] = (data['close'] - data['ema_50']) / data['ema_50']  # отклонение от EMA
-    data['vol_ratio'] = data['volume'] / data['vol_sma']  # отношение объема к среднему
-    data['atr_pct'] = data['atr'] / data['close']  # волатильность в %
+    # Нормализуем цены в проценты для стабильности
+    data['rsi_norm'] = data['rsi'] / 100.0
+    data['rsi_7_norm'] = data['rsi_7'] / 100.0
+    data['rsi_21_norm'] = data['rsi_21'] / 100.0
+    data['macd_norm'] = data['macd_hist'] / data['close']
+    data['ema50_diff'] = (data['close'] - data['ema_50']) / data['ema_50']
+    data['ema20_diff'] = (data['close'] - data['ema_20']) / data['ema_20']
+    data['ema200_diff'] = (data['close'] - data['ema_200']) / data['ema_200']
+    data['vol_ratio'] = data['volume'] / data['vol_sma']
+    data['atr7_pct'] = data['atr_7'] / data['close']
+    data['atr14_pct'] = data['atr_14'] / data['close']
+    data['atr50_pct'] = data['atr_50'] / data['close']
+    data['atr100_pct'] = data['atr_100'] / data['close']
+    data['buy_ratio'] = data['buy_ratio']
+    data['avg_trade_norm'] = data['avg_trade_size'] / data['volume'].rolling(20).mean()
+    data['pc1'] = data['price_change_1h']
+    data['pc4'] = data['price_change_4h']
+    data['pc24'] = data['price_change_24h']
     
-    # Лаговые признаки (прошлые значения)
-    for lag in [1, 2, 3, 6, 12]:
-        data[f'rsi_lag{lag}'] = data['rsi'].shift(lag)
-        data[f'ema_diff_lag{lag}'] = data['ema_diff'].shift(lag)
-        data[f'vol_ratio_lag{lag}'] = data['vol_ratio'].shift(lag)
+    # Лаги
+    base_features = ['rsi_norm', 'macd_norm', 'ema50_diff', 'ema20_diff', 'ema200_diff',
+                     'vol_ratio', 'atr14_pct', 'atr50_pct', 'buy_ratio', 'avg_trade_norm',
+                     'pc1', 'pc4', 'pc24']
     
-    # Целевая переменная: направление цены через HORIZON часов
+    for lag in [1, 3, 6, 12, 24]:
+        for f in ['rsi_norm', 'macd_norm', 'ema50_diff', 'vol_ratio', 'buy_ratio']:
+            data[f'{f}_lag{lag}'] = data[f].shift(lag)
+    
     data['target'] = (data['close'].shift(-HORIZON) > data['close']).astype(int)
     
-    feature_cols = ['rsi', 'macd_norm', 'ema_diff', 'vol_ratio', 'atr_pct'] + \
-                   [f'rsi_lag{l}' for l in [1,2,3,6,12]] + \
-                   [f'ema_diff_lag{l}' for l in [1,2,3,6,12]] + \
-                   [f'vol_ratio_lag{l}' for l in [1,2,3,6,12]]
+    feature_cols = base_features + \
+                   [f'{f}_lag{l}' for l in [1,3,6,12,24] for f in ['rsi_norm', 'macd_norm', 'ema50_diff', 'vol_ratio', 'buy_ratio']]
     
     data = data.dropna()
     return data, feature_cols
 
 def walk_forward_validate(data, feature_cols, side):
-    """Walk-forward валидация: обучаемся на прошлом, проверяем на будущем."""
     n_splits = 5
     tscv = TimeSeriesSplit(n_splits=n_splits)
     
@@ -64,11 +74,12 @@ def walk_forward_validate(data, feature_cols, side):
             continue
         
         model = xgb.XGBClassifier(
-            n_estimators=100,
-            max_depth=4,
-            learning_rate=0.05,
-            subsample=0.8,
-            colsample_bytree=0.8,
+            n_estimators=200,
+            max_depth=5,
+            learning_rate=0.03,
+            subsample=0.85,
+            colsample_bytree=0.85,
+            min_child_weight=3,
             use_label_encoder=False,
             eval_metric='logloss',
             random_state=42
@@ -80,38 +91,31 @@ def walk_forward_validate(data, feature_cols, side):
         all_indices.extend(test_idx)
     
     if not all_predictions:
-        return None, None
+        return None
     
-    # Оценка accuracy
     actual = y[all_indices]
     acc = accuracy_score(actual, all_predictions)
     
-    # Симуляция торговли на основе предсказаний
     trades = []
     for i, idx in enumerate(all_indices):
         row = data.iloc[idx]
         pred = all_predictions[i]
         
         if side == "long" and pred == 1:
-            # Симулируем Long: вход по close, выход через HORIZON часов или по TP/SL
             entry = row['close']
-            future_prices = data.iloc[idx+1:idx+HORIZON+1]['close']
-            if len(future_prices) < HORIZON:
-                continue
-            exit_price = future_prices.iloc[-1]
-            pnl_pct = (exit_price - entry) / entry * 100 - (FEE_RATE * 200)
+            future = data.iloc[idx+1:idx+HORIZON+1]['close']
+            if len(future) < HORIZON: continue
+            pnl_pct = (future.iloc[-1] - entry) / entry * 100 - (FEE_RATE * 200)
             trades.append(POSITION_NOTIONAL * (pnl_pct / 100))
         elif side == "short" and pred == 0:
             entry = row['close']
-            future_prices = data.iloc[idx+1:idx+HORIZON+1]['close']
-            if len(future_prices) < HORIZON:
-                continue
-            exit_price = future_prices.iloc[-1]
-            pnl_pct = (entry - exit_price) / entry * 100 - (FEE_RATE * 200)
+            future = data.iloc[idx+1:idx+HORIZON+1]['close']
+            if len(future) < HORIZON: continue
+            pnl_pct = (entry - future.iloc[-1]) / entry * 100 - (FEE_RATE * 200)
             trades.append(POSITION_NOTIONAL * (pnl_pct / 100))
     
     if not trades:
-        return None, None
+        return None
     
     trades = np.array(trades)
     total_pnl = trades.sum()
@@ -125,35 +129,30 @@ def walk_forward_validate(data, feature_cols, side):
     
     score = total_pnl / abs(max_dd)
     
-    metrics = {
+    return {
         "trades": len(trades),
         "pnl": round(total_pnl, 2),
-        "winrate": round(winrate, 4),
-        "max_dd": round(max_dd, 2),
-        "score": round(score, 2),
-        "accuracy": round(acc, 4)
+        "winrate": round(float(winrate), 4),
+        "max_dd": round(float(max_dd), 2),
+        "score": round(float(score), 2),
+        "accuracy": round(float(acc), 4)
     }
-    
-    return metrics, model
 
 def train(df, side="long"):
-    """Основная функция, которую вызывает оркестратор."""
     try:
         data, feature_cols = prepare_features(df)
-        if len(data) < 500:
+        if len(data) < 2000:
             log.warning(f"Not enough data for XGBoost ({len(data)} rows)")
             return None
         
-        metrics, model = walk_forward_validate(data, feature_cols, side)
+        metrics = walk_forward_validate(data, feature_cols, side)
         if not metrics:
             return None
         
-        # Возвращаем результат в формате, который ждет оркестратор
         return {
             "params": {
                 "model_type": "xgboost",
                 "horizon": HORIZON,
-                "features": feature_cols,
                 "n_features": len(feature_cols)
             },
             "metrics": metrics
