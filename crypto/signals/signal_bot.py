@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - SIGNAL BOT v9.1.0 (STARTED_AT FIX)
+# ARGUS - SIGNAL BOT v9.2.0 (VIRTUAL BALANCE)
 # Path: crypto/signals/signal_bot.py
 # ============================================================
 
@@ -15,7 +15,7 @@ import pandas as pd
 import numpy as np
 import xgboost as xgb
 
-VERSION = "9.1.0"
+VERSION = "9.2.0"
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("crypto.signal_bot")
 
@@ -64,7 +64,7 @@ def append_event(event):
     save_json(INFO_DEAL, queue)
 
 def ensure_weights(bot_info):
-    # Проверяем и создаем структуру для INTRADAY
+    # INTRADAY
     if "intraday" not in bot_info: 
         bot_info["intraday"] = {
             "weights": {"macd": 1.0, "ema": 1.0, "volume": 1.0, "rsi_low": 1.0, "rsi_mid": 1.0, "rsi_high": 1.0}, 
@@ -74,8 +74,12 @@ def ensure_weights(bot_info):
         }
     if "started_at" not in bot_info["intraday"]:
         bot_info["intraday"]["started_at"] = datetime.now(timezone.utc).isoformat()
+    if "balance" not in bot_info["intraday"]:
+        bot_info["intraday"]["balance"] = 100.0
+    if "start_balance" not in bot_info["intraday"]:
+        bot_info["intraday"]["start_balance"] = 100.0
 
-    # Проверяем и создаем структуру для SWING
+    # SWING
     if "swing" not in bot_info: 
         bot_info["swing"] = {
             "weights": {"macd": 1.0, "ema": 1.0, "volume": 1.0, "rsi_low": 1.0, "rsi_mid": 1.0, "rsi_high": 1.0}, 
@@ -85,6 +89,10 @@ def ensure_weights(bot_info):
         }
     if "started_at" not in bot_info["swing"]:
         bot_info["swing"]["started_at"] = datetime.now(timezone.utc).isoformat()
+    if "balance" not in bot_info["swing"]:
+        bot_info["swing"]["balance"] = 100.0
+    if "start_balance" not in bot_info["swing"]:
+        bot_info["swing"]["start_balance"] = 100.0
 
     save_json(BOT_INFO, bot_info)
     return bot_info
@@ -196,7 +204,6 @@ def process_mode(mode, deals, bot_info, models, df_1h):
         time_held_h = (datetime.now(timezone.utc) - datetime.fromisoformat(deal["open_time"])).total_seconds() / 3600.0
         time_exit_h = models[mode][deal_type.lower()]["params"].get("time_exit_h", 24)
         
-        # Для интрадея: принудительное закрытие при смене дня
         if mode == "intraday" and datetime.now(timezone.utc).date() > datetime.fromisoformat(deal["open_time"]).date():
             exit_reason, exit_price = "TIME_EXIT_DAY", close
         elif deal_type == "LONG":
@@ -210,10 +217,13 @@ def process_mode(mode, deals, bot_info, models, df_1h):
 
         if exit_reason:
             pnl_pct = (exit_price - entry) / entry * 100 if deal_type == "LONG" else (entry - exit_price) / entry * 100
-            pnl_usd = 100.0 * (pnl_pct / 100)
+            pnl_usd = bot_info[mode]["balance"] * (pnl_pct / 100)
             
-            append_event({"type": "CLOSE", "mode": mode, "deal_type": deal_type, "reason": exit_reason, "pnl_pct": round(pnl_pct, 2), "pnl_usd": round(pnl_usd, 2)})
-            log.info(f"🔴 [{mode.upper()}] {deal_type} CLOSED: {exit_reason} | PnL: {pnl_pct:.2f}%")
+            # ОБНОВЛЕНИЕ БАЛАНСА
+            bot_info[mode]["balance"] = round(bot_info[mode]["balance"] + pnl_usd, 2)
+            
+            append_event({"type": "CLOSE", "mode": mode, "deal_type": deal_type, "reason": exit_reason, "pnl_pct": round(pnl_pct, 2), "pnl_usd": round(pnl_usd, 2), "new_balance": bot_info[mode]["balance"]})
+            log.info(f"🔴 [{mode.upper()}] {deal_type} CLOSED: {exit_reason} | PnL: {pnl_pct:.2f}% (${pnl_usd:.2f}) | New Balance: ${bot_info[mode]['balance']:.2f}")
             
             # Обучение (только для базовой модели)
             if models[mode][deal_type.lower()].get("source") == "model_base":
@@ -225,10 +235,10 @@ def process_mode(mode, deals, bot_info, models, df_1h):
                     bot_info[mode]["weights"][k] = max(0.1, min(2.0, round(bot_info[mode]["weights"][k], 2)))
             
             closed = load_json(CLOSED_DEALS, [])
-            closed.append({"type": deal_type, "entry": entry, "exit": exit_price, "pnl_pct": round(pnl_pct, 2), "pnl_usd": round(pnl_usd, 2), "reason": exit_reason, "mode": mode, "close_time": datetime.now(timezone.utc).isoformat()})
+            closed.append({"type": deal_type, "entry": entry, "exit": exit_price, "pnl_pct": round(pnl_pct, 2), "pnl_usd": round(pnl_usd, 2), "reason": exit_reason, "mode": mode, "close_time": datetime.now(timezone.utc).isoformat(), "balance_after": bot_info[mode]["balance"]})
             save_json(CLOSED_DEALS, closed)
             
-            del deals[mode] # Удаляем сделку
+            del deals[mode]
             bot_info[mode]["last_close_ts"] = datetime.now(timezone.utc).isoformat()
             save_json(BOT_INFO, bot_info)
         return
