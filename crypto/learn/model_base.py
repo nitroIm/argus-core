@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - BASE MODEL (RULES & GRID SEARCH)
+# ARGUS - BASE MODEL v3.0 (INTRADAY + SWING)
 # Path: crypto/learn/model_base.py
 # ============================================================
 
@@ -12,27 +12,28 @@ log = logging.getLogger("model_base")
 INITIAL_BALANCE = 100.0
 POSITION_NOTIONAL = 20.0
 FEE_RATE = 0.001
+MIN_TRADES_FOR_FULL_SCORE = 300
 
-# Сетка для Лонга
-GRID_LONG = {
+# Сетка для Свинга (длинные позиции)
+GRID_SWING = {
     "use_trend_filter": [True, False],
     "use_volume_filter": [True, False],
     "rsi_min": [25, 30, 35],
     "rsi_max": [50, 55, 60, 70],
-    "tp_pct": [2.0, 3.0, 5.0, 8.0, 15.0],
-    "sl_pct": [1.5, 2.0, 3.0, 5.0],
+    "tp_pct": [3.0, 5.0, 8.0, 15.0],
+    "sl_pct": [2.0, 3.0, 5.0, 10.0],
     "time_exit_h": [24, 48, 72, 168]
 }
 
-# Сетка для Шорта
-GRID_SHORT = {
+# Сетка для Интрадея (короткие позиции, закрытие в тот же день)
+GRID_INTRADAY = {
     "use_trend_filter": [True, False],
     "use_volume_filter": [True, False],
-    "rsi_min": [50, 60, 70],
-    "rsi_max": [70, 80, 90],
-    "tp_pct": [2.0, 3.0, 5.0, 8.0, 15.0],
-    "sl_pct": [1.5, 2.0, 3.0, 5.0],
-    "time_exit_h": [24, 48, 72, 168]
+    "rsi_min": [25, 30, 35],
+    "rsi_max": [50, 55, 60, 70],
+    "tp_pct": [1.0, 1.5, 2.0, 3.0],
+    "sl_pct": [0.5, 1.0, 1.5, 2.0],
+    "time_exit_h": [4, 8, 12, 24] # Максимум сутки
 }
 
 def run_backtest(df, params, side="long"):
@@ -96,16 +97,22 @@ def run_backtest(df, params, side="long"):
     max_dd = float(dd.min()) if len(dd) else 0.0
     if max_dd == 0: max_dd = -0.1
 
-    score = total_pnl / abs(max_dd)
+    raw_score = total_pnl / abs(max_dd)
+    trade_penalty = min(1.0, n / MIN_TRADES_FOR_FULL_SCORE)
+    adjusted_score = raw_score * trade_penalty
+    
     return {
         "trades": n, "pnl": round(total_pnl, 2),
         "winrate": round(float((pnls > 0).mean()), 4),
-        "max_dd": round(max_dd, 2), "score": round(score, 2)
+        "max_dd": round(max_dd, 2), 
+        "score": round(adjusted_score, 2),
+        "raw_score": round(raw_score, 2)
     }
 
-def train(df, side="long"):
-    """Функция, которую вызывает оркестратор."""
-    grid = GRID_LONG if side == "long" else GRID_SHORT
+def train(df, side="long", mode="swing"):
+    # Выбираем сетку в зависимости от режима
+    grid = GRID_INTRADAY if mode == "intraday" else GRID_SWING
+    
     keys, values = zip(*grid.items())
     combinations = [dict(zip(keys, v)) for v in itertools.product(*values)]
     
@@ -121,7 +128,4 @@ def train(df, side="long"):
     if not best_params:
         return None
 
-    return {
-        "params": best_params,
-        "metrics": best_result
-    }
+    return {"params": best_params, "metrics": best_result}
