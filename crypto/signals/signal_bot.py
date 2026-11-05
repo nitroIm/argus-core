@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - SIGNAL BOT v9.0 (DUAL MODE + EVENT QUEUE)
+# ARGUS - SIGNAL BOT v9.1.0 (STARTED_AT FIX)
 # Path: crypto/signals/signal_bot.py
 # ============================================================
 
@@ -15,7 +15,7 @@ import pandas as pd
 import numpy as np
 import xgboost as xgb
 
-VERSION = "9.0.0"
+VERSION = "9.1.0"
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("crypto.signal_bot")
 
@@ -59,13 +59,33 @@ def save_json(path, data):
 
 def append_event(event):
     queue = load_json(INFO_DEAL, [])
-    if not isinstance(queue, list): queue = [] # Защита, если файл старый
+    if not isinstance(queue, list): queue = []
     queue.append(event)
     save_json(INFO_DEAL, queue)
 
 def ensure_weights(bot_info):
-    if "intraday" not in bot_info: bot_info["intraday"] = {"weights": {"macd": 1.0, "ema": 1.0, "volume": 1.0, "rsi_low": 1.0, "rsi_mid": 1.0, "rsi_high": 1.0}, "threshold": DEFAULT_THRESHOLD, "score_history": [], "score_archive": []}
-    if "swing" not in bot_info: bot_info["swing"] = {"weights": {"macd": 1.0, "ema": 1.0, "volume": 1.0, "rsi_low": 1.0, "rsi_mid": 1.0, "rsi_high": 1.0}, "threshold": DEFAULT_THRESHOLD, "score_history": [], "score_archive": []}
+    # Проверяем и создаем структуру для INTRADAY
+    if "intraday" not in bot_info: 
+        bot_info["intraday"] = {
+            "weights": {"macd": 1.0, "ema": 1.0, "volume": 1.0, "rsi_low": 1.0, "rsi_mid": 1.0, "rsi_high": 1.0}, 
+            "threshold": DEFAULT_THRESHOLD, 
+            "score_history": [], 
+            "score_archive": []
+        }
+    if "started_at" not in bot_info["intraday"]:
+        bot_info["intraday"]["started_at"] = datetime.now(timezone.utc).isoformat()
+
+    # Проверяем и создаем структуру для SWING
+    if "swing" not in bot_info: 
+        bot_info["swing"] = {
+            "weights": {"macd": 1.0, "ema": 1.0, "volume": 1.0, "rsi_low": 1.0, "rsi_mid": 1.0, "rsi_high": 1.0}, 
+            "threshold": DEFAULT_THRESHOLD, 
+            "score_history": [], 
+            "score_archive": []
+        }
+    if "started_at" not in bot_info["swing"]:
+        bot_info["swing"]["started_at"] = datetime.now(timezone.utc).isoformat()
+
     save_json(BOT_INFO, bot_info)
     return bot_info
 
@@ -166,7 +186,8 @@ def process_mode(mode, deals, bot_info, models, df_1h):
             new_sl = close - (atr * 2.0) if deal_type == "LONG" else close + (atr * 2.0)
             if (deal_type == "LONG" and new_sl > sl and new_sl > entry) or (deal_type == "SHORT" and new_sl < sl and new_sl < entry):
                 deal['sl'] = new_sl
-                append_event({"type": "UPDATE", "mode": mode, "deal_type": deal_type, "new_sl": new_sl, "sl_pct": round((new_sl-entry)/entry*100 if deal_type=="LONG" else (entry-new_sl)/entry*100, 2)})
+                sl_pct = (new_sl-entry)/entry*100 if deal_type=="LONG" else (entry-new_sl)/entry*100
+                append_event({"type": "UPDATE", "mode": mode, "deal_type": deal_type, "new_sl": new_sl, "sl_pct": round(sl_pct, 2)})
                 log.info(f"🔼 [{mode.upper()}] Trailing SL updated: {sl:.2f} -> {new_sl:.2f}")
                 sl = new_sl
 
@@ -232,95 +253,4 @@ def process_mode(mode, deals, bot_info, models, df_1h):
         elif rsi < 70: score_long += bot_info[mode]["weights"]["rsi_mid"]; active_long.append("rsi_mid")
     else:
         try:
-            m_b64 = models[mode]["long"]["params"]["model_b64"]
-            feat = models[mode]["long"]["params"]["features"]
-            raw = base64.b64decode(m_b64)
-            if "xgb" in source_long:
-                bst = xgb.Booster(); bst.load_model(bytearray(raw))
-                score_long = bst.predict(xgb.DMatrix(get_features_for_ml(df_1h, feat)))[0] * 10
-            else:
-                mdl = pickle.loads(raw)
-                score_long = mdl.predict_proba(get_features_for_ml(df_1h, feat))[0][1] * 10
-        except: pass
-
-    score_short, active_short = 0.0, []
-    if source_short == "model_base":
-        if macd_hist < 0: score_short += bot_info[mode]["weights"]["macd"]; active_short.append("macd")
-        if price < ema: score_short += bot_info[mode]["weights"]["ema"]; active_short.append("ema")
-        if cur_vol > vol_sma: score_short += bot_info[mode]["weights"]["volume"]; active_short.append("volume")
-        if rsi > 70: score_short += bot_info[mode]["weights"]["rsi_high"]; active_short.append("rsi_high")
-        elif rsi > 30: score_short += bot_info[mode]["weights"]["rsi_mid"]; active_short.append("rsi_mid")
-    else:
-        try:
-            m_b64 = models[mode]["short"]["params"]["model_b64"]
-            feat = models[mode]["short"]["params"]["features"]
-            raw = base64.b64decode(m_b64)
-            if "xgb" in source_short:
-                bst = xgb.Booster(); bst.load_model(bytearray(raw))
-                score_short = (1.0 - bst.predict(xgb.DMatrix(get_features_for_ml(df_1h, feat)))[0]) * 10
-            else:
-                mdl = pickle.loads(raw)
-                score_short = mdl.predict_proba(get_features_for_ml(df_1h, feat))[0][0] * 10
-        except: pass
-
-    # Адаптивный порог
-    max_s = max(score_long, score_short)
-    bot_info[mode]["score_history"].append({"ts": datetime.now(timezone.utc).isoformat(), "score": max_s})
-    bot_info = archive_and_clean_history(bot_info, mode)
-    fresh = [e["score"] for e in bot_info[mode]["score_history"]]
-    thresh = float(np.percentile(fresh, 90)) if len(fresh) > 50 else DEFAULT_THRESHOLD
-    thresh = max(1.5, min(3.5, thresh))
-
-    last_close = bot_info[mode].get("last_close_ts")
-    can_open = True
-    if last_close:
-        h_since = (datetime.now(timezone.utc) - datetime.fromisoformat(last_close)).total_seconds() / 3600.0
-        if h_since < 1.0: can_open = False
-
-    log.info(f"[{mode.upper()}] Price: {price:.1f} | LONG: {score_long:.2f} | SHORT: {score_short:.2f} | Thresh: {thresh:.2f}")
-
-    if can_open and score_long >= thresh and score_long > score_short:
-        tp = price * (1 + models[mode]["long"]["params"].get("tp_pct", 2.0) / 100)
-        sl = price * (1 - models[mode]["long"]["params"].get("sl_pct", 1.0) / 100)
-        deals[mode] = {"type": "LONG", "entry": price, "tp": tp, "sl": sl, "open_time": datetime.now(timezone.utc).isoformat(), "active_signals": active_long}
-        append_event({"type": "ENTRY", "mode": mode, "deal_type": "LONG", "entry": price, "tp": tp, "sl": sl})
-        log.info(f"🚀 [{mode.upper()}] LONG SIGNAL!")
-    elif can_open and score_short >= thresh and score_short > score_long:
-        tp = price * (1 - models[mode]["short"]["params"].get("tp_pct", 2.0) / 100)
-        sl = price * (1 + models[mode]["short"]["params"].get("sl_pct", 1.0) / 100)
-        deals[mode] = {"type": "SHORT", "entry": price, "tp": tp, "sl": sl, "open_time": datetime.now(timezone.utc).isoformat(), "active_signals": active_short}
-        append_event({"type": "ENTRY", "mode": mode, "deal_type": "SHORT", "entry": price, "tp": tp, "sl": sl})
-        log.info(f"🩸 [{mode.upper()}] SHORT SIGNAL!")
-
-def main():
-    log.info(f"STARTING DUAL BOT v{VERSION}")
-    
-    bot_info = ensure_weights(load_json(BOT_INFO, {}))
-    models = load_json(MODEL_FILE)
-    if not models.get("swing") or not models.get("intraday"): return log.error("Models not found.")
-    
-    deals = load_json(OPENED_DEALS, {})
-    if "intraday" not in deals: deals["intraday"] = {}
-    if "swing" not in deals: deals["swing"] = {}
-
-    try:
-        conn = get_conn()
-        with conn.cursor() as cur:
-            cur.execute("SELECT open_time, open, high, low, close, volume, taker_buy_volume, count FROM candles WHERE symbol=%s AND timeframe='15m' AND market_type='spot' ORDER BY open_time DESC LIMIT 500", (SYMBOL,))
-            rows = list(reversed(cur.fetchall()))
-        conn.close()
-    except Exception as e: return log.error(f"DB error: {e}")
-
-    df = pd.DataFrame([(r[0], float(r[1]), float(r[2]), float(r[3]), float(r[4]), float(r[5]), float(r[6]), int(r[7])) for r in rows], columns=['open_time', 'open', 'high', 'low', 'close', 'volume', 'taker_buy_volume', 'count'])
-    df['open_time'] = pd.to_datetime(df['open_time'], utc=True)
-    df_1h = df.set_index('open_time').resample('1h').agg({'open': 'first', 'high': 'max', 'low': 'min', 'close': 'last', 'volume': 'sum', 'taker_buy_volume': 'sum', 'count': 'sum'}).dropna().reset_index()
-    df_1h = calculate_indicators(df_1h.set_index('open_time')).reset_index()
-
-    process_mode("intraday", deals, bot_info, models, df_1h)
-    process_mode("swing", deals, bot_info, models, df_1h)
-    
-    save_json(OPENED_DEALS, deals)
-    save_json(BOT_INFO, bot_info)
-
-if __name__ == "__main__":
-    main()
+            m_b64 = models
