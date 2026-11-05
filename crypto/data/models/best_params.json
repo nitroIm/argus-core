@@ -1,89 +1,157 @@
 {
-  "trainer_version": "3.1.0",
-  "updated_at": "2026-11-05T11:18:05.367890+00:00",
-  "long": {
-    "params": {
-      "use_trend_filter": true,
-      "use_volume_filter": true,
-      "rsi_min": 25,
-      "rsi_max": 50,
-      "tp_pct": 8.0,
-      "sl_pct": 5.0,
-      "time_exit_h": 168
-    },
-    "metrics": {
-      "trades": 134,
-      "pnl": 25.38,
-      "winrate": 0.5448,
-      "max_dd": -4.3,
-      "score": 5.9
-    },
-    "source": "model_base"
-  },
-  "short": {
-    "params": {
-      "use_trend_filter": true,
-      "use_volume_filter": true,
-      "rsi_min": 60,
-      "rsi_max": 70,
-      "tp_pct": 2.0,
-      "sl_pct": 1.5,
-      "time_exit_h": 168
-    },
-    "metrics": {
-      "trades": 3,
-      "pnl": 0.53,
-      "winrate": 0.6667,
-      "max_dd": -0.1,
-      "score": 5.27
-    },
-    "source": "model_base"
-  },
-  "all_scores": {
+  "trainer_version": "4.0.0",
+  "updated_at": "2026-11-05T15:43:56.543249+00:00",
+  "intraday": {
     "long": {
-      "model_rf": {
-        "trades": 872,
-        "pnl": -2.26,
-        "winrate": 0.4667,
-        "max_dd": -14.62,
-        "score": -0.15
+      "params": {
+        "use_trend_filter": true,
+        "use_volume_filter": false,
+        "rsi_min": 35,
+        "rsi_max": 50,
+        "tp_pct": 2.0,
+        "sl_pct": 1.5,
+        "time_exit_h": 24
       },
-      "model_base": {
-        "trades": 134,
-        "pnl": 25.38,
-        "winrate": 0.5448,
-        "max_dd": -4.3,
-        "score": 5.9
+      "metrics": {
+        "trades": 394,
+        "pnl": 7.53,
+        "winrate": 0.5076,
+        "max_dd": -6.88,
+        "score": 1.09,
+        "raw_score": 1.09
       },
-      "model_xgb": {
-        "trades": 1673,
-        "pnl": -27.86,
-        "winrate": 0.4638,
-        "max_dd": -30.5,
-        "score": -0.91
-      }
+      "source": "model_base"
     },
     "short": {
-      "model_rf": {
-        "trades": 24,
-        "pnl": -2.1,
-        "winrate": 0.3333,
-        "max_dd": -2.56,
-        "score": -0.82
+      "params": {
+        "use_trend_filter": true,
+        "use_volume_filter": true,
+        "rsi_min": 35,
+        "rsi_max": 60,
+        "tp_pct": 1.0,
+        "sl_pct": 2.0,
+        "time_exit_h": 24
       },
-      "model_base": {
-        "trades": 3,
-        "pnl": 0.53,
-        "winrate": 0.6667,
-        "max_dd": -0.1,
-        "score": 5.27
+      "metrics": {
+        "trades": 1237,
+        "pnl": -61.67,
+        "winrate": 0.5327,
+        "max_dd": -64.06,
+        "score": -0.96,
+        "raw_score": -0.96
       },
-      "model_xgb": {
-        "trades": 532,
-        "pnl": -12.44,
-        "winrate": 0.4887,
-        "max_dd": -16.87,
-        "score": -0.74
+      "source": "model_base"
+    }
+  },
+  "swing": {
+    "long": {
+      "params": {
+        "use_trend_filter": true,
+        "use_volume_filter": true,
+        "rsi_min": 25,
+        "rsi_max": 70,
+        "tp_pct": 15.0,
+        "sl_pct": 10.0,
+        "time_exit_h": 168
+      },
+      "metrics": {
+        "trades": 291,
+        "pnl": 54.34,
+        "winrate": 0.5017,
+        "max_dd": -11.13,
+        "score": 4.74,
+        "raw_score": 4.88
+      },
+      "source": "model_base"
+    },
+    "short": {
+      "params": {
+        "use_trend_filter": true,
+        "use_volume_filter": true,
+        "rsi_min": 35,
+        "rsi_max": 60,
+        "tp_pct": 15.0,
+        "sl_pct": 10.0,
+        "time_exit_h": 168
+      },
+      "metrics": {
+        "trades": 277,
+        "pnl": -33.48,
+        "winrate": 0.4332,
+        "max_dd": -41.26,
+        "score": -0.75,
+        "raw_score": -0.81
+      },
+      "source": "model_base"
+    }
+  },
+  "all_scores": {
+    "intraday": {
+      "long": {
+        "model_rf": {
+          "error": "train() got an unexpected keyword argument 'mode'"
+        },
+        "model_base": {
+          "trades": 394,
+          "pnl": 7.53,
+          "winrate": 0.5076,
+          "max_dd": -6.88,
+          "score": 1.09,
+          "raw_score": 1.09
+        },
+        "model_xgb": {
+          "error": "train() got an unexpected keyword argument 'mode'"
+        }
+      },
+      "short": {
+        "model_rf": {
+          "error": "train() got an unexpected keyword argument 'mode'"
+        },
+        "model_base": {
+          "trades": 1237,
+          "pnl": -61.67,
+          "winrate": 0.5327,
+          "max_dd": -64.06,
+          "score": -0.96,
+          "raw_score": -0.96
+        },
+        "model_xgb": {
+          "error": "train() got an unexpected keyword argument 'mode'"
+        }
+      }
+    },
+    "swing": {
+      "long": {
+        "model_rf": {
+          "error": "train() got an unexpected keyword argument 'mode'"
+        },
+        "model_base": {
+          "trades": 291,
+          "pnl": 54.34,
+          "winrate": 0.5017,
+          "max_dd": -11.13,
+          "score": 4.74,
+          "raw_score": 4.88
+        },
+        "model_xgb": {
+          "error": "train() got an unexpected keyword argument 'mode'"
+        }
+      },
+      "short": {
+        "model_rf": {
+          "error": "train() got an unexpected keyword argument 'mode'"
+        },
+        "model_base": {
+          "trades": 277,
+          "pnl": -33.48,
+          "winrate": 0.4332,
+          "max_dd": -41.26,
+          "score": -0.75,
+          "raw_score": -0.81
+        },
+        "model_xgb": {
+          "error": "train() got an unexpected keyword argument 'mode'"
+        }
       }
     }
   }
