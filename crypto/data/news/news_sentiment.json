@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-11-05T02:05:41.073740+00:00",
+  "generated_at": "2026-11-05T03:05:38.078868+00:00",
   "total_news": 99,
-  "avg_sentiment": -0.602,
+  "avg_sentiment": -0.542,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 12,
-  "bearish_count": 40,
+  "bullish_count": 13,
+  "bearish_count": 39,
   "neutral_count": 47,
   "fake_count": 0,
-  "cross_confirmed": 29,
+  "cross_confirmed": 27,
   "by_source": {
     "Cointelegraph": {
       "total": 21,
@@ -21,8 +21,8 @@
     },
     "Bitcoin.com": {
       "total": 10,
-      "bull": 1,
-      "bear": 4
+      "bull": 2,
+      "bear": 3
     },
     "CryptoSlate": {
       "total": 6,
@@ -47,6 +47,23 @@
   },
   "top_bullish": [
     {
+      "title": "Saylor Links Republican and Democratic Wins to Bitcoin Reserves",
+      "url": "https://news.bitcoin.com/featured/saylor-links-republican-and-democratic-wins-to-bitcoin-reserves/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-05T02:30:37+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-05T03:05:36.541422+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Saylor Links Republican and Democratic Wins to Bitcoin Reserves",
+      "cross_check": 1
+    },
+    {
       "title": "Bitcoin hits $80.5K as US stocks rally on midterm election results",
       "url": "https://cointelegraph.com/markets/bitcoin-price-us-stocks-rally-midterm-election-result?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
       "source": "Cointelegraph",
@@ -58,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-05T02:05:38.467499+00:00",
+      "collected_at": "2026-11-05T03:05:36.243250+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin hits $80.5K as US stocks rally on midterm election results",
       "cross_check": 1
@@ -75,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-05T02:05:38.467614+00:00",
+      "collected_at": "2026-11-05T03:05:36.243428+00:00",
       "effective_weight": 1.04,
       "title_original": "Canton’s CC rises 4% as SEC staff view it as ‘digital commodity’",
       "cross_check": 2
@@ -92,7 +109,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-05T02:05:39.092993+00:00",
+      "collected_at": "2026-11-05T03:05:36.541558+00:00",
       "effective_weight": 1.0,
       "title_original": "Analyst Sees Bitcoin Rally Potential Despite Democratic Sweep",
       "cross_check": 6
@@ -107,32 +124,32 @@
       "sentiment": 1.0,
       "bull_weight": 1.5,
       "bear_weight": 0.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-05T02:05:39.311270+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Pro-crypto candidates sweep 241 seats as Congress shifts power",
-      "cross_check": 2
-    },
-    {
-      "title": "NEAR Mobile Hits #1 in Finance App Rankings and Charts Across 38 Countries as NEAR Ecosystem Gains Momentum",
-      "url": "https://cryptopotato.com/near-mobile-hits-1-in-finance-app-rankings-and-charts-across-38-countries-as-near-ecosystem-gains-momentum/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-04T13:18:01+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-05T02:05:39.604207+00:00",
+      "collected_at": "2026-11-05T03:05:36.688332+00:00",
       "effective_weight": 0.8,
-      "title_original": "NEAR Mobile Hits #1 in Finance App Rankings and Charts Across 38 Countries as NEAR Ecosystem Gains Momentum",
-      "cross_check": 1
+      "title_original": "Pro-crypto candidates sweep 241 seats as Congress shifts power",
+      "cross_check": 2
     }
   ],
   "top_bearish": [
+    {
+      "title": "French bank resumes transfers after $133 million attack but leaves crypto loss unconfirmed",
+      "url": "https://cryptoslate.com/french-bank-resumes-transfers-after-133-million-attack-but-leaves-crypto-loss-unconfirmed/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-05T02:30:38+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 3.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-05T03:05:36.688187+00:00",
+      "effective_weight": 1.5,
+      "title_original": "French bank resumes transfers after $133 million attack but leaves crypto loss unconfirmed",
+      "cross_check": 2
+    },
     {
       "title": "India warns AI-powered hackers targeting crypto exchanges at ‘machine speed’",
       "url": "https://cointelegraph.com/news/india-warns-ai-powered-hackers-targeting-crypto-exchanges-at-machine-speed?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -143,28 +160,11 @@
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 2.3,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-05T02:05:38.467163+00:00",
-      "effective_weight": 1.95,
+      "collected_at": "2026-11-05T03:05:36.242783+00:00",
+      "effective_weight": 1.3,
       "title_original": "India warns AI-powered hackers targeting crypto exchanges at ‘machine speed’",
-      "cross_check": 1
-    },
-    {
-      "title": "Kiyosaki Buys Bitcoin During Market Panic, Warns of a Bigger Threat",
-      "url": "https://news.bitcoin.com/featured/kiyosaki-buys-bitcoin-during-market-panic-warns-of-a-bigger-threat/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-05T01:30:01+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-05T02:05:39.092941+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Kiyosaki Buys Bitcoin During Market Panic, Warns of a Bigger Threat",
       "cross_check": 1
     },
     {
@@ -179,7 +179,7 @@
       "bear_weight": 3.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-05T02:05:38.467229+00:00",
+      "collected_at": "2026-11-05T03:05:36.242876+00:00",
       "effective_weight": 1.3,
       "title_original": "Mercado Bitcoin says phased reopening to begin Monday, will cover losses",
       "cross_check": 1
@@ -196,27 +196,27 @@
       "bear_weight": 0.8,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-05T02:05:38.731135+00:00",
+      "collected_at": "2026-11-05T03:05:36.333657+00:00",
       "effective_weight": 1.1,
       "title_original": "ChatGPT Is Getting a GIF Maker Powered by OpenAI's Unannounced Images 2.6 Model",
       "cross_check": 1
     },
     {
-      "title": "Coinbase Says 99% of Customer Crypto Is Offline and Out of Hackers’ Reach",
-      "url": "https://decrypt.co/382570/coinbase-99-percent-customer-crypto-offline-binance-hack",
-      "source": "Decrypt",
-      "source_weight": 1.1,
+      "title": "Trump-linked tokens lead crypto losses after Democrats sweep in the US midterms",
+      "url": "https://cointelegraph.com/news/trump-linked-tokens-lead-crypto-losses-after-democrats-sweep-in-the-us-midterms?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
       "lang": "en",
-      "pub_date": "2026-11-04T20:46:03+00:00",
+      "pub_date": "2026-11-04T19:15:39+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.0,
+      "bear_weight": 3.0,
+      "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-05T02:05:38.731199+00:00",
-      "effective_weight": 1.1,
-      "title_original": "Coinbase Says 99% of Customer Crypto Is Offline and Out of Hackers’ Reach",
-      "cross_check": 2
+      "collected_at": "2026-11-05T03:05:36.243099+00:00",
+      "effective_weight": 1.04,
+      "title_original": "Trump-linked tokens lead crypto losses after Democrats sweep in the US midterms",
+      "cross_check": 9
     }
   ]
 }
