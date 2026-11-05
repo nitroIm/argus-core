@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - WEEKLY TRAINER ORCHESTRATOR v4.1 (WITH REPORT)
+# ARGUS - WEEKLY TRAINER ORCHESTRATOR v4.2 (WITH PERIOD)
 # Path: crypto/learn/weekly_trainer.py
 # ============================================================
 
@@ -17,7 +17,7 @@ import warnings
 
 warnings.filterwarnings("ignore", message=".*SQLAlchemy.*")
 
-VERSION = "4.1.0"
+VERSION = "4.2.0"
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("crypto.trainer")
 
@@ -103,6 +103,11 @@ def main():
     df = pd.concat([df_hist, df_fresh]) if not df_fresh.empty else df_hist
     df = df.drop_duplicates(subset=['open_time']).sort_values('open_time').reset_index(drop=True)
     
+    # --- ДОБАВЛЯЕМ ПЕРИОД ДАННЫХ ---
+    data_start = df['open_time'].min().strftime("%Y-%m-%d")
+    data_end = df['open_time'].max().strftime("%Y-%m-%d")
+    total_rows = len(df)
+    
     log.info("Calculating indicators...")
     df['rsi'] = calculate_rsi(df['close'], 14)
     df['rsi_7'] = calculate_rsi(df['close'], 7)
@@ -132,6 +137,9 @@ def main():
     out_data = {
         "trainer_version": VERSION,
         "updated_at": datetime.now(timezone.utc).isoformat(),
+        "data_start": data_start,
+        "data_end": data_end,
+        "total_rows": total_rows,
         "intraday": {"long": None, "short": None},
         "swing": {"long": None, "short": None},
         "all_scores": {}
