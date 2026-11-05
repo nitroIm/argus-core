@@ -1,5 +1,6 @@
 # ============================================================
-# ARGUS - SIGNAL REPORT (SENDER v4.1 TRAILING)
+# ARGUS - SIGNAL REPORT (SENDER v4.2 TRAILING UPDATE)
+# Path: crypto/report/signal_bot_report.py
 # ============================================================
 
 import os
@@ -65,7 +66,7 @@ def get_stats_text():
     return text
 
 def main():
-    log.info("STARTING SIGNAL REPORT v4.1")
+    log.info("STARTING SIGNAL REPORT v4.2")
     
     event = load_json(INFO_DEAL, {})
     if not event or event.get("sent") == True:
@@ -91,6 +92,18 @@ def main():
         text += f"🟢 <b>Вход:</b> {fmt(entry)}\n"
         text += f"🎯 <b>Тейк (TP):</b> {fmt(tp)} ({tp_pct:+.2f}%)\n"
         text += f"🛑 <b>Стоп (SL):</b> {fmt(sl)} ({sl_pct:+.2f}%)\n\n"
+        text += get_stats_text()
+    
+    elif event["type"] == "UPDATE":
+        new_sl = float(event["new_sl"])
+        sl_pct = float(event["sl_pct"])
+        
+        if deal_type == "LONG":
+            text = f"🛡️ <b>ARGUS UPDATE: Трейлинг-стоп (LONG)</b>\n\n"
+        else:
+            text = f"🛡️ <b>ARGUS UPDATE: Трейлинг-стоп (SHORT)</b>\n\n"
+            
+        text += f"🛑 <b>Новый стоп:</b> {fmt(new_sl)} ({sl_pct:+.2f}%)\n\n"
         text += get_stats_text()
     
     elif event["type"] == "CLOSE":
