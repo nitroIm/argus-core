@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - XGBOOST MODEL v3.0 (Pack to Base64)
+# ARGUS - XGBOOST MODEL v3.1 (Fixed Backtest)
 # Path: crypto/learn/model_xgb.py
 # ============================================================
 
@@ -8,15 +8,14 @@ import numpy as np
 import pandas as pd
 import xgboost as xgb
 import base64
-from sklearn.metrics import accuracy_score
 from sklearn.model_selection import TimeSeriesSplit
 
 log = logging.getLogger("model_xgb")
 
 INITIAL_BALANCE = 100.0
 POSITION_NOTIONAL = 20.0
-FEE_RATE = 0.001
-HORIZON = 24
+FEE_RATE = 0.0005 # 0.05% за сторону
+HORIZON = 8
 
 def prepare_features(df):
     data = df.copy()
@@ -60,36 +59,49 @@ def walk_forward_validate(data, feature_cols, side):
     tscv = TimeSeriesSplit(n_splits=n_splits)
     X = data[feature_cols].values
     y = data['target'].values
-    all_predictions = []
-    all_indices = []
+    
+    # Массив для предсказаний (вне выборки)
+    predictions = np.full(len(data), np.nan)
     
     for train_idx, test_idx in tscv.split(X):
         if len(np.unique(y[train_idx])) < 2: continue
-        model = xgb.XGBClassifier(n_estimators=200, max_depth=5, learning_rate=0.03, 
-                                  subsample=0.85, colsample_bytree=0.85, min_child_weight=3,
-                                  eval_metric='logloss', random_state=42)
+        model = xgb.XGBClassifier(n_estimators=100, max_depth=4, learning_rate=0.05, 
+                                  subsample=0.8, colsample_bytree=0.8, eval_metric='logloss', random_state=42)
         model.fit(X[train_idx], y[train_idx])
-        all_predictions.extend(model.predict(X[test_idx]))
-        all_indices.extend(test_idx)
+        predictions[test_idx] = model.predict_proba(X[test_idx])[:, 1]
     
-    if not all_predictions: return None, None
-    
+    # Симуляция торговли без перекрытия сделок
     trades = []
-    for i, idx in enumerate(all_indices):
-        row = data.iloc[idx]
-        pred = all_predictions[i]
-        if side == "long" and pred == 1:
-            future = data.iloc[idx+1:idx+HORIZON+1]['close']
-            if len(future) < HORIZON: continue
-            pnl_pct = (future.iloc[-1] - row['close']) / row['close'] * 100 - (FEE_RATE * 200)
-            trades.append(POSITION_NOTIONAL * (pnl_pct / 100))
-        elif side == "short" and pred == 0:
-            future = data.iloc[idx+1:idx+HORIZON+1]['close']
-            if len(future) < HORIZON: continue
-            pnl_pct = (row['close'] - future.iloc[-1]) / row['close'] * 100 - (FEE_RATE * 200)
-            trades.append(POSITION_NOTIONAL * (pnl_pct / 100))
+    in_pos = False
+    entry_price = 0
+    entry_idx = 0
     
+    for i in range(len(data)):
+        prob = predictions[i]
+        if pd.isna(prob): continue
+        
+        if in_pos:
+            if i - entry_idx >= HORIZON:
+                exit_price = data.iloc[i]['close']
+                if side == "long":
+                    pnl_pct = (exit_price - entry_price) / entry_price * 100
+                else:
+                    pnl_pct = (entry_price - exit_price) / entry_price * 100
+                pnl_pct -= (FEE_RATE * 200) # комиссия за круг (0.1%)
+                trades.append(POSITION_NOTIONAL * (pnl_pct / 100))
+                in_pos = False
+        else:
+            if side == "long" and prob > 0.60:
+                in_pos = True
+                entry_price = data.iloc[i]['close']
+                entry_idx = i
+            elif side == "short" and prob < 0.40:
+                in_pos = True
+                entry_price = data.iloc[i]['close']
+                entry_idx = i
+                
     if not trades: return None, None
+    
     trades = np.array(trades)
     total_pnl = trades.sum()
     winrate = (trades > 0).mean()
@@ -102,11 +114,10 @@ def walk_forward_validate(data, feature_cols, side):
     
     metrics = {"trades": len(trades), "pnl": round(float(total_pnl), 2), "winrate": round(float(winrate), 4),
                "max_dd": round(float(max_dd), 2), "score": round(float(score), 2)}
-    
-    # Обучаем финальную модель на всех данных для сохранения
-    final_model = xgb.XGBClassifier(n_estimators=200, max_depth=5, learning_rate=0.03, 
-                                    subsample=0.85, colsample_bytree=0.85, min_child_weight=3,
-                                    eval_metric='logloss', random_state=42)
+               
+    # Финальная модель на всех данных для упаковки
+    final_model = xgb.XGBClassifier(n_estimators=100, max_depth=4, learning_rate=0.05, 
+                                    subsample=0.8, colsample_bytree=0.8, eval_metric='logloss', random_state=42)
     final_model.fit(X, y)
     
     return metrics, final_model
@@ -114,23 +125,15 @@ def walk_forward_validate(data, feature_cols, side):
 def train(df, side="long"):
     try:
         data, feature_cols = prepare_features(df)
-        if len(data) < 2000:
-            return None
-        
+        if len(data) < 2000: return None
         metrics, model = walk_forward_validate(data, feature_cols, side)
-        if not metrics or model is None:
-            return None
+        if not metrics or model is None: return None
         
-        # Упаковка модели в Base64 строку
         raw_model = model.get_booster().save_raw()
         model_b64 = base64.b64encode(raw_model).decode('utf-8')
         
         return {
-            "params": {
-                "model_type": "xgboost",
-                "features": feature_cols,
-                "model_b64": model_b64
-            },
+            "params": {"model_type": "xgboost", "features": feature_cols, "model_b64": model_b64},
             "metrics": metrics
         }
     except Exception as e:
