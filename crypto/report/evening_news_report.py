@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - EVENING NEWS REPORT v5.1 (VK MOBILE SPOOF)
+# ARGUS - EVENING NEWS REPORT v5.2 (VK FIX)
 # Path: crypto/report/evening_news_report.py
 # ============================================================
 
@@ -12,6 +12,8 @@ import logging
 import requests
 import io
 import time
+import random
+import string
 import pandas as pd
 import psycopg
 import mplfinance as mpf
@@ -116,63 +118,79 @@ def get_rapira_usdt():
     return None
 
 # ============================================================
-# VK UPLOADER (MOBILE APP SPOOF)
+# VK UPLOADER (BROWSER UA + RANDOM FILENAME)
 # ============================================================
 def upload_photo_to_vk(photo_buf):
+    log.info(">>> VK UPLOAD START")
     if not VK_TOKEN or not VK_GROUP_ID: 
+        log.error(">>> VK ERROR: Empty VK_TOKEN or VK_GROUP_ID")
         return None
     
     gid = VK_GROUP_ID.replace("-", "")
     img_data = photo_buf.getvalue()
-    
-    # МАСКИРУЕМСЯ ПОД КЛИЕНТ ВК С ТЕЛЕФОНА
+    log.info(f">>> VK: Image size = {len(img_data)} bytes")
+
     upload_headers = {
-        "User-Agent": "VKAndroidApp/7.14-14800 (Android 13; SDK 33; arm64-v8a; Google Pixel 7; ru; 1080x2400)",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
         "Accept": "*/*"
     }
 
     for attempt in range(1, 4):
         try:
+            log.info(f">>> VK: Attempt {attempt}/3 - Getting server...")
             url = "https://api.vk.com/method/photos.getWallUploadServer"
             r = requests.post(url, data={"group_id": gid, "access_token": VK_TOKEN, "v": "5.199"}, headers=HEADERS, timeout=20)
             
-            if r.status_code != 200: continue
+            if r.status_code != 200:
+                log.error(f">>> VK ERROR HTTP: {r.status_code} - {r.text[:200]}")
+                continue
+                
             r_data = r.json()
             if "error" in r_data: 
-                log.error(f"VK API Error: {r_data['error']}")
+                log.error(f">>> VK API ERROR: {r_data['error']}")
                 return None
             
             upload_url = r_data["response"]["upload_url"]
             
-            files = {'photo': ('chart.jpg', img_data, 'image/jpeg')}
+            fname = ''.join(random.choices(string.ascii_lowercase + string.digits, k=8)) + '.jpg'
+            files = {'photo': (fname, img_data, 'image/jpeg')}
+            
+            log.info(f">>> VK: Uploading file as {fname}...")
             r = requests.post(upload_url, files=files, headers=upload_headers, timeout=30)
             
-            if r.status_code != 200: continue
-            r_upload = r.json()
-            
-            if not r_upload.get("photo"):
-                log.error(f"VK Upload returned empty photo. Response: {r_upload}")
-                time.sleep(2)
+            if r.status_code != 200:
+                log.error(f">>> VK UPLOAD ERROR HTTP: {r.status_code} - {r.text[:200]}")
                 continue
                 
+            r_upload = r.json()
+            if not r_upload.get("photo"):
+                log.error(f">>> VK UPLOAD ERROR: Empty photo field. Response: {r_upload}")
+                time.sleep(3)
+                continue
+                
+            log.info(">>> VK: Saving photo...")
             url = "https://api.vk.com/method/photos.saveWallPhoto"
             params = {"group_id": gid, "photo": r_upload["photo"], "server": r_upload["server"], "hash": r_upload["hash"], "access_token": VK_TOKEN, "v": "5.199"}
             res = requests.post(url, data=params, headers=HEADERS, timeout=20)
             
-            if res.status_code != 200: continue
+            if res.status_code != 200:
+                log.error(f">>> VK SAVE ERROR HTTP: {res.status_code} - {res.text[:200]}")
+                continue
+                
             res_data = res.json()
             if "error" in res_data: 
-                log.error(f"VK Save API Error: {res_data['error']}")
+                log.error(f">>> VK SAVE API ERROR: {res_data['error']}")
                 continue
                 
             saved = res_data["response"][0]
-            log.info(f"VK Photo Uploaded: photo{saved['owner_id']}_{saved['id']}")
+            log.info(f">>> VK SUCCESS: photo{saved['owner_id']}_{saved['id']}")
             return f"photo{saved['owner_id']}_{saved['id']}"
             
         except Exception as e:
-            log.error(f"VK Upload Error (attempt {attempt}): {e}")
+            log.error(f">>> VK CRITICAL ERROR on attempt {attempt}: {e}")
             time.sleep(3)
 
+    log.error(">>> VK UPLOAD FAILED after all attempts.")
     return None
 
 def send_vk(text, photo_attachment=None):
@@ -552,7 +570,7 @@ def build_report(data, top_items, top_ru, btc, live_cmc, prev_g_metrics, n_senti
     return "\n".join(lines)
 
 def main():
-    log.info("evening news report v5.1")
+    log.info("evening news report v5.2")
     if not SENTIMENT_FILE.exists(): return log.error("no sentiment file")
 
     data = load_json(SENTIMENT_FILE)
