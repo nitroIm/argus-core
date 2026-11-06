@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - CORRELATION ANALYZER (v1.1)
+# ARGUS - CORRELATION ANALYZER (v1.2 - Beta & Price)
 # Path: crypto/intel/correlation.py
 # ============================================================
 
@@ -40,12 +40,11 @@ def save_json(path, data):
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 def fetch_all_data():
-    """Собирает абсолютно все данные из базы и приводит к часовому таймфрейму."""
-    log.info("Fetching ALL data from DB...")
+    log.info("Fetching ALL data from DB (READ ONLY)...")
     conn = get_conn()
     dfs = []
 
-    # 1. BTC Candles (15m -> resample to 1h)
+    # 1. BTC Candles
     try:
         query = """
             SELECT open_time, open, high, low, close, volume 
@@ -58,32 +57,23 @@ def fetch_all_data():
         if not df.empty:
             df['open_time'] = pd.to_datetime(df['open_time'], utc=True)
             df = df.set_index('open_time')
-            # Конвертируем 15m в 1h
-            df_1h = df.resample('1h').agg({
-                'open': 'first', 'high': 'max', 'low': 'min', 
-                'close': 'last', 'volume': 'sum'
-            }).dropna()
+            df_1h = df.resample('1h').agg({'open': 'first', 'high': 'max', 'low': 'min', 'close': 'last', 'volume': 'sum'}).dropna()
             df_1h = df_1h.rename(columns={'close': 'BTC_Close'})
             dfs.append(df_1h[['BTC_Close']])
-            log.info(f"  Candles: {len(df_1h)} rows (1h)")
-        else:
-            log.error("  Candles: No data found in DB!")
     except Exception as e:
         log.error(f"Failed to fetch candles: {e}")
 
-    # 2. Market Indices (Все тикеры)
+    # 2. Market Indices
     try:
         query = "SELECT ticker, open_time, close FROM market_indices WHERE open_time > NOW() - INTERVAL '90 days'"
         df = pd.read_sql(query, conn)
         df['open_time'] = pd.to_datetime(df['open_time'], utc=True)
-        df_pivot = df.pivot(index='open_time', columns='ticker', values='close')
-        df_pivot = df_pivot.resample('1h').last()
+        df_pivot = df.pivot(index='open_time', columns='ticker', values='close').resample('1h').last()
         dfs.append(df_pivot)
-        log.info(f"  Indices: {len(df_pivot.columns)} tickers")
     except Exception as e:
         log.error(f"Failed to fetch indices: {e}")
 
-    # 3. Global Metrics (CMC)
+    # 3. Global Metrics
     try:
         query = """
             SELECT last_updated, btc_dominance, eth_dominance, total_market_cap, 
@@ -95,19 +85,16 @@ def fetch_all_data():
         df['last_updated'] = pd.to_datetime(df['last_updated'], utc=True)
         df = df.set_index('last_updated').resample('1h').last()
         dfs.append(df)
-        log.info(f"  Global Metrics: {len(df)} rows")
     except Exception as e:
         log.error(f"Failed to fetch global_metrics: {e}")
 
-    # 4. Network (Blockchain.com)
+    # 4. Network
     try:
         query = "SELECT chart_time, chart_name, value FROM btc_network WHERE chart_time > NOW() - INTERVAL '90 days'"
         df = pd.read_sql(query, conn)
         df['chart_time'] = pd.to_datetime(df['chart_time'], utc=True)
-        df_pivot = df.pivot(index='chart_time', columns='chart_name', values='value')
-        df_pivot = df_pivot.resample('1h').last()
+        df_pivot = df.pivot(index='chart_time', columns='chart_name', values='value').resample('1h').last()
         dfs.append(df_pivot)
-        log.info(f"  Network: {len(df_pivot.columns)} metrics")
     except Exception as e:
         log.error(f"Failed to fetch btc_network: {e}")
 
@@ -118,7 +105,6 @@ def fetch_all_data():
         df['timestamp'] = pd.to_datetime(df['timestamp'], utc=True)
         df = df.set_index('timestamp').resample('1h').last()
         dfs.append(df)
-        log.info(f"  FearGreed: {len(df)} rows")
     except Exception as e:
         log.error(f"Failed to fetch fear_greed: {e}")
 
@@ -127,50 +113,35 @@ def fetch_all_data():
         query = "SELECT timestamp, symbol, circulating FROM stablecoins WHERE timestamp > NOW() - INTERVAL '90 days'"
         df = pd.read_sql(query, conn)
         df['timestamp'] = pd.to_datetime(df['timestamp'], utc=True)
-        df_pivot = df.pivot(index='timestamp', columns='symbol', values='circulating')
-        df_pivot = df_pivot.resample('1h').last()
+        df_pivot = df.pivot(index='timestamp', columns='symbol', values='circulating').resample('1h').last()
         df_pivot = df_pivot.add_prefix('Stable_')
         dfs.append(df_pivot)
-        log.info(f"  Stablecoins: {len(df_pivot.columns)} assets")
     except Exception as e:
         log.error(f"Failed to fetch stablecoins: {e}")
 
     conn.close()
 
-    if not dfs:
-        return pd.DataFrame()
+    if not dfs: return pd.DataFrame()
 
-    # Объединяем всё по времени
-    log.info("Merging and aligning data...")
-    merged = pd.concat(dfs, axis=1)
-    
-    # Сортируем по времени
-    merged = merged.sort_index()
-    
-    # Заполняем пропуски вперед (для выходных на фондовых рынках)
-    merged = merged.ffill()
-    
-    # Удаляем строки, где нет BTC
+    merged = pd.concat(dfs, axis=1).sort_index().ffill()
     if 'BTC_Close' in merged.columns:
         merged = merged.dropna(subset=['BTC_Close'])
-    else:
-        log.error("BTC_Close missing after merge!")
-    
     return merged
 
 def calculate_correlations(df):
-    """Считает корреляцию и ищет лаги (Lead-Lag)."""
-    log.info("Calculating correlations and lags...")
+    log.info("Calculating correlations, lags, and beta...")
     results = {}
     
     if 'BTC_Close' not in df.columns:
-        log.error("BTC_Close not found in data!")
         return results
 
-    # Логарифмические возвраты
+    # Текущая цена BTC (последняя свеча)
+    current_btc_price = float(df['BTC_Close'].iloc[-1])
+    results["current_btc_price"] = round(current_btc_price, 2)
+
+    # Процентные изменения (возвраты)
     returns = df.pct_change().dropna()
-    if returns.empty: 
-        return results
+    if returns.empty: return results
     
     btc_returns = returns['BTC_Close']
     targets = [c for c in returns.columns if c != 'BTC_Close']
@@ -185,54 +156,48 @@ def calculate_correlations(df):
         # Ищем лаг от -24 до +24 часов
         for lag in range(-LAG_RANGE, LAG_RANGE + 1):
             corr = btc_returns.corr(target_returns.shift(lag))
-            
             if pd.notna(corr):
                 all_lags[str(lag)] = round(float(corr), 3)
                 if abs(corr) > abs(best_corr):
                     best_corr = corr
                     best_lag = lag
 
+        # Считаем Бету (волатильность BTC относительно актива)
+        # Beta = Cov(BTC, Target) / Var(Target)
+        beta = 0.0
+        if target_returns.var() != 0:
+            beta = btc_returns.cov(target_returns) / target_returns.var()
+
         results[target] = {
             "best_corr": round(float(best_corr), 3),
             "best_lag_h": best_lag,
+            "beta": round(float(beta), 3),
             "all_lags": all_lags
         }
         
     return results
 
 def archive_and_save(new_results):
-    """Сохраняет данные, детально за 30 дней, остальное сжимает в месячный архив."""
-    log.info("Saving results...")
-    
+    log.info("Saving results to JSON...")
     data = load_json(OUT_FILE, {"history": [], "archive": []})
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     
-    # Если запускали сегодня, перезаписываем запись за сегодня
     data["history"] = [h for h in data["history"] if h["date"] != today]
-    data["history"].append({
-        "date": today,
-        "correlations": new_results
-    })
+    data["history"].append({"date": today, "correlations": new_results})
     
-    # Оставляем детально только 30 дней
     cutoff = datetime.now(timezone.utc) - timedelta(days=HISTORY_DAYS)
-    fresh = []
-    old = []
+    fresh, old = [], []
     
     for entry in data["history"]:
         entry_date = datetime.strptime(entry["date"], "%Y-%m-%d").replace(tzinfo=timezone.utc)
-        if entry_date >= cutoff:
-            fresh.append(entry)
-        else:
-            old.append(entry)
+        if entry_date >= cutoff: fresh.append(entry)
+        else: old.append(entry)
             
-    # Сжимаем старые в месячный архив
     if old:
         by_month = {}
         for entry in old:
-            month = entry["date"][:7] # YYYY-MM
-            if month not in by_month:
-                by_month[month] = []
+            month = entry["date"][:7]
+            if month not in by_month: by_month[month] = []
             by_month[month].append(entry["correlations"])
             
         for month, corrs in by_month.items():
@@ -241,11 +206,10 @@ def archive_and_save(new_results):
                 month_rec = {"month": month, "avg_corr": {}}
                 data["archive"].append(month_rec)
             
-            targets = corrs[0].keys()
-            for t in targets:
-                vals = [c[t]["best_corr"] for c in corrs if t in c]
-                if vals:
-                    month_rec["avg_corr"][t] = round(sum(vals)/len(vals), 3)
+            for t in corrs[0].keys():
+                if t == "current_btc_price": continue
+                vals = [c[t]["best_corr"] for c in corrs if t in c and "best_corr" in c[t]]
+                if vals: month_rec["avg_corr"][t] = round(sum(vals)/len(vals), 3)
 
     data["history"] = fresh
     save_json(OUT_FILE, data)
@@ -258,7 +222,6 @@ def main():
         if df.empty:
             log.error("No data to analyze.")
             return
-            
         results = calculate_correlations(df)
         if results:
             archive_and_save(results)
