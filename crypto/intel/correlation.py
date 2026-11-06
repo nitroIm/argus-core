@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - CORRELATION ANALYZER (v1.2 - Beta & Price)
+# ARGUS - CORRELATION ANALYZER (v1.3 - Reliability Score)
 # Path: crypto/intel/correlation.py
 # ============================================================
 
@@ -44,7 +44,6 @@ def fetch_all_data():
     conn = get_conn()
     dfs = []
 
-    # 1. BTC Candles
     try:
         query = """
             SELECT open_time, open, high, low, close, volume 
@@ -63,7 +62,6 @@ def fetch_all_data():
     except Exception as e:
         log.error(f"Failed to fetch candles: {e}")
 
-    # 2. Market Indices
     try:
         query = "SELECT ticker, open_time, close FROM market_indices WHERE open_time > NOW() - INTERVAL '90 days'"
         df = pd.read_sql(query, conn)
@@ -73,7 +71,6 @@ def fetch_all_data():
     except Exception as e:
         log.error(f"Failed to fetch indices: {e}")
 
-    # 3. Global Metrics
     try:
         query = """
             SELECT last_updated, btc_dominance, eth_dominance, total_market_cap, 
@@ -88,7 +85,6 @@ def fetch_all_data():
     except Exception as e:
         log.error(f"Failed to fetch global_metrics: {e}")
 
-    # 4. Network
     try:
         query = "SELECT chart_time, chart_name, value FROM btc_network WHERE chart_time > NOW() - INTERVAL '90 days'"
         df = pd.read_sql(query, conn)
@@ -98,7 +94,6 @@ def fetch_all_data():
     except Exception as e:
         log.error(f"Failed to fetch btc_network: {e}")
 
-    # 5. Fear & Greed
     try:
         query = "SELECT timestamp, value as FearGreed FROM fear_greed WHERE timestamp > NOW() - INTERVAL '90 days'"
         df = pd.read_sql(query, conn)
@@ -108,7 +103,6 @@ def fetch_all_data():
     except Exception as e:
         log.error(f"Failed to fetch fear_greed: {e}")
 
-    # 6. Stablecoins
     try:
         query = "SELECT timestamp, symbol, circulating FROM stablecoins WHERE timestamp > NOW() - INTERVAL '90 days'"
         df = pd.read_sql(query, conn)
@@ -135,11 +129,9 @@ def calculate_correlations(df):
     if 'BTC_Close' not in df.columns:
         return results
 
-    # Текущая цена BTC (последняя свеча)
     current_btc_price = float(df['BTC_Close'].iloc[-1])
     results["current_btc_price"] = round(current_btc_price, 2)
 
-    # Процентные изменения (возвраты)
     returns = df.pct_change().dropna()
     if returns.empty: return results
     
@@ -148,12 +140,8 @@ def calculate_correlations(df):
 
     for target in targets:
         target_returns = returns[target]
-        
-        best_corr = 0
-        best_lag = 0
-        all_lags = {}
+        best_corr, best_lag, all_lags = 0, 0, {}
 
-        # Ищем лаг от -24 до +24 часов
         for lag in range(-LAG_RANGE, LAG_RANGE + 1):
             corr = btc_returns.corr(target_returns.shift(lag))
             if pd.notna(corr):
@@ -162,8 +150,6 @@ def calculate_correlations(df):
                     best_corr = corr
                     best_lag = lag
 
-        # Считаем Бету (волатильность BTC относительно актива)
-        # Beta = Cov(BTC, Target) / Var(Target)
         beta = 0.0
         if target_returns.var() != 0:
             beta = btc_returns.cov(target_returns) / target_returns.var()
@@ -177,14 +163,64 @@ def calculate_correlations(df):
         
     return results
 
+def update_reliability(new_results, old_history):
+    """
+    Обновляет счётчик надёжности на основе сравнения с вчерашними данными.
+    +1 если знак тот же и сила не упала > 0.1
+    -1 если знак перевернулся или сила упала > 0.1
+    """
+    if not old_history:
+        # Первый запуск — инициализируем
+        for ticker, info in new_results.items():
+            if ticker == "current_btc_price": continue
+            info["reliability"] = 1
+        return new_results
+    
+    yesterday = old_history[-1].get("correlations", {})
+    today_date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    yesterday_date = old_history[-1].get("date", "")
+    
+    # Если вчера уже был запуск сегодня, берем позавчерашний
+    if yesterday_date == today_date and len(old_history) >= 2:
+        yesterday = old_history[-2].get("correlations", {})
+
+    for ticker, info in new_results.items():
+        if ticker == "current_btc_price": continue
+        
+        old_info = yesterday.get(ticker, {})
+        old_corr = old_info.get("best_corr", 0)
+        old_reliability = old_info.get("reliability", 0)
+        
+        new_corr = info["best_corr"]
+        
+        # Проверка стабильности
+        same_sign = (old_corr >= 0 and new_corr >= 0) or (old_corr < 0 and new_corr < 0)
+        strength_maintained = abs(new_corr) >= abs(old_corr) - 0.1
+        
+        if old_info and same_sign and strength_maintained:
+            new_reliability = min(10, old_reliability + 1)
+        elif old_info and (not same_sign or abs(new_corr) < abs(old_corr) - 0.1):
+            new_reliability = max(0, old_reliability - 1)
+        else:
+            new_reliability = max(1, old_reliability)  # новая метрика
+        
+        info["reliability"] = new_reliability
+
+    return new_results
+
 def archive_and_save(new_results):
     log.info("Saving results to JSON...")
     data = load_json(OUT_FILE, {"history": [], "archive": []})
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     
+    # Обновляем счётчик надёжности
+    new_results = update_reliability(new_results, data["history"])
+    
+    # Удаляем запись за сегодня, если она была (перезапись)
     data["history"] = [h for h in data["history"] if h["date"] != today]
     data["history"].append({"date": today, "correlations": new_results})
     
+    # Архивация
     cutoff = datetime.now(timezone.utc) - timedelta(days=HISTORY_DAYS)
     fresh, old = [], []
     
