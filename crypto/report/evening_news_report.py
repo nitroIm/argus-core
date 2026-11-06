@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - EVENING NEWS REPORT v5.0 (TELEGRAM IMAGE HOST)
+# ARGUS - EVENING NEWS REPORT v5.1 (VK MOBILE SPOOF)
 # Path: crypto/report/evening_news_report.py
 # ============================================================
 
@@ -11,6 +11,7 @@ import hashlib
 import logging
 import requests
 import io
+import time
 import pandas as pd
 import psycopg
 import mplfinance as mpf
@@ -39,7 +40,6 @@ except Exception as e:
 
 BOT_TOKEN = (os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("BOT_TOKEN") or "").strip()
 TG_CHANNEL_ID = (os.getenv("TG_CHANNEL_ID") or "").strip()
-CHAT_ID = (os.getenv("TELEGRAM_CHAT_ID") or "").strip()
 VK_TOKEN = (os.getenv("VK_TOKEN") or "").strip()
 VK_GROUP_ID = (os.getenv("VK_GROUP_ID") or "").strip()
 DB_URL = (os.getenv("AIVEN_DB_URL") or "").strip()
@@ -116,76 +116,85 @@ def get_rapira_usdt():
     return None
 
 # ============================================================
-# IMAGE HOSTING (TELEGRAM BOT API)
+# VK UPLOADER (MOBILE APP SPOOF)
 # ============================================================
-def upload_to_telegram_host(photo_buf):
-    """Отправляет фото в ТГ, забирает ссылку и удаляет сообщение, чтобы не спамить."""
-    if not BOT_TOKEN or not CHAT_ID: 
-        log.error("TG: No token or chat ID for hosting")
+def upload_photo_to_vk(photo_buf):
+    if not VK_TOKEN or not VK_GROUP_ID: 
         return None
-    try:
-        # 1. Отправляем фото в ТГ (без звука)
-        img_data = photo_buf.getvalue()
-        url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendPhoto"
-        files = {'photo': ('chart.jpg', img_data, 'image/jpeg')}
-        data = {'chat_id': CHAT_ID, 'disable_notification': True}
-        r = requests.post(url, data=data, files=files, timeout=30).json()
-        
-        if not r.get("ok"):
-            log.error(f"Telegram sendPhoto error: {r}")
-            return None
+    
+    gid = VK_GROUP_ID.replace("-", "")
+    img_data = photo_buf.getvalue()
+    
+    # МАСКИРУЕМСЯ ПОД КЛИЕНТ ВК С ТЕЛЕФОНА
+    upload_headers = {
+        "User-Agent": "VKAndroidApp/7.14-14800 (Android 13; SDK 33; arm64-v8a; Google Pixel 7; ru; 1080x2400)",
+        "Accept": "*/*"
+    }
+
+    for attempt in range(1, 4):
+        try:
+            url = "https://api.vk.com/method/photos.getWallUploadServer"
+            r = requests.post(url, data={"group_id": gid, "access_token": VK_TOKEN, "v": "5.199"}, headers=HEADERS, timeout=20)
             
-        msg_id = r["result"]["message_id"]
-        file_id = r["result"]["photo"][-1]["file_id"]
-        
-        # 2. Удаляем сообщение, чтобы не засорять чат
-        del_url = f"https://api.telegram.org/bot{BOT_TOKEN}/deleteMessage"
-        requests.post(del_url, json={"chat_id": CHAT_ID, "message_id": msg_id}, timeout=10)
-        
-        # 3. Получаем прямой путь к файлу
-        get_file_url = f"https://api.telegram.org/bot{BOT_TOKEN}/getFile"
-        res_file = requests.get(get_file_url, params={"file_id": file_id}, timeout=10).json()
-        
-        if res_file.get("ok"):
-            file_path = res_file["result"]["file_path"]
-            direct_url = f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file_path}"
-            log.info(f"Telegram Host URL generated: {direct_url}")
-            return direct_url
+            if r.status_code != 200: continue
+            r_data = r.json()
+            if "error" in r_data: 
+                log.error(f"VK API Error: {r_data['error']}")
+                return None
             
-    except Exception as e:
-        log.error(f"Telegram Host Exception: {e}")
+            upload_url = r_data["response"]["upload_url"]
+            
+            files = {'photo': ('chart.jpg', img_data, 'image/jpeg')}
+            r = requests.post(upload_url, files=files, headers=upload_headers, timeout=30)
+            
+            if r.status_code != 200: continue
+            r_upload = r.json()
+            
+            if not r_upload.get("photo"):
+                log.error(f"VK Upload returned empty photo. Response: {r_upload}")
+                time.sleep(2)
+                continue
+                
+            url = "https://api.vk.com/method/photos.saveWallPhoto"
+            params = {"group_id": gid, "photo": r_upload["photo"], "server": r_upload["server"], "hash": r_upload["hash"], "access_token": VK_TOKEN, "v": "5.199"}
+            res = requests.post(url, data=params, headers=HEADERS, timeout=20)
+            
+            if res.status_code != 200: continue
+            res_data = res.json()
+            if "error" in res_data: 
+                log.error(f"VK Save API Error: {res_data['error']}")
+                continue
+                
+            saved = res_data["response"][0]
+            log.info(f"VK Photo Uploaded: photo{saved['owner_id']}_{saved['id']}")
+            return f"photo{saved['owner_id']}_{saved['id']}"
+            
+        except Exception as e:
+            log.error(f"VK Upload Error (attempt {attempt}): {e}")
+            time.sleep(3)
+
     return None
 
-def send_vk(text, photo_url=None):
+def send_vk(text, photo_attachment=None):
     if not VK_TOKEN or not VK_GROUP_ID: return False
     try:
         gid = VK_GROUP_ID.strip()
         owner_id = gid if gid.startswith("-") else "-" + gid
         url = "https://api.vk.com/method/wall.post"
         
-        # Вставляем ссылку в текст, чтобы ВК подтянул превью
-        final_text = text
-        if photo_url:
-            final_text += f"\n\n🖼️ График: {photo_url}"
-        
         params = {
             "owner_id": owner_id, 
             "from_group": 1, 
-            "message": final_text[:MAX_VK_LEN], 
+            "message": text[:MAX_VK_LEN], 
             "access_token": VK_TOKEN, 
             "v": "5.199"
         }
         
+        if photo_attachment: 
+            params["attachments"] = photo_attachment
+            
         r = requests.post(url, data=params, headers=HEADERS, timeout=30)
-        if r.status_code == 200:
-            res = r.json()
-            if "error" in res:
-                log.error(f"VK Wall Post API Error: {res['error']}")
-                return False
-            return True
-        else:
-            log.error(f"VK Wall Post HTTP Error {r.status_code}: {r.text[:200]}")
-            return False
+        return "error" not in r.json()
     except Exception as e: 
         log.error(f"VK Wall Post Error: {e}")
         return False
@@ -369,7 +378,6 @@ def fetch_btc_snapshot():
         df_1h = df.resample('1h').agg({'open': 'first', 'high': 'max', 'low': 'min', 'close': 'last', 'volume': 'sum'}).dropna()
         
         if len(df_1h) < 15: return None
-        
         closes_1h, highs_1h, lows_1h = df_1h['close'].tolist(), df_1h['high'].tolist(), df_1h['low'].tolist()
         rsi_1h = _rsi(closes_1h, 14)
         atr_1h = _atr(highs_1h, lows_1h, closes_1h, 14)
@@ -460,7 +468,6 @@ def build_report(data, top_items, top_ru, btc, live_cmc, prev_g_metrics, n_senti
     avg = data.get("avg_sentiment", 0.0)
     total = data.get("total_news", 0)
     
-    # --- ВЕЧЕРНИЙ ЗАГОЛОВОК ---
     lines = ["📰 <b>ARGUS — Новости</b>", f"🌙 Добрый вечер! {now.strftime('%d.%m.%Y, %H:%M')}", ""]
 
     if btc:
@@ -545,7 +552,7 @@ def build_report(data, top_items, top_ru, btc, live_cmc, prev_g_metrics, n_senti
     return "\n".join(lines)
 
 def main():
-    log.info("evening news report v5.0")
+    log.info("evening news report v5.1")
     if not SENTIMENT_FILE.exists(): return log.error("no sentiment file")
 
     data = load_json(SENTIMENT_FILE)
@@ -573,16 +580,16 @@ def main():
     if TG_CHANNEL_ID: send_telegram(text_tg, TG_CHANNEL_ID)
     
     photo_buf = generate_chart_image()
-    photo_url = None
+    photo_att = None
     
     if photo_buf:
-        photo_url = upload_to_telegram_host(photo_buf)
-        if not photo_url:
-            log.warning("Не удалось загрузить картинку в ТГ (хостинг). Пост будет без картинки.")
+        photo_att = upload_photo_to_vk(photo_buf)
+        if not photo_att:
+            log.warning("Не удалось загрузить фото в VK. Пост будет без картинки.")
     else:
         log.warning("График не сгенерировался. Пост будет без картинки.")
 
-    if send_vk(text_vk, photo_url): 
+    if send_vk(text_vk, photo_att): 
         log.info("VK post sent.")
 
     for it in top_5:
