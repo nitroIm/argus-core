@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - EVENING NEWS REPORT v4.5 (FIAT + VK BULLETPROOF)
+# ARGUS - EVENING NEWS REPORT v4.6 (EXTERNAL IMAGE HOST)
 # Path: crypto/report/evening_news_report.py
 # ============================================================
 
@@ -51,10 +51,8 @@ SYMBOL = "BTCUSDT"
 TIMEFRAME = "15m"
 TZ = ZoneInfo("Europe/Kaliningrad")
 
-# Защита от блокировок ВК (маскировка под браузер)
 HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-    "Accept": "application/json"
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 }
 
 def now_local(): return datetime.now(timezone.utc).astimezone(TZ)
@@ -86,7 +84,7 @@ def send_telegram(text, chat_id):
     return ok_all
 
 # ============================================================
-# FIAT RATES (PROTECTED)
+# FIAT RATES
 # ============================================================
 def get_cbr_usd():
     try:
@@ -116,80 +114,53 @@ def get_rapira_usdt():
     return None
 
 # ============================================================
-# VK UPLOADER (BULLETPROOF)
+# IMAGE HOSTING (CATBOX)
 # ============================================================
-def upload_photo_to_vk(photo_bytes):
-    if not VK_TOKEN or not VK_GROUP_ID: 
-        log.error("VK: No token or group ID")
-        return None
-    
+def upload_to_catbox(photo_bytes):
+    """Загружает картинку на бесплатный хостинг Catbox.moe и возвращает прямую ссылку."""
     try:
-        gid = VK_GROUP_ID.replace("-", "")
-        url = "https://api.vk.com/method/photos.getWallUploadServer"
-        
-        # 1. Получаем сервер (POST + Headers)
-        r = requests.post(url, data={"group_id": gid, "access_token": VK_TOKEN, "v": "5.199"}, headers=HEADERS, timeout=20)
-        if r.status_code != 200:
-            log.error(f"VK getWallUploadServer HTTP Error {r.status_code}: {r.text[:200]}")
-            return None
-            
-        r_data = r.json()
-        if "error" in r_data: 
-            log.error(f"VK getWallUploadServer Error: {r_data['error']}")
-            return None
-            
-        upload_url = r_data["response"]["upload_url"]
-        
-        # 2. Загружаем файл (JPEG)
-        files = {'photo': ('chart.jpg', photo_bytes.getvalue(), 'image/jpeg')}
-        r = requests.post(upload_url, files=files, timeout=30)
-        if r.status_code != 200:
-            log.error(f"VK Upload HTTP Error {r.status_code}: {r.text[:200]}")
-            return None
-            
-        r_upload = r.json()
-        if not r_upload.get("photo"):
-            log.error(f"VK Upload Error: {r_upload}")
-            return None
-            
-        # 3. Сохраняем на стене
-        url = "https://api.vk.com/method/photos.saveWallPhoto"
-        params = {"group_id": gid, "photo": r_upload["photo"], "server": r_upload["server"], "hash": r_upload["hash"], "access_token": VK_TOKEN, "v": "5.199"}
-        res = requests.post(url, data=params, headers=HEADERS, timeout=20)
-        if res.status_code != 200:
-            log.error(f"VK saveWallPhoto HTTP Error {res.status_code}: {res.text[:200]}")
-            return None
-            
-        res_data = res.json()
-        if "error" in res_data: 
-            log.error(f"VK saveWallPhoto Error: {res_data['error']}")
-            return None
-            
-        saved = res_data["response"][0]
-        return f"photo{saved['owner_id']}_{saved['id']}"
+        url = "https://catbox.moe/user/api.php"
+        files = {'fileToUpload': ('chart.jpg', photo_bytes, 'image/jpeg')}
+        data = {'reqtype': 'fileupload'}
+        log.info("Uploading chart to Catbox...")
+        r = requests.post(url, data=data, files=files, timeout=30)
+        if r.status_code == 200 and r.text.startswith("https://"):
+            log.info(f"Catbox upload success: {r.text.strip()}")
+            return r.text.strip()
+        else:
+            log.error(f"Catbox upload failed: {r.status_code} - {r.text}")
     except Exception as e:
-        log.error(f"VK Photo Upload Critical Error: {e}")
-        return None
+        log.error(f"Catbox Exception: {e}")
+    return None
 
-def send_vk(text, photo_attachment=None):
+def send_vk(text, photo_url=None):
     if not VK_TOKEN or not VK_GROUP_ID: return False
     try:
         gid = VK_GROUP_ID.strip()
         owner_id = gid if gid.startswith("-") else "-" + gid
         url = "https://api.vk.com/method/wall.post"
-        params = {
-            "owner_id": owner_id, "from_group": 1, 
-            "message": text[:MAX_VK_LEN], 
-            "access_token": VK_TOKEN, "v": "5.199"
-        }
-        if photo_attachment: params["attachments"] = photo_attachment
-        r = requests.post(url, data=params, headers=HEADERS, timeout=30)
         
-        if r.status_code != 200:
+        params = {
+            "owner_id": owner_id, 
+            "from_group": 1, 
+            "message": text[:MAX_VK_LEN], 
+            "access_token": VK_TOKEN, 
+            "v": "5.199"
+        }
+        # Если есть ссылка, ВК сам скачает картинку и прикрепит
+        if photo_url: 
+            params["attachments"] = photo_url
+            
+        r = requests.post(url, data=params, headers=HEADERS, timeout=30)
+        if r.status_code == 200:
+            res = r.json()
+            if "error" in res:
+                log.error(f"VK Wall Post API Error: {res['error']}")
+                return False
+            return True
+        else:
             log.error(f"VK Wall Post HTTP Error {r.status_code}: {r.text[:200]}")
             return False
-            
-        return "error" not in r.json()
     except Exception as e: 
         log.error(f"VK Wall Post Error: {e}")
         return False
@@ -284,17 +255,15 @@ def generate_chart_image():
         ax_main = axes[0]
         ax_main.text(1.005, last_close, f' {last_close:,.2f} ', transform=ax_main.get_yaxis_transform(), va='center', ha='left', color='black', bbox=dict(boxstyle="round,pad=0.3", fc=last_color, ec=last_color, lw=1), fontsize=10, fontweight='bold')
 
-        # Сохраняем как PNG в память
         buf = io.BytesIO()
         fig.savefig(buf, format='png', dpi=150, bbox_inches='tight')
         buf.seek(0)
         
-        # Конвертируем в JPEG для ВК (убираем прозрачность)
         img = Image.open(buf).convert('RGB')
         out_buf = io.BytesIO()
         img.save(out_buf, format='JPEG', quality=95)
         out_buf.seek(0)
-        return out_buf
+        return out_buf.getvalue() # Возвращаем байты, а не BytesIO
     except Exception as e:
         log.error(f"Chart Gen Error: {e}")
         return None
@@ -405,7 +374,7 @@ def fetch_stablecoins():
     except Exception: return {}
 
 # ============================================================
-# FORMATTING & BARS (NEW BLOCK CHARACTERS)
+# FORMATTING & BARS
 # ============================================================
 def fmt_price(p): return "$" + format(int(p), ",") if p >= 1000 else "$" + format(p, ".2f")
 def fmt_usd(v):
@@ -445,7 +414,6 @@ def build_report(data, top_items, top_ru, btc, live_cmc, prev_g_metrics, n_senti
         if parts: lines.append("  " + " | ".join(parts))
         lines.append("")
         
-        # УМЕНЬШЕННЫЕ ПОЛОСКИ (15 ВМЕСТО 20)
         bar_len = 15
         b_buy = int(round(btc["buy_pct"] / 100 * bar_len))
         bar_buy = "█" * b_buy + "░" * (bar_len - b_buy)
@@ -466,14 +434,12 @@ def build_report(data, top_items, top_ru, btc, live_cmc, prev_g_metrics, n_senti
         d_dom = calc_delta(dom, prev_g_metrics["btc_dominance"], is_pct=True) if prev_g_metrics else "(нет данных)"
         usdt = stables.get("USDT")
         usdt_s = f"${usdt:.3f} ✅" if usdt and 0.99 <= float(usdt) <= 1.01 else f"${usdt:.3f} ⚠️" if usdt else "?"
-        
         lines.append(f"  Капитализация: {fmt_usd(mcap)} {d_mcap}")
         lines.append(f"  Доминация BTC: {dom:.2f}% {d_dom}")
         lines.append(f"  Стейблкоины: {fmt_usd(stbl_mcap)} (USDT {usdt_s})")
     else:
         lines.append("  ⚠️ CMC не отвечает")
         
-    # ВСТАВЛЯЕМ БЛОК КУРСОВ ВАЛЮТ
     if fiat_cbr or fiat_rapira:
         lines.append("")
         lines.append("💵 <b>Валюты</b>")
@@ -521,7 +487,7 @@ def build_report(data, top_items, top_ru, btc, live_cmc, prev_g_metrics, n_senti
     return "\n".join(lines)
 
 def main():
-    log.info("evening news report v4.5")
+    log.info("evening news report v4.6")
     if not SENTIMENT_FILE.exists(): return
 
     data = load_json(SENTIMENT_FILE)
@@ -546,7 +512,6 @@ def main():
     n_sentiment = fetch_network_sentiment(hours_ago=12)
     stables = fetch_stablecoins()
     
-    # ПОЛУЧАЕМ КУРСЫ ВАЛЮТ
     fiat_cbr = get_cbr_usd()
     fiat_rapira = get_rapira_usdt()
 
@@ -556,10 +521,23 @@ def main():
     log.info("sending evening report to TG Channel and VK...")
     if TG_CHANNEL_ID: send_telegram(text_tg, TG_CHANNEL_ID)
     
-    photo_buf = generate_chart_image()
-    photo_att = upload_photo_to_vk(photo_buf) if photo_buf else None
+    # Генерируем картинку
+    photo_bytes = generate_chart_image()
+    photo_url = None
     
-    if VK_GROUP_ID: send_vk(text_vk, photo_att)
+    if photo_bytes:
+        photo_url = upload_to_catbox(photo_bytes)
+        if not photo_url:
+            log.warning("Не удалось загрузить картинку на Catbox. Пост будет без картинки.")
+    else:
+        log.warning("График не сгенерировался. Пост будет без картинки.")
+
+    # Отправляем в ВК (передаем ссылку)
+    if VK_GROUP_ID: 
+        if send_vk(text_vk, photo_url):
+            log.info("VK post sent.")
+        else:
+            log.error("VK post failed.")
 
     for it in top_5:
         history["entries"].append({"hash": _title_hash(it.get("title_original", "")), "sent_at": datetime.now(timezone.utc).isoformat()})
