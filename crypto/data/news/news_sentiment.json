@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-11-06T07:05:43.708650+00:00",
-  "total_news": 95,
-  "avg_sentiment": -0.305,
+  "generated_at": "2026-11-06T08:05:37.608341+00:00",
+  "total_news": 94,
+  "avg_sentiment": -0.336,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 15,
+  "bullish_count": 14,
   "bearish_count": 28,
   "neutral_count": 52,
   "fake_count": 0,
@@ -30,8 +30,8 @@
       "bear": 2
     },
     "CryptoPotato": {
-      "total": 25,
-      "bull": 5,
+      "total": 24,
+      "bull": 4,
       "bear": 9
     },
     "Bitcoinist": {
@@ -58,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-06T07:05:41.728270+00:00",
+      "collected_at": "2026-11-06T08:05:35.876243+00:00",
       "effective_weight": 1.04,
       "title_original": "Core Scientific to quit Bitcoin mining by year-end as AI business surges",
       "cross_check": 1
@@ -75,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-06T07:05:41.730074+00:00",
+      "collected_at": "2026-11-06T08:05:35.876718+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin, Ether ETFs draw $128M as crypto rebounds after midterms",
       "cross_check": 5
@@ -92,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-06T07:05:42.082498+00:00",
+      "collected_at": "2026-11-06T08:05:36.252538+00:00",
       "effective_weight": 1.0,
       "title_original": "JPMorgan Gives Bitcoin Top Return Forecast, Grayscale Highlights",
       "cross_check": 1
@@ -109,30 +109,47 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-06T07:05:42.082556+00:00",
+      "collected_at": "2026-11-06T08:05:36.252574+00:00",
       "effective_weight": 1.0,
       "title_original": "Ripple CEO Says Crypto Is Here to Stay as Pro-Crypto Lawmakers Win",
       "cross_check": 1
     },
     {
-      "title": "XRP Tradable Supply on Binance Tightens as Scarcity Hits Four-Year High",
-      "url": "https://news.bitcoin.com/market-updates/xrp-tradable-supply-on-binance-tightens-as-scarcity-hits-four-year-high/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
+      "title": "Zcash Upgrade Could Lock $16 Million in Crypto Forever",
+      "url": "https://decrypt.co/382663/zcash-upgrade-could-lock-16-million-crypto",
+      "source": "Decrypt",
+      "source_weight": 1.1,
       "lang": "en",
-      "pub_date": "2026-11-06T02:05:32+00:00",
+      "pub_date": "2026-11-05T19:46:03+00:00",
       "sentiment": 1.0,
-      "bull_weight": 1.0,
+      "bull_weight": 1.2,
       "bear_weight": 0.0,
-      "freshness": 1.0,
+      "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-06T07:05:42.082614+00:00",
-      "effective_weight": 1.0,
-      "title_original": "XRP Tradable Supply on Binance Tightens as Scarcity Hits Four-Year High",
+      "collected_at": "2026-11-06T08:05:35.987591+00:00",
+      "effective_weight": 0.88,
+      "title_original": "Zcash Upgrade Could Lock $16 Million in Crypto Forever",
       "cross_check": 1
     }
   ],
   "top_bearish": [
+    {
+      "title": "Why Is the XRP Price Down to an 11-Week Low Today?",
+      "url": "https://cryptopotato.com/why-is-the-xrp-price-down-to-an-11-week-low-today/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-06T07:19:53+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-06T08:05:36.505919+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Why Is the XRP Price Down to an 11-Week Low Today?",
+      "cross_check": 1
+    },
     {
       "title": "Биткоин упал ниже $76 000 вслед за обвалом фондового рынка США",
       "url": "https://forklog.com/news/bitkoin-upal-nizhe-76-000-vsled-za-obvalom-fondovogo-rynka-ssha",
@@ -143,10 +160,10 @@
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 1.5,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-06T07:05:43.643938+00:00",
-      "effective_weight": 1.8,
+      "collected_at": "2026-11-06T08:05:37.570819+00:00",
+      "effective_weight": 1.2,
       "title_original": "Биткоин упал ниже $76 000 вслед за обвалом фондового рынка США",
       "cross_check": 1
     },
@@ -162,7 +179,7 @@
       "bear_weight": 3.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-06T07:05:41.728615+00:00",
+      "collected_at": "2026-11-06T08:05:35.876452+00:00",
       "effective_weight": 1.04,
       "title_original": "Fed, OCC check US banks after Binance hack as experts flag security risks",
       "cross_check": 3
@@ -179,7 +196,7 @@
       "bear_weight": 1.2,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-06T07:05:41.729964+00:00",
+      "collected_at": "2026-11-06T08:05:35.876643+00:00",
       "effective_weight": 1.04,
       "title_original": "South Korea seeks 4th crypto tax delay, targets 2029 start",
       "cross_check": 3
@@ -196,26 +213,9 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-06T07:05:41.730019+00:00",
+      "collected_at": "2026-11-06T08:05:35.876676+00:00",
       "effective_weight": 1.04,
       "title_original": "France budget rejection sidelines stablecoin tax, wallet reporting",
-      "cross_check": 1
-    },
-    {
-      "title": "Bitcoin Clings to $75K as Asian Markets Lose Over $1 Trillion in a Day",
-      "url": "https://news.bitcoin.com/market-updates/asia-stocks-1-trillion-crash-kospi-bitcoin-75k/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-06T05:30:04+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-06T07:05:42.082435+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Bitcoin Clings to $75K as Asian Markets Lose Over $1 Trillion in a Day",
       "cross_check": 1
     }
   ]
