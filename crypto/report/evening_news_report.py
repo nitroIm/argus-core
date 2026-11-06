@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - EVENING NEWS REPORT v5.3 (VK USER_TOKEN FIX)
+# ARGUS - EVENING NEWS REPORT v5.4 (VK RESIZE & RETRY)
 # Path: crypto/report/evening_news_report.py
 # ============================================================
 
@@ -28,10 +28,6 @@ except Exception as e:
     log.warning("translate unavailable: " + str(e))
     def translate_batch(t): return t
 
-# --- ТОКЕНЫ ---
-# VK_USER_TOKEN — обязателен для загрузки фото (user_token админа группы, scope: photos,wall)
-# VK_TOKEN — может быть group_token (для wall.post) или user_token (тогда можно использовать его же)
-VK_USER_TOKEN = (os.getenv("VK_USER_TOKEN") or "").strip()
 VK_TOKEN = (os.getenv("VK_TOKEN") or "").strip()
 VK_GROUP_ID = (os.getenv("VK_GROUP_ID") or "").strip()
 
@@ -78,7 +74,7 @@ def send_telegram(text, chat_id):
     return ok_all
 
 # ============================================================
-# FIAT RATES (без изменений)
+# FIAT RATES
 # ============================================================
 def get_cbr_usd():
     try:
@@ -102,66 +98,75 @@ def get_rapira_usdt():
     return None
 
 # ============================================================
-# VK UPLOADER (USER_TOKEN + ПРАВИЛЬНЫЙ OWNER_ID)
+# VK UPLOADER (RESIZE & RETRY)
 # ============================================================
 def upload_photo_to_vk(photo_buf):
     log.info(">>> VK UPLOAD START")
-    # 1. Выбираем токен: приоритет VK_USER_TOKEN, иначе VK_TOKEN
-    token = VK_USER_TOKEN or VK_TOKEN
-    if not token or not VK_GROUP_ID:
-        log.error(">>> VK ERROR: Empty token (VK_USER_TOKEN/VK_TOKEN) or VK_GROUP_ID")
+    if not VK_TOKEN or not VK_GROUP_ID:
+        log.error(">>> VK ERROR: Empty VK_TOKEN or VK_GROUP_ID")
         return None
 
     gid = VK_GROUP_ID.replace("-", "")
     img_data = photo_buf.getvalue()
-    log.info(f">>> VK: Image size = {len(img_data)} bytes | group_id = {gid} | token_source = {'VK_USER_TOKEN' if VK_USER_TOKEN else 'VK_TOKEN'}")
+    log.info(f">>> VK: Image size = {len(img_data)} bytes")
 
-    upload_headers = {"User-Agent": HEADERS["User-Agent"], "Accept": "*/*"}
+    # Разные варианты User-Agent и версий API на случай блокировок
+    attempts = [
+        {"ua": HEADERS["User-Agent"], "v": "5.199"},
+        {"ua": HEADERS["User-Agent"], "v": "5.131"},
+        {"ua": "VKAndroidApp/7.14-14800 (Android 13; SDK 33; arm64-v8a; Google Pixel 7; ru; 1080x2400)", "v": "5.199"}
+    ]
 
-    for attempt in range(1, 4):
+    for attempt_idx, cfg in enumerate(attempts, 1):
         try:
-            log.info(f">>> VK: Attempt {attempt}/3 - photos.getWallUploadServer...")
+            log.info(f">>> VK: Attempt {attempt_idx}/{len(attempts)} (v={cfg['v']}, UA={cfg['ua'][:30]}...)")
+            
+            # 1. Получаем сервер
             url = "https://api.vk.com/method/photos.getWallUploadServer"
-            r = requests.post(url, data={"group_id": gid, "access_token": token, "v": "5.199"}, headers=HEADERS, timeout=20)
-
+            r = requests.post(url, data={"group_id": gid, "access_token": VK_TOKEN, "v": cfg['v']}, headers=HEADERS, timeout=20)
+            
             if r.status_code != 200:
-                log.error(f">>> VK HTTP {r.status_code}: {r.text[:200]}"); continue
+                log.error(f"HTTP {r.status_code}: {r.text[:100]}"); continue
             r_data = r.json()
             if "error" in r_data:
-                log.error(f">>> VK API ERROR at getWallUploadServer: {r_data['error']}"); return None
+                log.error(f"API ERROR: {r_data['error']}"); continue
 
             upload_url = r_data["response"]["upload_url"]
             fname = ''.join(random.choices(string.ascii_lowercase + string.digits, k=8)) + '.jpg'
 
+            # 2. Загружаем файл
             log.info(f">>> VK: Uploading file as {fname}...")
+            upload_headers = {"User-Agent": cfg['ua'], "Accept": "*/*"}
             r = requests.post(upload_url, files={'photo': (fname, img_data, 'image/jpeg')}, headers=upload_headers, timeout=30)
+            
             if r.status_code != 200:
-                log.error(f">>> VK UPLOAD HTTP {r.status_code}: {r.text[:200]}"); continue
-
+                log.error(f"UPLOAD HTTP {r.status_code}: {r.text[:100]}"); continue
             r_upload = r.json()
+            
             if not r_upload.get("photo"):
-                log.error(f">>> VK UPLOAD EMPTY PHOTO (token issue). Response: {r_upload}")
-                time.sleep(3); continue
+                log.error(f"UPLOAD EMPTY PHOTO. Response: {r_upload}")
+                time.sleep(2); continue
 
-            log.info(">>> VK: photos.saveWallPhoto...")
+            # 3. Сохраняем
+            log.info(">>> VK: Saving photo...")
             url = "https://api.vk.com/method/photos.saveWallPhoto"
-            params = {"group_id": gid, "photo": r_upload["photo"], "server": r_upload["server"],
-                      "hash": r_upload["hash"], "access_token": token, "v": "5.199"}
+            params = {"group_id": gid, "photo": r_upload["photo"], "server": r_upload["server"], "hash": r_upload["hash"], "access_token": VK_TOKEN, "v": cfg['v']}
             res = requests.post(url, data=params, headers=HEADERS, timeout=20)
+            
             if res.status_code != 200:
-                log.error(f">>> VK SAVE HTTP {res.status_code}: {res.text[:200]}"); continue
-
+                log.error(f"SAVE HTTP {res.status_code}: {res.text[:100]}"); continue
             res_data = res.json()
             if "error" in res_data:
-                log.error(f">>> VK SAVE API ERROR: {res_data['error']}"); continue
+                log.error(f"SAVE API ERROR: {res_data['error']}"); continue
 
             saved = res_data["response"][0]
-            # ВАЖНО: VK может вернуть owner_id пользователя, а не группы — используем ровно то, что вернул VK
             attach = f"photo{saved['owner_id']}_{saved['id']}"
-            log.info(f">>> VK SUCCESS: {attach} (owner_id={saved['owner_id']})")
+            log.info(f">>> VK SUCCESS: {attach}")
             return attach
+            
         except Exception as e:
-            log.error(f">>> VK CRITICAL ERROR attempt {attempt}: {e}"); time.sleep(3)
+            log.error(f">>> VK CRITICAL ERROR attempt {attempt_idx}: {e}")
+            time.sleep(2)
 
     log.error(">>> VK UPLOAD FAILED after all attempts.")
     return None
@@ -187,7 +192,7 @@ def send_vk(text, photo_attachment=None):
         log.error(f"VK Wall Post Exception: {e}"); return False
 
 # ============================================================
-# УТИЛИТЫ (без изменений)
+# УТИЛИТЫ
 # ============================================================
 def to_plain(text):
     text = re.sub(r"<a href=\"([^\"]+)\">([^<]+)</a>", r"\2 (\1)", text)
@@ -243,7 +248,7 @@ def translate_top(items, n=5):
     except Exception: return originals
 
 # ============================================================
-# CHART & DB FETCHERS (без изменений)
+# CHART & DB FETCHERS (С УМЕНЬШЕНИЕМ РАЗМЕРА)
 # ============================================================
 def get_conn():
     if not DB_URL: raise RuntimeError("AIVEN_DB_URL not set")
@@ -293,8 +298,18 @@ def generate_chart_image():
         buf = io.BytesIO()
         fig.savefig(buf, format='png', dpi=150, bbox_inches='tight')
         buf.seek(0)
+        
+        # --- УМЕНЬШЕНИЕ КАРТИНКИ ДЛЯ VK ---
+        img = Image.open(buf).convert('RGB')
+        max_width = 1080
+        if img.width > max_width:
+            ratio = max_width / img.width
+            new_size = (max_width, int(img.height * ratio))
+            img = img.resize(new_size, Image.Resampling.LANCZOS)
+        
         out_buf = io.BytesIO()
-        Image.open(buf).convert('RGB').save(out_buf, format='JPEG', quality=95)
+        # Сжимаем до 85% качества, чтобы уменьшить вес
+        img.save(out_buf, format='JPEG', quality=85)
         out_buf.seek(0)
         return out_buf
     except Exception as e:
@@ -398,7 +413,7 @@ def fetch_stablecoins():
     except Exception: return {}
 
 # ============================================================
-# FORMATTING & BARS (без изменений)
+# FORMATTING & BARS
 # ============================================================
 def fmt_price(p): return "$" + format(int(p), ",") if p >= 1000 else "$" + format(p, ".2f")
 def fmt_usd(v):
@@ -507,7 +522,7 @@ def build_report(data, top_items, top_ru, btc, live_cmc, prev_g_metrics, n_senti
     return "\n".join(lines)
 
 def main():
-    log.info("evening news report v5.3")
+    log.info("evening news report v5.4")
     if not SENTIMENT_FILE.exists(): return log.error("no sentiment file")
 
     data = load_json(SENTIMENT_FILE)
