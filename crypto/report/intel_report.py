@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - INTEL REPORT (v1.4 - Compact & Reliability)
+# ARGUS - INTEL REPORT (v1.5 - Compact, No Total Cap, Beta Filter)
 # Path: crypto/report/intel_report.py
 # ============================================================
 
@@ -25,7 +25,7 @@ TZ = ZoneInfo("Europe/Kaliningrad")
 TICKER_NAMES = {
     "^VIX": "VIX (Страх)", "^GSPC": "S&P 500", "^IXIC": "Nasdaq",
     "^N225": "Nikkei 225", "^HSI": "Гонконг", "DX-Y.NYB": "DXY (Доллар)",
-    "CL=F": "Нефть", "GC=F": "Золото", "total_market_cap": "Общая капа",
+    "CL=F": "Нефть", "GC=F": "Золото", 
     "altcoin_market_cap": "Альткоины", "eth_dominance": "Доминация ETH",
     "feargreed": "Fear & Greed", "btc_dominance": "Доминация BTC",
     "^KS11": "KOSPI (Корея)", "^FTSE": "FTSE (UK)", "^JKSE": "Джакарта",
@@ -62,7 +62,7 @@ def main():
     if btc_price == 0:
         return
 
-    # Собираем сильные связи (порог 0.4) и не мусорные
+    # Собираем сильные связи (порог 0.4), фильтруем мусор и слабую Бету
     strong_links = []
     for ticker, info in corrs.items():
         corr = info.get("best_corr", 0)
@@ -70,7 +70,9 @@ def main():
         
         if abs(corr) < 0.4: continue
         if "Stable" in ticker or "stablecoin" in ticker: continue
-        if abs(beta) > 2.5: continue
+        if abs(beta) > 2.5: continue # Убираем аномалии
+        if abs(beta) < 0.2: continue # УБИРАЕМ СЛАБУЮ БЕТУ (меньше 0.2)
+        if ticker == "total_market_cap": continue # УБИРАЕМ ОБЩУЮ КАПУ
         if "hash-rate" in ticker or "difficulty" in ticker: continue
         if "miners-revenue" in ticker or "n-transactions" in ticker: continue
         
@@ -100,11 +102,9 @@ def main():
         # Иконки
         emoji = "🟢" if corr > 0 else "🔴"
         lag_str = f"{lag:+d}ч"
-        stars = "⭐" * min(rel, 5)
         
-        lines.append(f"{emoji} <b>{name}</b> ({corr:+.2f}, {lag_str}) → ${est_price:,.0f} ({est_pct:+.2f}%)")
-        if stars:
-            lines.append(f"   {stars}")
+        # Компактная строка с рейтингом в конце
+        lines.append(f"{emoji} <b>{name}</b> ({corr:+.2f}, {lag_str}) → ${est_price:,.0f} ({est_pct:+.2f}%) [над.: {rel}]")
 
     if proven:
         lines.append("🔥 <b>ПРОВЕРЕННЫЕ СВЯЗИ:</b>")
@@ -113,11 +113,11 @@ def main():
 
     if new_links:
         lines.append("⚡ <b>НОВЫЕ СВЯЗИ:</b>")
-        for t, i in new_links[:3]: add_link(t, i)
+        for t, i in new_links[:5]: add_link(t, i)
         lines.append("")
 
     if not proven and not new_links:
-        lines.append("<i>Сильных связей (порог 0.4) нет. Фон неопределенный.</i>\n")
+        lines.append("<i>Сильных связей (порог 0.4) с достаточной бетой нет. Фон неопределенный.</i>\n")
 
     if fail_count > 0:
         lines.append(f"⚠️ <i>{fail_count} модуль(ей) упали.</i>")
