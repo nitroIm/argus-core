@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - INTEL REPORT (v1.2 - Beta & Price)
+# ARGUS - INTEL REPORT (v1.4 - Compact & Reliability)
 # Path: crypto/report/intel_report.py
 # ============================================================
 
@@ -22,115 +22,109 @@ BOT_TOKEN = (os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("BOT_TOKEN") or "").st
 CHAT_ID = (os.getenv("TELEGRAM_CHAT_ID") or "").strip()
 TZ = ZoneInfo("Europe/Kaliningrad")
 
+TICKER_NAMES = {
+    "^VIX": "VIX (Страх)", "^GSPC": "S&P 500", "^IXIC": "Nasdaq",
+    "^N225": "Nikkei 225", "^HSI": "Гонконг", "DX-Y.NYB": "DXY (Доллар)",
+    "CL=F": "Нефть", "GC=F": "Золото", "total_market_cap": "Общая капа",
+    "altcoin_market_cap": "Альткоины", "eth_dominance": "Доминация ETH",
+    "feargreed": "Fear & Greed", "btc_dominance": "Доминация BTC",
+    "^KS11": "KOSPI (Корея)", "^FTSE": "FTSE (UK)", "^JKSE": "Джакарта",
+    "^TWII": "Тайвань", "399001.SZ": "Шэньчжэнь", "^BSESN": "BSE Sensex",
+    "defi_market_cap": "DeFi Market Cap"
+}
+
 def load_json(path):
-    if not path.exists():
-        log.error(f"Файл не найден: {path}")
-        return None
+    if not path.exists(): return None
     try:
-        with open(path, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except Exception as e:
-        log.error(f"Ошибка чтения JSON: {e}")
-        return None
+        with open(path, "r", encoding="utf-8") as f: return json.load(f)
+    except Exception: return None
 
 def send_telegram(text):
-    if not BOT_TOKEN or not CHAT_ID:
-        log.error("Нет токена или chat_id для Telegram")
-        return False
+    if not BOT_TOKEN or not CHAT_ID: return False
     try:
         url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
         r = requests.post(url, json={"chat_id": CHAT_ID, "text": text, "parse_mode": "HTML", "disable_web_page_preview": True}, timeout=20)
-        if r.status_code == 200:
-            return True
-        log.error(f"TG API Error: {r.text}")
-    except Exception as e:
-        log.error(f"TG Exception: {e}")
-    return False
+        return r.status_code == 200
+    except Exception: return False
 
 def main():
-    # Получаем fail_count от runner.py (если передали)
     fail_count = int(sys.argv[1]) if len(sys.argv) > 1 else 0
-    
     log.info("Формирование отчета Intel...")
     
     data = load_json(DATA_FILE)
     if not data or "history" not in data or not data["history"]:
-        log.warning("Нет данных в correlations.json")
         return
 
     latest = data["history"][-1]
     corrs = latest.get("correlations", {}).copy()
-    
-    # Извлекаем текущую цену BTC
     btc_price = corrs.pop("current_btc_price", 0)
-    if not btc_price:
-        btc_price = 0 # Защита, если цена не посчиталась
-        
-    if not corrs:
-        log.warning("Словарь корреляций пуст")
+
+    if btc_price == 0:
         return
 
-    # Разделяем на 3 группы
-    leading_btc = []  # Актив ведет BTC (лаг > 0)
-    lagging_btc = []  # BTC ведет актив (лаг < 0)
-    sync_btc = []     # Синхронно (лаг 0)
-
+    # Собираем сильные связи (порог 0.4) и не мусорные
+    strong_links = []
     for ticker, info in corrs.items():
-        lag = info.get("best_lag_h", 0)
-        if lag > 0: leading_btc.append((ticker, info))
-        elif lag < 0: lagging_btc.append((ticker, info))
-        else: sync_btc.append((ticker, info))
+        corr = info.get("best_corr", 0)
+        beta = info.get("beta", 0)
+        
+        if abs(corr) < 0.4: continue
+        if "Stable" in ticker or "stablecoin" in ticker: continue
+        if abs(beta) > 2.5: continue
+        if "hash-rate" in ticker or "difficulty" in ticker: continue
+        if "miners-revenue" in ticker or "n-transactions" in ticker: continue
+        
+        strong_links.append((ticker, info))
 
-    # Сортируем каждую группу по силе связи (по модулю)
-    for lst in [leading_btc, lagging_btc, sync_btc]:
-        lst.sort(key=lambda x: abs(x[1].get("best_corr", 0)), reverse=True)
+    # Сортируем по силе корреляции
+    strong_links.sort(key=lambda x: abs(x[1]["best_corr"]), reverse=True)
+
+    # Делим на "проверенные" (reliability >= 3) и "новые"
+    proven = [x for x in strong_links if x[1].get("reliability", 0) >= 3]
+    new_links = [x for x in strong_links if x[1].get("reliability", 0) < 3]
 
     now = datetime.now(timezone.utc).astimezone(TZ)
-    
-    lines = [
-        f"📊 <b>ARGUS Intel — {now.strftime('%d.%m.%Y, %H:%M')}</b> | BTC: ${btc_price:,.0f}",
-        ""
-    ]
+    lines = [f"📊 <b>ARGUS Intel</b> — {now.strftime('%d.%m')} | BTC: ${btc_price:,.0f}\n"]
 
-    if fail_count > 0:
-        lines.append(f"⚠️ <b>Внимание:</b> {fail_count} модуль(ей) упали. Данные могут быть неполными.")
+    def add_link(ticker, info):
+        corr = info["best_corr"]
+        beta = info["beta"]
+        lag = info["best_lag_h"]
+        rel = info.get("reliability", 0)
+        name = TICKER_NAMES.get(ticker, ticker)
+        
+        # Считаем предсказание: движение на 1% актива → изменение BTC
+        est_pct = beta * 1.0
+        est_price = btc_price * (1 + (est_pct / 100))
+        
+        # Иконки
+        emoji = "🟢" if corr > 0 else "🔴"
+        lag_str = f"{lag:+d}ч"
+        stars = "⭐" * min(rel, 5)
+        
+        lines.append(f"{emoji} <b>{name}</b> ({corr:+.2f}, {lag_str}) → ${est_price:,.0f} ({est_pct:+.2f}%)")
+        if stars:
+            lines.append(f"   {stars}")
+
+    if proven:
+        lines.append("🔥 <b>ПРОВЕРЕННЫЕ СВЯЗИ:</b>")
+        for t, i in proven[:5]: add_link(t, i)
         lines.append("")
 
-    def format_group(title, group_list):
-        if not group_list: return []
-        res = [title]
-        # Ограничиваем вывод топ-10, чтобы сообщение влезло в лимит Телеграма (4096 символов)
-        for ticker, info in group_list[:10]:
-            corr = info.get("best_corr", 0)
-            lag = info.get("best_lag_h", 0)
-            beta = info.get("beta", 0)
-            
-            # Рассчитываем примерное изменение цены BTC при движении актива на 1%
-            est_pct = beta * 1.0
-            est_price = btc_price * (1 + (est_pct / 100))
-            
-            emoji = "🔹" if corr > 0 else "🔸"
-            lag_str = f"{lag:+d}ч" if lag != 0 else "0ч"
-            
-            # Форматируем блок
-            res.append(f"{emoji} <b>{ticker}</b>: corr {corr:+.2f} (лаг {lag_str})")
-            if beta != 0 and btc_price > 0:
-                res.append(f"   └ Beta {beta:+.2f}: при +1% актива, BTC {est_pct:+.2f}% (~${est_price:,.0f})")
-        res.append("")
-        return res
+    if new_links:
+        lines.append("⚡ <b>НОВЫЕ СВЯЗИ:</b>")
+        for t, i in new_links[:3]: add_link(t, i)
+        lines.append("")
 
-    # Собираем единое сообщение
-    lines.extend(format_group("📈 <b>Активы, которые ведут BTC (крипто-бот):</b>", leading_btc))
-    lines.extend(format_group("📉 <b>Активы, которые ведет BTC (фондовый бот):</b>", lagging_btc))
-    lines.extend(format_group("⏱ <b>Синхронные (лаг 0ч):</b>", sync_btc))
+    if not proven and not new_links:
+        lines.append("<i>Сильных связей (порог 0.4) нет. Фон неопределенный.</i>\n")
 
-    lines.append("<i>* Показан ТОП-10 в каждой категории. Beta — это % изменения BTC при движении актива на +1%.</i>")
+    if fail_count > 0:
+        lines.append(f"⚠️ <i>{fail_count} модуль(ей) упали.</i>")
 
     text = "\n".join(lines)
     if send_telegram(text):
         log.info("Отчет отправлен в личку.")
-    else:
-        log.error("Не удалось отправить отчет.")
 
 if __name__ == "__main__":
     main()
