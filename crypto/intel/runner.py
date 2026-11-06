@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - INTEL RUNNER (v1.1.1)
+# ARGUS - INTEL RUNNER (v1.2)
 # Path: crypto/intel/runner.py
 # ============================================================
 
@@ -67,9 +67,24 @@ def main():
             fail_count += 1
 
     log.info("========================================")
-    log.info(f"ФИНИШ INTEL. Успешно: {success_count} | Ошибок: {fail_count}")
+    log.info(f"ФИНИШ МОДУЛЕЙ. Успешно: {success_count} | Ошибок: {fail_count}")
     log.info("========================================")
 
+    # --- ВЫЗОВ ОТЧЕТА ---
+    report_path = SCRIPT_DIR.parent / "report" / "intel_report.py"
+    if report_path.exists():
+        log.info("▶️ Запуск модуля: intel_report.py")
+        try:
+            # Передаем fail_count как аргумент (строкой), чтобы отчет знал, если что-то упало
+            subprocess.run([sys.executable, str(report_path), str(fail_count)], check=True)
+            log.info("✅ Отчет Intel успешно отправлен.")
+        except subprocess.CalledProcessError as e:
+            log.error(f"❌ Ошибка при отправке отчета Intel (Код выхода: {e.returncode})")
+            fail_count += 1
+    else:
+        log.warning("⚠️ Файл intel_report.py не найден. Отчет не будет отправлен.")
+
+    # Если были падения (модулей или отчета), помечаем шаг в GitHub Actions красным
     if fail_count > 0:
         sys.exit(1)
 
