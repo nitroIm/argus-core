@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - EVENING NEWS REPORT v4.6 (EXTERNAL IMAGE HOST)
+# ARGUS - EVENING NEWS REPORT v5.0 (TELEGRAM IMAGE HOST)
 # Path: crypto/report/evening_news_report.py
 # ============================================================
 
@@ -29,15 +29,17 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(me
 log = logging.getLogger("crypto.evening_news")
 
 sys.path.insert(0, str(SCRIPT_DIR))
+TRANSLATE_AVAILABLE = False
 try:
     from translate import translate_batch
     TRANSLATE_AVAILABLE = True
-except Exception:
-    TRANSLATE_AVAILABLE = False
+except Exception as e:
+    log.warning("translate unavailable: " + str(e))
     def translate_batch(t): return t
 
 BOT_TOKEN = (os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("BOT_TOKEN") or "").strip()
 TG_CHANNEL_ID = (os.getenv("TG_CHANNEL_ID") or "").strip()
+CHAT_ID = (os.getenv("TELEGRAM_CHAT_ID") or "").strip()
 VK_TOKEN = (os.getenv("VK_TOKEN") or "").strip()
 VK_GROUP_ID = (os.getenv("VK_GROUP_ID") or "").strip()
 DB_URL = (os.getenv("AIVEN_DB_URL") or "").strip()
@@ -52,10 +54,12 @@ TIMEFRAME = "15m"
 TZ = ZoneInfo("Europe/Kaliningrad")
 
 HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Accept": "application/json"
 }
 
 def now_local(): return datetime.now(timezone.utc).astimezone(TZ)
+def should_send_group(): return True if TEST_MODE else now_local().hour == 19
 
 def esc(s):
     if not s: return ""
@@ -91,12 +95,10 @@ def get_cbr_usd():
         r = requests.get("https://www.cbr-xml-daily.ru/daily_json.js", timeout=10)
         data = r.json()
         usd = data.get("Valute", {}).get("USD", {})
-        cur = usd.get("Value")
-        prev = usd.get("Previous")
+        cur, prev = usd.get("Value"), usd.get("Previous")
         if cur and prev:
             change = cur - prev
-            pct = (change / prev) * 100
-            return {"rate": cur, "change": change, "pct": pct}
+            return {"rate": cur, "change": change, "pct": (change / prev) * 100}
     except Exception as e:
         log.error(f"CBR Error: {e}")
     return None
@@ -114,23 +116,44 @@ def get_rapira_usdt():
     return None
 
 # ============================================================
-# IMAGE HOSTING (CATBOX)
+# IMAGE HOSTING (TELEGRAM BOT API)
 # ============================================================
-def upload_to_catbox(photo_bytes):
-    """Загружает картинку на бесплатный хостинг Catbox.moe и возвращает прямую ссылку."""
+def upload_to_telegram_host(photo_buf):
+    """Отправляет фото в ТГ, забирает ссылку и удаляет сообщение, чтобы не спамить."""
+    if not BOT_TOKEN or not CHAT_ID: 
+        log.error("TG: No token or chat ID for hosting")
+        return None
     try:
-        url = "https://catbox.moe/user/api.php"
-        files = {'fileToUpload': ('chart.jpg', photo_bytes, 'image/jpeg')}
-        data = {'reqtype': 'fileupload'}
-        log.info("Uploading chart to Catbox...")
-        r = requests.post(url, data=data, files=files, timeout=30)
-        if r.status_code == 200 and r.text.startswith("https://"):
-            log.info(f"Catbox upload success: {r.text.strip()}")
-            return r.text.strip()
-        else:
-            log.error(f"Catbox upload failed: {r.status_code} - {r.text}")
+        # 1. Отправляем фото в ТГ (без звука)
+        img_data = photo_buf.getvalue()
+        url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendPhoto"
+        files = {'photo': ('chart.jpg', img_data, 'image/jpeg')}
+        data = {'chat_id': CHAT_ID, 'disable_notification': True}
+        r = requests.post(url, data=data, files=files, timeout=30).json()
+        
+        if not r.get("ok"):
+            log.error(f"Telegram sendPhoto error: {r}")
+            return None
+            
+        msg_id = r["result"]["message_id"]
+        file_id = r["result"]["photo"][-1]["file_id"]
+        
+        # 2. Удаляем сообщение, чтобы не засорять чат
+        del_url = f"https://api.telegram.org/bot{BOT_TOKEN}/deleteMessage"
+        requests.post(del_url, json={"chat_id": CHAT_ID, "message_id": msg_id}, timeout=10)
+        
+        # 3. Получаем прямой путь к файлу
+        get_file_url = f"https://api.telegram.org/bot{BOT_TOKEN}/getFile"
+        res_file = requests.get(get_file_url, params={"file_id": file_id}, timeout=10).json()
+        
+        if res_file.get("ok"):
+            file_path = res_file["result"]["file_path"]
+            direct_url = f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file_path}"
+            log.info(f"Telegram Host URL generated: {direct_url}")
+            return direct_url
+            
     except Exception as e:
-        log.error(f"Catbox Exception: {e}")
+        log.error(f"Telegram Host Exception: {e}")
     return None
 
 def send_vk(text, photo_url=None):
@@ -140,17 +163,19 @@ def send_vk(text, photo_url=None):
         owner_id = gid if gid.startswith("-") else "-" + gid
         url = "https://api.vk.com/method/wall.post"
         
+        # Вставляем ссылку в текст, чтобы ВК подтянул превью
+        final_text = text
+        if photo_url:
+            final_text += f"\n\n🖼️ График: {photo_url}"
+        
         params = {
             "owner_id": owner_id, 
             "from_group": 1, 
-            "message": text[:MAX_VK_LEN], 
+            "message": final_text[:MAX_VK_LEN], 
             "access_token": VK_TOKEN, 
             "v": "5.199"
         }
-        # Если есть ссылка, ВК сам скачает картинку и прикрепит
-        if photo_url: 
-            params["attachments"] = photo_url
-            
+        
         r = requests.post(url, data=params, headers=HEADERS, timeout=30)
         if r.status_code == 200:
             res = r.json()
@@ -181,7 +206,33 @@ def save_json(path, data):
     with open(path, "w", encoding="utf-8") as f: json.dump(data, f, ensure_ascii=False, indent=2)
 
 def _title_hash(text):
-    return hashlib.md5((text or "").strip().lower().encode("utf-8")).hexdigest()
+    return hashlib.md5((text or "").strip().lower().encode("utf-8"), usedforsecurity=False).hexdigest()
+
+def load_sent_history():
+    data = load_json(SENT_HISTORY_FILE, {"entries": []})
+    if not isinstance(data, dict): data = {"entries": []}
+    if "entries" not in data: data["entries"] = []
+    return data
+
+def clean_history(data):
+    cutoff = datetime.now(timezone.utc) - timedelta(days=HISTORY_DAYS)
+    entries = []
+    for e in data.get("entries", []):
+        ts_str = e.get("sent_at")
+        if not ts_str: continue
+        try:
+            ts = datetime.fromisoformat(ts_str)
+            if ts.tzinfo is None: ts = ts.replace(tzinfo=timezone.utc)
+            if ts >= cutoff: entries.append(e)
+        except Exception: continue
+    data["entries"] = entries
+    return data
+
+def get_sent_hashes(data):
+    return {e.get("hash") for e in data.get("entries", []) if e.get("hash")}
+
+def add_sent_hash(data, h):
+    data.setdefault("entries", []).append({"hash": h, "sent_at": datetime.now(timezone.utc).isoformat()})
 
 def filter_fresh(items, seen):
     out = []
@@ -192,7 +243,7 @@ def filter_fresh(items, seen):
 
 def translate_top(items, n=5):
     if not items or not TRANSLATE_AVAILABLE: return []
-    originals = [it.get("title_original") or it.get("title", "") for it in items[:n]]
+    originals = [it.get("title_original") or it.get("title", "") for it in items[:n] if (it.get("title_original") or it.get("title", ""))]
     try: return translate_batch(originals)
     except Exception: return originals
 
@@ -207,15 +258,16 @@ def generate_chart_image():
     try:
         conn = get_conn()
         with conn.cursor() as cur:
-            cur.execute("SELECT open_time, open, high, low, close, volume FROM candles WHERE symbol='BTCUSDT' AND timeframe='15m' AND market_type='spot' ORDER BY open_time ASC")
+            cur.execute("SELECT open_time, open, high, low, close, volume FROM candles WHERE symbol='BTCUSDT' AND timeframe='15m' AND market_type='spot' ORDER BY open_time DESC LIMIT 5000")
             rows = cur.fetchall()
         conn.close()
         
         if len(rows) < 100: return None
+        rows.reverse()
         
         df = pd.DataFrame(rows, columns=['open_time', 'open', 'high', 'low', 'close', 'volume'])
         df['open_time'] = pd.to_datetime(df['open_time'], utc=True)
-        df.set_index('open_time', inplace=True)
+        df = df.set_index('open_time')
         df = df.astype(float)
         
         df_1d = df.resample('1D').agg({'open': 'first', 'high': 'max', 'low': 'min', 'close': 'last', 'volume': 'sum'}).dropna().tail(45)
@@ -263,10 +315,34 @@ def generate_chart_image():
         out_buf = io.BytesIO()
         img.save(out_buf, format='JPEG', quality=95)
         out_buf.seek(0)
-        return out_buf.getvalue() # Возвращаем байты, а не BytesIO
+        return out_buf
     except Exception as e:
         log.error(f"Chart Gen Error: {e}")
         return None
+
+def _rsi(closes, period=14):
+    if len(closes) < period + 1: return None
+    gains = losses = 0.0
+    for i in range(1, period + 1):
+        d = closes[i] - closes[i - 1]
+        if d >= 0: gains += d
+        else: losses -= d
+    ag, al = gains / period, losses / period
+    for i in range(period + 1, len(closes)):
+        d = closes[i] - closes[i - 1]
+        g, l = (d if d > 0 else 0), (-d if d < 0 else 0)
+        ag = (ag * (period - 1) + g) / period
+        al = (al * (period - 1) + l) / period
+    if al == 0: return 100.0
+    return 100 - 100 / (1 + (ag / al))
+
+def _atr(highs, lows, closes, period=14):
+    if len(highs) < period + 1: return None
+    trs = [max(highs[i]-lows[i], abs(highs[i]-closes[i-1]), abs(lows[i]-closes[i-1])) for i in range(1, len(highs))]
+    if len(trs) < period: return None
+    a = sum(trs[:period]) / period
+    for i in range(period, len(trs)): a = (a * (period - 1) + trs[i]) / period
+    return a
 
 def fetch_btc_snapshot():
     try:
@@ -295,30 +371,9 @@ def fetch_btc_snapshot():
         if len(df_1h) < 15: return None
         
         closes_1h, highs_1h, lows_1h = df_1h['close'].tolist(), df_1h['high'].tolist(), df_1h['low'].tolist()
-        p = 14
-        rsi = None
-        if len(closes_1h) > p:
-            gains, losses = 0.0, 0.0
-            for i in range(1, p+1):
-                d = closes_1h[i] - closes_1h[i-1]
-                if d >= 0: gains += d
-                else: losses -= d
-            ag, al = gains/p, losses/p
-            for i in range(p+1, len(closes_1h)):
-                d = closes_1h[i] - closes_1h[i-1]
-                ag = (ag*(p-1) + (d if d>0 else 0))/p
-                al = (al*(p-1) + (-d if d<0 else 0))/p
-            rsi = 100 - 100/(1 + (ag/al if al>0 else 999))
-            
-        atr = None
-        if len(highs_1h) > p:
-            trs = [max(highs_1h[i]-lows_1h[i], abs(highs_1h[i]-closes_1h[i-1]), abs(lows_1h[i]-closes_1h[i-1])) for i in range(1, len(highs_1h))]
-            a = sum(trs[:p])/p
-            for i in range(p, len(trs)):
-                a = (a*(p-1) + trs[i])/p
-            atr = a
-
-        return {"price": price, "change_pct": change_pct, "high_24h": high_24h, "low_24h": low_24h, "rsi": rsi, "atr": atr, "vol_btc": vol_btc, "buy_pct": buy_pct, "sell_pct": sell_pct, "taker_buy": taker_buy}
+        rsi_1h = _rsi(closes_1h, 14)
+        atr_1h = _atr(highs_1h, lows_1h, closes_1h, 14)
+        return {"price": price, "change_pct": change_pct, "high_24h": high_24h, "low_24h": low_24h, "rsi": rsi_1h, "atr": atr_1h, "vol_btc": vol_btc, "buy_pct": buy_pct, "sell_pct": sell_pct, "taker_buy": taker_buy}
     except Exception as e:
         log.error("fetch_btc: %s", e)
         return None
@@ -401,8 +456,11 @@ def calc_delta(cur, prev, is_pct=False, is_money=False):
 
 def build_report(data, top_items, top_ru, btc, live_cmc, prev_g_metrics, n_sentiment, stables, fiat_cbr, fiat_rapira):
     now = now_local()
-    mood, avg, total = data.get("mood", "Неизвестно"), data.get("avg_sentiment", 0.0), data.get("total_news", 0)
+    mood = data.get("mood", "Неизвестно")
+    avg = data.get("avg_sentiment", 0.0)
+    total = data.get("total_news", 0)
     
+    # --- ВЕЧЕРНИЙ ЗАГОЛОВОК ---
     lines = ["📰 <b>ARGUS — Новости</b>", f"🌙 Добрый вечер! {now.strftime('%d.%m.%Y, %H:%M')}", ""]
 
     if btc:
@@ -487,20 +545,13 @@ def build_report(data, top_items, top_ru, btc, live_cmc, prev_g_metrics, n_senti
     return "\n".join(lines)
 
 def main():
-    log.info("evening news report v4.6")
-    if not SENTIMENT_FILE.exists(): return
+    log.info("evening news report v5.0")
+    if not SENTIMENT_FILE.exists(): return log.error("no sentiment file")
 
     data = load_json(SENTIMENT_FILE)
-    history = load_json(SENT_HISTORY_FILE, {"entries": []})
-    cutoff = datetime.now(timezone.utc) - timedelta(days=HISTORY_DAYS)
+    history = clean_history(load_sent_history())
+    seen = get_sent_hashes(history)
     
-    try:
-        history["entries"] = [e for e in history.get("entries", []) if datetime.fromisoformat(e["sent_at"]) >= cutoff]
-    except Exception:
-        history["entries"] = []
-        
-    seen = {e["hash"] for e in history["entries"]}
-
     all_top = data.get("top_bullish", []) + data.get("top_bearish", [])
     all_top.sort(key=lambda x: x.get("effective_weight", 0), reverse=True)
     top_5 = filter_fresh(all_top, seen)[:5]
@@ -521,26 +572,21 @@ def main():
     log.info("sending evening report to TG Channel and VK...")
     if TG_CHANNEL_ID: send_telegram(text_tg, TG_CHANNEL_ID)
     
-    # Генерируем картинку
-    photo_bytes = generate_chart_image()
+    photo_buf = generate_chart_image()
     photo_url = None
     
-    if photo_bytes:
-        photo_url = upload_to_catbox(photo_bytes)
+    if photo_buf:
+        photo_url = upload_to_telegram_host(photo_buf)
         if not photo_url:
-            log.warning("Не удалось загрузить картинку на Catbox. Пост будет без картинки.")
+            log.warning("Не удалось загрузить картинку в ТГ (хостинг). Пост будет без картинки.")
     else:
         log.warning("График не сгенерировался. Пост будет без картинки.")
 
-    # Отправляем в ВК (передаем ссылку)
-    if VK_GROUP_ID: 
-        if send_vk(text_vk, photo_url):
-            log.info("VK post sent.")
-        else:
-            log.error("VK post failed.")
+    if send_vk(text_vk, photo_url): 
+        log.info("VK post sent.")
 
     for it in top_5:
-        history["entries"].append({"hash": _title_hash(it.get("title_original", "")), "sent_at": datetime.now(timezone.utc).isoformat()})
+        add_sent_hash(history, _title_hash(it.get("title_original", "")))
     save_json(SENT_HISTORY_FILE, history)
     log.info("evening report sent")
 
