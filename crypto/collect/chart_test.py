@@ -117,7 +117,7 @@ def main():
         mpf.make_addplot(signal_line, color='#9370DB', panel=2, width=1)
     ]
 
-    # ГЛАВНЫЙ ФИКС: hspace=0.6 ВНУТРИ mpf.plot, tight_layout=False
+    # tight_layout=False - ОБЯЗАТЕЛЬНО, чтобы библиотека не схлопывала панели
     fig, axes = mpf.plot(
         df_1d, type='candle', style=s,
         ylabel='', ylabel_lower='',
@@ -129,12 +129,11 @@ def main():
         hlines=dict(hlines=[last_close], colors=[last_color], linestyle='--', linewidths=[1]),
         returnfig=True,
         xrotation=0,
-        tight_layout=False,
-        hspace=0.6  # <--- РАЗДВИГАЕТ ПАНЕЛИ
+        tight_layout=False
     )
 
-    # Оставляем только отступы по краям
-    fig.subplots_adjust(right=0.88, top=0.92, bottom=0.08, left=0.08)
+    # hspace=0.8 - физически раздвигает панели, чтобы цифры не наезжали
+    fig.subplots_adjust(hspace=0.8, right=0.88, top=0.92, bottom=0.08, left=0.08)
 
     # Заголовок по центру графика
     axes[0].set_title("BTC/USDT | 1D", fontsize=20, fontweight='bold', pad=15)
