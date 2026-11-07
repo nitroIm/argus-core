@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-07T17:05:35.833770+00:00",
+  "generated_at": "2026-11-07T18:05:36.507615+00:00",
   "total_news": 96,
-  "avg_sentiment": -0.454,
+  "avg_sentiment": -0.421,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 18,
-  "bearish_count": 40,
-  "neutral_count": 38,
+  "bearish_count": 38,
+  "neutral_count": 40,
   "fake_count": 0,
   "cross_confirmed": 3,
   "by_source": {
@@ -27,12 +27,12 @@
     "CryptoSlate": {
       "total": 8,
       "bull": 1,
-      "bear": 3
+      "bear": 2
     },
     "CryptoPotato": {
       "total": 27,
       "bull": 3,
-      "bear": 13
+      "bear": 12
     },
     "Bitcoinist": {
       "total": 5,
@@ -58,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-07T17:05:34.498756+00:00",
+      "collected_at": "2026-11-07T18:05:34.756503+00:00",
       "effective_weight": 0.88,
       "title_original": "Greece Passes Crypto Tax Law With 10% Gains Levy, 15% on Staking and DeFi",
       "cross_check": 2
@@ -75,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.1,
-      "collected_at": "2026-11-07T17:05:34.968766+00:00",
+      "collected_at": "2026-11-07T18:05:35.506982+00:00",
       "effective_weight": 0.81,
       "title_original": "AI IPO Dilution Could Fuel Crypto’s Next Rally, Analyst Warns",
       "cross_check": 1
@@ -92,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.1,
-      "collected_at": "2026-11-07T17:05:34.968847+00:00",
+      "collected_at": "2026-11-07T18:05:35.507028+00:00",
       "effective_weight": 0.81,
       "title_original": "Bitcoin Is Repeating The 2023 Setup That Sparked Its Last Major Rally, Analyst Says",
       "cross_check": 1
@@ -109,7 +109,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-07T17:05:34.749407+00:00",
+      "collected_at": "2026-11-07T18:05:35.161856+00:00",
       "effective_weight": 0.8,
       "title_original": "Moscow Exchange sets December 1 to launch Bitcoin and Ethereum trading",
       "cross_check": 2
@@ -126,30 +126,13 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-07T17:05:34.850076+00:00",
+      "collected_at": "2026-11-07T18:05:35.307808+00:00",
       "effective_weight": 0.8,
       "title_original": "ZEC and CC Lead Altcoin Swings as BTC Settles at $76K Despite US-Iran Attacks: Weekend Watch",
       "cross_check": 1
     }
   ],
   "top_bearish": [
-    {
-      "title": "Binance Hack Takes Another Twist as Hackers Amass 2,300 More Bitcoin",
-      "url": "https://news.bitcoin.com/featured/binance-hack-takes-another-twist-as-hackers-amass-2300-more-bitcoin/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-07T16:30:13+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-07T17:05:34.670451+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Binance Hack Takes Another Twist as Hackers Amass 2,300 More Bitcoin",
-      "cross_check": 1
-    },
     {
       "title": "Binance hack is ‘cyber war,’ TRM Labs executive says",
       "url": "https://cointelegraph.com/interview/trm-labs-binance-hack-interview?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -162,7 +145,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-07T17:05:34.420044+00:00",
+      "collected_at": "2026-11-07T18:05:34.652238+00:00",
       "effective_weight": 1.04,
       "title_original": "Binance hack is ‘cyber war,’ TRM Labs executive says",
       "cross_check": 1
@@ -179,9 +162,26 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-07T17:05:34.420185+00:00",
+      "collected_at": "2026-11-07T18:05:34.652316+00:00",
       "effective_weight": 1.04,
       "title_original": "Strive buys 15,124 Bitcoin in October, closes in on top treasury holders",
+      "cross_check": 1
+    },
+    {
+      "title": "Binance Hack Takes Another Twist as Hackers Amass 2,300 More Bitcoin",
+      "url": "https://news.bitcoin.com/featured/binance-hack-takes-another-twist-as-hackers-amass-2300-more-bitcoin/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-07T16:30:13+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-07T18:05:35.014309+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Binance Hack Takes Another Twist as Hackers Amass 2,300 More Bitcoin",
       "cross_check": 1
     },
     {
@@ -196,26 +196,26 @@
       "bear_weight": 4.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-07T17:05:34.670585+00:00",
+      "collected_at": "2026-11-07T18:05:35.014382+00:00",
       "effective_weight": 1.0,
       "title_original": "Nubank and Mercadopago Suspend Crypto Withdrawals in Latam",
       "cross_check": 1
     },
     {
-      "title": "Bitcoin Mining Difficulty Has Never Stayed Below Its Peak for This Long",
-      "url": "https://news.bitcoin.com/featured/bitcoin-mining-difficulty-longest-below-all-time-high/",
-      "source": "Bitcoin.com",
+      "title": "MEXC sees $126 million outflows as US targets exchange over $16.7 billion in suspected illicit transactions",
+      "url": "https://cryptoslate.com/mexc-sees-126-million-outflows-as-us-targets-exchange-over-16-7-billion-in-suspected-illicit-transactions/",
+      "source": "CryptoSlate",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-11-07T11:30:53+00:00",
+      "pub_date": "2026-11-07T15:10:42+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 1.0,
+      "bear_weight": 4.6,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-07T17:05:34.670650+00:00",
+      "collected_at": "2026-11-07T18:05:35.161721+00:00",
       "effective_weight": 1.0,
-      "title_original": "Bitcoin Mining Difficulty Has Never Stayed Below Its Peak for This Long",
+      "title_original": "MEXC sees $126 million outflows as US targets exchange over $16.7 billion in suspected illicit transactions",
       "cross_check": 1
     }
   ]
