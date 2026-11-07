@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - EVENING NEWS REPORT v5.6 (VK FIX & CHART LAYOUT FIX)
+# ARGUS - EVENING NEWS REPORT v5.7 (CHART LAYOUT HARD FIX)
 # Path: crypto/report/evening_news_report.py
 # ============================================================
 
@@ -305,7 +305,7 @@ def generate_chart_image():
         fig, axes = mpf.plot(
             df_1d, type='candle', style=s, title="BTC/USDT | 1D", 
             ylabel='', ylabel_lower='', volume=True, addplot=apds, 
-            panel_ratios=(7, 1.5, 2), figsize=(12, 12), 
+            panel_ratios=(6, 1.5, 2), figsize=(12, 14), 
             ylim=(ymin, ymax), hlines=dict(hlines=[last_close], colors=[last_color], linestyle='--', linewidths=[1]), 
             returnfig=True, xrotation=0
         )
@@ -314,10 +314,19 @@ def generate_chart_image():
         
         fig.text(0.5, 0.5, 'ARGUS', alpha=0.1, fontsize=80, ha='center', va='center', color='white', rotation=30)
         ax_main = axes[0]
-        ax_main.text(1.005, last_close, f' {last_close:,.2f} ', transform=ax_main.get_yaxis_transform(), va='center', ha='left', color='black', bbox=dict(boxstyle="round,pad=0.3", fc=last_color, ec=last_color, lw=1), fontsize=10, fontweight='bold')
+        
+        # Сохраняем объект плашки в переменную
+        price_tag = ax_main.text(
+            1.005, last_close, f' {last_close:,.2f} ', 
+            transform=ax_main.get_yaxis_transform(), 
+            va='center', ha='left', color='black', 
+            bbox=dict(boxstyle="round,pad=0.3", fc=last_color, ec=last_color, lw=1), 
+            fontsize=10, fontweight='bold'
+        )
 
         buf = io.BytesIO()
-        fig.savefig(buf, format='png', dpi=150, bbox_inches='tight', pad_inches=0.5)
+        # Принудительно добавляем плашку в область сохранения (bbox_extra_artists)
+        fig.savefig(buf, format='png', dpi=150, bbox_inches='tight', pad_inches=0.5, bbox_extra_artists=(price_tag,))
         buf.seek(0)
         
         img = Image.open(buf).convert('RGB')
@@ -555,7 +564,7 @@ def build_report(data, top_items, top_ru, btc, live_cmc, prev_g_metrics, n_senti
     return "\n".join(lines)
 
 def main():
-    log.info("evening news report v5.6")
+    log.info("evening news report v5.7")
     if not SENTIMENT_FILE.exists(): return log.error("no sentiment file")
 
     data = load_json(SENTIMENT_FILE)
