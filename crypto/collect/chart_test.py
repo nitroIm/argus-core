@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - CHART TEST (FIXED: tight_layout / overlap / title)
+# ARGUS - CHART TEST (PRODUCTION FIX: NO OVERLAP)
 # Path: crypto/collect/chart_test.py
 # ============================================================
 
@@ -90,10 +90,10 @@ def main():
     padding = (max_price - min_price) * 0.10
     ymin, ymax = min_price - padding, max_price + padding
 
-    # ==== УВЕЛИЧЕННЫЕ ШРИФТЫ ====
+    # Шрифты
     rc = {
         'axes.labelsize': 14,
-        'ytick.labelsize': 16,   # Крупные цифры на осях
+        'ytick.labelsize': 16,
         'xtick.labelsize': 14,
         'axes.titlesize': 20,
         'figure.titlesize': 20,
@@ -117,7 +117,7 @@ def main():
         mpf.make_addplot(signal_line, color='#9370DB', panel=2, width=1)
     ]
 
-    # ==== ГЛАВНЫЙ ФИКС: tight_layout=False ====
+    # ГЛАВНЫЙ ФИКС: hspace=0.6 ВНУТРИ mpf.plot, tight_layout=False
     fig, axes = mpf.plot(
         df_1d, type='candle', style=s,
         ylabel='', ylabel_lower='',
@@ -129,14 +129,14 @@ def main():
         hlines=dict(hlines=[last_close], colors=[last_color], linestyle='--', linewidths=[1]),
         returnfig=True,
         xrotation=0,
-        tight_layout=False  # <--- ОТКЛЮЧАЕМ АВТОМАТИЧЕСКОЕ СЛИПАНИЕ
+        tight_layout=False,
+        hspace=0.6  # <--- РАЗДВИГАЕТ ПАНЕЛИ
     )
 
-    # hspace=0.5 раздвигает панели, чтобы 74к и 15к не наезжали.
-    # top=0.92 оставляет место для заголовка.
-    fig.subplots_adjust(hspace=0.5, right=0.88, top=0.92, bottom=0.08, left=0.08)
+    # Оставляем только отступы по краям
+    fig.subplots_adjust(right=0.88, top=0.92, bottom=0.08, left=0.08)
 
-    # Заголовок теперь привязан к графику и стоит ровно по центру
+    # Заголовок по центру графика
     axes[0].set_title("BTC/USDT | 1D", fontsize=20, fontweight='bold', pad=15)
 
     # Watermark
