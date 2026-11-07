@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - NEWS REPORT v13.5 (VK FIX & CHART LAYOUT)
+# ARGUS - NEWS REPORT v13.6 (VK FIX & CHART LAYOUT FIX)
 # Path: crypto/report/news_report.py
 # ============================================================
 
@@ -302,16 +302,22 @@ def generate_chart_image():
             mpf.make_addplot(signal_line, color='#9370DB', panel=2, width=1)
         ]
 
-        fig, axes = mpf.plot(df_1d, type='candle', style=s, title="BTC/USDT | 1D", ylabel='', ylabel_lower='', volume=True, addplot=apds, panel_ratios=(6, 1.5, 2), figsize=(10, 12), ylim=(ymin, ymax), hlines=dict(hlines=[last_close], colors=[last_color], linestyle='--', linewidths=[1]), returnfig=True, xrotation=0)
+        fig, axes = mpf.plot(
+            df_1d, type='candle', style=s, title="BTC/USDT | 1D", 
+            ylabel='', ylabel_lower='', volume=True, addplot=apds, 
+            panel_ratios=(7, 1.5, 2), figsize=(12, 12), 
+            ylim=(ymin, ymax), hlines=dict(hlines=[last_close], colors=[last_color], linestyle='--', linewidths=[1]), 
+            returnfig=True, xrotation=0
+        )
         
-        fig.subplots_adjust(hspace=0.35, right=0.88)
+        fig.subplots_adjust(hspace=0.4, right=0.85)
         
         fig.text(0.5, 0.5, 'ARGUS', alpha=0.1, fontsize=80, ha='center', va='center', color='white', rotation=30)
         ax_main = axes[0]
         ax_main.text(1.005, last_close, f' {last_close:,.2f} ', transform=ax_main.get_yaxis_transform(), va='center', ha='left', color='black', bbox=dict(boxstyle="round,pad=0.3", fc=last_color, ec=last_color, lw=1), fontsize=10, fontweight='bold')
 
         buf = io.BytesIO()
-        fig.savefig(buf, format='png', dpi=150, bbox_inches='tight')
+        fig.savefig(buf, format='png', dpi=150, bbox_inches='tight', pad_inches=0.5)
         buf.seek(0)
         
         img = Image.open(buf).convert('RGB')
@@ -549,7 +555,7 @@ def build_report(data, top_items, top_ru, btc, live_cmc, prev_g_metrics, n_senti
     return "\n".join(lines)
 
 def main():
-    log.info("news report v13.5")
+    log.info("news report v13.6")
     if not should_send_group(): return log.info("skip")
 
     if not SENTIMENT_FILE.exists(): return log.error("no sentiment file")
