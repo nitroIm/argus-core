@@ -310,14 +310,14 @@ def generate_chart_image():
             returnfig=True, xrotation=0
         )
         
-        # hspace=0.5 - отступ между панелями, чтобы цифры не слипались
+        # hspace=0.8 - отступ между панелями, чтобы белые цифры не слипались
         # right=0.88 - оставляем место справа для плашки
-        fig.subplots_adjust(hspace=0.5, right=0.88)
+        fig.subplots_adjust(hspace=0.8, right=0.88)
         
         fig.text(0.5, 0.5, 'ARGUS', alpha=0.1, fontsize=80, ha='center', va='center', color='white', rotation=30)
         ax_main = axes[0]
         
-        # Используем annotate вместо text, чтобы bbox_inches='tight' его не обрезал
+        # fontsize=14 и pad=0.5 - увеличиваем плашку, чтобы цифры были видны
         ax_main.annotate(
             f' {last_close:,.2f} ', 
             xy=(1.0, last_close), 
@@ -325,8 +325,8 @@ def generate_chart_image():
             xytext=(3, 0), 
             textcoords='offset points', 
             color='black', 
-            bbox=dict(boxstyle="round,pad=0.3", fc=last_color, ec=last_color, lw=1), 
-            fontsize=10, fontweight='bold', va='center', ha='left'
+            bbox=dict(boxstyle="round,pad=0.5", fc=last_color, ec=last_color, lw=1), 
+            fontsize=14, fontweight='bold', va='center', ha='left'
         )
 
         buf = io.BytesIO()
