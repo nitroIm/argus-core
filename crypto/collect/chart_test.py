@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - CHART TEST (PRODUCTION FIX: NO OVERLAP - FINAL)
+# ARGUS - CHART TEST (FINAL: SEPARATED LABELS + DYNAMIC SCALE)
 # Path: crypto/collect/chart_test.py
 # ============================================================
 
@@ -11,7 +11,6 @@ import pandas as pd
 import psycopg
 import requests
 import mplfinance as mpf
-from matplotlib.ticker import MaxNLocator
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("chart_test")
@@ -85,10 +84,10 @@ def main():
     last_open = df_1d['open'].iloc[-1]
     last_color = '#26a69a' if last_close >= last_open else '#ef5350'
 
-    # Динамический padding
+    # ДИНАМИЧЕСКИЙ РАСЧЕТ (15% отступа, чтобы свечи не липли к краям при резком полете)
     max_price = df_1d['high'].max()
     min_price = df_1d['low'].min()
-    padding = (max_price - min_price) * 0.10
+    padding = (max_price - min_price) * 0.15
     ymin, ymax = min_price - padding, max_price + padding
 
     # Шрифты
@@ -118,7 +117,7 @@ def main():
         mpf.make_addplot(signal_line, color='#9370DB', panel=2, width=1)
     ]
 
-    # Рисуем график с отключенным авто-слипанием
+    # Рисуем график (отключаем авто-слипание)
     fig, axes = mpf.plot(
         df_1d, type='candle', style=s,
         ylabel='', ylabel_lower='',
@@ -133,21 +132,16 @@ def main():
         tight_layout=False
     )
 
-    # Раздвигаем панели
-    fig.subplots_adjust(hspace=0.6, right=0.88, top=0.92, bottom=0.08, left=0.08)
+    # Раздвигаем панели так, чтобы между ними было огромное пространство
+    fig.subplots_adjust(hspace=1.0, right=0.88, top=0.92, bottom=0.08, left=0.08)
 
-    # === ГЛАВНЫЙ ФИКС ОТ НАЛОЖЕНИЯ ===
-    # Убираем нижнюю цифру на графике цены и верхнюю цифру на графике объема.
-    # Библиотека mplfinance создает правые оси на четных индексах (1, 3, 5)
-    if len(axes) > 1:
-        axes[1].yaxis.set_major_locator(MaxNLocator(nbins=6, prune='lower'))
-        axes[1].tick_params(axis='y', pad=10)
+    # === ФИЗИЧЕСКОЕ РАЗДЕЛЕНИЕ ЦИФР ===
+    # Берем ось объемов (axes[3] - это правая ось объемов) 
+    # и добавляем 30% пустого места сверху. Цифра 15 000 уезжает вниз.
     if len(axes) > 3:
-        axes[3].yaxis.set_major_locator(MaxNLocator(nbins=4, prune='upper'))
-        axes[3].tick_params(axis='y', pad=10)
-    if len(axes) > 5:
-        axes[5].yaxis.set_major_locator(MaxNLocator(nbins=4, prune='upper'))
-        axes[5].tick_params(axis='y', pad=10)
+        vol_ax = axes[3]
+        vol_ymin, vol_ymax = vol_ax.get_ylim()
+        vol_ax.set_ylim(vol_ymin, vol_ymax * 1.3)
 
     # Заголовок по центру графика
     axes[0].set_title("BTC/USDT | 1D", fontsize=20, fontweight='bold', pad=15)
