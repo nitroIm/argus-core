@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-07T19:05:46.869421+00:00",
-  "total_news": 96,
-  "avg_sentiment": -0.372,
+  "generated_at": "2026-11-07T20:05:39.146166+00:00",
+  "total_news": 95,
+  "avg_sentiment": -0.385,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 19,
   "bearish_count": 38,
-  "neutral_count": 39,
+  "neutral_count": 38,
   "fake_count": 0,
   "cross_confirmed": 3,
   "by_source": {
@@ -25,14 +25,14 @@
       "bear": 6
     },
     "CryptoSlate": {
-      "total": 8,
+      "total": 7,
       "bull": 2,
-      "bear": 2
+      "bear": 1
     },
     "CryptoPotato": {
       "total": 27,
       "bull": 3,
-      "bear": 12
+      "bear": 13
     },
     "Bitcoinist": {
       "total": 5,
@@ -56,10 +56,10 @@
       "sentiment": 1.0,
       "bull_weight": 1.0,
       "bear_weight": 0.0,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-07T19:05:45.379160+00:00",
-      "effective_weight": 1.5,
+      "collected_at": "2026-11-07T20:05:38.019551+00:00",
+      "effective_weight": 1.0,
       "title_original": "Higher wages don’t have to mean higher inflation. That could matter for Bitcoin",
       "cross_check": 1
     },
@@ -75,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-07T19:05:44.917724+00:00",
+      "collected_at": "2026-11-07T20:05:37.743472+00:00",
       "effective_weight": 0.88,
       "title_original": "Greece Passes Crypto Tax Law With 10% Gains Levy, 15% on Staking and DeFi",
       "cross_check": 2
@@ -92,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.1,
-      "collected_at": "2026-11-07T19:05:45.755396+00:00",
+      "collected_at": "2026-11-07T20:05:38.306320+00:00",
       "effective_weight": 0.81,
       "title_original": "AI IPO Dilution Could Fuel Crypto’s Next Rally, Analyst Warns",
       "cross_check": 1
@@ -109,7 +109,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-07T19:05:45.379530+00:00",
+      "collected_at": "2026-11-07T20:05:38.019995+00:00",
       "effective_weight": 0.8,
       "title_original": "Moscow Exchange sets December 1 to launch Bitcoin and Ethereum trading",
       "cross_check": 2
@@ -126,7 +126,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-07T19:05:45.537259+00:00",
+      "collected_at": "2026-11-07T20:05:38.138928+00:00",
       "effective_weight": 0.8,
       "title_original": "ZEC and CC Lead Altcoin Swings as BTC Settles at $76K Despite US-Iran Attacks: Weekend Watch",
       "cross_check": 1
@@ -134,21 +134,21 @@
   ],
   "top_bearish": [
     {
-      "title": "Prediction Markets Favor Another Drop as Year-End Bitcoin Price Forecasts Sour",
-      "url": "https://news.bitcoin.com/price-predictions/prediction-markets-favor-another-drop-as-year-end-bitcoin-price-forecasts-sour/",
-      "source": "Bitcoin.com",
+      "title": "Ethereum Price Analysis: ETH Must Reclaim These Levels to Reverse Bearish Momentum",
+      "url": "https://cryptopotato.com/ethereum-price-analysis-eth-must-reclaim-these-levels-to-reverse-bearish-momentum/",
+      "source": "CryptoPotato",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-11-07T18:10:04+00:00",
+      "pub_date": "2026-11-07T20:02:19+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 1.8,
+      "bear_weight": 1.2,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-07T19:05:45.242160+00:00",
+      "collected_at": "2026-11-07T20:05:38.138497+00:00",
       "effective_weight": 1.5,
-      "title_original": "Prediction Markets Favor Another Drop as Year-End Bitcoin Price Forecasts Sour",
-      "cross_check": 2
+      "title_original": "Ethereum Price Analysis: ETH Must Reclaim These Levels to Reverse Bearish Momentum",
+      "cross_check": 1
     },
     {
       "title": "Binance hack is ‘cyber war,’ TRM Labs executive says",
@@ -162,10 +162,27 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-07T19:05:44.817963+00:00",
+      "collected_at": "2026-11-07T20:05:37.673703+00:00",
       "effective_weight": 1.04,
       "title_original": "Binance hack is ‘cyber war,’ TRM Labs executive says",
       "cross_check": 1
+    },
+    {
+      "title": "Prediction Markets Favor Another Drop as Year-End Bitcoin Price Forecasts Sour",
+      "url": "https://news.bitcoin.com/price-predictions/prediction-markets-favor-another-drop-as-year-end-bitcoin-price-forecasts-sour/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-07T18:10:04+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.8,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-07T20:05:37.930387+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Prediction Markets Favor Another Drop as Year-End Bitcoin Price Forecasts Sour",
+      "cross_check": 2
     },
     {
       "title": "Binance Hack Takes Another Twist as Hackers Amass 2,300 More Bitcoin",
@@ -179,7 +196,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-07T19:05:45.242227+00:00",
+      "collected_at": "2026-11-07T20:05:37.930460+00:00",
       "effective_weight": 1.0,
       "title_original": "Binance Hack Takes Another Twist as Hackers Amass 2,300 More Bitcoin",
       "cross_check": 1
@@ -196,27 +213,10 @@
       "bear_weight": 4.6,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-07T19:05:45.379308+00:00",
+      "collected_at": "2026-11-07T20:05:38.019712+00:00",
       "effective_weight": 1.0,
       "title_original": "MEXC sees $126 million outflows as US targets exchange over $16.7 billion in suspected illicit transactions",
       "cross_check": 1
-    },
-    {
-      "title": "Paraguay’s Bank Collapse Exposes a Problem Bitcoin Was Built to Solve",
-      "url": "https://cryptopotato.com/paraguays-bank-collapse-exposes-a-problem-bitcoin-was-built-to-solve/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-07T13:33:38+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 3.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-07T19:05:45.537124+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Paraguay’s Bank Collapse Exposes a Problem Bitcoin Was Built to Solve",
-      "cross_check": 2
     }
   ]
 }
