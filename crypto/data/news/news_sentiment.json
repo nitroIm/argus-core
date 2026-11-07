@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-07T15:05:36.720215+00:00",
+  "generated_at": "2026-11-07T16:05:37.200431+00:00",
   "total_news": 96,
-  "avg_sentiment": -0.397,
+  "avg_sentiment": -0.431,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 19,
-  "bearish_count": 39,
-  "neutral_count": 38,
+  "bearish_count": 40,
+  "neutral_count": 37,
   "fake_count": 0,
   "cross_confirmed": 6,
   "by_source": {
@@ -15,7 +15,7 @@
       "bear": 9
     },
     "Decrypt": {
-      "total": 17,
+      "total": 16,
       "bull": 5,
       "bear": 7
     },
@@ -25,9 +25,9 @@
       "bear": 5
     },
     "CryptoSlate": {
-      "total": 8,
+      "total": 9,
       "bull": 1,
-      "bear": 3
+      "bear": 4
     },
     "CryptoPotato": {
       "total": 27,
@@ -47,40 +47,6 @@
   },
   "top_bullish": [
     {
-      "title": "AI IPO Dilution Could Fuel Crypto’s Next Rally, Analyst Warns",
-      "url": "https://bitcoinist.com/ai-ipo-dilution-could-fuel-cryptos-next-rally-analyst-warns/",
-      "source": "Bitcoinist",
-      "source_weight": 0.9,
-      "lang": "en",
-      "pub_date": "2026-11-07T14:25:21+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.5,
-      "bear_weight": 0.0,
-      "freshness": 1.5,
-      "fake_score": 0.1,
-      "collected_at": "2026-11-07T15:05:35.780285+00:00",
-      "effective_weight": 1.215,
-      "title_original": "AI IPO Dilution Could Fuel Crypto’s Next Rally, Analyst Warns",
-      "cross_check": 1
-    },
-    {
-      "title": "ZEC and CC Lead Altcoin Swings as BTC Settles at $76K Despite US-Iran Attacks: Weekend Watch",
-      "url": "https://cryptopotato.com/zec-and-cc-lead-altcoin-swings-as-btc-settles-at-76k-despite-us-iran-attacks-weekend-watch/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-07T09:30:40+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-07T15:05:35.609624+00:00",
-      "effective_weight": 1.0,
-      "title_original": "ZEC and CC Lead Altcoin Swings as BTC Settles at $76K Despite US-Iran Attacks: Weekend Watch",
-      "cross_check": 1
-    },
-    {
       "title": "Greece Passes Crypto Tax Law With 10% Gains Levy, 15% on Staking and DeFi",
       "url": "https://decrypt.co/382756/greece-passes-crypto-tax-law-staking-defi",
       "source": "Decrypt",
@@ -92,10 +58,27 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-07T15:05:35.129619+00:00",
+      "collected_at": "2026-11-07T16:05:35.256432+00:00",
       "effective_weight": 0.88,
       "title_original": "Greece Passes Crypto Tax Law With 10% Gains Levy, 15% on Staking and DeFi",
       "cross_check": 3
+    },
+    {
+      "title": "AI IPO Dilution Could Fuel Crypto’s Next Rally, Analyst Warns",
+      "url": "https://bitcoinist.com/ai-ipo-dilution-could-fuel-cryptos-next-rally-analyst-warns/",
+      "source": "Bitcoinist",
+      "source_weight": 0.9,
+      "lang": "en",
+      "pub_date": "2026-11-07T14:25:21+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.5,
+      "bear_weight": 0.0,
+      "freshness": 1.0,
+      "fake_score": 0.1,
+      "collected_at": "2026-11-07T16:05:36.184099+00:00",
+      "effective_weight": 0.81,
+      "title_original": "AI IPO Dilution Could Fuel Crypto’s Next Rally, Analyst Warns",
+      "cross_check": 1
     },
     {
       "title": "Bitcoin Is Repeating The 2023 Setup That Sparked Its Last Major Rally, Analyst Says",
@@ -109,30 +92,64 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.1,
-      "collected_at": "2026-11-07T15:05:35.780346+00:00",
+      "collected_at": "2026-11-07T16:05:36.184161+00:00",
       "effective_weight": 0.81,
       "title_original": "Bitcoin Is Repeating The 2023 Setup That Sparked Its Last Major Rally, Analyst Says",
       "cross_check": 1
     },
     {
-      "title": "Moscow Exchange Sets December Launch for Bitcoin, Ethereum Trading",
-      "url": "https://bitcoinist.com/moscow-exchange-sets-december-launch-for-bitcoin-ethereum-trading/",
-      "source": "Bitcoinist",
-      "source_weight": 0.9,
+      "title": "Greece Approves 10% Crypto Gains Tax, 15% Levy on Staking and DeFi Income",
+      "url": "https://news.bitcoin.com/regulation-and-legal/greece-approves-crypto-gains-tax-levy-staking-defi-income/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-11-07T09:12:08+00:00",
+      "pub_date": "2026-11-07T01:45:02+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 2.5,
+      "bear_weight": 0.0,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-07T16:05:35.665962+00:00",
+      "effective_weight": 0.8,
+      "title_original": "Greece Approves 10% Crypto Gains Tax, 15% Levy on Staking and DeFi Income",
+      "cross_check": 3
+    },
+    {
+      "title": "Moscow Exchange sets December 1 to launch Bitcoin and Ethereum trading",
+      "url": "https://cryptoslate.com/moscow-exchange-sets-dec-1-to-launch-bitcoin-and-ethereum-trading/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-07T04:40:10+00:00",
       "sentiment": 1.0,
       "bull_weight": 1.0,
       "bear_weight": 0.0,
-      "freshness": 1.0,
-      "fake_score": 0.1,
-      "collected_at": "2026-11-07T15:05:35.780506+00:00",
-      "effective_weight": 0.81,
-      "title_original": "Moscow Exchange Sets December Launch for Bitcoin, Ethereum Trading",
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-07T16:05:35.809935+00:00",
+      "effective_weight": 0.8,
+      "title_original": "Moscow Exchange sets December 1 to launch Bitcoin and Ethereum trading",
       "cross_check": 2
     }
   ],
   "top_bearish": [
+    {
+      "title": "MEXC sees $126 million outflows as US targets exchange over $16.7 billion in suspected illicit transactions",
+      "url": "https://cryptoslate.com/mexc-sees-126-million-outflows-as-us-targets-exchange-over-16-7-billion-in-suspected-illicit-transactions/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-07T15:10:42+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 4.6,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-07T16:05:35.809743+00:00",
+      "effective_weight": 1.5,
+      "title_original": "MEXC sees $126 million outflows as US targets exchange over $16.7 billion in suspected illicit transactions",
+      "cross_check": 1
+    },
     {
       "title": "Binance hack is ‘cyber war,’ TRM Labs executive says",
       "url": "https://cointelegraph.com/interview/trm-labs-binance-hack-interview?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -145,7 +162,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-07T15:05:34.974302+00:00",
+      "collected_at": "2026-11-07T16:05:35.163255+00:00",
       "effective_weight": 1.04,
       "title_original": "Binance hack is ‘cyber war,’ TRM Labs executive says",
       "cross_check": 1
@@ -162,7 +179,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-07T15:05:34.974405+00:00",
+      "collected_at": "2026-11-07T16:05:35.163359+00:00",
       "effective_weight": 1.04,
       "title_original": "Strive buys 15,124 Bitcoin in October, closes in on top treasury holders",
       "cross_check": 1
@@ -179,7 +196,7 @@
       "bear_weight": 4.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-07T15:05:35.365710+00:00",
+      "collected_at": "2026-11-07T16:05:35.665551+00:00",
       "effective_weight": 1.0,
       "title_original": "Nubank and Mercadopago Suspend Crypto Withdrawals in Latam",
       "cross_check": 1
@@ -196,26 +213,9 @@
       "bear_weight": 1.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-07T15:05:35.365759+00:00",
+      "collected_at": "2026-11-07T16:05:35.665600+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitcoin Mining Difficulty Has Never Stayed Below Its Peak for This Long",
-      "cross_check": 1
-    },
-    {
-      "title": "Indian Enforcement Raids CoinDCX Over Claims Its Trades Ran Through Binance",
-      "url": "https://news.bitcoin.com/regulation-and-legal/india-ed-searches-coindcx-delta-exchange-binance/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-07T09:30:51+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-07T15:05:35.365867+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Indian Enforcement Raids CoinDCX Over Claims Its Trades Ran Through Binance",
       "cross_check": 1
     }
   ]
