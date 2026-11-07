@@ -287,14 +287,32 @@ def generate_chart_image():
         last_open = df_1d['open'].iloc[-1]
         last_color = '#26a69a' if last_close >= last_open else '#ef5350'
         
+        # ДИНАМИЧЕСКИЙ РАСЧЕТ (15% отступа, чтобы свечи не липли к краям при резком полете)
         max_price = df_1d['high'].max()
         min_price = df_1d['low'].min()
-        padding = (max_price - min_price) * 0.10
+        padding = (max_price - min_price) * 0.15
         ymin, ymax = min_price - padding, max_price + padding
 
-        rc = {'axes.labelsize': 12, 'ytick.labelsize': 12, 'xtick.labelsize': 10, 'axes.titlesize': 16, 'figure.titlesize': 16}
+        # ==== УВЕЛИЧЕННЫЕ ШРИФТЫ ====
+        rc = {
+            'axes.labelsize': 14,
+            'ytick.labelsize': 16,
+            'xtick.labelsize': 14,
+            'axes.titlesize': 20,
+            'figure.titlesize': 20,
+        }
+        
         mc = mpf.make_marketcolors(up='#26a69a', down='#ef5350', edge='inherit', wick='inherit', volume='in')
-        s = mpf.make_mpf_style(marketcolors=mc, base_mpf_style='nightclouds', facecolor='#131722', figcolor='#131722', gridcolor='#2a2e39', gridstyle='--', rc=rc, y_on_right=True)
+        s = mpf.make_mpf_style(
+            marketcolors=mc,
+            base_mpf_style='nightclouds',
+            facecolor='#131722',
+            figcolor='#131722',
+            gridcolor='#2a2e39',
+            gridstyle='--',
+            rc=rc,
+            y_on_right=True
+        )
 
         apds = [
             mpf.make_addplot(macd_hist, type='bar', color=macd_colors, panel=2),
@@ -302,22 +320,34 @@ def generate_chart_image():
             mpf.make_addplot(signal_line, color='#9370DB', panel=2, width=1)
         ]
 
+        # Рисуем график (отключаем авто-слипание)
         fig, axes = mpf.plot(
-            df_1d, type='candle', style=s, title="BTC/USDT | 1D", 
+            df_1d, type='candle', style=s, 
             ylabel='', ylabel_lower='', volume=True, addplot=apds, 
             panel_ratios=(6, 1.5, 2), figsize=(12, 12), 
             ylim=(ymin, ymax), hlines=dict(hlines=[last_close], colors=[last_color], linestyle='--', linewidths=[1]), 
-            returnfig=True, xrotation=0
+            returnfig=True, xrotation=0, tight_layout=False
         )
         
-        # hspace=0.5 - отступ между панелями, чтобы цифры не слипались
-        # right=0.88 - оставляем место справа для плашки
-        fig.subplots_adjust(hspace=0.5, right=0.88)
+        # Раздвигаем панели так, чтобы между ними было огромное пространство
+        fig.subplots_adjust(hspace=1.0, right=0.88, top=0.92, bottom=0.08, left=0.08)
+
+        # === ФИЗИЧЕСКОЕ РАЗДЕЛЕНИЕ ЦИФР ===
+        # Берем ось объемов (axes[3] - это правая ось объемов) 
+        # и добавляем 30% пустого места сверху. Цифра 15 000 уезжает вниз.
+        if len(axes) > 3:
+            vol_ax = axes[3]
+            vol_ymin, vol_ymax = vol_ax.get_ylim()
+            vol_ax.set_ylim(vol_ymin, vol_ymax * 1.3)
+
+        # Заголовок по центру графика
+        axes[0].set_title("BTC/USDT | 1D", fontsize=20, fontweight='bold', pad=15)
         
-        fig.text(0.5, 0.5, 'ARGUS', alpha=0.1, fontsize=80, ha='center', va='center', color='white', rotation=30)
+        # Watermark
+        fig.text(0.5, 0.5, 'ARGUS', alpha=0.1, fontsize=100, ha='center', va='center', color='white', rotation=30)
+        
+        # Плашка цены
         ax_main = axes[0]
-        
-        # Используем annotate вместо text, чтобы bbox_inches='tight' его не обрезал
         ax_main.annotate(
             f' {last_close:,.2f} ', 
             xy=(1.0, last_close), 
@@ -325,12 +355,11 @@ def generate_chart_image():
             xytext=(3, 0), 
             textcoords='offset points', 
             color='black', 
-            bbox=dict(boxstyle="round,pad=0.3", fc=last_color, ec=last_color, lw=1), 
-            fontsize=10, fontweight='bold', va='center', ha='left'
+            bbox=dict(boxstyle="round,pad=0.5", fc=last_color, ec=last_color, lw=1), 
+            fontsize=14, fontweight='bold', va='center', ha='left'
         )
 
         buf = io.BytesIO()
-        # ВОЗВРАЩАЕМ bbox_inches='tight' чтобы убрать черные поля
         fig.savefig(buf, format='png', dpi=150, bbox_inches='tight', pad_inches=0.2)
         buf.seek(0)
         
