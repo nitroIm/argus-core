@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - CHART TEST (DYNAMIC PADDING & WINDOW)
+# ARGUS - CHART TEST (FIXED: hspace / title center / fonts)
 # Path: crypto/collect/chart_test.py
 # ============================================================
 
@@ -39,7 +39,7 @@ def send_telegram_photo(photo_bytes):
 
 def main():
     log.info("STARTING CHART GENERATOR")
-    
+
     try:
         conn = get_conn()
         with conn.cursor() as cur:
@@ -49,7 +49,7 @@ def main():
     except Exception as e:
         log.error(f"DB Error: {e}")
         sys.exit(1)
-        
+
     if len(rows) < 100:
         log.error("Not enough data in DB")
         sys.exit(1)
@@ -58,52 +58,54 @@ def main():
     df['open_time'] = pd.to_datetime(df['open_time'], utc=True)
     df.set_index('open_time', inplace=True)
     df = df.astype(float)
-    
+
     # Склеиваем в 1D
     df_1d = df.resample('1D').agg({
-        'open': 'first', 'high': 'max', 'low': 'min', 
+        'open': 'first', 'high': 'max', 'low': 'min',
         'close': 'last', 'volume': 'sum'
     }).dropna()
 
-    # СКОЛЬЗЯЩЕЕ ОКНО: оставляем только последние 45 дней для графика
+    # Скользящее окно — последние 45 дней
     df_1d = df_1d.tail(45)
 
-    # Считаем MACD
+    if len(df_1d) < 15:
+        log.error("Not enough 1D candles after resample")
+        sys.exit(1)
+
+    # MACD
     exp12 = df_1d['close'].ewm(span=12, adjust=False).mean()
     exp26 = df_1d['close'].ewm(span=26, adjust=False).mean()
     macd_line = exp12 - exp26
     signal_line = macd_line.ewm(span=9, adjust=False).mean()
     macd_hist = macd_line - signal_line
-
     macd_colors = ['#26a69a' if val >= 0 else '#ef5350' for val in macd_hist]
 
     last_close = df_1d['close'].iloc[-1]
     last_open = df_1d['open'].iloc[-1]
     last_color = '#26a69a' if last_close >= last_open else '#ef5350'
 
-    # ДИНАМИЧЕСКИЙ РАСЧЕТ ГРАНИЦ (Чтобы не пробивало потолок)
+    # Динамический padding
     max_price = df_1d['high'].max()
     min_price = df_1d['low'].min()
-    price_range = max_price - min_price
-    padding = price_range * 0.10 # 10% отступа сверху и снизу
-    ymin = min_price - padding
-    ymax = max_price + padding
+    padding = (max_price - min_price) * 0.10
+    ymin, ymax = min_price - padding, max_price + padding
 
+    # ==== УВЕЛИЧЕННЫЕ ШРИФТЫ ====
     rc = {
-        'axes.labelsize': 12, 
-        'ytick.labelsize': 12, 
-        'xtick.labelsize': 10, 
-        'axes.titlesize': 16, 
-        'figure.titlesize': 16
+        'axes.labelsize': 14,
+        'ytick.labelsize': 14,   # было 12 — крупнее цифры на осях
+        'xtick.labelsize': 12,   # было 10
+        'axes.titlesize': 18,
+        'figure.titlesize': 18,
     }
 
     mc = mpf.make_marketcolors(up='#26a69a', down='#ef5350', edge='inherit', wick='inherit', volume='in')
     s = mpf.make_mpf_style(
-        marketcolors=mc, 
-        base_mpf_style='nightclouds', 
-        facecolor='#131722', 
-        figcolor='#131722', 
-        gridcolor='#2a2e39', 
+        marketcolors=mc,
+        base_mpf_style='nightclouds',
+        facecolor='#131722',
+        figcolor='#131722',
+        gridcolor='#2a2e39',
         gridstyle='--',
         rc=rc,
         y_on_right=True
@@ -115,37 +117,48 @@ def main():
         mpf.make_addplot(signal_line, color='#9370DB', panel=2, width=1)
     ]
 
-    title = "BTC/USDT | 1D"
-    
+    # ==== title убран из mpf.plot — ставим ниже через set_title на axes[0] ====
     fig, axes = mpf.plot(
-        df_1d, type='candle', style=s, 
-        title=title, ylabel='', ylabel_lower='',
-        volume=True, 
+        df_1d, type='candle', style=s,
+        ylabel='', ylabel_lower='',
+        volume=True,
         addplot=apds,
-        panel_ratios=(6, 1.5, 2), 
-        figsize=(10, 10), 
-        ylim=(ymin, ymax), # <--- Применяем рассчитанные границы
+        panel_ratios=(6, 1.5, 2),
+        figsize=(12, 12),          # было (10,10) — крупнее
+        ylim=(ymin, ymax),
         hlines=dict(hlines=[last_close], colors=[last_color], linestyle='--', linewidths=[1]),
-        returnfig=True
+        returnfig=True,
+        xrotation=0
     )
-    
-    fig.subplots_adjust(hspace=0.25, right=0.85)
 
-    fig.text(0.5, 0.5, 'ARGUS', alpha=0.1, fontsize=80, ha='center', va='center', color='white', rotation=30)
-    fig.text(0.5, 0.02, 'ARGUS — автономная система анализа', alpha=0.6, fontsize=10, ha='center', va='bottom', color='gray')
+    # hspace=0.8 — фиксит наложение цифр 74к и 15к
+    # right=0.88 — место под плашку цены
+    fig.subplots_adjust(hspace=0.8, right=0.88)
 
+    # Заголовок ЦЕНТРИРУЕТСЯ относительно панели графика (а не всей figure)
+    axes[0].set_title("BTC/USDT | 1D", fontsize=18, fontweight='bold', pad=20)
+
+    # Watermark
+    fig.text(0.5, 0.5, 'ARGUS', alpha=0.1, fontsize=80, ha='center', va='center',
+             color='white', rotation=30)
+
+    # ==== Плашка цены (как в evening_news_report) ====
     ax_main = axes[0]
-    ax_main.text(1.005, last_close, f' {last_close:,.2f} ', 
-                 transform=ax_main.get_yaxis_transform(), 
-                 va='center', ha='left', 
-                 color='black', 
-                 bbox=dict(boxstyle="round,pad=0.3", fc=last_color, ec=last_color, lw=1),
-                 fontsize=10, fontweight='bold')
+    ax_main.annotate(
+        f' {last_close:,.2f} ',
+        xy=(1.0, last_close),
+        xycoords=('axes fraction', 'data'),
+        xytext=(3, 0),
+        textcoords='offset points',
+        color='black',
+        bbox=dict(boxstyle="round,pad=0.5", fc=last_color, ec=last_color, lw=1),
+        fontsize=14, fontweight='bold', va='center', ha='left'
+    )
 
     buf = io.BytesIO()
-    fig.savefig(buf, format='png', dpi=150, bbox_inches='tight')
+    fig.savefig(buf, format='png', dpi=150, bbox_inches='tight', pad_inches=0.2)
     buf.seek(0)
-    
+
     log.info("Sending to Telegram...")
     if send_telegram_photo(buf):
         log.info("Photo sent successfully!")
