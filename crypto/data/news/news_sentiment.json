@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-07T05:05:40.386327+00:00",
+  "generated_at": "2026-11-07T06:05:39.134037+00:00",
   "total_news": 98,
-  "avg_sentiment": -0.497,
+  "avg_sentiment": -0.493,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 15,
-  "bearish_count": 39,
-  "neutral_count": 44,
+  "bearish_count": 38,
+  "neutral_count": 45,
   "fake_count": 0,
   "cross_confirmed": 8,
   "by_source": {
@@ -22,7 +22,7 @@
     "Bitcoin.com": {
       "total": 8,
       "bull": 1,
-      "bear": 5
+      "bear": 4
     },
     "CryptoSlate": {
       "total": 8,
@@ -47,23 +47,6 @@
   },
   "top_bullish": [
     {
-      "title": "Moscow Exchange sets Dec. 1 to launch Bitcoin and Ethereum trading",
-      "url": "https://cryptoslate.com/moscow-exchange-sets-dec-1-to-launch-bitcoin-and-ethereum-trading/",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-07T04:40:10+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-07T05:05:38.974247+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Moscow Exchange sets Dec. 1 to launch Bitcoin and Ethereum trading",
-      "cross_check": 1
-    },
-    {
       "title": "Ethereum devs won’t fork Glamsterdam on Hoodi until smart contract risks resolved",
       "url": "https://cointelegraph.com/news/ethereum-devs-fork-glamsterdam-hoodi-smart-contract-risks?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
       "source": "Cointelegraph",
@@ -75,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-07T05:05:38.549719+00:00",
+      "collected_at": "2026-11-07T06:05:37.737376+00:00",
       "effective_weight": 1.04,
       "title_original": "Ethereum devs won’t fork Glamsterdam on Hoodi until smart contract risks resolved",
       "cross_check": 1
@@ -92,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-07T05:05:38.549999+00:00",
+      "collected_at": "2026-11-07T06:05:37.737695+00:00",
       "effective_weight": 1.04,
       "title_original": "Greece approves 10% tax on crypto gains starting in 2027",
       "cross_check": 4
@@ -109,10 +92,27 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-07T05:05:38.834420+00:00",
+      "collected_at": "2026-11-07T06:05:37.978749+00:00",
       "effective_weight": 1.0,
       "title_original": "Greece Approves 10% Crypto Gains Tax, 15% Levy on Staking and DeFi Income",
       "cross_check": 5
+    },
+    {
+      "title": "Moscow Exchange sets Dec. 1 to launch Bitcoin and Ethereum trading",
+      "url": "https://cryptoslate.com/moscow-exchange-sets-dec-1-to-launch-bitcoin-and-ethereum-trading/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-07T04:40:10+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-07T06:05:38.067814+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Moscow Exchange sets Dec. 1 to launch Bitcoin and Ethereum trading",
+      "cross_check": 1
     },
     {
       "title": "Греция одобрила налоги в 10% на прибыль от криптовалют и 15% на доходы от DeFi",
@@ -126,7 +126,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-07T05:05:40.314756+00:00",
+      "collected_at": "2026-11-07T06:05:39.062201+00:00",
       "effective_weight": 0.96,
       "title_original": "Греция одобрила налоги в 10% на прибыль от криптовалют и 15% на доходы от DeFi",
       "cross_check": 1
@@ -145,7 +145,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-07T05:05:38.549351+00:00",
+      "collected_at": "2026-11-07T06:05:37.737013+00:00",
       "effective_weight": 1.04,
       "title_original": "Binance hack is ‘cyber war,’ TRM Labs executive says",
       "cross_check": 1
@@ -162,7 +162,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-07T05:05:38.549493+00:00",
+      "collected_at": "2026-11-07T06:05:37.737154+00:00",
       "effective_weight": 1.04,
       "title_original": "Strive buys 15,124 Bitcoin in October, closes in on top treasury holders",
       "cross_check": 1
@@ -179,7 +179,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-07T05:05:38.549629+00:00",
+      "collected_at": "2026-11-07T06:05:37.737287+00:00",
       "effective_weight": 1.04,
       "title_original": "Nigeria sets new crypto licensing rules, bans algorithmic stablecoins",
       "cross_check": 1
@@ -196,7 +196,7 @@
       "bear_weight": 3.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-07T05:05:38.549796+00:00",
+      "collected_at": "2026-11-07T06:05:37.737491+00:00",
       "effective_weight": 1.04,
       "title_original": "Solana’s Shanghai event halted over unauthorized promotion: Report",
       "cross_check": 1
@@ -213,7 +213,7 @@
       "bear_weight": 6.2,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-07T05:05:38.549935+00:00",
+      "collected_at": "2026-11-07T06:05:37.737634+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin holds $75K as AI regulation fears see KOSPI halted after 8% crash",
       "cross_check": 2
