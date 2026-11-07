@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-11-07T07:05:38.444589+00:00",
+  "generated_at": "2026-11-07T08:05:41.738705+00:00",
   "total_news": 98,
-  "avg_sentiment": -0.496,
+  "avg_sentiment": -0.501,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 15,
   "bearish_count": 38,
@@ -58,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-07T07:05:36.525559+00:00",
+      "collected_at": "2026-11-07T08:05:39.948005+00:00",
       "effective_weight": 1.04,
       "title_original": "Ethereum devs won’t fork Glamsterdam on Hoodi until smart contract risks resolved",
       "cross_check": 1
@@ -75,27 +75,10 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-07T07:05:36.525773+00:00",
+      "collected_at": "2026-11-07T08:05:39.948169+00:00",
       "effective_weight": 1.04,
       "title_original": "Greece approves 10% tax on crypto gains starting in 2027",
       "cross_check": 4
-    },
-    {
-      "title": "Greece Approves 10% Crypto Gains Tax, 15% Levy on Staking and DeFi Income",
-      "url": "https://news.bitcoin.com/regulation-and-legal/greece-approves-crypto-gains-tax-levy-staking-defi-income/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-07T01:45:02+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 2.5,
-      "bear_weight": 0.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-07T07:05:36.841509+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Greece Approves 10% Crypto Gains Tax, 15% Levy on Staking and DeFi Income",
-      "cross_check": 5
     },
     {
       "title": "Moscow Exchange sets Dec. 1 to launch Bitcoin and Ethereum trading",
@@ -109,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-07T07:05:36.952189+00:00",
+      "collected_at": "2026-11-07T08:05:40.452447+00:00",
       "effective_weight": 1.0,
       "title_original": "Moscow Exchange sets Dec. 1 to launch Bitcoin and Ethereum trading",
       "cross_check": 1
@@ -126,29 +109,46 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-07T07:05:38.391449+00:00",
+      "collected_at": "2026-11-07T08:05:41.698306+00:00",
       "effective_weight": 0.96,
       "title_original": "Греция одобрила налоги в 10% на прибыль от криптовалют и 15% на доходы от DeFi",
       "cross_check": 1
+    },
+    {
+      "title": "Greece Passes Crypto Tax Law With 10% Gains Levy, 15% on Staking and DeFi",
+      "url": "https://decrypt.co/382756/greece-passes-crypto-tax-law-staking-defi",
+      "source": "Decrypt",
+      "source_weight": 1.1,
+      "lang": "en",
+      "pub_date": "2026-11-06T20:36:03+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-07T08:05:40.067902+00:00",
+      "effective_weight": 0.88,
+      "title_original": "Greece Passes Crypto Tax Law With 10% Gains Levy, 15% on Staking and DeFi",
+      "cross_check": 4
     }
   ],
   "top_bearish": [
     {
-      "title": "‘Extreme Fear’ Hits Bitcoin for the First Time in 3 Months as BTC Plummets",
-      "url": "https://cryptopotato.com/extreme-fear-hits-bitcoin-for-the-first-time-in-3-months-as-btc-plummets/",
-      "source": "CryptoPotato",
+      "title": "Former FBI Agent Pleads Guilty to Stealing $2.47M in Crypto Across 35 Cases",
+      "url": "https://news.bitcoin.com/security/former-fbi-agent-guilty-stealing-2-47m-crypto-35-cases/",
+      "source": "Bitcoin.com",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-11-07T06:52:47+00:00",
+      "pub_date": "2026-11-07T07:30:14+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 1.2,
+      "bear_weight": 1.8,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-07T07:05:37.103663+00:00",
+      "collected_at": "2026-11-07T08:05:40.323058+00:00",
       "effective_weight": 1.5,
-      "title_original": "‘Extreme Fear’ Hits Bitcoin for the First Time in 3 Months as BTC Plummets",
-      "cross_check": 1
+      "title_original": "Former FBI Agent Pleads Guilty to Stealing $2.47M in Crypto Across 35 Cases",
+      "cross_check": 2
     },
     {
       "title": "Binance hack is ‘cyber war,’ TRM Labs executive says",
@@ -162,7 +162,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-07T07:05:36.525297+00:00",
+      "collected_at": "2026-11-07T08:05:39.947794+00:00",
       "effective_weight": 1.04,
       "title_original": "Binance hack is ‘cyber war,’ TRM Labs executive says",
       "cross_check": 1
@@ -179,7 +179,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-07T07:05:36.525398+00:00",
+      "collected_at": "2026-11-07T08:05:39.947874+00:00",
       "effective_weight": 1.04,
       "title_original": "Strive buys 15,124 Bitcoin in October, closes in on top treasury holders",
       "cross_check": 1
@@ -196,7 +196,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-07T07:05:36.525492+00:00",
+      "collected_at": "2026-11-07T08:05:39.947949+00:00",
       "effective_weight": 1.04,
       "title_original": "Nigeria sets new crypto licensing rules, bans algorithmic stablecoins",
       "cross_check": 1
@@ -213,7 +213,7 @@
       "bear_weight": 3.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-07T07:05:36.525629+00:00",
+      "collected_at": "2026-11-07T08:05:39.948058+00:00",
       "effective_weight": 1.04,
       "title_original": "Solana’s Shanghai event halted over unauthorized promotion: Report",
       "cross_check": 1
