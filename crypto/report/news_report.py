@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - NEWS REPORT v13.4 (VK RESIZE & RETRY)
+# ARGUS - NEWS REPORT v13.5 (VK FIX & CHART LAYOUT)
 # Path: crypto/report/news_report.py
 # ============================================================
 
@@ -89,9 +89,6 @@ def send_telegram(text, chat_id):
         except Exception: ok_all = False
     return ok_all
 
-# ============================================================
-# FIAT RATES
-# ============================================================
 def get_cbr_usd():
     try:
         r = requests.get("https://www.cbr-xml-daily.ru/daily_json.js", timeout=10)
@@ -117,9 +114,6 @@ def get_rapira_usdt():
         log.error(f"Rapira Error: {e}")
     return None
 
-# ============================================================
-# VK UPLOADER (RESIZE & RETRY)
-# ============================================================
 def upload_photo_to_vk(photo_buf):
     log.info(">>> VK UPLOAD START")
     if not VK_TOKEN or not VK_GROUP_ID: 
@@ -140,7 +134,6 @@ def upload_photo_to_vk(photo_buf):
         try:
             log.info(f">>> VK: Attempt {attempt_idx}/{len(attempts)} (v={cfg['v']}, UA={cfg['ua'][:30]}...)")
             
-            # 1. Получаем сервер
             url = "https://api.vk.com/method/photos.getWallUploadServer"
             r = requests.post(url, data={"group_id": gid, "access_token": VK_TOKEN, "v": cfg['v']}, headers=HEADERS, timeout=20)
             
@@ -153,7 +146,6 @@ def upload_photo_to_vk(photo_buf):
             upload_url = r_data["response"]["upload_url"]
             fname = ''.join(random.choices(string.ascii_lowercase + string.digits, k=8)) + '.jpg'
 
-            # 2. Загружаем файл
             log.info(f">>> VK: Uploading file as {fname}...")
             upload_headers = {"User-Agent": cfg['ua'], "Accept": "*/*"}
             r = requests.post(upload_url, files={'photo': (fname, img_data, 'image/jpeg')}, headers=upload_headers, timeout=30)
@@ -166,7 +158,6 @@ def upload_photo_to_vk(photo_buf):
                 log.error(f"UPLOAD EMPTY PHOTO. Response: {r_upload}")
                 time.sleep(2); continue
 
-            # 3. Сохраняем
             log.info(">>> VK: Saving photo...")
             url = "https://api.vk.com/method/photos.saveWallPhoto"
             params = {"group_id": gid, "photo": r_upload["photo"], "server": r_upload["server"], "hash": r_upload["hash"], "access_token": VK_TOKEN, "v": cfg['v']}
@@ -261,9 +252,6 @@ def translate_top(items, n=5):
     try: return translate_batch(originals)
     except Exception: return originals
 
-# ============================================================
-# CHART & DB FETCHERS (С УМЕНЬШЕНИЕМ РАЗМЕРА)
-# ============================================================
 def get_conn():
     if not DB_URL: raise RuntimeError("AIVEN_DB_URL not set")
     return psycopg.connect(DB_URL, connect_timeout=30, application_name="argus-news")
@@ -314,8 +302,9 @@ def generate_chart_image():
             mpf.make_addplot(signal_line, color='#9370DB', panel=2, width=1)
         ]
 
-        fig, axes = mpf.plot(df_1d, type='candle', style=s, title="BTC/USDT | 1D", ylabel='', ylabel_lower='', volume=True, addplot=apds, panel_ratios=(6, 1.5, 2), figsize=(10, 10), ylim=(ymin, ymax), hlines=dict(hlines=[last_close], colors=[last_color], linestyle='--', linewidths=[1]), returnfig=True)
-        fig.subplots_adjust(hspace=0.25, right=0.85)
+        fig, axes = mpf.plot(df_1d, type='candle', style=s, title="BTC/USDT | 1D", ylabel='', ylabel_lower='', volume=True, addplot=apds, panel_ratios=(6, 1.5, 2), figsize=(10, 12), ylim=(ymin, ymax), hlines=dict(hlines=[last_close], colors=[last_color], linestyle='--', linewidths=[1]), returnfig=True, xrotation=0)
+        
+        fig.subplots_adjust(hspace=0.35, right=0.88)
         
         fig.text(0.5, 0.5, 'ARGUS', alpha=0.1, fontsize=80, ha='center', va='center', color='white', rotation=30)
         ax_main = axes[0]
@@ -325,7 +314,6 @@ def generate_chart_image():
         fig.savefig(buf, format='png', dpi=150, bbox_inches='tight')
         buf.seek(0)
         
-        # --- УМЕНЬШЕНИЕ КАРТИНКИ ДЛЯ VK ---
         img = Image.open(buf).convert('RGB')
         max_width = 1080
         if img.width > max_width:
@@ -448,9 +436,6 @@ def fetch_stablecoins():
         return res
     except Exception: return {}
 
-# ============================================================
-# FORMATTING & BARS
-# ============================================================
 def fmt_price(p): return "$" + format(int(p), ",") if p >= 1000 else "$" + format(p, ".2f")
 def fmt_usd(v):
     if v is None: return "?"
@@ -564,7 +549,7 @@ def build_report(data, top_items, top_ru, btc, live_cmc, prev_g_metrics, n_senti
     return "\n".join(lines)
 
 def main():
-    log.info("news report v13.4")
+    log.info("news report v13.5")
     if not should_send_group(): return log.info("skip")
 
     if not SENTIMENT_FILE.exists(): return log.error("no sentiment file")
