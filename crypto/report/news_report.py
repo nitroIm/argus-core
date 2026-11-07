@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - NEWS REPORT v13.7 (CHART LAYOUT HARD FIX)
+# ARGUS - NEWS REPORT v13.9 (FINAL CHART SPACING FIX)
 # Path: crypto/report/news_report.py
 # ============================================================
 
@@ -302,31 +302,26 @@ def generate_chart_image():
             mpf.make_addplot(signal_line, color='#9370DB', panel=2, width=1)
         ]
 
+        # ОГРОМНАЯ высота (14, 18) и пропорции для панелей
         fig, axes = mpf.plot(
             df_1d, type='candle', style=s, title="BTC/USDT | 1D", 
             ylabel='', ylabel_lower='', volume=True, addplot=apds, 
-            panel_ratios=(6, 1.5, 2), figsize=(12, 14), 
+            panel_ratios=(8, 2, 3), figsize=(14, 18), 
             ylim=(ymin, ymax), hlines=dict(hlines=[last_close], colors=[last_color], linestyle='--', linewidths=[1]), 
             returnfig=True, xrotation=0
         )
         
-        fig.subplots_adjust(hspace=0.4, right=0.85)
+        # ОГРОМНЫЙ отступ между панелями (hspace=0.7), чтобы цифры не слипались. 
+        # right=0.85 оставляет место для цифр и плашки
+        fig.subplots_adjust(hspace=0.7, right=0.85)
         
         fig.text(0.5, 0.5, 'ARGUS', alpha=0.1, fontsize=80, ha='center', va='center', color='white', rotation=30)
         ax_main = axes[0]
-        
-        # Сохраняем объект плашки в переменную
-        price_tag = ax_main.text(
-            1.005, last_close, f' {last_close:,.2f} ', 
-            transform=ax_main.get_yaxis_transform(), 
-            va='center', ha='left', color='black', 
-            bbox=dict(boxstyle="round,pad=0.3", fc=last_color, ec=last_color, lw=1), 
-            fontsize=10, fontweight='bold'
-        )
+        ax_main.text(1.005, last_close, f' {last_close:,.2f} ', transform=ax_main.get_yaxis_transform(), va='center', ha='left', color='black', bbox=dict(boxstyle="round,pad=0.3", fc=last_color, ec=last_color, lw=1), fontsize=10, fontweight='bold')
 
         buf = io.BytesIO()
-        # Принудительно добавляем плашку в область сохранения (bbox_extra_artists)
-        fig.savefig(buf, format='png', dpi=150, bbox_inches='tight', pad_inches=0.5, bbox_extra_artists=(price_tag,))
+        # Сохраняем без обрезки краев (bbox_inches убран), чтобы плашку не резало
+        fig.savefig(buf, format='png', dpi=150, facecolor=fig.get_facecolor(), edgecolor='none')
         buf.seek(0)
         
         img = Image.open(buf).convert('RGB')
@@ -564,7 +559,7 @@ def build_report(data, top_items, top_ru, btc, live_cmc, prev_g_metrics, n_senti
     return "\n".join(lines)
 
 def main():
-    log.info("news report v13.7")
+    log.info("news report v13.9")
     if not should_send_group(): return log.info("skip")
 
     if not SENTIMENT_FILE.exists(): return log.error("no sentiment file")
