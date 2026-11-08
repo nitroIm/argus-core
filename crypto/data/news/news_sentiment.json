@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-08T19:05:36.373748+00:00",
-  "total_news": 90,
-  "avg_sentiment": -0.291,
+  "generated_at": "2026-11-08T20:05:37.189079+00:00",
+  "total_news": 89,
+  "avg_sentiment": -0.289,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 20,
   "bearish_count": 33,
-  "neutral_count": 37,
+  "neutral_count": 36,
   "fake_count": 0,
   "cross_confirmed": 5,
   "by_source": {
@@ -20,14 +20,14 @@
       "bear": 7
     },
     "Bitcoin.com": {
-      "total": 8,
+      "total": 7,
       "bull": 2,
-      "bear": 2
+      "bear": 1
     },
     "CryptoSlate": {
       "total": 4,
       "bull": 2,
-      "bear": 0
+      "bear": 1
     },
     "CryptoPotato": {
       "total": 28,
@@ -58,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-08T19:05:34.753747+00:00",
+      "collected_at": "2026-11-08T20:05:36.059135+00:00",
       "effective_weight": 1.0,
       "title_original": "Weekly Report: Crypto Market Erases $100B Rally as Bitcoin, XRP Prices Slide",
       "cross_check": 5
@@ -75,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-08T19:05:34.902497+00:00",
+      "collected_at": "2026-11-08T20:05:36.154065+00:00",
       "effective_weight": 1.0,
       "title_original": "One BlackRock fund dominates Bitcoin’s billion-dollar ETF exodus",
       "cross_check": 1
@@ -92,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-08T19:05:34.753965+00:00",
+      "collected_at": "2026-11-08T20:05:36.059464+00:00",
       "effective_weight": 0.8,
       "title_original": "EU, Asia, or the US: Who Will Win the Regulatory Race for Crypto Business?",
       "cross_check": 1
@@ -109,7 +109,7 @@
       "bear_weight": 0.0,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-08T19:05:34.446569+00:00",
+      "collected_at": "2026-11-08T20:05:35.283793+00:00",
       "effective_weight": 0.65,
       "title_original": "Ethereum devs won’t fork Glamsterdam on Hoodi until smart contract risks resolved",
       "cross_check": 1
@@ -126,13 +126,30 @@
       "bear_weight": 0.0,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-08T19:05:34.446784+00:00",
+      "collected_at": "2026-11-08T20:05:35.284021+00:00",
       "effective_weight": 0.65,
       "title_original": "Greece approves 10% tax on crypto gains starting in 2027",
       "cross_check": 2
     }
   ],
   "top_bearish": [
+    {
+      "title": "The catch in recovering a hacked crypto wallet: the thief may still have a key",
+      "url": "https://cryptoslate.com/the-catch-in-recovering-a-hacked-crypto-wallet-the-thief-may-still-have-a-key/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-08T19:30:55+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-08T20:05:36.153916+00:00",
+      "effective_weight": 1.5,
+      "title_original": "The catch in recovering a hacked crypto wallet: the thief may still have a key",
+      "cross_check": 1
+    },
     {
       "title": "Ripple Price Analysis: Could XRP Crash to $1.00 Next Week as Sellers Remain in Control?",
       "url": "https://cryptopotato.com/ripple-price-analysis-could-xrp-crash-to-1-00-next-week-as-sellers-remain-in-control/",
@@ -143,10 +160,10 @@
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 2.0,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-08T19:05:35.055249+00:00",
-      "effective_weight": 1.5,
+      "collected_at": "2026-11-08T20:05:36.237361+00:00",
+      "effective_weight": 1.0,
       "title_original": "Ripple Price Analysis: Could XRP Crash to $1.00 Next Week as Sellers Remain in Control?",
       "cross_check": 2
     },
@@ -162,7 +179,7 @@
       "bear_weight": 1.2,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-08T19:05:35.055370+00:00",
+      "collected_at": "2026-11-08T20:05:36.237509+00:00",
       "effective_weight": 1.0,
       "title_original": "JPMorgan Stock Slides on Epstein Probe Fears: Bitcoin Has No CEO to Drag Into the Scandal",
       "cross_check": 1
@@ -179,26 +196,9 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.1,
-      "collected_at": "2026-11-08T19:05:35.290883+00:00",
+      "collected_at": "2026-11-08T20:05:36.338817+00:00",
       "effective_weight": 0.81,
       "title_original": "Trump Administration Inches Closer to Opening 401(k)s to Crypto",
-      "cross_check": 1
-    },
-    {
-      "title": "Meta and Palantir Reject OKXICE Stock Tokenization Listings",
-      "url": "https://news.bitcoin.com/finance/meta-and-palantir-reject-okxice-stock-tokenization-listings/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-08T04:30:07+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-08T19:05:34.754009+00:00",
-      "effective_weight": 0.8,
-      "title_original": "Meta and Palantir Reject OKXICE Stock Tokenization Listings",
       "cross_check": 1
     },
     {
@@ -213,7 +213,7 @@
       "bear_weight": 3.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-08T19:05:35.055469+00:00",
+      "collected_at": "2026-11-08T20:05:36.237622+00:00",
       "effective_weight": 0.8,
       "title_original": "Double-Digit Altcoin Losses Mount as BTC Shows Weakness at $76K: Weekend Watch",
       "cross_check": 2
