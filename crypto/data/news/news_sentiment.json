@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-08T03:05:38.404734+00:00",
+  "generated_at": "2026-11-08T04:05:37.707570+00:00",
   "total_news": 92,
-  "avg_sentiment": -0.307,
+  "avg_sentiment": -0.31,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 19,
-  "bearish_count": 35,
-  "neutral_count": 38,
+  "bearish_count": 34,
+  "neutral_count": 39,
   "fake_count": 0,
   "cross_confirmed": 3,
   "by_source": {
@@ -22,7 +22,7 @@
     "Bitcoin.com": {
       "total": 9,
       "bull": 2,
-      "bear": 3
+      "bear": 2
     },
     "CryptoSlate": {
       "total": 5,
@@ -56,10 +56,10 @@
       "sentiment": 1.0,
       "bull_weight": 1.2,
       "bear_weight": 0.0,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-08T03:05:36.601367+00:00",
-      "effective_weight": 1.5,
+      "collected_at": "2026-11-08T04:05:36.524860+00:00",
+      "effective_weight": 1.0,
       "title_original": "XRP $0.99 Call Draws Scrutiny as Santiment Tracks Growing Shorts",
       "cross_check": 1
     },
@@ -75,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-08T03:05:36.601652+00:00",
+      "collected_at": "2026-11-08T04:05:36.525159+00:00",
       "effective_weight": 0.8,
       "title_original": "Solo Bitcoin Miners Strike Digital Gold as 2026 Jackpot Wins Reach 36 Blocks",
       "cross_check": 1
@@ -92,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-08T03:05:36.776906+00:00",
+      "collected_at": "2026-11-08T04:05:36.591032+00:00",
       "effective_weight": 0.8,
       "title_original": "Higher wages don’t have to mean higher inflation. That could matter for Bitcoin",
       "cross_check": 1
@@ -109,7 +109,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-08T03:05:37.230008+00:00",
+      "collected_at": "2026-11-08T04:05:36.702014+00:00",
       "effective_weight": 0.8,
       "title_original": "ZEC and CC Lead Altcoin Swings as BTC Settles at $76K Despite US-Iran Attacks: Weekend Watch",
       "cross_check": 1
@@ -126,7 +126,7 @@
       "bear_weight": 0.0,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-08T03:05:36.197616+00:00",
+      "collected_at": "2026-11-08T04:05:36.298950+00:00",
       "effective_weight": 0.65,
       "title_original": "Ethereum devs won’t fork Glamsterdam on Hoodi until smart contract risks resolved",
       "cross_check": 1
@@ -145,7 +145,7 @@
       "bear_weight": 1.8,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-08T03:05:36.601718+00:00",
+      "collected_at": "2026-11-08T04:05:36.525226+00:00",
       "effective_weight": 0.8,
       "title_original": "Prediction Markets Favor Another Drop as Year-End Bitcoin Price Forecasts Sour",
       "cross_check": 2
@@ -162,26 +162,9 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-08T03:05:36.601783+00:00",
+      "collected_at": "2026-11-08T04:05:36.525291+00:00",
       "effective_weight": 0.8,
       "title_original": "Binance Hack Takes Another Twist as Hackers Amass 2,300 More Bitcoin",
-      "cross_check": 1
-    },
-    {
-      "title": "Nubank and Mercadopago Suspend Crypto Withdrawals in Latam",
-      "url": "https://news.bitcoin.com/exchanges/nubank-and-mercadopago-suspend-crypto-withdrawals-in-latam/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-07T13:00:36+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 4.5,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-08T03:05:36.601904+00:00",
-      "effective_weight": 0.8,
-      "title_original": "Nubank and Mercadopago Suspend Crypto Withdrawals in Latam",
       "cross_check": 1
     },
     {
@@ -196,7 +179,7 @@
       "bear_weight": 4.6,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-08T03:05:36.777089+00:00",
+      "collected_at": "2026-11-08T04:05:36.591198+00:00",
       "effective_weight": 0.8,
       "title_original": "MEXC sees $126 million outflows as US targets exchange over $16.7 billion in suspected illicit transactions",
       "cross_check": 1
@@ -213,10 +196,27 @@
       "bear_weight": 1.2,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-08T03:05:37.229643+00:00",
+      "collected_at": "2026-11-08T04:05:36.701587+00:00",
       "effective_weight": 0.8,
       "title_original": "Ethereum Price Analysis: ETH Must Reclaim These Levels to Reverse Bearish Momentum",
       "cross_check": 1
+    },
+    {
+      "title": "Paraguay’s Bank Collapse Exposes a Problem Bitcoin Was Built to Solve",
+      "url": "https://cryptopotato.com/paraguays-bank-collapse-exposes-a-problem-bitcoin-was-built-to-solve/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-07T13:33:38+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 3.0,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-08T04:05:36.701821+00:00",
+      "effective_weight": 0.8,
+      "title_original": "Paraguay’s Bank Collapse Exposes a Problem Bitcoin Was Built to Solve",
+      "cross_check": 2
     }
   ]
 }
