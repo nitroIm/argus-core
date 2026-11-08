@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-11-08T11:05:33.102261+00:00",
+  "generated_at": "2026-11-08T12:05:36.716519+00:00",
   "total_news": 92,
-  "avg_sentiment": -0.282,
+  "avg_sentiment": -0.296,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 21,
   "bearish_count": 34,
@@ -47,23 +47,6 @@
   },
   "top_bullish": [
     {
-      "title": "EU, Asia, or the US: Who Will Win the Regulatory Race for Crypto Business?",
-      "url": "https://news.bitcoin.com/regulation-and-legal/eu-asia-or-the-us-who-will-win-the-regulatory-race-for-crypto-business/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-08T05:30:57+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-08T11:05:31.741607+00:00",
-      "effective_weight": 1.0,
-      "title_original": "EU, Asia, or the US: Who Will Win the Regulatory Race for Crypto Business?",
-      "cross_check": 1
-    },
-    {
       "title": "Solana Price Set To Catch Up After Record October, RSI Signals Reversal",
       "url": "https://bitcoinist.com/solana-price-catch-up-record-october/",
       "source": "Bitcoinist",
@@ -75,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.1,
-      "collected_at": "2026-11-08T11:05:32.189191+00:00",
+      "collected_at": "2026-11-08T12:05:35.664601+00:00",
       "effective_weight": 0.81,
       "title_original": "Solana Price Set To Catch Up After Record October, RSI Signals Reversal",
       "cross_check": 1
@@ -92,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.1,
-      "collected_at": "2026-11-08T11:05:32.189230+00:00",
+      "collected_at": "2026-11-08T12:05:35.664653+00:00",
       "effective_weight": 0.81,
       "title_original": "Bitcoin Technical Analysis: Bullish Checkmate Setup Near $76K",
       "cross_check": 1
@@ -109,9 +92,26 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.1,
-      "collected_at": "2026-11-08T11:05:32.189264+00:00",
+      "collected_at": "2026-11-08T12:05:35.664699+00:00",
       "effective_weight": 0.81,
       "title_original": "Ethereum Price Repeats 2025 Fractal As Whales Buy The Dip",
+      "cross_check": 1
+    },
+    {
+      "title": "EU, Asia, or the US: Who Will Win the Regulatory Race for Crypto Business?",
+      "url": "https://news.bitcoin.com/regulation-and-legal/eu-asia-or-the-us-who-will-win-the-regulatory-race-for-crypto-business/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-08T05:30:57+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-08T12:05:35.268008+00:00",
+      "effective_weight": 0.8,
+      "title_original": "EU, Asia, or the US: Who Will Win the Regulatory Race for Crypto Business?",
       "cross_check": 1
     },
     {
@@ -126,13 +126,30 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-08T11:05:31.741709+00:00",
+      "collected_at": "2026-11-08T12:05:35.268148+00:00",
       "effective_weight": 0.8,
       "title_original": "XRP $0.99 Call Draws Scrutiny as Santiment Tracks Growing Shorts",
       "cross_check": 1
     }
   ],
   "top_bearish": [
+    {
+      "title": "Double-Digit Altcoin Losses Mount as BTC Shows Weakness at $76K: Weekend Watch",
+      "url": "https://cryptopotato.com/double-digit-altcoin-losses-mount-as-btc-shows-weakness-at-76k-weekend-watch/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-08T11:41:57+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 3.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-08T12:05:35.471132+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Double-Digit Altcoin Losses Mount as BTC Shows Weakness at $76K: Weekend Watch",
+      "cross_check": 2
+    },
     {
       "title": "Bitcoin Mining Enters a New Reality: Even the China Ban Wasn’t This Bad",
       "url": "https://cryptopotato.com/bitcoin-mining-enters-a-new-reality-even-the-china-ban-wasnt-this-bad/",
@@ -145,7 +162,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-08T11:05:32.024353+00:00",
+      "collected_at": "2026-11-08T12:05:35.471200+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitcoin Mining Enters a New Reality: Even the China Ban Wasn’t This Bad",
       "cross_check": 1
@@ -162,7 +179,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-08T11:05:31.741641+00:00",
+      "collected_at": "2026-11-08T12:05:35.268054+00:00",
       "effective_weight": 0.8,
       "title_original": "Meta and Palantir Reject OKXICE Stock Tokenization Listings",
       "cross_check": 1
@@ -179,7 +196,7 @@
       "bear_weight": 4.6,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-08T11:05:31.911365+00:00",
+      "collected_at": "2026-11-08T12:05:35.369531+00:00",
       "effective_weight": 0.8,
       "title_original": "MEXC sees $126 million outflows as US targets exchange over $16.7 billion in suspected illicit transactions",
       "cross_check": 1
@@ -196,26 +213,9 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-08T11:05:32.024441+00:00",
+      "collected_at": "2026-11-08T12:05:35.471314+00:00",
       "effective_weight": 0.8,
       "title_original": "Crypto Wallets Lose $700M in Revenue During H1 2026: Report",
-      "cross_check": 1
-    },
-    {
-      "title": "Ethereum Price Analysis: ETH Must Reclaim These Levels to Reverse Bearish Momentum",
-      "url": "https://cryptopotato.com/ethereum-price-analysis-eth-must-reclaim-these-levels-to-reverse-bearish-momentum/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-07T20:02:19+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.2,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-08T11:05:32.024517+00:00",
-      "effective_weight": 0.8,
-      "title_original": "Ethereum Price Analysis: ETH Must Reclaim These Levels to Reverse Bearish Momentum",
       "cross_check": 1
     }
   ]
