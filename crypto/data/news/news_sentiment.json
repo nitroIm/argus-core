@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-08T08:05:37.141590+00:00",
-  "total_news": 92,
-  "avg_sentiment": -0.27,
+  "generated_at": "2026-11-08T09:05:33.630415+00:00",
+  "total_news": 91,
+  "avg_sentiment": -0.273,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 20,
   "bearish_count": 33,
-  "neutral_count": 39,
+  "neutral_count": 38,
   "fake_count": 0,
   "cross_confirmed": 3,
   "by_source": {
@@ -20,8 +20,8 @@
       "bear": 7
     },
     "Bitcoin.com": {
-      "total": 9,
-      "bull": 3,
+      "total": 8,
+      "bull": 2,
       "bear": 1
     },
     "CryptoSlate": {
@@ -32,20 +32,37 @@
     "CryptoPotato": {
       "total": 27,
       "bull": 3,
-      "bear": 13
+      "bear": 14
     },
     "Bitcoinist": {
-      "total": 5,
-      "bull": 4,
+      "total": 6,
+      "bull": 5,
       "bear": 0
     },
     "ForkLog": {
-      "total": 7,
+      "total": 6,
       "bull": 1,
-      "bear": 2
+      "bear": 1
     }
   },
   "top_bullish": [
+    {
+      "title": "Ethereum Price Repeats 2025 Fractal As Whales Buy The Dip",
+      "url": "https://bitcoinist.com/ethereum-price-repeats-2025-fractal-as-whales-buy-the-dip/",
+      "source": "Bitcoinist",
+      "source_weight": 0.9,
+      "lang": "en",
+      "pub_date": "2026-11-08T08:26:15+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.5,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.1,
+      "collected_at": "2026-11-08T09:05:32.662579+00:00",
+      "effective_weight": 1.215,
+      "title_original": "Ethereum Price Repeats 2025 Fractal As Whales Buy The Dip",
+      "cross_check": 1
+    },
     {
       "title": "EU, Asia, or the US: Who Will Win the Regulatory Race for Crypto Business?",
       "url": "https://news.bitcoin.com/regulation-and-legal/eu-asia-or-the-us-who-will-win-the-regulatory-race-for-crypto-business/",
@@ -58,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-08T08:05:35.504332+00:00",
+      "collected_at": "2026-11-08T09:05:32.178656+00:00",
       "effective_weight": 1.0,
       "title_original": "EU, Asia, or the US: Who Will Win the Regulatory Race for Crypto Business?",
       "cross_check": 1
@@ -73,28 +90,11 @@
       "sentiment": 1.0,
       "bull_weight": 1.2,
       "bear_weight": 0.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-08T08:05:35.504483+00:00",
-      "effective_weight": 1.0,
-      "title_original": "XRP $0.99 Call Draws Scrutiny as Santiment Tracks Growing Shorts",
-      "cross_check": 1
-    },
-    {
-      "title": "Solo Bitcoin Miners Strike Digital Gold as 2026 Jackpot Wins Reach 36 Blocks",
-      "url": "https://news.bitcoin.com/mining/solo-bitcoin-miners-strike-digital-gold-as-2026-jackpot-wins-reach-36-blocks/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-07T20:12:19+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-08T08:05:35.504684+00:00",
+      "collected_at": "2026-11-08T09:05:32.178758+00:00",
       "effective_weight": 0.8,
-      "title_original": "Solo Bitcoin Miners Strike Digital Gold as 2026 Jackpot Wins Reach 36 Blocks",
+      "title_original": "XRP $0.99 Call Draws Scrutiny as Santiment Tracks Growing Shorts",
       "cross_check": 1
     },
     {
@@ -109,7 +109,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-08T08:05:35.644768+00:00",
+      "collected_at": "2026-11-08T09:05:32.349883+00:00",
       "effective_weight": 0.8,
       "title_original": "Higher wages don’t have to mean higher inflation. That could matter for Bitcoin",
       "cross_check": 1
@@ -126,13 +126,30 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-08T08:05:35.899793+00:00",
+      "collected_at": "2026-11-08T09:05:32.495060+00:00",
       "effective_weight": 0.8,
       "title_original": "ZEC and CC Lead Altcoin Swings as BTC Settles at $76K Despite US-Iran Attacks: Weekend Watch",
       "cross_check": 1
     }
   ],
   "top_bearish": [
+    {
+      "title": "Bitcoin Mining Enters a New Reality: Even the China Ban Wasn’t This Bad",
+      "url": "https://cryptopotato.com/bitcoin-mining-enters-a-new-reality-even-the-china-ban-wasnt-this-bad/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-08T08:51:16+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-08T09:05:32.494697+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Bitcoin Mining Enters a New Reality: Even the China Ban Wasn’t This Bad",
+      "cross_check": 1
+    },
     {
       "title": "Meta and Palantir Reject OKXICE Stock Tokenization Listings",
       "url": "https://news.bitcoin.com/finance/meta-and-palantir-reject-okxice-stock-tokenization-listings/",
@@ -145,7 +162,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-08T08:05:35.504379+00:00",
+      "collected_at": "2026-11-08T09:05:32.178691+00:00",
       "effective_weight": 1.0,
       "title_original": "Meta and Palantir Reject OKXICE Stock Tokenization Listings",
       "cross_check": 1
@@ -162,7 +179,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-08T08:05:35.899403+00:00",
+      "collected_at": "2026-11-08T09:05:32.494785+00:00",
       "effective_weight": 1.0,
       "title_original": "Crypto Wallets Lose $700M in Revenue During H1 2026: Report",
       "cross_check": 1
@@ -179,7 +196,7 @@
       "bear_weight": 4.6,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-08T08:05:35.644889+00:00",
+      "collected_at": "2026-11-08T09:05:32.349973+00:00",
       "effective_weight": 0.8,
       "title_original": "MEXC sees $126 million outflows as US targets exchange over $16.7 billion in suspected illicit transactions",
       "cross_check": 1
@@ -196,27 +213,10 @@
       "bear_weight": 1.2,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-08T08:05:35.899521+00:00",
+      "collected_at": "2026-11-08T09:05:32.494862+00:00",
       "effective_weight": 0.8,
       "title_original": "Ethereum Price Analysis: ETH Must Reclaim These Levels to Reverse Bearish Momentum",
       "cross_check": 1
-    },
-    {
-      "title": "Paraguay’s Bank Collapse Exposes a Problem Bitcoin Was Built to Solve",
-      "url": "https://cryptopotato.com/paraguays-bank-collapse-exposes-a-problem-bitcoin-was-built-to-solve/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-07T13:33:38+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 3.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-08T08:05:35.899689+00:00",
-      "effective_weight": 0.8,
-      "title_original": "Paraguay’s Bank Collapse Exposes a Problem Bitcoin Was Built to Solve",
-      "cross_check": 2
     }
   ]
 }
