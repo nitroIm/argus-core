@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-11-08T22:05:39.115917+00:00",
-  "total_news": 90,
-  "avg_sentiment": -0.328,
+  "generated_at": "2026-11-08T23:05:36.902198+00:00",
+  "total_news": 89,
+  "avg_sentiment": -0.355,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 18,
-  "bearish_count": 34,
-  "neutral_count": 38,
+  "bearish_count": 35,
+  "neutral_count": 36,
   "fake_count": 0,
-  "cross_confirmed": 5,
+  "cross_confirmed": 3,
   "by_source": {
     "Cointelegraph": {
       "total": 21,
@@ -22,7 +22,7 @@
     "Bitcoin.com": {
       "total": 7,
       "bull": 2,
-      "bear": 1
+      "bear": 2
     },
     "CryptoSlate": {
       "total": 4,
@@ -30,7 +30,7 @@
       "bear": 1
     },
     "CryptoPotato": {
-      "total": 28,
+      "total": 27,
       "bull": 2,
       "bear": 15
     },
@@ -58,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-08T22:05:37.871683+00:00",
+      "collected_at": "2026-11-08T23:05:35.527814+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitcoin Packs 11,255 Transactions Into a Single Block, Nears Record",
       "cross_check": 1
@@ -75,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-08T22:05:37.991229+00:00",
+      "collected_at": "2026-11-08T23:05:35.621253+00:00",
       "effective_weight": 1.0,
       "title_original": "One BlackRock fund dominates Bitcoin’s billion-dollar ETF exodus",
       "cross_check": 1
@@ -92,10 +92,10 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-08T22:05:37.871865+00:00",
+      "collected_at": "2026-11-08T23:05:35.528009+00:00",
       "effective_weight": 0.8,
       "title_original": "Weekly Report: Crypto Market Erases $100B Rally as Bitcoin, XRP Prices Slide",
-      "cross_check": 5
+      "cross_check": 4
     },
     {
       "title": "Ethereum devs won’t fork Glamsterdam on Hoodi until smart contract risks resolved",
@@ -109,7 +109,7 @@
       "bear_weight": 0.0,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-08T22:05:37.590711+00:00",
+      "collected_at": "2026-11-08T23:05:35.232381+00:00",
       "effective_weight": 0.65,
       "title_original": "Ethereum devs won’t fork Glamsterdam on Hoodi until smart contract risks resolved",
       "cross_check": 1
@@ -126,13 +126,30 @@
       "bear_weight": 0.0,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-08T22:05:37.590945+00:00",
+      "collected_at": "2026-11-08T23:05:35.232661+00:00",
       "effective_weight": 0.65,
       "title_original": "Greece approves 10% tax on crypto gains starting in 2027",
       "cross_check": 2
     }
   ],
   "top_bearish": [
+    {
+      "title": "Binance Restores HYPE, APT as Data Reveals Billions in Reserve Outflows",
+      "url": "https://news.bitcoin.com/crypto-news/binance-restores-hype-apt-as-data-reveals-billions-in-reserve-outflows/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-08T22:30:51+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 4.6,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-08T23:05:35.527742+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Binance Restores HYPE, APT as Data Reveals Billions in Reserve Outflows",
+      "cross_check": 1
+    },
     {
       "title": "The catch in recovering a hacked crypto wallet: the thief may still have a key",
       "url": "https://cryptoslate.com/the-catch-in-recovering-a-hacked-crypto-wallet-the-thief-may-still-have-a-key/",
@@ -145,7 +162,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-08T22:05:37.991075+00:00",
+      "collected_at": "2026-11-08T23:05:35.621106+00:00",
       "effective_weight": 1.0,
       "title_original": "The catch in recovering a hacked crypto wallet: the thief may still have a key",
       "cross_check": 1
@@ -162,7 +179,7 @@
       "bear_weight": 2.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-08T22:05:38.123817+00:00",
+      "collected_at": "2026-11-08T23:05:35.795046+00:00",
       "effective_weight": 1.0,
       "title_original": "Ripple Price Analysis: Could XRP Crash to $1.00 Next Week as Sellers Remain in Control?",
       "cross_check": 2
@@ -179,7 +196,7 @@
       "bear_weight": 1.2,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-08T22:05:38.123952+00:00",
+      "collected_at": "2026-11-08T23:05:35.795189+00:00",
       "effective_weight": 0.8,
       "title_original": "JPMorgan Stock Slides on Epstein Probe Fears: Bitcoin Has No CEO to Drag Into the Scandal",
       "cross_check": 1
@@ -196,27 +213,10 @@
       "bear_weight": 3.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-08T22:05:38.124067+00:00",
+      "collected_at": "2026-11-08T23:05:35.795317+00:00",
       "effective_weight": 0.8,
       "title_original": "Double-Digit Altcoin Losses Mount as BTC Shows Weakness at $76K: Weekend Watch",
       "cross_check": 2
-    },
-    {
-      "title": "Bitcoin Mining Enters a New Reality: Even the China Ban Wasn’t This Bad",
-      "url": "https://cryptopotato.com/bitcoin-mining-enters-a-new-reality-even-the-china-ban-wasnt-this-bad/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-08T08:51:16+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-08T22:05:38.124139+00:00",
-      "effective_weight": 0.8,
-      "title_original": "Bitcoin Mining Enters a New Reality: Even the China Ban Wasn’t This Bad",
-      "cross_check": 1
     }
   ]
 }
