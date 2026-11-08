@@ -61,7 +61,8 @@ jobs:
             exit 0
           fi
           git commit -m "ARGUS: signal status updated [skip ci]"
-          git pull --rebase --autostash origin main || true
+          git fetch origin main
+          git rebase origin/main
           git push origin main
 
       - name: Notify on failure
