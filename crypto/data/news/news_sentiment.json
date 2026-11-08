@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-08T00:05:35.837007+00:00",
+  "generated_at": "2026-11-08T01:05:40.484812+00:00",
   "total_news": 92,
-  "avg_sentiment": -0.353,
+  "avg_sentiment": -0.343,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 19,
-  "bearish_count": 37,
-  "neutral_count": 36,
+  "bearish_count": 36,
+  "neutral_count": 37,
   "fake_count": 0,
   "cross_confirmed": 3,
   "by_source": {
@@ -22,7 +22,7 @@
     "Bitcoin.com": {
       "total": 9,
       "bull": 2,
-      "bear": 5
+      "bear": 4
     },
     "CryptoSlate": {
       "total": 5,
@@ -58,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-08T00:05:34.740701+00:00",
+      "collected_at": "2026-11-08T01:05:38.932653+00:00",
       "effective_weight": 1.0,
       "title_original": "Solo Bitcoin Miners Strike Digital Gold as 2026 Jackpot Wins Reach 36 Blocks",
       "cross_check": 1
@@ -73,10 +73,10 @@
       "sentiment": 1.0,
       "bull_weight": 1.0,
       "bear_weight": 0.0,
-      "freshness": 1.0,
+      "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-08T00:05:34.797271+00:00",
-      "effective_weight": 1.0,
+      "collected_at": "2026-11-08T01:05:39.057478+00:00",
+      "effective_weight": 0.8,
       "title_original": "Higher wages don’t have to mean higher inflation. That could matter for Bitcoin",
       "cross_check": 1
     },
@@ -92,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-08T00:05:34.891509+00:00",
+      "collected_at": "2026-11-08T01:05:39.202568+00:00",
       "effective_weight": 0.8,
       "title_original": "ZEC and CC Lead Altcoin Swings as BTC Settles at $76K Despite US-Iran Attacks: Weekend Watch",
       "cross_check": 1
@@ -109,7 +109,7 @@
       "bear_weight": 0.0,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-08T00:05:34.502473+00:00",
+      "collected_at": "2026-11-08T01:05:38.571811+00:00",
       "effective_weight": 0.65,
       "title_original": "Ethereum devs won’t fork Glamsterdam on Hoodi until smart contract risks resolved",
       "cross_check": 1
@@ -126,30 +126,13 @@
       "bear_weight": 0.0,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-08T00:05:34.502776+00:00",
+      "collected_at": "2026-11-08T01:05:38.572009+00:00",
       "effective_weight": 0.65,
       "title_original": "Greece approves 10% tax on crypto gains starting in 2027",
       "cross_check": 2
     }
   ],
   "top_bearish": [
-    {
-      "title": "Prediction Markets Favor Another Drop as Year-End Bitcoin Price Forecasts Sour",
-      "url": "https://news.bitcoin.com/price-predictions/prediction-markets-favor-another-drop-as-year-end-bitcoin-price-forecasts-sour/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-07T18:10:04+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.8,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-08T00:05:34.740771+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Prediction Markets Favor Another Drop as Year-End Bitcoin Price Forecasts Sour",
-      "cross_check": 2
-    },
     {
       "title": "Ethereum Price Analysis: ETH Must Reclaim These Levels to Reverse Bearish Momentum",
       "url": "https://cryptopotato.com/ethereum-price-analysis-eth-must-reclaim-these-levels-to-reverse-bearish-momentum/",
@@ -162,10 +145,27 @@
       "bear_weight": 1.2,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-08T00:05:34.891130+00:00",
+      "collected_at": "2026-11-08T01:05:39.202289+00:00",
       "effective_weight": 1.0,
       "title_original": "Ethereum Price Analysis: ETH Must Reclaim These Levels to Reverse Bearish Momentum",
       "cross_check": 1
+    },
+    {
+      "title": "Prediction Markets Favor Another Drop as Year-End Bitcoin Price Forecasts Sour",
+      "url": "https://news.bitcoin.com/price-predictions/prediction-markets-favor-another-drop-as-year-end-bitcoin-price-forecasts-sour/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-07T18:10:04+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.8,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-08T01:05:38.932708+00:00",
+      "effective_weight": 0.8,
+      "title_original": "Prediction Markets Favor Another Drop as Year-End Bitcoin Price Forecasts Sour",
+      "cross_check": 2
     },
     {
       "title": "Binance Hack Takes Another Twist as Hackers Amass 2,300 More Bitcoin",
@@ -179,7 +179,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-08T00:05:34.740837+00:00",
+      "collected_at": "2026-11-08T01:05:38.932759+00:00",
       "effective_weight": 0.8,
       "title_original": "Binance Hack Takes Another Twist as Hackers Amass 2,300 More Bitcoin",
       "cross_check": 1
@@ -196,7 +196,7 @@
       "bear_weight": 4.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-08T00:05:34.740961+00:00",
+      "collected_at": "2026-11-08T01:05:38.932852+00:00",
       "effective_weight": 0.8,
       "title_original": "Nubank and Mercadopago Suspend Crypto Withdrawals in Latam",
       "cross_check": 1
@@ -213,7 +213,7 @@
       "bear_weight": 1.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-08T00:05:34.741025+00:00",
+      "collected_at": "2026-11-08T01:05:38.932899+00:00",
       "effective_weight": 0.8,
       "title_original": "Bitcoin Mining Difficulty Has Never Stayed Below Its Peak for This Long",
       "cross_check": 1
