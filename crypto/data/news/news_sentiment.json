@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-11-08T14:05:36.128009+00:00",
+  "generated_at": "2026-11-08T15:05:36.493470+00:00",
   "total_news": 90,
-  "avg_sentiment": -0.286,
+  "avg_sentiment": -0.334,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 20,
-  "bearish_count": 32,
+  "bullish_count": 19,
+  "bearish_count": 33,
   "neutral_count": 38,
   "fake_count": 0,
-  "cross_confirmed": 3,
+  "cross_confirmed": 1,
   "by_source": {
     "Cointelegraph": {
       "total": 21,
@@ -36,8 +36,8 @@
     },
     "Bitcoinist": {
       "total": 7,
-      "bull": 6,
-      "bear": 0
+      "bull": 5,
+      "bear": 1
     },
     "ForkLog": {
       "total": 5,
@@ -58,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.1,
-      "collected_at": "2026-11-08T14:05:35.280721+00:00",
+      "collected_at": "2026-11-08T15:05:35.532818+00:00",
       "effective_weight": 0.81,
       "title_original": "Solana Price Set To Catch Up After Record October, RSI Signals Reversal",
       "cross_check": 1
@@ -75,26 +75,9 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.1,
-      "collected_at": "2026-11-08T14:05:35.280788+00:00",
+      "collected_at": "2026-11-08T15:05:35.532853+00:00",
       "effective_weight": 0.81,
       "title_original": "Bitcoin Technical Analysis: Bullish Checkmate Setup Near $76K",
-      "cross_check": 1
-    },
-    {
-      "title": "Ethereum Price Repeats 2025 Fractal As Whales Buy The Dip",
-      "url": "https://bitcoinist.com/ethereum-price-repeats-2025-fractal-as-whales-buy-the-dip/",
-      "source": "Bitcoinist",
-      "source_weight": 0.9,
-      "lang": "en",
-      "pub_date": "2026-11-08T08:26:15+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.5,
-      "bear_weight": 0.0,
-      "freshness": 1.0,
-      "fake_score": 0.1,
-      "collected_at": "2026-11-08T14:05:35.280849+00:00",
-      "effective_weight": 0.81,
-      "title_original": "Ethereum Price Repeats 2025 Fractal As Whales Buy The Dip",
       "cross_check": 1
     },
     {
@@ -109,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-08T14:05:35.027830+00:00",
+      "collected_at": "2026-11-08T15:05:35.075476+00:00",
       "effective_weight": 0.8,
       "title_original": "EU, Asia, or the US: Who Will Win the Regulatory Race for Crypto Business?",
       "cross_check": 1
@@ -126,13 +109,47 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-08T14:05:35.028037+00:00",
+      "collected_at": "2026-11-08T15:05:35.075580+00:00",
       "effective_weight": 0.8,
       "title_original": "XRP $0.99 Call Draws Scrutiny as Santiment Tracks Growing Shorts",
+      "cross_check": 1
+    },
+    {
+      "title": "Higher wages don’t have to mean higher inflation. That could matter for Bitcoin",
+      "url": "https://cryptoslate.com/higher-wages-dont-have-to-mean-higher-inflation-that-could-matter-for-bitcoin/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-07T18:15:46+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-08T15:05:35.211092+00:00",
+      "effective_weight": 0.8,
+      "title_original": "Higher wages don’t have to mean higher inflation. That could matter for Bitcoin",
       "cross_check": 1
     }
   ],
   "top_bearish": [
+    {
+      "title": "Trump Administration Inches Closer to Opening 401(k)s to Crypto",
+      "url": "https://bitcoinist.com/trump-administration-inches-closer-to-opening-401ks-to-crypto/",
+      "source": "Bitcoinist",
+      "source_weight": 0.9,
+      "lang": "en",
+      "pub_date": "2026-11-08T14:18:59+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.1,
+      "collected_at": "2026-11-08T15:05:35.532780+00:00",
+      "effective_weight": 1.215,
+      "title_original": "Trump Administration Inches Closer to Opening 401(k)s to Crypto",
+      "cross_check": 1
+    },
     {
       "title": "Double-Digit Altcoin Losses Mount as BTC Shows Weakness at $76K: Weekend Watch",
       "url": "https://cryptopotato.com/double-digit-altcoin-losses-mount-as-btc-shows-weakness-at-76k-weekend-watch/",
@@ -145,27 +162,10 @@
       "bear_weight": 3.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-08T14:05:35.182064+00:00",
+      "collected_at": "2026-11-08T15:05:35.332483+00:00",
       "effective_weight": 1.0,
       "title_original": "Double-Digit Altcoin Losses Mount as BTC Shows Weakness at $76K: Weekend Watch",
       "cross_check": 2
-    },
-    {
-      "title": "Bitcoin Mining Enters a New Reality: Even the China Ban Wasn’t This Bad",
-      "url": "https://cryptopotato.com/bitcoin-mining-enters-a-new-reality-even-the-china-ban-wasnt-this-bad/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-08T08:51:16+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-08T14:05:35.182136+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Bitcoin Mining Enters a New Reality: Even the China Ban Wasn’t This Bad",
-      "cross_check": 1
     },
     {
       "title": "Meta and Palantir Reject OKXICE Stock Tokenization Listings",
@@ -179,7 +179,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-08T14:05:35.027899+00:00",
+      "collected_at": "2026-11-08T15:05:35.075511+00:00",
       "effective_weight": 0.8,
       "title_original": "Meta and Palantir Reject OKXICE Stock Tokenization Listings",
       "cross_check": 1
@@ -196,26 +196,26 @@
       "bear_weight": 4.6,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-08T14:05:35.089438+00:00",
+      "collected_at": "2026-11-08T15:05:35.211187+00:00",
       "effective_weight": 0.8,
       "title_original": "MEXC sees $126 million outflows as US targets exchange over $16.7 billion in suspected illicit transactions",
       "cross_check": 1
     },
     {
-      "title": "Crypto Wallets Lose $700M in Revenue During H1 2026: Report",
-      "url": "https://cryptopotato.com/crypto-wallets-lose-700m-in-revenue-during-h1-2026-report/",
+      "title": "Bitcoin Mining Enters a New Reality: Even the China Ban Wasn’t This Bad",
+      "url": "https://cryptopotato.com/bitcoin-mining-enters-a-new-reality-even-the-china-ban-wasnt-this-bad/",
       "source": "CryptoPotato",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-11-08T05:02:54+00:00",
+      "pub_date": "2026-11-08T08:51:16+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-08T14:05:35.182265+00:00",
+      "collected_at": "2026-11-08T15:05:35.332533+00:00",
       "effective_weight": 0.8,
-      "title_original": "Crypto Wallets Lose $700M in Revenue During H1 2026: Report",
+      "title_original": "Bitcoin Mining Enters a New Reality: Even the China Ban Wasn’t This Bad",
       "cross_check": 1
     }
   ]
