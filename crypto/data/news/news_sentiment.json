@@ -1,31 +1,31 @@
 {
-  "generated_at": "2026-11-09T11:05:38.349450+00:00",
+  "generated_at": "2026-11-09T12:05:41.539402+00:00",
   "total_news": 93,
-  "avg_sentiment": -0.42,
+  "avg_sentiment": -0.522,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 18,
-  "bearish_count": 40,
-  "neutral_count": 35,
+  "bullish_count": 14,
+  "bearish_count": 41,
+  "neutral_count": 38,
   "fake_count": 0,
-  "cross_confirmed": 2,
+  "cross_confirmed": 3,
   "by_source": {
     "Cointelegraph": {
-      "total": 23,
-      "bull": 3,
+      "total": 22,
+      "bull": 2,
       "bear": 8
     },
     "Decrypt": {
       "total": 16,
-      "bull": 5,
-      "bear": 7
+      "bull": 4,
+      "bear": 8
     },
     "Bitcoin.com": {
       "total": 10,
-      "bull": 1,
+      "bull": 0,
       "bear": 6
     },
     "CryptoSlate": {
-      "total": 6,
+      "total": 7,
       "bull": 1,
       "bear": 1
     },
@@ -36,7 +36,7 @@
     },
     "Bitcoinist": {
       "total": 8,
-      "bull": 5,
+      "bull": 4,
       "bear": 1
     },
     "ForkLog": {
@@ -58,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-09T11:05:36.443264+00:00",
+      "collected_at": "2026-11-09T12:05:39.628200+00:00",
       "effective_weight": 1.3,
       "title_original": "Binance, Tether and Trump crypto firms face Senate records deadline",
       "cross_check": 1
@@ -75,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-09T11:05:37.075837+00:00",
+      "collected_at": "2026-11-09T12:05:40.149787+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitcoin Under Pressure Again Ahead of 4 Major Market-Moving Events",
       "cross_check": 1
@@ -92,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-09T11:05:37.075882+00:00",
+      "collected_at": "2026-11-09T12:05:40.149851+00:00",
       "effective_weight": 1.0,
       "title_original": "Ethereum Whales Buy the Dip as ETH Crumbles 15% in 5 Days",
       "cross_check": 1
@@ -109,7 +109,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.1,
-      "collected_at": "2026-11-09T11:05:37.326123+00:00",
+      "collected_at": "2026-11-09T12:05:40.352544+00:00",
       "effective_weight": 0.81,
       "title_original": "Bitcoin Political Support Is Growing Across US Parties",
       "cross_check": 1
@@ -126,13 +126,47 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.1,
-      "collected_at": "2026-11-09T11:05:37.326179+00:00",
+      "collected_at": "2026-11-09T12:05:40.352611+00:00",
       "effective_weight": 0.81,
       "title_original": "Bitcoin Price Eyes Recovery As Analyst Identifies Key Level For Next Rally",
-      "cross_check": 2
+      "cross_check": 3
     }
   ],
   "top_bearish": [
+    {
+      "title": "Coinbase’s US national trust bank charter takes effect",
+      "url": "https://cointelegraph.com/news/coinbase-occ-approval-national-trust-bank-charter?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-11-09T11:38:52+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-09T12:05:39.628042+00:00",
+      "effective_weight": 1.95,
+      "title_original": "Coinbase’s US national trust bank charter takes effect",
+      "cross_check": 2
+    },
+    {
+      "title": "Coinbase Joins Circle, Ripple With Final OCC Approval for Federal Trust Bank Charter",
+      "url": "https://decrypt.co/382816/coinbase-joins-circle-ripple-with-final-occ-approval-for-federal-trust-bank-charter",
+      "source": "Decrypt",
+      "source_weight": 1.1,
+      "lang": "en",
+      "pub_date": "2026-11-09T11:50:36+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-09T12:05:39.704007+00:00",
+      "effective_weight": 1.65,
+      "title_original": "Coinbase Joins Circle, Ripple With Final OCC Approval for Federal Trust Bank Charter",
+      "cross_check": 2
+    },
     {
       "title": "Bitcoin Traders Will Now Need to Follow Nvidia CEO’s Affair, Too",
       "url": "https://news.bitcoin.com/market-updates/bitcoin-traders-will-now-need-to-follow-nvidia-ceos-affair-too/",
@@ -143,28 +177,11 @@
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 1.0,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-09T11:05:36.774228+00:00",
-      "effective_weight": 1.5,
+      "collected_at": "2026-11-09T12:05:39.912287+00:00",
+      "effective_weight": 1.0,
       "title_original": "Bitcoin Traders Will Now Need to Follow Nvidia CEO’s Affair, Too",
-      "cross_check": 1
-    },
-    {
-      "title": "Crypto Markets Shed $80B Daily as BTC Dives Below $74K: Market Watch",
-      "url": "https://cryptopotato.com/crypto-markets-shed-80b-daily-as-btc-dives-below-74k-market-watch/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-09T10:20:50+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.0,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-09T11:05:37.075662+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Crypto Markets Shed $80B Daily as BTC Dives Below $74K: Market Watch",
       "cross_check": 1
     },
     {
@@ -179,7 +196,7 @@
       "bear_weight": 0.8,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-09T11:05:36.774291+00:00",
+      "collected_at": "2026-11-09T12:05:39.912367+00:00",
       "effective_weight": 1.0,
       "title_original": "Popular Analyst Predicted Bitcoin’s Latest Slide and Sees More Pain Ahead",
       "cross_check": 1
@@ -196,27 +213,10 @@
       "bear_weight": 3.2,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-09T11:05:36.774388+00:00",
+      "collected_at": "2026-11-09T12:05:39.912499+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitcoin Price Drops Below $74,000 as Liquidations Top $1 Billion",
       "cross_check": 2
-    },
-    {
-      "title": "Did the Crypto Industry Blow Its Best Chance at Regulatory Clarity? Patrick McHenry Thinks So",
-      "url": "https://news.bitcoin.com/regulation-and-legal/did-the-crypto-industry-blow-its-best-chance-at-regulatory-clarity-patrick-mchenry-thinks-so/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-09T06:30:39+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-09T11:05:36.774444+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Did the Crypto Industry Blow Its Best Chance at Regulatory Clarity? Patrick McHenry Thinks So",
-      "cross_check": 1
     }
   ]
 }
