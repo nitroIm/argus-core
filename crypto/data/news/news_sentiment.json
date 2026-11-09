@@ -1,16 +1,16 @@
 {
-  "generated_at": "2026-11-09T04:05:58.740696+00:00",
-  "total_news": 90,
-  "avg_sentiment": -0.341,
+  "generated_at": "2026-11-09T05:05:38.611859+00:00",
+  "total_news": 92,
+  "avg_sentiment": -0.36,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 18,
-  "bearish_count": 34,
-  "neutral_count": 38,
+  "bearish_count": 35,
+  "neutral_count": 39,
   "fake_count": 0,
   "cross_confirmed": 4,
   "by_source": {
     "Cointelegraph": {
-      "total": 21,
+      "total": 22,
       "bull": 2,
       "bear": 9
     },
@@ -20,9 +20,9 @@
       "bear": 7
     },
     "Bitcoin.com": {
-      "total": 8,
+      "total": 9,
       "bull": 2,
-      "bear": 1
+      "bear": 2
     },
     "CryptoSlate": {
       "total": 4,
@@ -58,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-09T04:05:57.233419+00:00",
+      "collected_at": "2026-11-09T05:05:37.463146+00:00",
       "effective_weight": 0.8,
       "title_original": "Bitcoin Packs 11,255 Transactions Into a Single Block, Nears Record",
       "cross_check": 1
@@ -75,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-09T04:05:57.233611+00:00",
+      "collected_at": "2026-11-09T05:05:37.463355+00:00",
       "effective_weight": 0.8,
       "title_original": "Weekly Report: Crypto Market Erases $100B Rally as Bitcoin, XRP Prices Slide",
       "cross_check": 4
@@ -92,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-09T04:05:57.327624+00:00",
+      "collected_at": "2026-11-09T05:05:37.523601+00:00",
       "effective_weight": 0.8,
       "title_original": "One BlackRock fund dominates Bitcoin’s billion-dollar ETF exodus",
       "cross_check": 1
@@ -109,7 +109,7 @@
       "bear_weight": 0.0,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-09T04:05:57.071846+00:00",
+      "collected_at": "2026-11-09T05:05:37.173639+00:00",
       "effective_weight": 0.65,
       "title_original": "Ethereum devs won’t fork Glamsterdam on Hoodi until smart contract risks resolved",
       "cross_check": 1
@@ -126,13 +126,30 @@
       "bear_weight": 0.0,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-09T04:05:57.072137+00:00",
+      "collected_at": "2026-11-09T05:05:37.173879+00:00",
       "effective_weight": 0.65,
       "title_original": "Greece approves 10% tax on crypto gains starting in 2027",
       "cross_check": 2
     }
   ],
   "top_bearish": [
+    {
+      "title": "California Orders $4.8M Payout to Bitcoin ATM Scam Victims",
+      "url": "https://news.bitcoin.com/regulation-and-legal/california-orders-4-8m-payout-to-bitcoin-atm-scam-victims/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-09T04:30:27+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-09T05:05:37.462858+00:00",
+      "effective_weight": 1.5,
+      "title_original": "California Orders $4.8M Payout to Bitcoin ATM Scam Victims",
+      "cross_check": 1
+    },
     {
       "title": "Binance Restores HYPE, APT as Data Reveals Billions in Reserve Outflows",
       "url": "https://news.bitcoin.com/crypto-news/binance-restores-hype-apt-as-data-reveals-billions-in-reserve-outflows/",
@@ -143,10 +160,10 @@
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 4.6,
-      "freshness": 1.0,
+      "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-09T04:05:57.233354+00:00",
-      "effective_weight": 1.0,
+      "collected_at": "2026-11-09T05:05:37.463075+00:00",
+      "effective_weight": 0.8,
       "title_original": "Binance Restores HYPE, APT as Data Reveals Billions in Reserve Outflows",
       "cross_check": 1
     },
@@ -162,7 +179,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-09T04:05:57.327472+00:00",
+      "collected_at": "2026-11-09T05:05:37.523441+00:00",
       "effective_weight": 0.8,
       "title_original": "The catch in recovering a hacked crypto wallet: the thief may still have a key",
       "cross_check": 1
@@ -179,7 +196,7 @@
       "bear_weight": 2.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-09T04:05:57.445214+00:00",
+      "collected_at": "2026-11-09T05:05:37.590892+00:00",
       "effective_weight": 0.8,
       "title_original": "Ripple Price Analysis: Could XRP Crash to $1.00 Next Week as Sellers Remain in Control?",
       "cross_check": 2
@@ -196,27 +213,10 @@
       "bear_weight": 1.2,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-09T04:05:57.445359+00:00",
+      "collected_at": "2026-11-09T05:05:37.591018+00:00",
       "effective_weight": 0.8,
       "title_original": "JPMorgan Stock Slides on Epstein Probe Fears: Bitcoin Has No CEO to Drag Into the Scandal",
       "cross_check": 1
-    },
-    {
-      "title": "Double-Digit Altcoin Losses Mount as BTC Shows Weakness at $76K: Weekend Watch",
-      "url": "https://cryptopotato.com/double-digit-altcoin-losses-mount-as-btc-shows-weakness-at-76k-weekend-watch/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-08T11:41:57+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 3.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-09T04:05:57.445490+00:00",
-      "effective_weight": 0.8,
-      "title_original": "Double-Digit Altcoin Losses Mount as BTC Shows Weakness at $76K: Weekend Watch",
-      "cross_check": 2
     }
   ]
 }
