@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-11-10T07:05:42.526517+00:00",
+  "generated_at": "2026-11-10T08:05:44.157992+00:00",
   "total_news": 100,
-  "avg_sentiment": -0.63,
+  "avg_sentiment": -0.645,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 8,
   "bearish_count": 37,
@@ -20,14 +20,14 @@
       "bear": 6
     },
     "Bitcoin.com": {
-      "total": 8,
+      "total": 7,
       "bull": 1,
-      "bear": 3
+      "bear": 2
     },
     "CryptoSlate": {
       "total": 9,
       "bull": 0,
-      "bear": 2
+      "bear": 3
     },
     "CryptoPotato": {
       "total": 25,
@@ -40,7 +40,7 @@
       "bear": 4
     },
     "ForkLog": {
-      "total": 9,
+      "total": 10,
       "bull": 0,
       "bear": 1
     }
@@ -58,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-10T07:05:40.656856+00:00",
+      "collected_at": "2026-11-10T08:05:42.285104+00:00",
       "effective_weight": 1.04,
       "title_original": "Should you leave Australia to avoid paying 47% tax on crypto gains?",
       "cross_check": 1
@@ -75,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-10T07:05:40.657613+00:00",
+      "collected_at": "2026-11-10T08:05:42.285765+00:00",
       "effective_weight": 1.04,
       "title_original": "Binance, Tether and Trump crypto firms face Senate records deadline",
       "cross_check": 1
@@ -92,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-10T07:05:41.056404+00:00",
+      "collected_at": "2026-11-10T08:05:42.599093+00:00",
       "effective_weight": 1.0,
       "title_original": "XRP Ledger Foundation Offers $40K to Teach XRPL and Its Next Upgrades",
       "cross_check": 1
@@ -109,30 +109,64 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-10T07:05:41.334661+00:00",
+      "collected_at": "2026-11-10T08:05:42.878108+00:00",
       "effective_weight": 0.8,
       "title_original": "BitMine Just Bought Another 9,500 ETH as Tom Lee Backs Buterin’s Ethereum Vision",
       "cross_check": 1
     },
     {
-      "title": "Bitcoin Under Pressure Again Ahead of 4 Major Market-Moving Events",
-      "url": "https://cryptopotato.com/bitcoin-under-pressure-again-ahead-of-4-major-market-moving-events/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
+      "title": "Greece Passes Crypto Tax Law With 10% Gains Levy, 15% on Staking and DeFi",
+      "url": "https://decrypt.co/382756/greece-passes-crypto-tax-law-staking-defi",
+      "source": "Decrypt",
+      "source_weight": 1.1,
       "lang": "en",
-      "pub_date": "2026-11-09T07:39:48+00:00",
+      "pub_date": "2026-11-06T20:36:03+00:00",
       "sentiment": 1.0,
       "bull_weight": 1.0,
       "bear_weight": 0.0,
-      "freshness": 0.8,
+      "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-10T07:05:41.335092+00:00",
-      "effective_weight": 0.8,
-      "title_original": "Bitcoin Under Pressure Again Ahead of 4 Major Market-Moving Events",
+      "collected_at": "2026-11-10T08:05:42.371903+00:00",
+      "effective_weight": 0.55,
+      "title_original": "Greece Passes Crypto Tax Law With 10% Gains Levy, 15% on Staking and DeFi",
       "cross_check": 1
     }
   ],
   "top_bearish": [
+    {
+      "title": "NYSE brings stocks to Avalanche, but bans direct wallets",
+      "url": "https://cryptoslate.com/nyse-brings-stocks-to-avalanche-but-bans-direct-wallets/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-10T07:10:09+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-10T08:05:42.714875+00:00",
+      "effective_weight": 1.5,
+      "title_original": "NYSE brings stocks to Avalanche, but bans direct wallets",
+      "cross_check": 1
+    },
+    {
+      "title": "Bitcoin’s $75K Selloff Isn’t Scaring These Holders, They’re Buying More BTC",
+      "url": "https://cryptopotato.com/bitcoins-75k-selloff-isnt-scaring-these-holders-theyre-buying-more-btc/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-10T07:12:59+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-10T08:05:42.877730+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Bitcoin’s $75K Selloff Isn’t Scaring These Holders, They’re Buying More BTC",
+      "cross_check": 1
+    },
     {
       "title": "PNC Bank начал тестировать конвертацию USDC в долларовые депозиты",
       "url": "https://forklog.com/pnc-bank-nachal-testirovat-konvertatsiyu-usdc-v-dollarovye-depozity",
@@ -143,10 +177,10 @@
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 1.5,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-10T07:05:42.454734+00:00",
-      "effective_weight": 1.8,
+      "collected_at": "2026-11-10T08:05:44.103740+00:00",
+      "effective_weight": 1.2,
       "title_original": "PNC Bank начал тестировать конвертацию USDC в долларовые депозиты",
       "cross_check": 1
     },
@@ -162,7 +196,7 @@
       "bear_weight": 1.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-10T07:05:40.656794+00:00",
+      "collected_at": "2026-11-10T08:05:42.285054+00:00",
       "effective_weight": 1.04,
       "title_original": "HIVE, MARA mine more Bitcoin but earn less as crypto prices fall",
       "cross_check": 1
@@ -179,44 +213,10 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-10T07:05:40.656924+00:00",
+      "collected_at": "2026-11-10T08:05:42.285165+00:00",
       "effective_weight": 1.04,
       "title_original": "North Korean hackers create memecoins to launder funds from Binance hack: Elliptic",
       "cross_check": 2
-    },
-    {
-      "title": "Mercado Bitcoin begins post-hack reopening without a timeline for withdrawals",
-      "url": "https://cointelegraph.com/news/mercado-bitcoin-reopening-withdrawals-hack-suspended?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-11-09T18:25:29+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 4.5,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-10T07:05:40.657050+00:00",
-      "effective_weight": 1.04,
-      "title_original": "Mercado Bitcoin begins post-hack reopening without a timeline for withdrawals",
-      "cross_check": 1
-    },
-    {
-      "title": "PNC Bank tests turning USDC payments into dollar deposits",
-      "url": "https://cointelegraph.com/news/pnc-bank-launches-usdc-payment-pilot-coinbase?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-11-09T17:48:35+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-10T07:05:40.657118+00:00",
-      "effective_weight": 1.04,
-      "title_original": "PNC Bank tests turning USDC payments into dollar deposits",
-      "cross_check": 1
     }
   ]
 }
