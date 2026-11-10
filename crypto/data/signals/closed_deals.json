@@ -149,5 +149,16 @@
     "mode": "swing",
     "close_time": "2026-11-10T15:16:09.278347+00:00",
     "balance_after": 100.02
+  },
+  {
+    "type": "SHORT",
+    "entry": 73766.26,
+    "exit": 73028.5974,
+    "pnl_pct": 1.0,
+    "pnl_usd": 0.99,
+    "reason": "TAKE_PROFIT",
+    "mode": "intraday",
+    "close_time": "2026-11-10T16:01:34.120022+00:00",
+    "balance_after": 99.71
   }
 ]

@@ -14,12 +14,12 @@
   "score_archive": [],
   "intraday": {
     "weights": {
-      "macd": 1.05,
-      "ema": 1.05,
-      "volume": 1.05,
-      "rsi_low": 0.95,
-      "rsi_mid": 1.05,
-      "rsi_high": 0.95
+      "macd": 1.1,
+      "ema": 1.1,
+      "volume": 1.1,
+      "rsi_low": 0.9,
+      "rsi_mid": 1.0,
+      "rsi_high": 0.9
     },
     "threshold": 2.0,
     "score_history": [
@@ -505,9 +505,9 @@
       }
     ],
     "score_archive": [],
-    "last_close_ts": "2026-11-10T13:46:11.024684+00:00",
+    "last_close_ts": "2026-11-10T16:01:34.120488+00:00",
     "started_at": "2026-11-05T17:01:34.066903+00:00",
-    "balance": 98.72,
+    "balance": 99.71,
     "start_balance": 100.0
   },
   "swing": {
@@ -652,6 +652,10 @@
       {
         "ts": "2026-11-10T15:46:09.808254+00:00",
         "score": 4.553731200558516
+      },
+      {
+        "ts": "2026-11-10T16:01:34.227053+00:00",
+        "score": 4.36281223241962
       }
     ],
     "score_archive": [],
