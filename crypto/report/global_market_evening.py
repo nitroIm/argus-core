@@ -1,6 +1,6 @@
 # ============================================================
-# ARGUS - GLOBAL MARKET REPORT (v1.0.4 - Dynamic Period)
-# Path: crypto/report/global_market_morning.py
+# ARGUS - GLOBAL MARKET EVENING REPORT (v1.0.7 - Daily Math)
+# Path: crypto/report/global_market_evening.py
 # ============================================================
 
 import os
@@ -84,13 +84,23 @@ def fetch_data():
             cur.execute("SELECT ticker, region, timezone, open_utc, close_utc, lunch_start_utc, lunch_end_utc, trading_days FROM market_hours")
             hours = {r[0]: r for r in cur.fetchall()}
             
+            # ДЛЯ ВЕЧЕРА: Берем открытие ТЕКУЩЕГО дня и последнюю цену этого же дня
             cur.execute("""
-                SELECT ticker, name, region, country,
-                       (array_agg(close ORDER BY open_time DESC))[1] as current_price,
-                       (array_agg(open ORDER BY open_time ASC))[1] as day_open
-                FROM market_indices
-                WHERE open_time >= NOW() - INTERVAL '7 days'
-                GROUP BY ticker, name, region, country
+                WITH daily_data AS (
+                    SELECT ticker, name, region, country,
+                           date_trunc('day', open_time) as day,
+                           (array_agg(open ORDER BY open_time ASC))[1] as day_open,
+                           (array_agg(close ORDER BY open_time DESC))[1] as day_close
+                    FROM market_indices
+                    WHERE open_time >= NOW() - INTERVAL '7 days'
+                    GROUP BY ticker, name, region, country, date_trunc('day', open_time)
+                )
+                SELECT DISTINCT ON (ticker)
+                       ticker, name, region, country,
+                       day_close as current_price,
+                       day_open
+                FROM daily_data
+                ORDER BY ticker, day DESC
             """)
             indices = {r[0]: r for r in cur.fetchall()}
         conn.close()
@@ -103,11 +113,8 @@ def build_report(hours, indices):
     now_utc = datetime.now(timezone.utc)
     now_kld = now_utc.astimezone(TZ)
     
-    # Определяем время суток для заголовка (до 12:00 - Утро, после - Вечер)
-    period = "Утро" if now_kld.hour < 12 else "Вечер"
-    
     lines = [
-        f"🌍 <b>ARGUS — Global Market ({period})</b>",
+        "🌍 <b>ARGUS — Global Market (Вечер)</b>",
         f"📅 {now_kld.strftime('%d.%m.%Y, %H:%M')} КЛГ",
         ""
     ]
@@ -129,10 +136,10 @@ def build_report(hours, indices):
         if idx:
             curr_price = float(idx[4])
             day_open = float(idx[5])
+            # Честный подсчет процента за сегодняшний день
             pct = ((curr_price - day_open) / day_open * 100) if day_open else 0
             arrow = "🔼" if pct > 0 else "🔽" if pct < 0 else "⏸️"
             
-            # Форматирование в зависимости от актива
             if ticker in ("GC=F", "CL=F"):
                 price_str = f"${curr_price:,.2f}"
             else:
@@ -180,7 +187,7 @@ def build_report(hours, indices):
         dxy_pct = ((float(dxy[4]) - float(dxy[5])) / float(dxy[5]) * 100) if float(dxy[5]) else 0
         
         lines.append("────────────────────")
-        lines.append("💡 <b>Макро-контекст:</b>")
+        lines.append("💡 <b>Макро-контекст (за день):</b>")
         
         if sp_pct > 0 and dxy_pct < 0:
             lines.append("  Рынок в режиме <b>Risk-On</b> (аппетит к риску растет).")
