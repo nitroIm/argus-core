@@ -105,5 +105,16 @@
     "mode": "swing",
     "close_time": "2026-11-09T15:46:05.633433+00:00",
     "balance_after": 100.69
+  },
+  {
+    "type": "SHORT",
+    "entry": 74098.01,
+    "exit": 74925.15,
+    "pnl_pct": -1.12,
+    "pnl_usd": -1.1,
+    "reason": "TIME_EXIT_DAY",
+    "mode": "intraday",
+    "close_time": "2026-11-10T06:02:01.823785+00:00",
+    "balance_after": 97.74
   }
 ]
