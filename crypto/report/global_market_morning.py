@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - GLOBAL MARKET REPORT (v1.0.5 - Real Math & Dynamic Period)
+# ARGUS - GLOBAL MARKET MORNING REPORT (v1.0.6 - 24h Math)
 # Path: crypto/report/global_market_morning.py
 # ============================================================
 
@@ -84,12 +84,11 @@ def fetch_data():
             cur.execute("SELECT ticker, region, timezone, open_utc, close_utc, lunch_start_utc, lunch_end_utc, trading_days FROM market_hours")
             hours = {r[0]: r for r in cur.fetchall()}
             
-            # ИСПРАВЛЕННЫЙ SQL: Берем корректные дневные цены (Open текущего дня и последний Close)
+            # ДЛЯ УТРА: Берем последнюю цену и сравниваем с закрытием ПРЕДЫДУЩЕГО дня
             cur.execute("""
                 WITH daily_data AS (
                     SELECT ticker, name, region, country,
                            date_trunc('day', open_time) as day,
-                           (array_agg(open ORDER BY open_time ASC))[1] as day_open,
                            (array_agg(close ORDER BY open_time DESC))[1] as day_close
                     FROM market_indices
                     WHERE open_time >= NOW() - INTERVAL '7 days'
@@ -97,9 +96,9 @@ def fetch_data():
                 )
                 SELECT DISTINCT ON (ticker)
                        ticker, name, region, country,
-                       day_close as current_price,
-                       day_open
-                FROM daily_data
+                       (SELECT day_close FROM daily_data d2 WHERE d2.ticker = d1.ticker ORDER BY day DESC LIMIT 1) as current_price,
+                       (SELECT day_close FROM daily_data d2 WHERE d2.ticker = d1.ticker AND d2.day < d1.day ORDER BY day DESC LIMIT 1) as prev_close
+                FROM daily_data d1
                 ORDER BY ticker, day DESC
             """)
             indices = {r[0]: r for r in cur.fetchall()}
@@ -113,11 +112,8 @@ def build_report(hours, indices):
     now_utc = datetime.now(timezone.utc)
     now_kld = now_utc.astimezone(TZ)
     
-    # Определяем время суток для заголовка (до 12:00 - Утро, после - Вечер)
-    period = "Утро" if now_kld.hour < 12 else "Вечер"
-    
     lines = [
-        f"🌍 <b>ARGUS — Global Market ({period})</b>",
+        "🌍 <b>ARGUS — Global Market (Утро)</b>",
         f"📅 {now_kld.strftime('%d.%m.%Y, %H:%M')} КЛГ",
         ""
     ]
@@ -136,14 +132,12 @@ def build_report(hours, indices):
         idx = indices.get(ticker)
         disp_name = TICKER_NAMES.get(ticker, ticker)
         
-        if idx:
+        if idx and idx[5]:  # Если есть данные и есть вчерашнее закрытие
             curr_price = float(idx[4])
-            day_open = float(idx[5])
-            # Честный подсчет дневного процента
-            pct = ((curr_price - day_open) / day_open * 100) if day_open else 0
+            prev_close = float(idx[5])
+            pct = ((curr_price - prev_close) / prev_close * 100) if prev_close else 0
             arrow = "🔼" if pct > 0 else "🔽" if pct < 0 else "⏸️"
             
-            # Форматирование в зависимости от актива
             if ticker in ("GC=F", "CL=F"):
                 price_str = f"${curr_price:,.2f}"
             else:
@@ -186,24 +180,19 @@ def build_report(hours, indices):
     sp500 = indices.get("^GSPC")
     dxy = indices.get("DX-Y.NYB")
     
-    if sp500 and dxy:
-        sp_pct = ((float(sp500[4]) - float(sp500[5])) / float(sp500[5]) * 100) if float(sp500[5]) else 0
-        dxy_pct = ((float(dxy[4]) - float(dxy[5])) / float(dxy[5]) * 100) if float(dxy[5]) else 0
+    if sp500 and dxy and sp500[5] and dxy[5]:
+        sp_pct = ((float(sp500[4]) - float(sp500[5])) / float(sp500[5]) * 100)
+        dxy_pct = ((float(dxy[4]) - float(dxy[5])) / float(dxy[5]) * 100)
         
         lines.append("────────────────────")
-        lines.append("💡 <b>Макро-контекст:</b>")
+        lines.append("💡 <b>Макро-контекст (за 24ч):</b>")
         
         if sp_pct > 0 and dxy_pct < 0:
             lines.append("  Рынок в режиме <b>Risk-On</b> (аппетит к риску растет).")
-            lines.append("  S&P 500 растет, доллар слабеет — благоприятный")
-            lines.append("  фон для роста криптовалют.")
         elif sp_pct < 0 and dxy_pct > 0:
             lines.append("  Рынок в режиме <b>Risk-Off</b> (уход от рисков).")
-            lines.append("  S&P 500 падает, доллар укрепляется — инвесторы")
-            lines.append("  уходят в защитные активы, давление на крипту.")
         else:
-            lines.append("  Смешанный фон. Рынки разнонаправлены,")
-            lines.append("  явного перевеса быков или медведей нет.")
+            lines.append("  Смешанный фон. Рынки разнонаправлены.")
 
     return "\n".join(lines)
 
