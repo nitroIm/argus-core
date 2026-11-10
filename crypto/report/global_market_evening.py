@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - GLOBAL MARKET MORNING REPORT (v1.0.3)
+# ARGUS - GLOBAL MARKET REPORT (v1.0.4 - Dynamic Period)
 # Path: crypto/report/global_market_morning.py
 # ============================================================
 
@@ -103,8 +103,11 @@ def build_report(hours, indices):
     now_utc = datetime.now(timezone.utc)
     now_kld = now_utc.astimezone(TZ)
     
+    # Определяем время суток для заголовка (до 12:00 - Утро, после - Вечер)
+    period = "Утро" if now_kld.hour < 12 else "Вечер"
+    
     lines = [
-        "🌍 <b>ARGUS — Global Market (Утро)</b>",
+        f"🌍 <b>ARGUS — Global Market ({period})</b>",
         f"📅 {now_kld.strftime('%d.%m.%Y, %H:%M')} КЛГ",
         ""
     ]
