@@ -116,5 +116,27 @@
     "mode": "intraday",
     "close_time": "2026-11-10T06:02:01.823785+00:00",
     "balance_after": 97.74
+  },
+  {
+    "type": "SHORT",
+    "entry": 74498.0,
+    "exit": 73753.02,
+    "pnl_pct": 1.0,
+    "pnl_usd": 0.98,
+    "reason": "TAKE_PROFIT",
+    "mode": "intraday",
+    "close_time": "2026-11-10T13:46:11.014918+00:00",
+    "balance_after": 98.72
+  },
+  {
+    "type": "SHORT",
+    "entry": 74912.01,
+    "exit": 74655.45428571428,
+    "pnl_pct": 0.34,
+    "pnl_usd": 0.34,
+    "reason": "TRAILING_STOP",
+    "mode": "swing",
+    "close_time": "2026-11-10T13:46:11.056964+00:00",
+    "balance_after": 101.03
   }
 ]
