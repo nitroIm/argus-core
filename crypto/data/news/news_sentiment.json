@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-11-11T06:05:44.123161+00:00",
+  "generated_at": "2026-11-11T07:05:33.719636+00:00",
   "total_news": 106,
-  "avg_sentiment": -0.632,
+  "avg_sentiment": -0.62,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 9,
-  "bearish_count": 38,
-  "neutral_count": 59,
+  "bearish_count": 39,
+  "neutral_count": 58,
   "fake_count": 0,
-  "cross_confirmed": 11,
+  "cross_confirmed": 12,
   "by_source": {
     "Cointelegraph": {
       "total": 22,
@@ -21,8 +21,8 @@
     },
     "Bitcoin.com": {
       "total": 9,
-      "bull": 2,
-      "bear": 3
+      "bull": 3,
+      "bear": 2
     },
     "CryptoSlate": {
       "total": 7,
@@ -30,9 +30,9 @@
       "bear": 4
     },
     "CryptoPotato": {
-      "total": 23,
-      "bull": 4,
-      "bear": 9
+      "total": 24,
+      "bull": 3,
+      "bear": 11
     },
     "Bitcoinist": {
       "total": 8,
@@ -40,12 +40,29 @@
       "bear": 4
     },
     "ForkLog": {
-      "total": 16,
+      "total": 15,
       "bull": 1,
       "bear": 2
     }
   },
   "top_bullish": [
+    {
+      "title": "Launching a Stablecoin: Become an Issuer or Partner With One?",
+      "url": "https://news.bitcoin.com/regulation-and-legal/launching-a-stablecoin-become-an-issuer-or-partner-with-one/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-11T06:30:17+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-11T07:05:32.217528+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Launching a Stablecoin: Become an Issuer or Partner With One?",
+      "cross_check": 1
+    },
     {
       "title": "Crypto Donors Flooded 2026 Midterms With a Record $471 Million",
       "url": "https://news.bitcoin.com/crypto-news/crypto-donors-flooded-2026-midterms-with-a-record-471-million/",
@@ -56,10 +73,10 @@
       "sentiment": 1.0,
       "bull_weight": 1.2,
       "bear_weight": 0.0,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-11T06:05:37.239443+00:00",
-      "effective_weight": 1.5,
+      "collected_at": "2026-11-11T07:05:32.217566+00:00",
+      "effective_weight": 1.0,
       "title_original": "Crypto Donors Flooded 2026 Midterms With a Record $471 Million",
       "cross_check": 1
     },
@@ -75,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-11T06:05:44.046443+00:00",
+      "collected_at": "2026-11-11T07:05:33.675058+00:00",
       "effective_weight": 0.96,
       "title_original": "В XRP Ledger предложили защиту от квантовых атак без роста комиссий",
       "cross_check": 1
@@ -92,7 +109,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-11T06:05:36.877733+00:00",
+      "collected_at": "2026-11-11T07:05:31.964372+00:00",
       "effective_weight": 0.88,
       "title_original": "Trump Media Posts $410 Million Profit. Bitcoin Gains Did the Heavy Lifting",
       "cross_check": 3
@@ -109,62 +126,45 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-11T06:05:37.239876+00:00",
+      "collected_at": "2026-11-11T07:05:32.217788+00:00",
       "effective_weight": 0.8,
       "title_original": "Bitcoin Could Rally Before Rate Cuts Begin, Binance Research Says",
       "cross_check": 2
-    },
-    {
-      "title": "Bitcoin Can Gain Privacy Features Without Changing Base Layer: Stacks Founder",
-      "url": "https://cryptopotato.com/bitcoin-can-gain-privacy-features-without-changing-base-layer-stacks-founder/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-10T19:35:00+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-11T06:05:37.354598+00:00",
-      "effective_weight": 0.8,
-      "title_original": "Bitcoin Can Gain Privacy Features Without Changing Base Layer: Stacks Founder",
-      "cross_check": 1
     }
   ],
   "top_bearish": [
     {
-      "title": "Aave passes native Bitcoin lending proposal, but hidden liquidation risks remain",
-      "url": "https://cryptoslate.com/aave-passes-native-bitcoin-lending-proposal-but-hidden-liquidation-risks-remain/",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-11T05:50:25+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.2,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-11T06:05:37.289273+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Aave passes native Bitcoin lending proposal, but hidden liquidation risks remain",
-      "cross_check": 1
-    },
-    {
-      "title": "2 Reasons Why Bitcoin (BTC) Could Bleed Even More in the Short Term",
-      "url": "https://cryptopotato.com/2-reasons-why-bitcoin-btc-could-bleed-even-more-in-the-short-term/",
+      "title": "Goldman, Citi Among Banks Committing $270M to Fund Joint Stablecoin Issuer for Five Years",
+      "url": "https://cryptopotato.com/goldman-citi-among-banks-committing-270m-to-fund-joint-stablecoin-issuer-for-five-years/",
       "source": "CryptoPotato",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-11-11T05:11:53+00:00",
+      "pub_date": "2026-11-11T06:58:48+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 1.5,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-11T06:05:37.354405+00:00",
+      "collected_at": "2026-11-11T07:05:32.521939+00:00",
       "effective_weight": 1.5,
-      "title_original": "2 Reasons Why Bitcoin (BTC) Could Bleed Even More in the Short Term",
+      "title_original": "Goldman, Citi Among Banks Committing $270M to Fund Joint Stablecoin Issuer for Five Years",
+      "cross_check": 4
+    },
+    {
+      "title": "Why Has XRP Plunged Harder Than Most? Analyst Blames Manipulation",
+      "url": "https://cryptopotato.com/why-has-xrp-plunged-harder-than-most-analyst-blames-manipulation/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-11T06:12:29+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-11T07:05:32.521977+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Why Has XRP Plunged Harder Than Most? Analyst Blames Manipulation",
       "cross_check": 1
     },
     {
@@ -179,7 +179,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-11T06:05:36.841800+00:00",
+      "collected_at": "2026-11-11T07:05:31.847486+00:00",
       "effective_weight": 1.04,
       "title_original": "Can crypto trust firms compete with banks in US derivatives settlements?",
       "cross_check": 1
@@ -196,7 +196,7 @@
       "bear_weight": 4.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-11T06:05:36.841937+00:00",
+      "collected_at": "2026-11-11T07:05:31.847574+00:00",
       "effective_weight": 1.04,
       "title_original": "Mercado Bitcoin to resume cash withdrawals after $49M hack",
       "cross_check": 1
@@ -213,7 +213,7 @@
       "bear_weight": 1.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-11T06:05:36.842003+00:00",
+      "collected_at": "2026-11-11T07:05:31.847617+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin nears 11-week low after ‘discouraging’ US CPI inflation beat",
       "cross_check": 1
