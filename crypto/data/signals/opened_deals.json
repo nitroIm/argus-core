@@ -9,6 +9,17 @@
     "volume",
     "rsi_low"
   ],
-  "intraday": {},
+  "intraday": {
+    "type": "LONG",
+    "entry": 74303.81,
+    "tp": 75789.8862,
+    "sl": 73189.25284999999,
+    "open_time": "2026-11-11T16:31:27.645550+00:00",
+    "active_signals": [
+      "macd",
+      "ema",
+      "rsi_mid"
+    ]
+  },
   "swing": {}
 }
