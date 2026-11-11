@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-11-11T17:05:39.501149+00:00",
-  "total_news": 96,
-  "avg_sentiment": -0.318,
+  "generated_at": "2026-11-11T18:05:41.029233+00:00",
+  "total_news": 73,
+  "avg_sentiment": -0.327,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 16,
-  "bearish_count": 33,
-  "neutral_count": 47,
+  "bullish_count": 12,
+  "bearish_count": 22,
+  "neutral_count": 39,
   "fake_count": 0,
-  "cross_confirmed": 6,
+  "cross_confirmed": 3,
   "by_source": {
     "Cointelegraph": {
       "total": 19,
@@ -20,19 +20,14 @@
       "bear": 7
     },
     "Bitcoin.com": {
-      "total": 6,
+      "total": 7,
       "bull": 1,
-      "bear": 2
+      "bear": 3
     },
     "CryptoSlate": {
       "total": 7,
       "bull": 3,
-      "bear": 1
-    },
-    "CryptoPotato": {
-      "total": 24,
-      "bull": 3,
-      "bear": 11
+      "bear": 0
     },
     "Bitcoinist": {
       "total": 7,
@@ -41,7 +36,7 @@
     },
     "ForkLog": {
       "total": 11,
-      "bull": 2,
+      "bull": 1,
       "bear": 3
     }
   },
@@ -56,12 +51,12 @@
       "sentiment": 1.0,
       "bull_weight": 1.0,
       "bear_weight": 0.0,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-11T17:05:37.252676+00:00",
-      "effective_weight": 1.95,
+      "collected_at": "2026-11-11T18:05:39.141803+00:00",
+      "effective_weight": 1.3,
       "title_original": "Bitcoin hovers near $74K as stocks rise despite US bond yield rebound",
-      "cross_check": 2
+      "cross_check": 1
     },
     {
       "title": "A High-Severity Bug Could Have Stalled Bitcoin Mining—Bitcoin Core Has a Fix",
@@ -73,10 +68,10 @@
       "sentiment": 1.0,
       "bull_weight": 1.0,
       "bear_weight": 0.0,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-11T17:05:37.303292+00:00",
-      "effective_weight": 1.65,
+      "collected_at": "2026-11-11T18:05:39.222035+00:00",
+      "effective_weight": 1.1,
       "title_original": "A High-Severity Bug Could Have Stalled Bitcoin Mining—Bitcoin Core Has a Fix",
       "cross_check": 1
     },
@@ -90,10 +85,10 @@
       "sentiment": 1.0,
       "bull_weight": 1.0,
       "bear_weight": 0.0,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-11T17:05:37.303365+00:00",
-      "effective_weight": 1.65,
+      "collected_at": "2026-11-11T18:05:39.222097+00:00",
+      "effective_weight": 1.1,
       "title_original": "OKX-ICE Tokenized Stock Venue Sets Launch, Turning to Crypto Companies After Big Tech Opts Out",
       "cross_check": 2
     },
@@ -109,45 +104,62 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-11T17:05:37.253202+00:00",
+      "collected_at": "2026-11-11T18:05:39.142268+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitget Wallet reports sevenfold jump in crypto phishing risk alerts",
       "cross_check": 1
     },
     {
-      "title": "Hoskinson says he cannot run Cardano like a CEO. Who is accountable for its growth?",
-      "url": "https://cryptoslate.com/hoskinson-says-he-cannot-run-cardano-like-a-ceo-who-is-accountable-for-its-growth/",
-      "source": "CryptoSlate",
+      "title": "Tom Emmer Wins House Minority Whip, Keeping Crypto Ally in Leadership",
+      "url": "https://news.bitcoin.com/regulation-and-legal/tom-emmer-wins-house-minority-whip-keeping-crypto-ally-leadership/",
+      "source": "Bitcoin.com",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-11-11T15:10:14+00:00",
+      "pub_date": "2026-11-11T17:05:28+00:00",
       "sentiment": 1.0,
-      "bull_weight": 1.0,
+      "bull_weight": 1.2,
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-11T17:05:37.553171+00:00",
+      "collected_at": "2026-11-11T18:05:39.466341+00:00",
       "effective_weight": 1.0,
-      "title_original": "Hoskinson says he cannot run Cardano like a CEO. Who is accountable for its growth?",
-      "cross_check": 1
+      "title_original": "Tom Emmer Wins House Minority Whip, Keeping Crypto Ally in Leadership",
+      "cross_check": 2
     }
   ],
   "top_bearish": [
     {
-      "title": "Ripple Price Analysis: XRP Approaches Make-or-Break Demand Zone as Bears Press Harder",
-      "url": "https://cryptopotato.com/ripple-price-analysis-xrp-approaches-make-or-break-demand-zone-as-bears-press-harder/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
+      "title": "Bitcoin Faces First Back-to-Back Annual Losses in History, But There's a Catch",
+      "url": "https://decrypt.co/383049/bitcoin-first-back-to-back-annual-losses-history",
+      "source": "Decrypt",
+      "source_weight": 1.1,
       "lang": "en",
-      "pub_date": "2026-11-11T16:16:55+00:00",
+      "pub_date": "2026-11-11T17:56:02+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 1.2,
+      "bear_weight": 3.0,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-11T17:05:37.626997+00:00",
+      "collected_at": "2026-11-11T18:05:39.221911+00:00",
+      "effective_weight": 1.65,
+      "title_original": "Bitcoin Faces First Back-to-Back Annual Losses in History, But There's a Catch",
+      "cross_check": 1
+    },
+    {
+      "title": "Bitcoin Price Reclaims $74K After CPI Sell-Off Sparks Volatility",
+      "url": "https://news.bitcoin.com/market-updates/bitcoin-price-reclaims-74k-after-cpi-sell-off-sparks-volatility/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-11T17:32:32+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-11T18:05:39.466285+00:00",
       "effective_weight": 1.5,
-      "title_original": "Ripple Price Analysis: XRP Approaches Make-or-Break Demand Zone as Bears Press Harder",
+      "title_original": "Bitcoin Price Reclaims $74K After CPI Sell-Off Sparks Volatility",
       "cross_check": 1
     },
     {
@@ -162,7 +174,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-11T17:05:39.443087+00:00",
+      "collected_at": "2026-11-11T18:05:41.001938+00:00",
       "effective_weight": 1.2,
       "title_original": "Deutsche Bank запустил хранение биткоина и Ethereum для институционалов",
       "cross_check": 1
@@ -179,7 +191,7 @@
       "bear_weight": 0.8,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-11T17:05:37.303433+00:00",
+      "collected_at": "2026-11-11T18:05:39.222210+00:00",
       "effective_weight": 1.1,
       "title_original": "Decrypt Becomes First News Publisher to Offer Perps Trading, Powered by Solana's Phoenix",
       "cross_check": 1
@@ -196,26 +208,9 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-11T17:05:37.253144+00:00",
+      "collected_at": "2026-11-11T18:05:39.142217+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin short-term holders send 47K BTC to exchanges at a loss",
-      "cross_check": 2
-    },
-    {
-      "title": "SEC enforcement actions fall 24%, crypto cases in spotlight",
-      "url": "https://cointelegraph.com/news/sec-crypto-cases-enforcement-actions-fall-23-2025?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-11-11T08:43:30+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 2.5,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-11T17:05:37.253314+00:00",
-      "effective_weight": 1.04,
-      "title_original": "SEC enforcement actions fall 24%, crypto cases in spotlight",
       "cross_check": 1
     }
   ]
