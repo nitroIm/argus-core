@@ -1,18 +1,18 @@
 {
-  "generated_at": "2026-11-12T05:06:11.864613+00:00",
-  "total_news": 103,
-  "avg_sentiment": -0.477,
+  "generated_at": "2026-11-12T06:05:40.497434+00:00",
+  "total_news": 102,
+  "avg_sentiment": -0.502,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 14,
-  "bearish_count": 36,
-  "neutral_count": 53,
+  "bearish_count": 37,
+  "neutral_count": 51,
   "fake_count": 0,
-  "cross_confirmed": 12,
+  "cross_confirmed": 9,
   "by_source": {
     "Cointelegraph": {
       "total": 20,
       "bull": 2,
-      "bear": 4
+      "bear": 5
     },
     "Decrypt": {
       "total": 24,
@@ -20,19 +20,19 @@
       "bear": 8
     },
     "Bitcoin.com": {
-      "total": 9,
+      "total": 8,
       "bull": 2,
-      "bear": 5
+      "bear": 4
     },
     "CryptoSlate": {
-      "total": 8,
+      "total": 7,
       "bull": 1,
       "bear": 1
     },
     "CryptoPotato": {
-      "total": 24,
+      "total": 25,
       "bull": 3,
-      "bear": 12
+      "bear": 13
     },
     "Bitcoinist": {
       "total": 7,
@@ -58,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-12T05:06:10.032488+00:00",
+      "collected_at": "2026-11-12T06:05:38.646321+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin hovers near $74K as stocks rise despite US bond yield rebound",
       "cross_check": 1
@@ -75,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-12T05:06:10.033514+00:00",
+      "collected_at": "2026-11-12T06:05:38.646691+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitget Wallet reports sevenfold jump in crypto phishing risk alerts",
       "cross_check": 1
@@ -92,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-12T05:06:10.325267+00:00",
+      "collected_at": "2026-11-12T06:05:38.933530+00:00",
       "effective_weight": 1.0,
       "title_original": "XRP Large Wallets Keep Growing Through a 30% Slide Toward $1.05",
       "cross_check": 1
@@ -109,7 +109,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-12T05:06:11.786311+00:00",
+      "collected_at": "2026-11-12T06:05:40.440663+00:00",
       "effective_weight": 0.96,
       "title_original": "TRON Inc увеличила квартальную прибыль на 22%",
       "cross_check": 1
@@ -126,13 +126,64 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-12T05:06:10.083059+00:00",
+      "collected_at": "2026-11-12T06:05:38.730933+00:00",
       "effective_weight": 0.88,
       "title_original": "A High-Severity Bug Could Have Stalled Bitcoin Mining—Bitcoin Core Has a Fix",
       "cross_check": 2
     }
   ],
   "top_bearish": [
+    {
+      "title": "South Korea to permit crypto withdrawal freezes during hacking threats",
+      "url": "https://cointelegraph.com/news/south-korea-crypto-withdrawal-freezes-suspected-hacks?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-11-12T05:54:48+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 4.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-12T06:05:38.646005+00:00",
+      "effective_weight": 1.95,
+      "title_original": "South Korea to permit crypto withdrawal freezes during hacking threats",
+      "cross_check": 1
+    },
+    {
+      "title": "Binance CSO unwittingly foreshadowed $6.3B hack tactic months before attack",
+      "url": "https://cointelegraph.com/news/binance-cso-foreshadowed-6b-hack-tactic-months-before-attack?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-11-12T05:07:11+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-12T06:05:38.646061+00:00",
+      "effective_weight": 1.95,
+      "title_original": "Binance CSO unwittingly foreshadowed $6.3B hack tactic months before attack",
+      "cross_check": 1
+    },
+    {
+      "title": "BTC, ETH, and XRP Face Extreme Fear, But Whales Are Sending Mixed Signals",
+      "url": "https://cryptopotato.com/btc-eth-and-xrp-face-extreme-fear-but-whales-are-sending-mixed-signals/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-12T05:06:16+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.2,
+      "freshness": 1.5,
+      "fake_score": 0.2,
+      "collected_at": "2026-11-12T06:05:39.186035+00:00",
+      "effective_weight": 1.2,
+      "title_original": "BTC, ETH, and XRP Face Extreme Fear, But Whales Are Sending Mixed Signals",
+      "cross_check": 1
+    },
     {
       "title": "Bitcoin short-term holders send 47K BTC to exchanges at a loss",
       "url": "https://cointelegraph.com/markets/bitcoin-speculators-btc-exchanges-unrealized-loss-727k?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -145,7 +196,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-12T05:06:10.033377+00:00",
+      "collected_at": "2026-11-12T06:05:38.646645+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin short-term holders send 47K BTC to exchanges at a loss",
       "cross_check": 3
@@ -162,60 +213,9 @@
       "bear_weight": 2.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-12T05:06:10.033789+00:00",
+      "collected_at": "2026-11-12T06:05:38.646784+00:00",
       "effective_weight": 1.04,
       "title_original": "SEC enforcement actions fall 24%, crypto cases in spotlight",
-      "cross_check": 1
-    },
-    {
-      "title": "Bitcoin Faces Deeper Reset Risk as Bitfinex Warns of $70K Drop",
-      "url": "https://news.bitcoin.com/market-updates/bitcoin-faces-deeper-reset-risk-as-bitfinex-warns-of-70k-drop/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-12T02:30:56+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-12T05:06:10.325336+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Bitcoin Faces Deeper Reset Risk as Bitfinex Warns of $70K Drop",
-      "cross_check": 1
-    },
-    {
-      "title": "Strategy Loses MSCI Index Spot as Bitcoin Bet Faces New Test",
-      "url": "https://news.bitcoin.com/featured/strategy-loses-msci-index-spot-as-bitcoin-bet-faces-new-test/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-12T00:05:38+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-12T05:06:10.325479+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Strategy Loses MSCI Index Spot as Bitcoin Bet Faces New Test",
-      "cross_check": 3
-    },
-    {
-      "title": "Deutsche Bank запустил хранение биткоина и Ethereum для институционалов",
-      "url": "https://forklog.com/deutsche-bank-zapustil-hranenie-bitkoina-i-ethereum-dlya-institutsionalov",
-      "source": "ForkLog",
-      "source_weight": 1.2,
-      "lang": "ru",
-      "pub_date": "2026-11-11T13:00:00+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-12T05:06:11.786180+00:00",
-      "effective_weight": 0.96,
-      "title_original": "Deutsche Bank запустил хранение биткоина и Ethereum для институционалов",
       "cross_check": 1
     }
   ]
