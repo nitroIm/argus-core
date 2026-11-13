@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-11-13T15:05:40.421304+00:00",
-  "total_news": 94,
-  "avg_sentiment": -0.742,
+  "generated_at": "2026-11-13T16:05:39.851589+00:00",
+  "total_news": 93,
+  "avg_sentiment": -0.71,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 6,
-  "bearish_count": 41,
+  "bearish_count": 40,
   "neutral_count": 47,
   "fake_count": 0,
   "cross_confirmed": 11,
@@ -20,13 +20,13 @@
       "bear": 7
     },
     "Bitcoin.com": {
-      "total": 9,
-      "bull": 0,
-      "bear": 3
+      "total": 8,
+      "bull": 1,
+      "bear": 2
     },
     "CryptoSlate": {
       "total": 7,
-      "bull": 1,
+      "bull": 0,
       "bear": 1
     },
     "CryptoPotato": {
@@ -47,6 +47,23 @@
   },
   "top_bullish": [
     {
+      "title": "JPMorgan Boosts Blackrock Bitcoin ETF, Strategy, Coinbase Exposure",
+      "url": "https://news.bitcoin.com/finance/jpmorgan-boosts-blackrock-bitcoin-etf-strategy-coinbase-exposure/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-13T15:50:35+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-13T16:05:38.231067+00:00",
+      "effective_weight": 1.5,
+      "title_original": "JPMorgan Boosts Blackrock Bitcoin ETF, Strategy, Coinbase Exposure",
+      "cross_check": 1
+    },
+    {
       "title": "Jane Street boosts Fidelity Bitcoin ETF holdings nearly 8x, trims IBIT",
       "url": "https://cointelegraph.com/news/jane-street-add-fidelity-bitcoin-etf-ibit-cut-q3-2026?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
       "source": "Cointelegraph",
@@ -58,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-13T15:05:36.820557+00:00",
+      "collected_at": "2026-11-13T16:05:37.438174+00:00",
       "effective_weight": 1.04,
       "title_original": "Jane Street boosts Fidelity Bitcoin ETF holdings nearly 8x, trims IBIT",
       "cross_check": 1
@@ -75,26 +92,9 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.1,
-      "collected_at": "2026-11-13T15:05:39.393100+00:00",
+      "collected_at": "2026-11-13T16:05:38.729577+00:00",
       "effective_weight": 0.81,
       "title_original": "Bitcoin Enters The AI Economy As Lightning Labs Launches Payments For Autonomous Agents",
-      "cross_check": 1
-    },
-    {
-      "title": "Circle hands USDC reserves to EU regulators risking higher fees",
-      "url": "https://cryptoslate.com/circle-hands-usdc-reserves-to-eu-regulators-risking-higher-fees/",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-13T03:30:19+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-13T15:05:39.070061+00:00",
-      "effective_weight": 0.8,
-      "title_original": "Circle hands USDC reserves to EU regulators risking higher fees",
       "cross_check": 1
     },
     {
@@ -109,7 +109,7 @@
       "bear_weight": 0.0,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-13T15:05:39.193589+00:00",
+      "collected_at": "2026-11-13T16:05:38.527776+00:00",
       "effective_weight": 0.5,
       "title_original": "Major XRP Price Update and Important Ripple News: November 12",
       "cross_check": 2
@@ -126,13 +126,30 @@
       "bear_weight": 0.0,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-13T15:05:39.193633+00:00",
+      "collected_at": "2026-11-13T16:05:38.527835+00:00",
       "effective_weight": 0.5,
       "title_original": "Important Cardano News and ADA Price Update: November 12",
       "cross_check": 2
     }
   ],
   "top_bearish": [
+    {
+      "title": "Ethereum Price Predictions: What’s Next for ETH After $2K Fell?",
+      "url": "https://cryptopotato.com/ethereum-price-predictions-whats-next-for-eth-after-2k-fell/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-13T15:11:08+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 0.8,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-13T16:05:38.526758+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Ethereum Price Predictions: What’s Next for ETH After $2K Fell?",
+      "cross_check": 1
+    },
     {
       "title": "Arthur Hayes ‘flattered’ as Coinbase backs US stock perps",
       "url": "https://cointelegraph.com/news/arthur-hayes-coinbase-us-stock-perps-cftc?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -145,44 +162,27 @@
       "bear_weight": 0.8,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-13T15:05:36.820348+00:00",
+      "collected_at": "2026-11-13T16:05:37.437865+00:00",
       "effective_weight": 1.3,
       "title_original": "Arthur Hayes ‘flattered’ as Coinbase backs US stock perps",
       "cross_check": 1
     },
     {
-      "title": "DOJ moves to seize $1.2B from Binance hack, disrupts FaceStealer scam",
-      "url": "https://cointelegraph.com/news/doj-12b-north-korean-crypto-seizure-400m-facestealer-scheme?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-11-13T09:27:14+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 3.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-13T15:05:36.820507+00:00",
-      "effective_weight": 1.3,
-      "title_original": "DOJ moves to seize $1.2B from Binance hack, disrupts FaceStealer scam",
-      "cross_check": 1
-    },
-    {
-      "title": "Bitcoin Price Crashes Below $70K as Liquidations Top $1.6 Billion",
-      "url": "https://bitcoinist.com/bitcoin-price-crashes-below-70k-as-liquidations-top-1-6-billion/",
+      "title": "Kraken’s Parent Payward Expands Beyond Crypto Trading as Revenue Falls 12%",
+      "url": "https://bitcoinist.com/krakens-parent-payward-expands-beyond-crypto-trading-as-revenue-falls-12/",
       "source": "Bitcoinist",
       "source_weight": 0.9,
       "lang": "en",
-      "pub_date": "2026-11-13T14:51:38+00:00",
+      "pub_date": "2026-11-13T15:05:42+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 4.2,
+      "bear_weight": 1.0,
       "freshness": 1.5,
       "fake_score": 0.1,
-      "collected_at": "2026-11-13T15:05:39.392987+00:00",
+      "collected_at": "2026-11-13T16:05:38.729361+00:00",
       "effective_weight": 1.215,
-      "title_original": "Bitcoin Price Crashes Below $70K as Liquidations Top $1.6 Billion",
-      "cross_check": 5
+      "title_original": "Kraken’s Parent Payward Expands Beyond Crypto Trading as Revenue Falls 12%",
+      "cross_check": 1
     },
     {
       "title": "Bitcoin Drops to $69K On 'Concentrated Liquidation' and 'Weakening' Demand",
@@ -196,26 +196,26 @@
       "bear_weight": 2.2,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-13T15:05:38.624394+00:00",
+      "collected_at": "2026-11-13T16:05:38.069155+00:00",
       "effective_weight": 1.1,
       "title_original": "Bitcoin Drops to $69K On 'Concentrated Liquidation' and 'Weakening' Demand",
       "cross_check": 1
     },
     {
-      "title": "Strategy stock sheds 5% amid MSCI index removal, Bitcoin sell-off",
-      "url": "https://cointelegraph.com/markets/strategy-shares-fall-5-msci-index-removal-bitcoin?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "title": "DOJ moves to seize $1.2B from Binance hack, disrupts FaceStealer scam",
+      "url": "https://cointelegraph.com/news/doj-12b-north-korean-crypto-seizure-400m-facestealer-scheme?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
       "source": "Cointelegraph",
       "source_weight": 1.3,
       "lang": "en",
-      "pub_date": "2026-11-12T21:52:04+00:00",
+      "pub_date": "2026-11-13T09:27:14+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 1.5,
+      "bear_weight": 3.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-13T15:05:36.820711+00:00",
+      "collected_at": "2026-11-13T16:05:37.438103+00:00",
       "effective_weight": 1.04,
-      "title_original": "Strategy stock sheds 5% amid MSCI index removal, Bitcoin sell-off",
+      "title_original": "DOJ moves to seize $1.2B from Binance hack, disrupts FaceStealer scam",
       "cross_check": 1
     }
   ]
