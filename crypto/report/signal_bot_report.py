@@ -19,7 +19,8 @@ CLOSED_DEALS = SIGNALS_DIR / "closed_deals.json"
 BOT_INFO = SIGNALS_DIR / "bot_info.json"
 
 BOT_TOKEN = (os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("BOT_TOKEN") or "").strip()
-CHAT_ID = (os.getenv("TELEGRAM_CHAT_ID") or "").strip()
+# Берем ID канала из переменной TG_CHANNEL_ID. Если её нет - пишем в приватный канал по умолчанию.
+CHAT_ID = (os.getenv("TG_CHANNEL_ID") or "-1004435496321").strip()
 
 def load_json(path, default=None):
     if not path.exists(): return default if default is not None else {}
@@ -31,10 +32,15 @@ def save_json(path, data):
     with open(path, "w", encoding="utf-8") as f: json.dump(data, f, ensure_ascii=False, indent=2)
 
 def send_tg(text):
-    if not BOT_TOKEN or not CHAT_ID: return False
+    if not BOT_TOKEN or not CHAT_ID: 
+        log.error("Нет BOT_TOKEN или CHAT_ID")
+        return False
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
     r = requests.post(url, json={"chat_id": CHAT_ID, "text": text, "parse_mode": "HTML"}, timeout=20)
-    return r.status_code == 200
+    if r.status_code != 200:
+        log.error(f"Ошибка ТГ: {r.text}")
+        return False
+    return True
 
 def fmt(p): return "$" + format(int(p), ",") if p >= 1000 else "$" + format(p, ".2f")
 
@@ -64,7 +70,7 @@ def get_stats_text(mode):
             f"💰 Баланс: <b>${balance:.2f}</b> (PnL: <b>{pnl_sign}${total_pnl:.2f}</b>)")
 
 def main():
-    log.info("STARTING SIGNAL REPORT v5.1")
+    log.info("STARTING SIGNAL REPORT v5.1 (PRIVATE CHANNEL)")
     
     queue = load_json(INFO_DEAL, [])
     if not isinstance(queue, list) or not queue:
@@ -84,7 +90,8 @@ def main():
                 text = f"{mode_tag} <b>ПРОДАЖА BTC (SHORT)</b>\n\n🟢 <b>Вход:</b> {fmt(entry)}\n🎯 <b>Тейк:</b> {fmt(tp)} ({(entry-tp)/entry*100:+.2f}%)\n🛑 <b>Стоп:</b> {fmt(sl)} ({(entry-sl)/entry*100:+.2f}%)\n\n"
         
         elif event["type"] == "UPDATE":
-            text = f"{mode_tag} <b>Трейлинг-стоп (LONG)</b>\n\n🛑 <b>Новый стоп:</b> {fmt(event['new_sl'])} ({event['sl_pct']:+.2f}%)\n\n"
+            direction = "LONG" if deal_type == "LONG" else "SHORT"
+            text = f"{mode_tag} <b>Трейлинг-стоп ({direction})</b>\n\n🛑 <b>Новый стоп:</b> {fmt(event['new_sl'])} ({event['sl_pct']:+.2f}%)\n\n"
         
         elif event["type"] == "CLOSE":
             pnl = event["pnl_usd"]
@@ -101,8 +108,10 @@ def main():
         text += get_stats_text(event.get("mode", "swing"))
         
         if send_tg(text):
-            log.info(f"Sent {event['type']} ({event.get('mode')}) to TG.")
+            log.info(f"Sent {event['type']} ({event.get('mode')}) to PRIVATE TG.")
             sent_any = True
+        else:
+            log.error(f"Failed to send {event['type']}")
 
     if sent_any:
         save_json(INFO_DEAL, [])
