@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-11-13T04:05:46.482707+00:00",
+  "generated_at": "2026-11-13T05:05:39.783918+00:00",
   "total_news": 95,
-  "avg_sentiment": -0.632,
+  "avg_sentiment": -0.664,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 9,
   "bearish_count": 36,
   "neutral_count": 50,
   "fake_count": 0,
-  "cross_confirmed": 14,
+  "cross_confirmed": 16,
   "by_source": {
     "Cointelegraph": {
       "total": 20,
@@ -56,10 +56,10 @@
       "sentiment": 1.0,
       "bull_weight": 1.0,
       "bear_weight": 0.0,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-13T04:05:45.042653+00:00",
-      "effective_weight": 1.5,
+      "collected_at": "2026-11-13T05:05:38.436372+00:00",
+      "effective_weight": 1.0,
       "title_original": "Circle hands USDC reserves to EU regulators risking higher fees",
       "cross_check": 1
     },
@@ -75,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-13T04:05:44.940503+00:00",
+      "collected_at": "2026-11-13T05:05:38.317759+00:00",
       "effective_weight": 0.8,
       "title_original": "Futurebit Bitcoin Mining Rigs Hit Retail Stores as Solo Miners Keep Winning Big",
       "cross_check": 1
@@ -92,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-13T04:05:45.178339+00:00",
+      "collected_at": "2026-11-13T05:05:38.588376+00:00",
       "effective_weight": 0.8,
       "title_original": "Major XRP Price Update and Important Ripple News: November 12",
       "cross_check": 2
@@ -109,7 +109,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-13T04:05:45.178398+00:00",
+      "collected_at": "2026-11-13T05:05:38.588420+00:00",
       "effective_weight": 0.8,
       "title_original": "Important Cardano News and ADA Price Update: November 12",
       "cross_check": 2
@@ -126,13 +126,30 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.1,
-      "collected_at": "2026-11-13T04:05:45.375270+00:00",
+      "collected_at": "2026-11-13T05:05:38.762467+00:00",
       "effective_weight": 0.648,
       "title_original": "Major Crypto Crime Task Force Launched by TRON, Tether, and Chainalysis",
       "cross_check": 4
     }
   ],
   "top_bearish": [
+    {
+      "title": "Bitcoin Price Dumps Below $69K as Liquidations Top $1.4B: XRP and ETH Bleed Heavy",
+      "url": "https://cryptopotato.com/bitcoin-price-dumps-below-69k-as-liquidations-top-1-4b-xrp-and-eth-bleed-heavy/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-13T04:46:32+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 5.2,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-13T05:05:38.587947+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Bitcoin Price Dumps Below $69K as Liquidations Top $1.4B: XRP and ETH Bleed Heavy",
+      "cross_check": 3
+    },
     {
       "title": "Strategy stock sheds 5% amid MSCI index removal, Bitcoin sell-off",
       "url": "https://cointelegraph.com/markets/strategy-shares-fall-5-msci-index-removal-bitcoin?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -145,7 +162,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-13T04:05:44.432898+00:00",
+      "collected_at": "2026-11-13T05:05:37.952288+00:00",
       "effective_weight": 1.04,
       "title_original": "Strategy stock sheds 5% amid MSCI index removal, Bitcoin sell-off",
       "cross_check": 3
@@ -162,7 +179,7 @@
       "bear_weight": 3.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-13T04:05:44.433201+00:00",
+      "collected_at": "2026-11-13T05:05:37.952501+00:00",
       "effective_weight": 1.04,
       "title_original": "Thailand proposes $148K daily cap on stablecoin deposits and withdrawals",
       "cross_check": 1
@@ -179,7 +196,7 @@
       "bear_weight": 4.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-13T04:05:44.433290+00:00",
+      "collected_at": "2026-11-13T05:05:37.952568+00:00",
       "effective_weight": 1.04,
       "title_original": "Crypto hack losses equal 57 cents per $1 earned onchain: Ark’s Valente",
       "cross_check": 1
@@ -196,26 +213,9 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-13T04:05:44.433433+00:00",
+      "collected_at": "2026-11-13T05:05:37.952675+00:00",
       "effective_weight": 1.04,
       "title_original": "Uber’s UK banking partner Griffin raises $20M for stablecoin services",
-      "cross_check": 1
-    },
-    {
-      "title": "Stablecoin supply falls $14.2B in biggest 30-day drop since June 2022",
-      "url": "https://cointelegraph.com/markets/stablecoin-supply-drops-worst-slump-since-mid-2022?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-11-12T11:38:50+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 2.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-13T04:05:44.433567+00:00",
-      "effective_weight": 1.04,
-      "title_original": "Stablecoin supply falls $14.2B in biggest 30-day drop since June 2022",
       "cross_check": 1
     }
   ]
