@@ -1,22 +1,24 @@
 name: Intel Tuner Worker
 
-# КРОНА ЗДЕСЬ НЕТ. Запуск только через Cron-Jab (API) или вручную.
 on:
   workflow_dispatch: 
 
-# ЗАЩИТА 1: Запрет параллельных запусков 
 concurrency:
   group: intel-tuner-group
   cancel-in-progress: false 
 
 permissions:
-  contents: write # Нужно для сохранения обновленного bot_config.json
+  contents: write
 
 jobs:
   run-tuner:
     runs-on: ubuntu-latest
-    # ЗАЩИТА 2: Таймаут (убьется через 10 минут, если зависнет)
     timeout-minutes: 10
+
+    # Указываем, что все команды выполняются внутри папки crypto
+    defaults:
+      run:
+        working-directory: ./crypto
 
     steps:
       - name: Checkout repository
@@ -29,6 +31,7 @@ jobs:
         with:
           python-version: '3.10'
           cache: 'pip'
+          cache-dependency-path: 'crypto/requirements.txt' # Указываем точный путь к кэшу
 
       - name: Install dependencies
         run: |
@@ -46,10 +49,13 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "Intel Tuner Bot"
           
+          # Проверяем изменения в конфиге
           if [[ -n "$(git status --porcelain data/intel/bot_config.json)" ]]; then
             git add data/intel/bot_config.json
             git commit -m "Auto-update: bot_config.json [skip ci]"
             
+            # Возвращаемся в корень репозитория для пуша
+            cd ..
             git pull --rebase origin main
             git push
           else
