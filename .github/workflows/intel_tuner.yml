@@ -1,0 +1,57 @@
+name: Intel Tuner Worker
+
+# КРОНА ЗДЕСЬ НЕТ. Запуск только через Cron-Jab (API) или вручную.
+on:
+  workflow_dispatch: 
+
+# ЗАЩИТА 1: Запрет параллельных запусков 
+concurrency:
+  group: intel-tuner-group
+  cancel-in-progress: false 
+
+permissions:
+  contents: write # Нужно для сохранения обновленного bot_config.json
+
+jobs:
+  run-tuner:
+    runs-on: ubuntu-latest
+    # ЗАЩИТА 2: Таймаут (убьется через 10 минут, если зависнет)
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Intel Tuner
+        env:
+          AIVEN_DB_URL: ${{ secrets.AIVEN_DB_URL }}
+        run: |
+          python intel/intel_tuner.py
+
+      - name: Commit and Push changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "Intel Tuner Bot"
+          
+          if [[ -n "$(git status --porcelain data/intel/bot_config.json)" ]]; then
+            git add data/intel/bot_config.json
+            git commit -m "Auto-update: bot_config.json [skip ci]"
+            
+            git pull --rebase origin main
+            git push
+          else
+            echo "Конфиг не изменился. Пуш не требуется."
+          fi
