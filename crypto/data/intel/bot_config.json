@@ -1,0 +1,29 @@
+{
+  "updated_at": "2026-11-13T16:30:00Z",
+  "global": {
+    "fee_pct": 0.001
+  },
+  "intraday": {
+    "close_hour_utc": 19,
+    "no_entry_hour_utc": 17,
+    "trailing_activation_pct": 0.5,
+    "trailing_atr_multiplier": 1.5,
+    "tp_pct": 2.0,
+    "sl_pct": 1.0,
+    "threshold": 2.5,
+    "weights": {
+      "macd": 1.0, "ema": 1.0, "volume": 1.0, "rsi_low": 1.0, "rsi_mid": 1.0, "rsi_high": 1.0
+    }
+  },
+  "swing": {
+    "close_hour_utc": null,
+    "trailing_activation_pct": 1.0,
+    "trailing_atr_multiplier": 2.0,
+    "tp_pct": 2.0,
+    "sl_pct": 1.0,
+    "threshold": 4.0,
+    "weights": {
+      "macd": 1.0, "ema": 1.0, "volume": 1.0, "rsi_low": 1.0, "rsi_mid": 1.0, "rsi_high": 1.0
+    }
+  }
+}
