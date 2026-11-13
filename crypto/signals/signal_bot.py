@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - SIGNAL BOT v9.2.0 (VIRTUAL BALANCE)
+# ARGUS - SIGNAL BOT v9.3.1 (CONFIG INTEGRATION + FIX TIME)
 # Path: crypto/signals/signal_bot.py
 # ============================================================
 
@@ -15,7 +15,7 @@ import pandas as pd
 import numpy as np
 import xgboost as xgb
 
-VERSION = "9.2.0"
+VERSION = "9.3.1"
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("crypto.signal_bot")
 
@@ -23,6 +23,8 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 CRYPTO_ROOT = SCRIPT_DIR.parent
 MODEL_FILE = CRYPTO_ROOT / "data" / "models" / "best_params.json"
 SIGNALS_DIR = CRYPTO_ROOT / "data" / "signals"
+CONFIG_FILE = CRYPTO_ROOT / "data" / "intel" / "bot_config.json"
+
 SIGNALS_DIR.mkdir(parents=True, exist_ok=True)
 
 OPENED_DEALS = SIGNALS_DIR / "opened_deals.json"
@@ -32,17 +34,6 @@ BOT_INFO = SIGNALS_DIR / "bot_info.json"
 
 DB_URL = (os.getenv("AIVEN_DB_URL") or "").strip()
 SYMBOL = "BTCUSDT"
-
-TRAILING_ACTIVATION_PCT = 1.0
-TRAILING_ATR_MULTIPLIER = 2.0
-
-DEFAULT_THRESHOLD = 2.0
-LEARN_STEP = 0.05
-MIN_WEIGHT = 0.1
-MAX_WEIGHT = 2.0
-MIN_ADAPTIVE_THRESHOLD = 1.5
-HISTORY_DAYS = 7
-PERCENTILE = 90
 
 def get_conn():
     if not DB_URL: raise RuntimeError("AIVEN_DB_URL not set")
@@ -64,35 +55,17 @@ def append_event(event):
     save_json(INFO_DEAL, queue)
 
 def ensure_weights(bot_info):
-    # INTRADAY
-    if "intraday" not in bot_info: 
-        bot_info["intraday"] = {
-            "weights": {"macd": 1.0, "ema": 1.0, "volume": 1.0, "rsi_low": 1.0, "rsi_mid": 1.0, "rsi_high": 1.0}, 
-            "threshold": DEFAULT_THRESHOLD, 
-            "score_history": [], 
-            "score_archive": []
-        }
-    if "started_at" not in bot_info["intraday"]:
-        bot_info["intraday"]["started_at"] = datetime.now(timezone.utc).isoformat()
-    if "balance" not in bot_info["intraday"]:
-        bot_info["intraday"]["balance"] = 100.0
-    if "start_balance" not in bot_info["intraday"]:
-        bot_info["intraday"]["start_balance"] = 100.0
-
-    # SWING
-    if "swing" not in bot_info: 
-        bot_info["swing"] = {
-            "weights": {"macd": 1.0, "ema": 1.0, "volume": 1.0, "rsi_low": 1.0, "rsi_mid": 1.0, "rsi_high": 1.0}, 
-            "threshold": DEFAULT_THRESHOLD, 
-            "score_history": [], 
-            "score_archive": []
-        }
-    if "started_at" not in bot_info["swing"]:
-        bot_info["swing"]["started_at"] = datetime.now(timezone.utc).isoformat()
-    if "balance" not in bot_info["swing"]:
-        bot_info["swing"]["balance"] = 100.0
-    if "start_balance" not in bot_info["swing"]:
-        bot_info["swing"]["start_balance"] = 100.0
+    for mode in ["intraday", "swing"]:
+        if mode not in bot_info: 
+            bot_info[mode] = {"score_history": [], "score_archive": []}
+        if "started_at" not in bot_info[mode]:
+            bot_info[mode]["started_at"] = datetime.now(timezone.utc).isoformat()
+        if "balance" not in bot_info[mode]:
+            bot_info[mode]["balance"] = 100.0
+        if "start_balance" not in bot_info[mode]:
+            bot_info[mode]["start_balance"] = 100.0
+        if "last_check_ts" not in bot_info[mode]:
+            bot_info[mode]["last_check_ts"] = datetime.now(timezone.utc).isoformat()
 
     save_json(BOT_INFO, bot_info)
     return bot_info
@@ -125,7 +98,7 @@ def archive_and_clean_history(bot_info, mode):
     now = datetime.now(timezone.utc)
     history = bot_info[mode].get("score_history", [])
     archive = bot_info[mode].get("score_archive", [])
-    cutoff = now - timedelta(days=HISTORY_DAYS)
+    cutoff = now - timedelta(days=7)
     
     fresh, old = [], []
     for entry in history:
@@ -138,16 +111,14 @@ def archive_and_clean_history(bot_info, mode):
         for e in old:
             d = e["ts"][:10]
             by_date.setdefault(d, []).append(e["score"])
-            
         for d, scores in by_date.items():
             rec = next((a for a in archive if a["date"] == d), None)
             if not rec:
-                rec = {"date": d, "avg_score": 0, "max_score": 0, "min_score": 0, "trades_count": 0, "winrate": 0}
+                rec = {"date": d, "avg_score": 0, "max_score": 0, "min_score": 0}
                 archive.append(rec)
             rec["avg_score"] = round(float(np.mean(scores)), 2)
             rec["max_score"] = round(float(np.max(scores)), 2)
             rec["min_score"] = round(float(np.min(scores)), 2)
-            
         archive.sort(key=lambda x: x["date"], reverse=True)
         archive = archive[:365]
         
@@ -177,69 +148,98 @@ def calculate_indicators(df_1h):
     df_1h['price_change_24h'] = close.pct_change(24)
     return df_1h.dropna()
 
-def process_mode(mode, deals, bot_info, models, df_1h):
+def process_mode(mode, deals, bot_info, models, df_1h, config):
+    cfg = config.get(mode, {})
+    fee_pct = config.get("global", {}).get("fee_pct", 0.001)
+    now_utc = datetime.now(timezone.utc)
+    
     # 1. Проверка открытой сделки
     if mode in deals and "entry" in deals[mode]:
         deal = deals[mode]
         deal_type = deal.get("type", "LONG")
         
-        close = float(df_1h.iloc[-1]['close'])
         entry = float(deal['entry'])
         sl = float(deal['sl'])
-        atr = float(df_1h.iloc[-1]['atr_14'])
+        tp = float(deal['tp'])
         
-        # Трейлинг
-        trailing_active = (deal_type == "LONG" and close >= entry * 1.01) or (deal_type == "SHORT" and close <= entry * 0.99)
-        if trailing_active and atr:
-            new_sl = close - (atr * 2.0) if deal_type == "LONG" else close + (atr * 2.0)
-            if (deal_type == "LONG" and new_sl > sl and new_sl > entry) or (deal_type == "SHORT" and new_sl < sl and new_sl < entry):
-                deal['sl'] = new_sl
-                sl_pct = (new_sl-entry)/entry*100 if deal_type=="LONG" else (entry-new_sl)/entry*100
-                append_event({"type": "UPDATE", "mode": mode, "deal_type": deal_type, "new_sl": new_sl, "sl_pct": round(sl_pct, 2)})
-                log.info(f"🔼 [{mode.upper()}] Trailing SL updated: {sl:.2f} -> {new_sl:.2f}")
-                sl = new_sl
+        last_check_str = bot_info[mode].get("last_check_ts", deal["open_time"])
+        last_check = datetime.fromisoformat(last_check_str)
+        df_missed = df_1h[df_1h['open_time'] > last_check]
 
-        # Выход
-        exit_reason, exit_price = None, close
-        time_held_h = (datetime.now(timezone.utc) - datetime.fromisoformat(deal["open_time"])).total_seconds() / 3600.0
-        time_exit_h = models[mode][deal_type.lower()]["params"].get("time_exit_h", 24)
+        atr = float(df_1h.iloc[-1]['atr_14'])
+        act_pct = cfg.get("trailing_activation_pct", 0.5)
+        atr_mult = cfg.get("trailing_atr_multiplier", 1.5)
+
+        exit_reason, exit_price = None, float(df_1h.iloc[-1]['close'])
+        old_sl = sl
         
-        if mode == "intraday" and datetime.now(timezone.utc).date() > datetime.fromisoformat(deal["open_time"]).date():
-            exit_reason, exit_price = "TIME_EXIT_DAY", close
-        elif deal_type == "LONG":
-            if float(df_1h.iloc[-1]['low']) <= sl: exit_reason, exit_price = ("TRAILING_STOP" if sl > entry else "STOP_LOSS"), sl
-            elif float(df_1h.iloc[-1]['high']) >= deal["tp"]: exit_reason, exit_price = "TAKE_PROFIT", deal["tp"]
-        else:
-            if float(df_1h.iloc[-1]['high']) >= sl: exit_reason, exit_price = ("TRAILING_STOP" if sl < entry else "STOP_LOSS"), sl
-            elif float(df_1h.iloc[-1]['low']) <= deal["tp"]: exit_reason, exit_price = "TAKE_PROFIT", deal["tp"]
-            
-        if not exit_reason and time_held_h >= time_exit_h: exit_reason, exit_price = "TIME_EXIT", close
+        # Ретроактивная проверка по всем пропущенным свечам
+        for _, row in df_missed.iterrows():
+            if deal_type == "LONG":
+                if row['high'] >= entry * (1 + act_pct/100):
+                    new_sl = row['high'] - (atr * atr_mult)
+                    if new_sl > sl: sl = round(new_sl, 2)
+                if row['low'] <= sl: 
+                    exit_reason, exit_price = ("TRAILING_STOP" if sl > entry else "STOP_LOSS"), sl
+                    break
+                if row['high'] >= tp: 
+                    exit_reason, exit_price = "TAKE_PROFIT", tp
+                    break
+            else: # SHORT
+                if row['low'] <= entry * (1 - act_pct/100):
+                    new_sl = row['low'] + (atr * atr_mult)
+                    if new_sl < sl: sl = round(new_sl, 2)
+                if row['high'] >= sl: 
+                    exit_reason, exit_price = ("TRAILING_STOP" if sl < entry else "STOP_LOSS"), sl
+                    break
+                if row['low'] <= tp: 
+                    exit_reason, exit_price = "TAKE_PROFIT", tp
+                    break
+        
+        if sl != old_sl:
+            deal['sl'] = sl
+            sl_pct = (sl-entry)/entry*100 if deal_type=="LONG" else (entry-sl)/entry*100
+            append_event({"type": "UPDATE", "mode": mode, "deal_type": deal_type, "new_sl": sl, "sl_pct": round(sl_pct, 2)})
+
+        # Принудительное закрытие Intraday (например, в 19:00)
+        close_h = cfg.get("close_hour_utc")
+        if not exit_reason and mode == "intraday" and close_h is not None and now_utc.hour >= close_h:
+            exit_reason, exit_price = "TIME_EXIT_DAY", float(df_1h.iloc[-1]['close'])
+
+        # Выход по времени для Swing
+        if not exit_reason and mode == "swing":
+            time_held = (now_utc - datetime.fromisoformat(deal["open_time"])).total_seconds() / 3600.0
+            time_exit_h = models[mode][deal_type.lower()]["params"].get("time_exit_h", 24)
+            if time_held >= time_exit_h:
+                exit_reason, exit_price = "TIME_EXIT", float(df_1h.iloc[-1]['close'])
 
         if exit_reason:
             pnl_pct = (exit_price - entry) / entry * 100 if deal_type == "LONG" else (entry - exit_price) / entry * 100
+            pnl_pct -= (fee_pct * 2 * 100)
             pnl_usd = bot_info[mode]["balance"] * (pnl_pct / 100)
-            
-            # ОБНОВЛЕНИЕ БАЛАНСА
             bot_info[mode]["balance"] = round(bot_info[mode]["balance"] + pnl_usd, 2)
             
-            append_event({"type": "CLOSE", "mode": mode, "deal_type": deal_type, "reason": exit_reason, "pnl_pct": round(pnl_pct, 2), "pnl_usd": round(pnl_usd, 2), "new_balance": bot_info[mode]["balance"]})
-            log.info(f"🔴 [{mode.upper()}] {deal_type} CLOSED: {exit_reason} | PnL: {pnl_pct:.2f}% (${pnl_usd:.2f}) | New Balance: ${bot_info[mode]['balance']:.2f}")
-            
-            # Обучение (только для базовой модели)
-            if models[mode][deal_type.lower()].get("source") == "model_base":
-                active = deal.get("active_signals", [])
-                direction = 1 if pnl_pct > 0 else -1
-                for k in bot_info[mode]["weights"].keys():
-                    if k in active: bot_info[mode]["weights"][k] += (0.05 * direction)
-                    else: bot_info[mode]["weights"][k] -= (0.05 * direction)
-                    bot_info[mode]["weights"][k] = max(0.1, min(2.0, round(bot_info[mode]["weights"][k], 2)))
+            append_event({
+                "type": "CLOSE", 
+                "mode": mode, 
+                "deal_type": deal_type, 
+                "reason": exit_reason, 
+                "pnl_pct": round(pnl_pct, 2), 
+                "pnl_usd": round(pnl_usd, 2),
+                "new_balance": bot_info[mode]["balance"]
+            })
             
             closed = load_json(CLOSED_DEALS, [])
-            closed.append({"type": deal_type, "entry": entry, "exit": exit_price, "pnl_pct": round(pnl_pct, 2), "pnl_usd": round(pnl_usd, 2), "reason": exit_reason, "mode": mode, "close_time": datetime.now(timezone.utc).isoformat(), "balance_after": bot_info[mode]["balance"]})
+            closed.append({"type": deal_type, "entry": entry, "exit": exit_price, "pnl_pct": round(pnl_pct, 2), "pnl_usd": round(pnl_usd, 2), "reason": exit_reason, "mode": mode, "close_time": now_utc.isoformat(), "balance_after": bot_info[mode]["balance"]})
             save_json(CLOSED_DEALS, closed)
             
             del deals[mode]
-            bot_info[mode]["last_close_ts"] = datetime.now(timezone.utc).isoformat()
+            bot_info[mode]["last_close_ts"] = now_utc.isoformat()
+            bot_info[mode]["last_check_ts"] = now_utc.isoformat()
+            save_json(BOT_INFO, bot_info)
+            save_json(OPENED_DEALS, deals)
+        else:
+            bot_info[mode]["last_check_ts"] = now_utc.isoformat()
             save_json(BOT_INFO, bot_info)
         return
 
@@ -254,13 +254,15 @@ def process_mode(mode, deals, bot_info, models, df_1h):
     vol_sma = float(df_1h.iloc[-1]['vol_sma'])
     cur_vol = float(df_1h.iloc[-1]['volume'])
 
+    w = cfg.get("weights", {})
+
     score_long, active_long = 0.0, []
     if source_long == "model_base":
-        if macd_hist > 0: score_long += bot_info[mode]["weights"]["macd"]; active_long.append("macd")
-        if price > ema: score_long += bot_info[mode]["weights"]["ema"]; active_long.append("ema")
-        if cur_vol > vol_sma: score_long += bot_info[mode]["weights"]["volume"]; active_long.append("volume")
-        if rsi < 30: score_long += bot_info[mode]["weights"]["rsi_low"]; active_long.append("rsi_low")
-        elif rsi < 70: score_long += bot_info[mode]["weights"]["rsi_mid"]; active_long.append("rsi_mid")
+        if macd_hist > 0: score_long += w.get("macd", 1.0); active_long.append("macd")
+        if price > ema: score_long += w.get("ema", 1.0); active_long.append("ema")
+        if cur_vol > vol_sma: score_long += w.get("volume", 1.0); active_long.append("volume")
+        if rsi < 30: score_long += w.get("rsi_low", 1.0); active_long.append("rsi_low")
+        elif rsi < 70: score_long += w.get("rsi_mid", 1.0); active_long.append("rsi_mid")
     else:
         try:
             m_b64 = models[mode]["long"]["params"]["model_b64"]
@@ -276,11 +278,11 @@ def process_mode(mode, deals, bot_info, models, df_1h):
 
     score_short, active_short = 0.0, []
     if source_short == "model_base":
-        if macd_hist < 0: score_short += bot_info[mode]["weights"]["macd"]; active_short.append("macd")
-        if price < ema: score_short += bot_info[mode]["weights"]["ema"]; active_short.append("ema")
-        if cur_vol > vol_sma: score_short += bot_info[mode]["weights"]["volume"]; active_short.append("volume")
-        if rsi > 70: score_short += bot_info[mode]["weights"]["rsi_high"]; active_short.append("rsi_high")
-        elif rsi > 30: score_short += bot_info[mode]["weights"]["rsi_mid"]; active_short.append("rsi_mid")
+        if macd_hist < 0: score_short += w.get("macd", 1.0); active_short.append("macd")
+        if price < ema: score_short += w.get("ema", 1.0); active_short.append("ema")
+        if cur_vol > vol_sma: score_short += w.get("volume", 1.0); active_short.append("volume")
+        if rsi > 70: score_short += w.get("rsi_high", 1.0); active_short.append("rsi_high")
+        elif rsi > 30: score_short += w.get("rsi_mid", 1.0); active_short.append("rsi_mid")
     else:
         try:
             m_b64 = models[mode]["short"]["params"]["model_b64"]
@@ -294,38 +296,50 @@ def process_mode(mode, deals, bot_info, models, df_1h):
                 score_short = mdl.predict_proba(get_features_for_ml(df_1h, feat))[0][0] * 10
         except: pass
 
-    # Адаптивный порог
-    max_s = max(score_long, score_short)
-    bot_info[mode]["score_history"].append({"ts": datetime.now(timezone.utc).isoformat(), "score": max_s})
-    bot_info = archive_and_clean_history(bot_info, mode)
-    fresh = [e["score"] for e in bot_info[mode]["score_history"]]
-    thresh = float(np.percentile(fresh, 90)) if len(fresh) > 50 else DEFAULT_THRESHOLD
-    thresh = max(1.5, min(3.5, thresh))
+    thresh = cfg.get("threshold", 2.0)
+    
+    # --- ИСПРАВЛЕННАЯ ЛОГИКА ВРЕМЕНИ ---
+    can_open = True
+    no_entry_str = cfg.get("no_entry_time_utc") # Ожидаем формат "18:30"
+    if mode == "intraday" and no_entry_str:
+        try:
+            ne_h, ne_m = map(int, no_entry_str.split(":"))
+            if now_utc.hour > ne_h or (now_utc.hour == ne_h and now_utc.minute >= ne_m):
+                can_open = False
+        except Exception as e:
+            log.error(f"Ошибка парсинга no_entry_time_utc: {e}")
 
     last_close = bot_info[mode].get("last_close_ts")
-    can_open = True
     if last_close:
-        h_since = (datetime.now(timezone.utc) - datetime.fromisoformat(last_close)).total_seconds() / 3600.0
+        h_since = (now_utc - datetime.fromisoformat(last_close)).total_seconds() / 3600.0
         if h_since < 1.0: can_open = False
 
     log.info(f"[{mode.upper()}] Price: {price:.1f} | LONG: {score_long:.2f} | SHORT: {score_short:.2f} | Thresh: {thresh:.2f}")
 
     if can_open and score_long >= thresh and score_long > score_short:
-        tp = price * (1 + models[mode]["long"]["params"].get("tp_pct", 2.0) / 100)
-        sl = price * (1 - models[mode]["long"]["params"].get("sl_pct", 1.0) / 100)
-        deals[mode] = {"type": "LONG", "entry": price, "tp": tp, "sl": sl, "open_time": datetime.now(timezone.utc).isoformat(), "active_signals": active_long}
+        tp = price * (1 + cfg.get("tp_pct", 2.0) / 100)
+        sl = price * (1 - cfg.get("sl_pct", 1.0) / 100)
+        deals[mode] = {"type": "LONG", "entry": price, "tp": tp, "sl": sl, "open_time": now_utc.isoformat(), "active_signals": active_long}
         append_event({"type": "ENTRY", "mode": mode, "deal_type": "LONG", "entry": price, "tp": tp, "sl": sl})
         log.info(f"🚀 [{mode.upper()}] LONG SIGNAL!")
     elif can_open and score_short >= thresh and score_short > score_long:
-        tp = price * (1 - models[mode]["short"]["params"].get("tp_pct", 2.0) / 100)
-        sl = price * (1 + models[mode]["short"]["params"].get("sl_pct", 1.0) / 100)
-        deals[mode] = {"type": "SHORT", "entry": price, "tp": tp, "sl": sl, "open_time": datetime.now(timezone.utc).isoformat(), "active_signals": active_short}
+        tp = price * (1 - cfg.get("tp_pct", 2.0) / 100)
+        sl = price * (1 + cfg.get("sl_pct", 1.0) / 100)
+        deals[mode] = {"type": "SHORT", "entry": price, "tp": tp, "sl": sl, "open_time": now_utc.isoformat(), "active_signals": active_short}
         append_event({"type": "ENTRY", "mode": mode, "deal_type": "SHORT", "entry": price, "tp": tp, "sl": sl})
         log.info(f"🩸 [{mode.upper()}] SHORT SIGNAL!")
+
+    bot_info[mode]["last_check_ts"] = now_utc.isoformat()
+    save_json(BOT_INFO, bot_info)
 
 def main():
     log.info(f"STARTING DUAL BOT v{VERSION}")
     
+    config = load_json(CONFIG_FILE, {})
+    if not config:
+        log.error("bot_config.json не найден. Ждем Тюнера.")
+        return
+
     bot_info = ensure_weights(load_json(BOT_INFO, {}))
     models = load_json(MODEL_FILE)
     if not models.get("swing") or not models.get("intraday"): return log.error("Models not found.")
@@ -347,8 +361,8 @@ def main():
     df_1h = df.set_index('open_time').resample('1h').agg({'open': 'first', 'high': 'max', 'low': 'min', 'close': 'last', 'volume': 'sum', 'taker_buy_volume': 'sum', 'count': 'sum'}).dropna().reset_index()
     df_1h = calculate_indicators(df_1h.set_index('open_time')).reset_index()
 
-    process_mode("intraday", deals, bot_info, models, df_1h)
-    process_mode("swing", deals, bot_info, models, df_1h)
+    process_mode("intraday", deals, bot_info, models, df_1h, config)
+    process_mode("swing", deals, bot_info, models, df_1h, config)
     
     save_json(OPENED_DEALS, deals)
     save_json(BOT_INFO, bot_info)
