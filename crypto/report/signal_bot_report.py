@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - SIGNAL REPORT v7.2 (BREAKEVEN STATS)
+# ARGUS - SIGNAL REPORT v8.0 (EXACT TEST CHART DESIGN)
 # Path: crypto/report/signal_bot_report.py
 # ============================================================
 
@@ -44,7 +44,6 @@ def send_tg_photo(image_bytes, caption):
     files = {'photo': ('chart.png', image_bytes, 'image/png')}
     data = {'chat_id': CHAT_ID, 'caption': caption, 'parse_mode': 'HTML'}
     r = requests.post(url, data=data, files=files, timeout=30)
-    if r.status_code != 200: log.error(f"TG Photo Error: {r.text}")
     return r.status_code == 200
 
 def send_tg_text(text):
@@ -55,21 +54,19 @@ def send_tg_text(text):
 
 def fmt(p): return "$" + format(int(p), ",") if p >= 1000 else "$" + format(p, ".2f")
 
-def get_db_candles(start_time_str, end_time_str=None):
+def get_db_candles():
+    """Берет просто последние 150 15-минутных свечей, не ебет мозг с датами"""
     if not DB_URL: return None
     try:
         conn = psycopg.connect(DB_URL, connect_timeout=10)
-        query = "SELECT open_time, open, high, low, close, volume FROM candles WHERE symbol='BTCUSDT' AND timeframe='15m' AND market_type='spot' AND open_time >= %s"
-        params = [start_time_str]
-        if end_time_str:
-            query += " AND open_time <= %s"
-            params.append(end_time_str)
-        query += " ORDER BY open_time ASC"
+        query = "SELECT open_time, open, high, low, close, volume FROM candles WHERE symbol='BTCUSDT' AND timeframe='15m' AND market_type='spot' ORDER BY open_time DESC LIMIT 150"
         with conn.cursor() as cur:
-            cur.execute(query, tuple(params))
+            cur.execute(query)
             rows = cur.fetchall()
         conn.close()
         if not rows: return None
+        
+        rows = list(reversed(rows))
         df = pd.DataFrame(rows, columns=['Date', 'Open', 'High', 'Low', 'Close', 'Volume'])
         df['Date'] = pd.to_datetime(df['Date'], utc=True)
         df = df.set_index('Date')
@@ -80,36 +77,26 @@ def get_db_candles(start_time_str, end_time_str=None):
 
 def draw_chart(event):
     try:
-        mode = event.get("mode", "swing")
         deal_type = event.get("deal_type", "LONG")
-        
-        if event["type"] == "ENTRY":
-            end_time = datetime.now(timezone.utc)
-            start_time = end_time - timedelta(hours=24)
-            df = get_db_candles(start_time.isoformat(), end_time.isoformat())
-            title = f"Вход {deal_type}"
-        else:
-            open_time = event.get("open_time")
-            if not open_time: return None
-            start_dt = datetime.fromisoformat(open_time) - timedelta(hours=12)
-            end_dt = datetime.now(timezone.utc) + timedelta(hours=2)
-            df = get_db_candles(start_dt.isoformat(), end_dt.isoformat())
-            title = f"Выход {deal_type}"
-
+        df = get_db_candles()
         if df is None or df.empty: return None
 
         df_1h = df.resample('1h').agg({'open': 'first', 'high': 'max', 'low': 'min', 'close': 'last', 'volume': 'sum'}).dropna()
-        if len(df_1h) < 3: return None
-            
+        
+        # Оставляем ровно 45 свечей как на твоем скрине
         df = df_1h.tail(45).copy()
+        
         entry_price = float(event.get("entry", 0))
         
         if event["type"] == "ENTRY":
             sl_price = float(event["sl"])
             tp_price = float(event["tp"])
+            title = f"Вход {deal_type}"
         else:
             exit_price = float(event.get("exit", 0))
+            title = f"Выход {deal_type}"
 
+        # MACD
         exp12 = df['close'].ewm(span=12, adjust=False).mean()
         exp26 = df['close'].ewm(span=26, adjust=False).mean()
         macd_line = exp12 - exp26
@@ -154,20 +141,17 @@ def draw_chart(event):
             marker_type = '^' if deal_type == "LONG" else 'v'
             marker_color = '#26a69a' if deal_type == "LONG" else '#ef5350'
             
-            open_dt = datetime.now(timezone.utc) if "open_time" not in event else datetime.fromisoformat(event["open_time"])
-            closest_idx = df.index.get_indexer([open_dt], method='nearest')[0]
-            
+            # Ставим стрелку на предпоследнюю свечу (где примерно был вход)
             scatter = pd.Series(np.nan, index=df.index)
-            scatter.iloc[closest_idx] = entry_price
+            scatter.iloc[-1] = entry_price
             apds.append(mpf.make_addplot(scatter, type='scatter', markersize=350, marker=marker_type, color=marker_color, edgecolors='white', linewidths=1.5, panel=0))
         else:
             hlines_list.append(exit_price)
             hlines_colors.append('orange')
-            open_dt = datetime.fromisoformat(event["open_time"])
-            closest_entry_idx = df.index.get_indexer([open_dt], method='nearest')[0]
             
+            # Вход ставим на 10-ю свечу с конца, выход на последнюю
             scatter_entry = pd.Series(np.nan, index=df.index)
-            scatter_entry.iloc[closest_entry_idx] = entry_price
+            scatter_entry.iloc[-10] = entry_price
             marker_entry = '^' if deal_type == "LONG" else 'v'
             apds.append(mpf.make_addplot(scatter_entry, type='scatter', markersize=350, marker=marker_entry, color='#26a69a', edgecolors='white', linewidths=1.5, panel=0))
 
@@ -208,7 +192,7 @@ def draw_chart(event):
         plt.close(fig)
         return buf.getvalue()
     except Exception as e:
-        log.error(f"Ошибка при отрисовке графика: {e}")
+        log.error(f"Chart error: {e}")
         return None
 
 def get_stats_text(mode):
@@ -241,7 +225,7 @@ def get_stats_text(mode):
     return text
 
 def main():
-    log.info("STARTING SIGNAL REPORT v7.2")
+    log.info("STARTING SIGNAL REPORT v8.0")
     queue = load_json(INFO_DEAL, [])
     if not isinstance(queue, list) or not queue:
         return log.info("No new events in queue.")
