@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - CHART TEST (ZOOMED 1H + LABELS)
+# ARGUS - CHART TEST (ZOOMED 1H + LABELS + FIXED SEND)
 # Path: crypto/collect/chart_test.py
 # ============================================================
 
@@ -34,8 +34,11 @@ def send_telegram_photo(photo_bytes):
     files = {'photo': ('chart.png', photo_bytes)}
     data = {'chat_id': CHAT_ID}
     try:
-        r = requests.post(url, files=files, data=data, timeout=20)
-        return r.status_code == 200
+        r = requests.post(url, files=files, data=data, timeout=30)
+        if r.status_code != 200:
+            log.error(f"TG API Error: {r.text}")
+            return False
+        return True
     except Exception as e:
         log.error(f"TG Send error: {e}")
         return False
@@ -192,7 +195,8 @@ def main():
     plt.close(fig)
 
     log.info("Sending zoomed chart to Telegram...")
-    if send_telegram_photo(buf):
+    # ТУТ ИСПРАВЛЕНО: buf.getvalue() вместо buf
+    if send_telegram_photo(buf.getvalue()):
         log.info("Test chart sent successfully!")
     else:
         log.error("Failed to send photo.")
