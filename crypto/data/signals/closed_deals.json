@@ -294,5 +294,27 @@
     "mode": "swing",
     "close_time": "2026-11-14T17:01:31.453756+00:00",
     "balance_after": 105.52
+  },
+  {
+    "type": "SHORT",
+    "entry": 65967.29,
+    "exit": 65835.36,
+    "pnl_pct": -0.0,
+    "pnl_usd": -0.0,
+    "reason": "TRAILING_STOP",
+    "mode": "intraday",
+    "close_time": "2026-11-14T21:33:02.176250+00:00",
+    "balance_after": 96.7
+  },
+  {
+    "type": "SHORT",
+    "entry": 65967.29,
+    "exit": 65835.36,
+    "pnl_pct": -0.0,
+    "pnl_usd": -0.0,
+    "reason": "TRAILING_STOP",
+    "mode": "swing",
+    "close_time": "2026-11-14T21:33:02.179833+00:00",
+    "balance_after": 105.52
   }
 ]
