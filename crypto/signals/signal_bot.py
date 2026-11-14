@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - SIGNAL BOT v9.4.1 (FIXED EXIT PRICE IN EVENT)
+# ARGUS - SIGNAL BOT v9.4.2 (COOLDOWN REMOVED)
 # Path: crypto/signals/signal_bot.py
 # ============================================================
 
@@ -15,7 +15,7 @@ import pandas as pd
 import numpy as np
 import xgboost as xgb
 
-VERSION = "9.4.1"
+VERSION = "9.4.2"
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("crypto.signal_bot")
 
@@ -241,7 +241,6 @@ def process_mode(mode, deals, bot_info, models, df_1h, config):
             pnl_usd = bot_info[mode]["balance"] * (pnl_pct / 100)
             bot_info[mode]["balance"] = round(bot_info[mode]["balance"] + pnl_usd, 2)
             
-            # ДОБАВЛЕН "exit": exit_price
             append_event({
                 "type": "CLOSE", "mode": mode, "deal_type": deal_type, "reason": exit_reason, 
                 "pnl_pct": round(pnl_pct, 2), "pnl_usd": round(pnl_usd, 2), "new_balance": bot_info[mode]["balance"],
@@ -331,26 +330,7 @@ def process_mode(mode, deals, bot_info, models, df_1h, config):
                 can_open = False
         except Exception: pass
 
-    last_close = bot_info[mode].get("last_close_ts")
-    if last_close:
-        h_since = (now_utc - datetime.fromisoformat(last_close)).total_seconds() / 3600.0
-        
-        closed_deals = load_json(CLOSED_DEALS, [])
-        mode_deals = [t for t in closed_deals if t.get("mode") == mode]
-        mode_deals.sort(key=lambda x: x.get("close_time", ""), reverse=True)
-        
-        cooldown_h = 1.0 
-        if mode_deals:
-            last_deal = mode_deals[0]
-            last_pnl = last_deal.get("pnl_usd", 0)
-            
-            if last_pnl > 0: cooldown_h = 0.25 
-            elif last_pnl < 0: cooldown_h = 1.0  
-            else: cooldown_h = 0.5  
-        
-        if h_since < cooldown_h:
-            can_open = False
-            log.info(f"[{mode.upper()}] Cooldown active: {h_since:.2f}h / {cooldown_h}h")
+    # КУЛДАУН ПОЛНОСТЬЮ УДАЛЕН
 
     log.info(f"[{mode.upper()}] Price: {price:.1f} | LONG: {score_long:.2f} | SHORT: {score_short:.2f} | Thresh: {thresh:.2f}")
 
