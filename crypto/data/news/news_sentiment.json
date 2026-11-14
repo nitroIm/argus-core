@@ -1,18 +1,18 @@
 {
-  "generated_at": "2026-11-14T06:05:34.153937+00:00",
+  "generated_at": "2026-11-14T07:05:37.139135+00:00",
   "total_news": 94,
-  "avg_sentiment": -0.55,
+  "avg_sentiment": -0.522,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 8,
   "bearish_count": 35,
   "neutral_count": 51,
   "fake_count": 0,
-  "cross_confirmed": 5,
+  "cross_confirmed": 4,
   "by_source": {
     "Cointelegraph": {
       "total": 19,
-      "bull": 2,
-      "bear": 7
+      "bull": 3,
+      "bear": 6
     },
     "Decrypt": {
       "total": 18,
@@ -31,8 +31,8 @@
     },
     "CryptoPotato": {
       "total": 23,
-      "bull": 2,
-      "bear": 11
+      "bull": 1,
+      "bear": 12
     },
     "Bitcoinist": {
       "total": 8,
@@ -47,6 +47,23 @@
   },
   "top_bullish": [
     {
+      "title": "Bitcoin ETFs shed $2.35B in two weeks as BlackRock’s losing streak hits 11 sessions",
+      "url": "https://cointelegraph.com/markets/bitcoin-etf-outflows-2-35-billion-blackrock-11-session-streak?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-11-14T06:33:13+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-14T07:05:34.758518+00:00",
+      "effective_weight": 1.95,
+      "title_original": "Bitcoin ETFs shed $2.35B in two weeks as BlackRock’s losing streak hits 11 sessions",
+      "cross_check": 1
+    },
+    {
       "title": "Adam Back makes case for simpler security as Blockstream launches Bitcoin custody system",
       "url": "https://cointelegraph.com/news/adam-back-simpler-security-blockstream-bitcoin-custody-system?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
       "source": "Cointelegraph",
@@ -58,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-14T06:05:32.688709+00:00",
+      "collected_at": "2026-11-14T07:05:34.758617+00:00",
       "effective_weight": 1.04,
       "title_original": "Adam Back makes case for simpler security as Blockstream launches Bitcoin custody system",
       "cross_check": 1
@@ -75,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-14T06:05:32.689183+00:00",
+      "collected_at": "2026-11-14T07:05:34.759003+00:00",
       "effective_weight": 1.04,
       "title_original": "Jane Street boosts Fidelity Bitcoin ETF holdings nearly 8x, trims IBIT",
       "cross_check": 1
@@ -92,7 +109,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-14T06:05:32.880254+00:00",
+      "collected_at": "2026-11-14T07:05:35.340440+00:00",
       "effective_weight": 0.8,
       "title_original": "Twenty One Capital’s Bitcoin Gains Fuel First Profitable Quarter at $1.09B",
       "cross_check": 1
@@ -109,30 +126,47 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-14T06:05:32.880443+00:00",
+      "collected_at": "2026-11-14T07:05:35.340579+00:00",
       "effective_weight": 0.8,
       "title_original": "BTCC Exchange Launches Anthropic Pre-IPO Trading Campaign with 0 Fees and an AI Tech Prize Pool",
-      "cross_check": 1
-    },
-    {
-      "title": "‘Draining the Economic Life and Soul’: Coffeezilla Turns Trump’s Own Words Against His Crypto Empire",
-      "url": "https://cryptopotato.com/draining-the-economic-life-and-soul-coffeezilla-turns-trumps-own-words-against-his-crypto-empire/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-13T16:55:14+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-14T06:05:33.020043+00:00",
-      "effective_weight": 0.8,
-      "title_original": "‘Draining the Economic Life and Soul’: Coffeezilla Turns Trump’s Own Words Against His Crypto Empire",
       "cross_check": 1
     }
   ],
   "top_bearish": [
+    {
+      "title": "Peter Schiff Calls Bitcoin a ‘Slow Bleed’ While Gold Slides Below $3,900",
+      "url": "https://news.bitcoin.com/finance/peter-schiff-calls-bitcoin-a-slow-bleed-while-gold-slides-below-3900/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-14T06:30:20+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 2.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-14T07:05:35.340238+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Peter Schiff Calls Bitcoin a ‘Slow Bleed’ While Gold Slides Below $3,900",
+      "cross_check": 4
+    },
+    {
+      "title": "BTC Dives Below $67K as XRP Breaks Under $1.00 in Fresh Crypto Sell-Off: Weekend Watch",
+      "url": "https://cryptopotato.com/btc-dives-below-67k-as-xrp-breaks-under-1-00-in-fresh-crypto-sell-off-weekend-watch/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-14T06:09:39+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 2.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-14T07:05:35.972752+00:00",
+      "effective_weight": 1.5,
+      "title_original": "BTC Dives Below $67K as XRP Breaks Under $1.00 in Fresh Crypto Sell-Off: Weekend Watch",
+      "cross_check": 1
+    },
     {
       "title": "Bitcoin holds below $70K as stocks slip despite a cooler US PPI print",
       "url": "https://cointelegraph.com/markets/bitcoin-below-70k-stocks-slip-cooler-us-ppi-print?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -145,7 +179,7 @@
       "bear_weight": 1.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-14T06:05:32.688920+00:00",
+      "collected_at": "2026-11-14T07:05:34.758782+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin holds below $70K as stocks slip despite a cooler US PPI print",
       "cross_check": 1
@@ -162,7 +196,7 @@
       "bear_weight": 0.8,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-14T06:05:32.688977+00:00",
+      "collected_at": "2026-11-14T07:05:34.758836+00:00",
       "effective_weight": 1.04,
       "title_original": "Arthur Hayes ‘flattered’ as Coinbase backs US stock perps",
       "cross_check": 1
@@ -179,44 +213,10 @@
       "bear_weight": 3.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-14T06:05:32.689133+00:00",
+      "collected_at": "2026-11-14T07:05:34.758963+00:00",
       "effective_weight": 1.04,
       "title_original": "DOJ moves to seize $1.2B from Binance hack, disrupts FaceStealer scam",
       "cross_check": 1
-    },
-    {
-      "title": "Bitcoin Drops to $69K On 'Concentrated Liquidation' and 'Weakening' Demand",
-      "url": "https://decrypt.co/383214/bitcoin-drops-to-69k-on-concentrated-liquidation-and-weakening-demand",
-      "source": "Decrypt",
-      "source_weight": 1.1,
-      "lang": "en",
-      "pub_date": "2026-11-13T11:20:44+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 2.2,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-14T06:05:32.725866+00:00",
-      "effective_weight": 0.88,
-      "title_original": "Bitcoin Drops to $69K On 'Concentrated Liquidation' and 'Weakening' Demand",
-      "cross_check": 1
-    },
-    {
-      "title": "DOJ, CFTC Sue Arkansas to Block Kalshi Crackdown as Prediction Market Battle Escalates",
-      "url": "https://news.bitcoin.com/regulation-and-legal/doj-cftc-sue-arkansas-block-kalshi-crackdown-prediction-market-battle/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-13T20:20:44+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 2.6,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-14T06:05:32.880336+00:00",
-      "effective_weight": 0.8,
-      "title_original": "DOJ, CFTC Sue Arkansas to Block Kalshi Crackdown as Prediction Market Battle Escalates",
-      "cross_check": 2
     }
   ]
 }
