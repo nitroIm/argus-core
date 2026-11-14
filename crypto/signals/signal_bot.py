@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - SIGNAL BOT v9.3.2 (FULL MISSED CANDLES + CURRENT)
+# ARGUS - SIGNAL BOT v9.3.4 (TRUE TRAILING FIX)
 # Path: crypto/signals/signal_bot.py
 # ============================================================
 
@@ -15,7 +15,7 @@ import pandas as pd
 import numpy as np
 import xgboost as xgb
 
-VERSION = "9.3.2"
+VERSION = "9.3.4"
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("crypto.signal_bot")
 
@@ -162,69 +162,87 @@ def process_mode(mode, deals, bot_info, models, df_1h, config):
         sl = float(deal['sl'])
         tp = float(deal['tp'])
         
-        last_check_str = bot_info[mode].get("last_check_ts", deal["open_time"])
-        last_check = datetime.fromisoformat(last_check_str)
+        deal_open_time = datetime.fromisoformat(deal["open_time"])
+        df_to_check = df_1h[df_1h['open_time'] >= deal_open_time - timedelta(hours=1)]
         
-        # Берем ВСЕ свечи, которые появились с момента прошлой проверки, ВКЛЮЧАЯ текущую
-        df_to_check = df_1h[df_1h['open_time'] >= last_check]
-        if df_to_check.empty:
-            df_to_check = df_1h.iloc[[-1]] # Если вдруг пусто, принудительно берем последнюю
-
-        atr = float(df_to_check.iloc[-1]['atr_14'])
         act_pct = cfg.get("trailing_activation_pct", 0.5)
         atr_mult = cfg.get("trailing_atr_multiplier", 1.5)
 
-        exit_reason, exit_price = None, float(df_to_check.iloc[-1]['close'])
+        exit_reason, exit_price = None, float(df_1h.iloc[-1]['close'])
         old_sl = sl
         
-        log.info(f"🔄 [{mode.upper()}] {deal_type} | SL: {sl} | Price: {exit_price} | Candles to check: {len(df_to_check)}")
+        log.info(f"🔄 [{mode.upper()}] {deal_type} | SL: {sl} | Price: {exit_price} | Checking {len(df_to_check)} candles")
         
-        # Функция проверки одной свечи
         def check_candle(row):
             nonlocal sl, exit_reason, exit_price
+            row_atr = float(row['atr_14']) if pd.notna(row['atr_14']) else 0 
+            if row_atr == 0: return False
+
             if deal_type == "LONG":
+                # Активация трейлинга
                 if row['high'] >= entry * (1 + act_pct/100):
-                    new_sl = row['high'] - (atr * atr_mult)
+                    # Считаем стоп по ATR
+                    atr_sl = row['high'] - (row_atr * atr_mult)
+                    # Считаем безубыток (вход + комиссии, чтобы не уйти в минус)
+                    breakeven_sl = entry * (1 + (fee_pct * 2))
+                    # Берем максимум из ATR и безубытка, чтобы стоп гарантированно зафиксировал профит
+                    new_sl = max(atr_sl, breakeven_sl)
+                    
                     if new_sl > sl: sl = round(new_sl, 2)
+                
+                # Проверка выхода
                 if row['low'] <= sl: 
-                    exit_reason, exit_price = ("TRAILING_STOP" if sl > entry else "STOP_LOSS"), sl
+                    exit_reason = "TRAILING_STOP" if sl > entry else "STOP_LOSS"
+                    exit_price = sl
                     return True
                 if row['high'] >= tp: 
-                    exit_reason, exit_price = "TAKE_PROFIT", tp
+                    exit_reason = "TAKE_PROFIT"
+                    exit_price = tp
                     return True
             else: # SHORT
+                # Активация трейлинга
                 if row['low'] <= entry * (1 - act_pct/100):
-                    new_sl = row['low'] + (atr * atr_mult)
+                    # Считаем стоп по ATR
+                    atr_sl = row['low'] + (row_atr * atr_mult)
+                    # Считаем безубыток (вход - комиссии)
+                    breakeven_sl = entry * (1 - (fee_pct * 2))
+                    # Берем минимум из ATR и безубытка
+                    new_sl = min(atr_sl, breakeven_sl)
+                    
                     if new_sl < sl: sl = round(new_sl, 2)
+                
+                # Проверка выхода
                 if row['high'] >= sl: 
-                    exit_reason, exit_price = ("TRAILING_STOP" if sl < entry else "STOP_LOSS"), sl
+                    exit_reason = "TRAILING_STOP" if sl < entry else "STOP_LOSS"
+                    exit_price = sl
                     return True
                 if row['low'] <= tp: 
-                    exit_reason, exit_price = "TAKE_PROFIT", tp
+                    exit_reason = "TAKE_PROFIT"
+                    exit_price = tp
                     return True
             return False
 
-        # Перебираем все свечи, которые накопились
+        # Перебираем все свечи с момента входа
         for _, row in df_to_check.iterrows():
             if check_candle(row): break
 
-        # Если стоп сдвинулся, отправляем событие
+        # Обновляем стоп, если сдвинулся
         if sl != old_sl:
             deal['sl'] = sl
             sl_pct = (sl-entry)/entry*100 if deal_type=="LONG" else (entry-sl)/entry*100
             append_event({"type": "UPDATE", "mode": mode, "deal_type": deal_type, "new_sl": sl, "sl_pct": round(sl_pct, 2)})
 
-        # Жесткое закрытие Intraday в 19:00
+        # Принудительное закрытие Intraday в 19:00
         close_h = cfg.get("close_hour_utc")
         if not exit_reason and mode == "intraday" and close_h is not None and now_utc.hour >= close_h:
-            exit_reason, exit_price = "TIME_EXIT_DAY", float(df_to_check.iloc[-1]['close'])
+            exit_reason, exit_price = "TIME_EXIT_DAY", float(df_1h.iloc[-1]['close'])
 
         # Выход по времени для Swing
         if not exit_reason and mode == "swing":
-            time_held = (now_utc - datetime.fromisoformat(deal["open_time"])).total_seconds() / 3600.0
+            time_held = (now_utc - deal_open_time).total_seconds() / 3600.0
             time_exit_h = models[mode][deal_type.lower()]["params"].get("time_exit_h", 24)
             if time_held >= time_exit_h:
-                exit_reason, exit_price = "TIME_EXIT", float(df_to_check.iloc[-1]['close'])
+                exit_reason, exit_price = "TIME_EXIT", float(df_1h.iloc[-1]['close'])
 
         if exit_reason:
             pnl_pct = (exit_price - entry) / entry * 100 if deal_type == "LONG" else (entry - exit_price) / entry * 100
