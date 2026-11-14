@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - SIGNAL BOT v9.4.0 (PASS ACTIVE SIGNALS TO TUNER)
+# ARGUS - SIGNAL BOT v9.4.1 (FIXED EXIT PRICE IN EVENT)
 # Path: crypto/signals/signal_bot.py
 # ============================================================
 
@@ -15,7 +15,7 @@ import pandas as pd
 import numpy as np
 import xgboost as xgb
 
-VERSION = "9.4.0"
+VERSION = "9.4.1"
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("crypto.signal_bot")
 
@@ -153,7 +153,6 @@ def process_mode(mode, deals, bot_info, models, df_1h, config):
     fee_pct = config.get("global", {}).get("fee_pct", 0.001)
     now_utc = datetime.now(timezone.utc)
     
-    # 1. ПРОВЕРКА ОТКРЫТОЙ СДЕЛКИ
     if mode in deals and "entry" in deals[mode]:
         deal = deals[mode]
         deal_type = deal.get("type", "LONG")
@@ -200,7 +199,7 @@ def process_mode(mode, deals, bot_info, models, df_1h, config):
                     exit_reason = "TAKE_PROFIT"
                     exit_price = tp
                     return True
-            else: # SHORT
+            else:
                 if row['low'] < min_price: min_price = row['low']
                 
                 if row_atr > 0 and min_price <= entry * (1 - act_pct/100):
@@ -242,14 +241,14 @@ def process_mode(mode, deals, bot_info, models, df_1h, config):
             pnl_usd = bot_info[mode]["balance"] * (pnl_pct / 100)
             bot_info[mode]["balance"] = round(bot_info[mode]["balance"] + pnl_usd, 2)
             
+            # ДОБАВЛЕН "exit": exit_price
             append_event({
                 "type": "CLOSE", "mode": mode, "deal_type": deal_type, "reason": exit_reason, 
                 "pnl_pct": round(pnl_pct, 2), "pnl_usd": round(pnl_usd, 2), "new_balance": bot_info[mode]["balance"],
-                "entry": entry, "open_time": deal["open_time"]
+                "entry": entry, "exit": exit_price, "open_time": deal["open_time"]
             })
             
             closed = load_json(CLOSED_DEALS, [])
-            # ТЕПЕРЬ ПЕРЕДАЕМ ACTIVE_SIGNALS В БАЗУ ДЛЯ ТЮНЕРА
             closed.append({
                 "type": deal_type, "entry": entry, "exit": exit_price, "pnl_pct": round(pnl_pct, 2), 
                 "pnl_usd": round(pnl_usd, 2), "reason": exit_reason, "mode": mode, "close_time": now_utc.isoformat(), 
@@ -269,7 +268,6 @@ def process_mode(mode, deals, bot_info, models, df_1h, config):
             save_json(OPENED_DEALS, deals)
         return
 
-    # 2. ПОИСК СИГНАЛА
     source_long = models[mode]["long"].get("source", "model_base")
     source_short = models[mode]["short"].get("source", "model_base")
     
