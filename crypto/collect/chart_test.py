@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - CHART TEST (FIXED SCATTER + FROM NOV 10)
+# ARGUS - CHART TEST (1H TIMEFRAME, MOCK TRADE)
 # Path: crypto/collect/chart_test.py
 # ============================================================
 
@@ -41,12 +41,12 @@ def send_telegram_photo(photo_bytes):
         return False
 
 def main():
-    log.info("STARTING CHART GENERATOR FROM NOV 10")
+    log.info("STARTING 1H CHART GENERATOR FROM NOV 10")
 
     try:
         conn = get_conn()
         with conn.cursor() as cur:
-            # БЕРЕМ ДАННЫЕ С 10 НОЯБРЯ
+            # Берем 15-минутные данные с 10 ноября
             cur.execute("""
                 SELECT open_time, open, high, low, close, volume 
                 FROM candles 
@@ -60,7 +60,7 @@ def main():
         log.error(f"DB Error: {e}")
         sys.exit(1)
 
-    if len(rows) < 50:
+    if len(rows) < 100:
         log.error("Not enough data in DB since Nov 10")
         sys.exit(1)
 
@@ -69,10 +69,21 @@ def main():
     df.set_index('open_time', inplace=True)
     df = df.astype(float)
 
-    # --- МОКАЕМ ТЕСТОВУЮ СДЕЛКУ ---
+    # --- СКЛЕИВАЕМ В 1 ЧАС (1H) ---
+    df_1h = df.resample('1h').agg({
+        'open': 'first',
+        'high': 'max',
+        'low': 'min',
+        'close': 'last',
+        'volume': 'sum'
+    }).dropna()
+    
+    df = df_1h # Дальше работаем с часовыми свечами
+
+    # --- МОКАЕМ ТЕСТОВУЮ СДЕЛКУ (на часовиках) ---
     mid_idx = len(df) // 2
-    entry_idx = mid_idx - 10
-    exit_idx = len(df) - 10
+    entry_idx = mid_idx - 10 # Вход чуть раньше середины
+    exit_idx = len(df) - 5   # Выход недавно
     
     entry_price = df['close'].iloc[entry_idx]
     exit_price = df['close'].iloc[exit_idx]
@@ -112,18 +123,18 @@ def main():
         gridstyle='--', rc=rc, y_on_right=True
     )
 
-    # --- ИСПРАВЛЕННЫЕ ОТМЕТКИ (такой же размер, как и график) ---
     apds = [
         mpf.make_addplot(macd_hist, type='bar', color=macd_colors, panel=2),
         mpf.make_addplot(macd_line, color='#FFD700', panel=2, width=1),
         mpf.make_addplot(signal_line, color='#9370DB', panel=2, width=1)
     ]
 
-    # Создаем серию с NaN на всю длину графика
+    # Стрелка покупки
     scatter_entry = pd.Series(np.nan, index=df.index)
     scatter_entry.iloc[entry_idx] = entry_price
     apds.append(mpf.make_addplot(scatter_entry, type='scatter', markersize=300, marker='^', color='#26a69a', panel=0))
 
+    # Стрелка продажи
     scatter_exit = pd.Series(np.nan, index=df.index)
     scatter_exit.iloc[exit_idx] = exit_price
     apds.append(mpf.make_addplot(scatter_exit, type='scatter', markersize=300, marker='v', color='#ef5350', panel=0))
@@ -135,7 +146,7 @@ def main():
         volume=True,
         addplot=apds,
         panel_ratios=(6, 1.5, 2),
-        figsize=(14, 12), # Сделал чуть шире, так как свечей с 10-го много
+        figsize=(14, 12),
         ylim=(ymin, ymax),
         hlines=dict(hlines=[entry_price, sl_price, tp_price], colors=['blue', '#ef5350', '#26a69a'], linestyle='--', linewidths=[1.5, 1.5, 1.5]),
         returnfig=True,
@@ -150,7 +161,7 @@ def main():
         vol_ymin, vol_ymax = vol_ax.get_ylim()
         vol_ax.set_ylim(vol_ymin, vol_ymax * 1.3)
 
-    axes[0].set_title("BTC/USDT | 15m (с 10.11.2026)", fontsize=20, fontweight='bold', pad=15)
+    axes[0].set_title("BTC/USDT | 1H (с 10.11.2026)", fontsize=20, fontweight='bold', pad=15)
     fig.text(0.5, 0.5, 'ARGUS', alpha=0.1, fontsize=100, ha='center', va='center', color='white', rotation=30)
 
     # Плашка цены
@@ -171,7 +182,7 @@ def main():
     buf.seek(0)
     plt.close(fig)
 
-    log.info("Sending test chart to Telegram...")
+    log.info("Sending test 1H chart to Telegram...")
     if send_telegram_photo(buf):
         log.info("Test chart sent successfully!")
     else:
