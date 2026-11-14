@@ -1,13 +1,9 @@
 # ============================================================
-# ARGUS - TELEGRAM GROUP REPORT
+# ARGUS - TELEGRAM GROUP REPORT (BREAKEVEN STATS)
 # Path: crypto/report/TG_GROUP_report.py
 # ============================================================
 
-import os
-import json
-import logging
-import requests
-import io
+import os, json, logging, requests, io
 from pathlib import Path
 from datetime import datetime, timezone
 import matplotlib
@@ -25,10 +21,9 @@ SIGNALS_DIR = CRYPTO_ROOT / "data" / "signals"
 BOT_INFO = SIGNALS_DIR / "bot_info.json"
 CLOSED_DEALS = SIGNALS_DIR / "closed_deals.json"
 
-# --- НАСТРОЙКИ ---
 BOT_TOKEN = (os.getenv("TELEGRAM_BOT_TOKEN") or "").strip()
-CHAT_ID = (os.getenv("TELEGRAM_GROUP_ID") or "-1003946449078").strip() # Твоя бесплатная группа
-PAID_GROUP_LINK = "https://t.me/+rxoHVrXih2k3YzUy" # Твоя закрытая ссылка
+CHAT_ID = (os.getenv("TELEGRAM_GROUP_ID") or "-1003946449078").strip() 
+PAID_GROUP_LINK = "https://t.me/+rxoHVrXih2k3YzUy"
 
 def load_json(path, default=None):
     if not path.exists(): return default if default is not None else {}
@@ -39,19 +34,12 @@ def load_json(path, default=None):
         return default if default is not None else {}
 
 def send_tg_photo(image_bytes, caption):
-    if not BOT_TOKEN or not CHAT_ID:
-        log.error("Не заданы TELEGRAM_BOT_TOKEN или TELEGRAM_GROUP_ID")
-        return False
+    if not BOT_TOKEN or not CHAT_ID: return False
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendPhoto"
     files = {'photo': ('chart.png', image_bytes, 'image/png')}
     data = {'chat_id': CHAT_ID, 'caption': caption, 'parse_mode': 'HTML'}
-    
     r = requests.post(url, data=data, files=files, timeout=30)
-    if r.status_code == 200:
-        return True
-    else:
-        log.error(f"Ошибка отправки в ТГ: {r.status_code} - {r.text}")
-        return False
+    return r.status_code == 200
 
 def generate_chart(deals, bot_info):
     fig, ax = plt.subplots(figsize=(10, 5))
@@ -129,7 +117,6 @@ def main():
     now = datetime.now(timezone.utc)
     today_str = now.strftime("%d.%m.%Y")
     
-    # Фильтр сделок за сегодня
     today_deals = []
     for d in deals:
         if "close_time" in d:
@@ -139,16 +126,21 @@ def main():
                     today_deals.append(d)
             except: pass
 
-    # --- Подсчет статистики за СЕГОДНЯ ---
+    # --- Подсчет за СЕГОДНЯ ---
     today_total = len(today_deals)
     today_wins = sum(1 for d in today_deals if d.get("pnl_usd", 0) > 0)
-    today_losses = today_total - today_wins
+    today_losses = sum(1 for d in today_deals if d.get("pnl_usd", 0) < 0)
+    today_breakeven = today_total - today_wins - today_losses
     today_pnl = sum(d.get("pnl_usd", 0) for d in today_deals)
     
-    # --- Подсчет ОБЩЕЙ статистики ---
+    # --- Подсчет ОБЩЕЙ ---
     total_deals = len(deals)
     total_wins = sum(1 for d in deals if d.get("pnl_usd", 0) > 0)
-    overall_winrate = (total_wins / total_deals * 100) if total_deals > 0 else 0.0
+    total_losses = sum(1 for d in deals if d.get("pnl_usd", 0) < 0)
+    total_breakeven = total_deals - total_wins - total_losses
+    
+    real_total = total_wins + total_losses
+    overall_winrate = (total_wins / real_total * 100) if real_total > 0 else 0.0
     
     bal_intra = bot_info.get("intraday", {}).get("balance", 100.0)
     bal_swing = bot_info.get("swing", {}).get("balance", 100.0)
@@ -166,14 +158,21 @@ def main():
             if start_dt is None or dt < start_dt: start_dt = dt
     start_str = start_dt.strftime("%d.%m.%Y") if start_dt else "?"
 
-    # Формируем красивый текст
     pnl_sign_today = "+" if today_pnl >= 0 else ""
     pnl_sign_total = "+" if total_pnl >= 0 else ""
     
+    # Формируем текст с учетом безубытков
+    today_text = f"Сделок: {today_total} ({today_wins} ✅ / {today_losses} ❌"
+    if today_breakeven > 0: today_text += f" / {today_breakeven} ⚖️"
+    today_text += ")\n"
+
+    total_text = f"Всего сделок: {total_deals} | Винрейт: {overall_winrate:.1f}%"
+    if total_breakeven > 0: total_text = f"Всего сделок: {total_deals} ({total_wins}✅/{total_losses}❌/{total_breakeven}⚖️) | Винрейт: {overall_winrate:.1f}%"
+
     caption = (
         f"🤖 <b>Отчёт торгового бота за {today_str}</b>\n\n"
         f"📊 <b>РЕЗУЛЬТАТ ЗА СЕГОДНЯ:</b>\n"
-        f"Сделок: {today_total} ({today_wins} ✅ / {today_losses} ❌)\n"
+        f"{today_text}"
         f"PnL за день: <b>{pnl_sign_today}${today_pnl:.2f}</b>\n\n"
         
         f"⚡ <b>INTRADAY (всего):</b>\n"
@@ -183,7 +182,7 @@ def main():
         f"Сделок: {len([d for d in deals if d.get('mode') == 'swing'])} | Баланс: <b>${bal_swing:.2f}</b>\n\n"
         
         f"💼 <b>ОБЩИЙ ИТОГ (с {start_str}):</b>\n"
-        f"Всего сделок: {total_deals} | Винрейт: {overall_winrate:.1f}%\n"
+        f"{total_text}\n"
         f"Общий баланс: <b>${total_bal:.2f}</b>\n"
         f"Общий PnL: <b>{pnl_sign_total}${total_pnl:.2f}</b>\n\n"
         
