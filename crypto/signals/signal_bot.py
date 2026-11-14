@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - SIGNAL BOT v9.3.5 (CONTINUOUS TRAILING)
+# ARGUS - SIGNAL BOT v9.3.6 (BULLETPROOF TRAILING)
 # Path: crypto/signals/signal_bot.py
 # ============================================================
 
@@ -15,7 +15,7 @@ import pandas as pd
 import numpy as np
 import xgboost as xgb
 
-VERSION = "9.3.5"
+VERSION = "9.3.6"
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("crypto.signal_bot")
 
@@ -162,6 +162,7 @@ def process_mode(mode, deals, bot_info, models, df_1h, config):
         sl = float(deal['sl'])
         tp = float(deal['tp'])
         
+        # Берем все свечи с момента открытия сделки (включая текущую)
         deal_open_time = datetime.fromisoformat(deal["open_time"])
         df_to_check = df_1h[df_1h['open_time'] >= deal_open_time - timedelta(hours=1)]
         
@@ -170,34 +171,32 @@ def process_mode(mode, deals, bot_info, models, df_1h, config):
 
         exit_reason, exit_price = None, float(df_1h.iloc[-1]['close'])
         
-        # Трекеры максимума и минимума с момента входа
-        max_price = entry if deal_type == "LONG" else 0
-        min_price = entry if deal_type == "SHORT" else 9999999
+        # Инициализация экстремумов
+        max_price = entry
+        min_price = entry
         
         log.info(f"🔄 [{mode.upper()}] {deal_type} | SL: {sl} | Price: {exit_price} | Checking {len(df_to_check)} candles")
         
         def check_candle(row):
             nonlocal sl, exit_reason, exit_price, max_price, min_price
-            row_atr = float(row['atr_14']) if pd.notna(row['atr_14']) else 0 
-            if row_atr == 0: return False
+            row_atr = float(row['atr_14']) if pd.notna(row['atr_14']) else 0.0
 
             if deal_type == "LONG":
-                # Обновляем максимум за все время
+                # 1. Обновляем абсолютный максимум
                 if row['high'] > max_price: max_price = row['high']
                 
-                # Постоянно двигаем стоп за ценой
-                if max_price >= entry * (1 + act_pct/100):
+                # 2. Трейлинг (если ATR есть и цена ушла выше активации)
+                if row_atr > 0 and max_price >= entry * (1 + act_pct/100):
                     atr_sl = max_price - (row_atr * atr_mult)
                     breakeven_sl = entry * (1 + (fee_pct * 2))
                     new_sl = max(atr_sl, breakeven_sl)
                     
-                    if new_sl > sl: 
+                    if new_sl > sl + 0.01: # Двигаем только если есть реальный сдвиг
                         sl = round(new_sl, 2)
                         sl_pct = (sl-entry)/entry*100
-                        # Шлем апдейт при КАЖДОМ движении
                         append_event({"type": "UPDATE", "mode": mode, "deal_type": deal_type, "new_sl": sl, "sl_pct": round(sl_pct, 2)})
 
-                # Проверка выхода
+                # 3. Проверка выхода (ВСЕГДА, даже если ATR=0)
                 if row['low'] <= sl: 
                     exit_reason = "TRAILING_STOP" if sl > entry else "STOP_LOSS"
                     exit_price = sl
@@ -207,22 +206,21 @@ def process_mode(mode, deals, bot_info, models, df_1h, config):
                     exit_price = tp
                     return True
             else: # SHORT
-                # Обновляем минимум за все время
+                # 1. Обновляем абсолютный минимум
                 if row['low'] < min_price: min_price = row['low']
                 
-                # Постоянно двигаем стоп за ценой
-                if min_price <= entry * (1 - act_pct/100):
+                # 2. Трейлинг (если ATR есть и цена ушла ниже активации)
+                if row_atr > 0 and min_price <= entry * (1 - act_pct/100):
                     atr_sl = min_price + (row_atr * atr_mult)
                     breakeven_sl = entry * (1 - (fee_pct * 2))
                     new_sl = min(atr_sl, breakeven_sl)
                     
-                    if new_sl < sl: 
+                    if new_sl < sl - 0.01: # Двигаем только если есть реальный сдвиг
                         sl = round(new_sl, 2)
                         sl_pct = (entry-sl)/entry*100
-                        # Шлем апдейт при КАЖДОМ движении
                         append_event({"type": "UPDATE", "mode": mode, "deal_type": deal_type, "new_sl": sl, "sl_pct": round(sl_pct, 2)})
 
-                # Проверка выхода
+                # 3. Проверка выхода (ВСЕГДА)
                 if row['high'] >= sl: 
                     exit_reason = "TRAILING_STOP" if sl < entry else "STOP_LOSS"
                     exit_price = sl
