@@ -9,5 +9,13 @@
     "volume",
     "rsi_low"
   ],
-  "intraday": {}
+  "intraday": {},
+  "swing": {
+    "type": "SHORT",
+    "entry": 63700.44,
+    "tp": 62426.4312,
+    "sl": 64337.4444,
+    "open_time": "2026-11-14T23:16:10.145410+00:00",
+    "active_signals": []
+  }
 }
