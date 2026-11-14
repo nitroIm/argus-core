@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - SIGNAL REPORT v6.0 (PRIVATE CHANNEL + CHARTS)
+# ARGUS - SIGNAL REPORT v7.0 (PERFECT CHARTS + REAL TRADES)
 # Path: crypto/report/signal_bot_report.py
 # ============================================================
 
@@ -8,6 +8,7 @@ from pathlib import Path
 from datetime import datetime, timezone, timedelta
 import psycopg
 import pandas as pd
+import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -26,7 +27,6 @@ BOT_INFO = SIGNALS_DIR / "bot_info.json"
 
 DB_URL = (os.getenv("AIVEN_DB_URL") or "").strip()
 BOT_TOKEN = (os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("BOT_TOKEN") or "").strip()
-# ЖЕСТКО ЗАШИТ ID ЗАКРЫТОГО КАНАЛА
 CHAT_ID = (os.getenv("TG_CHANNEL_ID") or "-1004435496321").strip()
 
 def load_json(path, default=None):
@@ -41,6 +41,7 @@ def save_json(path, data):
 def send_tg_photo(image_bytes, caption):
     if not BOT_TOKEN or not CHAT_ID: return False
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendPhoto"
+    # Используем PNG, так как он стабильнее при обрезке
     files = {'photo': ('chart.png', image_bytes, 'image/png')}
     data = {'chat_id': CHAT_ID, 'caption': caption, 'parse_mode': 'HTML'}
     r = requests.post(url, data=data, files=files, timeout=30)
@@ -76,7 +77,8 @@ def get_db_candles(start_time_str, end_time_str=None):
         
         df = pd.DataFrame(rows, columns=['Date', 'Open', 'High', 'Low', 'Close', 'Volume'])
         df['Date'] = pd.to_datetime(df['Date'], utc=True)
-        df.set_index('Date', inplace=True)
+        df = df.set_index('Date')
+        df = df.astype(float)
         return df
     except Exception as e:
         log.error(f"DB Error: {e}")
@@ -86,71 +88,168 @@ def draw_chart(event):
     mode = event.get("mode", "swing")
     deal_type = event.get("deal_type", "LONG")
     
+    # Определяем временное окно
     if event["type"] == "ENTRY":
         end_time = datetime.now(timezone.utc)
-        start_time = end_time - timedelta(hours=10)
+        start_time = end_time - timedelta(hours=24) # Берем сутки до входа
         df = get_db_candles(start_time.isoformat(), end_time.isoformat())
         title = f"Вход {deal_type}"
     else: # CLOSE
         open_time = event.get("open_time")
         if not open_time: return None
-        start_dt = datetime.fromisoformat(open_time) - timedelta(hours=2)
-        end_dt = datetime.now(timezone.utc) + timedelta(minutes=30)
+        start_dt = datetime.fromisoformat(open_time) - timedelta(hours=12)
+        end_dt = datetime.now(timezone.utc) + timedelta(hours=2)
         df = get_db_candles(start_dt.isoformat(), end_dt.isoformat())
         title = f"Выход {deal_type}"
 
-    if df is None or df.empty:
+    if df is None or df.empty or len(df) < 20:
         return None
 
-    # Темная тема
-    mc = mpf.make_marketcolors(up='#00ff87', down='#ff0044', edge='inherit', wick='inherit', volume='in')
-    s  = mpf.make_mpf_style(marketcolors=mc, gridstyle='--', y_on_right=True, facecolor='#1e1e1e', edgecolor='gray', figcolor='#1e1e1e', gridcolor='#333333', rc={'axes.labelcolor': 'white', 'xtick.color': 'white', 'ytick.color': 'white'})
+    # --- СКЛЕИВАЕМ В 1 ЧАС ---
+    df_1h = df.resample('1h').agg({
+        'open': 'first', 'high': 'max', 'low': 'min',
+        'close': 'last', 'volume': 'sum'
+    }).dropna()
+    
+    # Оставляем последние 45 свечей, чтобы они были толстыми (как на тесте)
+    df = df_1h.tail(45).copy()
 
-    hlines = dict(hlines=[], colors=[], linewidths=[])
+    # Получаем цены из события
     entry_price = float(event.get("entry", 0))
     
     if event["type"] == "ENTRY":
         sl_price = float(event["sl"])
         tp_price = float(event["tp"])
-        hlines['hlines'].extend([entry_price, sl_price, tp_price])
-        hlines['colors'].extend(['blue', 'red', 'green'])
-        hlines['linewidths'].extend([1.5, 1.5, 1.5])
     else:
         exit_price = float(event.get("exit", 0))
-        hlines['hlines'].extend([entry_price, exit_price])
-        hlines['colors'].extend(['blue', 'orange'])
-        hlines['linewidths'].extend([1.5, 1.5])
 
-    apds = []
+    # MACD
+    exp12 = df['close'].ewm(span=12, adjust=False).mean()
+    exp26 = df['close'].ewm(span=26, adjust=False).mean()
+    macd_line = exp12 - exp26
+    signal_line = macd_line.ewm(span=9, adjust=False).mean()
+    macd_hist = macd_line - signal_line
+    macd_colors = ['#26a69a' if val >= 0 else '#ef5350' for val in macd_hist]
+
+    last_close = df['close'].iloc[-1]
+    last_open = df['open'].iloc[-1]
+    last_color = '#26a69a' if last_close >= last_open else '#ef5350'
+
+    # Отступы по Y-оси
+    max_list = [df['high'].max(), entry_price]
+    min_list = [df['low'].min(), entry_price]
     if event["type"] == "ENTRY":
-        marker_price = entry_price
-        marker_type = '^' if deal_type == "LONG" else 'v'
-        marker_color = '#00ff87' if deal_type == "LONG" else '#ff0044'
-        scatter = pd.Series([marker_price], index=[df.index[-1]])
-        apds.append(mpf.make_addplot(scatter, type='scatter', markersize=200, marker=marker_type, color=marker_color))
+        max_list.append(tp_price)
+        min_list.append(sl_price)
     else:
-        entry_dt = datetime.fromisoformat(event["open_time"])
-        closest_entry_idx = df.index.get_indexer([entry_dt], method='nearest')[0]
-        scatter_entry = pd.Series([entry_price], index=[df.index[closest_entry_idx]])
+        max_list.append(exit_price)
+        min_list.append(exit_price)
+
+    max_price = max(max_list)
+    min_price = min(min_list)
+    padding = (max_price - min_price) * 0.15
+    ymin, ymax = min_price - padding, max_price + padding
+
+    rc = {
+        'axes.labelsize': 14, 'ytick.labelsize': 16, 'xtick.labelsize': 14,
+        'axes.titlesize': 20, 'figure.titlesize': 20,
+    }
+
+    mc = mpf.make_marketcolors(up='#26a69a', down='#ef5350', edge='inherit', wick='inherit', volume='in')
+    s = mpf.make_mpf_style(
+        marketcolors=mc, base_mpf_style='nightclouds',
+        facecolor='#131722', figcolor='#131722', gridcolor='#2a2e39',
+        gridstyle='--', rc=rc, y_on_right=True
+    )
+
+    apds = [
+        mpf.make_addplot(macd_hist, type='bar', color=macd_colors, panel=2),
+        mpf.make_addplot(macd_line, color='#FFD700', panel=2, width=1),
+        mpf.make_addplot(signal_line, color='#9370DB', panel=2, width=1)
+    ]
+
+    hlines_list = [entry_price]
+    hlines_colors = ['blue']
+
+    # --- РАССТАНОВКА СТРЕЛОК ---
+    if event["type"] == "ENTRY":
+        hlines_list.extend([sl_price, tp_price])
+        hlines_colors.extend(['#ef5350', '#26a69a'])
+
+        marker_type = '^' if deal_type == "LONG" else 'v'
+        marker_color = '#26a69a' if deal_type == "LONG" else '#ef5350'
         
-        scatter_exit = pd.Series([float(event["exit"])], index=[df.index[-1]])
+        # Ищем ближайшую свечу к моменту открытия
+        open_dt = datetime.fromisoformat(event["open_time"])
+        closest_idx = df.index.get_indexer([open_dt], method='nearest')[0]
+        
+        scatter = pd.Series(np.nan, index=df.index)
+        scatter.iloc[closest_idx] = entry_price
+        apds.append(mpf.make_addplot(scatter, type='scatter', markersize=350, marker=marker_type, color=marker_color, edgecolors='white', linewidths=1.5, panel=0))
+    else:
+        hlines_list.append(exit_price)
+        hlines_colors.append('orange')
+
+        # Вход
+        open_dt = datetime.fromisoformat(event["open_time"])
+        closest_entry_idx = df.index.get_indexer([open_dt], method='nearest')[0]
+        scatter_entry = pd.Series(np.nan, index=df.index)
+        scatter_entry.iloc[closest_entry_idx] = entry_price
         
         marker_entry = '^' if deal_type == "LONG" else 'v'
-        marker_exit = 'v' if deal_type == "LONG" else '^'
+        apds.append(mpf.make_addplot(scatter_entry, type='scatter', markersize=350, marker=marker_entry, color='#26a69a', edgecolors='white', linewidths=1.5, panel=0))
+
+        # Выход
+        scatter_exit = pd.Series(np.nan, index=df.index)
+        scatter_exit.iloc[-1] = exit_price # Выход ставим на текущую последнюю свечу
         
-        apds.append(mpf.make_addplot(scatter_entry, type='scatter', markersize=200, marker=marker_entry, color='#00ff87'))
-        apds.append(mpf.make_addplot(scatter_exit, type='scatter', markersize=200, marker=marker_exit, color='#ff0044'))
+        marker_exit = 'v' if deal_type == "LONG" else '^'
+        apds.append(mpf.make_addplot(scatter_exit, type='scatter', markersize=350, marker=marker_exit, color='#ef5350', edgecolors='white', linewidths=1.5, panel=0))
+
+    # Рисуем (с твоими идеальными настройками)
+    fig, axes = mpf.plot(
+        df, type='candle', style=s,
+        ylabel='', ylabel_lower='',
+        volume=True,
+        addplot=apds,
+        panel_ratios=(7, 1.5, 3),
+        figsize=(14, 10),
+        ylim=(ymin, ymax),
+        hlines=dict(hlines=hlines_list, colors=hlines_colors, linestyle='--', linewidths=[1.5]*len(hlines_list)),
+        returnfig=True,
+        tight_layout=True
+    )
+
+    axes[0].set_title(f"BTC/USDT | 1H | {title}", fontsize=20, fontweight='bold', pad=15)
+    
+    ax_main = axes[0]
+    fig.text(0.5, 0.5, 'ARGUS', alpha=0.1, fontsize=100, ha='center', va='center', color='white', rotation=30)
+
+    # Плашки линий
+    if event["type"] == "ENTRY":
+        ax_main.text(0.01, entry_price, ' ВХОД', color='white', fontsize=12, fontweight='bold', va='center', ha='left', bbox=dict(facecolor='blue', alpha=0.8, edgecolor='none', boxstyle='round,pad=0.2'), transform=ax_main.get_yaxis_transform())
+        ax_main.text(0.01, sl_price, ' СТОП', color='white', fontsize=12, fontweight='bold', va='center', ha='left', bbox=dict(facecolor='#ef5350', alpha=0.8, edgecolor='none', boxstyle='round,pad=0.2'), transform=ax_main.get_yaxis_transform())
+        ax_main.text(0.01, tp_price, ' ТЕЙК', color='white', fontsize=12, fontweight='bold', va='center', ha='left', bbox=dict(facecolor='#26a69a', alpha=0.8, edgecolor='none', boxstyle='round,pad=0.2'), transform=ax_main.get_yaxis_transform())
+    else:
+        ax_main.text(0.01, entry_price, ' ВХОД', color='white', fontsize=12, fontweight='bold', va='center', ha='left', bbox=dict(facecolor='blue', alpha=0.8, edgecolor='none', boxstyle='round,pad=0.2'), transform=ax_main.get_yaxis_transform())
+        ax_main.text(0.01, exit_price, ' ВЫХОД', color='white', fontsize=12, fontweight='bold', va='center', ha='left', bbox=dict(facecolor='orange', alpha=0.8, edgecolor='none', boxstyle='round,pad=0.2'), transform=ax_main.get_yaxis_transform())
+
+    # Плашка текущей цены
+    ax_main.annotate(
+        f' {last_close:,.2f} ',
+        xy=(1.0, last_close),
+        xycoords=('axes fraction', 'data'),
+        xytext=(3, 0),
+        textcoords='offset points',
+        color='black',
+        bbox=dict(boxstyle="round,pad=0.5", fc=last_color, ec=last_color, lw=1),
+        fontsize=14, fontweight='bold', va='center', ha='left'
+    )
 
     buf = io.BytesIO()
-    fig, axes = mpf.plot(
-        df, type='candle', style=s, title=title, 
-        addplot=apds, hlines=hlines, 
-        figsize=(10, 6), returnfig=True, 
-        volume=False, warn_too_much_data=1000
-    )
-    fig.savefig(buf, format='png', dpi=120, facecolor=fig.get_facecolor(), bbox_inches='tight')
-    plt.close(fig)
+    fig.savefig(buf, format='png', dpi=150, facecolor=fig.get_facecolor(), bbox_inches='tight', pad_inches=0.2)
     buf.seek(0)
+    plt.close(fig)
     return buf.getvalue()
 
 def get_stats_text(mode):
@@ -170,7 +269,7 @@ def get_stats_text(mode):
             f"💰 Баланс: <b>${balance:.2f}</b> (PnL: <b>{pnl_sign}${total_pnl:.2f}</b>)")
 
 def main():
-    log.info("STARTING SIGNAL REPORT v6.0 (PRIVATE CHANNEL)")
+    log.info("STARTING SIGNAL REPORT v7.0")
     queue = load_json(INFO_DEAL, [])
     if not isinstance(queue, list) or not queue:
         return log.info("No new events in queue.")
@@ -181,7 +280,7 @@ def main():
         deal_type = event.get("deal_type", "LONG")
         text = ""
         
-        # 1. ОТКРЫТИЕ СДЕЛКИ
+        # 1. ОТКРЫТИЕ
         if event["type"] == "ENTRY":
             entry, tp, sl = float(event["entry"]), float(event["tp"]), float(event["sl"])
             action = "ПОКУПКА" if deal_type == "LONG" else "ПРОДАЖА"
@@ -190,24 +289,19 @@ def main():
                 text += f"🎯 <b>Тейк:</b> {fmt(tp)} ({(tp-entry)/entry*100:+.2f}%)\n🛑 <b>Стоп:</b> {fmt(sl)} ({(sl-entry)/entry*100:+.2f}%)\n"
             else:
                 text += f"🎯 <b>Тейк:</b> {fmt(tp)} ({(entry-tp)/entry*100:+.2f}%)\n🛑 <b>Стоп:</b> {fmt(sl)} ({(entry-sl)/entry*100:+.2f}%)\n"
-            
             text += "\n" + get_stats_text(event.get("mode", "swing"))
-            
-            chart = draw_chart(event)
-            if chart:
-                if send_tg_photo(chart, text): sent_any = True
-            else:
-                if send_tg_text(text): sent_any = True
 
-        # 2. ПОДТЯЖКА СТОПА
+        # 2. ПОДТЯЖКА
         elif event["type"] == "UPDATE":
             text = (f"🟡 <b>ПОДТЯЖКА СТОПА: {mode_name}</b>\n\n"
                     f"<b>Сделка {deal_type} все еще в работе!</b>\n"
                     f"🛑 <b>Новый стоп:</b> {fmt(event['new_sl'])} ({event['sl_pct']:+.2f}%)\n"
                     f"<i>Бот защищает профит.</i>")
+            # Трейлинг шлем текстом, без графика
             if send_tg_text(text): sent_any = True
+            continue 
 
-        # 3. ЗАКРЫТИЕ СДЕЛКИ
+        # 3. ЗАКРЫТИЕ
         elif event["type"] == "CLOSE":
             pnl = event["pnl_usd"]
             sign = "+" if pnl >= 0 else ""
@@ -227,14 +321,14 @@ def main():
                     f"📊 <b>Причина:</b> {reason_text}\n"
                     f"💰 <b>PnL:</b> {sign}{event['pnl_pct']}% ({sign}${pnl:.2f})\n"
                     f"💼 <b>Баланс:</b> ${event.get('new_balance', 0):.2f}\n")
-            
             text += "\n" + get_stats_text(event.get("mode", "swing"))
 
-            chart = draw_chart(event)
-            if chart:
-                if send_tg_photo(chart, text): sent_any = True
-            else:
-                if send_tg_text(text): sent_any = True
+        # Отрисовка и отправка
+        chart = draw_chart(event)
+        if chart:
+            if send_tg_photo(chart, text): sent_any = True
+        else:
+            if send_tg_text(text): sent_any = True
 
         if sent_any:
             log.info(f"Sent {event['type']} ({event.get('mode')}) to PRIVATE CHANNEL.")
