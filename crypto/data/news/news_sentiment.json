@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-14T21:05:37.320695+00:00",
-  "total_news": 92,
-  "avg_sentiment": -0.315,
+  "generated_at": "2026-11-14T22:05:36.520110+00:00",
+  "total_news": 86,
+  "avg_sentiment": -0.372,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 10,
-  "bearish_count": 30,
-  "neutral_count": 52,
+  "bullish_count": 8,
+  "bearish_count": 28,
+  "neutral_count": 50,
   "fake_count": 0,
   "cross_confirmed": 6,
   "by_source": {
@@ -26,18 +26,13 @@
     },
     "CryptoSlate": {
       "total": 8,
-      "bull": 0,
+      "bull": 1,
       "bear": 3
     },
     "CryptoPotato": {
       "total": 26,
       "bull": 2,
       "bear": 13
-    },
-    "Bitcoinist": {
-      "total": 6,
-      "bull": 3,
-      "bear": 2
     },
     "ForkLog": {
       "total": 7,
@@ -47,20 +42,20 @@
   },
   "top_bullish": [
     {
-      "title": "Cobra Warns AI Threatens Bitcoin Self-Custody as Winter Looms",
-      "url": "https://news.bitcoin.com/crypto-news/cobra-warns-ai-threatens-bitcoin-self-custody-as-winter-looms/",
-      "source": "Bitcoin.com",
+      "title": "Crypto’s $168 million election: 78 winners, 13 newcomers and one costly defeat",
+      "url": "https://cryptoslate.com/cryptos-168-million-election-78-winners-13-newcomers-and-one-costly-defeat/",
+      "source": "CryptoSlate",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-11-14T20:45:28+00:00",
+      "pub_date": "2026-11-14T21:40:06+00:00",
       "sentiment": 1.0,
       "bull_weight": 1.2,
       "bear_weight": 0.0,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-14T21:05:35.652338+00:00",
+      "collected_at": "2026-11-14T22:05:35.184496+00:00",
       "effective_weight": 1.5,
-      "title_original": "Cobra Warns AI Threatens Bitcoin Self-Custody as Winter Looms",
+      "title_original": "Crypto’s $168 million election: 78 winners, 13 newcomers and one costly defeat",
       "cross_check": 1
     },
     {
@@ -75,26 +70,26 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-14T21:05:35.275264+00:00",
+      "collected_at": "2026-11-14T22:05:34.319648+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin ETFs shed $2.35B in 2 weeks, BlackRock’s losing streak hits 11",
       "cross_check": 1
     },
     {
-      "title": "Adam Back makes case for simpler security as Blockstream launches Bitcoin custody system",
-      "url": "https://cointelegraph.com/news/adam-back-simpler-security-blockstream-bitcoin-custody-system?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
+      "title": "Cobra Warns AI Threatens Bitcoin Self-Custody as Winter Looms",
+      "url": "https://news.bitcoin.com/crypto-news/cobra-warns-ai-threatens-bitcoin-self-custody-as-winter-looms/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-11-13T21:49:27+00:00",
+      "pub_date": "2026-11-14T20:45:28+00:00",
       "sentiment": 1.0,
-      "bull_weight": 1.0,
+      "bull_weight": 1.2,
       "bear_weight": 0.0,
-      "freshness": 0.8,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-14T21:05:35.275337+00:00",
-      "effective_weight": 1.04,
-      "title_original": "Adam Back makes case for simpler security as Blockstream launches Bitcoin custody system",
+      "collected_at": "2026-11-14T22:05:35.073041+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Cobra Warns AI Threatens Bitcoin Self-Custody as Winter Looms",
       "cross_check": 1
     },
     {
@@ -109,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-14T21:05:35.955898+00:00",
+      "collected_at": "2026-11-14T22:05:35.334015+00:00",
       "effective_weight": 1.0,
       "title_original": "JPMorgan Lifts Strategy Stake 36% and Holds $540M in BlackRock’s Bitcoin ETF",
       "cross_check": 1
@@ -126,7 +121,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-14T21:05:35.405206+00:00",
+      "collected_at": "2026-11-14T22:05:34.441355+00:00",
       "effective_weight": 0.88,
       "title_original": "OpenAI Launches ChatGPT Wallet to Let AI Agents Shop—Without Crypto",
       "cross_check": 1
@@ -145,7 +140,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-14T21:05:35.652434+00:00",
+      "collected_at": "2026-11-14T22:05:35.073078+00:00",
       "effective_weight": 1.0,
       "title_original": "Unocoin Admits $200K Crypto Loss, Warns of Customer Data Breach",
       "cross_check": 1
@@ -162,7 +157,7 @@
       "bear_weight": 1.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-14T21:05:35.652520+00:00",
+      "collected_at": "2026-11-14T22:05:35.073115+00:00",
       "effective_weight": 1.0,
       "title_original": "Fed Rate Hike Odds Reach Near-Certainty as Bitcoin Price Falls to $65K",
       "cross_check": 1
@@ -179,26 +174,9 @@
       "bear_weight": 1.8,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-14T21:05:35.804786+00:00",
+      "collected_at": "2026-11-14T22:05:35.184658+00:00",
       "effective_weight": 1.0,
       "title_original": "Binance says stolen crypto has been replaced but some customers have to wait",
-      "cross_check": 1
-    },
-    {
-      "title": "Analyst Explains Why Bitcoin Dumped to $65K on Saturday: Details",
-      "url": "https://cryptopotato.com/analyst-explains-why-bitcoin-dumped-to-65k-on-saturday-details/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-14T19:47:28+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-14T21:05:35.955826+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Analyst Explains Why Bitcoin Dumped to $65K on Saturday: Details",
       "cross_check": 1
     },
     {
@@ -213,10 +191,27 @@
       "bear_weight": 2.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-14T21:05:35.956070+00:00",
+      "collected_at": "2026-11-14T22:05:35.334097+00:00",
       "effective_weight": 1.0,
       "title_original": "Ripple Price Analysis: Is the Worst Yet to Come as XRP Dumps to a 2-Year Low?",
       "cross_check": 1
+    },
+    {
+      "title": "Nakamoto Debt Dwarfs Market Cap as Bitcoin Price Plunges Below $67K",
+      "url": "https://news.bitcoin.com/finance/nakamoto-debt-dwarfs-market-cap-as-bitcoin-price-plunges-below-67k/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-14T14:45:09+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 2.5,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-14T22:05:35.073221+00:00",
+      "effective_weight": 0.8,
+      "title_original": "Nakamoto Debt Dwarfs Market Cap as Bitcoin Price Plunges Below $67K",
+      "cross_check": 2
     }
   ]
 }
