@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - SIGNAL BOT v9.3.6 (BULLETPROOF TRAILING)
+# ARGUS - SIGNAL BOT v9.3.7 (CHART DATA SUPPORT)
 # Path: crypto/signals/signal_bot.py
 # ============================================================
 
@@ -15,7 +15,7 @@ import pandas as pd
 import numpy as np
 import xgboost as xgb
 
-VERSION = "9.3.6"
+VERSION = "9.3.7"
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("crypto.signal_bot")
 
@@ -162,7 +162,6 @@ def process_mode(mode, deals, bot_info, models, df_1h, config):
         sl = float(deal['sl'])
         tp = float(deal['tp'])
         
-        # Берем все свечи с момента открытия сделки (включая текущую)
         deal_open_time = datetime.fromisoformat(deal["open_time"])
         df_to_check = df_1h[df_1h['open_time'] >= deal_open_time - timedelta(hours=1)]
         
@@ -171,7 +170,6 @@ def process_mode(mode, deals, bot_info, models, df_1h, config):
 
         exit_reason, exit_price = None, float(df_1h.iloc[-1]['close'])
         
-        # Инициализация экстремумов
         max_price = entry
         min_price = entry
         
@@ -182,21 +180,18 @@ def process_mode(mode, deals, bot_info, models, df_1h, config):
             row_atr = float(row['atr_14']) if pd.notna(row['atr_14']) else 0.0
 
             if deal_type == "LONG":
-                # 1. Обновляем абсолютный максимум
                 if row['high'] > max_price: max_price = row['high']
                 
-                # 2. Трейлинг (если ATR есть и цена ушла выше активации)
                 if row_atr > 0 and max_price >= entry * (1 + act_pct/100):
                     atr_sl = max_price - (row_atr * atr_mult)
                     breakeven_sl = entry * (1 + (fee_pct * 2))
                     new_sl = max(atr_sl, breakeven_sl)
                     
-                    if new_sl > sl + 0.01: # Двигаем только если есть реальный сдвиг
+                    if new_sl > sl + 0.01:
                         sl = round(new_sl, 2)
                         sl_pct = (sl-entry)/entry*100
                         append_event({"type": "UPDATE", "mode": mode, "deal_type": deal_type, "new_sl": sl, "sl_pct": round(sl_pct, 2)})
 
-                # 3. Проверка выхода (ВСЕГДА, даже если ATR=0)
                 if row['low'] <= sl: 
                     exit_reason = "TRAILING_STOP" if sl > entry else "STOP_LOSS"
                     exit_price = sl
@@ -206,21 +201,18 @@ def process_mode(mode, deals, bot_info, models, df_1h, config):
                     exit_price = tp
                     return True
             else: # SHORT
-                # 1. Обновляем абсолютный минимум
                 if row['low'] < min_price: min_price = row['low']
                 
-                # 2. Трейлинг (если ATR есть и цена ушла ниже активации)
                 if row_atr > 0 and min_price <= entry * (1 - act_pct/100):
                     atr_sl = min_price + (row_atr * atr_mult)
                     breakeven_sl = entry * (1 - (fee_pct * 2))
                     new_sl = min(atr_sl, breakeven_sl)
                     
-                    if new_sl < sl - 0.01: # Двигаем только если есть реальный сдвиг
+                    if new_sl < sl - 0.01:
                         sl = round(new_sl, 2)
                         sl_pct = (entry-sl)/entry*100
                         append_event({"type": "UPDATE", "mode": mode, "deal_type": deal_type, "new_sl": sl, "sl_pct": round(sl_pct, 2)})
 
-                # 3. Проверка выхода (ВСЕГДА)
                 if row['high'] >= sl: 
                     exit_reason = "TRAILING_STOP" if sl < entry else "STOP_LOSS"
                     exit_price = sl
@@ -231,16 +223,13 @@ def process_mode(mode, deals, bot_info, models, df_1h, config):
                     return True
             return False
 
-        # Перебираем свечи
         for _, row in df_to_check.iterrows():
             if check_candle(row): break
 
-        # Принудительное закрытие Intraday в 19:00
         close_h = cfg.get("close_hour_utc")
         if not exit_reason and mode == "intraday" and close_h is not None and now_utc.hour >= close_h:
             exit_reason, exit_price = "TIME_EXIT_DAY", float(df_1h.iloc[-1]['close'])
 
-        # Выход по времени для Swing
         if not exit_reason and mode == "swing":
             time_held = (now_utc - deal_open_time).total_seconds() / 3600.0
             time_exit_h = models[mode][deal_type.lower()]["params"].get("time_exit_h", 24)
@@ -253,9 +242,11 @@ def process_mode(mode, deals, bot_info, models, df_1h, config):
             pnl_usd = bot_info[mode]["balance"] * (pnl_pct / 100)
             bot_info[mode]["balance"] = round(bot_info[mode]["balance"] + pnl_usd, 2)
             
+            # ДОБАВЛЕНЫ ENTRY И OPEN_TIME ДЛЯ ГРАФИКОВ
             append_event({
                 "type": "CLOSE", "mode": mode, "deal_type": deal_type, "reason": exit_reason, 
-                "pnl_pct": round(pnl_pct, 2), "pnl_usd": round(pnl_usd, 2), "new_balance": bot_info[mode]["balance"]
+                "pnl_pct": round(pnl_pct, 2), "pnl_usd": round(pnl_usd, 2), "new_balance": bot_info[mode]["balance"],
+                "entry": entry, "open_time": deal["open_time"]
             })
             
             closed = load_json(CLOSED_DEALS, [])
@@ -268,7 +259,7 @@ def process_mode(mode, deals, bot_info, models, df_1h, config):
             save_json(BOT_INFO, bot_info)
             save_json(OPENED_DEALS, deals)
         else:
-            deal['sl'] = sl # Фиксируем стоп в сделке
+            deal['sl'] = sl
             bot_info[mode]["last_check_ts"] = now_utc.isoformat()
             save_json(BOT_INFO, bot_info)
             save_json(OPENED_DEALS, deals)
