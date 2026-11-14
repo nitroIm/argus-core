@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - SIGNAL REPORT v8.2 (FIXED MPF COLUMNS)
+# ARGUS - SIGNAL REPORT v8.4 (INFO + PADDING + PRICES)
 # Path: crypto/report/signal_bot_report.py
 # ============================================================
 
@@ -67,7 +67,6 @@ def get_db_candles():
         if not rows: return None
         
         rows = list(reversed(rows))
-        # ВАЖНО: ТУТ КОЛОНКИ С БОЛЬШОЙ БУКВЫ (Open, High, Low, Close, Volume)
         df = pd.DataFrame(rows, columns=['Date', 'Open', 'High', 'Low', 'Close', 'Volume'])
         df['Date'] = pd.to_datetime(df['Date'], utc=True)
         df = df.set_index('Date')
@@ -82,16 +81,11 @@ def draw_chart(event):
         df = get_db_candles()
         if df is None or df.empty: return None
 
-        # ВАЖНО: ТУТ ТОЖЕ БОЛЬШИЕ БУКВЫ В СЛОВАРЕ
         df_1h = df.resample('1h').agg({
-            'Open': 'first', 
-            'High': 'max', 
-            'Low': 'min', 
-            'Close': 'last', 
-            'Volume': 'sum'
+            'Open': 'first', 'High': 'max', 'Low': 'min', 'Close': 'last', 'Volume': 'sum'
         }).dropna()
         
-        df = df_1h.tail(45).copy()
+        df = df_1h.tail(40).copy() # Берем 40 свечей, чтобы оставить место справа
         
         entry_price = float(event.get("entry", 0))
         
@@ -100,10 +94,9 @@ def draw_chart(event):
             tp_price = float(event["tp"])
             title = f"Вход {deal_type}"
         else:
-            exit_price = float(event.get("exit", 0))
+            exit_price = float(event.get("exit", entry_price))
             title = f"Выход {deal_type}"
 
-        # MACD
         exp12 = df['Close'].ewm(span=12, adjust=False).mean()
         exp26 = df['Close'].ewm(span=26, adjust=False).mean()
         macd_line = exp12 - exp26
@@ -165,24 +158,27 @@ def draw_chart(event):
             marker_exit = 'v' if deal_type == "LONG" else '^'
             apds.append(mpf.make_addplot(scatter_exit, type='scatter', markersize=350, marker=marker_exit, color='#ef5350', edgecolors='white', linewidths=1.5, panel=0))
 
+        # ДОБАВЛЯЕМ 5 ПУСТЫХ СВЕЧЕЙ СПРАВА, ЧТОБЫ ГРАФИК НЕ УПИРАЛСЯ В КРАЙ
         fig, axes = mpf.plot(
             df, type='candle', style=s, ylabel='', ylabel_lower='', volume=True, addplot=apds,
             panel_ratios=(7, 1.5, 3), figsize=(14, 10), ylim=(ymin, ymax),
             hlines=dict(hlines=hlines_list, colors=hlines_colors, linestyle='--', linewidths=[1.5]*len(hlines_list)),
-            returnfig=True, tight_layout=True
+            returnfig=True, tight_layout=True,
+            xlim=(0, len(df) + 5) # <--- ОТСТУП СПРАВА
         )
 
         axes[0].set_title(f"BTC/USDT | 1H | {title}", fontsize=20, fontweight='bold', pad=15)
         ax_main = axes[0]
         fig.text(0.5, 0.5, 'ARGUS', alpha=0.1, fontsize=100, ha='center', va='center', color='white', rotation=30)
 
+        # ПОДПИСИ С ЦЕНАМИ
         if event["type"] == "ENTRY":
-            ax_main.text(0.01, entry_price, ' ВХОД', color='white', fontsize=12, fontweight='bold', va='center', ha='left', bbox=dict(facecolor='blue', alpha=0.8, edgecolor='none', boxstyle='round,pad=0.2'), transform=ax_main.get_yaxis_transform())
-            ax_main.text(0.01, sl_price, ' СТОП', color='white', fontsize=12, fontweight='bold', va='center', ha='left', bbox=dict(facecolor='#ef5350', alpha=0.8, edgecolor='none', boxstyle='round,pad=0.2'), transform=ax_main.get_yaxis_transform())
-            ax_main.text(0.01, tp_price, ' ТЕЙК', color='white', fontsize=12, fontweight='bold', va='center', ha='left', bbox=dict(facecolor='#26a69a', alpha=0.8, edgecolor='none', boxstyle='round,pad=0.2'), transform=ax_main.get_yaxis_transform())
+            ax_main.text(0.01, entry_price, f' ВХОД: {entry_price:,.2f}', color='white', fontsize=12, fontweight='bold', va='center', ha='left', bbox=dict(facecolor='blue', alpha=0.8, edgecolor='none', boxstyle='round,pad=0.2'), transform=ax_main.get_yaxis_transform())
+            ax_main.text(0.01, sl_price, f' СТОП: {sl_price:,.2f}', color='white', fontsize=12, fontweight='bold', va='center', ha='left', bbox=dict(facecolor='#ef5350', alpha=0.8, edgecolor='none', boxstyle='round,pad=0.2'), transform=ax_main.get_yaxis_transform())
+            ax_main.text(0.01, tp_price, f' ТЕЙК: {tp_price:,.2f}', color='white', fontsize=12, fontweight='bold', va='center', ha='left', bbox=dict(facecolor='#26a69a', alpha=0.8, edgecolor='none', boxstyle='round,pad=0.2'), transform=ax_main.get_yaxis_transform())
         else:
-            ax_main.text(0.01, entry_price, ' ВХОД', color='white', fontsize=12, fontweight='bold', va='center', ha='left', bbox=dict(facecolor='blue', alpha=0.8, edgecolor='none', boxstyle='round,pad=0.2'), transform=ax_main.get_yaxis_transform())
-            ax_main.text(0.01, exit_price, ' ВЫХОД', color='white', fontsize=12, fontweight='bold', va='center', ha='left', bbox=dict(facecolor='orange', alpha=0.8, edgecolor='none', boxstyle='round,pad=0.2'), transform=ax_main.get_yaxis_transform())
+            ax_main.text(0.01, entry_price, f' ВХОД: {entry_price:,.2f}', color='white', fontsize=12, fontweight='bold', va='center', ha='left', bbox=dict(facecolor='blue', alpha=0.8, edgecolor='none', boxstyle='round,pad=0.2'), transform=ax_main.get_yaxis_transform())
+            ax_main.text(0.01, exit_price, f' ВЫХОД: {exit_price:,.2f}', color='white', fontsize=12, fontweight='bold', va='center', ha='left', bbox=dict(facecolor='orange', alpha=0.8, edgecolor='none', boxstyle='round,pad=0.2'), transform=ax_main.get_yaxis_transform())
 
         ax_main.annotate(
             f' {last_close:,.2f} ', xy=(1.0, last_close), xycoords=('axes fraction', 'data'),
@@ -230,7 +226,7 @@ def get_stats_text(mode):
     return text
 
 def main():
-    log.info("STARTING SIGNAL REPORT v8.2")
+    log.info("STARTING SIGNAL REPORT v8.4")
     queue = load_json(INFO_DEAL, [])
     if not isinstance(queue, list) or not queue:
         return log.info("No new events in queue.")
@@ -275,8 +271,14 @@ def main():
             }
             reason_text = reasons_ru.get(reason_raw, reason_raw)
             
+            # ИНФОРМАТИВНОСТЬ В ТЕКСТЕ
+            entry_price_text = float(event.get("entry", 0))
+            exit_price_text = float(event.get("exit", 0))
+            
             text = (f"🔴 <b>СДЕЛКА ЗАКРЫТА: {mode_name}</b>\n\n"
                     f"<b>Результат ({deal_type}): {status}</b>\n"
+                    f"📥 <b>Вход:</b> {fmt(entry_price_text)}\n"
+                    f"📤 <b>Выход:</b> {fmt(exit_price_text)}\n"
                     f"📊 <b>Причина:</b> {reason_text}\n"
                     f"💰 <b>PnL:</b> {sign}{event['pnl_pct']}% ({sign}${pnl:.2f})\n"
                     f"💼 <b>Баланс:</b> ${event.get('new_balance', 0):.2f}\n")
