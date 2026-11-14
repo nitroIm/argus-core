@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - SIGNAL REPORT v8.0 (EXACT TEST CHART DESIGN)
+# ARGUS - SIGNAL REPORT v8.1 (ABSOLUTE BULLETPROOF)
 # Path: crypto/report/signal_bot_report.py
 # ============================================================
 
@@ -44,6 +44,7 @@ def send_tg_photo(image_bytes, caption):
     files = {'photo': ('chart.png', image_bytes, 'image/png')}
     data = {'chat_id': CHAT_ID, 'caption': caption, 'parse_mode': 'HTML'}
     r = requests.post(url, data=data, files=files, timeout=30)
+    if r.status_code != 200: log.error(f"TG Error: {r.text}")
     return r.status_code == 200
 
 def send_tg_text(text):
@@ -55,10 +56,10 @@ def send_tg_text(text):
 def fmt(p): return "$" + format(int(p), ",") if p >= 1000 else "$" + format(p, ".2f")
 
 def get_db_candles():
-    """Берет просто последние 150 15-минутных свечей, не ебет мозг с датами"""
     if not DB_URL: return None
     try:
         conn = psycopg.connect(DB_URL, connect_timeout=10)
+        # Берем просто последние 150 пятнадцатиминуток. Этого хватит на 37 часов.
         query = "SELECT open_time, open, high, low, close, volume FROM candles WHERE symbol='BTCUSDT' AND timeframe='15m' AND market_type='spot' ORDER BY open_time DESC LIMIT 150"
         with conn.cursor() as cur:
             cur.execute(query)
@@ -81,9 +82,10 @@ def draw_chart(event):
         df = get_db_candles()
         if df is None or df.empty: return None
 
+        # Склеиваем в 1 час
         df_1h = df.resample('1h').agg({'open': 'first', 'high': 'max', 'low': 'min', 'close': 'last', 'volume': 'sum'}).dropna()
         
-        # Оставляем ровно 45 свечей как на твоем скрине
+        # Берем ровно 45 свечей для идеальной картинки
         df = df_1h.tail(45).copy()
         
         entry_price = float(event.get("entry", 0))
@@ -141,7 +143,7 @@ def draw_chart(event):
             marker_type = '^' if deal_type == "LONG" else 'v'
             marker_color = '#26a69a' if deal_type == "LONG" else '#ef5350'
             
-            # Ставим стрелку на предпоследнюю свечу (где примерно был вход)
+            # Ставим стрелку входа на последнюю свечу
             scatter = pd.Series(np.nan, index=df.index)
             scatter.iloc[-1] = entry_price
             apds.append(mpf.make_addplot(scatter, type='scatter', markersize=350, marker=marker_type, color=marker_color, edgecolors='white', linewidths=1.5, panel=0))
@@ -149,7 +151,7 @@ def draw_chart(event):
             hlines_list.append(exit_price)
             hlines_colors.append('orange')
             
-            # Вход ставим на 10-ю свечу с конца, выход на последнюю
+            # Стрелка входа на 10-ю свечу с конца, стрелка выхода на последнюю
             scatter_entry = pd.Series(np.nan, index=df.index)
             scatter_entry.iloc[-10] = entry_price
             marker_entry = '^' if deal_type == "LONG" else 'v'
@@ -192,7 +194,7 @@ def draw_chart(event):
         plt.close(fig)
         return buf.getvalue()
     except Exception as e:
-        log.error(f"Chart error: {e}")
+        log.error(f"CHART ERROR: {e}")
         return None
 
 def get_stats_text(mode):
@@ -225,7 +227,7 @@ def get_stats_text(mode):
     return text
 
 def main():
-    log.info("STARTING SIGNAL REPORT v8.0")
+    log.info("STARTING SIGNAL REPORT v8.1")
     queue = load_json(INFO_DEAL, [])
     if not isinstance(queue, list) or not queue:
         return log.info("No new events in queue.")
