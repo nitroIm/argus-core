@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - SIGNAL REPORT v7.1 (FIXED CHARTS & STATUS)
+# ARGUS - SIGNAL REPORT v7.2 (BREAKEVEN STATS)
 # Path: crypto/report/signal_bot_report.py
 # ============================================================
 
@@ -61,25 +61,19 @@ def get_db_candles(start_time_str, end_time_str=None):
         conn = psycopg.connect(DB_URL, connect_timeout=10)
         query = "SELECT open_time, open, high, low, close, volume FROM candles WHERE symbol='BTCUSDT' AND timeframe='15m' AND market_type='spot' AND open_time >= %s"
         params = [start_time_str]
-        
         if end_time_str:
             query += " AND open_time <= %s"
             params.append(end_time_str)
-            
         query += " ORDER BY open_time ASC"
-        
         with conn.cursor() as cur:
             cur.execute(query, tuple(params))
             rows = cur.fetchall()
         conn.close()
-        
         if not rows: return None
-        
         df = pd.DataFrame(rows, columns=['Date', 'Open', 'High', 'Low', 'Close', 'Volume'])
         df['Date'] = pd.to_datetime(df['Date'], utc=True)
         df = df.set_index('Date')
-        df = df.astype(float)
-        return df
+        return df.astype(float)
     except Exception as e:
         log.error(f"DB Error: {e}")
         return None
@@ -96,28 +90,20 @@ def draw_chart(event):
             title = f"Вход {deal_type}"
         else:
             open_time = event.get("open_time")
-            if not open_time: 
-                log.error("Нет open_time для графика")
-                return None
+            if not open_time: return None
             start_dt = datetime.fromisoformat(open_time) - timedelta(hours=12)
             end_dt = datetime.now(timezone.utc) + timedelta(hours=2)
             df = get_db_candles(start_dt.isoformat(), end_dt.isoformat())
             title = f"Выход {deal_type}"
 
-        if df is None or df.empty:
-            log.error("Нет данных свечей для графика")
-            return None
+        if df is None or df.empty: return None
 
         df_1h = df.resample('1h').agg({'open': 'first', 'high': 'max', 'low': 'min', 'close': 'last', 'volume': 'sum'}).dropna()
-        
-        # Если сделка была короткой, свечей может быть мало. Берем сколько есть, но не меньше 3.
-        if len(df_1h) < 3:
-            log.error("Слишком мало данных для графика")
-            return None
+        if len(df_1h) < 3: return None
             
         df = df_1h.tail(45).copy()
-
         entry_price = float(event.get("entry", 0))
+        
         if event["type"] == "ENTRY":
             sl_price = float(event["sl"])
             tp_price = float(event["tp"])
@@ -223,26 +209,39 @@ def draw_chart(event):
         return buf.getvalue()
     except Exception as e:
         log.error(f"Ошибка при отрисовке графика: {e}")
-        return None # Если график упал, отправим хотя бы текст
+        return None
 
 def get_stats_text(mode):
     info = load_json(BOT_INFO, {}).get(mode, {})
     closed = [t for t in load_json(CLOSED_DEALS, []) if t.get("mode") == mode]
+    
     total = len(closed)
     wins = sum(1 for t in closed if t.get("pnl_usd", 0) > 0)
-    losses = total - wins
-    winrate = (wins / total * 100) if total > 0 else 0
+    losses = sum(1 for t in closed if t.get("pnl_usd", 0) < 0)
+    breakeven = total - wins - losses
+    
+    real_trades = wins + losses
+    winrate = (wins / real_trades * 100) if real_trades > 0 else 0
+    
     balance = info.get("balance", 100.0)
     total_pnl = balance - info.get("start_balance", 100.0)
     pnl_sign = "+" if total_pnl >= 0 else ""
-    return (f"────────────────────\n"
+    
+    text = (f"────────────────────\n"
             f"📊 <b>Статистика {mode.upper()}:</b>\n"
-            f"📈 Сделок: {total} ({wins} ✅ / {losses} ❌)\n"
-            f"🎯 Винрейт: <b>{winrate:.1f}%</b>\n"
-            f"💰 Баланс: <b>${balance:.2f}</b> (PnL: <b>{pnl_sign}${total_pnl:.2f}</b>)")
+            f"📈 Сделок: {total} ({wins} ✅ / {losses} ❌")
+    
+    if breakeven > 0:
+        text += f" / {breakeven} ⚖️"
+        
+    text += (f")\n"
+             f"🎯 Винрейт: <b>{winrate:.1f}%</b>\n"
+             f"💰 Баланс: <b>${balance:.2f}</b> (PnL: <b>{pnl_sign}${total_pnl:.2f}</b>)")
+             
+    return text
 
 def main():
-    log.info("STARTING SIGNAL REPORT v7.1")
+    log.info("STARTING SIGNAL REPORT v7.2")
     queue = load_json(INFO_DEAL, [])
     if not isinstance(queue, list) or not queue:
         return log.info("No new events in queue.")
@@ -264,7 +263,6 @@ def main():
             text += "\n" + get_stats_text(event.get("mode", "swing"))
 
         elif event["type"] == "UPDATE":
-            # Убрал строку "Бот защищает профит"
             text = (f"🟡 <b>ПОДТЯЖКА СТОПА: {mode_name}</b>\n\n"
                     f"<b>Сделка {deal_type} все еще в работе!</b>\n"
                     f"🛑 <b>Новый стоп:</b> {fmt(event['new_sl'])} ({event['sl_pct']:+.2f}%)\n")
@@ -274,7 +272,6 @@ def main():
         elif event["type"] == "CLOSE":
             pnl = event["pnl_usd"]
             sign = "+" if pnl > 0 else ""
-            # Если 0, пишем БЕЗУБЫТОК
             if pnl > 0: status = "✅ УСПЕХ"
             elif pnl < 0: status = "❌ УБЫТОК"
             else: status = "⚖️ БЕЗУБЫТОК"
