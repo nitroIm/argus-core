@@ -316,5 +316,17 @@
     "mode": "swing",
     "close_time": "2026-11-14T21:33:02.179833+00:00",
     "balance_after": 105.52
+  },
+  {
+    "type": "SHORT",
+    "entry": 64477.95,
+    "exit": 64348.99,
+    "pnl_pct": 0.0,
+    "pnl_usd": 0.0,
+    "reason": "TRAILING_STOP",
+    "mode": "swing",
+    "close_time": "2026-11-14T22:12:12.065372+00:00",
+    "balance_after": 105.52,
+    "active_signals": []
   }
 ]
