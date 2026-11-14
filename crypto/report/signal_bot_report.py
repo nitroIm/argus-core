@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - SIGNAL REPORT v6.0 (CHARTS & MARKERS)
+# ARGUS - SIGNAL REPORT v6.0 (PRIVATE CHANNEL + CHARTS)
 # Path: crypto/report/signal_bot_report.py
 # ============================================================
 
@@ -26,8 +26,8 @@ BOT_INFO = SIGNALS_DIR / "bot_info.json"
 
 DB_URL = (os.getenv("AIVEN_DB_URL") or "").strip()
 BOT_TOKEN = (os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("BOT_TOKEN") or "").strip()
-# ДЛЯ ТЕСТА ОТПРАВЛЯЕМ В ЛИЧКУ (TELEGRAM_CHAT_ID), А НЕ В КАНАЛ
-CHAT_ID = (os.getenv("TELEGRAM_CHAT_ID") or "").strip()
+# ЖЕСТКО ЗАШИТ ID ЗАКРЫТОГО КАНАЛА
+CHAT_ID = (os.getenv("TG_CHANNEL_ID") or "-1004435496321").strip()
 
 def load_json(path, default=None):
     if not path.exists(): return default if default is not None else {}
@@ -43,7 +43,7 @@ def send_tg_photo(image_bytes, caption):
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendPhoto"
     files = {'photo': ('chart.png', image_bytes, 'image/png')}
     data = {'chat_id': CHAT_ID, 'caption': caption, 'parse_mode': 'HTML'}
-    r = requests.post(url, data=data, files=files, timeout=20)
+    r = requests.post(url, data=data, files=files, timeout=30)
     return r.status_code == 200
 
 def send_tg_text(text):
@@ -55,7 +55,6 @@ def send_tg_text(text):
 def fmt(p): return "$" + format(int(p), ",") if p >= 1000 else "$" + format(p, ".2f")
 
 def get_db_candles(start_time_str, end_time_str=None):
-    """Достаем свечи из базы для графика"""
     if not DB_URL: return None
     try:
         conn = psycopg.connect(DB_URL, connect_timeout=10)
@@ -84,12 +83,10 @@ def get_db_candles(start_time_str, end_time_str=None):
         return None
 
 def draw_chart(event):
-    """Рисует свечной график с отметками"""
     mode = event.get("mode", "swing")
     deal_type = event.get("deal_type", "LONG")
     
     if event["type"] == "ENTRY":
-        # Берем 40 свечей назад от текущего момента
         end_time = datetime.now(timezone.utc)
         start_time = end_time - timedelta(hours=10)
         df = get_db_candles(start_time.isoformat(), end_time.isoformat())
@@ -97,7 +94,6 @@ def draw_chart(event):
     else: # CLOSE
         open_time = event.get("open_time")
         if not open_time: return None
-        # Берем чуть больше времени, чтобы показать контекст до входа и после выхода
         start_dt = datetime.fromisoformat(open_time) - timedelta(hours=2)
         end_dt = datetime.now(timezone.utc) + timedelta(minutes=30)
         df = get_db_candles(start_dt.isoformat(), end_dt.isoformat())
@@ -106,11 +102,10 @@ def draw_chart(event):
     if df is None or df.empty:
         return None
 
-    # Настройки стиля (темная тема)
+    # Темная тема
     mc = mpf.make_marketcolors(up='#00ff87', down='#ff0044', edge='inherit', wick='inherit', volume='in')
     s  = mpf.make_mpf_style(marketcolors=mc, gridstyle='--', y_on_right=True, facecolor='#1e1e1e', edgecolor='gray', figcolor='#1e1e1e', gridcolor='#333333', rc={'axes.labelcolor': 'white', 'xtick.color': 'white', 'ytick.color': 'white'})
 
-    # Линии уровней
     hlines = dict(hlines=[], colors=[], linewidths=[])
     entry_price = float(event.get("entry", 0))
     
@@ -126,7 +121,6 @@ def draw_chart(event):
         hlines['colors'].extend(['blue', 'orange'])
         hlines['linewidths'].extend([1.5, 1.5])
 
-    # Пометки Buy/Sell (стрелочки)
     apds = []
     if event["type"] == "ENTRY":
         marker_price = entry_price
@@ -136,11 +130,9 @@ def draw_chart(event):
         apds.append(mpf.make_addplot(scatter, type='scatter', markersize=200, marker=marker_type, color=marker_color))
     else:
         entry_dt = datetime.fromisoformat(event["open_time"])
-        # Ищем ближайшую свечу к времени входа
         closest_entry_idx = df.index.get_indexer([entry_dt], method='nearest')[0]
         scatter_entry = pd.Series([entry_price], index=[df.index[closest_entry_idx]])
         
-        exit_dt = datetime.now(timezone.utc)
         scatter_exit = pd.Series([float(event["exit"])], index=[df.index[-1]])
         
         marker_entry = '^' if deal_type == "LONG" else 'v'
@@ -149,7 +141,6 @@ def draw_chart(event):
         apds.append(mpf.make_addplot(scatter_entry, type='scatter', markersize=200, marker=marker_entry, color='#00ff87'))
         apds.append(mpf.make_addplot(scatter_exit, type='scatter', markersize=200, marker=marker_exit, color='#ff0044'))
 
-    # Отрисовка
     buf = io.BytesIO()
     fig, axes = mpf.plot(
         df, type='candle', style=s, title=title, 
@@ -163,7 +154,6 @@ def draw_chart(event):
     return buf.getvalue()
 
 def get_stats_text(mode):
-    # (Оставляем как было)
     info = load_json(BOT_INFO, {}).get(mode, {})
     closed = [t for t in load_json(CLOSED_DEALS, []) if t.get("mode") == mode]
     total = len(closed)
@@ -180,7 +170,7 @@ def get_stats_text(mode):
             f"💰 Баланс: <b>${balance:.2f}</b> (PnL: <b>{pnl_sign}${total_pnl:.2f}</b>)")
 
 def main():
-    log.info("STARTING SIGNAL REPORT v6.0 (WITH CHARTS)")
+    log.info("STARTING SIGNAL REPORT v6.0 (PRIVATE CHANNEL)")
     queue = load_json(INFO_DEAL, [])
     if not isinstance(queue, list) or not queue:
         return log.info("No new events in queue.")
@@ -209,7 +199,7 @@ def main():
             else:
                 if send_tg_text(text): sent_any = True
 
-        # 2. ПОДТЯЖКА СТОПА (ТРЕЙЛИНГ)
+        # 2. ПОДТЯЖКА СТОПА
         elif event["type"] == "UPDATE":
             text = (f"🟡 <b>ПОДТЯЖКА СТОПА: {mode_name}</b>\n\n"
                     f"<b>Сделка {deal_type} все еще в работе!</b>\n"
@@ -247,7 +237,7 @@ def main():
                 if send_tg_text(text): sent_any = True
 
         if sent_any:
-            log.info(f"Sent {event['type']} ({event.get('mode')}) to TG.")
+            log.info(f"Sent {event['type']} ({event.get('mode')}) to PRIVATE CHANNEL.")
         
     if sent_any:
         save_json(INFO_DEAL, [])
