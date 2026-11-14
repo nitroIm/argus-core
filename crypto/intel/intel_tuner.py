@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - INTEL TUNER (SMART TRAILING & BREAKEVEN FIX)
+# ARGUS - INTEL TUNER v2.1 (FIXED WINRATE & DYNAMIC WEIGHTS)
 # Path: crypto/intel/intel_tuner.py
 # ============================================================
 
@@ -24,10 +24,13 @@ THRESHOLD_STEP = 0.1
 MIN_THRESHOLD = 1.5        
 MAX_THRESHOLD = 5.0        
 
-# НОВЫЕ НАСТРОЙКИ ДЛЯ ИСПРАВЛЕНИЯ БЕЗУБЫТКОВ
-MAX_BREAKEVENS = 2         # Если безубытков больше 2-х, расширяем стоп
-TRAILING_STEP = 0.2        # Шаг увеличения активации трейлинга
-ATR_STEP = 0.5             # Шаг увеличения множителя ATR
+# Настройки для весов и стопов
+MAX_BREAKEVENS = 2         
+TRAILING_STEP = 0.2        
+ATR_STEP = 0.5             
+WEIGHT_STEP = 0.05         # Шаг изменения весов индикаторов
+MIN_WEIGHT = 0.5
+MAX_WEIGHT = 2.0
 
 def load_json(path, default=None):
     if not path.exists(): return default if default is not None else {}
@@ -82,24 +85,43 @@ def analyze_deals_and_tune():
 
 def _tune_mode(mode_name, deals, config):
     if len(deals) < MIN_TRADES_TO_TUNE:
-        log.info(f"[{mode_name.upper()}] Мало сделок за 24ч ({len(deals)}). Порог не меняем.")
+        log.info(f"[{mode_name.upper()}] Мало сделок за 24ч ({len(deals)}). Настройки не меняем.")
         return
 
     wins = sum(1 for d in deals if d.get("pnl_usd", 0) > 0)
     losses = sum(1 for d in deals if d.get("pnl_usd", 0) < 0)
     breakevens = sum(1 for d in deals if d.get("pnl_usd", 0) == 0)
     
-    real_trades = wins + losses
-    winrate = (wins / real_trades * 100) if real_trades > 0 else 0
+    total_trades = len(deals)
+    # Считаем винрейт от ОБЩЕГО количества сделок, а не только от результативных
+    winrate = (wins / total_trades * 100) if total_trades > 0 else 0
     
     cfg_mode = config[mode_name]
     current_thresh = cfg_mode.get("threshold", 2.5)
     current_act = cfg_mode.get("trailing_activation_pct", 0.5)
     current_atr = cfg_mode.get("trailing_atr_multiplier", 1.5)
     
-    log.info(f"[{mode_name.upper()}] Сделок: {len(deals)} (W:{wins} L:{losses} B:{breakevens}) | Winrate: {winrate:.1f}%")
+    log.info(f"[{mode_name.upper()}] Сделок: {total_trades} (W:{wins} L:{losses} B:{breakevens}) | Общий Winrate: {winrate:.1f}%")
 
-    # 1. ЛОГИКА ПОРОГА (THRESHOLD)
+    # 1. ДИНАМИЧЕСКОЕ ОБНОВЛЕНИЕ ВЕСОВ
+    for deal in deals:
+        pnl = deal.get("pnl_usd", 0)
+        active = deal.get("active_signals", [])
+        
+        # Если профит - хвалим индикаторы. Если лосс - наказываем. (Безубыток не трогаем)
+        if pnl > 0: direction = 1
+        elif pnl < 0: direction = -1
+        else: direction = 0
+        
+        if direction != 0:
+            for sig in active:
+                if sig in cfg_mode["weights"]:
+                    old_w = cfg_mode["weights"][sig]
+                    new_w = old_w + (WEIGHT_STEP * direction)
+                    # Ограничиваем веса рамками, чтобы не уйти в крайности
+                    cfg_mode["weights"][sig] = round(max(MIN_WEIGHT, min(MAX_WEIGHT, new_w)), 2)
+
+    # 2. ЛОГИКА ПОРОГА (THRESHOLD)
     if winrate < 40.0:
         new_thresh = min(MAX_THRESHOLD, current_thresh + THRESHOLD_STEP)
         log.info(f"🔻 Винрейт < 40%. Поднимаем порог с {current_thresh} до {new_thresh}")
@@ -109,7 +131,7 @@ def _tune_mode(mode_name, deals, config):
         log.info(f"🔺 Винрейт > 65%. Снижаем порог с {current_thresh} до {new_thresh}")
         cfg_mode["threshold"] = round(new_thresh, 2)
 
-    # 2. ЛОГИКА БЕЗУБЫТКОВ (ЕСЛИ СТОП СЛИШКОМ ТЕСНЫЙ)
+    # 3. ЛОГИКА БЕЗУБЫТКОВ (ЕСЛИ СТОП СЛИШКОМ ТЕСНЫЙ)
     if breakevens > MAX_BREAKEVENS:
         new_act = current_act + TRAILING_STEP
         new_atr = current_atr + ATR_STEP
