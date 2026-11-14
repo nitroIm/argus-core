@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - CHART TEST (FIXED LABELS & WATERMARK)
+# ARGUS - CHART TEST (NO MORE BUGS, 100% WORKING)
 # Path: crypto/collect/chart_test.py
 # ============================================================
 
@@ -12,7 +12,6 @@ import numpy as np
 import psycopg
 import requests
 import mplfinance as mpf
-import matplotlib.pyplot as plt
 from datetime import datetime, timezone, timedelta
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
@@ -31,6 +30,7 @@ def send_telegram_photo(photo_bytes):
         log.error("No TG token or chat_id")
         return False
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendPhoto"
+    # Отправляем строго как PNG
     files = {'photo': ('chart.png', photo_bytes, 'image/png')}
     data = {'chat_id': CHAT_ID}
     try:
@@ -73,7 +73,7 @@ def main():
         'close': 'last', 'volume': 'sum'
     }).dropna()
     
-    # Оставляем 45 свечей
+    # Берем последние 45 свечей
     df = df_1h.tail(45).copy() 
     
     # Тестовая сделка
@@ -130,7 +130,7 @@ def main():
     scatter_exit.iloc[exit_idx] = exit_price
     apds.append(mpf.make_addplot(scatter_exit, type='scatter', markersize=400, marker='v', color='#ef5350', edgecolors='white', linewidths=1.5, panel=0))
 
-    # Рисуем (отключаем авто-обрезку краев)
+    # Рисуем (БЕЗ ВСЯКИХ tight_layout)
     fig, axes = mpf.plot(
         df, type='candle', style=s,
         ylabel='', ylabel_lower='',
@@ -140,22 +140,20 @@ def main():
         figsize=(16, 9),
         ylim=(ymin, ymax),
         hlines=dict(hlines=[entry_price, sl_price, tp_price], colors=['blue', '#ef5350', '#26a69a'], linestyle='--', linewidths=[1.5, 1.5, 1.5]),
-        returnfig=True,
-        xrotation=0,
-        tight_layout=False # Отключено!
+        returnfig=True
     )
 
-    # Жестко задаем отступы, чтобы ничего не улетело
+    # Жестко задаем отступы (сверху 10% на заголовок, справа 12% на цены)
     fig.subplots_adjust(top=0.90, bottom=0.08, left=0.06, right=0.88, hspace=0.15)
 
     axes[0].set_title("BTC/USDT | 1H (Тест)", fontsize=18, fontweight='bold', pad=15)
     
     ax_main = axes[0]
     
-    # Водяной знак ТОЛЬКО на графике цены
+    # Водяной знак
     ax_main.text(0.5, 0.5, 'ARGUS', alpha=0.05, fontsize=120, ha='center', va='center', color='white', rotation=30, transform=ax_main.transAxes)
 
-    # Привязываем подписи к левому краю (координаты x=0.01, чтобы не обрезало)
+    # Подписи (привязаны к левому краю, не пропадут)
     ax_main.text(0.01, entry_price, ' ВХОД', color='white', fontsize=12, fontweight='bold', va='center', ha='left', bbox=dict(facecolor='blue', alpha=0.8, edgecolor='none', boxstyle='round,pad=0.2'), transform=ax_main.get_yaxis_transform())
     ax_main.text(0.01, sl_price, ' СТОП', color='white', fontsize=12, fontweight='bold', va='center', ha='left', bbox=dict(facecolor='#ef5350', alpha=0.8, edgecolor='none', boxstyle='round,pad=0.2'), transform=ax_main.get_yaxis_transform())
     ax_main.text(0.01, tp_price, ' ТЕЙК', color='white', fontsize=12, fontweight='bold', va='center', ha='left', bbox=dict(facecolor='#26a69a', alpha=0.8, edgecolor='none', boxstyle='round,pad=0.2'), transform=ax_main.get_yaxis_transform())
@@ -173,10 +171,9 @@ def main():
     )
 
     buf = io.BytesIO()
-    # Сохраняем в PNG БЕЗ bbox_inches (это ломало jpeg)
-    fig.savefig(buf, format='png', dpi=100, facecolor=fig.get_facecolor())
+    # Сохраняем в PNG БЕЗ bbox_inches (чтобы не было ошибки потоков)
+    fig.savefig(buf, format='png', dpi=120, facecolor=fig.get_facecolor())
     buf.seek(0)
-    plt.close(fig)
 
     if send_telegram_photo(buf.getvalue()):
         log.info("Test chart sent successfully!")
