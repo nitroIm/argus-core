@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - CHART TEST (ZOOMED 1H + LABELS + FIXED SEND)
+# ARGUS - CHART TEST (FIXED TELEGRAM DIMENSIONS)
 # Path: crypto/collect/chart_test.py
 # ============================================================
 
@@ -31,7 +31,7 @@ def send_telegram_photo(photo_bytes):
         log.error("No TG token or chat_id")
         return False
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendPhoto"
-    files = {'photo': ('chart.png', photo_bytes)}
+    files = {'photo': ('chart.jpg', photo_bytes, 'image/jpeg')}
     data = {'chat_id': CHAT_ID}
     try:
         r = requests.post(url, files=files, data=data, timeout=30)
@@ -68,7 +68,7 @@ def main():
 
     df = pd.DataFrame(rows, columns=['open_time', 'open', 'high', 'low', 'close', 'volume'])
     df['open_time'] = pd.to_datetime(df['open_time'], utc=True)
-    df.set_index('open_time', inplace=True)
+    df = df.set_index('open_time') # Убрал inplace, чтобы не было Warning
     df = df.astype(float)
 
     # --- СКЛЕИВАЕМ В 1 ЧАС ---
@@ -77,7 +77,7 @@ def main():
         'close': 'last', 'volume': 'sum'
     }).dropna()
     
-    # --- ОБРЕЗАЕМ ДО ПОСЛЕДНИХ 70 СВЕЧЕЙ (чтобы было крупно) ---
+    # --- ОБРЕЗАЕМ ДО ПОСЛЕДНИХ 70 СВЕЧЕЙ ---
     df = df_1h.tail(70).copy() 
     
     # --- МОКАЕМ ТЕСТОВУЮ СДЕЛКУ ---
@@ -129,7 +129,7 @@ def main():
         mpf.make_addplot(signal_line, color='#9370DB', panel=2, width=1)
     ]
 
-    # --- УЛУЧШЕННЫЕ СТРЕЛКИ (с белой обводкой для контраста) ---
+    # Стрелки
     scatter_entry = pd.Series(np.nan, index=df.index)
     scatter_entry.iloc[entry_idx] = entry_price
     apds.append(mpf.make_addplot(scatter_entry, type='scatter', markersize=400, marker='^', 
@@ -165,19 +165,11 @@ def main():
     axes[0].set_title("BTC/USDT | 1H (Тест 70 свечей)", fontsize=20, fontweight='bold', pad=15)
     fig.text(0.5, 0.5, 'ARGUS', alpha=0.1, fontsize=100, ha='center', va='center', color='white', rotation=30)
 
-    # --- ПОДПИСИ К ЛИНИЯМ (Вход/Стоп/Тейк) ---
     ax_main = axes[0]
-    
-    # Подпись Входа
     ax_main.text(df.index[0], entry_price, ' ВХОД', color='white', fontsize=12, fontweight='bold', va='center', ha='left', bbox=dict(facecolor='blue', alpha=0.8, edgecolor='none', boxstyle='round,pad=0.2'))
-    
-    # Подпись Стопа
     ax_main.text(df.index[0], sl_price, ' СТОП', color='white', fontsize=12, fontweight='bold', va='center', ha='left', bbox=dict(facecolor='#ef5350', alpha=0.8, edgecolor='none', boxstyle='round,pad=0.2'))
-    
-    # Подпись Тейка
     ax_main.text(df.index[0], tp_price, ' ТЕЙК', color='white', fontsize=12, fontweight='bold', va='center', ha='left', bbox=dict(facecolor='#26a69a', alpha=0.8, edgecolor='none', boxstyle='round,pad=0.2'))
 
-    # Плашка текущей цены
     ax_main.annotate(
         f' {last_close:,.2f} ',
         xy=(1.0, last_close),
@@ -190,12 +182,12 @@ def main():
     )
 
     buf = io.BytesIO()
-    fig.savefig(buf, format='png', dpi=150, bbox_inches='tight', pad_inches=0.2, facecolor=fig.get_facecolor())
+    # СОХРАНЯЕМ В JPEG БЕЗ ОБРЕЗКИ КРАЕВ (чтобы Телеграм не ругался на размеры)
+    fig.savefig(buf, format='jpeg', dpi=100, facecolor=fig.get_facecolor())
     buf.seek(0)
     plt.close(fig)
 
     log.info("Sending zoomed chart to Telegram...")
-    # ТУТ ИСПРАВЛЕНО: buf.getvalue() вместо buf
     if send_telegram_photo(buf.getvalue()):
         log.info("Test chart sent successfully!")
     else:
