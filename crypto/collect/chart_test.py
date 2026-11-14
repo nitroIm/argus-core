@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - CHART TEST (FINAL, NO CROP BUG)
+# ARGUS - CHART TEST (FIXED LABELS & WATERMARK)
 # Path: crypto/collect/chart_test.py
 # ============================================================
 
@@ -31,7 +31,7 @@ def send_telegram_photo(photo_bytes):
         log.error("No TG token or chat_id")
         return False
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendPhoto"
-    files = {'photo': ('chart.jpg', photo_bytes, 'image/jpeg')}
+    files = {'photo': ('chart.png', photo_bytes, 'image/png')}
     data = {'chat_id': CHAT_ID}
     try:
         r = requests.post(url, files=files, data=data, timeout=30)
@@ -73,7 +73,7 @@ def main():
         'close': 'last', 'volume': 'sum'
     }).dropna()
     
-    # Оставляем 45 свечей (как на твоем скрине)
+    # Оставляем 45 свечей
     df = df_1h.tail(45).copy() 
     
     # Тестовая сделка
@@ -100,11 +100,11 @@ def main():
     # Отступы по Y-оси
     max_price = max(df['high'].max(), tp_price)
     min_price = min(df['low'].min(), sl_price)
-    padding = (max_price - min_price) * 0.15
+    padding = (max_price - min_price) * 0.1
     ymin, ymax = min_price - padding, max_price + padding
 
     rc = {
-        'axes.labelsize': 12, 'ytick.labelsize': 14, 'xtick.labelsize': 12,
+        'axes.labelsize': 12, 'ytick.labelsize': 14, 'xtick.labelsize': 14,
         'axes.titlesize': 18, 'figure.titlesize': 18,
     }
 
@@ -130,29 +130,37 @@ def main():
     scatter_exit.iloc[exit_idx] = exit_price
     apds.append(mpf.make_addplot(scatter_exit, type='scatter', markersize=400, marker='v', color='#ef5350', edgecolors='white', linewidths=1.5, panel=0))
 
-    # Рисуем
+    # Рисуем (отключаем авто-обрезку краев)
     fig, axes = mpf.plot(
         df, type='candle', style=s,
         ylabel='', ylabel_lower='',
         volume=True,
         addplot=apds,
         panel_ratios=(7, 2, 3),
-        figsize=(14, 10), # Пропорции под телефон
+        figsize=(16, 9),
         ylim=(ymin, ymax),
         hlines=dict(hlines=[entry_price, sl_price, tp_price], colors=['blue', '#ef5350', '#26a69a'], linestyle='--', linewidths=[1.5, 1.5, 1.5]),
         returnfig=True,
         xrotation=0,
-        tight_layout=False # Отключаем авто-обрезку
+        tight_layout=False # Отключено!
     )
 
-    # Жестко задаем отступы (сверху на заголовок, справа на цены)
-    fig.subplots_adjust(top=0.90, bottom=0.08, left=0.06, right=0.88, hspace=0.25)
+    # Жестко задаем отступы, чтобы ничего не улетело
+    fig.subplots_adjust(top=0.90, bottom=0.08, left=0.06, right=0.88, hspace=0.15)
 
     axes[0].set_title("BTC/USDT | 1H (Тест)", fontsize=18, fontweight='bold', pad=15)
-    fig.text(0.5, 0.5, 'ARGUS', alpha=0.05, fontsize=120, ha='center', va='center', color='white', rotation=30)
+    
+    ax_main = axes[0]
+    
+    # Водяной знак ТОЛЬКО на графике цены
+    ax_main.text(0.5, 0.5, 'ARGUS', alpha=0.05, fontsize=120, ha='center', va='center', color='white', rotation=30, transform=ax_main.transAxes)
+
+    # Привязываем подписи к левому краю (координаты x=0.01, чтобы не обрезало)
+    ax_main.text(0.01, entry_price, ' ВХОД', color='white', fontsize=12, fontweight='bold', va='center', ha='left', bbox=dict(facecolor='blue', alpha=0.8, edgecolor='none', boxstyle='round,pad=0.2'), transform=ax_main.get_yaxis_transform())
+    ax_main.text(0.01, sl_price, ' СТОП', color='white', fontsize=12, fontweight='bold', va='center', ha='left', bbox=dict(facecolor='#ef5350', alpha=0.8, edgecolor='none', boxstyle='round,pad=0.2'), transform=ax_main.get_yaxis_transform())
+    ax_main.text(0.01, tp_price, ' ТЕЙК', color='white', fontsize=12, fontweight='bold', va='center', ha='left', bbox=dict(facecolor='#26a69a', alpha=0.8, edgecolor='none', boxstyle='round,pad=0.2'), transform=ax_main.get_yaxis_transform())
 
     # Плашка цены
-    ax_main = axes[0]
     ax_main.annotate(
         f' {last_close:,.2f} ',
         xy=(1.0, last_close),
@@ -165,8 +173,8 @@ def main():
     )
 
     buf = io.BytesIO()
-    # Сохраняем БЕЗ bbox_inches, чтобы не было сбоя
-    fig.savefig(buf, format='jpeg', dpi=120, facecolor=fig.get_facecolor())
+    # Сохраняем в PNG БЕЗ bbox_inches (это ломало jpeg)
+    fig.savefig(buf, format='png', dpi=100, facecolor=fig.get_facecolor())
     buf.seek(0)
     plt.close(fig)
 
