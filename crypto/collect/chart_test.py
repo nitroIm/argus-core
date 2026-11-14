@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - CHART TEST (FINAL: SEPARATED LABELS + DYNAMIC SCALE)
+# ARGUS - CHART TEST (WITH MOCK TRADE MARKERS)
 # Path: crypto/collect/chart_test.py
 # ============================================================
 
@@ -11,12 +11,15 @@ import pandas as pd
 import psycopg
 import requests
 import mplfinance as mpf
+import matplotlib.pyplot as plt
+from datetime import datetime, timezone, timedelta
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("chart_test")
 
 DB_URL = (os.getenv("AIVEN_DB_URL") or "").strip()
 BOT_TOKEN = (os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("BOT_TOKEN") or "").strip()
+# ДЛЯ ТЕСТА ШЛЕМ В ЛИЧКУ (TELEGRAM_CHAT_ID)
 CHAT_ID = (os.getenv("TELEGRAM_CHAT_ID") or "").strip()
 
 def get_conn():
@@ -38,12 +41,13 @@ def send_telegram_photo(photo_bytes):
         return False
 
 def main():
-    log.info("STARTING CHART GENERATOR")
+    log.info("STARTING CHART GENERATOR WITH MOCK TRADE")
 
     try:
         conn = get_conn()
         with conn.cursor() as cur:
-            cur.execute("SELECT open_time, open, high, low, close, volume FROM candles WHERE symbol='BTCUSDT' AND timeframe='15m' AND market_type='spot' ORDER BY open_time ASC")
+            # Берем последние 300 свечей по 15 минут
+            cur.execute("SELECT open_time, open, high, low, close, volume FROM candles WHERE symbol='BTCUSDT' AND timeframe='15m' AND market_type='spot' ORDER BY open_time DESC LIMIT 300")
             rows = cur.fetchall()
         conn.close()
     except Exception as e:
@@ -54,101 +58,96 @@ def main():
         log.error("Not enough data in DB")
         sys.exit(1)
 
+    # Реверсируем, чтобы шло от старых к новым
+    rows = list(reversed(rows))
     df = pd.DataFrame(rows, columns=['open_time', 'open', 'high', 'low', 'close', 'volume'])
     df['open_time'] = pd.to_datetime(df['open_time'], utc=True)
     df.set_index('open_time', inplace=True)
     df = df.astype(float)
 
-    # Склеиваем в 1D
-    df_1d = df.resample('1D').agg({
-        'open': 'first', 'high': 'max', 'low': 'min',
-        'close': 'last', 'volume': 'sum'
-    }).dropna()
-
-    # Скользящее окно — последние 45 дней
-    df_1d = df_1d.tail(45)
-
-    if len(df_1d) < 15:
-        log.error("Not enough 1D candles after resample")
-        sys.exit(1)
+    # --- МОКАЕМ ТЕСТОВУЮ СДЕЛКУ (Берем середину графика) ---
+    mid_idx = len(df) // 2
+    entry_idx = mid_idx - 15
+    exit_idx = len(df) - 5
+    
+    entry_price = df['close'].iloc[entry_idx]
+    exit_price = df['close'].iloc[exit_idx]
+    
+    # Фейковые уровни (Лонг)
+    sl_price = entry_price * 0.99
+    tp_price = entry_price * 1.02
 
     # MACD
-    exp12 = df_1d['close'].ewm(span=12, adjust=False).mean()
-    exp26 = df_1d['close'].ewm(span=26, adjust=False).mean()
+    exp12 = df['close'].ewm(span=12, adjust=False).mean()
+    exp26 = df['close'].ewm(span=26, adjust=False).mean()
     macd_line = exp12 - exp26
     signal_line = macd_line.ewm(span=9, adjust=False).mean()
     macd_hist = macd_line - signal_line
     macd_colors = ['#26a69a' if val >= 0 else '#ef5350' for val in macd_hist]
 
-    last_close = df_1d['close'].iloc[-1]
-    last_open = df_1d['open'].iloc[-1]
+    last_close = df['close'].iloc[-1]
+    last_open = df['open'].iloc[-1]
     last_color = '#26a69a' if last_close >= last_open else '#ef5350'
 
-    # ДИНАМИЧЕСКИЙ РАСЧЕТ (15% отступа, чтобы свечи не липли к краям при резком полете)
-    max_price = df_1d['high'].max()
-    min_price = df_1d['low'].min()
+    # ДИНАМИЧЕСКИЙ РАСЧЕТ
+    max_price = max(df['high'].max(), tp_price)
+    min_price = min(df['low'].min(), sl_price)
     padding = (max_price - min_price) * 0.15
     ymin, ymax = min_price - padding, max_price + padding
 
     # Шрифты
     rc = {
-        'axes.labelsize': 14,
-        'ytick.labelsize': 16,
-        'xtick.labelsize': 14,
-        'axes.titlesize': 20,
-        'figure.titlesize': 20,
+        'axes.labelsize': 14, 'ytick.labelsize': 16, 'xtick.labelsize': 14,
+        'axes.titlesize': 20, 'figure.titlesize': 20,
     }
 
     mc = mpf.make_marketcolors(up='#26a69a', down='#ef5350', edge='inherit', wick='inherit', volume='in')
     s = mpf.make_mpf_style(
-        marketcolors=mc,
-        base_mpf_style='nightclouds',
-        facecolor='#131722',
-        figcolor='#131722',
-        gridcolor='#2a2e39',
-        gridstyle='--',
-        rc=rc,
-        y_on_right=True
+        marketcolors=mc, base_mpf_style='nightclouds',
+        facecolor='#131722', figcolor='#131722', gridcolor='#2a2e39',
+        gridstyle='--', rc=rc, y_on_right=True
     )
 
+    # --- ТЕСТОВЫЕ ОТМЕТКИ ---
     apds = [
         mpf.make_addplot(macd_hist, type='bar', color=macd_colors, panel=2),
         mpf.make_addplot(macd_line, color='#FFD700', panel=2, width=1),
         mpf.make_addplot(signal_line, color='#9370DB', panel=2, width=1)
     ]
 
-    # Рисуем график (отключаем авто-слипание)
+    # Стрелка покупки (на 15-й свече с конца)
+    scatter_entry = pd.Series([entry_price], index=[df.index[entry_idx]])
+    apds.append(mpf.make_addplot(scatter_entry, type='scatter', markersize=300, marker='^', color='#26a69a', panel=0))
+
+    # Стрелка продажи (на 5-й свече с конца)
+    scatter_exit = pd.Series([exit_price], index=[df.index[exit_idx]])
+    apds.append(mpf.make_addplot(scatter_exit, type='scatter', markersize=300, marker='v', color='#ef5350', panel=0))
+
+    # Рисуем график
     fig, axes = mpf.plot(
-        df_1d, type='candle', style=s,
+        df, type='candle', style=s,
         ylabel='', ylabel_lower='',
         volume=True,
         addplot=apds,
         panel_ratios=(6, 1.5, 2),
         figsize=(12, 12),
         ylim=(ymin, ymax),
-        hlines=dict(hlines=[last_close], colors=[last_color], linestyle='--', linewidths=[1]),
+        # Линии входа, стопа и тейка
+        hlines=dict(hlines=[entry_price, sl_price, tp_price], colors=['blue', '#ef5350', '#26a69a'], linestyle='--', linewidths=[1.5, 1.5, 1.5]),
         returnfig=True,
         xrotation=0,
         tight_layout=False
     )
 
-    # Раздвигаем панели так, чтобы между ними было огромное пространство
     fig.subplots_adjust(hspace=1.0, right=0.88, top=0.92, bottom=0.08, left=0.08)
 
-    # === ФИЗИЧЕСКОЕ РАЗДЕЛЕНИЕ ЦИФР ===
-    # Берем ось объемов (axes[3] - это правая ось объемов) 
-    # и добавляем 30% пустого места сверху. Цифра 15 000 уезжает вниз.
     if len(axes) > 3:
         vol_ax = axes[3]
         vol_ymin, vol_ymax = vol_ax.get_ylim()
         vol_ax.set_ylim(vol_ymin, vol_ymax * 1.3)
 
-    # Заголовок по центру графика
-    axes[0].set_title("BTC/USDT | 1D", fontsize=20, fontweight='bold', pad=15)
-
-    # Watermark
-    fig.text(0.5, 0.5, 'ARGUS', alpha=0.1, fontsize=100, ha='center', va='center',
-             color='white', rotation=30)
+    axes[0].set_title("BTC/USDT | 15m (ТЕСТ СДЕЛКИ)", fontsize=20, fontweight='bold', pad=15)
+    fig.text(0.5, 0.5, 'ARGUS', alpha=0.1, fontsize=100, ha='center', va='center', color='white', rotation=30)
 
     # Плашка цены
     ax_main = axes[0]
@@ -164,12 +163,13 @@ def main():
     )
 
     buf = io.BytesIO()
-    fig.savefig(buf, format='png', dpi=150, bbox_inches='tight', pad_inches=0.2)
+    fig.savefig(buf, format='png', dpi=150, bbox_inches='tight', pad_inches=0.2, facecolor=fig.get_facecolor())
     buf.seek(0)
+    plt.close(fig)
 
-    log.info("Sending to Telegram...")
+    log.info("Sending test chart to Telegram...")
     if send_telegram_photo(buf):
-        log.info("Photo sent successfully!")
+        log.info("Test chart sent successfully!")
     else:
         log.error("Failed to send photo.")
         sys.exit(1)
