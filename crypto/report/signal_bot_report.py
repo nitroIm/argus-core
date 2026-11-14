@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - SIGNAL REPORT v8.1 (ABSOLUTE BULLETPROOF)
+# ARGUS - SIGNAL REPORT v8.2 (FIXED MPF COLUMNS)
 # Path: crypto/report/signal_bot_report.py
 # ============================================================
 
@@ -44,7 +44,7 @@ def send_tg_photo(image_bytes, caption):
     files = {'photo': ('chart.png', image_bytes, 'image/png')}
     data = {'chat_id': CHAT_ID, 'caption': caption, 'parse_mode': 'HTML'}
     r = requests.post(url, data=data, files=files, timeout=30)
-    if r.status_code != 200: log.error(f"TG Error: {r.text}")
+    if r.status_code != 200: log.error(f"TG Photo Error: {r.text}")
     return r.status_code == 200
 
 def send_tg_text(text):
@@ -59,7 +59,6 @@ def get_db_candles():
     if not DB_URL: return None
     try:
         conn = psycopg.connect(DB_URL, connect_timeout=10)
-        # Берем просто последние 150 пятнадцатиминуток. Этого хватит на 37 часов.
         query = "SELECT open_time, open, high, low, close, volume FROM candles WHERE symbol='BTCUSDT' AND timeframe='15m' AND market_type='spot' ORDER BY open_time DESC LIMIT 150"
         with conn.cursor() as cur:
             cur.execute(query)
@@ -68,6 +67,7 @@ def get_db_candles():
         if not rows: return None
         
         rows = list(reversed(rows))
+        # ВАЖНО: ТУТ КОЛОНКИ С БОЛЬШОЙ БУКВЫ (Open, High, Low, Close, Volume)
         df = pd.DataFrame(rows, columns=['Date', 'Open', 'High', 'Low', 'Close', 'Volume'])
         df['Date'] = pd.to_datetime(df['Date'], utc=True)
         df = df.set_index('Date')
@@ -82,10 +82,15 @@ def draw_chart(event):
         df = get_db_candles()
         if df is None or df.empty: return None
 
-        # Склеиваем в 1 час
-        df_1h = df.resample('1h').agg({'open': 'first', 'high': 'max', 'low': 'min', 'close': 'last', 'volume': 'sum'}).dropna()
+        # ВАЖНО: ТУТ ТОЖЕ БОЛЬШИЕ БУКВЫ В СЛОВАРЕ
+        df_1h = df.resample('1h').agg({
+            'Open': 'first', 
+            'High': 'max', 
+            'Low': 'min', 
+            'Close': 'last', 
+            'Volume': 'sum'
+        }).dropna()
         
-        # Берем ровно 45 свечей для идеальной картинки
         df = df_1h.tail(45).copy()
         
         entry_price = float(event.get("entry", 0))
@@ -99,19 +104,19 @@ def draw_chart(event):
             title = f"Выход {deal_type}"
 
         # MACD
-        exp12 = df['close'].ewm(span=12, adjust=False).mean()
-        exp26 = df['close'].ewm(span=26, adjust=False).mean()
+        exp12 = df['Close'].ewm(span=12, adjust=False).mean()
+        exp26 = df['Close'].ewm(span=26, adjust=False).mean()
         macd_line = exp12 - exp26
         signal_line = macd_line.ewm(span=9, adjust=False).mean()
         macd_hist = macd_line - signal_line
         macd_colors = ['#26a69a' if val >= 0 else '#ef5350' for val in macd_hist]
 
-        last_close = df['close'].iloc[-1]
-        last_open = df['open'].iloc[-1]
+        last_close = df['Close'].iloc[-1]
+        last_open = df['Open'].iloc[-1]
         last_color = '#26a69a' if last_close >= last_open else '#ef5350'
 
-        max_list = [df['high'].max(), entry_price]
-        min_list = [df['low'].min(), entry_price]
+        max_list = [df['High'].max(), entry_price]
+        min_list = [df['Low'].min(), entry_price]
         if event["type"] == "ENTRY":
             max_list.append(tp_price)
             min_list.append(sl_price)
@@ -143,7 +148,6 @@ def draw_chart(event):
             marker_type = '^' if deal_type == "LONG" else 'v'
             marker_color = '#26a69a' if deal_type == "LONG" else '#ef5350'
             
-            # Ставим стрелку входа на последнюю свечу
             scatter = pd.Series(np.nan, index=df.index)
             scatter.iloc[-1] = entry_price
             apds.append(mpf.make_addplot(scatter, type='scatter', markersize=350, marker=marker_type, color=marker_color, edgecolors='white', linewidths=1.5, panel=0))
@@ -151,7 +155,6 @@ def draw_chart(event):
             hlines_list.append(exit_price)
             hlines_colors.append('orange')
             
-            # Стрелка входа на 10-ю свечу с конца, стрелка выхода на последнюю
             scatter_entry = pd.Series(np.nan, index=df.index)
             scatter_entry.iloc[-10] = entry_price
             marker_entry = '^' if deal_type == "LONG" else 'v'
@@ -227,7 +230,7 @@ def get_stats_text(mode):
     return text
 
 def main():
-    log.info("STARTING SIGNAL REPORT v8.1")
+    log.info("STARTING SIGNAL REPORT v8.2")
     queue = load_json(INFO_DEAL, [])
     if not isinstance(queue, list) or not queue:
         return log.info("No new events in queue.")
