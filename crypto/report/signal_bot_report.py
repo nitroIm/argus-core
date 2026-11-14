@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - SIGNAL REPORT v8.6 (BIG THICK LABELS)
+# ARGUS - SIGNAL REPORT v8.7 (FIXED ZERO PNL DISPLAY)
 # Path: crypto/report/signal_bot_report.py
 # ============================================================
 
@@ -154,9 +154,8 @@ def draw_chart(event):
         ax_main = axes[0]
         fig.text(0.5, 0.5, 'ARGUS', alpha=0.1, fontsize=100, ha='center', va='center', color='white', rotation=30)
 
-        # ДЕЛАЕМ ПЛАШКИ КРУПНЫМИ И ТОЛСТЫМИ
-        font_size_label = 20 # Увеличили шрифт
-        bbox_style = 'round,pad=0.6' # Увеличили отступ внутри плашки (сделали ее толще)
+        font_size_label = 20
+        bbox_style = 'round,pad=0.6'
         
         if event["type"] == "ENTRY":
             ax_main.text(0.01, entry_price, f' ВХОД: {entry_price:,.2f} ', color='white', fontsize=font_size_label, fontweight='bold', va='center', ha='left', bbox=dict(facecolor='blue', alpha=0.9, edgecolor='none', boxstyle=bbox_style), transform=ax_main.get_yaxis_transform())
@@ -212,7 +211,7 @@ def get_stats_text(mode):
     return text
 
 def main():
-    log.info("STARTING SIGNAL REPORT v8.6")
+    log.info("STARTING SIGNAL REPORT v8.7")
     queue = load_json(INFO_DEAL, [])
     if not isinstance(queue, list) or not queue:
         return log.info("No new events in queue.")
@@ -242,7 +241,16 @@ def main():
 
         elif event["type"] == "CLOSE":
             pnl = event["pnl_usd"]
-            sign = "+" if pnl > 0 else ""
+            
+            # ИСПРАВЛЕНИЕ ОТОБРАЖЕНИЯ НУЛЯ
+            pnl_pct_val = event["pnl_pct"]
+            if abs(pnl_pct_val) < 0.05: # Если меньше 0.05%, считаем это нулем
+                pnl_pct_str = "0.00"
+                pnl_usd_str = "0.00"
+            else:
+                pnl_pct_str = f"{pnl_pct_val:+.2f}"
+                pnl_usd_str = f"{pnl:+.2f}"
+
             if pnl > 0: status = "✅ УСПЕХ"
             elif pnl < 0: status = "❌ УБЫТОК"
             else: status = "⚖️ БЕЗУБЫТОК"
@@ -265,7 +273,7 @@ def main():
                     f"📥 <b>Вход:</b> {fmt(entry_price_text)}\n"
                     f"📤 <b>Выход:</b> {fmt(exit_price_text)}\n"
                     f"📊 <b>Причина:</b> {reason_text}\n"
-                    f"💰 <b>PnL:</b> {sign}{event['pnl_pct']}% ({sign}${pnl:.2f})\n"
+                    f"💰 <b>PnL:</b> {pnl_pct_str}% (${pnl_usd_str})\n"
                     f"💼 <b>Баланс:</b> ${event.get('new_balance', 0):.2f}\n")
             text += "\n" + get_stats_text(event.get("mode", "swing"))
 
