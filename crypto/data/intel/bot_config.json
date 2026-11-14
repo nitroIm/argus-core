@@ -5,7 +5,7 @@
   },
   "intraday": {
     "close_hour_utc": 19,
-    "no_entry_hour_utc": 17,
+    "no_entry_hour_utc": "18:30"
     "trailing_activation_pct": 0.5,
     "trailing_atr_multiplier": 1.5,
     "tp_pct": 2.0,
