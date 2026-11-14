@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-11-14T04:05:34.849091+00:00",
-  "total_news": 63,
-  "avg_sentiment": -0.636,
+  "generated_at": "2026-11-14T05:05:43.763130+00:00",
+  "total_news": 94,
+  "avg_sentiment": -0.534,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 4,
-  "bearish_count": 19,
-  "neutral_count": 40,
+  "bullish_count": 8,
+  "bearish_count": 35,
+  "neutral_count": 51,
   "fake_count": 0,
-  "cross_confirmed": 2,
+  "cross_confirmed": 5,
   "by_source": {
     "Cointelegraph": {
       "total": 19,
@@ -29,6 +29,16 @@
       "bull": 0,
       "bear": 3
     },
+    "CryptoPotato": {
+      "total": 23,
+      "bull": 2,
+      "bear": 11
+    },
+    "Bitcoinist": {
+      "total": 8,
+      "bull": 2,
+      "bear": 5
+    },
     "ForkLog": {
       "total": 10,
       "bull": 0,
@@ -48,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-14T04:05:32.987762+00:00",
+      "collected_at": "2026-11-14T05:05:42.072334+00:00",
       "effective_weight": 1.04,
       "title_original": "Adam Back makes case for simpler security as Blockstream launches Bitcoin custody system",
       "cross_check": 1
@@ -65,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-14T04:05:32.988102+00:00",
+      "collected_at": "2026-11-14T05:05:42.072962+00:00",
       "effective_weight": 1.04,
       "title_original": "Jane Street boosts Fidelity Bitcoin ETF holdings nearly 8x, trims IBIT",
       "cross_check": 1
@@ -82,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-14T04:05:33.262840+00:00",
+      "collected_at": "2026-11-14T05:05:42.255336+00:00",
       "effective_weight": 0.8,
       "title_original": "Twenty One Capital’s Bitcoin Gains Fuel First Profitable Quarter at $1.09B",
       "cross_check": 1
@@ -99,9 +109,26 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-14T04:05:33.262957+00:00",
+      "collected_at": "2026-11-14T05:05:42.255555+00:00",
       "effective_weight": 0.8,
       "title_original": "BTCC Exchange Launches Anthropic Pre-IPO Trading Campaign with 0 Fees and an AI Tech Prize Pool",
+      "cross_check": 1
+    },
+    {
+      "title": "‘Draining the Economic Life and Soul’: Coffeezilla Turns Trump’s Own Words Against His Crypto Empire",
+      "url": "https://cryptopotato.com/draining-the-economic-life-and-soul-coffeezilla-turns-trumps-own-words-against-his-crypto-empire/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-13T16:55:14+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-14T05:05:42.486111+00:00",
+      "effective_weight": 0.8,
+      "title_original": "‘Draining the Economic Life and Soul’: Coffeezilla Turns Trump’s Own Words Against His Crypto Empire",
       "cross_check": 1
     }
   ],
@@ -118,7 +145,7 @@
       "bear_weight": 1.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-14T04:05:32.987912+00:00",
+      "collected_at": "2026-11-14T05:05:42.072612+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin holds below $70K as stocks slip despite a cooler US PPI print",
       "cross_check": 1
@@ -135,7 +162,7 @@
       "bear_weight": 0.8,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-14T04:05:32.987954+00:00",
+      "collected_at": "2026-11-14T05:05:42.072686+00:00",
       "effective_weight": 1.04,
       "title_original": "Arthur Hayes ‘flattered’ as Coinbase backs US stock perps",
       "cross_check": 1
@@ -152,26 +179,9 @@
       "bear_weight": 3.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-14T04:05:32.988067+00:00",
+      "collected_at": "2026-11-14T05:05:42.072896+00:00",
       "effective_weight": 1.04,
       "title_original": "DOJ moves to seize $1.2B from Binance hack, disrupts FaceStealer scam",
-      "cross_check": 1
-    },
-    {
-      "title": "Diesel prices plunge 8%, yet Bitcoin traders face a squeeze",
-      "url": "https://cryptoslate.com/diesel-prices-plunge-8-yet-bitcoin-traders-face-a-squeeze/",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-13T22:20:46+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-14T04:05:33.350828+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Diesel prices plunge 8%, yet Bitcoin traders face a squeeze",
       "cross_check": 1
     },
     {
@@ -186,10 +196,27 @@
       "bear_weight": 2.2,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-14T04:05:33.080888+00:00",
+      "collected_at": "2026-11-14T05:05:42.114345+00:00",
       "effective_weight": 0.88,
       "title_original": "Bitcoin Drops to $69K On 'Concentrated Liquidation' and 'Weakening' Demand",
       "cross_check": 1
+    },
+    {
+      "title": "DOJ, CFTC Sue Arkansas to Block Kalshi Crackdown as Prediction Market Battle Escalates",
+      "url": "https://news.bitcoin.com/regulation-and-legal/doj-cftc-sue-arkansas-block-kalshi-crackdown-prediction-market-battle/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-13T20:20:44+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 2.6,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-14T05:05:42.255416+00:00",
+      "effective_weight": 0.8,
+      "title_original": "DOJ, CFTC Sue Arkansas to Block Kalshi Crackdown as Prediction Market Battle Escalates",
+      "cross_check": 2
     }
   ]
 }
