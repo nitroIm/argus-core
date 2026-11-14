@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - CHART TEST (1H TIMEFRAME, MOCK TRADE)
+# ARGUS - CHART TEST (ZOOMED 1H + LABELS)
 # Path: crypto/collect/chart_test.py
 # ============================================================
 
@@ -41,12 +41,11 @@ def send_telegram_photo(photo_bytes):
         return False
 
 def main():
-    log.info("STARTING 1H CHART GENERATOR FROM NOV 10")
+    log.info("STARTING ZOOMED 1H CHART")
 
     try:
         conn = get_conn()
         with conn.cursor() as cur:
-            # Берем 15-минутные данные с 10 ноября
             cur.execute("""
                 SELECT open_time, open, high, low, close, volume 
                 FROM candles 
@@ -61,7 +60,7 @@ def main():
         sys.exit(1)
 
     if len(rows) < 100:
-        log.error("Not enough data in DB since Nov 10")
+        log.error("Not enough data in DB")
         sys.exit(1)
 
     df = pd.DataFrame(rows, columns=['open_time', 'open', 'high', 'low', 'close', 'volume'])
@@ -69,21 +68,19 @@ def main():
     df.set_index('open_time', inplace=True)
     df = df.astype(float)
 
-    # --- СКЛЕИВАЕМ В 1 ЧАС (1H) ---
+    # --- СКЛЕИВАЕМ В 1 ЧАС ---
     df_1h = df.resample('1h').agg({
-        'open': 'first',
-        'high': 'max',
-        'low': 'min',
-        'close': 'last',
-        'volume': 'sum'
+        'open': 'first', 'high': 'max', 'low': 'min',
+        'close': 'last', 'volume': 'sum'
     }).dropna()
     
-    df = df_1h # Дальше работаем с часовыми свечами
-
-    # --- МОКАЕМ ТЕСТОВУЮ СДЕЛКУ (на часовиках) ---
+    # --- ОБРЕЗАЕМ ДО ПОСЛЕДНИХ 70 СВЕЧЕЙ (чтобы было крупно) ---
+    df = df_1h.tail(70).copy() 
+    
+    # --- МОКАЕМ ТЕСТОВУЮ СДЕЛКУ ---
     mid_idx = len(df) // 2
-    entry_idx = mid_idx - 10 # Вход чуть раньше середины
-    exit_idx = len(df) - 5   # Выход недавно
+    entry_idx = mid_idx - 10 
+    exit_idx = len(df) - 5   
     
     entry_price = df['close'].iloc[entry_idx]
     exit_price = df['close'].iloc[exit_idx]
@@ -129,15 +126,16 @@ def main():
         mpf.make_addplot(signal_line, color='#9370DB', panel=2, width=1)
     ]
 
-    # Стрелка покупки
+    # --- УЛУЧШЕННЫЕ СТРЕЛКИ (с белой обводкой для контраста) ---
     scatter_entry = pd.Series(np.nan, index=df.index)
     scatter_entry.iloc[entry_idx] = entry_price
-    apds.append(mpf.make_addplot(scatter_entry, type='scatter', markersize=300, marker='^', color='#26a69a', panel=0))
+    apds.append(mpf.make_addplot(scatter_entry, type='scatter', markersize=400, marker='^', 
+                                 color='#26a69a', edgecolors='white', linewidths=1.5, panel=0))
 
-    # Стрелка продажи
     scatter_exit = pd.Series(np.nan, index=df.index)
     scatter_exit.iloc[exit_idx] = exit_price
-    apds.append(mpf.make_addplot(scatter_exit, type='scatter', markersize=300, marker='v', color='#ef5350', panel=0))
+    apds.append(mpf.make_addplot(scatter_exit, type='scatter', markersize=400, marker='v', 
+                                 color='#ef5350', edgecolors='white', linewidths=1.5, panel=0))
 
     # Рисуем график
     fig, axes = mpf.plot(
@@ -161,11 +159,22 @@ def main():
         vol_ymin, vol_ymax = vol_ax.get_ylim()
         vol_ax.set_ylim(vol_ymin, vol_ymax * 1.3)
 
-    axes[0].set_title("BTC/USDT | 1H (с 10.11.2026)", fontsize=20, fontweight='bold', pad=15)
+    axes[0].set_title("BTC/USDT | 1H (Тест 70 свечей)", fontsize=20, fontweight='bold', pad=15)
     fig.text(0.5, 0.5, 'ARGUS', alpha=0.1, fontsize=100, ha='center', va='center', color='white', rotation=30)
 
-    # Плашка цены
+    # --- ПОДПИСИ К ЛИНИЯМ (Вход/Стоп/Тейк) ---
     ax_main = axes[0]
+    
+    # Подпись Входа
+    ax_main.text(df.index[0], entry_price, ' ВХОД', color='white', fontsize=12, fontweight='bold', va='center', ha='left', bbox=dict(facecolor='blue', alpha=0.8, edgecolor='none', boxstyle='round,pad=0.2'))
+    
+    # Подпись Стопа
+    ax_main.text(df.index[0], sl_price, ' СТОП', color='white', fontsize=12, fontweight='bold', va='center', ha='left', bbox=dict(facecolor='#ef5350', alpha=0.8, edgecolor='none', boxstyle='round,pad=0.2'))
+    
+    # Подпись Тейка
+    ax_main.text(df.index[0], tp_price, ' ТЕЙК', color='white', fontsize=12, fontweight='bold', va='center', ha='left', bbox=dict(facecolor='#26a69a', alpha=0.8, edgecolor='none', boxstyle='round,pad=0.2'))
+
+    # Плашка текущей цены
     ax_main.annotate(
         f' {last_close:,.2f} ',
         xy=(1.0, last_close),
@@ -182,7 +191,7 @@ def main():
     buf.seek(0)
     plt.close(fig)
 
-    log.info("Sending test 1H chart to Telegram...")
+    log.info("Sending zoomed chart to Telegram...")
     if send_telegram_photo(buf):
         log.info("Test chart sent successfully!")
     else:
