@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - SIGNAL BOT v9.4.2 (COOLDOWN REMOVED)
+# ARGUS - SIGNAL BOT v9.4.3 (NO INSTANT CLOSE BUG)
 # Path: crypto/signals/signal_bot.py
 # ============================================================
 
@@ -15,7 +15,7 @@ import pandas as pd
 import numpy as np
 import xgboost as xgb
 
-VERSION = "9.4.2"
+VERSION = "9.4.3"
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("crypto.signal_bot")
 
@@ -179,8 +179,18 @@ def process_mode(mode, deals, bot_info, models, df_1h, config):
             row_atr = float(row['atr_14']) if pd.notna(row['atr_14']) else 0.0
 
             if deal_type == "LONG":
-                if row['high'] > max_price: max_price = row['high']
+                # 1. СНАЧАЛА ПРОВЕРЯЕМ СТАРЫЙ СТОП
+                if row['low'] <= sl: 
+                    exit_reason = "TRAILING_STOP" if sl > entry else "STOP_LOSS"
+                    exit_price = sl
+                    return True
+                if row['high'] >= tp: 
+                    exit_reason = "TAKE_PROFIT"
+                    exit_price = tp
+                    return True
                 
+                # 2. ЕСЛИ СТАРЫЙ СТОП ЦЕЛ, ТО ТОЛЬКО ТОГДА ПОДТЯГИВАЕМ НОВЫЙ
+                if row['high'] > max_price: max_price = row['high']
                 if row_atr > 0 and max_price >= entry * (1 + act_pct/100):
                     atr_sl = max_price - (row_atr * atr_mult)
                     breakeven_sl = entry * (1 + (fee_pct * 2))
@@ -191,17 +201,19 @@ def process_mode(mode, deals, bot_info, models, df_1h, config):
                         sl_pct = (sl-entry)/entry*100
                         append_event({"type": "UPDATE", "mode": mode, "deal_type": deal_type, "new_sl": sl, "sl_pct": round(sl_pct, 2)})
 
-                if row['low'] <= sl: 
-                    exit_reason = "TRAILING_STOP" if sl > entry else "STOP_LOSS"
+            else: # SHORT
+                # 1. СНАЧАЛА ПРОВЕРЯЕМ СТАРЫЙ СТОП
+                if row['high'] >= sl: 
+                    exit_reason = "TRAILING_STOP" if sl < entry else "STOP_LOSS"
                     exit_price = sl
                     return True
-                if row['high'] >= tp: 
+                if row['low'] <= tp: 
                     exit_reason = "TAKE_PROFIT"
                     exit_price = tp
                     return True
-            else:
-                if row['low'] < min_price: min_price = row['low']
                 
+                # 2. ЕСЛИ СТАРЫЙ СТОП ЦЕЛ, ТО ТОЛЬКО ТОГДА ПОДТЯГИВАЕМ НОВЫЙ
+                if row['low'] < min_price: min_price = row['low']
                 if row_atr > 0 and min_price <= entry * (1 - act_pct/100):
                     atr_sl = min_price + (row_atr * atr_mult)
                     breakeven_sl = entry * (1 - (fee_pct * 2))
@@ -211,15 +223,6 @@ def process_mode(mode, deals, bot_info, models, df_1h, config):
                         sl = round(new_sl, 2)
                         sl_pct = (entry-sl)/entry*100
                         append_event({"type": "UPDATE", "mode": mode, "deal_type": deal_type, "new_sl": sl, "sl_pct": round(sl_pct, 2)})
-
-                if row['high'] >= sl: 
-                    exit_reason = "TRAILING_STOP" if sl < entry else "STOP_LOSS"
-                    exit_price = sl
-                    return True
-                if row['low'] <= tp: 
-                    exit_reason = "TAKE_PROFIT"
-                    exit_price = tp
-                    return True
             return False
 
         for _, row in df_to_check.iterrows():
@@ -329,8 +332,6 @@ def process_mode(mode, deals, bot_info, models, df_1h, config):
             if now_utc.hour > ne_h or (now_utc.hour == ne_h and now_utc.minute >= ne_m):
                 can_open = False
         except Exception: pass
-
-    # КУЛДАУН ПОЛНОСТЬЮ УДАЛЕН
 
     log.info(f"[{mode.upper()}] Price: {price:.1f} | LONG: {score_long:.2f} | SHORT: {score_short:.2f} | Thresh: {thresh:.2f}")
 
