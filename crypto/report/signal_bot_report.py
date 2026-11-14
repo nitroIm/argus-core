@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - SIGNAL REPORT v8.4 (INFO + PADDING + PRICES)
+# ARGUS - SIGNAL REPORT v8.6 (BIG THICK LABELS)
 # Path: crypto/report/signal_bot_report.py
 # ============================================================
 
@@ -85,7 +85,7 @@ def draw_chart(event):
             'Open': 'first', 'High': 'max', 'Low': 'min', 'Close': 'last', 'Volume': 'sum'
         }).dropna()
         
-        df = df_1h.tail(40).copy() # Берем 40 свечей, чтобы оставить место справа
+        df = df_1h.tail(40).copy() 
         
         entry_price = float(event.get("entry", 0))
         
@@ -138,47 +138,33 @@ def draw_chart(event):
         if event["type"] == "ENTRY":
             hlines_list.extend([sl_price, tp_price])
             hlines_colors.extend(['#ef5350', '#26a69a'])
-            marker_type = '^' if deal_type == "LONG" else 'v'
-            marker_color = '#26a69a' if deal_type == "LONG" else '#ef5350'
-            
-            scatter = pd.Series(np.nan, index=df.index)
-            scatter.iloc[-1] = entry_price
-            apds.append(mpf.make_addplot(scatter, type='scatter', markersize=350, marker=marker_type, color=marker_color, edgecolors='white', linewidths=1.5, panel=0))
         else:
             hlines_list.append(exit_price)
             hlines_colors.append('orange')
-            
-            scatter_entry = pd.Series(np.nan, index=df.index)
-            scatter_entry.iloc[-10] = entry_price
-            marker_entry = '^' if deal_type == "LONG" else 'v'
-            apds.append(mpf.make_addplot(scatter_entry, type='scatter', markersize=350, marker=marker_entry, color='#26a69a', edgecolors='white', linewidths=1.5, panel=0))
 
-            scatter_exit = pd.Series(np.nan, index=df.index)
-            scatter_exit.iloc[-1] = exit_price 
-            marker_exit = 'v' if deal_type == "LONG" else '^'
-            apds.append(mpf.make_addplot(scatter_exit, type='scatter', markersize=350, marker=marker_exit, color='#ef5350', edgecolors='white', linewidths=1.5, panel=0))
-
-        # ДОБАВЛЯЕМ 5 ПУСТЫХ СВЕЧЕЙ СПРАВА, ЧТОБЫ ГРАФИК НЕ УПИРАЛСЯ В КРАЙ
         fig, axes = mpf.plot(
             df, type='candle', style=s, ylabel='', ylabel_lower='', volume=True, addplot=apds,
             panel_ratios=(7, 1.5, 3), figsize=(14, 10), ylim=(ymin, ymax),
             hlines=dict(hlines=hlines_list, colors=hlines_colors, linestyle='--', linewidths=[1.5]*len(hlines_list)),
             returnfig=True, tight_layout=True,
-            xlim=(0, len(df) + 5) # <--- ОТСТУП СПРАВА
+            xlim=(0, len(df) + 5) 
         )
 
         axes[0].set_title(f"BTC/USDT | 1H | {title}", fontsize=20, fontweight='bold', pad=15)
         ax_main = axes[0]
         fig.text(0.5, 0.5, 'ARGUS', alpha=0.1, fontsize=100, ha='center', va='center', color='white', rotation=30)
 
-        # ПОДПИСИ С ЦЕНАМИ
+        # ДЕЛАЕМ ПЛАШКИ КРУПНЫМИ И ТОЛСТЫМИ
+        font_size_label = 20 # Увеличили шрифт
+        bbox_style = 'round,pad=0.6' # Увеличили отступ внутри плашки (сделали ее толще)
+        
         if event["type"] == "ENTRY":
-            ax_main.text(0.01, entry_price, f' ВХОД: {entry_price:,.2f}', color='white', fontsize=12, fontweight='bold', va='center', ha='left', bbox=dict(facecolor='blue', alpha=0.8, edgecolor='none', boxstyle='round,pad=0.2'), transform=ax_main.get_yaxis_transform())
-            ax_main.text(0.01, sl_price, f' СТОП: {sl_price:,.2f}', color='white', fontsize=12, fontweight='bold', va='center', ha='left', bbox=dict(facecolor='#ef5350', alpha=0.8, edgecolor='none', boxstyle='round,pad=0.2'), transform=ax_main.get_yaxis_transform())
-            ax_main.text(0.01, tp_price, f' ТЕЙК: {tp_price:,.2f}', color='white', fontsize=12, fontweight='bold', va='center', ha='left', bbox=dict(facecolor='#26a69a', alpha=0.8, edgecolor='none', boxstyle='round,pad=0.2'), transform=ax_main.get_yaxis_transform())
+            ax_main.text(0.01, entry_price, f' ВХОД: {entry_price:,.2f} ', color='white', fontsize=font_size_label, fontweight='bold', va='center', ha='left', bbox=dict(facecolor='blue', alpha=0.9, edgecolor='none', boxstyle=bbox_style), transform=ax_main.get_yaxis_transform())
+            ax_main.text(0.01, sl_price, f' СТОП: {sl_price:,.2f} ', color='white', fontsize=font_size_label, fontweight='bold', va='center', ha='left', bbox=dict(facecolor='#ef5350', alpha=0.9, edgecolor='none', boxstyle=bbox_style), transform=ax_main.get_yaxis_transform())
+            ax_main.text(0.01, tp_price, f' ТЕЙК: {tp_price:,.2f} ', color='white', fontsize=font_size_label, fontweight='bold', va='center', ha='left', bbox=dict(facecolor='#26a69a', alpha=0.9, edgecolor='none', boxstyle=bbox_style), transform=ax_main.get_yaxis_transform())
         else:
-            ax_main.text(0.01, entry_price, f' ВХОД: {entry_price:,.2f}', color='white', fontsize=12, fontweight='bold', va='center', ha='left', bbox=dict(facecolor='blue', alpha=0.8, edgecolor='none', boxstyle='round,pad=0.2'), transform=ax_main.get_yaxis_transform())
-            ax_main.text(0.01, exit_price, f' ВЫХОД: {exit_price:,.2f}', color='white', fontsize=12, fontweight='bold', va='center', ha='left', bbox=dict(facecolor='orange', alpha=0.8, edgecolor='none', boxstyle='round,pad=0.2'), transform=ax_main.get_yaxis_transform())
+            ax_main.text(0.01, entry_price, f' ВХОД: {entry_price:,.2f} ', color='white', fontsize=font_size_label, fontweight='bold', va='center', ha='left', bbox=dict(facecolor='blue', alpha=0.9, edgecolor='none', boxstyle=bbox_style), transform=ax_main.get_yaxis_transform())
+            ax_main.text(0.01, exit_price, f' ВЫХОД: {exit_price:,.2f} ', color='white', fontsize=font_size_label, fontweight='bold', va='center', ha='left', bbox=dict(facecolor='orange', alpha=0.9, edgecolor='none', boxstyle=bbox_style), transform=ax_main.get_yaxis_transform())
 
         ax_main.annotate(
             f' {last_close:,.2f} ', xy=(1.0, last_close), xycoords=('axes fraction', 'data'),
@@ -226,7 +212,7 @@ def get_stats_text(mode):
     return text
 
 def main():
-    log.info("STARTING SIGNAL REPORT v8.4")
+    log.info("STARTING SIGNAL REPORT v8.6")
     queue = load_json(INFO_DEAL, [])
     if not isinstance(queue, list) or not queue:
         return log.info("No new events in queue.")
@@ -271,7 +257,6 @@ def main():
             }
             reason_text = reasons_ru.get(reason_raw, reason_raw)
             
-            # ИНФОРМАТИВНОСТЬ В ТЕКСТЕ
             entry_price_text = float(event.get("entry", 0))
             exit_price_text = float(event.get("exit", 0))
             
