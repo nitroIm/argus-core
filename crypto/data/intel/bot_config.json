@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-14T14:11:09.572280+00:00",
+  "updated_at": "2026-11-14T15:11:04.887444+00:00",
   "global": {
     "fee_pct": 0.001
   },
@@ -26,7 +26,7 @@
     "trailing_atr_multiplier": 2.0,
     "tp_pct": 2.0,
     "sl_pct": 1.0,
-    "threshold": 4.0,
+    "threshold": 3.9,
     "weights": {
       "macd": 1.0,
       "ema": 1.0,
