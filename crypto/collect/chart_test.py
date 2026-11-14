@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - CHART TEST (NO MORE BUGS, 100% WORKING)
+# ARGUS - CHART TEST (EXACT ORIGINAL DESIGN + MARKERS)
 # Path: crypto/collect/chart_test.py
 # ============================================================
 
@@ -12,6 +12,7 @@ import numpy as np
 import psycopg
 import requests
 import mplfinance as mpf
+import matplotlib.pyplot as plt
 from datetime import datetime, timezone, timedelta
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
@@ -30,7 +31,7 @@ def send_telegram_photo(photo_bytes):
         log.error("No TG token or chat_id")
         return False
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendPhoto"
-    # Отправляем строго как PNG
+    # Отправляем строго как PNG (JPEG на этой версии вызывает ошибку потоков)
     files = {'photo': ('chart.png', photo_bytes, 'image/png')}
     data = {'chat_id': CHAT_ID}
     try:
@@ -73,8 +74,8 @@ def main():
         'close': 'last', 'volume': 'sum'
     }).dropna()
     
-    # Берем последние 45 свечей
-    df = df_1h.tail(45).copy() 
+    # Берем последние 40 свечей (чтобы они были толстыми в квадрате)
+    df = df_1h.tail(40).copy() 
     
     # Тестовая сделка
     entry_idx = 10 
@@ -97,15 +98,15 @@ def main():
     last_open = df['open'].iloc[-1]
     last_color = '#26a69a' if last_close >= last_open else '#ef5350'
 
-    # Отступы по Y-оси
+    # ДИНАМИЧЕСКИЙ РАСЧЕТ (ровно как в твоем оригинале, 15% отступа)
     max_price = max(df['high'].max(), tp_price)
     min_price = min(df['low'].min(), sl_price)
-    padding = (max_price - min_price) * 0.1
+    padding = (max_price - min_price) * 0.15
     ymin, ymax = min_price - padding, max_price + padding
 
     rc = {
-        'axes.labelsize': 12, 'ytick.labelsize': 14, 'xtick.labelsize': 14,
-        'axes.titlesize': 18, 'figure.titlesize': 18,
+        'axes.labelsize': 14, 'ytick.labelsize': 16, 'xtick.labelsize': 14,
+        'axes.titlesize': 20, 'figure.titlesize': 20,
     }
 
     mc = mpf.make_marketcolors(up='#26a69a', down='#ef5350', edge='inherit', wick='inherit', volume='in')
@@ -124,56 +125,59 @@ def main():
     # Стрелки
     scatter_entry = pd.Series(np.nan, index=df.index)
     scatter_entry.iloc[entry_idx] = entry_price
-    apds.append(mpf.make_addplot(scatter_entry, type='scatter', markersize=400, marker='^', color='#26a69a', edgecolors='white', linewidths=1.5, panel=0))
+    apds.append(mpf.make_addplot(scatter_entry, type='scatter', markersize=300, marker='^', color='#26a69a', edgecolors='white', linewidths=1.5, panel=0))
 
     scatter_exit = pd.Series(np.nan, index=df.index)
     scatter_exit.iloc[exit_idx] = exit_price
-    apds.append(mpf.make_addplot(scatter_exit, type='scatter', markersize=400, marker='v', color='#ef5350', edgecolors='white', linewidths=1.5, panel=0))
+    apds.append(mpf.make_addplot(scatter_exit, type='scatter', markersize=300, marker='v', color='#ef5350', edgecolors='white', linewidths=1.5, panel=0))
 
-    # Рисуем (БЕЗ ВСЯКИХ tight_layout)
+    # ТВОЙ ОРИГИНАЛЬНЫЙ ФОРМАТ (квадрат 12x12, пропорции панелей, отключенный авто-слип)
     fig, axes = mpf.plot(
         df, type='candle', style=s,
         ylabel='', ylabel_lower='',
         volume=True,
         addplot=apds,
-        panel_ratios=(7, 2, 3),
-        figsize=(16, 9),
+        panel_ratios=(6, 1.5, 2),
+        figsize=(12, 12),
         ylim=(ymin, ymax),
         hlines=dict(hlines=[entry_price, sl_price, tp_price], colors=['blue', '#ef5350', '#26a69a'], linestyle='--', linewidths=[1.5, 1.5, 1.5]),
-        returnfig=True
+        returnfig=True,
+        xrotation=0,
+        tight_layout=False
     )
 
-    # Жестко задаем отступы (сверху 10% на заголовок, справа 12% на цены)
-    fig.subplots_adjust(top=0.90, bottom=0.08, left=0.06, right=0.88, hspace=0.15)
+    # Твой оригинальный отступ hspace=1.0 (огромное пространство)
+    fig.subplots_adjust(hspace=1.0, right=0.88, top=0.92, bottom=0.08, left=0.08)
 
-    axes[0].set_title("BTC/USDT | 1H (Тест)", fontsize=18, fontweight='bold', pad=15)
+    axes[0].set_title("BTC/USDT | 1H (Тест)", fontsize=20, fontweight='bold', pad=15)
     
+    # Водяной знак строго по центру
+    fig.text(0.5, 0.5, 'ARGUS', alpha=0.1, fontsize=100, ha='center', va='center', color='white', rotation=30)
+
     ax_main = axes[0]
-    
-    # Водяной знак
-    ax_main.text(0.5, 0.5, 'ARGUS', alpha=0.05, fontsize=120, ha='center', va='center', color='white', rotation=30, transform=ax_main.transAxes)
 
-    # Подписи (привязаны к левому краю, не пропадут)
-    ax_main.text(0.01, entry_price, ' ВХОД', color='white', fontsize=12, fontweight='bold', va='center', ha='left', bbox=dict(facecolor='blue', alpha=0.8, edgecolor='none', boxstyle='round,pad=0.2'), transform=ax_main.get_yaxis_transform())
-    ax_main.text(0.01, sl_price, ' СТОП', color='white', fontsize=12, fontweight='bold', va='center', ha='left', bbox=dict(facecolor='#ef5350', alpha=0.8, edgecolor='none', boxstyle='round,pad=0.2'), transform=ax_main.get_yaxis_transform())
-    ax_main.text(0.01, tp_price, ' ТЕЙК', color='white', fontsize=12, fontweight='bold', va='center', ha='left', bbox=dict(facecolor='#26a69a', alpha=0.8, edgecolor='none', boxstyle='round,pad=0.2'), transform=ax_main.get_yaxis_transform())
-
-    # Плашка цены
+    # Плашка цены (справа)
     ax_main.annotate(
         f' {last_close:,.2f} ',
         xy=(1.0, last_close),
         xycoords=('axes fraction', 'data'),
-        xytext=(5, 0),
+        xytext=(3, 0),
         textcoords='offset points',
         color='black',
         bbox=dict(boxstyle="round,pad=0.5", fc=last_color, ec=last_color, lw=1),
         fontsize=14, fontweight='bold', va='center', ha='left'
     )
 
+    # Подписи (строго привязаны к левому краю оси Y, чтобы не съезжали)
+    ax_main.text(0.01, entry_price, ' ВХОД', color='white', fontsize=12, fontweight='bold', va='center', ha='left', bbox=dict(facecolor='blue', alpha=0.8, edgecolor='none', boxstyle='round,pad=0.2'), transform=ax_main.get_yaxis_transform())
+    ax_main.text(0.01, sl_price, ' СТОП', color='white', fontsize=12, fontweight='bold', va='center', ha='left', bbox=dict(facecolor='#ef5350', alpha=0.8, edgecolor='none', boxstyle='round,pad=0.2'), transform=ax_main.get_yaxis_transform())
+    ax_main.text(0.01, tp_price, ' ТЕЙК', color='white', fontsize=12, fontweight='bold', va='center', ha='left', bbox=dict(facecolor='#26a69a', alpha=0.8, edgecolor='none', boxstyle='round,pad=0.2'), transform=ax_main.get_yaxis_transform())
+
     buf = io.BytesIO()
-    # Сохраняем в PNG БЕЗ bbox_inches (чтобы не было ошибки потоков)
+    # Сохраняем в PNG без сжатия
     fig.savefig(buf, format='png', dpi=120, facecolor=fig.get_facecolor())
     buf.seek(0)
+    plt.close(fig)
 
     if send_telegram_photo(buf.getvalue()):
         log.info("Test chart sent successfully!")
