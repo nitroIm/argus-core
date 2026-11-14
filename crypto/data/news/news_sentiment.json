@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-11-14T11:05:35.054421+00:00",
-  "total_news": 88,
-  "avg_sentiment": -0.573,
+  "generated_at": "2026-11-14T12:05:40.739764+00:00",
+  "total_news": 89,
+  "avg_sentiment": -0.454,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 7,
-  "bearish_count": 32,
-  "neutral_count": 49,
+  "bullish_count": 8,
+  "bearish_count": 30,
+  "neutral_count": 51,
   "fake_count": 0,
-  "cross_confirmed": 9,
+  "cross_confirmed": 7,
   "by_source": {
     "Cointelegraph": {
       "total": 18,
@@ -22,10 +22,10 @@
     "Bitcoin.com": {
       "total": 8,
       "bull": 1,
-      "bear": 3
+      "bear": 2
     },
     "CryptoSlate": {
-      "total": 7,
+      "total": 8,
       "bull": 0,
       "bear": 4
     },
@@ -36,8 +36,8 @@
     },
     "Bitcoinist": {
       "total": 7,
-      "bull": 2,
-      "bear": 4
+      "bull": 3,
+      "bear": 3
     },
     "ForkLog": {
       "total": 7,
@@ -58,10 +58,27 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-14T11:05:33.199642+00:00",
+      "collected_at": "2026-11-14T12:05:39.023748+00:00",
       "effective_weight": 1.3,
       "title_original": "Bitcoin ETFs shed $2.35B in 2 weeks, BlackRock’s losing streak hits 11",
       "cross_check": 1
+    },
+    {
+      "title": "Jane Street Nearly Doubled Its Bitcoin ETF Book In Q3: What The Filing Really Shows",
+      "url": "https://bitcoinist.com/jane-street-nearly-doubled-its-bitcoin-etf-book-in-q3-what-the-filing-really-shows/",
+      "source": "Bitcoinist",
+      "source_weight": 0.9,
+      "lang": "en",
+      "pub_date": "2026-11-14T11:30:01+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.1,
+      "collected_at": "2026-11-14T12:05:39.674101+00:00",
+      "effective_weight": 1.215,
+      "title_original": "Jane Street Nearly Doubled Its Bitcoin ETF Book In Q3: What The Filing Really Shows",
+      "cross_check": 2
     },
     {
       "title": "Adam Back makes case for simpler security as Blockstream launches Bitcoin custody system",
@@ -75,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-14T11:05:33.199900+00:00",
+      "collected_at": "2026-11-14T12:05:39.023812+00:00",
       "effective_weight": 1.04,
       "title_original": "Adam Back makes case for simpler security as Blockstream launches Bitcoin custody system",
       "cross_check": 1
@@ -92,7 +109,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.1,
-      "collected_at": "2026-11-14T11:05:33.940483+00:00",
+      "collected_at": "2026-11-14T12:05:39.674166+00:00",
       "effective_weight": 0.81,
       "title_original": "Bitcoin Dips To $68,000 As Anthropic IPO Pulls Cash, But History Points To A Buying Window",
       "cross_check": 1
@@ -109,30 +126,30 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-14T11:05:33.435548+00:00",
+      "collected_at": "2026-11-14T12:05:39.295674+00:00",
       "effective_weight": 0.8,
       "title_original": "Twenty One Capital’s Bitcoin Gains Fuel First Profitable Quarter at $1.09B",
-      "cross_check": 1
-    },
-    {
-      "title": "‘Draining the Economic Life and Soul’: Coffeezilla Turns Trump’s Own Words Against His Crypto Empire",
-      "url": "https://cryptopotato.com/draining-the-economic-life-and-soul-coffeezilla-turns-trumps-own-words-against-his-crypto-empire/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-13T16:55:14+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-14T11:05:33.759117+00:00",
-      "effective_weight": 0.8,
-      "title_original": "‘Draining the Economic Life and Soul’: Coffeezilla Turns Trump’s Own Words Against His Crypto Empire",
       "cross_check": 1
     }
   ],
   "top_bearish": [
+    {
+      "title": "9 Reasons Bitcoin Crashed From $81K to $67K in Just 10 Days",
+      "url": "https://cryptopotato.com/9-reasons-bitcoin-crashed-from-81k-to-67k-in-just-10-days/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-14T11:56:54+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 2.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-14T12:05:39.472878+00:00",
+      "effective_weight": 1.5,
+      "title_original": "9 Reasons Bitcoin Crashed From $81K to $67K in Just 10 Days",
+      "cross_check": 1
+    },
     {
       "title": "Bitcoin holds below $70K as stocks slip despite a cooler US PPI print",
       "url": "https://cointelegraph.com/markets/bitcoin-below-70k-stocks-slip-cooler-us-ppi-print?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -145,7 +162,7 @@
       "bear_weight": 1.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-14T11:05:33.200440+00:00",
+      "collected_at": "2026-11-14T12:05:39.024029+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin holds below $70K as stocks slip despite a cooler US PPI print",
       "cross_check": 1
@@ -162,7 +179,7 @@
       "bear_weight": 0.8,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-14T11:05:33.200603+00:00",
+      "collected_at": "2026-11-14T12:05:39.024091+00:00",
       "effective_weight": 1.04,
       "title_original": "Arthur Hayes ‘flattered’ as Coinbase backs US stock perps",
       "cross_check": 1
@@ -179,10 +196,10 @@
       "bear_weight": 2.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-14T11:05:33.435166+00:00",
+      "collected_at": "2026-11-14T12:05:39.295399+00:00",
       "effective_weight": 1.0,
       "title_original": "Ether Price Dips Below $2K as Ethereum Foundation Dumps 5000 ETH in 5 Day",
-      "cross_check": 3
+      "cross_check": 2
     },
     {
       "title": "Peter Schiff Calls Bitcoin a ‘Slow Bleed’ While Gold Slides Below $3,900",
@@ -196,27 +213,10 @@
       "bear_weight": 2.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-14T11:05:33.435242+00:00",
+      "collected_at": "2026-11-14T12:05:39.295460+00:00",
       "effective_weight": 1.0,
       "title_original": "Peter Schiff Calls Bitcoin a ‘Slow Bleed’ While Gold Slides Below $3,900",
       "cross_check": 4
-    },
-    {
-      "title": "Elizabeth Warren could reopen crypto’s banking fight without changing a single law",
-      "url": "https://cryptoslate.com/warren-could-reopen-crypto-banking-fight-without-changing-a-single-law/",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-14T08:10:11+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-14T11:05:33.617097+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Elizabeth Warren could reopen crypto’s banking fight without changing a single law",
-      "cross_check": 1
     }
   ]
 }
