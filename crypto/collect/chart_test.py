@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - CHART TEST (ABSOLUTE FINAL, PERFECT LAYOUT)
+# ARGUS - CHART TEST (FINAL, NO CROP BUG)
 # Path: crypto/collect/chart_test.py
 # ============================================================
 
@@ -73,7 +73,7 @@ def main():
         'close': 'last', 'volume': 'sum'
     }).dropna()
     
-    # Берем последние 45 свечей для идеальной детализации
+    # Оставляем 45 свечей (как на твоем скрине)
     df = df_1h.tail(45).copy() 
     
     # Тестовая сделка
@@ -97,10 +97,10 @@ def main():
     last_open = df['open'].iloc[-1]
     last_color = '#26a69a' if last_close >= last_open else '#ef5350'
 
-    # РАСЧЕТ Y-ОСИ (Добавил 20% запаса сверху и снизу, чтобы свечи не липли)
+    # Отступы по Y-оси
     max_price = max(df['high'].max(), tp_price)
     min_price = min(df['low'].min(), sl_price)
-    padding = (max_price - min_price) * 0.20 
+    padding = (max_price - min_price) * 0.15
     ymin, ymax = min_price - padding, max_price + padding
 
     rc = {
@@ -130,33 +130,29 @@ def main():
     scatter_exit.iloc[exit_idx] = exit_price
     apds.append(mpf.make_addplot(scatter_exit, type='scatter', markersize=400, marker='v', color='#ef5350', edgecolors='white', linewidths=1.5, panel=0))
 
-    # ШИРОКИЙ ГРАФИК
+    # Рисуем
     fig, axes = mpf.plot(
         df, type='candle', style=s,
         ylabel='', ylabel_lower='',
         volume=True,
         addplot=apds,
         panel_ratios=(7, 2, 3),
-        figsize=(14, 9),
+        figsize=(14, 10), # Пропорции под телефон
         ylim=(ymin, ymax),
         hlines=dict(hlines=[entry_price, sl_price, tp_price], colors=['blue', '#ef5350', '#26a69a'], linestyle='--', linewidths=[1.5, 1.5, 1.5]),
         returnfig=True,
         xrotation=0,
-        tight_layout=False 
+        tight_layout=False # Отключаем авто-обрезку
     )
 
-    # ЖЕСТКИЕ ОТСТУПЫ (без конфликтов)
-    fig.subplots_adjust(top=0.88, bottom=0.10, left=0.06, right=0.88, hspace=0.25)
+    # Жестко задаем отступы (сверху на заголовок, справа на цены)
+    fig.subplots_adjust(top=0.90, bottom=0.08, left=0.06, right=0.88, hspace=0.25)
 
-    axes[0].set_title("BTC/USDT | 1H (Последние 45 свечей)", fontsize=18, fontweight='bold', pad=15)
+    axes[0].set_title("BTC/USDT | 1H (Тест)", fontsize=18, fontweight='bold', pad=15)
     fig.text(0.5, 0.5, 'ARGUS', alpha=0.05, fontsize=120, ha='center', va='center', color='white', rotation=30)
 
+    # Плашка цены
     ax_main = axes[0]
-    ax_main.text(df.index[0], entry_price, ' ВХОД', color='white', fontsize=12, fontweight='bold', va='center', ha='left', bbox=dict(facecolor='blue', alpha=0.8, edgecolor='none', boxstyle='round,pad=0.2'))
-    ax_main.text(df.index[0], sl_price, ' СТОП', color='white', fontsize=12, fontweight='bold', va='center', ha='left', bbox=dict(facecolor='#ef5350', alpha=0.8, edgecolor='none', boxstyle='round,pad=0.2'))
-    ax_main.text(df.index[0], tp_price, ' ТЕЙК', color='white', fontsize=12, fontweight='bold', va='center', ha='left', bbox=dict(facecolor='#26a69a', alpha=0.8, edgecolor='none', boxstyle='round,pad=0.2'))
-
-    # Плашка цены (сдвинул чуть правее, чтобы не слипалась с краем)
     ax_main.annotate(
         f' {last_close:,.2f} ',
         xy=(1.0, last_close),
@@ -169,8 +165,8 @@ def main():
     )
 
     buf = io.BytesIO()
-    # СОХРАНЯЕМ С БОЛЬШИМ ПОЛЕМ (чтобы вообще ничего не обрезалось)
-    fig.savefig(buf, format='jpeg', dpi=150, facecolor=fig.get_facecolor(), bbox_inches='tight', pad_inches=0.4)
+    # Сохраняем БЕЗ bbox_inches, чтобы не было сбоя
+    fig.savefig(buf, format='jpeg', dpi=120, facecolor=fig.get_facecolor())
     buf.seek(0)
     plt.close(fig)
 
