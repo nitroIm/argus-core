@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-11-14T19:05:33.903707+00:00",
-  "total_news": 89,
-  "avg_sentiment": -0.31,
+  "generated_at": "2026-11-14T20:05:45.972964+00:00",
+  "total_news": 91,
+  "avg_sentiment": -0.379,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 10,
-  "bearish_count": 29,
+  "bearish_count": 31,
   "neutral_count": 50,
   "fake_count": 0,
   "cross_confirmed": 4,
@@ -20,9 +20,9 @@
       "bear": 3
     },
     "Bitcoin.com": {
-      "total": 9,
+      "total": 10,
       "bull": 0,
-      "bear": 4
+      "bear": 5
     },
     "CryptoSlate": {
       "total": 7,
@@ -30,9 +30,9 @@
       "bear": 3
     },
     "CryptoPotato": {
-      "total": 24,
+      "total": 25,
       "bull": 2,
-      "bear": 12
+      "bear": 13
     },
     "Bitcoinist": {
       "total": 7,
@@ -47,40 +47,6 @@
   },
   "top_bullish": [
     {
-      "title": "JPMorgan Lifts Strategy Stake 36% and Holds $540M in BlackRock’s Bitcoin ETF",
-      "url": "https://cryptopotato.com/jpmorgan-lifts-strategy-stake-36-and-holds-540m-in-blackrocks-bitcoin-etf/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-14T18:49:14+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-14T19:05:32.656669+00:00",
-      "effective_weight": 1.5,
-      "title_original": "JPMorgan Lifts Strategy Stake 36% and Holds $540M in BlackRock’s Bitcoin ETF",
-      "cross_check": 1
-    },
-    {
-      "title": "OpenAI Launches ChatGPT Wallet to Let AI Agents Shop—Without Crypto",
-      "url": "https://decrypt.co/383278/openai-chatgpt-wallet-ai-agents-shop-without-crypto",
-      "source": "Decrypt",
-      "source_weight": 1.1,
-      "lang": "en",
-      "pub_date": "2026-11-14T14:01:02+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-14T19:05:32.261959+00:00",
-      "effective_weight": 1.1,
-      "title_original": "OpenAI Launches ChatGPT Wallet to Let AI Agents Shop—Without Crypto",
-      "cross_check": 1
-    },
-    {
       "title": "Bitcoin ETFs shed $2.35B in 2 weeks, BlackRock’s losing streak hits 11",
       "url": "https://cointelegraph.com/markets/bitcoin-etf-outflows-2-35-billion-blackrock-11-session-streak?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
       "source": "Cointelegraph",
@@ -92,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-14T19:05:32.163371+00:00",
+      "collected_at": "2026-11-14T20:05:44.228373+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin ETFs shed $2.35B in 2 weeks, BlackRock’s losing streak hits 11",
       "cross_check": 1
@@ -109,9 +75,43 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-14T19:05:32.163418+00:00",
+      "collected_at": "2026-11-14T20:05:44.228427+00:00",
       "effective_weight": 1.04,
       "title_original": "Adam Back makes case for simpler security as Blockstream launches Bitcoin custody system",
+      "cross_check": 1
+    },
+    {
+      "title": "JPMorgan Lifts Strategy Stake 36% and Holds $540M in BlackRock’s Bitcoin ETF",
+      "url": "https://cryptopotato.com/jpmorgan-lifts-strategy-stake-36-and-holds-540m-in-blackrocks-bitcoin-etf/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-14T18:49:14+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-14T20:05:44.682757+00:00",
+      "effective_weight": 1.0,
+      "title_original": "JPMorgan Lifts Strategy Stake 36% and Holds $540M in BlackRock’s Bitcoin ETF",
+      "cross_check": 1
+    },
+    {
+      "title": "OpenAI Launches ChatGPT Wallet to Let AI Agents Shop—Without Crypto",
+      "url": "https://decrypt.co/383278/openai-chatgpt-wallet-ai-agents-shop-without-crypto",
+      "source": "Decrypt",
+      "source_weight": 1.1,
+      "lang": "en",
+      "pub_date": "2026-11-14T14:01:02+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-14T20:05:44.318216+00:00",
+      "effective_weight": 0.88,
+      "title_original": "OpenAI Launches ChatGPT Wallet to Let AI Agents Shop—Without Crypto",
       "cross_check": 1
     },
     {
@@ -126,13 +126,47 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.1,
-      "collected_at": "2026-11-14T19:05:32.863144+00:00",
+      "collected_at": "2026-11-14T20:05:44.889418+00:00",
       "effective_weight": 0.81,
       "title_original": "Ethereum Staking Hits Record 36.3% Of Supply As ETH Holders Lock In",
       "cross_check": 1
     }
   ],
   "top_bearish": [
+    {
+      "title": "Unocoin Admits $200K Crypto Loss, Warns of Customer Data Breach",
+      "url": "https://news.bitcoin.com/featured/unocoin-admits-200k-crypto-loss-warns-of-customer-data-breach/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-14T19:24:37+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-14T20:05:44.535125+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Unocoin Admits $200K Crypto Loss, Warns of Customer Data Breach",
+      "cross_check": 1
+    },
+    {
+      "title": "Analyst Explains Why Bitcoin Dumped to $65K on Saturday: Details",
+      "url": "https://cryptopotato.com/analyst-explains-why-bitcoin-dumped-to-65k-on-saturday-details/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-14T19:47:28+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-14T20:05:44.682700+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Analyst Explains Why Bitcoin Dumped to $65K on Saturday: Details",
+      "cross_check": 1
+    },
     {
       "title": "Fed Rate Hike Odds Reach Near-Certainty as Bitcoin Price Falls to $65K",
       "url": "https://news.bitcoin.com/market-updates/fed-rate-hike-odds-reach-near-certainty-as-bitcoin-price-falls-to-65k/",
@@ -143,10 +177,10 @@
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 1.0,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-14T19:05:32.403347+00:00",
-      "effective_weight": 1.5,
+      "collected_at": "2026-11-14T20:05:44.535172+00:00",
+      "effective_weight": 1.0,
       "title_original": "Fed Rate Hike Odds Reach Near-Certainty as Bitcoin Price Falls to $65K",
       "cross_check": 1
     },
@@ -162,27 +196,10 @@
       "bear_weight": 2.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-14T19:05:32.403455+00:00",
+      "collected_at": "2026-11-14T20:05:44.535298+00:00",
       "effective_weight": 1.0,
       "title_original": "Nakamoto Debt Dwarfs Market Cap as Bitcoin Price Plunges Below $67K",
       "cross_check": 2
-    },
-    {
-      "title": "Bitcoin Price Faces 10 Bearish Threats as 10 Recovery Catalysts Begin Taking Shape",
-      "url": "https://news.bitcoin.com/market-updates/bitcoin-price-faces-10-bearish-threats-as-10-recovery-catalysts-begin-taking-shape/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-14T13:30:06+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.2,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-14T19:05:32.403505+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Bitcoin Price Faces 10 Bearish Threats as 10 Recovery Catalysts Begin Taking Shape",
-      "cross_check": 1
     },
     {
       "title": "Binance says stolen crypto has been replaced but some customers have to wait",
@@ -196,27 +213,10 @@
       "bear_weight": 1.8,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-14T19:05:32.543546+00:00",
+      "collected_at": "2026-11-14T20:05:44.583095+00:00",
       "effective_weight": 1.0,
       "title_original": "Binance says stolen crypto has been replaced but some customers have to wait",
       "cross_check": 2
-    },
-    {
-      "title": "Ripple Price Analysis: Is the Worst Yet to Come as XRP Dumps to a 2-Year Low?",
-      "url": "https://cryptopotato.com/ripple-price-analysis-is-the-worst-yet-to-come-as-xrp-dumps-to-a-2-year-low/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-14T16:28:42+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 2.5,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-14T19:05:32.656754+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Ripple Price Analysis: Is the Worst Yet to Come as XRP Dumps to a 2-Year Low?",
-      "cross_check": 1
     }
   ]
 }
