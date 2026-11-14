@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - SIGNAL BOT v9.3.1 (CONFIG INTEGRATION + FIX TIME)
+# ARGUS - SIGNAL BOT v9.3.2 (FULL MISSED CANDLES + CURRENT)
 # Path: crypto/signals/signal_bot.py
 # ============================================================
 
@@ -15,7 +15,7 @@ import pandas as pd
 import numpy as np
 import xgboost as xgb
 
-VERSION = "9.3.1"
+VERSION = "9.3.2"
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("crypto.signal_bot")
 
@@ -153,7 +153,7 @@ def process_mode(mode, deals, bot_info, models, df_1h, config):
     fee_pct = config.get("global", {}).get("fee_pct", 0.001)
     now_utc = datetime.now(timezone.utc)
     
-    # 1. Проверка открытой сделки
+    # 1. ПРОВЕРКА ОТКРЫТОЙ СДЕЛКИ
     if mode in deals and "entry" in deals[mode]:
         deal = deals[mode]
         deal_type = deal.get("type", "LONG")
@@ -164,54 +164,67 @@ def process_mode(mode, deals, bot_info, models, df_1h, config):
         
         last_check_str = bot_info[mode].get("last_check_ts", deal["open_time"])
         last_check = datetime.fromisoformat(last_check_str)
-        df_missed = df_1h[df_1h['open_time'] > last_check]
+        
+        # Берем ВСЕ свечи, которые появились с момента прошлой проверки, ВКЛЮЧАЯ текущую
+        df_to_check = df_1h[df_1h['open_time'] >= last_check]
+        if df_to_check.empty:
+            df_to_check = df_1h.iloc[[-1]] # Если вдруг пусто, принудительно берем последнюю
 
-        atr = float(df_1h.iloc[-1]['atr_14'])
+        atr = float(df_to_check.iloc[-1]['atr_14'])
         act_pct = cfg.get("trailing_activation_pct", 0.5)
         atr_mult = cfg.get("trailing_atr_multiplier", 1.5)
 
-        exit_reason, exit_price = None, float(df_1h.iloc[-1]['close'])
+        exit_reason, exit_price = None, float(df_to_check.iloc[-1]['close'])
         old_sl = sl
         
-        # Ретроактивная проверка по всем пропущенным свечам
-        for _, row in df_missed.iterrows():
+        log.info(f"🔄 [{mode.upper()}] {deal_type} | SL: {sl} | Price: {exit_price} | Candles to check: {len(df_to_check)}")
+        
+        # Функция проверки одной свечи
+        def check_candle(row):
+            nonlocal sl, exit_reason, exit_price
             if deal_type == "LONG":
                 if row['high'] >= entry * (1 + act_pct/100):
                     new_sl = row['high'] - (atr * atr_mult)
                     if new_sl > sl: sl = round(new_sl, 2)
                 if row['low'] <= sl: 
                     exit_reason, exit_price = ("TRAILING_STOP" if sl > entry else "STOP_LOSS"), sl
-                    break
+                    return True
                 if row['high'] >= tp: 
                     exit_reason, exit_price = "TAKE_PROFIT", tp
-                    break
+                    return True
             else: # SHORT
                 if row['low'] <= entry * (1 - act_pct/100):
                     new_sl = row['low'] + (atr * atr_mult)
                     if new_sl < sl: sl = round(new_sl, 2)
                 if row['high'] >= sl: 
                     exit_reason, exit_price = ("TRAILING_STOP" if sl < entry else "STOP_LOSS"), sl
-                    break
+                    return True
                 if row['low'] <= tp: 
                     exit_reason, exit_price = "TAKE_PROFIT", tp
-                    break
-        
+                    return True
+            return False
+
+        # Перебираем все свечи, которые накопились
+        for _, row in df_to_check.iterrows():
+            if check_candle(row): break
+
+        # Если стоп сдвинулся, отправляем событие
         if sl != old_sl:
             deal['sl'] = sl
             sl_pct = (sl-entry)/entry*100 if deal_type=="LONG" else (entry-sl)/entry*100
             append_event({"type": "UPDATE", "mode": mode, "deal_type": deal_type, "new_sl": sl, "sl_pct": round(sl_pct, 2)})
 
-        # Принудительное закрытие Intraday (например, в 19:00)
+        # Жесткое закрытие Intraday в 19:00
         close_h = cfg.get("close_hour_utc")
         if not exit_reason and mode == "intraday" and close_h is not None and now_utc.hour >= close_h:
-            exit_reason, exit_price = "TIME_EXIT_DAY", float(df_1h.iloc[-1]['close'])
+            exit_reason, exit_price = "TIME_EXIT_DAY", float(df_to_check.iloc[-1]['close'])
 
         # Выход по времени для Swing
         if not exit_reason and mode == "swing":
             time_held = (now_utc - datetime.fromisoformat(deal["open_time"])).total_seconds() / 3600.0
             time_exit_h = models[mode][deal_type.lower()]["params"].get("time_exit_h", 24)
             if time_held >= time_exit_h:
-                exit_reason, exit_price = "TIME_EXIT", float(df_1h.iloc[-1]['close'])
+                exit_reason, exit_price = "TIME_EXIT", float(df_to_check.iloc[-1]['close'])
 
         if exit_reason:
             pnl_pct = (exit_price - entry) / entry * 100 if deal_type == "LONG" else (entry - exit_price) / entry * 100
@@ -220,13 +233,8 @@ def process_mode(mode, deals, bot_info, models, df_1h, config):
             bot_info[mode]["balance"] = round(bot_info[mode]["balance"] + pnl_usd, 2)
             
             append_event({
-                "type": "CLOSE", 
-                "mode": mode, 
-                "deal_type": deal_type, 
-                "reason": exit_reason, 
-                "pnl_pct": round(pnl_pct, 2), 
-                "pnl_usd": round(pnl_usd, 2),
-                "new_balance": bot_info[mode]["balance"]
+                "type": "CLOSE", "mode": mode, "deal_type": deal_type, "reason": exit_reason, 
+                "pnl_pct": round(pnl_pct, 2), "pnl_usd": round(pnl_usd, 2), "new_balance": bot_info[mode]["balance"]
             })
             
             closed = load_json(CLOSED_DEALS, [])
@@ -243,7 +251,7 @@ def process_mode(mode, deals, bot_info, models, df_1h, config):
             save_json(BOT_INFO, bot_info)
         return
 
-    # 2. Поиск сигнала (если сделки нет)
+    # 2. ПОИСК СИГНАЛА
     source_long = models[mode]["long"].get("source", "model_base")
     source_short = models[mode]["short"].get("source", "model_base")
     
@@ -298,16 +306,14 @@ def process_mode(mode, deals, bot_info, models, df_1h, config):
 
     thresh = cfg.get("threshold", 2.0)
     
-    # --- ИСПРАВЛЕННАЯ ЛОГИКА ВРЕМЕНИ ---
     can_open = True
-    no_entry_str = cfg.get("no_entry_time_utc") # Ожидаем формат "18:30"
+    no_entry_str = cfg.get("no_entry_time_utc")
     if mode == "intraday" and no_entry_str:
         try:
             ne_h, ne_m = map(int, no_entry_str.split(":"))
             if now_utc.hour > ne_h or (now_utc.hour == ne_h and now_utc.minute >= ne_m):
                 can_open = False
-        except Exception as e:
-            log.error(f"Ошибка парсинга no_entry_time_utc: {e}")
+        except Exception: pass
 
     last_close = bot_info[mode].get("last_close_ts")
     if last_close:
@@ -337,7 +343,7 @@ def main():
     
     config = load_json(CONFIG_FILE, {})
     if not config:
-        log.error("bot_config.json не найден. Ждем Тюнера.")
+        log.error("bot_config.json не найден.")
         return
 
     bot_info = ensure_weights(load_json(BOT_INFO, {}))
