@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-11-14T20:05:45.972964+00:00",
-  "total_news": 91,
-  "avg_sentiment": -0.379,
+  "generated_at": "2026-11-14T21:05:37.320695+00:00",
+  "total_news": 92,
+  "avg_sentiment": -0.315,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 10,
-  "bearish_count": 31,
-  "neutral_count": 50,
+  "bearish_count": 30,
+  "neutral_count": 52,
   "fake_count": 0,
-  "cross_confirmed": 4,
+  "cross_confirmed": 6,
   "by_source": {
     "Cointelegraph": {
       "total": 18,
@@ -21,22 +21,22 @@
     },
     "Bitcoin.com": {
       "total": 10,
-      "bull": 0,
-      "bear": 5
+      "bull": 1,
+      "bear": 4
     },
     "CryptoSlate": {
-      "total": 7,
+      "total": 8,
       "bull": 0,
       "bear": 3
     },
     "CryptoPotato": {
-      "total": 25,
+      "total": 26,
       "bull": 2,
       "bear": 13
     },
     "Bitcoinist": {
-      "total": 7,
-      "bull": 4,
+      "total": 6,
+      "bull": 3,
       "bear": 2
     },
     "ForkLog": {
@@ -46,6 +46,23 @@
     }
   },
   "top_bullish": [
+    {
+      "title": "Cobra Warns AI Threatens Bitcoin Self-Custody as Winter Looms",
+      "url": "https://news.bitcoin.com/crypto-news/cobra-warns-ai-threatens-bitcoin-self-custody-as-winter-looms/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-14T20:45:28+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-14T21:05:35.652338+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Cobra Warns AI Threatens Bitcoin Self-Custody as Winter Looms",
+      "cross_check": 1
+    },
     {
       "title": "Bitcoin ETFs shed $2.35B in 2 weeks, BlackRock’s losing streak hits 11",
       "url": "https://cointelegraph.com/markets/bitcoin-etf-outflows-2-35-billion-blackrock-11-session-streak?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -58,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-14T20:05:44.228373+00:00",
+      "collected_at": "2026-11-14T21:05:35.275264+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin ETFs shed $2.35B in 2 weeks, BlackRock’s losing streak hits 11",
       "cross_check": 1
@@ -75,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-14T20:05:44.228427+00:00",
+      "collected_at": "2026-11-14T21:05:35.275337+00:00",
       "effective_weight": 1.04,
       "title_original": "Adam Back makes case for simpler security as Blockstream launches Bitcoin custody system",
       "cross_check": 1
@@ -92,7 +109,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-14T20:05:44.682757+00:00",
+      "collected_at": "2026-11-14T21:05:35.955898+00:00",
       "effective_weight": 1.0,
       "title_original": "JPMorgan Lifts Strategy Stake 36% and Holds $540M in BlackRock’s Bitcoin ETF",
       "cross_check": 1
@@ -109,26 +126,9 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-14T20:05:44.318216+00:00",
+      "collected_at": "2026-11-14T21:05:35.405206+00:00",
       "effective_weight": 0.88,
       "title_original": "OpenAI Launches ChatGPT Wallet to Let AI Agents Shop—Without Crypto",
-      "cross_check": 1
-    },
-    {
-      "title": "Ethereum Staking Hits Record 36.3% Of Supply As ETH Holders Lock In",
-      "url": "https://bitcoinist.com/ethereum-staking-hits-record-36-3-of-supply-as-eth-holders-lock-in/",
-      "source": "Bitcoinist",
-      "source_weight": 0.9,
-      "lang": "en",
-      "pub_date": "2026-11-14T14:16:57+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
-      "freshness": 1.0,
-      "fake_score": 0.1,
-      "collected_at": "2026-11-14T20:05:44.889418+00:00",
-      "effective_weight": 0.81,
-      "title_original": "Ethereum Staking Hits Record 36.3% Of Supply As ETH Holders Lock In",
       "cross_check": 1
     }
   ],
@@ -143,28 +143,11 @@
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 1.5,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-14T20:05:44.535125+00:00",
-      "effective_weight": 1.5,
+      "collected_at": "2026-11-14T21:05:35.652434+00:00",
+      "effective_weight": 1.0,
       "title_original": "Unocoin Admits $200K Crypto Loss, Warns of Customer Data Breach",
-      "cross_check": 1
-    },
-    {
-      "title": "Analyst Explains Why Bitcoin Dumped to $65K on Saturday: Details",
-      "url": "https://cryptopotato.com/analyst-explains-why-bitcoin-dumped-to-65k-on-saturday-details/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-14T19:47:28+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-14T20:05:44.682700+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Analyst Explains Why Bitcoin Dumped to $65K on Saturday: Details",
       "cross_check": 1
     },
     {
@@ -179,27 +162,10 @@
       "bear_weight": 1.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-14T20:05:44.535172+00:00",
+      "collected_at": "2026-11-14T21:05:35.652520+00:00",
       "effective_weight": 1.0,
       "title_original": "Fed Rate Hike Odds Reach Near-Certainty as Bitcoin Price Falls to $65K",
       "cross_check": 1
-    },
-    {
-      "title": "Nakamoto Debt Dwarfs Market Cap as Bitcoin Price Plunges Below $67K",
-      "url": "https://news.bitcoin.com/finance/nakamoto-debt-dwarfs-market-cap-as-bitcoin-price-plunges-below-67k/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-14T14:45:09+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 2.5,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-14T20:05:44.535298+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Nakamoto Debt Dwarfs Market Cap as Bitcoin Price Plunges Below $67K",
-      "cross_check": 2
     },
     {
       "title": "Binance says stolen crypto has been replaced but some customers have to wait",
@@ -213,10 +179,44 @@
       "bear_weight": 1.8,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-14T20:05:44.583095+00:00",
+      "collected_at": "2026-11-14T21:05:35.804786+00:00",
       "effective_weight": 1.0,
       "title_original": "Binance says stolen crypto has been replaced but some customers have to wait",
-      "cross_check": 2
+      "cross_check": 1
+    },
+    {
+      "title": "Analyst Explains Why Bitcoin Dumped to $65K on Saturday: Details",
+      "url": "https://cryptopotato.com/analyst-explains-why-bitcoin-dumped-to-65k-on-saturday-details/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-14T19:47:28+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-14T21:05:35.955826+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Analyst Explains Why Bitcoin Dumped to $65K on Saturday: Details",
+      "cross_check": 1
+    },
+    {
+      "title": "Ripple Price Analysis: Is the Worst Yet to Come as XRP Dumps to a 2-Year Low?",
+      "url": "https://cryptopotato.com/ripple-price-analysis-is-the-worst-yet-to-come-as-xrp-dumps-to-a-2-year-low/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-14T16:28:42+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 2.5,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-14T21:05:35.956070+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Ripple Price Analysis: Is the Worst Yet to Come as XRP Dumps to a 2-Year Low?",
+      "cross_check": 1
     }
   ]
 }
