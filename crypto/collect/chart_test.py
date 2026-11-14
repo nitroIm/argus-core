@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - CHART TEST (WITH MOCK TRADE MARKERS)
+# ARGUS - CHART TEST (FIXED SCATTER + FROM NOV 10)
 # Path: crypto/collect/chart_test.py
 # ============================================================
 
@@ -8,6 +8,7 @@ import sys
 import io
 import logging
 import pandas as pd
+import numpy as np
 import psycopg
 import requests
 import mplfinance as mpf
@@ -19,7 +20,6 @@ log = logging.getLogger("chart_test")
 
 DB_URL = (os.getenv("AIVEN_DB_URL") or "").strip()
 BOT_TOKEN = (os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("BOT_TOKEN") or "").strip()
-# ДЛЯ ТЕСТА ШЛЕМ В ЛИЧКУ (TELEGRAM_CHAT_ID)
 CHAT_ID = (os.getenv("TELEGRAM_CHAT_ID") or "").strip()
 
 def get_conn():
@@ -41,34 +41,38 @@ def send_telegram_photo(photo_bytes):
         return False
 
 def main():
-    log.info("STARTING CHART GENERATOR WITH MOCK TRADE")
+    log.info("STARTING CHART GENERATOR FROM NOV 10")
 
     try:
         conn = get_conn()
         with conn.cursor() as cur:
-            # Берем последние 300 свечей по 15 минут
-            cur.execute("SELECT open_time, open, high, low, close, volume FROM candles WHERE symbol='BTCUSDT' AND timeframe='15m' AND market_type='spot' ORDER BY open_time DESC LIMIT 300")
+            # БЕРЕМ ДАННЫЕ С 10 НОЯБРЯ
+            cur.execute("""
+                SELECT open_time, open, high, low, close, volume 
+                FROM candles 
+                WHERE symbol='BTCUSDT' AND timeframe='15m' AND market_type='spot' 
+                  AND open_time >= '2026-11-10' 
+                ORDER BY open_time ASC
+            """)
             rows = cur.fetchall()
         conn.close()
     except Exception as e:
         log.error(f"DB Error: {e}")
         sys.exit(1)
 
-    if len(rows) < 100:
-        log.error("Not enough data in DB")
+    if len(rows) < 50:
+        log.error("Not enough data in DB since Nov 10")
         sys.exit(1)
 
-    # Реверсируем, чтобы шло от старых к новым
-    rows = list(reversed(rows))
     df = pd.DataFrame(rows, columns=['open_time', 'open', 'high', 'low', 'close', 'volume'])
     df['open_time'] = pd.to_datetime(df['open_time'], utc=True)
     df.set_index('open_time', inplace=True)
     df = df.astype(float)
 
-    # --- МОКАЕМ ТЕСТОВУЮ СДЕЛКУ (Берем середину графика) ---
+    # --- МОКАЕМ ТЕСТОВУЮ СДЕЛКУ ---
     mid_idx = len(df) // 2
-    entry_idx = mid_idx - 15
-    exit_idx = len(df) - 5
+    entry_idx = mid_idx - 10
+    exit_idx = len(df) - 10
     
     entry_price = df['close'].iloc[entry_idx]
     exit_price = df['close'].iloc[exit_idx]
@@ -108,19 +112,20 @@ def main():
         gridstyle='--', rc=rc, y_on_right=True
     )
 
-    # --- ТЕСТОВЫЕ ОТМЕТКИ ---
+    # --- ИСПРАВЛЕННЫЕ ОТМЕТКИ (такой же размер, как и график) ---
     apds = [
         mpf.make_addplot(macd_hist, type='bar', color=macd_colors, panel=2),
         mpf.make_addplot(macd_line, color='#FFD700', panel=2, width=1),
         mpf.make_addplot(signal_line, color='#9370DB', panel=2, width=1)
     ]
 
-    # Стрелка покупки (на 15-й свече с конца)
-    scatter_entry = pd.Series([entry_price], index=[df.index[entry_idx]])
+    # Создаем серию с NaN на всю длину графика
+    scatter_entry = pd.Series(np.nan, index=df.index)
+    scatter_entry.iloc[entry_idx] = entry_price
     apds.append(mpf.make_addplot(scatter_entry, type='scatter', markersize=300, marker='^', color='#26a69a', panel=0))
 
-    # Стрелка продажи (на 5-й свече с конца)
-    scatter_exit = pd.Series([exit_price], index=[df.index[exit_idx]])
+    scatter_exit = pd.Series(np.nan, index=df.index)
+    scatter_exit.iloc[exit_idx] = exit_price
     apds.append(mpf.make_addplot(scatter_exit, type='scatter', markersize=300, marker='v', color='#ef5350', panel=0))
 
     # Рисуем график
@@ -130,9 +135,8 @@ def main():
         volume=True,
         addplot=apds,
         panel_ratios=(6, 1.5, 2),
-        figsize=(12, 12),
+        figsize=(14, 12), # Сделал чуть шире, так как свечей с 10-го много
         ylim=(ymin, ymax),
-        # Линии входа, стопа и тейка
         hlines=dict(hlines=[entry_price, sl_price, tp_price], colors=['blue', '#ef5350', '#26a69a'], linestyle='--', linewidths=[1.5, 1.5, 1.5]),
         returnfig=True,
         xrotation=0,
@@ -146,7 +150,7 @@ def main():
         vol_ymin, vol_ymax = vol_ax.get_ylim()
         vol_ax.set_ylim(vol_ymin, vol_ymax * 1.3)
 
-    axes[0].set_title("BTC/USDT | 15m (ТЕСТ СДЕЛКИ)", fontsize=20, fontweight='bold', pad=15)
+    axes[0].set_title("BTC/USDT | 15m (с 10.11.2026)", fontsize=20, fontweight='bold', pad=15)
     fig.text(0.5, 0.5, 'ARGUS', alpha=0.1, fontsize=100, ha='center', va='center', color='white', rotation=30)
 
     # Плашка цены
