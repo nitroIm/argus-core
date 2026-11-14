@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - SIGNAL BOT v9.3.7 (CHART DATA SUPPORT)
+# ARGUS - SIGNAL BOT v9.3.8 (ENTRY OPEN_TIME FIX)
 # Path: crypto/signals/signal_bot.py
 # ============================================================
 
@@ -15,7 +15,7 @@ import pandas as pd
 import numpy as np
 import xgboost as xgb
 
-VERSION = "9.3.7"
+VERSION = "9.3.8"
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("crypto.signal_bot")
 
@@ -242,7 +242,6 @@ def process_mode(mode, deals, bot_info, models, df_1h, config):
             pnl_usd = bot_info[mode]["balance"] * (pnl_pct / 100)
             bot_info[mode]["balance"] = round(bot_info[mode]["balance"] + pnl_usd, 2)
             
-            # ДОБАВЛЕНЫ ENTRY И OPEN_TIME ДЛЯ ГРАФИКОВ
             append_event({
                 "type": "CLOSE", "mode": mode, "deal_type": deal_type, "reason": exit_reason, 
                 "pnl_pct": round(pnl_pct, 2), "pnl_usd": round(pnl_usd, 2), "new_balance": bot_info[mode]["balance"],
@@ -340,13 +339,13 @@ def process_mode(mode, deals, bot_info, models, df_1h, config):
         tp = price * (1 + cfg.get("tp_pct", 2.0) / 100)
         sl = price * (1 - cfg.get("sl_pct", 1.0) / 100)
         deals[mode] = {"type": "LONG", "entry": price, "tp": tp, "sl": sl, "open_time": now_utc.isoformat(), "active_signals": active_long}
-        append_event({"type": "ENTRY", "mode": mode, "deal_type": "LONG", "entry": price, "tp": tp, "sl": sl})
+        append_event({"type": "ENTRY", "mode": mode, "deal_type": "LONG", "entry": price, "tp": tp, "sl": sl, "open_time": now_utc.isoformat()})
         log.info(f"🚀 [{mode.upper()}] LONG SIGNAL!")
     elif can_open and score_short >= thresh and score_short > score_long:
         tp = price * (1 - cfg.get("tp_pct", 2.0) / 100)
         sl = price * (1 + cfg.get("sl_pct", 1.0) / 100)
         deals[mode] = {"type": "SHORT", "entry": price, "tp": tp, "sl": sl, "open_time": now_utc.isoformat(), "active_signals": active_short}
-        append_event({"type": "ENTRY", "mode": mode, "deal_type": "SHORT", "entry": price, "tp": tp, "sl": sl})
+        append_event({"type": "ENTRY", "mode": mode, "deal_type": "SHORT", "entry": price, "tp": tp, "sl": sl, "open_time": now_utc.isoformat()})
         log.info(f"🩸 [{mode.upper()}] SHORT SIGNAL!")
 
     bot_info[mode]["last_check_ts"] = now_utc.isoformat()
