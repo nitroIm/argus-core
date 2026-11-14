@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - SIGNAL BOT v9.3.8 (ENTRY OPEN_TIME FIX)
+# ARGUS - SIGNAL BOT v9.3.9 (SMART COOLDOWN)
 # Path: crypto/signals/signal_bot.py
 # ============================================================
 
@@ -15,7 +15,7 @@ import pandas as pd
 import numpy as np
 import xgboost as xgb
 
-VERSION = "9.3.8"
+VERSION = "9.3.9"
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("crypto.signal_bot")
 
@@ -328,10 +328,33 @@ def process_mode(mode, deals, bot_info, models, df_1h, config):
                 can_open = False
         except Exception: pass
 
+    # ==========================================
+    # УМНЫЙ КУЛДАУН
+    # ==========================================
     last_close = bot_info[mode].get("last_close_ts")
     if last_close:
         h_since = (now_utc - datetime.fromisoformat(last_close)).total_seconds() / 3600.0
-        if h_since < 1.0: can_open = False
+        
+        # Определяем результат последней сделки, чтобы понять время ожидания
+        closed_deals = load_json(CLOSED_DEALS, [])
+        mode_deals = [t for t in closed_deals if t.get("mode") == mode]
+        mode_deals.sort(key=lambda x: x.get("close_time", ""), reverse=True)
+        
+        cooldown_h = 1.0 # По умолчанию 1 час
+        if mode_deals:
+            last_deal = mode_deals[0]
+            last_pnl = last_deal.get("pnl_usd", 0)
+            
+            if last_pnl > 0:
+                cooldown_h = 0.25 # 15 минут после профита (ловим тренд)
+            elif last_pnl < 0:
+                cooldown_h = 1.0  # 1 час после лося (остываем)
+            else:
+                cooldown_h = 0.5  # 30 минут после безубытка (нейтрально)
+        
+        if h_since < cooldown_h:
+            can_open = False
+            log.info(f"[{mode.upper()}] Cooldown active: {h_since:.2f}h / {cooldown_h}h")
 
     log.info(f"[{mode.upper()}] Price: {price:.1f} | LONG: {score_long:.2f} | SHORT: {score_short:.2f} | Thresh: {thresh:.2f}")
 
