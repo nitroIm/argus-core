@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-15T18:00:00.000000+00:00",
+  "updated_at": "2026-11-15T18:30:00.000000+00:00",
   "force_reset_old": false,
   "global": {
     "fee_pct": 0.001,
@@ -33,6 +33,14 @@
     "min_tp2_pct": 2.0,
     "max_tp2_pct": 8.0,
     "swing_flat_atr_mult": 2.0
+  },
+  "adaptive_threshold": {
+    "enabled": true,
+    "atr_lookback": 200,
+    "low_vol_multiplier": 0.75,
+    "high_vol_multiplier": 1.3,
+    "min_threshold": 3.0,
+    "max_threshold": 6.5
   },
   "intraday": {
     "close_hour_utc": 19,
