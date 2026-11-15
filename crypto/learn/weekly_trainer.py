@@ -27,8 +27,6 @@ MODEL_OUT_FILE = SCRIPT_DIR.parent / "data" / "models" / "best_params.json"
 MODEL_OUT_FILE.parent.mkdir(parents=True, exist_ok=True)
 
 DB_URL = (os.getenv("AIVEN_DB_URL") or "").strip()
-
-# НАСТРОЙКИ ДИНАМИКИ
 LOOKBACK_DAYS = 365 # Берем последний год
 
 def calculate_ema(series, period): return series.ewm(span=period, adjust=False).mean()
@@ -106,7 +104,6 @@ def main():
     df = pd.concat([df_hist, df_fresh]) if not df_fresh.empty else df_hist
     df = df.drop_duplicates(subset=['open_time']).sort_values('open_time').reset_index(drop=True)
     
-    # ДИНАМИЧЕСКОЕ ОКНО (ПОСЛЕДНИЙ ГОД)
     max_date = df['open_time'].max()
     cutoff_date = max_date - pd.Timedelta(days=LOOKBACK_DAYS)
     df = df[df['open_time'] >= cutoff_date].reset_index(drop=True)
@@ -117,6 +114,7 @@ def main():
     
     log.info(f"Data window: {data_start} to {data_end} (Total rows: {total_rows})")
     log.info("Calculating indicators...")
+    
     df['rsi'] = calculate_rsi(df['close'], 14)
     df['rsi_7'] = calculate_rsi(df['close'], 7)
     df['rsi_21'] = calculate_rsi(df['close'], 21)
@@ -141,7 +139,6 @@ def main():
         log.error("No models found!")
         return
 
-    # ЗАГРУЗКА СТАРЫХ МОДЕЛЕЙ ДЛЯ ЗАЩИТЫ (CHAMPION-CHALLENGER)
     old_data = {}
     if MODEL_OUT_FILE.exists():
         try:
@@ -183,11 +180,10 @@ def main():
                     log.error(f"  ❌ Model {model_name} crashed on {mode}/{side}: {e}")
                     model_scores[model_name] = {"error": str(e)}
                     
-            # ЛОГИКА ЗАЩИТЫ: СРАВНИВАЕМ С ПРОШЛОЙ МОДЕЛЬЮ
             old_score = old_data.get(mode, {}).get(side, {}).get("metrics", {}).get("score", -99999)
             if best_model_data and best_score <= old_score:
                 log.info(f"  🛡️ New best ({best_score}) is WORSE than old ({old_score}). Keeping OLD model.")
-                out_data[mode][side] = old_data[mode][side] # Оставляем старую
+                out_data[mode][side] = old_data[mode][side]
             elif best_model_data:
                 log.info(f"  🚀 New best ({best_score}) is BETTER than old ({old_score}). Updating!")
                 out_data[mode][side] = best_model_data
