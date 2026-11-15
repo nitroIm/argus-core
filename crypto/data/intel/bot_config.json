@@ -11,9 +11,6 @@
     "min_trades_to_deploy": 10,
     "filter_min_pct_intraday": 0.3,
     "filter_min_pct_swing": 1.5,
-    "tp_max_pct": 10.0,
-    "sl_max_pct": 3.0,
-    "atr_mult": 1.5,
     "percentile_top": 80.0,
     "position_notional": 20.0,
     "initial_balance": 100.0,
@@ -23,40 +20,38 @@
     "min_trades_for_live": 10,
     "min_score_for_live": 0.0
   },
+  "risk_management": {
+    "atr_mult_sl": 1.5,
+    "atr_mult_tp1": 1.0,
+    "atr_mult_tp2": 2.5,
+    "trail_atr_mult": 2.0,
+    "partial_exit_pct": 50,
+    "min_sl_pct": 0.5,
+    "max_sl_pct": 3.0,
+    "min_tp1_pct": 0.8,
+    "max_tp1_pct": 2.0,
+    "min_tp2_pct": 2.0,
+    "max_tp2_pct": 8.0,
+    "swing_flat_atr_mult": 2.0
+  },
   "intraday": {
     "close_hour_utc": 19,
     "no_entry_time_utc": "18:30",
-    "trailing_activation_pct": 1.0,
-    "trailing_atr_multiplier": 2.0,
-    "tp_pct": 2.0,
-    "sl_pct": 1.0,
-    "threshold": 4.6,
     "time_exit_h": 12,
+    "threshold": 4.6,
     "weights": {
-      "macd": 1.05,
-      "ema": 1.05,
-      "volume": 1.05,
-      "rsi_low": 1.0,
-      "rsi_mid": 1.05,
-      "rsi_high": 1.0
+      "macd": 1.05, "ema": 1.05, "volume": 1.05,
+      "rsi_low": 1.0, "rsi_mid": 1.05, "rsi_high": 1.0
     }
   },
   "swing": {
     "close_hour_utc": null,
     "no_entry_time_utc": null,
-    "trailing_activation_pct": 1.5,
-    "trailing_atr_multiplier": 3.0,
-    "tp_pct": 2.0,
-    "sl_pct": 1.0,
+    "time_exit_h": 168,
     "threshold": 4.8,
-    "time_exit_h": 48,
     "weights": {
-      "macd": 1.0,
-      "ema": 1.0,
-      "volume": 1.0,
-      "rsi_low": 1.0,
-      "rsi_mid": 1.0,
-      "rsi_high": 1.0
+      "macd": 1.0, "ema": 1.0, "volume": 1.0,
+      "rsi_low": 1.0, "rsi_mid": 1.0, "rsi_high": 1.0
     }
   }
 }
