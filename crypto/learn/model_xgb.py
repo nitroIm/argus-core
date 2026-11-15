@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - XGBOOST MODEL v7.3 (NAN SUPPORT)
+# ARGUS - XGBOOST MODEL v7.3 (DYNAMIC ATR & MIN PROFIT)
 # Path: crypto/learn/model_xgb.py
 # ============================================================
 
@@ -68,7 +68,6 @@ def prepare_features(df, horizon, side):
     feature_cols = base_features + macro_features + \
                    [f'{f}_lag{l}' for l in [1,3,6,12,24] for f in ['rsi_norm', 'macd_norm', 'ema50_diff', 'vol_ratio', 'buy_ratio']]
     
-    # ВАЖНО: Удаляем строки, где НЕТ ТАРГЕТА (будущего). Остальные пустые значения (NaN) XGBoost переварит сам.
     data = data.dropna(subset=['target'])
     return data, feature_cols
 
@@ -88,11 +87,12 @@ def walk_forward_validate(data, feature_cols, side, horizon):
     valid_preds = predictions[~np.isnan(predictions)]
     if len(valid_preds) == 0: return None, None
     
+    # Берем Топ-20% лучших сигналов (отсекаем слабые)
     if side == "long":
-        threshold = np.percentile(valid_preds, 90)
+        threshold = np.percentile(valid_preds, 80)
         signal_condition = lambda p: p >= threshold
     else:
-        threshold = np.percentile(valid_preds, 10)
+        threshold = np.percentile(valid_preds, 20)
         signal_condition = lambda p: p <= threshold
 
     trades, in_pos, entry_price, entry_idx = [], False, 0, 0
@@ -115,18 +115,25 @@ def walk_forward_validate(data, feature_cols, side, horizon):
                 exit_price = row['close']; pnl_pct = ((exit_price - entry_price) / entry_price) if side == "long" else ((entry_price - exit_price) / entry_price)
                 trades.append(POSITION_NOTIONAL * (pnl_pct - (FEE_RATE * 2))); in_pos = False
         else:
+            # ФИЛЬТР: Не входим, если предсказание меньше 1.5% (комиссия съест)
+            if abs(prob) < 1.5: continue 
+            
             if signal_condition(prob):
                 in_pos = True
                 entry_price = data.iloc[i]['close']
                 entry_idx = i
+                atr = data.iloc[i]['atr_14']
                 
-                expected_move_pct = abs(prob)
+                # ДИНАМИЧЕСКИЙ ТЕЙК И СТОП НА ОСНОВЕ ATR
+                tp_pct = min(abs(prob), 10.0) / 100
+                sl_pct = min((atr * 1.5) / entry_price, 0.03)
+                
                 if side == "long":
-                    dynamic_tp = entry_price * (1 + (expected_move_pct / 100))
-                    dynamic_sl = entry_price * (1 - (expected_move_pct / 200)) 
+                    dynamic_tp = entry_price * (1 + tp_pct)
+                    dynamic_sl = entry_price * (1 - sl_pct) 
                 else:
-                    dynamic_tp = entry_price * (1 - (expected_move_pct / 100))
-                    dynamic_sl = entry_price * (1 + (expected_move_pct / 200))
+                    dynamic_tp = entry_price * (1 - tp_pct)
+                    dynamic_sl = entry_price * (1 + sl_pct)
                 
     if not trades: return None, None
     trades = np.array(trades)
@@ -148,7 +155,7 @@ def train(df, side="long", mode="swing"):
     try:
         horizon = 12 if mode == "intraday" else 48
         data, feature_cols = prepare_features(df, horizon, side)
-        if len(data) < 1000: return None # Понизили порог, так как данных может быть меньше
+        if len(data) < 1000: return None
         metrics, model = walk_forward_validate(data, feature_cols, side, horizon)
         if not metrics or model is None: return None
         
