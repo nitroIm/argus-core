@@ -1,11 +1,6 @@
 # ============================================================
-# ARGUS - RANDOM FOREST MODEL v5.7.0
+# ARGUS - RANDOM FOREST MODEL v5.7.1
 # Path: crypto/learn/model_rf.py
-#
-# ИЗМЕНЕНИЯ v5.7.0:
-#   - dropna(subset=['target']) + медианная импутация NaN для RF
-#   - 80/20 split, percentile top 20%
-#   - model_file (.pkl)
 # ============================================================
 
 import logging, numpy as np, pandas as pd, pickle
@@ -16,7 +11,6 @@ from pathlib import Path
 log = logging.getLogger("model_rf")
 
 def prepare_features(df, horizon, side):
-    # копия из lgbm/xgb
     data = df.copy()
     data['rsi_norm'] = data['rsi'] / 100.0
     data['rsi_7_norm'] = data['rsi_7'] / 100.0
@@ -50,39 +44,34 @@ def prepare_features(df, horizon, side):
     data['target'] = ((data['close'].shift(-horizon) - data['close']) / data['close'] * 100).clip(-20, 20)
     cols = base + macro + [f'{f}_lag{l}' for l in [1,3,6,12,24] for f in ['rsi_norm','macd_norm','ema50_diff','vol_ratio','buy_ratio']]
     data = data.dropna(subset=['target'])
-    return data, cols
+    
+    valid_cols = [c for c in cols if c in data.columns and not data[c].isna().all()]
+    return data, valid_cols
 
-def walk_forward_validate(data, feature_cols, side, horizon, cfg):
+class RFWrapper:
+    def __init__(self, model, imputer):
+        self.model = model
+        self.imputer = imputer
+    def predict(self, X):
+        X = self.imputer.transform(X)
+        return self.model.predict(X)
+
+def _backtest(data, preds, side, horizon, cfg):
     bt = cfg.get("backtest", {})
     fee = float(cfg.get("global", {}).get("fee_pct", 0.001))
     notional = float(bt.get("position_notional", 20.0))
     init_bal = float(bt.get("initial_balance", 100.0))
-    tp_max = float(bt.get("tp_max_pct", 10.0))
-    sl_max = float(bt.get("sl_max_pct", 3.0))
-    atr_mult = float(bt.get("atr_mult", 1.5))
-    pct_top = float(bt.get("percentile_top", 80.0))
-    split_pct = float(bt.get("test_split_pct", 0.2))
+    tp_max = float(bt.get("tp_max_pct", 10.0)); sl_max = float(bt.get("sl_max_pct", 3.0))
+    atr_mult = float(bt.get("atr_mult", 1.5)); pct_top = float(bt.get("percentile_top", 80.0))
     filt = float(bt.get("filter_min_pct_intraday" if horizon <= 24 else "filter_min_pct_swing", 0.5 if horizon <= 24 else 1.5))
 
-    split_idx = int(len(data) * (1 - split_pct)) - horizon
-    if split_idx <= 100:
-        return {"trades":0,"pnl":0.0,"winrate":0.0,"max_dd":-0.1,"score":-99999.0}, None
-    train, test = data.iloc[:split_idx], data.iloc[split_idx:].copy()
-    imp = SimpleImputer(strategy='median')
-    X_tr = imp.fit_transform(train[feature_cols].values); y_tr = train['target'].values
-    X_te = imp.transform(test[feature_cols].values)
-    model = RandomForestRegressor(n_estimators=100, max_depth=6, random_state=42, n_jobs=-1)
-    model.fit(X_tr, y_tr)
-    preds = model.predict(X_te)
-    if len(preds) == 0:
-        return {"trades":0,"pnl":0.0,"winrate":0.0,"max_dd":-0.1,"score":-99999.0}, None
-    if side == "long":
-        th = np.percentile(preds, pct_top); cond = lambda p: p >= th
-    else:
-        th = np.percentile(preds, 100 - pct_top); cond = lambda p: p <= th
+    if len(preds) == 0: return {"trades":0,"pnl":0.0,"winrate":0.0,"max_dd":-0.1,"score":-99999.0}
+    if side == "long": th = np.percentile(preds, pct_top); cond = lambda p: p >= th
+    else: th = np.percentile(preds, 100 - pct_top); cond = lambda p: p <= th
+
     trades = []; in_pos = False; ep=0.0; ei=0; dtp=0.0; dsl=0.0
-    for i in range(len(test)):
-        row = test.iloc[i]; prob = preds[i]
+    for i in range(len(data)):
+        row = data.iloc[i]; prob = preds[i]
         if in_pos:
             if side == "long":
                 if row['low'] <= dsl: trades.append(notional*((dsl-ep)/ep - fee*2)); in_pos=False
@@ -96,21 +85,16 @@ def walk_forward_validate(data, feature_cols, side, horizon, cfg):
         else:
             if abs(prob) < filt or not cond(prob): continue
             in_pos = True; ep = row['close']; ei = i; atr = row['atr_14']
-            tp_pct = min(abs(prob), tp_max)/100
-            sl_pct = min((atr*atr_mult)/ep, sl_max/100)
+            tp_pct = min(abs(prob), tp_max)/100; sl_pct = min((atr*atr_mult)/ep, sl_max/100)
             if side == "long": dtp = ep*(1+tp_pct); dsl = ep*(1-sl_pct)
             else: dtp = ep*(1-tp_pct); dsl = ep*(1+sl_pct)
-    if not trades:
-        return {"trades":0,"pnl":0.0,"winrate":0.0,"max_dd":-0.1,"score":-99999.0}, None
+
+    if not trades: return {"trades":0,"pnl":0.0,"winrate":0.0,"max_dd":-0.1,"score":-99999.0}
     tr = np.array(trades); pnl = tr.sum(); wr = float((tr>0).mean())
     cum = np.cumsum(tr) + init_bal; peak = np.maximum.accumulate(cum)
     dd = float(((cum-peak)/peak*100).min())
     if dd == 0: dd = -0.1
-    score = float(pnl/abs(dd))
-    metrics = {"trades": int(len(tr)), "pnl": round(float(pnl),2), "winrate": round(wr,4), "max_dd": round(dd,2), "score": round(score,2)}
-    final = RandomForestRegressor(n_estimators=100, max_depth=6, random_state=42, n_jobs=-1)
-    final.fit(imp.fit_transform(data[feature_cols].values), data['target'].values)
-    return metrics, (final, imp)
+    return {"trades": int(len(tr)), "pnl": round(float(pnl),2), "winrate": round(wr,4), "max_dd": round(dd,2), "score": round(float(pnl/abs(dd)),2)}
 
 def train(df, side="long", mode="swing", models_dir=None, cfg=None):
     try:
@@ -119,16 +103,31 @@ def train(df, side="long", mode="swing", models_dir=None, cfg=None):
         models_dir = Path(models_dir)
         horizon = 12 if mode == "intraday" else 48
         data, cols = prepare_features(df, horizon, side)
-        if len(data) < 1000:
-            log.info(f"  [{mode}/{side}] Not enough rows: {len(data)}")
-            return None
-        metrics, model_tuple = walk_forward_validate(data, cols, side, horizon, cfg)
-        if model_tuple is None:
-            return {"params": {"model_type":"random_forest_reg","horizon":horizon,"time_exit_h":horizon,"features":cols,"model_file":None}, "metrics": metrics}
+        if len(data) < 1000: return None
+
+        bt = cfg.get("backtest", {})
+        split_pct = float(bt.get("test_split_pct", 0.2))
+        split_idx = int(len(data) * (1 - split_pct)) - horizon
+        if split_idx <= 200: return {"params": {"model_type":"random_forest_reg","horizon":horizon,"time_exit_h":horizon,"features":cols,"model_file":None}, "metrics": {"trades":0,"score":-99999.0}}
+
+        train_d, test_d = data.iloc[:split_idx], data.iloc[split_idx:].copy()
+        imp = SimpleImputer(strategy='median')
+        X_tr = imp.fit_transform(train_d[cols].values); y_tr = train_d['target'].values
+        X_te = imp.transform(test_d[cols].values)
+
+        model = RandomForestRegressor(n_estimators=100, max_depth=6, random_state=42, n_jobs=-1)
+        model.fit(X_tr, y_tr)
+        preds = model.predict(X_te)
+        metrics = _backtest(test_d.reset_index(drop=True), preds, side, horizon, cfg)
+
+        X_all = imp.fit_transform(data[cols].values); y_all = data['target'].values
+        final_model = RandomForestRegressor(n_estimators=100, max_depth=6, random_state=42, n_jobs=-1)
+        final_model.fit(X_all, y_all)
+        
+        wrapper = RFWrapper(final_model, imp)
         fname = f"model_rf_{mode}_{side}.pkl"
-        with open(models_dir / fname, "wb") as f:
-            pickle.dump(model_tuple, f)
+        with open(models_dir / fname, "wb") as f: pickle.dump(wrapper, f)
+
         return {"params": {"model_type":"random_forest_reg","horizon":horizon,"time_exit_h":horizon,"features":cols,"model_file":fname}, "metrics": metrics}
     except Exception as e:
-        log.error(f"Random Forest training failed: {e}")
-        return None
+        log.error(f"Random Forest training failed: {e}"); return None
