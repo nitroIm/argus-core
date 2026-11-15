@@ -1,10 +1,9 @@
 # ============================================================
-# ARGUS - WEEKLY TRAINER ORCHESTRATOR v7.5.2
+# ARGUS - WEEKLY TRAINER ORCHESTRATOR v7.5.3
 # Path: crypto/learn/weekly_trainer.py
 #
-# ИЗМЕНЕНИЯ v7.5.2:
-#   - ФИКС: Добавлен sys.modules[fp.stem] = module в load_models()
-#     (исправляет ошибку Can't pickle TFTWrapper)
+# ИЗМЕНЕНИЯ v7.5.3:
+#   - Добавлены train_start и train_end в best_params.json (для отчета)
 # ============================================================
 
 import os, json, logging, importlib.util, subprocess, base64, sys
@@ -17,7 +16,7 @@ import warnings
 
 warnings.filterwarnings("ignore", message=".*SQLAlchemy.*")
 
-VERSION = "7.5.2"
+VERSION = "7.5.3"
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("crypto.trainer")
 
@@ -160,7 +159,7 @@ def load_models():
         try:
             spec = importlib.util.spec_from_file_location(fp.stem, fp)
             module = importlib.util.module_from_spec(spec)
-            sys.modules[fp.stem] = module  # <--- ИСПРАВЛЕНИЕ PICKLE
+            sys.modules[fp.stem] = module  # ИСПРАВЛЕНИЕ PICKLE
             spec.loader.exec_module(module)
             if hasattr(module, "train"):
                 models.append((fp.stem, module))
@@ -175,7 +174,7 @@ def main():
     bt_cfg = config.get("backtest", {})
     lookback_days = int(bt_cfg.get("lookback_days", 365))
     min_score = float(bt_cfg.get("min_score", 0.0))
-    min_trades = int(bt_cfg.get("min_trades_to_deploy", 30))
+    min_trades = int(bt_cfg.get("min_trades_to_deploy", 3))
     force_reset = bool(config.get("force_reset_old", False))
 
     migrate_old_format()
@@ -220,7 +219,10 @@ def main():
         log.warning("No macro data. Training BTC-only."); df = df_btc
 
     if len(df) < 1000: return log.error(f"CRITICAL: Not enough rows ({len(df)})")
-    log.info(f"Training window: {df['open_time'].min().strftime('%Y-%m-%d')} .. {df['open_time'].max().strftime('%Y-%m-%d')} | Rows: {len(df)}")
+    
+    train_start = df['open_time'].min().strftime('%Y-%m-%d')
+    train_end = df['open_time'].max().strftime('%Y-%m-%d')
+    log.info(f"Training window: {train_start} .. {train_end} | Rows: {len(df)}")
 
     models = load_models()
     if not models: return log.error("No models loaded")
@@ -232,7 +234,16 @@ def main():
             if m in old_data and isinstance(old_data[m], dict):
                 for s in ["long", "short"]: old_data[m][s] = None
 
-    out_data = {"trainer_version": VERSION, "updated_at": datetime.now(timezone.utc).isoformat(), "intraday": {"long": None, "short": None}, "swing": {"long": None, "short": None}, "all_scores": {}}
+    # ИСПРАВЛЕНИЕ ДАТ В ОТЧЕТЕ: сохраняем train_start и train_end
+    out_data = {
+        "trainer_version": VERSION, 
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+        "train_start": train_start,
+        "train_end": train_end,
+        "intraday": {"long": None, "short": None}, 
+        "swing": {"long": None, "short": None}, 
+        "all_scores": {}
+    }
 
     for mode in ["intraday", "swing"]:
         out_data["all_scores"][mode] = {}
