@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - WEEKLY TRAINER ORCHESTRATOR v7.1 (REAL DATA ONLY)
+# ARGUS - WEEKLY TRAINER ORCHESTRATOR v7.2 (SAFE MERGE & REAL DATA)
 # Path: crypto/learn/weekly_trainer.py
 # ============================================================
 
@@ -13,7 +13,7 @@ import warnings
 
 warnings.filterwarnings("ignore", message=".*SQLAlchemy.*")
 
-VERSION = "7.1.0"
+VERSION = "7.2.0"
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("crypto.trainer")
 
@@ -27,18 +27,21 @@ DB_URL = (os.getenv("AIVEN_DB_URL") or "").strip()
 LOOKBACK_DAYS = 730
 
 def calculate_ema(series, period): return series.ewm(span=period, adjust=False).mean()
+
 def calculate_rsi(series, period=14):
     delta = series.diff()
     gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()
     loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()
     rs = gain / loss
     return 100 - (100 / (1 + rs))
+
 def calculate_macd(series, fast=12, slow=26, signal=9):
     ema_fast = calculate_ema(series, fast)
     ema_slow = calculate_ema(series, slow)
     macd_line = ema_fast - ema_slow
     signal_line = calculate_ema(macd_line, signal)
     return macd_line - signal_line
+
 def calculate_atr(df, period=14):
     high_low = df['high'] - df['low']
     high_close = (df['high'] - df['close'].shift()).abs()
@@ -54,7 +57,6 @@ def fetch_macro_data(start_date):
         conn = psycopg.connect(DB_URL, connect_timeout=30)
         frames = []
         
-        # 1. Индексы (NASDAQ, DXY, S&P500, Золото, Нефть)
         df_mi = pd.read_sql("SELECT ticker, open_time as timestamp, close FROM market_indices WHERE open_time >= %s ORDER BY open_time ASC", conn, params=(start_date,))
         if not df_mi.empty:
             df_mi['timestamp'] = pd.to_datetime(df_mi['timestamp'], utc=True)
@@ -63,21 +65,18 @@ def fetch_macro_data(start_date):
             df_mi = df_mi.rename(columns={'^IXIC': 'nasdaq', 'DX-Y.NYB': 'dxy', '^GSPC': 'sp500', 'GC=F': 'gold', 'CL=F': 'oil'})
             frames.append(df_mi)
 
-        # 2. Глобальные метрики (Капитализация, Доминация)
         df_gm = pd.read_sql("SELECT last_updated as timestamp, btc_dominance, total_market_cap, stablecoin_market_cap FROM global_metrics WHERE last_updated >= %s ORDER BY last_updated ASC", conn, params=(start_date,))
         if not df_gm.empty:
             df_gm['timestamp'] = pd.to_datetime(df_gm['timestamp'], utc=True)
             df_gm = df_gm.set_index('timestamp').resample('1h').ffill()
             frames.append(df_gm)
 
-        # 3. Стейблкоины (Ликвидность)
         df_st = pd.read_sql("SELECT timestamp, SUM(circulating) as stablecoin_supply FROM stablecoins WHERE timestamp >= %s GROUP BY timestamp ORDER BY timestamp ASC", conn, params=(start_date,))
         if not df_st.empty:
             df_st['timestamp'] = pd.to_datetime(df_st['timestamp'], utc=True)
             df_st = df_st.set_index('timestamp').resample('1h').ffill()
             frames.append(df_st)
 
-        # 4. Индекс страха и жадности
         df_fg = pd.read_sql("SELECT timestamp, value as fear_greed FROM fear_greed WHERE timestamp >= %s ORDER BY timestamp ASC", conn, params=(start_date,))
         if not df_fg.empty:
             df_fg['timestamp'] = pd.to_datetime(df_fg['timestamp'], utc=True)
@@ -85,7 +84,7 @@ def fetch_macro_data(start_date):
             frames.append(df_fg)
 
         conn.close()
-        if frames: return pd.concat(frames, axis=1)
+        if frames: return pd.concat(frames, axis=1, sort=True)
         return pd.DataFrame()
     except Exception as e:
         log.error(f"Failed to fetch macro data: {e}")
@@ -119,6 +118,7 @@ def main():
     
     if not DATA_FILE.exists(): return log.error(f"DATA FILE NOT FOUND: {DATA_FILE}")
 
+    # 1. ЗАГРУЗКА ИСТОРИЧЕСКИХ ДАННЫХ BTC
     df_hist = pd.read_parquet(DATA_FILE)
     df_hist['open_time'] = pd.to_datetime(df_hist['open_time'].apply(lambda x: x / 1000 if x > 1e14 else x), unit='ms', utc=True)
     if 'taker_buy_volume' not in df_hist.columns: df_hist['taker_buy_volume'] = df_hist['volume'] * 0.5
@@ -127,12 +127,11 @@ def main():
     df_fresh = fetch_fresh_candles()
     df_btc = pd.concat([df_hist, df_fresh]).drop_duplicates(subset=['open_time']).sort_values('open_time').reset_index(drop=True)
     
-    # Обрезаем BTC по LOOKBACK_DAYS
     max_date = df_btc['open_time'].max()
     cutoff_date = max_date - pd.Timedelta(days=LOOKBACK_DAYS)
     df_btc = df_btc[df_btc['open_time'] >= cutoff_date].reset_index(drop=True)
     
-    # Считаем индикаторы BTC
+    # 2. РАСЧЕТ ИНДИКАТОРОВ BTC
     df_btc['rsi'] = calculate_rsi(df_btc['close'], 14)
     df_btc['rsi_7'] = calculate_rsi(df_btc['close'], 7)
     df_btc['rsi_21'] = calculate_rsi(df_btc['close'], 21)
@@ -151,29 +150,43 @@ def main():
     df_btc['price_change_4h'] = df_btc['close'].pct_change(4)
     df_btc['price_change_24h'] = df_btc['close'].pct_change(24)
 
-    # --- СКЛЕЙКА (MERGE) ТОЛЬКО ПО РЕАЛЬНЫМ ДАННЫМ ---
+    # 3. ЗАГРУЗКА МАКРО И СКЛЕЙКА
     macro_df = fetch_macro_data(cutoff_date)
     
     if not macro_df.empty:
-        # Находим дату, с которой есть ВСЕ макро-данные (без пустот)
-        macro_start_date = macro_df.dropna().index.min()
-        log.info(f"Macro data starts at: {macro_start_date}")
+        # Заполняем пропуски в макро-данных
+        macro_df = macro_df.ffill().bfill()
+        valid_macro = macro_df.dropna(how='all')
         
-        # Обрезаем BTC, чтобы он начинался ровно с этой даты
-        df_btc = df_btc[df_btc['open_time'] >= macro_start_date].reset_index(drop=True)
-        
-        df_btc = df_btc.set_index('open_time')
-        
-        # Джойним. ffill() оставляем только для выходных/ночей на биржах.
-        df = df_btc.join(macro_df, how='left').ffill().reset_index()
-        
-        # Если в самом начале остались пустоты (пограничные часы) - удаляем только их
-        df = df.dropna().reset_index(drop=True)
-        
-        log.info(f"Merged Real Data! Total rows: {len(df)} | Period: {df['open_time'].min().strftime('%Y-%m-%d')} to {df['open_time'].max().strftime('%Y-%m-%d')}")
+        if not valid_macro.empty:
+            # Ищем, с какого момента есть макро-данные
+            macro_start_date = valid_macro.index.min()
+            log.info(f"Macro data starts at: {macro_start_date}")
+            
+            # Обрезаем BTC по дату начала макро-данных
+            df_btc = df_btc[df_btc['open_time'] >= macro_start_date].reset_index(drop=True)
+            
+            if len(df_btc) > 100:
+                df_btc = df_btc.set_index('open_time')
+                df = df_btc.join(macro_df, how='left').ffill().bfill().reset_index()
+                df = df.dropna(subset=['close']).reset_index(drop=True)
+                log.info(f"Merged Real Data! Total rows: {len(df)}")
+            else:
+                log.warning("Too little overlapping data. Using BTC only.")
+                df = df_btc.dropna()
+        else:
+            log.warning("Macro data is all NaN. Using BTC only.")
+            df = df_btc.dropna()
     else:
-        log.warning("No macro data found in DB. Training on BTC candles only.")
+        log.warning("No macro data found in DB. Using BTC only.")
         df = df_btc.dropna()
+
+    # 4. ЗАЩИТА ОТ ПУСТОГО ДАТАФРЕЙМА
+    if df.empty or len(df) < 100:
+        log.error("CRITICAL: Not enough data to train models. Exiting.")
+        return
+
+    log.info(f"Training window: {df['open_time'].min().strftime('%Y-%m-%d')} to {df['open_time'].max().strftime('%Y-%m-%d')} | Rows: {len(df)}")
 
     models = load_models()
     old_data = {}
