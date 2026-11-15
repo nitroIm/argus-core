@@ -424,5 +424,22 @@
     "close_time": "2026-11-15T02:31:20.763284+00:00",
     "balance_after": 98.14,
     "active_signals": []
+  },
+  {
+    "type": "SHORT",
+    "entry": 64359.18,
+    "exit": 63071.996399999996,
+    "pnl_pct": 1.8,
+    "pnl_usd": 1.74,
+    "reason": "TAKE_PROFIT",
+    "mode": "intraday",
+    "close_time": "2026-11-15T02:46:06.343138+00:00",
+    "balance_after": 98.44,
+    "active_signals": [
+      "macd",
+      "ema",
+      "volume",
+      "rsi_mid"
+    ]
   }
 ]
