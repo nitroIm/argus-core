@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-15T14:00:00.000000+00:00",
+  "updated_at": "2026-11-15T14:11:07.909393+00:00",
   "global": {
     "fee_pct": 0.001
   },
@@ -19,11 +19,11 @@
   "intraday": {
     "close_hour_utc": 19,
     "no_entry_time_utc": "18:30",
-    "trailing_activation_pct": 1.0,
-    "trailing_atr_multiplier": 2.0,
+    "trailing_activation_pct": 1.2,
+    "trailing_atr_multiplier": 2.5,
     "tp_pct": 2.0,
     "sl_pct": 1.0,
-    "threshold": 4.6,
+    "threshold": 4.7,
     "time_exit_h": 12,
     "weights": {
       "macd": 1.05,
@@ -37,11 +37,11 @@
   "swing": {
     "close_hour_utc": null,
     "no_entry_time_utc": null,
-    "trailing_activation_pct": 1.5,
-    "trailing_atr_multiplier": 3.0,
+    "trailing_activation_pct": 1.7,
+    "trailing_atr_multiplier": 3.5,
     "tp_pct": 2.0,
     "sl_pct": 1.0,
-    "threshold": 4.8,
+    "threshold": 4.9,
     "time_exit_h": 48,
     "weights": {
       "macd": 1.0,
