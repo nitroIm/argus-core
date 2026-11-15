@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - XGBOOST MODEL v7.3 (DYNAMIC ATR & MIN PROFIT)
+# ARGUS - XGBOOST MODEL v7.4 (80/20 TRAIN & BACKTEST SPLIT)
 # Path: crypto/learn/model_xgb.py
 # ============================================================
 
@@ -72,22 +72,28 @@ def prepare_features(df, horizon, side):
     return data, feature_cols
 
 def walk_forward_validate(data, feature_cols, side, horizon):
-    n_splits = 5
-    tscv = TimeSeriesSplit(n_splits=n_splits)
-    X = data[feature_cols].values
-    y = data['target'].values
-    predictions = np.full(len(data), np.nan)
+    # 1. РАЗДЕЛЯЕМ ДАННЫЕ НА ОБУЧЕНИЕ (80%) И БЭКТЕСТ (20%)
+    split_idx = int(len(data) * 0.8)
+    train_data = data.iloc[:split_idx]
+    test_data = data.iloc[split_idx:].copy()
     
-    for train_idx, test_idx in tscv.split(X):
-        if len(np.unique(y[train_idx])) < 2: continue
-        model = xgb.XGBRegressor(n_estimators=100, max_depth=4, learning_rate=0.05, subsample=0.8, colsample_bytree=0.8, random_state=42)
-        model.fit(X[train_idx], y[train_idx])
-        predictions[test_idx] = model.predict(X[test_idx])
+    X_train = train_data[feature_cols].values
+    y_train = train_data['target'].values
+    X_test = test_data[feature_cols].values
+    y_test = test_data['target'].values
     
-    valid_preds = predictions[~np.isnan(predictions)]
+    # 2. ОБУЧАЕМ МОДЕЛЬ ТОЛЬКО НА ПРОШЛОМ (80%)
+    model = xgb.XGBRegressor(n_estimators=100, max_depth=4, learning_rate=0.05, subsample=0.8, colsample_bytree=0.8, random_state=42)
+    model.fit(X_train, y_train)
+    
+    # 3. ДЕЛАЕМ ПРЕДСКАЗАНИЯ НА БУДУЩЕМ (20%), КОТОРОЕ ОНА НЕ ВИДЕЛА
+    predictions = model.predict(X_test)
+    test_data['prediction'] = predictions
+    
+    valid_preds = test_data['prediction'].values
     if len(valid_preds) == 0: return None, None
     
-    # Берем Топ-20% лучших сигналов (отсекаем слабые)
+    # Берем Топ-20% лучших сигналов
     if side == "long":
         threshold = np.percentile(valid_preds, 80)
         signal_condition = lambda p: p >= threshold
@@ -95,15 +101,15 @@ def walk_forward_validate(data, feature_cols, side, horizon):
         threshold = np.percentile(valid_preds, 20)
         signal_condition = lambda p: p <= threshold
 
+    # 4. ПРОГОНЯЕМ БЭКТЕСТ ТОЛЬКО НА ТЕСТОВЫХ ДАННЫХ (20%)
     trades, in_pos, entry_price, entry_idx = [], False, 0, 0
     dynamic_tp, dynamic_sl = 0, 0
 
-    for i in range(len(data)):
-        prob = predictions[i]
-        if pd.isna(prob): continue
+    for i in range(len(test_data)):
+        row = test_data.iloc[i]
+        prob = row['prediction']
         
         if in_pos:
-            row = data.iloc[i]
             if side == "long":
                 if row['low'] <= dynamic_sl: trades.append(POSITION_NOTIONAL * ((dynamic_sl - entry_price) / entry_price - (FEE_RATE * 2))); in_pos = False
                 elif row['high'] >= dynamic_tp: trades.append(POSITION_NOTIONAL * ((dynamic_tp - entry_price) / entry_price - (FEE_RATE * 2))); in_pos = False
@@ -120,9 +126,9 @@ def walk_forward_validate(data, feature_cols, side, horizon):
             
             if signal_condition(prob):
                 in_pos = True
-                entry_price = data.iloc[i]['close']
+                entry_price = row['close']
                 entry_idx = i
-                atr = data.iloc[i]['atr_14']
+                atr = row['atr_14']
                 
                 # ДИНАМИЧЕСКИЙ ТЕЙК И СТОП НА ОСНОВЕ ATR
                 tp_pct = min(abs(prob), 10.0) / 100
@@ -147,8 +153,9 @@ def walk_forward_validate(data, feature_cols, side, horizon):
     
     metrics = {"trades": len(trades), "pnl": round(float(total_pnl), 2), "winrate": round(float(winrate), 4), "max_dd": round(float(max_dd), 2), "score": round(float(score), 2)}
     
+    # Для сохранения (чтобы бот торговал) переобучаем модель на ВСЕХ данных (100%)
     final_model = xgb.XGBRegressor(n_estimators=100, max_depth=4, learning_rate=0.05, subsample=0.8, colsample_bytree=0.8, random_state=42)
-    final_model.fit(X, y)
+    final_model.fit(data[feature_cols].values, data['target'].values)
     return metrics, final_model
 
 def train(df, side="long", mode="swing"):
