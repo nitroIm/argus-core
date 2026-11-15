@@ -1,6 +1,6 @@
 {
-  "trainer_version": "7.5.1",
-  "updated_at": "2026-11-15T15:22:39.984192+00:00",
+  "trainer_version": "7.5.2",
+  "updated_at": "2026-11-15T15:35:17.045061+00:00",
   "intraday": {
     "long": {
       "params": {
@@ -127,7 +127,60 @@
   },
   "swing": {
     "long": null,
-    "short": null
+    "short": {
+      "params": {
+        "model_type": "meta_labeling",
+        "horizon": 48,
+        "time_exit_h": 48,
+        "features": [
+          "rsi_norm",
+          "macd_norm",
+          "ema50_diff",
+          "ema20_diff",
+          "ema200_diff",
+          "vol_ratio",
+          "atr14_pct",
+          "avg_trade_norm",
+          "pc1",
+          "pc4",
+          "pc24",
+          "buy_ratio",
+          "rsi_norm_lag1",
+          "macd_norm_lag1",
+          "ema50_diff_lag1",
+          "vol_ratio_lag1",
+          "buy_ratio_lag1",
+          "rsi_norm_lag3",
+          "macd_norm_lag3",
+          "ema50_diff_lag3",
+          "vol_ratio_lag3",
+          "buy_ratio_lag3",
+          "rsi_norm_lag6",
+          "macd_norm_lag6",
+          "ema50_diff_lag6",
+          "vol_ratio_lag6",
+          "buy_ratio_lag6",
+          "rsi_norm_lag12",
+          "macd_norm_lag12",
+          "ema50_diff_lag12",
+          "vol_ratio_lag12",
+          "buy_ratio_lag12",
+          "rsi_norm_lag24",
+          "macd_norm_lag24",
+          "ema50_diff_lag24",
+          "vol_ratio_lag24",
+          "buy_ratio_lag24"
+        ],
+        "model_file": "model_meta_labeling_swing_short.pkl"
+      },
+      "metrics": {
+        "trades": 23,
+        "pnl": 0.63,
+        "winrate": 0.3478,
+        "max_dd": -1.13,
+        "score": 0.56
+      }
+    }
   },
   "all_scores": {
     "intraday": {
@@ -147,10 +200,18 @@
           "score": -0.81
         },
         "model_gru": {
-          "error": "no_result"
+          "trades": 54,
+          "pnl": -3.56,
+          "winrate": 0.2963,
+          "max_dd": -3.38,
+          "score": -1.05
         },
         "model_hybrid": {
-          "error": "no_result"
+          "trades": 0,
+          "pnl": 0.0,
+          "winrate": 0.0,
+          "max_dd": -0.1,
+          "score": -99999.0
         },
         "model_lgbm": {
           "trades": 30,
@@ -167,7 +228,11 @@
           "score": -0.96
         },
         "model_meta_labeling": {
-          "error": "no_result"
+          "trades": 27,
+          "pnl": -0.27,
+          "winrate": 0.4074,
+          "max_dd": -0.95,
+          "score": -0.29
         },
         "model_rf": {
           "trades": 22,
@@ -180,7 +245,11 @@
           "error": "no_result"
         },
         "model_tft": {
-          "error": "no_result"
+          "trades": 0,
+          "pnl": 0.0,
+          "winrate": 0.0,
+          "max_dd": -0.1,
+          "score": -99999.0
         },
         "model_xgb": {
           "trades": 30,
@@ -206,10 +275,18 @@
           "score": -0.02
         },
         "model_gru": {
-          "error": "no_result"
+          "trades": 53,
+          "pnl": -1.55,
+          "winrate": 0.3774,
+          "max_dd": -2.19,
+          "score": -0.71
         },
         "model_hybrid": {
-          "error": "no_result"
+          "trades": 0,
+          "pnl": 0.0,
+          "winrate": 0.0,
+          "max_dd": -0.1,
+          "score": -99999.0
         },
         "model_lgbm": {
           "trades": 62,
@@ -226,7 +303,11 @@
           "score": 0.49
         },
         "model_meta_labeling": {
-          "error": "no_result"
+          "trades": 25,
+          "pnl": -0.17,
+          "winrate": 0.36,
+          "max_dd": -1.51,
+          "score": -0.12
         },
         "model_rf": {
           "trades": 23,
@@ -239,7 +320,11 @@
           "error": "no_result"
         },
         "model_tft": {
-          "error": "no_result"
+          "trades": 0,
+          "pnl": 0.0,
+          "winrate": 0.0,
+          "max_dd": -0.1,
+          "score": -99999.0
         },
         "model_xgb": {
           "trades": 61,
@@ -267,10 +352,18 @@
           "score": -0.33
         },
         "model_gru": {
-          "error": "no_result"
+          "trades": 32,
+          "pnl": -2.67,
+          "winrate": 0.1875,
+          "max_dd": -3.51,
+          "score": -0.76
         },
         "model_hybrid": {
-          "error": "no_result"
+          "trades": 0,
+          "pnl": 0.0,
+          "winrate": 0.0,
+          "max_dd": -0.1,
+          "score": -99999.0
         },
         "model_lgbm": {
           "trades": 4,
@@ -287,7 +380,11 @@
           "score": 0.89
         },
         "model_meta_labeling": {
-          "error": "no_result"
+          "trades": 27,
+          "pnl": -1.55,
+          "winrate": 0.2222,
+          "max_dd": -2.09,
+          "score": -0.74
         },
         "model_rf": {
           "trades": 3,
@@ -300,7 +397,11 @@
           "error": "no_result"
         },
         "model_tft": {
-          "error": "no_result"
+          "trades": 0,
+          "pnl": 0.0,
+          "winrate": 0.0,
+          "max_dd": -0.1,
+          "score": -99999.0
         },
         "model_xgb": {
           "trades": 5,
@@ -326,10 +427,18 @@
           "score": -0.92
         },
         "model_gru": {
-          "error": "no_result"
+          "trades": 24,
+          "pnl": -0.04,
+          "winrate": 0.375,
+          "max_dd": -1.51,
+          "score": -0.03
         },
         "model_hybrid": {
-          "error": "no_result"
+          "trades": 0,
+          "pnl": 0.0,
+          "winrate": 0.0,
+          "max_dd": -0.1,
+          "score": -99999.0
         },
         "model_lgbm": {
           "trades": 24,
@@ -346,7 +455,11 @@
           "score": -0.34
         },
         "model_meta_labeling": {
-          "error": "no_result"
+          "trades": 23,
+          "pnl": 0.63,
+          "winrate": 0.3478,
+          "max_dd": -1.13,
+          "score": 0.56
         },
         "model_rf": {
           "trades": 22,
@@ -359,7 +472,11 @@
           "error": "no_result"
         },
         "model_tft": {
-          "error": "no_result"
+          "trades": 0,
+          "pnl": 0.0,
+          "winrate": 0.0,
+          "max_dd": -0.1,
+          "score": -99999.0
         },
         "model_xgb": {
           "trades": 22,
