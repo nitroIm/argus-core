@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-15T18:30:00.000000+00:00",
+  "updated_at": "2026-11-15T18:45:00.000000+00:00",
   "force_reset_old": false,
   "global": {
     "fee_pct": 0.001,
@@ -8,16 +8,16 @@
   "backtest": {
     "lookback_days": 365,
     "min_score": 0.0,
-    "min_trades_to_deploy": 10,
+    "min_trades_to_deploy": 3,
     "filter_min_pct_intraday": 0.3,
-    "filter_min_pct_swing": 1.5,
+    "filter_min_pct_swing": 1.2,
     "percentile_top": 80.0,
     "position_notional": 20.0,
     "initial_balance": 100.0,
     "test_split_pct": 0.2
   },
   "ml_deploy": {
-    "min_trades_for_live": 10,
+    "min_trades_for_live": 3,
     "min_score_for_live": 0.0
   },
   "risk_management": {
