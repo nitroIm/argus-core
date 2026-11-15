@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-15T03:11:05.265079+00:00",
+  "updated_at": "2026-11-15T04:11:07.509187+00:00",
   "global": {
     "fee_pct": 0.001
   },
@@ -10,7 +10,7 @@
     "trailing_atr_multiplier": 1.5,
     "tp_pct": 2.0,
     "sl_pct": 1.0,
-    "threshold": 3.6,
+    "threshold": 3.7,
     "weights": {
       "macd": 1.05,
       "ema": 1.05,
@@ -22,11 +22,11 @@
   },
   "swing": {
     "close_hour_utc": null,
-    "trailing_activation_pct": 2.0,
-    "trailing_atr_multiplier": 4.5,
+    "trailing_activation_pct": 2.2,
+    "trailing_atr_multiplier": 5.0,
     "tp_pct": 2.0,
     "sl_pct": 1.0,
-    "threshold": 3.7,
+    "threshold": 3.8,
     "weights": {
       "macd": 1.0,
       "ema": 1.0,
