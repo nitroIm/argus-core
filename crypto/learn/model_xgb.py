@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - XGBOOST MODEL v5.0 (DYNAMIC TARGET & THRESHOLD)
+# ARGUS - XGBOOST MODEL v5.1 (TP/SL TARGET)
 # Path: crypto/learn/model_xgb.py
 # ============================================================
 
@@ -15,9 +15,12 @@ log = logging.getLogger("model_xgb")
 INITIAL_BALANCE = 100.0
 POSITION_NOTIONAL = 20.0
 FEE_RATE = 0.001
+TP_PCT = 2.0
+SL_PCT = 1.0
 
 def prepare_features(df, horizon, side):
     data = df.copy()
+    
     data['rsi_norm'] = data['rsi'] / 100.0
     data['rsi_7_norm'] = data['rsi_7'] / 100.0
     data['rsi_21_norm'] = data['rsi_21'] / 100.0
@@ -43,11 +46,36 @@ def prepare_features(df, horizon, side):
         for f in ['rsi_norm', 'macd_norm', 'ema50_diff', 'vol_ratio', 'buy_ratio']:
             data[f'{f}_lag{lag}'] = data[f].shift(lag)
     
-    future_close = data['close'].shift(-horizon)
-    if side == "long":
-        data['target'] = ((future_close - data['close']) > (data['atr_14'] * 0.5)).astype(int)
-    else:
-        data['target'] = ((data['close'] - future_close) > (data['atr_14'] * 0.5)).astype(int)
+    # УМНАЯ ЦЕЛЬ: Кто первый? Тейк 2% или Стоп 1%?
+    target = np.zeros(len(data))
+    for i in range(len(data) - horizon):
+        entry_price = data.iloc[i]['close']
+        if side == "long":
+            tp_price = entry_price * (1 + TP_PCT / 100)
+            sl_price = entry_price * (1 - SL_PCT / 100)
+            # Смотрим вперед на horizon свечей
+            future_data = data.iloc[i+1 : i+1+horizon]
+            hit_tp = (future_data['high'] >= tp_price).values
+            hit_sl = (future_data['low'] <= sl_price).values
+        else:
+            tp_price = entry_price * (1 - TP_PCT / 100)
+            sl_price = entry_price * (1 + SL_PCT / 100)
+            future_data = data.iloc[i+1 : i+1+horizon]
+            hit_tp = (future_data['low'] <= tp_price).values
+            hit_sl = (future_data['high'] >= sl_price).values
+
+        # Ищем, что случилось раньше
+        tp_idx = np.argmax(hit_tp) if np.any(hit_tp) else 999
+        sl_idx = np.argmax(hit_sl) if np.any(hit_sl) else 999
+
+        if tp_idx < sl_idx:
+            target[i] = 1 # Успех
+        elif sl_idx < tp_idx:
+            target[i] = 0 # Провал
+        else:
+            target[i] = np.nan # Ничего не произошло (тайм-аут)
+
+    data['target'] = target
     
     feature_cols = base_features + \
                    [f'{f}_lag{l}' for l in [1,3,6,12,24] for f in ['rsi_norm', 'macd_norm', 'ema50_diff', 'vol_ratio', 'buy_ratio']]
@@ -68,19 +96,7 @@ def walk_forward_validate(data, feature_cols, side, horizon):
         model.fit(X[train_idx], y[train_idx])
         predictions[test_idx] = model.predict_proba(X[test_idx])[:, 1]
     
-    valid_preds = predictions[~np.isnan(predictions)]
-    if len(valid_preds) == 0: return None, None
-    
-    if side == "long":
-        threshold = np.percentile(valid_preds, 90)
-        signal_condition = lambda p: p >= threshold
-    else:
-        threshold = np.percentile(valid_preds, 10)
-        signal_condition = lambda p: p <= threshold
-
-    trades = []
-    in_pos = False
-    entry_price, entry_idx = 0, 0
+    trades, in_pos, entry_price, entry_idx = [], False, 0, 0
     
     for i in range(len(data)):
         prob = predictions[i]
@@ -93,7 +109,12 @@ def walk_forward_validate(data, feature_cols, side, horizon):
                 trades.append(POSITION_NOTIONAL * ((pnl_pct - (FEE_RATE * 200)) / 100))
                 in_pos = False
         else:
-            if signal_condition(prob):
+            # ЖЕСТКИЙ ПОРОГ УВЕРЕННОСТИ (65%)
+            if side == "long" and prob > 0.65:
+                in_pos = True
+                entry_price = data.iloc[i]['close']
+                entry_idx = i
+            elif side == "short" and prob < 0.35:
                 in_pos = True
                 entry_price = data.iloc[i]['close']
                 entry_idx = i
@@ -116,7 +137,7 @@ def walk_forward_validate(data, feature_cols, side, horizon):
 
 def train(df, side="long", mode="swing"):
     try:
-        horizon = 4 if mode == "intraday" else 24
+        horizon = 12 if mode == "intraday" else 48 # Даем сделке больше времени
         data, feature_cols = prepare_features(df, horizon, side)
         if len(data) < 2000: return None
         metrics, model = walk_forward_validate(data, feature_cols, side, horizon)
