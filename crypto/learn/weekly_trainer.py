@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - WEEKLY TRAINER ORCHESTRATOR v7.2 (SAFE MERGE & REAL DATA)
+# ARGUS - WEEKLY TRAINER ORCHESTRATOR v7.3 (FULL HISTORY)
 # Path: crypto/learn/weekly_trainer.py
 # ============================================================
 
@@ -13,7 +13,7 @@ import warnings
 
 warnings.filterwarnings("ignore", message=".*SQLAlchemy.*")
 
-VERSION = "7.2.0"
+VERSION = "7.3.0"
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("crypto.trainer")
 
@@ -24,7 +24,7 @@ CONFIG_FILE = SCRIPT_DIR.parent / "data" / "intel" / "bot_config.json"
 
 MODEL_OUT_FILE.parent.mkdir(parents=True, exist_ok=True)
 DB_URL = (os.getenv("AIVEN_DB_URL") or "").strip()
-LOOKBACK_DAYS = 730
+LOOKBACK_DAYS = 730 # Берем 2 года
 
 def calculate_ema(series, period): return series.ewm(span=period, adjust=False).mean()
 
@@ -118,7 +118,6 @@ def main():
     
     if not DATA_FILE.exists(): return log.error(f"DATA FILE NOT FOUND: {DATA_FILE}")
 
-    # 1. ЗАГРУЗКА ИСТОРИЧЕСКИХ ДАННЫХ BTC
     df_hist = pd.read_parquet(DATA_FILE)
     df_hist['open_time'] = pd.to_datetime(df_hist['open_time'].apply(lambda x: x / 1000 if x > 1e14 else x), unit='ms', utc=True)
     if 'taker_buy_volume' not in df_hist.columns: df_hist['taker_buy_volume'] = df_hist['volume'] * 0.5
@@ -131,7 +130,6 @@ def main():
     cutoff_date = max_date - pd.Timedelta(days=LOOKBACK_DAYS)
     df_btc = df_btc[df_btc['open_time'] >= cutoff_date].reset_index(drop=True)
     
-    # 2. РАСЧЕТ ИНДИКАТОРОВ BTC
     df_btc['rsi'] = calculate_rsi(df_btc['close'], 14)
     df_btc['rsi_7'] = calculate_rsi(df_btc['close'], 7)
     df_btc['rsi_21'] = calculate_rsi(df_btc['close'], 21)
@@ -150,49 +148,34 @@ def main():
     df_btc['price_change_4h'] = df_btc['close'].pct_change(4)
     df_btc['price_change_24h'] = df_btc['close'].pct_change(24)
 
-    # 3. ЗАГРУЗКА МАКРО И СКЛЕЙКА
+    # --- СКЛЕЙКА (БЕЗ ОБРЕЗКИ ИСТОРИИ) ---
     macro_df = fetch_macro_data(cutoff_date)
     
     if not macro_df.empty:
-        # Заполняем пропуски в макро-данных
         macro_df = macro_df.ffill().bfill()
-        valid_macro = macro_df.dropna(how='all')
-        
-        if not valid_macro.empty:
-            # Ищем, с какого момента есть макро-данные
-            macro_start_date = valid_macro.index.min()
-            log.info(f"Macro data starts at: {macro_start_date}")
-            
-            # Обрезаем BTC по дату начала макро-данных
-            df_btc = df_btc[df_btc['open_time'] >= macro_start_date].reset_index(drop=True)
-            
-            if len(df_btc) > 100:
-                df_btc = df_btc.set_index('open_time')
-                df = df_btc.join(macro_df, how='left').ffill().bfill().reset_index()
-                df = df.dropna(subset=['close']).reset_index(drop=True)
-                log.info(f"Merged Real Data! Total rows: {len(df)}")
-            else:
-                log.warning("Too little overlapping data. Using BTC only.")
-                df = df_btc.dropna()
-        else:
-            log.warning("Macro data is all NaN. Using BTC only.")
-            df = df_btc.dropna()
+        df_btc = df_btc.set_index('open_time')
+        # Джойним. Не удаляем строки, где макро-данных нет. Оставляем NaN. XGBoost с этим разберется.
+        df = df_btc.join(macro_df, how='left').reset_index()
+        log.info(f"Merged Data (with NaNs for old dates)! Total rows: {len(df)}")
     else:
         log.warning("No macro data found in DB. Using BTC only.")
-        df = df_btc.dropna()
+        df = df_btc.reset_index(drop=True)
 
-    # 4. ЗАЩИТА ОТ ПУСТОГО ДАТАФРЕЙМА
-    if df.empty or len(df) < 100:
+    if df.empty or len(df) < 1000:
         log.error("CRITICAL: Not enough data to train models. Exiting.")
         return
 
     log.info(f"Training window: {df['open_time'].min().strftime('%Y-%m-%d')} to {df['open_time'].max().strftime('%Y-%m-%d')} | Rows: {len(df)}")
 
     models = load_models()
+    
+    # --- БЕЗОПАСНАЯ ЗАГРУЗКА СТАРОГО JSON ---
     old_data = {}
     if MODEL_OUT_FILE.exists():
         try:
-            with open(MODEL_OUT_FILE, "r", encoding="utf-8") as f: old_data = json.load(f)
+            with open(MODEL_OUT_FILE, "r", encoding="utf-8") as f: 
+                old_data = json.load(f)
+                if old_data is None: old_data = {}
         except: pass
 
     out_data = {"trainer_version": VERSION, "updated_at": datetime.now(timezone.utc).isoformat(), "intraday": {"long": None, "short": None}, "swing": {"long": None, "short": None}, "all_scores": {}}
@@ -215,11 +198,16 @@ def main():
                 except Exception as e:
                     log.error(f"  ❌ Model {model_name} crashed: {e}")
                     model_scores[model_name] = {"error": str(e)}
+            
+            # БЕЗОПАСНОЕ ЧТЕНИЕ СТАРОГО СКОРА
+            old_mode = old_data.get(mode) or {}
+            old_side = old_mode.get(side) or {}
+            old_metrics = old_side.get("metrics") or {}
+            old_score = old_metrics.get("score", -99999)
                     
-            old_score = old_data.get(mode, {}).get(side, {}).get("metrics", {}).get("score", -99999)
             if best_model_data and best_score <= old_score:
                 log.info(f"  🛡️ Keeping OLD model (New: {best_score}, Old: {old_score})")
-                out_data[mode][side] = old_data[mode][side]
+                out_data[mode][side] = old_side
             elif best_model_data:
                 log.info(f"  🚀 Updating model! (New: {best_score}, Old: {old_score})")
                 out_data[mode][side] = best_model_data
