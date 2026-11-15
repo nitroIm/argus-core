@@ -470,5 +470,22 @@
       "volume",
       "rsi_mid"
     ]
+  },
+  {
+    "type": "SHORT",
+    "entry": 64789.2,
+    "exit": 64659.62,
+    "pnl_pct": 0.0,
+    "pnl_usd": 0.0,
+    "reason": "TRAILING_STOP",
+    "mode": "intraday",
+    "close_time": "2026-11-15T06:31:23.573682+00:00",
+    "balance_after": 97.26,
+    "active_signals": [
+      "macd",
+      "ema",
+      "volume",
+      "rsi_mid"
+    ]
   }
 ]
