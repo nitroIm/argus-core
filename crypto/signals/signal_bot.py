@@ -1,14 +1,14 @@
 # ============================================================
-# ARGUS - SIGNAL BOT v9.4.6
+# ARGUS - SIGNAL BOT v9.4.7
 # Path: crypto/signals/signal_bot.py
 #
-# ИЗМЕНЕНИЯ v9.4.6 (относительно v9.4.5):
-#   - ФИКС: UPDATE-события теперь содержат sl_pct (был KeyError в report)
-#   - LONG:  sl_pct = (sl - entry) / entry * 100
-#   - SHORT: sl_pct = (entry - sl) / entry * 100
+# ИЗМЕНЕНИЯ v9.4.7 (относительно v9.4.6):
+#   - Встроен Data Watchdog: если последняя 15m свеча старше 45 мин,
+#     бот пишет алерт в Telegram и приостанавливает работу.
+#   - Защита от спама: алерт не чаще раза в час.
 # ============================================================
 
-import os, json, logging, base64, pickle
+import os, json, logging, base64, pickle, requests
 from pathlib import Path
 from datetime import datetime, timezone, timedelta
 import psycopg
@@ -16,7 +16,7 @@ import pandas as pd
 import numpy as np
 import xgboost as xgb
 
-VERSION = "9.4.6"
+VERSION = "9.4.7"
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("crypto.signal_bot")
 
@@ -35,6 +35,8 @@ BOT_INFO = SIGNALS_DIR / "bot_info.json"
 
 DB_URL = (os.getenv("AIVEN_DB_URL") or "").strip()
 SYMBOL = "BTCUSDT"
+TG_TOKEN = (os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("BOT_TOKEN") or "").strip()
+TG_CHAT = (os.getenv("TG_CHANNEL_ID") or "-1004435496321").strip()
 
 
 def get_conn():
@@ -56,6 +58,49 @@ def append_event(event):
     queue.append(event)
     save_json(INFO_DEAL, queue)
 
+def send_tg_text(text):
+    if not TG_TOKEN or not TG_CHAT: return False
+    url = f"https://api.telegram.org/bot{TG_TOKEN}/sendMessage"
+    try:
+        requests.post(url, json={"chat_id": TG_CHAT, "text": text, "parse_mode": "HTML"}, timeout=10)
+        return True
+    except Exception as e:
+        log.error(f"TG alert failed: {e}")
+        return False
+
+def check_data_freshness(df_15m, config, bot_info):
+    """Проверяет, не завис ли коллектор. Пишет алерт, если данные устарели."""
+    if df_15m.empty: return False
+    last_time = df_15m['open_time'].iloc[-1]
+    now_utc = datetime.now(timezone.utc)
+    diff_min = (now_utc - last_time).total_seconds() / 60.0
+    limit_min = float(config.get("global", {}).get("stale_data_limit_min", 45.0))
+    
+    if diff_min > limit_min:
+        log.warning(f"DATA STALE: last candle {last_time} ({diff_min:.1f} min ago, limit {limit_min})")
+        
+        # Защита от спама: алерт не чаще раза в час
+        last_alert_str = bot_info.get("last_stale_alert_ts")
+        should_alert = True
+        if last_alert_str:
+            try:
+                last_alert = datetime.fromisoformat(last_alert_str)
+                if (now_utc - last_alert).total_seconds() < 3600:
+                    should_alert = False
+            except: pass
+            
+        if should_alert:
+            msg = (f"⚠️ <b>ARGUS: ДАННЫЕ НЕ ПОСТУПАЮТ</b>\n\n"
+                   f"Последняя свеча 15m: <b>{last_time.strftime('%Y-%m-%d %H:%M')} UTC</b>\n"
+                   f"Прошло: <b>{diff_min:.0f} минут</b> (лимит {limit_min:.0f})\n\n"
+                   f"Бот приостановил работу. Проверь сервер сбора данных!")
+            send_tg_text(msg)
+            bot_info["last_stale_alert_ts"] = now_utc.isoformat()
+            save_json(BOT_INFO, bot_info)
+            
+        return False
+    return True
+
 def ensure_bot_info(bot_info):
     for mode in ["intraday", "swing"]:
         if mode not in bot_info: bot_info[mode] = {"score_history": [], "score_archive": []}
@@ -65,7 +110,6 @@ def ensure_bot_info(bot_info):
         if "last_check_ts" not in bot_info[mode]: bot_info[mode]["last_check_ts"] = datetime.now(timezone.utc).isoformat()
     save_json(BOT_INFO, bot_info)
     return bot_info
-
 
 def calculate_indicators(df_1h):
     close = df_1h['close']
@@ -88,7 +132,6 @@ def calculate_indicators(df_1h):
     df_1h['price_change_4h'] = close.pct_change(4)
     df_1h['price_change_24h'] = close.pct_change(24)
     return df_1h.dropna()
-
 
 def fetch_macro_for_bot():
     if not DB_URL: return pd.DataFrame()
@@ -120,7 +163,6 @@ def fetch_macro_for_bot():
         log.error(f"Macro fetch failed: {e}")
         return pd.DataFrame()
 
-
 def merge_macro_for_bot(df_btc, macro):
     if macro.empty: return df_btc
     df_btc = df_btc.sort_values('open_time').reset_index(drop=True)
@@ -138,7 +180,6 @@ def merge_macro_for_bot(df_btc, macro):
     result = asof(result, ['stablecoin_supply'], 6)
     result = asof(result, ['fear_greed'], 48)
     return result
-
 
 def get_features_for_ml(df_1h, feature_cols):
     df = df_1h.copy()
@@ -184,7 +225,6 @@ def get_features_for_ml(df_1h, feature_cols):
     if not cols: return None
     return df[cols].iloc[[-1]].values
 
-
 def load_ml_model(node):
     if not node or "params" not in node: return None, None
     p = node["params"]
@@ -227,7 +267,6 @@ def load_ml_model(node):
             return None, None
     return None, None
 
-
 def predict_ml(node, df_1h):
     if not node or "params" not in node: return None
     feat = node["params"].get("features", [])
@@ -244,7 +283,6 @@ def predict_ml(node, df_1h):
         log.error(f"ML predict failed: {e}")
         return None
 
-
 def is_ml_ready(node, cfg):
     if not node: return False
     m = node.get("metrics", {}) or {}
@@ -254,7 +292,6 @@ def is_ml_ready(node, cfg):
     trades = int(m.get("trades", 0) or 0)
     score = float(m.get("score", -99999) or -99999)
     return trades >= min_trades and score >= min_score
-
 
 def process_mode(mode, deals, bot_info, models, df_1h, config):
     cfg = config.get(mode, {})
@@ -436,6 +473,12 @@ def main():
 
     df = pd.DataFrame([(r[0], float(r[1]), float(r[2]), float(r[3]), float(r[4]), float(r[5]), float(r[6]), int(r[7])) for r in rows], columns=['open_time','open','high','low','close','volume','taker_buy_volume','count'])
     df['open_time'] = pd.to_datetime(df['open_time'], utc=True)
+    
+    # ---- ВСТРОЕННЫЙ DATA WATCHDOG ----
+    if not check_data_freshness(df, config, bot_info):
+        log.warning("Stale data detected. Bot paused. Exiting.")
+        return
+
     df_1h = df.set_index('open_time').resample('1h').agg({
         'open':'first','high':'max','low':'min','close':'last',
         'volume':'sum','taker_buy_volume':'sum','count':'sum'
