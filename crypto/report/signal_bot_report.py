@@ -1,6 +1,11 @@
 # ============================================================
-# ARGUS - SIGNAL REPORT v8.7 (FIXED ZERO PNL DISPLAY)
+# ARGUS - SIGNAL REPORT v8.7.1
 # Path: crypto/report/signal_bot_report.py
+#
+# ИЗМЕНЕНИЯ v8.7.1 (относительно v8.7):
+#   - ФИКС: event['sl_pct'] -> event.get('sl_pct', 0) в UPDATE
+#     (был KeyError, если signal_bot v9.4.5 писал UPDATE без sl_pct)
+#   - Защита на будущее: любое событие без sl_pct -> покажет +0.00%
 # ============================================================
 
 import os, json, logging, requests, io
@@ -211,7 +216,7 @@ def get_stats_text(mode):
     return text
 
 def main():
-    log.info("STARTING SIGNAL REPORT v8.7")
+    log.info("STARTING SIGNAL REPORT v8.7.1")
     queue = load_json(INFO_DEAL, [])
     if not isinstance(queue, list) or not queue:
         return log.info("No new events in queue.")
@@ -233,18 +238,19 @@ def main():
             text += "\n" + get_stats_text(event.get("mode", "swing"))
 
         elif event["type"] == "UPDATE":
+            # ФИКС v8.7.1: защита от event без sl_pct
+            sl_pct_val = event.get("sl_pct", 0)
             text = (f"🟡 <b>ПОДТЯЖКА СТОПА: {mode_name}</b>\n\n"
                     f"<b>Сделка {deal_type} все еще в работе!</b>\n"
-                    f"🛑 <b>Новый стоп:</b> {fmt(event['new_sl'])} ({event['sl_pct']:+.2f}%)\n")
+                    f"🛑 <b>Новый стоп:</b> {fmt(event['new_sl'])} ({sl_pct_val:+.2f}%)\n")
             if send_tg_text(text): sent_any = True
             continue 
 
         elif event["type"] == "CLOSE":
             pnl = event["pnl_usd"]
             
-            # ИСПРАВЛЕНИЕ ОТОБРАЖЕНИЯ НУЛЯ
             pnl_pct_val = event["pnl_pct"]
-            if abs(pnl_pct_val) < 0.05: # Если меньше 0.05%, считаем это нулем
+            if abs(pnl_pct_val) < 0.05:
                 pnl_pct_str = "0.00"
                 pnl_usd_str = "0.00"
             else:
