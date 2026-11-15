@@ -1,10 +1,10 @@
 {
-  "trainer_version": "7.5.0",
-  "updated_at": "2026-11-15T14:07:43.104796+00:00",
+  "trainer_version": "7.5.1",
+  "updated_at": "2026-11-15T14:20:32.763708+00:00",
   "intraday": {
     "long": {
       "params": {
-        "model_type": "catboost_reg",
+        "model_type": "xgboost_reg",
         "horizon": 12,
         "time_exit_h": 12,
         "features": [
@@ -21,8 +21,6 @@
           "pc4",
           "pc24",
           "buy_ratio",
-          "nasdaq_pct_1h",
-          "nasdaq_pct_24h",
           "dxy_pct_1h",
           "dxy_pct_24h",
           "fear_greed_norm",
@@ -55,360 +53,172 @@
           "vol_ratio_lag24",
           "buy_ratio_lag24"
         ],
-        "model_file": "model_catboost_intraday_long.cbm"
+        "model_file": "model_xgb_intraday_long.xgb"
       },
       "metrics": {
-        "trades": 15,
-        "pnl": 1.13,
-        "winrate": 0.9333,
-        "max_dd": -0.48,
-        "score": 2.36
+        "trades": 35,
+        "pnl": 0.21,
+        "winrate": 0.8,
+        "max_dd": -0.66,
+        "score": 0.32
       }
     },
-    "short": {
-      "params": {
-        "model_type": "xgboost_reg",
-        "horizon": 12,
-        "features": [
-          "rsi_norm",
-          "macd_norm",
-          "ema50_diff",
-          "ema20_diff",
-          "ema200_diff",
-          "vol_ratio",
-          "atr14_pct",
-          "atr50_pct",
-          "avg_trade_norm",
-          "pc1",
-          "pc4",
-          "pc24",
-          "buy_ratio",
-          "nasdaq_pct_1h",
-          "nasdaq_pct_24h",
-          "dxy_pct_1h",
-          "dxy_pct_24h",
-          "fear_greed_norm",
-          "btc_dom_pct",
-          "stable_flow_1h",
-          "stable_flow_24h",
-          "rsi_norm_lag1",
-          "macd_norm_lag1",
-          "ema50_diff_lag1",
-          "vol_ratio_lag1",
-          "buy_ratio_lag1",
-          "rsi_norm_lag3",
-          "macd_norm_lag3",
-          "ema50_diff_lag3",
-          "vol_ratio_lag3",
-          "buy_ratio_lag3",
-          "rsi_norm_lag6",
-          "macd_norm_lag6",
-          "ema50_diff_lag6",
-          "vol_ratio_lag6",
-          "buy_ratio_lag6",
-          "rsi_norm_lag12",
-          "macd_norm_lag12",
-          "ema50_diff_lag12",
-          "vol_ratio_lag12",
-          "buy_ratio_lag12",
-          "rsi_norm_lag24",
-          "macd_norm_lag24",
-          "ema50_diff_lag24",
-          "vol_ratio_lag24",
-          "buy_ratio_lag24"
-        ],
-        "model_file": "model_xgboost_reg_intraday_short.xgb",
-        "time_exit_h": 12
-      },
-      "metrics": {
-        "trades": 7,
-        "pnl": -0.05,
-        "winrate": 0.5714,
-        "max_dd": -0.31,
-        "score": -0.15
-      },
-      "source": "model_xgb"
-    }
+    "short": null
   },
   "swing": {
-    "long": {
-      "params": {
-        "model_type": "xgboost_reg",
-        "horizon": 48,
-        "features": [
-          "rsi_norm",
-          "macd_norm",
-          "ema50_diff",
-          "ema20_diff",
-          "ema200_diff",
-          "vol_ratio",
-          "atr14_pct",
-          "atr50_pct",
-          "avg_trade_norm",
-          "pc1",
-          "pc4",
-          "pc24",
-          "buy_ratio",
-          "nasdaq_pct_1h",
-          "nasdaq_pct_24h",
-          "dxy_pct_1h",
-          "dxy_pct_24h",
-          "fear_greed_norm",
-          "btc_dom_pct",
-          "stable_flow_1h",
-          "stable_flow_24h",
-          "rsi_norm_lag1",
-          "macd_norm_lag1",
-          "ema50_diff_lag1",
-          "vol_ratio_lag1",
-          "buy_ratio_lag1",
-          "rsi_norm_lag3",
-          "macd_norm_lag3",
-          "ema50_diff_lag3",
-          "vol_ratio_lag3",
-          "buy_ratio_lag3",
-          "rsi_norm_lag6",
-          "macd_norm_lag6",
-          "ema50_diff_lag6",
-          "vol_ratio_lag6",
-          "buy_ratio_lag6",
-          "rsi_norm_lag12",
-          "macd_norm_lag12",
-          "ema50_diff_lag12",
-          "vol_ratio_lag12",
-          "buy_ratio_lag12",
-          "rsi_norm_lag24",
-          "macd_norm_lag24",
-          "ema50_diff_lag24",
-          "vol_ratio_lag24",
-          "buy_ratio_lag24"
-        ],
-        "model_file": "model_xgboost_reg_swing_long.xgb",
-        "time_exit_h": 48
-      },
-      "metrics": {
-        "trades": 2,
-        "pnl": 0.24,
-        "winrate": 0.5,
-        "max_dd": -0.03,
-        "score": 8.92
-      },
-      "source": "model_xgb"
-    },
-    "short": {
-      "params": {
-        "model_type": "lgbm_reg",
-        "horizon": 48,
-        "time_exit_h": 48,
-        "features": [
-          "rsi_norm",
-          "macd_norm",
-          "ema50_diff",
-          "ema20_diff",
-          "ema200_diff",
-          "vol_ratio",
-          "atr14_pct",
-          "atr50_pct",
-          "avg_trade_norm",
-          "pc1",
-          "pc4",
-          "pc24",
-          "buy_ratio",
-          "nasdaq_pct_1h",
-          "nasdaq_pct_24h",
-          "dxy_pct_1h",
-          "dxy_pct_24h",
-          "fear_greed_norm",
-          "btc_dom_pct",
-          "stable_flow_1h",
-          "stable_flow_24h",
-          "rsi_norm_lag1",
-          "macd_norm_lag1",
-          "ema50_diff_lag1",
-          "vol_ratio_lag1",
-          "buy_ratio_lag1",
-          "rsi_norm_lag3",
-          "macd_norm_lag3",
-          "ema50_diff_lag3",
-          "vol_ratio_lag3",
-          "buy_ratio_lag3",
-          "rsi_norm_lag6",
-          "macd_norm_lag6",
-          "ema50_diff_lag6",
-          "vol_ratio_lag6",
-          "buy_ratio_lag6",
-          "rsi_norm_lag12",
-          "macd_norm_lag12",
-          "ema50_diff_lag12",
-          "vol_ratio_lag12",
-          "buy_ratio_lag12",
-          "rsi_norm_lag24",
-          "macd_norm_lag24",
-          "ema50_diff_lag24",
-          "vol_ratio_lag24",
-          "buy_ratio_lag24"
-        ],
-        "model_file": "model_lgbm_swing_short.txt"
-      },
-      "metrics": {
-        "trades": 2,
-        "pnl": 0.1,
-        "winrate": 0.5,
-        "max_dd": -0.16,
-        "score": 0.64
-      }
-    }
+    "long": null,
+    "short": null
   },
   "all_scores": {
     "intraday": {
       "long": {
         "model_base": {
-          "trades": 31,
-          "pnl": -2.11,
-          "winrate": 0.6452,
-          "max_dd": -1.95,
-          "score": -1.08
+          "trades": 109,
+          "pnl": -6.29,
+          "winrate": 0.4954,
+          "max_dd": -6.38,
+          "score": -0.99
         },
         "model_catboost": {
-          "trades": 15,
-          "pnl": 1.13,
-          "winrate": 0.9333,
-          "max_dd": -0.48,
-          "score": 2.36
+          "trades": 19,
+          "pnl": 0.04,
+          "winrate": 0.7895,
+          "max_dd": -0.63,
+          "score": 0.06
         },
         "model_lgbm": {
-          "trades": 34,
-          "pnl": -2.71,
-          "winrate": 0.6765,
-          "max_dd": -3.17,
-          "score": -0.85
+          "trades": 33,
+          "pnl": -1.03,
+          "winrate": 0.6061,
+          "max_dd": -1.11,
+          "score": -0.93
         },
         "model_rf": {
-          "trades": 6,
-          "pnl": 0.08,
-          "winrate": 0.8333,
-          "max_dd": -0.64,
-          "score": 0.12
+          "trades": 24,
+          "pnl": -0.42,
+          "winrate": 0.7083,
+          "max_dd": -0.67,
+          "score": -0.63
         },
         "model_xgb": {
-          "trades": 42,
-          "pnl": -1.88,
-          "winrate": 0.7143,
-          "max_dd": -2.54,
-          "score": -0.74
+          "trades": 35,
+          "pnl": 0.21,
+          "winrate": 0.8,
+          "max_dd": -0.66,
+          "score": 0.32
         }
       },
       "short": {
         "model_base": {
-          "trades": 19,
-          "pnl": -0.57,
-          "winrate": 0.7368,
-          "max_dd": -0.81,
-          "score": -0.7
+          "trades": 56,
+          "pnl": -1.6,
+          "winrate": 0.6429,
+          "max_dd": -1.99,
+          "score": -0.81
         },
         "model_catboost": {
-          "trades": 4,
-          "pnl": -1.16,
-          "winrate": 0.25,
-          "max_dd": -0.86,
-          "score": -1.35
+          "trades": 28,
+          "pnl": 0.22,
+          "winrate": 0.8214,
+          "max_dd": -0.4,
+          "score": 0.56
         },
         "model_lgbm": {
-          "trades": 27,
-          "pnl": -0.81,
-          "winrate": 0.7037,
-          "max_dd": -1.83,
-          "score": -0.44
+          "trades": 63,
+          "pnl": -0.25,
+          "winrate": 0.7302,
+          "max_dd": -1.29,
+          "score": -0.19
         },
         "model_rf": {
-          "trades": 0,
-          "pnl": 0.0,
-          "winrate": 0.0,
-          "max_dd": -0.1,
-          "score": -99999.0
+          "trades": 21,
+          "pnl": 0.9,
+          "winrate": 0.8571,
+          "max_dd": -0.26,
+          "score": 3.53
         },
         "model_xgb": {
-          "trades": 12,
-          "pnl": -0.6,
-          "winrate": 0.75,
+          "trades": 64,
+          "pnl": -0.19,
+          "winrate": 0.7188,
           "max_dd": -1.17,
-          "score": -0.51
+          "score": -0.16
         }
       }
     },
     "swing": {
       "long": {
         "model_base": {
-          "trades": 3,
-          "pnl": -0.01,
-          "winrate": 0.6667,
-          "max_dd": -0.1,
-          "score": -0.09
+          "trades": 6,
+          "pnl": 0.11,
+          "winrate": 0.3333,
+          "max_dd": -0.33,
+          "score": 0.33
         },
         "model_catboost": {
-          "trades": 20,
-          "pnl": -1.12,
-          "winrate": 0.5,
-          "max_dd": -2.07,
-          "score": -0.54
+          "trades": 1,
+          "pnl": 0.38,
+          "winrate": 1.0,
+          "max_dd": -0.1,
+          "score": 3.78
         },
         "model_lgbm": {
-          "trades": 72,
-          "pnl": -2.15,
-          "winrate": 0.4722,
-          "max_dd": -5.3,
-          "score": -0.41
+          "trades": 5,
+          "pnl": -0.01,
+          "winrate": 0.4,
+          "max_dd": -0.32,
+          "score": -0.04
         },
         "model_rf": {
-          "trades": 16,
-          "pnl": 0.27,
-          "winrate": 0.5,
-          "max_dd": -1.4,
-          "score": 0.19
+          "trades": 3,
+          "pnl": 0.07,
+          "winrate": 0.3333,
+          "max_dd": -0.02,
+          "score": 3.36
         },
         "model_xgb": {
-          "trades": 63,
-          "pnl": -3.85,
-          "winrate": 0.4603,
-          "max_dd": -6.01,
+          "trades": 8,
+          "pnl": -0.65,
+          "winrate": 0.25,
+          "max_dd": -1.01,
           "score": -0.64
         }
       },
       "short": {
         "model_base": {
-          "trades": 0,
-          "pnl": 0.0,
-          "winrate": 0.0,
-          "max_dd": -0.1,
-          "score": -99999.0
+          "trades": 6,
+          "pnl": -1.2,
+          "winrate": 0.1667,
+          "max_dd": -1.29,
+          "score": -0.93
         },
         "model_catboost": {
-          "trades": 0,
-          "pnl": 0.0,
-          "winrate": 0.0,
-          "max_dd": -0.1,
-          "score": -99999.0
+          "trades": 20,
+          "pnl": -1.82,
+          "winrate": 0.25,
+          "max_dd": -1.99,
+          "score": -0.91
         },
         "model_lgbm": {
-          "trades": 2,
-          "pnl": 0.1,
-          "winrate": 0.5,
-          "max_dd": -0.16,
-          "score": 0.64
+          "trades": 24,
+          "pnl": -1.45,
+          "winrate": 0.2917,
+          "max_dd": -1.67,
+          "score": -0.86
         },
         "model_rf": {
-          "trades": 0,
-          "pnl": 0.0,
-          "winrate": 0.0,
-          "max_dd": -0.1,
-          "score": -99999.0
+          "trades": 22,
+          "pnl": -0.93,
+          "winrate": 0.3182,
+          "max_dd": -1.62,
+          "score": -0.57
         },
         "model_xgb": {
-          "trades": 3,
-          "pnl": -0.09,
-          "winrate": 0.3333,
-          "max_dd": -0.11,
-          "score": -0.81
+          "trades": 23,
+          "pnl": -1.55,
+          "winrate": 0.2609,
+          "max_dd": -2.28,
+          "score": -0.68
         }
       }
     }
