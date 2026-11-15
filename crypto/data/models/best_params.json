@@ -1,6 +1,6 @@
 {
-  "trainer_version": "5.6.0",
-  "updated_at": "2026-11-15T11:58:24.136982+00:00",
+  "trainer_version": "5.7.0",
+  "updated_at": "2026-11-15T12:08:28.997687+00:00",
   "intraday": {
     "long": {
       "params": {
@@ -173,11 +173,11 @@
           "score": -0.95
         },
         "model_xgb": {
-          "trades": 59,
-          "pnl": -5.06,
-          "winrate": 0.3729,
-          "max_dd": -6.63,
-          "score": -0.76
+          "trades": 680,
+          "pnl": -32.56,
+          "winrate": 0.2868,
+          "max_dd": -32.54,
+          "score": -1.0
         },
         "model_lgbm": {
           "trades": 77,
@@ -210,11 +210,11 @@
           "score": -0.56
         },
         "model_xgb": {
-          "trades": 41,
-          "pnl": -1.62,
-          "winrate": 0.2683,
-          "max_dd": -2.68,
-          "score": -0.61
+          "trades": 514,
+          "pnl": -21.11,
+          "winrate": 0.3132,
+          "max_dd": -21.18,
+          "score": -1.0
         },
         "model_lgbm": {
           "trades": 65,
@@ -249,11 +249,11 @@
           "score": -0.87
         },
         "model_xgb": {
-          "trades": 197,
-          "pnl": -12.13,
-          "winrate": 0.2995,
-          "max_dd": -14.52,
-          "score": -0.84
+          "trades": 361,
+          "pnl": -16.01,
+          "winrate": 0.3352,
+          "max_dd": -18.57,
+          "score": -0.86
         },
         "model_lgbm": {
           "trades": 178,
@@ -286,11 +286,11 @@
           "score": -0.77
         },
         "model_xgb": {
-          "trades": 247,
-          "pnl": -8.81,
-          "winrate": 0.2632,
-          "max_dd": -10.17,
-          "score": -0.87
+          "trades": 195,
+          "pnl": -9.41,
+          "winrate": 0.3231,
+          "max_dd": -10.62,
+          "score": -0.89
         },
         "model_lgbm": {
           "trades": 232,
