@@ -487,5 +487,17 @@
       "volume",
       "rsi_mid"
     ]
+  },
+  {
+    "type": "SHORT",
+    "entry": 65399.05,
+    "exit": 64091.069,
+    "pnl_pct": 1.8,
+    "pnl_usd": 1.8,
+    "reason": "TAKE_PROFIT",
+    "mode": "swing",
+    "close_time": "2026-11-15T07:46:15.003874+00:00",
+    "balance_after": 101.71,
+    "active_signals": []
   }
 ]
