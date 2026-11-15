@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - XGBOOST MODEL v4.0 (MODE AWARE)
+# ARGUS - XGBOOST MODEL v5.0 (DYNAMIC TARGET & THRESHOLD)
 # Path: crypto/learn/model_xgb.py
 # ============================================================
 
@@ -16,9 +16,8 @@ INITIAL_BALANCE = 100.0
 POSITION_NOTIONAL = 20.0
 FEE_RATE = 0.001
 
-def prepare_features(df, horizon):
+def prepare_features(df, horizon, side):
     data = df.copy()
-    
     data['rsi_norm'] = data['rsi'] / 100.0
     data['rsi_7_norm'] = data['rsi_7'] / 100.0
     data['rsi_21_norm'] = data['rsi_21'] / 100.0
@@ -44,7 +43,11 @@ def prepare_features(df, horizon):
         for f in ['rsi_norm', 'macd_norm', 'ema50_diff', 'vol_ratio', 'buy_ratio']:
             data[f'{f}_lag{lag}'] = data[f].shift(lag)
     
-    data['target'] = (data['close'].shift(-horizon) > data['close']).astype(int)
+    future_close = data['close'].shift(-horizon)
+    if side == "long":
+        data['target'] = ((future_close - data['close']) > (data['atr_14'] * 0.5)).astype(int)
+    else:
+        data['target'] = ((data['close'] - future_close) > (data['atr_14'] * 0.5)).astype(int)
     
     feature_cols = base_features + \
                    [f'{f}_lag{l}' for l in [1,3,6,12,24] for f in ['rsi_norm', 'macd_norm', 'ema50_diff', 'vol_ratio', 'buy_ratio']]
@@ -61,15 +64,23 @@ def walk_forward_validate(data, feature_cols, side, horizon):
     
     for train_idx, test_idx in tscv.split(X):
         if len(np.unique(y[train_idx])) < 2: continue
-        model = xgb.XGBClassifier(n_estimators=100, max_depth=4, learning_rate=0.05, 
-                                  subsample=0.8, colsample_bytree=0.8, eval_metric='logloss', random_state=42)
+        model = xgb.XGBClassifier(n_estimators=100, max_depth=4, learning_rate=0.05, subsample=0.8, colsample_bytree=0.8, eval_metric='logloss', random_state=42)
         model.fit(X[train_idx], y[train_idx])
         predictions[test_idx] = model.predict_proba(X[test_idx])[:, 1]
     
+    valid_preds = predictions[~np.isnan(predictions)]
+    if len(valid_preds) == 0: return None, None
+    
+    if side == "long":
+        threshold = np.percentile(valid_preds, 90)
+        signal_condition = lambda p: p >= threshold
+    else:
+        threshold = np.percentile(valid_preds, 10)
+        signal_condition = lambda p: p <= threshold
+
     trades = []
     in_pos = False
-    entry_price = 0
-    entry_idx = 0
+    entry_price, entry_idx = 0, 0
     
     for i in range(len(data)):
         prob = predictions[i]
@@ -78,55 +89,40 @@ def walk_forward_validate(data, feature_cols, side, horizon):
         if in_pos:
             if i - entry_idx >= horizon:
                 exit_price = data.iloc[i]['close']
-                if side == "long":
-                    pnl_pct = (exit_price - entry_price) / entry_price * 100
-                else:
-                    pnl_pct = (entry_price - exit_price) / entry_price * 100
-                pnl_pct -= (FEE_RATE * 200)
-                trades.append(POSITION_NOTIONAL * (pnl_pct / 100))
+                pnl_pct = ((exit_price - entry_price) / entry_price * 100) if side == "long" else ((entry_price - exit_price) / entry_price * 100)
+                trades.append(POSITION_NOTIONAL * ((pnl_pct - (FEE_RATE * 200)) / 100))
                 in_pos = False
         else:
-            if side == "long" and prob > 0.60:
-                in_pos = True
-                entry_price = data.iloc[i]['close']
-                entry_idx = i
-            elif side == "short" and prob < 0.40:
+            if signal_condition(prob):
                 in_pos = True
                 entry_price = data.iloc[i]['close']
                 entry_idx = i
                 
     if not trades: return None, None
-    
     trades = np.array(trades)
     total_pnl = trades.sum()
     winrate = (trades > 0).mean()
     cum = np.cumsum(trades) + INITIAL_BALANCE
     peak = np.maximum.accumulate(cum)
-    dd = (cum - peak) / peak * 100
-    max_dd = dd.min() if len(dd) else 0
+    max_dd = ((cum - peak) / peak * 100).min()
     if max_dd == 0: max_dd = -0.1
     score = total_pnl / abs(max_dd)
     
-    metrics = {"trades": len(trades), "pnl": round(float(total_pnl), 2), "winrate": round(float(winrate), 4),
-               "max_dd": round(float(max_dd), 2), "score": round(float(score), 2)}
-               
-    final_model = xgb.XGBClassifier(n_estimators=100, max_depth=4, learning_rate=0.05, 
-                                    subsample=0.8, colsample_bytree=0.8, eval_metric='logloss', random_state=42)
-    final_model.fit(X, y)
+    metrics = {"trades": len(trades), "pnl": round(float(total_pnl), 2), "winrate": round(float(winrate), 4), "max_dd": round(float(max_dd), 2), "score": round(float(score), 2)}
     
+    final_model = xgb.XGBClassifier(n_estimators=100, max_depth=4, learning_rate=0.05, subsample=0.8, colsample_bytree=0.8, eval_metric='logloss', random_state=42)
+    final_model.fit(X, y)
     return metrics, final_model
 
 def train(df, side="long", mode="swing"):
     try:
         horizon = 4 if mode == "intraday" else 24
-        data, feature_cols = prepare_features(df, horizon)
+        data, feature_cols = prepare_features(df, horizon, side)
         if len(data) < 2000: return None
         metrics, model = walk_forward_validate(data, feature_cols, side, horizon)
         if not metrics or model is None: return None
         
-        raw_model = model.get_booster().save_raw()
-        model_b64 = base64.b64encode(raw_model).decode('utf-8')
-        
+        model_b64 = base64.b64encode(model.get_booster().save_raw()).decode('utf-8')
         return {
             "params": {"model_type": "xgboost", "horizon": horizon, "features": feature_cols, "model_b64": model_b64},
             "metrics": metrics
