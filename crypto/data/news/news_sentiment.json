@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-15T01:05:36.722623+00:00",
-  "total_news": 92,
-  "avg_sentiment": -0.435,
+  "generated_at": "2026-11-15T02:05:36.707012+00:00",
+  "total_news": 93,
+  "avg_sentiment": -0.408,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 11,
-  "bearish_count": 33,
-  "neutral_count": 48,
+  "bearish_count": 32,
+  "neutral_count": 50,
   "fake_count": 0,
   "cross_confirmed": 6,
   "by_source": {
@@ -22,10 +22,10 @@
     "Bitcoin.com": {
       "total": 9,
       "bull": 1,
-      "bear": 5
+      "bear": 4
     },
     "CryptoSlate": {
-      "total": 8,
+      "total": 9,
       "bull": 1,
       "bear": 4
     },
@@ -58,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-15T01:05:35.079416+00:00",
+      "collected_at": "2026-11-15T02:05:34.799971+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin ETFs shed $2.35B in 2 weeks, BlackRock’s losing streak hits 11",
       "cross_check": 1
@@ -75,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-15T01:05:35.383172+00:00",
+      "collected_at": "2026-11-15T02:05:35.156078+00:00",
       "effective_weight": 1.0,
       "title_original": "Cobra Warns AI Threatens Bitcoin Self-Custody as Winter Looms",
       "cross_check": 1
@@ -92,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-15T01:05:35.450994+00:00",
+      "collected_at": "2026-11-15T02:05:35.310260+00:00",
       "effective_weight": 1.0,
       "title_original": "Crypto’s $168 million election: 78 winners, 13 newcomers and one costly defeat",
       "cross_check": 1
@@ -109,7 +109,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-15T01:05:35.116652+00:00",
+      "collected_at": "2026-11-15T02:05:34.925265+00:00",
       "effective_weight": 0.88,
       "title_original": "OpenAI Launches ChatGPT Wallet to Let AI Agents Shop—Without Crypto",
       "cross_check": 1
@@ -126,7 +126,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-15T01:05:35.559864+00:00",
+      "collected_at": "2026-11-15T02:05:35.472710+00:00",
       "effective_weight": 0.8,
       "title_original": "JPMorgan Lifts Strategy Stake 36% and Holds $540M in BlackRock’s Bitcoin ETF",
       "cross_check": 1
@@ -143,28 +143,11 @@
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 1.2,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-15T01:05:35.383037+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Bitcoin Faces Massive Liquidation Cluster Near $60K, Glassnode Warns",
-      "cross_check": 1
-    },
-    {
-      "title": "Unocoin Admits $200K Crypto Loss, Warns of Customer Data Breach",
-      "url": "https://news.bitcoin.com/featured/unocoin-admits-200k-crypto-loss-warns-of-customer-data-breach/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-14T19:24:37+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-15T01:05:35.383235+00:00",
+      "collected_at": "2026-11-15T02:05:35.155952+00:00",
       "effective_weight": 1.0,
-      "title_original": "Unocoin Admits $200K Crypto Loss, Warns of Customer Data Breach",
+      "title_original": "Bitcoin Faces Massive Liquidation Cluster Near $60K, Glassnode Warns",
       "cross_check": 1
     },
     {
@@ -179,7 +162,7 @@
       "bear_weight": 2.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-15T01:05:35.450912+00:00",
+      "collected_at": "2026-11-15T02:05:35.310182+00:00",
       "effective_weight": 1.0,
       "title_original": "Peter Schiff argues Bitcoin may fall below $16,500 by year-end if $50,000 breaks next",
       "cross_check": 2
@@ -196,10 +179,27 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-15T01:05:35.559642+00:00",
+      "collected_at": "2026-11-15T02:05:35.472456+00:00",
       "effective_weight": 1.0,
       "title_original": "Crypto Executives Targeted in $400M North Korea Hacking Scheme: FBI",
       "cross_check": 2
+    },
+    {
+      "title": "Unocoin Admits $200K Crypto Loss, Warns of Customer Data Breach",
+      "url": "https://news.bitcoin.com/featured/unocoin-admits-200k-crypto-loss-warns-of-customer-data-breach/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-14T19:24:37+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-15T02:05:35.156143+00:00",
+      "effective_weight": 0.8,
+      "title_original": "Unocoin Admits $200K Crypto Loss, Warns of Customer Data Breach",
+      "cross_check": 1
     },
     {
       "title": "Fed Rate Hike Odds Reach Near-Certainty as Bitcoin Price Falls to $65K",
@@ -213,7 +213,7 @@
       "bear_weight": 1.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-15T01:05:35.383337+00:00",
+      "collected_at": "2026-11-15T02:05:35.156221+00:00",
       "effective_weight": 0.8,
       "title_original": "Fed Rate Hike Odds Reach Near-Certainty as Bitcoin Price Falls to $65K",
       "cross_check": 1
