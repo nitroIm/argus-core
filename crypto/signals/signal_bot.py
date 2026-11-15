@@ -1,22 +1,15 @@
 # ============================================================
-# ARGUS - SIGNAL BOT v9.4.4
+# ARGUS - SIGNAL BOT v9.4.5
 # Path: crypto/signals/signal_bot.py
 #
-# ИЗМЕНЕНИЯ v9.4.4:
-#   - Модели из отдельных файлов (.xgb/.txt/.cbm/.pkl), fallback на model_b64
-#   - SHORT формула: score_short = -pred * 10 (было (1.0 - pred) * 10 — баг)
-#   - except: pass -> log.error + НЕ входить в сделку (не score=0)
-#   - Защита от null в models[mode][side]
-#   - time_exit_h из bot_config (не из params модели)
-#   - Макро-фичи для ML подтягиваются из БД (как в тренере)
-#   - Загрузка моделей через файлы (быстрее, без base64 decode)
+# ИЗМЕНЕНИЯ v9.4.5 (относительно v9.4.4):
+#   - is_ml_ready(): ML используется только если trades>=30 и score>=0.5
+#   - Иначе fallback на технические веса (без падения на null)
+#   - Защита от models[mode][side] = null (было AttributeError)
+#   - Лог "ML NOT READY (...) -> using WEIGHTS"
 # ============================================================
 
-import os
-import json
-import logging
-import base64
-import pickle
+import os, json, logging, base64, pickle
 from pathlib import Path
 from datetime import datetime, timezone, timedelta
 import psycopg
@@ -24,7 +17,7 @@ import pandas as pd
 import numpy as np
 import xgboost as xgb
 
-VERSION = "9.4.4"
+VERSION = "9.4.5"
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("crypto.signal_bot")
 
@@ -43,6 +36,7 @@ BOT_INFO = SIGNALS_DIR / "bot_info.json"
 
 DB_URL = (os.getenv("AIVEN_DB_URL") or "").strip()
 SYMBOL = "BTCUSDT"
+
 
 def get_conn():
     if not DB_URL: raise RuntimeError("AIVEN_DB_URL not set")
@@ -65,20 +59,15 @@ def append_event(event):
 
 def ensure_bot_info(bot_info):
     for mode in ["intraday", "swing"]:
-        if mode not in bot_info:
-            bot_info[mode] = {"score_history": [], "score_archive": []}
-        if "started_at" not in bot_info[mode]:
-            bot_info[mode]["started_at"] = datetime.now(timezone.utc).isoformat()
-        if "balance" not in bot_info[mode]:
-            bot_info[mode]["balance"] = 100.0
-        if "start_balance" not in bot_info[mode]:
-            bot_info[mode]["start_balance"] = 100.0
-        if "last_check_ts" not in bot_info[mode]:
-            bot_info[mode]["last_check_ts"] = datetime.now(timezone.utc).isoformat()
+        if mode not in bot_info: bot_info[mode] = {"score_history": [], "score_archive": []}
+        if "started_at" not in bot_info[mode]: bot_info[mode]["started_at"] = datetime.now(timezone.utc).isoformat()
+        if "balance" not in bot_info[mode]: bot_info[mode]["balance"] = 100.0
+        if "start_balance" not in bot_info[mode]: bot_info[mode]["start_balance"] = 100.0
+        if "last_check_ts" not in bot_info[mode]: bot_info[mode]["last_check_ts"] = datetime.now(timezone.utc).isoformat()
     save_json(BOT_INFO, bot_info)
     return bot_info
 
-# ── Расчёт индикаторов (как в тренере) ─────────────────────
+
 def calculate_indicators(df_1h):
     close = df_1h['close']
     df_1h['rsi'] = 100 - 100 / (1 + close.diff().where(close.diff() > 0, 0).rolling(14).mean() / (-close.diff().where(close.diff() < 0, 0)).rolling(14).mean())
@@ -101,7 +90,7 @@ def calculate_indicators(df_1h):
     df_1h['price_change_24h'] = close.pct_change(24)
     return df_1h.dropna()
 
-# ── Макро для ML (упрощённая версия тренера) ───────────────
+
 def fetch_macro_for_bot():
     if not DB_URL: return pd.DataFrame()
     try:
@@ -110,12 +99,10 @@ def fetch_macro_for_bot():
         df_mi = pd.read_sql("SELECT ticker, open_time AS ts, close FROM market_indices WHERE open_time > NOW() - INTERVAL '7 days' ORDER BY open_time ASC", conn)
         if not df_mi.empty:
             df_mi['ts'] = pd.to_datetime(df_mi['ts'], utc=True)
-            rename = {'^IXIC': 'nasdaq', 'DX-Y.NYB': 'dxy'}
-            for ticker, col in rename.items():
-                sub = df_mi[df_mi['ticker'] == ticker][['ts', 'close']].copy()
+            for t, c in {'^IXIC':'nasdaq','DX-Y.NYB':'dxy'}.items():
+                sub = df_mi[df_mi['ticker']==t][['ts','close']].copy()
                 if sub.empty: continue
-                sub = sub.rename(columns={'close': col}).sort_values('ts')
-                frames.append(sub.set_index('ts'))
+                frames.append(sub.rename(columns={'close':c}).sort_values('ts').set_index('ts'))
         df_gm = pd.read_sql("SELECT last_updated AS ts, btc_dominance, stablecoin_market_cap FROM global_metrics WHERE last_updated > NOW() - INTERVAL '7 days' ORDER BY last_updated ASC", conn)
         if not df_gm.empty:
             df_gm['ts'] = pd.to_datetime(df_gm['ts'], utc=True)
@@ -129,33 +116,31 @@ def fetch_macro_for_bot():
             df_fg['ts'] = pd.to_datetime(df_fg['ts'], utc=True)
             frames.append(df_fg.set_index('ts'))
         conn.close()
-        if not frames: return pd.DataFrame()
-        return pd.concat(frames, axis=1, sort=True)
+        return pd.concat(frames, axis=1, sort=True) if frames else pd.DataFrame()
     except Exception as e:
         log.error(f"Macro fetch failed: {e}")
         return pd.DataFrame()
+
 
 def merge_macro_for_bot(df_btc, macro):
     if macro.empty: return df_btc
     df_btc = df_btc.sort_values('open_time').reset_index(drop=True)
     macro = macro.sort_index()
     result = df_btc.copy()
-    # упрощённо: tolerance 72ч для индексов, 6ч для глобалок, 48ч для fear&greed
-    def asof_merge(left, cols, tol_h):
+    def asof(left, cols, tol_h):
         cols = [c for c in cols if c in macro.columns]
         if not cols: return left
-        right = macro[cols].dropna(how='all').reset_index().rename(columns={macro.index.name or 'index': 'ts'})
-        right = right.sort_values('ts')
-        left_sorted = left.sort_values('open_time').rename(columns={'open_time': 'ts'})
-        merged = pd.merge_asof(left_sorted, right, on='ts', direction='backward', allow_exact_matches=True, tolerance=pd.Timedelta(hours=tol_h))
-        return merged.rename(columns={'ts': 'open_time'})
-    result = asof_merge(result, ['nasdaq', 'dxy'], 72)
-    result = asof_merge(result, ['btc_dominance', 'stablecoin_market_cap'], 6)
-    result = asof_merge(result, ['stablecoin_supply'], 6)
-    result = asof_merge(result, ['fear_greed'], 48)
+        right = macro[cols].dropna(how='all').reset_index().rename(columns={macro.index.name or 'index': 'ts'}).sort_values('ts')
+        left_s = left.sort_values('open_time').rename(columns={'open_time':'ts'})
+        m = pd.merge_asof(left_s, right, on='ts', direction='backward', allow_exact_matches=True, tolerance=pd.Timedelta(hours=tol_h))
+        return m.rename(columns={'ts':'open_time'})
+    result = asof(result, ['nasdaq','dxy'], 72)
+    result = asof(result, ['btc_dominance','stablecoin_market_cap'], 6)
+    result = asof(result, ['stablecoin_supply'], 6)
+    result = asof(result, ['fear_greed'], 48)
     return result
 
-# ── Фичи для ML ─────────────────────────────────────────────
+
 def get_features_for_ml(df_1h, feature_cols):
     df = df_1h.copy()
     df['rsi_norm'] = df['rsi'] / 100.0
@@ -175,15 +160,13 @@ def get_features_for_ml(df_1h, feature_cols):
     df['pc4'] = df['price_change_4h']
     df['pc24'] = df['price_change_24h']
     for lag in [1, 3, 6, 12, 24]:
-        for f in ['rsi_norm', 'macd_norm', 'ema50_diff', 'vol_ratio', 'buy_ratio']:
+        for f in ['rsi_norm','macd_norm','ema50_diff','vol_ratio','buy_ratio']:
             df[f'{f}_lag{lag}'] = df[f].shift(lag)
     df = df.dropna()
     if df.empty: return None
-    # макро
     macro = fetch_macro_for_bot()
     if not macro.empty:
-        df_m = merge_macro_for_bot(df.reset_index(), macro)
-        df_m = df_m.set_index('open_time')
+        df_m = merge_macro_for_bot(df.reset_index(), macro).set_index('open_time')
         if 'nasdaq' in df_m.columns:
             df_m['nasdaq_pct_1h'] = df_m['nasdaq'].pct_change(1)
             df_m['nasdaq_pct_24h'] = df_m['nasdaq'].pct_change(24)
@@ -199,16 +182,12 @@ def get_features_for_ml(df_1h, feature_cols):
             df_m['stable_flow_24h'] = df_m['stablecoin_supply'].pct_change(24)
         df = df_m
     cols = [c for c in feature_cols if c in df.columns]
-    if len(cols) < len(feature_cols) * 0.8:
-        log.warning(f"Only {len(cols)}/{len(feature_cols)} features available for ML")
     if not cols: return None
     return df[cols].iloc[[-1]].values
 
-# ── Загрузка ML-модели ──────────────────────────────────────
+
 def load_ml_model(node):
-    """Возвращает (model_type, model_object) или (None, None)."""
-    if not node or "params" not in node:
-        return None, None
+    if not node or "params" not in node: return None, None
     p = node["params"]
     mt = p.get("model_type", "")
     if "model_file" in p and p["model_file"]:
@@ -218,41 +197,30 @@ def load_ml_model(node):
             return None, None
         try:
             if "xgb" in mt:
-                bst = xgb.Booster()
-                bst.load_model(str(fpath))
-                return "xgb", bst
+                bst = xgb.Booster(); bst.load_model(str(fpath)); return "xgb", bst
             elif "lgbm" in mt:
-                import lightgbm as lgb
-                return "lgbm", lgb.Booster(model_file=str(fpath))
+                import lightgbm as lgb; return "lgbm", lgb.Booster(model_file=str(fpath))
             elif "catboost" in mt:
                 from catboost import CatBoostRegressor
-                m = CatBoostRegressor()
-                m.load_model(str(fpath))
-                return "catboost", m
-            elif "random_forest" in mt or "linear" in mt:
-                with open(fpath, "rb") as f:
-                    return "sklearn", pickle.load(f)
+                m = CatBoostRegressor(); m.load_model(str(fpath)); return "catboost", m
+            else:
+                with open(fpath, "rb") as f: return "sklearn", pickle.load(f)
         except Exception as e:
             log.error(f"Failed to load {fpath}: {e}")
             return None, None
-    # fallback на model_b64
     if "model_b64" in p:
         try:
             raw = base64.b64decode(p["model_b64"])
             if "xgb" in mt:
-                bst = xgb.Booster()
-                bst.load_model(bytearray(raw))
-                return "xgb", bst
+                bst = xgb.Booster(); bst.load_model(bytearray(raw)); return "xgb", bst
             elif "lgbm" in mt:
-                import lightgbm as lgb
-                return "lgbm", lgb.Booster(model_str=raw.decode('utf-8'))
+                import lightgbm as lgb; return "lgbm", lgb.Booster(model_str=raw.decode('utf-8'))
             elif "catboost" in mt:
                 import tempfile, os as _os
                 from catboost import CatBoostRegressor
                 with tempfile.NamedTemporaryFile(suffix=".cbm", delete=False) as tmp:
                     tmp.write(raw); tmp_path = tmp.name
-                m = CatBoostRegressor(); m.load_model(tmp_path); _os.remove(tmp_path)
-                return "catboost", m
+                m = CatBoostRegressor(); m.load_model(tmp_path); _os.remove(tmp_path); return "catboost", m
             else:
                 return "sklearn", pickle.loads(raw)
         except Exception as e:
@@ -260,31 +228,36 @@ def load_ml_model(node):
             return None, None
     return None, None
 
+
 def predict_ml(node, df_1h):
-    """Возвращает prediction (float) или None при ошибке."""
-    if not node or "params" not in node:
-        return None
+    if not node or "params" not in node: return None
     feat = node["params"].get("features", [])
     mt, model = load_ml_model(node)
-    if model is None:
-        return None
+    if model is None: return None
     try:
         X = get_features_for_ml(df_1h, feat)
-        if X is None or len(X) == 0:
-            return None
-        if mt == "xgb":
-            return float(model.predict(xgb.DMatrix(X))[0])
-        elif mt == "lgbm":
-            return float(model.predict(X)[0])
-        elif mt == "catboost":
-            return float(model.predict(X)[0])
-        else:
-            return float(model.predict(X)[0])
+        if X is None or len(X) == 0: return None
+        if mt == "xgb": return float(model.predict(xgb.DMatrix(X))[0])
+        elif mt == "lgbm": return float(model.predict(X)[0])
+        elif mt == "catboost": return float(model.predict(X)[0])
+        else: return float(model.predict(X)[0])
     except Exception as e:
         log.error(f"ML predict failed: {e}")
         return None
 
-# ── Основной process_mode ───────────────────────────────────
+
+def is_ml_ready(node, cfg):
+    """Модель готова к live только если trades и score выше порогов."""
+    if not node: return False
+    m = node.get("metrics", {}) or {}
+    ml_cfg = cfg.get("ml_deploy", {})
+    min_trades = int(ml_cfg.get("min_trades_for_live", 30))
+    min_score = float(ml_cfg.get("min_score_for_live", 0.5))
+    trades = int(m.get("trades", 0) or 0)
+    score = float(m.get("score", -99999) or -99999)
+    return trades >= min_trades and score >= min_score
+
+
 def process_mode(mode, deals, bot_info, models, df_1h, config):
     cfg = config.get(mode, {})
     fee_pct = config.get("global", {}).get("fee_pct", 0.001)
@@ -293,17 +266,13 @@ def process_mode(mode, deals, bot_info, models, df_1h, config):
     if mode in deals and "entry" in deals[mode]:
         deal = deals[mode]
         deal_type = deal.get("type", "LONG")
-        entry = float(deal['entry'])
-        sl = float(deal['sl'])
-        tp = float(deal['tp'])
+        entry = float(deal['entry']); sl = float(deal['sl']); tp = float(deal['tp'])
         deal_open_time = datetime.fromisoformat(deal["open_time"])
         df_to_check = df_1h[df_1h['open_time'] >= deal_open_time - timedelta(hours=1)]
-
         act_pct = cfg.get("trailing_activation_pct", 1.0)
         atr_mult = cfg.get("trailing_atr_multiplier", 2.0)
         exit_reason, exit_price = None, float(df_1h.iloc[-1]['close'])
         max_price, min_price = entry, entry
-
         log.info(f"🔄 [{mode.upper()}] {deal_type} | SL: {sl} | Price: {exit_price}")
 
         def check_candle(row):
@@ -322,7 +291,7 @@ def process_mode(mode, deals, bot_info, models, df_1h, config):
                     new_sl = max(atr_sl, breakeven_sl)
                     if new_sl > sl + 0.01:
                         sl = round(new_sl, 2)
-                        append_event({"type": "UPDATE", "mode": mode, "deal_type": deal_type, "new_sl": sl})
+                        append_event({"type":"UPDATE","mode":mode,"deal_type":deal_type,"new_sl":sl})
             else:
                 if row['high'] >= sl:
                     exit_reason = "TRAILING_STOP" if sl < entry else "STOP_LOSS"
@@ -336,7 +305,7 @@ def process_mode(mode, deals, bot_info, models, df_1h, config):
                     new_sl = min(atr_sl, breakeven_sl)
                     if new_sl < sl - 0.01:
                         sl = round(new_sl, 2)
-                        append_event({"type": "UPDATE", "mode": mode, "deal_type": deal_type, "new_sl": sl})
+                        append_event({"type":"UPDATE","mode":mode,"deal_type":deal_type,"new_sl":sl})
             return False
 
         for _, row in df_to_check.iterrows():
@@ -357,27 +326,22 @@ def process_mode(mode, deals, bot_info, models, df_1h, config):
             pnl_pct -= (fee_pct * 2 * 100)
             pnl_usd = bot_info[mode]["balance"] * (pnl_pct / 100)
             bot_info[mode]["balance"] = round(bot_info[mode]["balance"] + pnl_usd, 2)
-            append_event({"type": "CLOSE", "mode": mode, "deal_type": deal_type, "reason": exit_reason,
-                          "pnl_pct": round(pnl_pct, 2), "pnl_usd": round(pnl_usd, 2),
-                          "new_balance": bot_info[mode]["balance"], "entry": entry, "exit": exit_price})
+            append_event({"type":"CLOSE","mode":mode,"deal_type":deal_type,"reason":exit_reason,"pnl_pct":round(pnl_pct,2),"pnl_usd":round(pnl_usd,2),"new_balance":bot_info[mode]["balance"],"entry":entry,"exit":exit_price})
             closed = load_json(CLOSED_DEALS, [])
-            closed.append({"type": deal_type, "entry": entry, "exit": exit_price, "pnl_pct": round(pnl_pct, 2),
-                           "pnl_usd": round(pnl_usd, 2), "reason": exit_reason, "mode": mode,
-                           "close_time": now_utc.isoformat(), "balance_after": bot_info[mode]["balance"],
-                           "active_signals": deal.get("active_signals", [])})
+            closed.append({"type":deal_type,"entry":entry,"exit":exit_price,"pnl_pct":round(pnl_pct,2),"pnl_usd":round(pnl_usd,2),"reason":exit_reason,"mode":mode,"close_time":now_utc.isoformat(),"balance_after":bot_info[mode]["balance"],"active_signals":deal.get("active_signals",[])})
             save_json(CLOSED_DEALS, closed)
             del deals[mode]
-            save_json(OPENED_DEALS, deals)
-            save_json(BOT_INFO, bot_info)
+            save_json(OPENED_DEALS, deals); save_json(BOT_INFO, bot_info)
         else:
             deal['sl'] = sl
-            save_json(BOT_INFO, bot_info)
-            save_json(OPENED_DEALS, deals)
+            save_json(BOT_INFO, bot_info); save_json(OPENED_DEALS, deals)
         return
 
-    # ── Открытие новой позиции ──────────────────────────────
+    # ── открытие новой позиции ──
     node_long = models.get(mode, {}).get("long")
     node_short = models.get(mode, {}).get("short")
+    ready_long = is_ml_ready(node_long, config)
+    ready_short = is_ml_ready(node_short, config)
 
     price = float(df_1h.iloc[-1]['close'])
     rsi = float(df_1h.iloc[-1]['rsi'])
@@ -389,31 +353,39 @@ def process_mode(mode, deals, bot_info, models, df_1h, config):
 
     # LONG
     score_long, active_long = 0.0, []
-    pred_long = predict_ml(node_long, df_1h) if node_long else None
+    pred_long = None
+    if ready_long:
+        pred_long = predict_ml(node_long, df_1h)
     if pred_long is not None:
-        score_long = pred_long * 10
-        active_long = ["ml"]
+        score_long = pred_long * 10; active_long = ["ml"]
         log.info(f"[{mode.upper()}] ML LONG pred={pred_long:.3f} -> score={score_long:.2f}")
     else:
-        if macd_hist > 0: score_long += w.get("macd", 1.0); active_long.append("macd")
-        if price > ema: score_long += w.get("ema", 1.0); active_long.append("ema")
-        if cur_vol > vol_sma: score_long += w.get("volume", 1.0); active_long.append("volume")
-        if rsi < 30: score_long += w.get("rsi_low", 1.0); active_long.append("rsi_low")
-        elif rsi < 70: score_long += w.get("rsi_mid", 1.0); active_long.append("rsi_mid")
+        if not ready_long and node_long:
+            m = node_long.get("metrics", {}) or {}
+            log.info(f"[{mode.upper()}] LONG ML NOT READY (trades={m.get('trades',0)}<{config.get('ml_deploy',{}).get('min_trades_for_live',30)}, score={m.get('score',0)}) -> using WEIGHTS")
+        if macd_hist > 0: score_long += w.get("macd",1.0); active_long.append("macd")
+        if price > ema: score_long += w.get("ema",1.0); active_long.append("ema")
+        if cur_vol > vol_sma: score_long += w.get("volume",1.0); active_long.append("volume")
+        if rsi < 30: score_long += w.get("rsi_low",1.0); active_long.append("rsi_low")
+        elif rsi < 70: score_long += w.get("rsi_mid",1.0); active_long.append("rsi_mid")
 
     # SHORT
     score_short, active_short = 0.0, []
-    pred_short = predict_ml(node_short, df_1h) if node_short else None
+    pred_short = None
+    if ready_short:
+        pred_short = predict_ml(node_short, df_1h)
     if pred_short is not None:
-        score_short = -pred_short * 10   # ИСПРАВЛЕНО: было (1.0 - pred) * 10
-        active_short = ["ml"]
+        score_short = -pred_short * 10; active_short = ["ml"]
         log.info(f"[{mode.upper()}] ML SHORT pred={pred_short:.3f} -> score={score_short:.2f}")
     else:
-        if macd_hist < 0: score_short += w.get("macd", 1.0); active_short.append("macd")
-        if price < ema: score_short += w.get("ema", 1.0); active_short.append("ema")
-        if cur_vol > vol_sma: score_short += w.get("volume", 1.0); active_short.append("volume")
-        if rsi > 70: score_short += w.get("rsi_high", 1.0); active_short.append("rsi_high")
-        elif rsi > 30: score_short += w.get("rsi_mid", 1.0); active_short.append("rsi_mid")
+        if not ready_short and node_short:
+            m = node_short.get("metrics", {}) or {}
+            log.info(f"[{mode.upper()}] SHORT ML NOT READY (trades={m.get('trades',0)}<{config.get('ml_deploy',{}).get('min_trades_for_live',30)}, score={m.get('score',0)}) -> using WEIGHTS")
+        if macd_hist < 0: score_short += w.get("macd",1.0); active_short.append("macd")
+        if price < ema: score_short += w.get("ema",1.0); active_short.append("ema")
+        if cur_vol > vol_sma: score_short += w.get("volume",1.0); active_short.append("volume")
+        if rsi > 70: score_short += w.get("rsi_high",1.0); active_short.append("rsi_high")
+        elif rsi > 30: score_short += w.get("rsi_mid",1.0); active_short.append("rsi_mid")
 
     thresh = cfg.get("threshold", 2.0)
     can_open = True
@@ -430,24 +402,24 @@ def process_mode(mode, deals, bot_info, models, df_1h, config):
     if can_open and score_long >= thresh and score_long > score_short:
         tp = price * (1 + cfg.get("tp_pct", 2.0) / 100)
         sl = price * (1 - cfg.get("sl_pct", 1.0) / 100)
-        deals[mode] = {"type": "LONG", "entry": price, "tp": tp, "sl": sl, "open_time": now_utc.isoformat(), "active_signals": active_long}
-        append_event({"type": "ENTRY", "mode": mode, "deal_type": "LONG", "entry": price, "tp": tp, "sl": sl})
+        deals[mode] = {"type":"LONG","entry":price,"tp":tp,"sl":sl,"open_time":now_utc.isoformat(),"active_signals":active_long}
+        append_event({"type":"ENTRY","mode":mode,"deal_type":"LONG","entry":price,"tp":tp,"sl":sl})
         log.info(f"🚀 [{mode.upper()}] LONG SIGNAL!")
     elif can_open and score_short >= thresh and score_short > score_long:
         tp = price * (1 - cfg.get("tp_pct", 2.0) / 100)
         sl = price * (1 + cfg.get("sl_pct", 1.0) / 100)
-        deals[mode] = {"type": "SHORT", "entry": price, "tp": tp, "sl": sl, "open_time": now_utc.isoformat(), "active_signals": active_short}
-        append_event({"type": "ENTRY", "mode": mode, "deal_type": "SHORT", "entry": price, "tp": tp, "sl": sl})
+        deals[mode] = {"type":"SHORT","entry":price,"tp":tp,"sl":sl,"open_time":now_utc.isoformat(),"active_signals":active_short}
+        append_event({"type":"ENTRY","mode":mode,"deal_type":"SHORT","entry":price,"tp":tp,"sl":sl})
         log.info(f"🩸 [{mode.upper()}] SHORT SIGNAL!")
 
     bot_info[mode]["last_check_ts"] = now_utc.isoformat()
     save_json(BOT_INFO, bot_info)
 
+
 def main():
     log.info(f"STARTING DUAL BOT v{VERSION}")
     config = load_json(CONFIG_FILE, {})
-    if not config:
-        return log.error("bot_config.json не найден")
+    if not config: return log.error("bot_config.json не найден")
     bot_info = ensure_bot_info(load_json(BOT_INFO, {}))
     models = load_json(MODEL_FILE)
     if not models.get("swing") or not models.get("intraday"):
@@ -465,20 +437,19 @@ def main():
     except Exception as e:
         return log.error(f"DB error: {e}")
 
-    df = pd.DataFrame([(r[0], float(r[1]), float(r[2]), float(r[3]), float(r[4]), float(r[5]), float(r[6]), int(r[7])) for r in rows],
-                      columns=['open_time', 'open', 'high', 'low', 'close', 'volume', 'taker_buy_volume', 'count'])
+    df = pd.DataFrame([(r[0], float(r[1]), float(r[2]), float(r[3]), float(r[4]), float(r[5]), float(r[6]), int(r[7])) for r in rows], columns=['open_time','open','high','low','close','volume','taker_buy_volume','count'])
     df['open_time'] = pd.to_datetime(df['open_time'], utc=True)
     df_1h = df.set_index('open_time').resample('1h').agg({
-        'open': 'first', 'high': 'max', 'low': 'min', 'close': 'last',
-        'volume': 'sum', 'taker_buy_volume': 'sum', 'count': 'sum'
+        'open':'first','high':'max','low':'min','close':'last',
+        'volume':'sum','taker_buy_volume':'sum','count':'sum'
     }).dropna().reset_index()
     df_1h = calculate_indicators(df_1h.set_index('open_time')).reset_index()
 
     process_mode("intraday", deals, bot_info, models, df_1h, config)
     process_mode("swing", deals, bot_info, models, df_1h, config)
 
-    save_json(OPENED_DEALS, deals)
-    save_json(BOT_INFO, bot_info)
+    save_json(OPENED_DEALS, deals); save_json(BOT_INFO, bot_info)
+
 
 if __name__ == "__main__":
     main()
