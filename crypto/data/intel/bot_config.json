@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-15T21:11:01.993885+00:00",
+  "updated_at": "2026-11-15T22:11:16.129603+00:00",
   "force_reset_old": false,
   "global": {
     "fee_pct": 0.001,
@@ -71,7 +71,7 @@
       "rsi_mid": 1.0,
       "rsi_high": 1.0
     },
-    "trailing_activation_pct": 2.0,
-    "trailing_atr_multiplier": 4.5
+    "trailing_activation_pct": 2.2,
+    "trailing_atr_multiplier": 5.0
   }
 }
