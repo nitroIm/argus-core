@@ -9,7 +9,7 @@ permissions:
 jobs:
   train:
     runs-on: ubuntu-latest
-    timeout-minutes: 45 # Увеличил время, так как нейросети (torch) учатся дольше
+    timeout-minutes: 45
 
     steps:
       - name: Checkout code
@@ -27,7 +27,7 @@ jobs:
             curl -s -X POST \
               "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
               -H "Content-Type: application/json" \
-              -d "{\"chat_id\": \"${TELEGRAM_CHAT_ID}\", \"text\": \"🚫 ARGUS Weekly Trainer: файл не найден — crypto/learn/weekly_trainer.py\\nЛог: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\", \"parse_mode\": \"HTML\"}" || true
+              -d "{\"chat_id\": \"${TELEGRAM_CHAT_ID}\", \"text\": \"🚫 ARGUS Weekly Trainer: файл не найден\\nЛог: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\", \"parse_mode\": \"HTML\"}" || true
             exit 1
           fi
 
@@ -35,11 +35,22 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+          cache: 'pip'  # ← ДОБАВЛЕНО: кэш pip по requirements/hash
+
+      # ↑ выше cache: 'pip' кэширует по хэшу файлов зависимостей,
+      # но у нас нет requirements.txt, поэтому дальше делаем явный кэш
+      
+      - name: Cache pip packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/train.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          # ДОБАВЛЕН torch в конец списка
           pip install pandas numpy pyarrow fastparquet "psycopg[binary]" xgboost scikit-learn scipy requests lightgbm catboost torch
 
       - name: Run Weekly Trainer
@@ -53,20 +64,12 @@ jobs:
         run: |
           git config user.name "ARGUS Trainer"
           git config user.email "trainer@github.com"
-          
-          # Жестко сохраняем ВСЕ модели, чтобы бот их не перезаписал
           mkdir -p /tmp/models_backup
           cp crypto/data/models/* /tmp/models_backup/ 2>/dev/null || true
-          
           git fetch origin main
           git reset --hard origin/main
-          
-          # Возвращаем обученные модели обратно
           cp /tmp/models_backup/* crypto/data/models/ 2>/dev/null || true
-          
-          # ИСПРАВЛЕНИЕ: коммитим всю папку models, а не только json
           git add crypto/data/models/
-          
           if git diff --staged --quiet; then
             echo "No changes in models"
             exit 0
