@@ -1,13 +1,9 @@
 # ============================================================
-# ARGUS - WEEKLY TRAINER ORCHESTRATOR v5.0 (DYNAMIC + CHAMPION)
+# ARGUS - WEEKLY TRAINER ORCHESTRATOR v5.6 (DYNAMIC)
 # Path: crypto/learn/weekly_trainer.py
 # ============================================================
 
-import os
-import json
-import logging
-import importlib.util
-import subprocess
+import os, json, logging, importlib.util, subprocess
 from pathlib import Path
 from datetime import datetime, timezone, timedelta
 import pandas as pd
@@ -17,17 +13,18 @@ import warnings
 
 warnings.filterwarnings("ignore", message=".*SQLAlchemy.*")
 
-VERSION = "5.0.0"
+VERSION = "5.6.0"
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("crypto.trainer")
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 DATA_FILE = SCRIPT_DIR.parent / "collect" / "vision_out" / "BTCUSDT_spot_1h.parquet"
 MODEL_OUT_FILE = SCRIPT_DIR.parent / "data" / "models" / "best_params.json"
-MODEL_OUT_FILE.parent.mkdir(parents=True, exist_ok=True)
+CONFIG_FILE = SCRIPT_DIR.parent / "data" / "intel" / "bot_config.json"
 
+MODEL_OUT_FILE.parent.mkdir(parents=True, exist_ok=True)
 DB_URL = (os.getenv("AIVEN_DB_URL") or "").strip()
-LOOKBACK_DAYS = 365 # Берем последний год
+LOOKBACK_DAYS = 730 # 2 года
 
 def calculate_ema(series, period): return series.ewm(span=period, adjust=False).mean()
 
@@ -79,8 +76,6 @@ def load_models():
             if hasattr(module, "train"):
                 models.append((model_name, module))
                 log.info(f"Loaded model: {model_name}")
-            else:
-                log.warning(f"Model {model_name} skipped: no 'train' function.")
         except Exception as e:
             log.error(f"Failed to load model {model_name}: {e}")
     return models
@@ -88,10 +83,8 @@ def load_models():
 def main():
     log.info(f"STARTING WEEKLY TRAINER ORCHESTRATOR v{VERSION}")
     
-    if not DATA_FILE.exists(): 
-        log.error(f"DATA FILE NOT FOUND: {DATA_FILE}")
-        return
-    
+    if not DATA_FILE.exists(): return log.error(f"DATA FILE NOT FOUND: {DATA_FILE}")
+
     log.info("Loading historical data...")
     df_hist = pd.read_parquet(DATA_FILE)
     df_hist['open_time'] = df_hist['open_time'].apply(lambda x: x / 1000 if x > 1e14 else x)
@@ -108,12 +101,7 @@ def main():
     cutoff_date = max_date - pd.Timedelta(days=LOOKBACK_DAYS)
     df = df[df['open_time'] >= cutoff_date].reset_index(drop=True)
     
-    data_start = df['open_time'].min().strftime("%Y-%m-%d")
-    data_end = df['open_time'].max().strftime("%Y-%m-%d")
-    total_rows = len(df)
-    
-    log.info(f"Data window: {data_start} to {data_end} (Total rows: {total_rows})")
-    log.info("Calculating indicators...")
+    log.info(f"Data window: {df['open_time'].min().strftime('%Y-%m-%d')} to {df['open_time'].max().strftime('%Y-%m-%d')} (Total rows: {len(df)})")
     
     df['rsi'] = calculate_rsi(df['close'], 14)
     df['rsi_7'] = calculate_rsi(df['close'], 7)
@@ -135,26 +123,15 @@ def main():
     df = df.dropna().reset_index(drop=True)
 
     models = load_models()
-    if not models: 
-        log.error("No models found!")
-        return
-
     old_data = {}
     if MODEL_OUT_FILE.exists():
         try:
-            with open(MODEL_OUT_FILE, "r", encoding="utf-8") as f:
-                old_data = json.load(f)
+            with open(MODEL_OUT_FILE, "r", encoding="utf-8") as f: old_data = json.load(f)
         except: pass
 
     out_data = {
-        "trainer_version": VERSION,
-        "updated_at": datetime.now(timezone.utc).isoformat(),
-        "data_start": data_start,
-        "data_end": data_end,
-        "total_rows": total_rows,
-        "intraday": {"long": None, "short": None},
-        "swing": {"long": None, "short": None},
-        "all_scores": {}
+        "trainer_version": VERSION, "updated_at": datetime.now(timezone.utc).isoformat(),
+        "intraday": {"long": None, "short": None}, "swing": {"long": None, "short": None}, "all_scores": {}
     }
 
     for mode in ["intraday", "swing"]:
@@ -177,15 +154,15 @@ def main():
                             best_model_data = res
                             log.info(f"  🏆 New best: {model_name} (Score: {sc})")
                 except Exception as e:
-                    log.error(f"  ❌ Model {model_name} crashed on {mode}/{side}: {e}")
+                    log.error(f"  ❌ Model {model_name} crashed: {e}")
                     model_scores[model_name] = {"error": str(e)}
                     
             old_score = old_data.get(mode, {}).get(side, {}).get("metrics", {}).get("score", -99999)
             if best_model_data and best_score <= old_score:
-                log.info(f"  🛡️ New best ({best_score}) is WORSE than old ({old_score}). Keeping OLD model.")
+                log.info(f"  🛡️ Keeping OLD model (New: {best_score}, Old: {old_score})")
                 out_data[mode][side] = old_data[mode][side]
             elif best_model_data:
-                log.info(f"  🚀 New best ({best_score}) is BETTER than old ({old_score}). Updating!")
+                log.info(f"  🚀 Updating model! (New: {best_score}, Old: {old_score})")
                 out_data[mode][side] = best_model_data
                 
             out_data["all_scores"][mode][side] = model_scores
@@ -194,11 +171,8 @@ def main():
         json.dump(out_data, f, ensure_ascii=False, indent=2)
     log.info(f"Saved to {MODEL_OUT_FILE}")
 
-    try:
-        log.info("Running weekly_trainer_report...")
-        subprocess.run(["python", "crypto/report/weekly_trainer_report.py"], check=False)
-    except Exception as e:
-        log.error(f"Report failed: {e}")
+    try: subprocess.run(["python", "crypto/report/weekly_trainer_report.py"], check=False)
+    except Exception as e: log.error(f"Report failed: {e}")
 
 if __name__ == "__main__":
     main()
