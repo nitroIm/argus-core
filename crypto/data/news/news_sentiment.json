@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-15T21:05:42.718461+00:00",
-  "total_news": 81,
-  "avg_sentiment": -0.51,
+  "generated_at": "2026-11-15T22:05:38.429601+00:00",
+  "total_news": 89,
+  "avg_sentiment": -0.536,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 11,
-  "bearish_count": 33,
-  "neutral_count": 37,
+  "bullish_count": 12,
+  "bearish_count": 37,
+  "neutral_count": 40,
   "fake_count": 0,
   "cross_confirmed": 7,
   "by_source": {
@@ -20,9 +20,9 @@
       "bear": 4
     },
     "Bitcoin.com": {
-      "total": 8,
+      "total": 9,
       "bull": 1,
-      "bear": 6
+      "bear": 7
     },
     "CryptoSlate": {
       "total": 5,
@@ -33,6 +33,11 @@
       "total": 28,
       "bull": 2,
       "bear": 14
+    },
+    "Bitcoinist": {
+      "total": 7,
+      "bull": 1,
+      "bear": 3
     },
     "ForkLog": {
       "total": 5,
@@ -53,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-15T21:05:40.948195+00:00",
+      "collected_at": "2026-11-15T22:05:36.887353+00:00",
       "effective_weight": 1.04,
       "title_original": "Enterprise blockchain is going to come back from the dead",
       "cross_check": 1
@@ -70,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-15T21:05:40.948342+00:00",
+      "collected_at": "2026-11-15T22:05:36.887595+00:00",
       "effective_weight": 1.04,
       "title_original": "RWA protocol stUSDT winds down three years after $2.3B TVL peak",
       "cross_check": 1
@@ -87,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-15T21:05:41.767550+00:00",
+      "collected_at": "2026-11-15T22:05:37.146704+00:00",
       "effective_weight": 1.0,
       "title_original": "Tether wants its gold token to rival ETFs",
       "cross_check": 1
@@ -104,7 +109,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-15T21:05:41.189327+00:00",
+      "collected_at": "2026-11-15T22:05:37.049376+00:00",
       "effective_weight": 0.8,
       "title_original": "Bitcoin Hits New Highs (Against and Because of Nvidia) — Week in Review",
       "cross_check": 2
@@ -121,13 +126,47 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-15T21:05:41.767666+00:00",
+      "collected_at": "2026-11-15T22:05:37.146862+00:00",
       "effective_weight": 0.8,
       "title_original": "Britain to spend £4 billion on grid bottlenecks. Can Bitcoin use the wasted wind?",
       "cross_check": 1
     }
   ],
   "top_bearish": [
+    {
+      "title": "Luxor Confirms Bitcoin Mining Hack and Reveals AI-Enabled Attack",
+      "url": "https://news.bitcoin.com/security/luxor-confirms-bitcoin-mining-hack-and-reveals-ai-enabled-attack/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-15T21:35:08+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-15T22:05:37.048855+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Luxor Confirms Bitcoin Mining Hack and Reveals AI-Enabled Attack",
+      "cross_check": 1
+    },
+    {
+      "title": "Kraken Parent Payward Takes Revenue Hit as Q3 Adjusted EBITDA Falls 67%",
+      "url": "https://cryptopotato.com/kraken-parent-payward-takes-revenue-hit-as-q3-adjusted-ebitda-falls-67/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-15T21:34:11+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-15T22:05:37.242876+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Kraken Parent Payward Takes Revenue Hit as Q3 Adjusted EBITDA Falls 67%",
+      "cross_check": 2
+    },
     {
       "title": "Bitcoin falls to four-month low near $62K as crypto selloff deepens",
       "url": "https://cointelegraph.com/markets/bitcoin-four-month-low-62k-crypto-market-selloff?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -140,7 +179,7 @@
       "bear_weight": 3.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-15T21:05:40.948299+00:00",
+      "collected_at": "2026-11-15T22:05:36.887510+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin falls to four-month low near $62K as crypto selloff deepens",
       "cross_check": 1
@@ -157,7 +196,7 @@
       "bear_weight": 2.8,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-15T21:05:41.189043+00:00",
+      "collected_at": "2026-11-15T22:05:37.048931+00:00",
       "effective_weight": 1.0,
       "title_original": "Tom Lee Predicts Massive Crypto Supercycle Despite Market Crash",
       "cross_check": 1
@@ -174,43 +213,9 @@
       "bear_weight": 2.7,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-15T21:05:41.189101+00:00",
+      "collected_at": "2026-11-15T22:05:37.049016+00:00",
       "effective_weight": 1.0,
       "title_original": "Strategist Sees Bitcoin Path to $170K Despite Selloff, Says ‘Buy the Fear’",
-      "cross_check": 1
-    },
-    {
-      "title": "Bitcoin Mining Hits Breaking Point as Difficulty Plunges 9.13%",
-      "url": "https://news.bitcoin.com/mining/bitcoin-mining-hits-breaking-point-as-difficulty-plunges-9-13/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-15T15:15:41+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-15T21:05:41.189276+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Bitcoin Mining Hits Breaking Point as Difficulty Plunges 9.13%",
-      "cross_check": 1
-    },
-    {
-      "title": "Crypto Has Lost 57 Cents to Hackers for Every Dollar Earned: ARK",
-      "url": "https://cryptopotato.com/crypto-has-lost-57-cents-to-hackers-for-every-dollar-earned-ark/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-15T18:40:24+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 3.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-15T21:05:41.817903+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Crypto Has Lost 57 Cents to Hackers for Every Dollar Earned: ARK",
       "cross_check": 1
     }
   ]
