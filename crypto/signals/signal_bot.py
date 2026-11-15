@@ -263,4 +263,190 @@ def process_mode(mode, deals, bot_info, models, df_1h, config):
 
     if mode in deals and "entry" in deals[mode]:
         deal = deals[mode]
-        deal_type = deal.get("type", "L
+        deal_type = deal.get("type", "LONG")
+        entry = float(deal['entry']); sl = float(deal['sl']); tp = float(deal['tp'])
+        deal_open_time = datetime.fromisoformat(deal["open_time"])
+        df_to_check = df_1h[df_1h['open_time'] >= deal_open_time - timedelta(hours=1)]
+        act_pct = cfg.get("trailing_activation_pct", 1.0)
+        atr_mult = cfg.get("trailing_atr_multiplier", 2.0)
+        exit_reason, exit_price = None, float(df_1h.iloc[-1]['close'])
+        max_price, min_price = entry, entry
+        log.info(f"🔄 [{mode.upper()}] {deal_type} | SL: {sl} | Price: {exit_price}")
+
+        def check_candle(row):
+            nonlocal sl, exit_reason, exit_price, max_price, min_price
+            row_atr = float(row['atr_14']) if pd.notna(row['atr_14']) else 0.0
+            if deal_type == "LONG":
+                if row['low'] <= sl:
+                    exit_reason = "TRAILING_STOP" if sl > entry else "STOP_LOSS"
+                    exit_price = sl; return True
+                if row['high'] >= tp:
+                    exit_reason = "TAKE_PROFIT"; exit_price = tp; return True
+                if row['high'] > max_price: max_price = row['high']
+                if row_atr > 0 and max_price >= entry * (1 + act_pct/100):
+                    atr_sl = max_price - (row_atr * atr_mult)
+                    breakeven_sl = entry * (1 + (fee_pct * 2))
+                    new_sl = max(atr_sl, breakeven_sl)
+                    if new_sl > sl + 0.01:
+                        sl = round(new_sl, 2)
+                        sl_pct = round((sl - entry) / entry * 100, 2)
+                        append_event({"type":"UPDATE","mode":mode,"deal_type":deal_type,"new_sl":sl,"sl_pct":sl_pct})
+            else:
+                if row['high'] >= sl:
+                    exit_reason = "TRAILING_STOP" if sl < entry else "STOP_LOSS"
+                    exit_price = sl; return True
+                if row['low'] <= tp:
+                    exit_reason = "TAKE_PROFIT"; exit_price = tp; return True
+                if row['low'] < min_price: min_price = row['low']
+                if row_atr > 0 and min_price <= entry * (1 - act_pct/100):
+                    atr_sl = min_price + (row_atr * atr_mult)
+                    breakeven_sl = entry * (1 - (fee_pct * 2))
+                    new_sl = min(atr_sl, breakeven_sl)
+                    if new_sl < sl - 0.01:
+                        sl = round(new_sl, 2)
+                        sl_pct = round((entry - sl) / entry * 100, 2)
+                        append_event({"type":"UPDATE","mode":mode,"deal_type":deal_type,"new_sl":sl,"sl_pct":sl_pct})
+            return False
+
+        for _, row in df_to_check.iterrows():
+            if check_candle(row): break
+
+        close_h = cfg.get("close_hour_utc")
+        if not exit_reason and mode == "intraday" and close_h is not None and now_utc.hour >= close_h:
+            exit_reason, exit_price = "TIME_EXIT_DAY", float(df_1h.iloc[-1]['close'])
+
+        if not exit_reason and mode == "swing":
+            time_held = (now_utc - deal_open_time).total_seconds() / 3600.0
+            time_exit_h = cfg.get("time_exit_h", 48)
+            if time_held >= time_exit_h:
+                exit_reason, exit_price = "TIME_EXIT", float(df_1h.iloc[-1]['close'])
+
+        if exit_reason:
+            pnl_pct = (exit_price - entry) / entry * 100 if deal_type == "LONG" else (entry - exit_price) / entry * 100
+            pnl_pct -= (fee_pct * 2 * 100)
+            pnl_usd = bot_info[mode]["balance"] * (pnl_pct / 100)
+            bot_info[mode]["balance"] = round(bot_info[mode]["balance"] + pnl_usd, 2)
+            append_event({"type":"CLOSE","mode":mode,"deal_type":deal_type,"reason":exit_reason,"pnl_pct":round(pnl_pct,2),"pnl_usd":round(pnl_usd,2),"new_balance":bot_info[mode]["balance"],"entry":entry,"exit":exit_price})
+            closed = load_json(CLOSED_DEALS, [])
+            closed.append({"type":deal_type,"entry":entry,"exit":exit_price,"pnl_pct":round(pnl_pct,2),"pnl_usd":round(pnl_usd,2),"reason":exit_reason,"mode":mode,"close_time":now_utc.isoformat(),"balance_after":bot_info[mode]["balance"],"active_signals":deal.get("active_signals",[])})
+            save_json(CLOSED_DEALS, closed)
+            del deals[mode]
+            save_json(OPENED_DEALS, deals); save_json(BOT_INFO, bot_info)
+        else:
+            deal['sl'] = sl
+            save_json(BOT_INFO, bot_info); save_json(OPENED_DEALS, deals)
+        return
+
+    node_long = models.get(mode, {}).get("long")
+    node_short = models.get(mode, {}).get("short")
+    ready_long = is_ml_ready(node_long, config)
+    ready_short = is_ml_ready(node_short, config)
+
+    price = float(df_1h.iloc[-1]['close'])
+    rsi = float(df_1h.iloc[-1]['rsi'])
+    macd_hist = float(df_1h.iloc[-1]['macd_hist'])
+    ema = float(df_1h.iloc[-1]['ema_50'])
+    vol_sma = float(df_1h.iloc[-1]['vol_sma'])
+    cur_vol = float(df_1h.iloc[-1]['volume'])
+    w = cfg.get("weights", {})
+
+    score_long, active_long = 0.0, []
+    pred_long = None
+    if ready_long:
+        pred_long = predict_ml(node_long, df_1h)
+    if pred_long is not None:
+        score_long = pred_long * 10; active_long = ["ml"]
+        log.info(f"[{mode.upper()}] ML LONG pred={pred_long:.3f} -> score={score_long:.2f}")
+    else:
+        if not ready_long and node_long:
+            m = node_long.get("metrics", {}) or {}
+            log.info(f"[{mode.upper()}] LONG ML NOT READY (trades={m.get('trades',0)}<{config.get('ml_deploy',{}).get('min_trades_for_live',30)}, score={m.get('score',0)}) -> using WEIGHTS")
+        if macd_hist > 0: score_long += w.get("macd",1.0); active_long.append("macd")
+        if price > ema: score_long += w.get("ema",1.0); active_long.append("ema")
+        if cur_vol > vol_sma: score_long += w.get("volume",1.0); active_long.append("volume")
+        if rsi < 30: score_long += w.get("rsi_low",1.0); active_long.append("rsi_low")
+        elif rsi < 70: score_long += w.get("rsi_mid",1.0); active_long.append("rsi_mid")
+
+    score_short, active_short = 0.0, []
+    pred_short = None
+    if ready_short:
+        pred_short = predict_ml(node_short, df_1h)
+    if pred_short is not None:
+        score_short = -pred_short * 10; active_short = ["ml"]
+        log.info(f"[{mode.upper()}] ML SHORT pred={pred_short:.3f} -> score={score_short:.2f}")
+    else:
+        if not ready_short and node_short:
+            m = node_short.get("metrics", {}) or {}
+            log.info(f"[{mode.upper()}] SHORT ML NOT READY (trades={m.get('trades',0)}<{config.get('ml_deploy',{}).get('min_trades_for_live',30)}, score={m.get('score',0)}) -> using WEIGHTS")
+        if macd_hist < 0: score_short += w.get("macd",1.0); active_short.append("macd")
+        if price < ema: score_short += w.get("ema",1.0); active_short.append("ema")
+        if cur_vol > vol_sma: score_short += w.get("volume",1.0); active_short.append("volume")
+        if rsi > 70: score_short += w.get("rsi_high",1.0); active_short.append("rsi_high")
+        elif rsi > 30: score_short += w.get("rsi_mid",1.0); active_short.append("rsi_mid")
+
+    thresh = cfg.get("threshold", 2.0)
+    can_open = True
+    no_entry_str = cfg.get("no_entry_time_utc")
+    if mode == "intraday" and no_entry_str:
+        try:
+            ne_h, ne_m = map(int, no_entry_str.split(":"))
+            if now_utc.hour > ne_h or (now_utc.hour == ne_h and now_utc.minute >= ne_m):
+                can_open = False
+        except Exception: pass
+
+    log.info(f"[{mode.upper()}] Price: {price:.1f} | LONG: {score_long:.2f} | SHORT: {score_short:.2f} | Thresh: {thresh:.2f}")
+
+    if can_open and score_long >= thresh and score_long > score_short:
+        tp = price * (1 + cfg.get("tp_pct", 2.0) / 100)
+        sl = price * (1 - cfg.get("sl_pct", 1.0) / 100)
+        deals[mode] = {"type":"LONG","entry":price,"tp":tp,"sl":sl,"open_time":now_utc.isoformat(),"active_signals":active_long}
+        append_event({"type":"ENTRY","mode":mode,"deal_type":"LONG","entry":price,"tp":tp,"sl":sl})
+        log.info(f"🚀 [{mode.upper()}] LONG SIGNAL!")
+    elif can_open and score_short >= thresh and score_short > score_long:
+        tp = price * (1 - cfg.get("tp_pct", 2.0) / 100)
+        sl = price * (1 + cfg.get("sl_pct", 1.0) / 100)
+        deals[mode] = {"type":"SHORT","entry":price,"tp":tp,"sl":sl,"open_time":now_utc.isoformat(),"active_signals":active_short}
+        append_event({"type":"ENTRY","mode":mode,"deal_type":"SHORT","entry":price,"tp":tp,"sl":sl})
+        log.info(f"🩸 [{mode.upper()}] SHORT SIGNAL!")
+
+    bot_info[mode]["last_check_ts"] = now_utc.isoformat()
+    save_json(BOT_INFO, bot_info)
+
+
+def main():
+    log.info(f"STARTING DUAL BOT v{VERSION}")
+    config = load_json(CONFIG_FILE, {})
+    if not config: return log.error("bot_config.json не найден")
+    bot_info = ensure_bot_info(load_json(BOT_INFO, {}))
+    models = load_json(MODEL_FILE)
+    if not models.get("swing") or not models.get("intraday"):
+        return log.error("Models not found")
+    deals = load_json(OPENED_DEALS, {})
+    if "intraday" not in deals: deals["intraday"] = {}
+    if "swing" not in deals: deals["swing"] = {}
+
+    try:
+        conn = get_conn()
+        with conn.cursor() as cur:
+            cur.execute("SELECT open_time, open, high, low, close, volume, taker_buy_volume, count FROM candles WHERE symbol=%s AND timeframe='15m' AND market_type='spot' ORDER BY open_time DESC LIMIT 500", (SYMBOL,))
+            rows = list(reversed(cur.fetchall()))
+        conn.close()
+    except Exception as e:
+        return log.error(f"DB error: {e}")
+
+    df = pd.DataFrame([(r[0], float(r[1]), float(r[2]), float(r[3]), float(r[4]), float(r[5]), float(r[6]), int(r[7])) for r in rows], columns=['open_time','open','high','low','close','volume','taker_buy_volume','count'])
+    df['open_time'] = pd.to_datetime(df['open_time'], utc=True)
+    df_1h = df.set_index('open_time').resample('1h').agg({
+        'open':'first','high':'max','low':'min','close':'last',
+        'volume':'sum','taker_buy_volume':'sum','count':'sum'
+    }).dropna().reset_index()
+    df_1h = calculate_indicators(df_1h.set_index('open_time')).reset_index()
+
+    process_mode("intraday", deals, bot_info, models, df_1h, config)
+    process_mode("swing", deals, bot_info, models, df_1h, config)
+
+    save_json(OPENED_DEALS, deals); save_json(BOT_INFO, bot_info)
+
+
+if __name__ == "__main__":
+    main()
