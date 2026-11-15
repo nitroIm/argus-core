@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - WEEKLY TRAINER ORCHESTRATOR v7.3 (FULL HISTORY)
+# ARGUS - WEEKLY TRAINER ORCHESTRATOR v7.4 (TRAIN + BACKTEST)
 # Path: crypto/learn/weekly_trainer.py
 # ============================================================
 
@@ -13,7 +13,7 @@ import warnings
 
 warnings.filterwarnings("ignore", message=".*SQLAlchemy.*")
 
-VERSION = "7.3.0"
+VERSION = "7.4.0"
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("crypto.trainer")
 
