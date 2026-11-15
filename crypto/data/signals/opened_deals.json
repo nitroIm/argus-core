@@ -17,5 +17,17 @@
     "open_time": "2026-11-15T03:16:08.727795+00:00",
     "active_signals": []
   },
-  "intraday": {}
+  "intraday": {
+    "type": "SHORT",
+    "entry": 64789.2,
+    "tp": 63493.416,
+    "sl": 65437.092,
+    "open_time": "2026-11-15T04:01:33.910064+00:00",
+    "active_signals": [
+      "macd",
+      "ema",
+      "volume",
+      "rsi_mid"
+    ]
+  }
 }
