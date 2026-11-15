@@ -9,7 +9,7 @@ permissions:
 jobs:
   train:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45 # Увеличил время, так как нейросети (torch) учатся дольше
 
     steps:
       - name: Checkout code
@@ -39,7 +39,8 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pandas numpy pyarrow fastparquet "psycopg[binary]" xgboost scikit-learn scipy requests lightgbm catboost
+          # ДОБАВЛЕН torch в конец списка
+          pip install pandas numpy pyarrow fastparquet "psycopg[binary]" xgboost scikit-learn scipy requests lightgbm catboost torch
 
       - name: Run Weekly Trainer
         env:
@@ -53,25 +54,28 @@ jobs:
           git config user.name "ARGUS Trainer"
           git config user.email "trainer@github.com"
           
-          # Жестко сохраняем обученный файл, чтобы бот его не перезаписал
-          cp crypto/data/models/best_params.json /tmp/best_params.json
+          # Жестко сохраняем ВСЕ модели, чтобы бот их не перезаписал
+          mkdir -p /tmp/models_backup
+          cp crypto/data/models/* /tmp/models_backup/ 2>/dev/null || true
           
           git fetch origin main
           git reset --hard origin/main
           
-          # Возвращаем обученный файл обратно
-          cp /tmp/best_params.json crypto/data/models/best_params.json
+          # Возвращаем обученные модели обратно
+          cp /tmp/models_backup/* crypto/data/models/ 2>/dev/null || true
           
-          git add crypto/data/models/best_params.json
+          # ИСПРАВЛЕНИЕ: коммитим всю папку models, а не только json
+          git add crypto/data/models/
+          
           if git diff --staged --quiet; then
-            echo "No changes in parameters"
+            echo "No changes in models"
             exit 0
           fi
-          git commit -m "ARGUS: model retrained [skip ci]"
+          git commit -m "ARGUS: models retrained [skip ci]"
           git push origin main
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: training-results
-          path: crypto/data/models/best_params.json
+          path: crypto/data/models/
