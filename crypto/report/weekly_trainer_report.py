@@ -1,6 +1,11 @@
 # ============================================================
-# ARGUS - WEEKLY TRAINER REPORT (v2.0)
+# ARGUS - WEEKLY TRAINER REPORT (v2.1)
 # Path: crypto/report/weekly_trainer_report.py
+#
+# ИЗМЕНЕНИЯ v2.1:
+#   - Исправлено чтение дат (train_start / train_end)
+#   - Убрано лишнее поле "свечей" (которое не передавалось)
+#   - Явное выделение модели, которая ушла в прод (🏆 DEPLOYED)
 # ============================================================
 
 import os
@@ -32,12 +37,11 @@ def send_tg(text):
     return r.status_code == 200
 
 def build_report(data):
-    start = data.get("data_start", "?")
-    end = data.get("data_end", "?")
-    rows = data.get("total_rows", 0)
+    start = data.get("train_start", "?")
+    end = data.get("train_end", "?")
     
     lines = ["🏋️ <b>ARGUS TRAINER: Обучение завершено</b>"]
-    lines.append(f"📅 Период данных: {start} — {end} ({rows} свечей)\n")
+    lines.append(f"📅 Период данных: {start} — {end}\n")
     
     for mode in ["intraday", "swing"]:
         mode_name = "⚡️ INTRADAY" if mode == "intraday" else "🌊 SWING"
@@ -45,7 +49,7 @@ def build_report(data):
         
         for side in ["long", "short"]:
             winner = data.get(mode, {}).get(side, {})
-            win_source = winner.get("source", "unknown") if winner else None
+            win_source = winner.get("source") if winner else None
             
             lines.append(f"  <b>{side.upper()}</b>:")
             
@@ -62,6 +66,7 @@ def build_report(data):
             )
             
             for model_name, metrics in sorted_models:
+                # Если модель деплоена - ставим кубок
                 prefix = "🏆 " if model_name == win_source else "   "
                 
                 if "error" in metrics:
@@ -77,7 +82,7 @@ def build_report(data):
     return "\n".join(lines)
 
 def main():
-    log.info("STARTING WEEKLY TRAINER REPORT")
+    log.info("STARTING WEEKLY TRAINER REPORT v2.1")
     data = load_json(MODEL_FILE)
     if not data:
         log.error(f"File not found: {MODEL_FILE}")
