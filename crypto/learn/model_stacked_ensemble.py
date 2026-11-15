@@ -1,10 +1,7 @@
 # ============================================================
-# ARGUS - STACKED ENSEMBLE MODEL v1.0.2
+# ARGUS - STACKED ENSEMBLE MODEL v1.0.3
 # Path: crypto/learn/model_stacked_ensemble.py
-#
-# ИЗМЕНЕНИЯ v1.0.2:
-#   - ФИКС: preds = stacked.predict(test_d[cols].values) вместо X_te
-#     (X_te уже imputed, imputer внутри падал с 44 vs 38)
+# ФИКС: убрана опечатка np.ep
 # ============================================================
 
 import logging, numpy as np, pandas as pd, pickle
@@ -69,36 +66,64 @@ class StackedRegressor:
 
 def _backtest(data, preds, side, horizon, cfg):
     bt = cfg.get("backtest", {})
+    rm = cfg.get("risk_management", {})
     fee = float(cfg.get("global", {}).get("fee_pct", 0.001))
     notional = float(bt.get("position_notional", 20.0))
     init_bal = float(bt.get("initial_balance", 100.0))
-    tp_max = float(bt.get("tp_max_pct", 10.0)); sl_max = float(bt.get("sl_max_pct", 3.0))
-    atr_mult = float(bt.get("atr_mult", 1.5)); pct_top = float(bt.get("percentile_top", 80.0))
+    pct_top = float(bt.get("percentile_top", 80.0))
     filt = float(bt.get("filter_min_pct_intraday" if horizon <= 24 else "filter_min_pct_swing", 0.5 if horizon <= 24 else 1.5))
 
     if len(preds) == 0: return {"trades":0,"pnl":0.0,"winrate":0.0,"max_dd":-0.1,"score":-99999.0}
     if side == "long": th = np.percentile(preds, pct_top); cond = lambda p: p >= th
     else: th = np.percentile(preds, 100 - pct_top); cond = lambda p: p <= th
 
-    trades = []; in_pos = False; ep=0.0; ei=0; dtp=0.0; dsl=0.0
+    trades = []; in_pos = False
+    entry=0.0; sl=0.0; tp1=0.0; tp2=0.0; size_left=0; tp1_hit=False; ei=0; max_p=0.0; min_p=0.0
     for i in range(len(data)):
         row = data.iloc[i]; prob = preds[i]
+        c_high, c_low = row['high'], row['low']
+        c_atr = row['atr_14'] if pd.notna(row['atr_14']) else 0.0
+        
         if in_pos:
-            if side == "long":
-                if row['low'] <= dsl: trades.append(notional*((dsl-ep)/ep - fee*2)); in_pos=False
-                elif row['high'] >= dtp: trades.append(notional*((dtp-ep)/ep - fee*2)); in_pos=False
-            else:
-                if row['high'] >= dsl: trades.append(notional*((np.ep-dsl)/ep - fee*2)); in_pos=False
-                elif row['low'] <= dtp: trades.append(notional*((ep-dtp)/ep - fee*2)); in_pos=False
-            if in_pos and (i - ei >= horizon):
-                ex = row['close']; pnl = ((ex-ep)/ep if side=="long" else (ep-ex)/ep)
-                trades.append(notional*(pnl - fee*2)); in_pos=False
+            if side == "long": max_p = max(max_p, c_high); min_p = min(min_p, c_low)
+            else: min_p = min(min_p, c_low); max_p = max(max_p, c_high)
+
+            if (side == "long" and c_low <= sl) or (side == "short" and c_high >= sl):
+                pnl = ((sl-entry)/entry if side=="long" else (entry-sl)/entry) - fee*2
+                trades.append(notional * (size_left/100) * pnl)
+                in_pos = False
+            elif (side == "long" and c_high >= tp2) or (side == "short" and c_low <= tp2):
+                pnl = ((tp2-entry)/entry if side=="long" else (entry-tp2)/entry) - fee*2
+                trades.append(notional * (size_left/100) * pnl)
+                in_pos = False
+            elif not tp1_hit and ((side == "long" and c_high >= tp1) or (side == "short" and c_low <= tp1)):
+                tp1_hit = True; close_pct = rm.get("partial_exit_pct", 50)
+                pnl = ((tp1-entry)/entry if side=="long" else (entry-tp1)/entry) - fee*2
+                trades.append(notional * (close_pct/100) * pnl)
+                size_left -= close_pct
+                sl = entry * (1 + fee*2) if side == "long" else entry * (1 - fee*2)
+
+            if in_pos and tp1_hit and c_atr > 0:
+                if side == "long":
+                    new_sl = max_p - (c_atr * rm.get("trail_atr_mult", 2.0))
+                    if new_sl > sl: sl = new_sl
+                else:
+                    new_sl = min_p + (c_atr * rm.get("trail_atr_mult", 2.0))
+                    if new_sl < sl: sl = new_sl
+
+            if in_pos and (i - ei >= horizon * 2):
+                ex = row['close']; pnl = ((ex-entry)/entry if side=="long" else (entry-ex)/entry) - fee*2
+                trades.append(notional * (size_left/100) * pnl)
+                in_pos = False
         else:
             if abs(prob) < filt or not cond(prob): continue
-            in_pos = True; ep = row['close']; ei = i; atr = row['atr_14']
-            tp_pct = min(abs(prob), tp_max)/100; sl_pct = min((atr*atr_mult)/ep, sl_max/100)
-            if side == "long": dtp = ep*(1+tp_pct); dsl = ep*(1-sl_pct)
-            else: dtp = ep*(1-tp_pct); dsl = ep*(1+sl_pct)
+            in_pos = True; entry = row['close']; ei = i; max_p = entry; min_p = entry
+            sl_pct = max(rm.get("min_sl_pct",0.5), min(rm.get("max_sl_pct",3.0), c_atr * rm.get("atr_mult_sl",1.5) / entry * 100))
+            tp1_pct = max(rm.get("min_tp1_pct",0.8), min(rm.get("max_tp1_pct",2.0), c_atr * rm.get("atr_mult_tp1",1.0) / entry * 100))
+            tp2_pct = max(rm.get("min_tp2_pct",2.0), min(rm.get("max_tp2_pct",8.0), c_atr * rm.get("atr_mult_tp2",2.5) / entry * 100))
+            if side == "long": sl = entry*(1-sl_pct/100); tp1 = entry*(1+tp1_pct/100); tp2 = entry*(1+tp2_pct/100)
+            else: sl = entry*(1+sl_pct/100); tp1 = entry*(1-tp1_pct/100); tp2 = entry*(1-tp2_pct/100)
+            tp1_hit = False; size_left = 100
 
     if not trades: return {"trades":0,"pnl":0.0,"winrate":0.0,"max_dd":-0.1,"score":-99999.0}
     tr = np.array(trades); pnl = tr.sum(); wr = float((tr>0).mean())
@@ -124,6 +149,7 @@ def train(df, side="long", mode="swing", models_dir=None, cfg=None):
         train_d, test_d = data.iloc[:split_idx], data.iloc[split_idx:].copy()
         imp = SimpleImputer(strategy='median')
         X_tr = imp.fit_transform(train_d[cols].values); y_tr = train_d['target'].values
+        X_te = imp.transform(test_d[cols].values)
 
         oof = np.zeros((len(X_tr), 4))
         kf = KFold(n_splits=5, shuffle=False)
@@ -142,7 +168,6 @@ def train(df, side="long", mode="swing", models_dir=None, cfg=None):
         m_cb = cb.CatBoostRegressor(iterations=100, depth=4, learning_rate=0.05, verbose=0, random_seed=42, nan_mode='Min').fit(X_tr, y_tr)
 
         stacked = StackedRegressor([m_rf, m_xgb, m_lgb, m_cb], meta, imp)
-        # ФИКС v1.0.2: подаём СЫРЫЕ данные (imputer сработает внутри predict)
         preds = stacked.predict(test_d[cols].values)
         metrics = _backtest(test_d.reset_index(drop=True), preds, side, horizon, cfg)
 
