@@ -1,11 +1,10 @@
 # ============================================================
-# ARGUS - SIGNAL BOT v9.4.7
+# ARGUS - SIGNAL BOT v9.4.8
 # Path: crypto/signals/signal_bot.py
 #
-# ИЗМЕНЕНИЯ v9.4.7 (относительно v9.4.6):
-#   - Встроен Data Watchdog: если последняя 15m свеча старше 45 мин,
-#     бот пишет алерт в Telegram и приостанавливает работу.
-#   - Защита от спама: алерт не чаще раза в час.
+# ИЗМЕНЕНИЯ v9.4.8 (относительно v9.4.7):
+#   - Алерт о зависших данных теперь идет в ЛИЧКУ (TELEGRAM_CHAT_ID),
+#     а не в канал (TG_CHANNEL_ID).
 # ============================================================
 
 import os, json, logging, base64, pickle, requests
@@ -16,7 +15,7 @@ import pandas as pd
 import numpy as np
 import xgboost as xgb
 
-VERSION = "9.4.7"
+VERSION = "9.4.8"
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("crypto.signal_bot")
 
@@ -35,8 +34,10 @@ BOT_INFO = SIGNALS_DIR / "bot_info.json"
 
 DB_URL = (os.getenv("AIVEN_DB_URL") or "").strip()
 SYMBOL = "BTCUSDT"
+
+# --- АЛЕРТЫ ИДУТ В ЛИЧКУ (АДМИНУ) ---
 TG_TOKEN = (os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("BOT_TOKEN") or "").strip()
-TG_CHAT = (os.getenv("TG_CHANNEL_ID") or "-1004435496321").strip()
+TG_CHAT = (os.getenv("TELEGRAM_CHAT_ID") or "").strip()
 
 
 def get_conn():
@@ -69,7 +70,7 @@ def send_tg_text(text):
         return False
 
 def check_data_freshness(df_15m, config, bot_info):
-    """Проверяет, не завис ли коллектор. Пишет алерт, если данные устарели."""
+    """Проверяет, не завис ли коллектор. Пишет алерт в личку, если данные устарели."""
     if df_15m.empty: return False
     last_time = df_15m['open_time'].iloc[-1]
     now_utc = datetime.now(timezone.utc)
