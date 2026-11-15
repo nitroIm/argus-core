@@ -1,7 +1,7 @@
 name: ARGUS Weekly Trainer
 
 on:
-  workflow_dispatch: # Запуск вручную или по крону
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -39,7 +39,6 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          # ВОТ ТУТ ДОБАВЛЕНЫ LIGHTGBM И CATBOOST
           pip install pandas numpy pyarrow fastparquet "psycopg[binary]" xgboost scikit-learn scipy requests lightgbm catboost
 
       - name: Run Weekly Trainer
@@ -53,19 +52,23 @@ jobs:
         run: |
           git config user.name "ARGUS Trainer"
           git config user.email "trainer@github.com"
-          git add crypto/data/models/best_params.json || true
+          
+          # Жестко сохраняем обученный файл, чтобы бот его не перезаписал
+          cp crypto/data/models/best_params.json /tmp/best_params.json
+          
+          git fetch origin main
+          git reset --hard origin/main
+          
+          # Возвращаем обученный файл обратно
+          cp /tmp/best_params.json crypto/data/models/best_params.json
+          
+          git add crypto/data/models/best_params.json
           if git diff --staged --quiet; then
             echo "No changes in parameters"
             exit 0
           fi
           git commit -m "ARGUS: model retrained [skip ci]"
-          for i in 1 2 3; do
-            git pull --rebase --autostash origin main || true
-            if git push origin main; then
-              break
-            fi
-            sleep 5
-          done
+          git push origin main
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
