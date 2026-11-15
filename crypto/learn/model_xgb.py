@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - XGBOOST MODEL v6.0 (MACRO FEATURES)
+# ARGUS - XGBOOST MODEL v7.3 (NAN SUPPORT)
 # Path: crypto/learn/model_xgb.py
 # ============================================================
 
@@ -9,11 +9,9 @@ from sklearn.model_selection import TimeSeriesSplit
 log = logging.getLogger("model_xgb")
 INITIAL_BALANCE, POSITION_NOTIONAL, FEE_RATE = 100.0, 20.0, 0.001
 
-# --- БЛОК 1: ПОДГОТОВКА ПРИЗНАКОВ ---
 def prepare_features(df, horizon, side):
     data = df.copy()
     
-    # 1.1. Старые признаки (свечи, RSI, MACD)
     data['rsi_norm'] = data['rsi'] / 100.0
     data['rsi_7_norm'] = data['rsi_7'] / 100.0
     data['rsi_21_norm'] = data['rsi_21'] / 100.0
@@ -39,10 +37,8 @@ def prepare_features(df, horizon, side):
         for f in ['rsi_norm', 'macd_norm', 'ema50_diff', 'vol_ratio', 'buy_ratio']:
             data[f'{f}_lag{lag}'] = data[f].shift(lag)
             
-    # --- 1.2. НОВЫЕ МАКРО-ПРИЗНАКИ (ИЗ ТВОЕЙ БАЗЫ) ---
     macro_features = []
     
-    # Если данные по индексам склеились, создаем фичи на их основе
     if 'nasdaq' in data.columns:
         data['nasdaq_pct_1h'] = data['nasdaq'].pct_change(1)
         data['nasdaq_pct_24h'] = data['nasdaq'].pct_change(24)
@@ -54,26 +50,28 @@ def prepare_features(df, horizon, side):
         macro_features.extend(['dxy_pct_1h', 'dxy_pct_24h'])
         
     if 'fear_greed' in data.columns:
-        # Нормализуем страх/жадность от 0 до 1
         data['fear_greed_norm'] = data['fear_greed'] / 100.0
         macro_features.append('fear_greed_norm')
         
     if 'btc_dominance' in data.columns:
         data['btc_dom_pct'] = data['btc_dominance'].pct_change(24)
         macro_features.append('btc_dom_pct')
+        
+    if 'stablecoin_supply' in data.columns:
+        data['stable_flow_1h'] = data['stablecoin_supply'].pct_change(1)
+        data['stable_flow_24h'] = data['stablecoin_supply'].pct_change(24)
+        macro_features.extend(['stable_flow_1h', 'stable_flow_24h'])
 
-    # --- 1.3. ЦЕЛЬ (Сколько процентов пройдет цена) ---
     future_return = (data['close'].shift(-horizon) - data['close']) / data['close'] * 100
     data['target'] = future_return.clip(-20, 20)
     
-    # Итоговый список фичей = Старые + Макро
     feature_cols = base_features + macro_features + \
                    [f'{f}_lag{l}' for l in [1,3,6,12,24] for f in ['rsi_norm', 'macd_norm', 'ema50_diff', 'vol_ratio', 'buy_ratio']]
     
-    data = data.dropna()
+    # ВАЖНО: Удаляем строки, где НЕТ ТАРГЕТА (будущего). Остальные пустые значения (NaN) XGBoost переварит сам.
+    data = data.dropna(subset=['target'])
     return data, feature_cols
 
-# --- БЛОК 2: ВАЛИДАЦИЯ И БЭКТЕСТ ---
 def walk_forward_validate(data, feature_cols, side, horizon):
     n_splits = 5
     tscv = TimeSeriesSplit(n_splits=n_splits)
@@ -90,7 +88,6 @@ def walk_forward_validate(data, feature_cols, side, horizon):
     valid_preds = predictions[~np.isnan(predictions)]
     if len(valid_preds) == 0: return None, None
     
-    # Берем Топ-10% лучших сигналов
     if side == "long":
         threshold = np.percentile(valid_preds, 90)
         signal_condition = lambda p: p >= threshold
@@ -147,12 +144,11 @@ def walk_forward_validate(data, feature_cols, side, horizon):
     final_model.fit(X, y)
     return metrics, final_model
 
-# --- БЛОК 3: ВЫЗОВ ИЗ ОРКЕСТРАТОРА ---
 def train(df, side="long", mode="swing"):
     try:
         horizon = 12 if mode == "intraday" else 48
         data, feature_cols = prepare_features(df, horizon, side)
-        if len(data) < 2000: return None
+        if len(data) < 1000: return None # Понизили порог, так как данных может быть меньше
         metrics, model = walk_forward_validate(data, feature_cols, side, horizon)
         if not metrics or model is None: return None
         
