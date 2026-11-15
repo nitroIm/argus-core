@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - WEEKLY TRAINER ORCHESTRATOR v4.2 (WITH PERIOD)
+# ARGUS - WEEKLY TRAINER ORCHESTRATOR v5.0 (DYNAMIC + CHAMPION)
 # Path: crypto/learn/weekly_trainer.py
 # ============================================================
 
@@ -9,7 +9,7 @@ import logging
 import importlib.util
 import subprocess
 from pathlib import Path
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import pandas as pd
 import numpy as np
 import psycopg
@@ -17,7 +17,7 @@ import warnings
 
 warnings.filterwarnings("ignore", message=".*SQLAlchemy.*")
 
-VERSION = "4.2.0"
+VERSION = "5.0.0"
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("crypto.trainer")
 
@@ -27,6 +27,9 @@ MODEL_OUT_FILE = SCRIPT_DIR.parent / "data" / "models" / "best_params.json"
 MODEL_OUT_FILE.parent.mkdir(parents=True, exist_ok=True)
 
 DB_URL = (os.getenv("AIVEN_DB_URL") or "").strip()
+
+# НАСТРОЙКИ ДИНАМИКИ
+LOOKBACK_DAYS = 365 # Берем последний год
 
 def calculate_ema(series, period): return series.ewm(span=period, adjust=False).mean()
 
@@ -103,11 +106,16 @@ def main():
     df = pd.concat([df_hist, df_fresh]) if not df_fresh.empty else df_hist
     df = df.drop_duplicates(subset=['open_time']).sort_values('open_time').reset_index(drop=True)
     
-    # --- ДОБАВЛЯЕМ ПЕРИОД ДАННЫХ ---
+    # ДИНАМИЧЕСКОЕ ОКНО (ПОСЛЕДНИЙ ГОД)
+    max_date = df['open_time'].max()
+    cutoff_date = max_date - pd.Timedelta(days=LOOKBACK_DAYS)
+    df = df[df['open_time'] >= cutoff_date].reset_index(drop=True)
+    
     data_start = df['open_time'].min().strftime("%Y-%m-%d")
     data_end = df['open_time'].max().strftime("%Y-%m-%d")
     total_rows = len(df)
     
+    log.info(f"Data window: {data_start} to {data_end} (Total rows: {total_rows})")
     log.info("Calculating indicators...")
     df['rsi'] = calculate_rsi(df['close'], 14)
     df['rsi_7'] = calculate_rsi(df['close'], 7)
@@ -127,12 +135,19 @@ def main():
     df['price_change_4h'] = df['close'].pct_change(4)
     df['price_change_24h'] = df['close'].pct_change(24)
     df = df.dropna().reset_index(drop=True)
-    log.info(f"Data ready. Total rows: {len(df)}")
 
     models = load_models()
     if not models: 
         log.error("No models found!")
         return
+
+    # ЗАГРУЗКА СТАРЫХ МОДЕЛЕЙ ДЛЯ ЗАЩИТЫ (CHAMPION-CHALLENGER)
+    old_data = {}
+    if MODEL_OUT_FILE.exists():
+        try:
+            with open(MODEL_OUT_FILE, "r", encoding="utf-8") as f:
+                old_data = json.load(f)
+        except: pass
 
     out_data = {
         "trainer_version": VERSION,
@@ -168,15 +183,21 @@ def main():
                     log.error(f"  ❌ Model {model_name} crashed on {mode}/{side}: {e}")
                     model_scores[model_name] = {"error": str(e)}
                     
-            if best_model_data:
+            # ЛОГИКА ЗАЩИТЫ: СРАВНИВАЕМ С ПРОШЛОЙ МОДЕЛЬЮ
+            old_score = old_data.get(mode, {}).get(side, {}).get("metrics", {}).get("score", -99999)
+            if best_model_data and best_score <= old_score:
+                log.info(f"  🛡️ New best ({best_score}) is WORSE than old ({old_score}). Keeping OLD model.")
+                out_data[mode][side] = old_data[mode][side] # Оставляем старую
+            elif best_model_data:
+                log.info(f"  🚀 New best ({best_score}) is BETTER than old ({old_score}). Updating!")
                 out_data[mode][side] = best_model_data
+                
             out_data["all_scores"][mode][side] = model_scores
 
     with open(MODEL_OUT_FILE, "w", encoding="utf-8") as f:
         json.dump(out_data, f, ensure_ascii=False, indent=2)
     log.info(f"Saved to {MODEL_OUT_FILE}")
 
-    # --- ЗАПУСК ОТЧЁТА ---
     try:
         log.info("Running weekly_trainer_report...")
         subprocess.run(["python", "crypto/report/weekly_trainer_report.py"], check=False)
