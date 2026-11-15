@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - WEEKLY TRAINER ORCHESTRATOR v5.6 (DYNAMIC)
+# ARGUS - WEEKLY TRAINER ORCHESTRATOR v5.7 (DYNAMIC)
 # Path: crypto/learn/weekly_trainer.py
 # ============================================================
 
@@ -13,7 +13,7 @@ import warnings
 
 warnings.filterwarnings("ignore", message=".*SQLAlchemy.*")
 
-VERSION = "5.6.0"
+VERSION = "5.7.0"
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("crypto.trainer")
 
@@ -84,6 +84,10 @@ def main():
     log.info(f"STARTING WEEKLY TRAINER ORCHESTRATOR v{VERSION}")
     
     if not DATA_FILE.exists(): return log.error(f"DATA FILE NOT FOUND: {DATA_FILE}")
+
+    bot_config = {}
+    if CONFIG_FILE.exists():
+        with open(CONFIG_FILE, "r", encoding="utf-8") as f: bot_config = json.load(f)
 
     log.info("Loading historical data...")
     df_hist = pd.read_parquet(DATA_FILE)
