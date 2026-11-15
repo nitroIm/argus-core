@@ -24,7 +24,7 @@ CONFIG_FILE = SCRIPT_DIR.parent / "data" / "intel" / "bot_config.json"
 
 MODEL_OUT_FILE.parent.mkdir(parents=True, exist_ok=True)
 DB_URL = (os.getenv("AIVEN_DB_URL") or "").strip()
-LOOKBACK_DAYS = 730 # Берем 2 года
+LOOKBACK_DAYS = 730
 
 def calculate_ema(series, period): return series.ewm(span=period, adjust=False).mean()
 
@@ -148,13 +148,11 @@ def main():
     df_btc['price_change_4h'] = df_btc['close'].pct_change(4)
     df_btc['price_change_24h'] = df_btc['close'].pct_change(24)
 
-    # --- СКЛЕЙКА (БЕЗ ОБРЕЗКИ ИСТОРИИ) ---
     macro_df = fetch_macro_data(cutoff_date)
     
     if not macro_df.empty:
         macro_df = macro_df.ffill().bfill()
         df_btc = df_btc.set_index('open_time')
-        # Джойним. Не удаляем строки, где макро-данных нет. Оставляем NaN. XGBoost с этим разберется.
         df = df_btc.join(macro_df, how='left').reset_index()
         log.info(f"Merged Data (with NaNs for old dates)! Total rows: {len(df)}")
     else:
@@ -169,7 +167,6 @@ def main():
 
     models = load_models()
     
-    # --- БЕЗОПАСНАЯ ЗАГРУЗКА СТАРОГО JSON ---
     old_data = {}
     if MODEL_OUT_FILE.exists():
         try:
@@ -199,7 +196,6 @@ def main():
                     log.error(f"  ❌ Model {model_name} crashed: {e}")
                     model_scores[model_name] = {"error": str(e)}
             
-            # БЕЗОПАСНОЕ ЧТЕНИЕ СТАРОГО СКОРА
             old_mode = old_data.get(mode) or {}
             old_side = old_mode.get(side) or {}
             old_metrics = old_side.get("metrics") or {}
