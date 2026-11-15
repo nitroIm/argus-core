@@ -376,5 +376,17 @@
     "close_time": "2026-11-15T00:31:26.004933+00:00",
     "balance_after": 103.0,
     "active_signals": []
+  },
+  {
+    "type": "SHORT",
+    "entry": 63851.25,
+    "exit": 64489.7625,
+    "pnl_pct": -1.2,
+    "pnl_usd": -1.24,
+    "reason": "STOP_LOSS",
+    "mode": "swing",
+    "close_time": "2026-11-15T01:01:33.265304+00:00",
+    "balance_after": 101.76,
+    "active_signals": []
   }
 ]
