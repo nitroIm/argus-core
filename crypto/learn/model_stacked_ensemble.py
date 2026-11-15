@@ -1,15 +1,3 @@
-# ============================================================
-# ARGUS - STACKED ENSEMBLE MODEL v1.0.0
-# Path: crypto/learn/model_stacked_ensemble.py
-#
-# ИДЕЯ (по мотивам ACM 2025-2026):
-#   RF + XGBoost + LightGBM + CatBoost -> OOF-предсказания
-#   -> Ridge мета-модель на OOF
-#   Стекинг снижает дисперсию, устойчивее к переобучению.
-#
-# ЗАВИСИМОСТИ: sklearn, xgboost, lightgbm, catboost (все в workflow)
-# ============================================================
-
 import logging, numpy as np, pandas as pd, pickle
 import xgboost as xgb
 import lightgbm as lgb
@@ -56,10 +44,12 @@ def prepare_features(df, horizon, side):
     data['target'] = ((data['close'].shift(-horizon) - data['close']) / data['close'] * 100).clip(-20, 20)
     cols = base + macro + [f'{f}_lag{l}' for l in [1,3,6,12,24] for f in ['rsi_norm','macd_norm','ema50_diff','vol_ratio','buy_ratio']]
     data = data.dropna(subset=['target'])
-    return data, cols
+    
+    # --- ФИКС SimpleImputer (отсекаем колонки, где ВООБЩЕ нет данных) ---
+    valid_cols = [c for c in cols if c in data.columns and not data[c].isna().all()]
+    return data, valid_cols
 
 class StackedRegressor:
-    """Обёртка: 4 базовые модели + Ridge мета. .predict(X) -> ndarray."""
     def __init__(self, models, meta, imputer):
         self.models = models
         self.meta = meta
@@ -101,8 +91,7 @@ def _backtest(data, feature_cols, preds, side, horizon, cfg):
         else:
             if abs(prob) < filt or not cond(prob): continue
             in_pos = True; ep = row['close']; ei = i; atr = row['atr_14']
-            tp_pct = min(abs(prob), tp_max)/100
-            sl_pct = min((atr*atr_mult)/ep, sl_max/100)
+            tp_pct = min(abs(prob), tp_max)/100; sl_pct = min((atr*atr_mult)/ep, sl_max/100)
             if side == "long": dtp = ep*(1+tp_pct); dsl = ep*(1-sl_pct)
             else: dtp = ep*(1-tp_pct); dsl = ep*(1+sl_pct)
 
@@ -135,7 +124,6 @@ def train(df, side="long", mode="swing", models_dir=None, cfg=None):
         X_tr = imp.fit_transform(train_d[cols].values); y_tr = train_d['target'].values
         X_te = imp.transform(test_d[cols].values)
 
-        # 5-fold OOF для мета-модели (без утечки: только на train_d)
         n_folds = 5
         oof = np.zeros((len(X_tr), 4))
         kf = KFold(n_splits=n_folds, shuffle=False)
@@ -153,7 +141,6 @@ def train(df, side="long", mode="swing", models_dir=None, cfg=None):
 
         meta = Ridge(alpha=1.0).fit(oof, y_tr)
 
-        # Финальные базовые на всём train + meta
         m_rf = RandomForestRegressor(n_estimators=100, max_depth=6, random_state=42, n_jobs=-1).fit(X_tr, y_tr)
         m_xgb = xgb.XGBRegressor(n_estimators=100, max_depth=4, learning_rate=0.05, subsample=0.8, colsample_bytree=0.8, random_state=42, verbosity=0).fit(X_tr, y_tr)
         m_lgb = lgb.LGBMRegressor(n_estimators=100, max_depth=4, learning_rate=0.05, subsample=0.8, colsample_bytree=0.8, random_state=42, verbose=-1).fit(X_tr, y_tr)
@@ -163,13 +150,12 @@ def train(df, side="long", mode="swing", models_dir=None, cfg=None):
         preds = stacked.predict(X_te)
         metrics = _backtest(test_d.reset_index(drop=True), cols, preds, side, horizon, cfg)
 
-        # финальный fit на 100%
         X_all = imp.fit_transform(data[cols].values); y_all = data['target'].values
         f_rf = RandomForestRegressor(n_estimators=100, max_depth=6, random_state=42, n_jobs=-1).fit(X_all, y_all)
         f_xgb = xgb.XGBRegressor(n_estimators=100, max_depth=4, learning_rate=0.05, subsample=0.8, colsample_bytree=0.8, random_state=42, verbosity=0).fit(X_all, y_all)
         f_lgb = lgb.LGBMRegressor(n_estimators=100, max_depth=4, learning_rate=0.05, subsample=0.8, colsample_bytree=0.8, random_state=42, verbose=-1).fit(X_all, y_all)
         f_cb = cb.CatBoostRegressor(iterations=100, depth=4, learning_rate=0.05, verbose=0, random_seed=42, nan_mode='Min').fit(X_all, y_all)
-        # OOF для мета на финальных
+        
         oof_all = np.zeros((len(X_all), 4))
         kf2 = KFold(n_splits=5, shuffle=False)
         for ti, vi in kf2.split(X_all):
@@ -177,6 +163,7 @@ def train(df, side="long", mode="swing", models_dir=None, cfg=None):
             oof_all[vi, 1] = xgb.XGBRegressor(n_estimators=100, max_depth=4, learning_rate=0.05, subsample=0.8, colsample_bytree=0.8, random_state=42, verbosity=0).fit(X_all[ti], y_all[ti]).predict(X_all[vi])
             oof_all[vi, 2] = lgb.LGBMRegressor(n_estimators=100, max_depth=4, learning_rate=0.05, subsample=0.8, colsample_bytree=0.8, random_state=42, verbose=-1).fit(X_all[ti], y_all[ti]).predict(X_all[vi])
             oof_all[vi, 3] = cb.CatBoostRegressor(iterations=100, depth=4, learning_rate=0.05, verbose=0, random_seed=42, nan_mode='Min').fit(X_all[ti], y_all[ti]).predict(X_all[vi])
+        
         f_meta = Ridge(alpha=1.0).fit(oof_all, y_all)
         final = StackedRegressor([f_rf, f_xgb, f_lgb, f_cb], f_meta, imp)
 
