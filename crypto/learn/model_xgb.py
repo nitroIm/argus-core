@@ -1,28 +1,19 @@
 # ============================================================
-# ARGUS - XGBOOST MODEL v7.5.0
+# ARGUS - XGBOOST MODEL v7.5.3
 # Path: crypto/learn/model_xgb.py
 #
-# ИЗМЕНЕНИЯ v7.5.0:
-#   - Модель сохраняется в отдельный файл (.xgb), в params -> model_file
-#   - time_exit_h = horizon (бот читает оттуда)
-#   - Все параметры бэктеста из bot_config.backtest
-#   - split_idx - horizon: убрана утечка target через границу train/test
-#   - При 0 сделок -> metrics={"trades":0, "score": -99999}, не None
-#   - Добавлено логирование: сколько train / test, сколько сделок
+# ИЗМЕНЕНИЯ v7.5.3:
+#   - Бэктест обновлен: ATR-тейки, частичный выход, умный трейлинг.
+#     Теперь Score отражает реальную торговлю бота.
 # ============================================================
 
-import logging
-import numpy as np
-import pandas as pd
-import xgboost as xgb
+import logging, numpy as np, pandas as pd, xgboost as xgb
 from pathlib import Path
 
 log = logging.getLogger("model_xgb")
 
-# ── Подготовка фичей (идентична v7.4) ───────────────────────
 def prepare_features(df, horizon, side):
     data = df.copy()
-
     data['rsi_norm'] = data['rsi'] / 100.0
     data['rsi_7_norm'] = data['rsi_7'] / 100.0
     data['rsi_21_norm'] = data['rsi_21'] / 100.0
@@ -36,218 +27,126 @@ def prepare_features(df, horizon, side):
     data['atr50_pct'] = data['atr_50'] / data['close']
     data['atr100_pct'] = data['atr_100'] / data['close']
     data['avg_trade_norm'] = data['avg_trade_size'] / data['volume'].rolling(20).mean()
-    data['pc1'] = data['price_change_1h']
-    data['pc4'] = data['price_change_4h']
-    data['pc24'] = data['price_change_24h']
-
-    base_features = ['rsi_norm', 'macd_norm', 'ema50_diff', 'ema20_diff',
-                     'ema200_diff', 'vol_ratio', 'atr14_pct', 'atr50_pct',
-                     'avg_trade_norm', 'pc1', 'pc4', 'pc24', 'buy_ratio']
-
-    for lag in [1, 3, 6, 12, 24]:
-        for f in ['rsi_norm', 'macd_norm', 'ema50_diff', 'vol_ratio', 'buy_ratio']:
+    data['pc1'] = data['price_change_1h']; data['pc4'] = data['price_change_4h']; data['pc24'] = data['price_change_24h']
+    base = ['rsi_norm','macd_norm','ema50_diff','ema20_diff','ema200_diff','vol_ratio','atr14_pct','atr50_pct','avg_trade_norm','pc1','pc4','pc24','buy_ratio']
+    for lag in [1,3,6,12,24]:
+        for f in ['rsi_norm','macd_norm','ema50_diff','vol_ratio','buy_ratio']:
             data[f'{f}_lag{lag}'] = data[f].shift(lag)
-
-    macro_features = []
+    macro = []
     if 'nasdaq' in data.columns:
-        data['nasdaq_pct_1h'] = data['nasdaq'].pct_change(1)
-        data['nasdaq_pct_24h'] = data['nasdaq'].pct_change(24)
-        macro_features += ['nasdaq_pct_1h', 'nasdaq_pct_24h']
+        data['nasdaq_pct_1h'] = data['nasdaq'].pct_change(1); data['nasdaq_pct_24h'] = data['nasdaq'].pct_change(24); macro += ['nasdaq_pct_1h','nasdaq_pct_24h']
     if 'dxy' in data.columns:
-        data['dxy_pct_1h'] = data['dxy'].pct_change(1)
-        data['dxy_pct_24h'] = data['dxy'].pct_change(24)
-        macro_features += ['dxy_pct_1h', 'dxy_pct_24h']
+        data['dxy_pct_1h'] = data['dxy'].pct_change(1); data['dxy_pct_24h'] = data['dxy'].pct_change(24); macro += ['dxy_pct_1h','dxy_pct_24h']
     if 'fear_greed' in data.columns:
-        data['fear_greed_norm'] = data['fear_greed'] / 100.0
-        macro_features.append('fear_greed_norm')
+        data['fear_greed_norm'] = data['fear_greed']/100.0; macro.append('fear_greed_norm')
     if 'btc_dominance' in data.columns:
-        data['btc_dom_pct'] = data['btc_dominance'].pct_change(24)
-        macro_features.append('btc_dom_pct')
+        data['btc_dom_pct'] = data['btc_dominance'].pct_change(24); macro.append('btc_dom_pct')
     if 'stablecoin_supply' in data.columns:
-        data['stable_flow_1h'] = data['stablecoin_supply'].pct_change(1)
-        data['stable_flow_24h'] = data['stablecoin_supply'].pct_change(24)
-        macro_features += ['stable_flow_1h', 'stable_flow_24h']
-
-    future_return = (data['close'].shift(-horizon) - data['close']) / data['close'] * 100
-    data['target'] = future_return.clip(-20, 20)
-
-    feature_cols = base_features + macro_features + \
-        [f'{f}_lag{l}' for l in [1, 3, 6, 12, 24]
-         for f in ['rsi_norm', 'macd_norm', 'ema50_diff', 'vol_ratio', 'buy_ratio']]
-
+        data['stable_flow_1h'] = data['stablecoin_supply'].pct_change(1); data['stable_flow_24h'] = data['stablecoin_supply'].pct_change(24); macro += ['stable_flow_1h','stable_flow_24h']
+    data['target'] = ((data['close'].shift(-horizon) - data['close']) / data['close'] * 100).clip(-20, 20)
+    cols = base + macro + [f'{f}_lag{l}' for l in [1,3,6,12,24] for f in ['rsi_norm','macd_norm','ema50_diff','vol_ratio','buy_ratio']]
     data = data.dropna(subset=['target'])
-    return data, feature_cols
+    return data, cols
 
-# ── Бэктест (80/20) ─────────────────────────────────────────
 def walk_forward_validate(data, feature_cols, side, horizon, cfg):
+    rm = cfg.get("risk_management", {})
     bt = cfg.get("backtest", {})
-    fee_rate = float(cfg.get("global", {}).get("fee_pct", 0.001))
+    fee = float(cfg.get("global", {}).get("fee_pct", 0.001))
     notional = float(bt.get("position_notional", 20.0))
-    initial_balance = float(bt.get("initial_balance", 100.0))
-    tp_max_pct = float(bt.get("tp_max_pct", 10.0))
-    sl_max_pct = float(bt.get("sl_max_pct", 3.0))
-    atr_mult = float(bt.get("atr_mult", 1.5))
-    percentile_top = float(bt.get("percentile_top", 80.0))
+    init_bal = float(bt.get("initial_balance", 100.0))
+    pct_top = float(bt.get("percentile_top", 80.0))
     split_pct = float(bt.get("test_split_pct", 0.2))
-    # фильтр входа разный для intraday/swing
-    filter_min_pct = float(bt.get(
-        "filter_min_pct_intraday" if horizon <= 24 else "filter_min_pct_swing",
-        0.5 if horizon <= 24 else 1.5
-    ))
-
-    # ── 80/20 с учётом horizon (нет утечки через границу) ───
+    filt = float(bt.get("filter_min_pct_intraday" if horizon <= 24 else "filter_min_pct_swing", 0.5 if horizon <= 24 else 1.5))
+    
     split_idx = int(len(data) * (1 - split_pct)) - horizon
-    if split_idx <= 100:
-        return {"trades": 0, "pnl": 0.0, "winrate": 0.0, "max_dd": -0.1,
-                "score": -99999.0}, None
+    if split_idx <= 100: return {"trades":0,"score":-99999.0}, None
+    
+    train, test = data.iloc[:split_idx], data.iloc[split_idx:].copy()
+    X_tr, y_tr = train[feature_cols].values, train['target'].values
+    X_te = test[feature_cols].values
+    
+    model = xgb.XGBRegressor(n_estimators=100, max_depth=4, learning_rate=0.05, subsample=0.8, colsample_bytree=0.8, random_state=42, verbosity=0)
+    model.fit(X_tr, y_tr)
+    preds = model.predict(X_te)
+    if len(preds) == 0: return {"trades":0,"score":-99999.0}, None
+    
+    if side == "long": th = np.percentile(preds, pct_top); cond = lambda p: p >= th
+    else: th = np.percentile(preds, 100 - pct_top); cond = lambda p: p <= th
 
-    train_data = data.iloc[:split_idx]
-    test_data = data.iloc[split_idx:].copy()
-
-    X_train = train_data[feature_cols].values
-    y_train = train_data['target'].values
-    X_test = test_data[feature_cols].values
-
-    model = xgb.XGBRegressor(
-        n_estimators=100, max_depth=4, learning_rate=0.05,
-        subsample=0.8, colsample_bytree=0.8, random_state=42,
-        verbosity=0
-    )
-    model.fit(X_train, y_train)
-    test_data['prediction'] = model.predict(X_test)
-
-    preds = test_data['prediction'].values
-    if len(preds) == 0:
-        return {"trades": 0, "pnl": 0.0, "winrate": 0.0, "max_dd": -0.1,
-                "score": -99999.0}, None
-
-    if side == "long":
-        threshold = np.percentile(preds, percentile_top)
-        signal_cond = lambda p: p >= threshold
-    else:
-        threshold = np.percentile(preds, 100 - percentile_top)
-        signal_cond = lambda p: p <= threshold
-
-    trades = []
-    in_pos = False
-    entry_price = 0.0
-    entry_idx = 0
-    dynamic_tp = 0.0
-    dynamic_sl = 0.0
-
-    for i in range(len(test_data)):
-        row = test_data.iloc[i]
-        prob = row['prediction']
-
+    trades = []; in_pos = False; 
+    entry=0.0; sl=0.0; tp1=0.0; tp2=0.0; size_left=0; tp1_hit=False; ei=0; max_p=0.0; min_p=0.0
+    
+    for i in range(len(test)):
+        row = test.iloc[i]; prob = preds[i]
+        c_high, c_low = row['high'], row['low']
+        c_atr = row['atr_14'] if pd.notna(row['atr_14']) else 0.0
+        
         if in_pos:
-            if side == "long":
-                if row['low'] <= dynamic_sl:
-                    pnl = notional * ((dynamic_sl - entry_price) / entry_price - fee_rate * 2)
-                    trades.append(pnl); in_pos = False
-                elif row['high'] >= dynamic_tp:
-                    pnl = notional * ((dynamic_tp - entry_price) / entry_price - fee_rate * 2)
-                    trades.append(pnl); in_pos = False
-            else:
-                if row['high'] >= dynamic_sl:
-                    pnl = notional * ((entry_price - dynamic_sl) / entry_price - fee_rate * 2)
-                    trades.append(pnl); in_pos = False
-                elif row['low'] <= dynamic_tp:
-                    pnl = notional * ((entry_price - dynamic_tp) / entry_price - fee_rate * 2)
-                    trades.append(pnl); in_pos = False
+            if side == "long": max_p = max(max_p, c_high); min_p = min(min_p, c_low)
+            else: min_p = min(min_p, c_low); max_p = max(max_p, c_high)
 
-            if in_pos and (i - entry_idx >= horizon):
-                exit_price = row['close']
-                pnl_pct = ((exit_price - entry_price) / entry_price
-                           if side == "long"
-                           else (entry_price - exit_price) / entry_price)
-                trades.append(notional * (pnl_pct - fee_rate * 2))
+            if (side == "long" and c_low <= sl) or (side == "short" and c_high >= sl):
+                pnl = ((sl-entry)/entry if side=="long" else (entry-sl)/entry) - fee*2
+                trades.append(notional * (size_left/100) * pnl)
+                in_pos = False
+            elif (side == "long" and c_high >= tp2) or (side == "short" and c_low <= tp2):
+                pnl = ((tp2-entry)/entry if side=="long" else (entry-tp2)/entry) - fee*2
+                trades.append(notional * (size_left/100) * pnl)
+                in_pos = False
+            elif not tp1_hit and ((side == "long" and c_high >= tp1) or (side == "short" and c_low <= tp1)):
+                tp1_hit = True
+                close_pct = rm.get("partial_exit_pct", 50)
+                pnl = ((tp1-entry)/entry if side=="long" else (entry-tp1)/entry) - fee*2
+                trades.append(notional * (close_pct/100) * pnl)
+                size_left -= close_pct
+                sl = entry * (1 + fee*2) if side == "long" else entry * (1 - fee*2)
+
+            if in_pos and tp1_hit and c_atr > 0:
+                if side == "long":
+                    new_sl = max_p - (c_atr * rm.get("trail_atr_mult", 2.0))
+                    if new_sl > sl: sl = new_sl
+                else:
+                    new_sl = min_p + (c_atr * rm.get("trail_atr_mult", 2.0))
+                    if new_sl < sl: sl = new_sl
+
+            if in_pos and (i - ei >= horizon * 2): # Жесткий выход только если совсем долго
+                ex = row['close']; pnl = ((ex-entry)/entry if side=="long" else (entry-ex)/entry) - fee*2
+                trades.append(notional * (size_left/100) * pnl)
                 in_pos = False
         else:
-            if abs(prob) < filter_min_pct:
-                continue
-            if not signal_cond(prob):
-                continue
-            in_pos = True
-            entry_price = row['close']
-            entry_idx = i
-            atr = row['atr_14']
-            tp_pct = min(abs(prob), tp_max_pct) / 100
-            sl_pct = min((atr * atr_mult) / entry_price, sl_max_pct / 100)
-            if side == "long":
-                dynamic_tp = entry_price * (1 + tp_pct)
-                dynamic_sl = entry_price * (1 - sl_pct)
-            else:
-                dynamic_tp = entry_price * (1 - tp_pct)
-                dynamic_sl = entry_price * (1 + sl_pct)
+            if abs(prob) < filt or not cond(prob): continue
+            in_pos = True; entry = row['close']; ei = i; max_p = entry; min_p = entry
+            sl_pct = max(rm.get("min_sl_pct",0.5), min(rm.get("max_sl_pct",3.0), c_atr * rm.get("atr_mult_sl",1.5) / entry * 100))
+            tp1_pct = max(rm.get("min_tp1_pct",0.8), min(rm.get("max_tp1_pct",2.0), c_atr * rm.get("atr_mult_tp1",1.0) / entry * 100))
+            tp2_pct = max(rm.get("min_tp2_pct",2.0), min(rm.get("max_tp2_pct",8.0), c_atr * rm.get("atr_mult_tp2",2.5) / entry * 100))
+            
+            if side == "long": sl = entry*(1-sl_pct/100); tp1 = entry*(1+tp1_pct/100); tp2 = entry*(1+tp2_pct/100)
+            else: sl = entry*(1+sl_pct/100); tp1 = entry*(1-tp1_pct/100); tp2 = entry*(1-tp2_pct/100)
+            tp1_hit = False; size_left = 100
 
-    if not trades:
-        return {"trades": 0, "pnl": 0.0, "winrate": 0.0, "max_dd": -0.1,
-                "score": -99999.0}, None
+    if not trades: return {"trades":0,"score":-99999.0}, None
+    tr = np.array(trades); pnl = tr.sum(); wr = float((tr>0).mean())
+    cum = np.cumsum(tr) + init_bal; peak = np.maximum.accumulate(cum)
+    dd = float(((cum-peak)/peak*100).min())
+    if dd == 0: dd = -0.1
+    
+    metrics = {"trades": int(len(tr)), "pnl": round(float(pnl),2), "winrate": round(wr,4), "max_dd": round(dd,2), "score": round(float(pnl/abs(dd)),2)}
+    final = xgb.XGBRegressor(n_estimators=100, max_depth=4, learning_rate=0.05, subsample=0.8, colsample_bytree=0.8, random_state=42, verbosity=0)
+    final.fit(data[feature_cols].values, data['target'].values)
+    return metrics, final
 
-    trades = np.array(trades)
-    total_pnl = trades.sum()
-    winrate = float((trades > 0).mean())
-    cum = np.cumsum(trades) + initial_balance
-    peak = np.maximum.accumulate(cum)
-    max_dd = float(((cum - peak) / peak * 100).min())
-    if max_dd == 0:
-        max_dd = -0.1
-    score = float(total_pnl / abs(max_dd))
-
-    metrics = {
-        "trades": int(len(trades)),
-        "pnl": round(float(total_pnl), 2),
-        "winrate": round(winrate, 4),
-        "max_dd": round(max_dd, 2),
-        "score": round(score, 2)
-    }
-
-    # финальная модель на 100%
-    final_model = xgb.XGBRegressor(
-        n_estimators=100, max_depth=4, learning_rate=0.05,
-        subsample=0.8, colsample_bytree=0.8, random_state=42,
-        verbosity=0
-    )
-    final_model.fit(data[feature_cols].values, data['target'].values)
-    return metrics, final_model
-
-# ── Публичный train ─────────────────────────────────────────
 def train(df, side="long", mode="swing", models_dir=None, cfg=None):
     try:
-        if cfg is None:
-            cfg = {}
-        if models_dir is None:
-            models_dir = Path("crypto/data/models")
+        if cfg is None: cfg = {}
+        if models_dir is None: models_dir = Path("crypto/data/models")
         models_dir = Path(models_dir)
-
         horizon = 12 if mode == "intraday" else 48
-        data, feature_cols = prepare_features(df, horizon, side)
-        if len(data) < 1000:
-            log.info(f"  [{mode}/{side}] Not enough rows: {len(data)}")
-            return None
-
-        metrics, model = walk_forward_validate(data, feature_cols, side, horizon, cfg)
-        if model is None:
-            log.info(f"  [{mode}/{side}] No trades on test — returning zero metrics")
-            return {"params": {"model_type": "xgboost_reg", "horizon": horizon,
-                               "time_exit_h": horizon, "features": feature_cols,
-                               "model_file": None},
-                    "metrics": metrics}
-
+        data, cols = prepare_features(df, horizon, side)
+        if len(data) < 1000: return None
+        metrics, model = walk_forward_validate(data, cols, side, horizon, cfg)
+        if model is None: return None
         fname = f"model_xgb_{mode}_{side}.xgb"
-        fpath = models_dir / fname
-        model.get_booster().save_model(str(fpath))
-
-        return {
-            "params": {
-                "model_type": "xgboost_reg",
-                "horizon": horizon,
-                "time_exit_h": horizon,
-                "features": feature_cols,
-                "model_file": fname,
-            },
-            "metrics": metrics,
-        }
+        model.get_booster().save_model(str(models_dir / fname))
+        return {"params": {"model_type":"xgboost_reg","horizon":horizon,"time_exit_h":horizon,"features":cols,"model_file":fname}, "metrics": metrics}
     except Exception as e:
-        log.error(f"XGBoost training failed: {e}")
-        return None
+        log.error(f"XGBoost training failed: {e}"); return None
