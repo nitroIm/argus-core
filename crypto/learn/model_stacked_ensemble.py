@@ -1,3 +1,12 @@
+# ============================================================
+# ARGUS - STACKED ENSEMBLE MODEL v1.0.2
+# Path: crypto/learn/model_stacked_ensemble.py
+#
+# ИЗМЕНЕНИЯ v1.0.2:
+#   - ФИКС: preds = stacked.predict(test_d[cols].values) вместо X_te
+#     (X_te уже imputed, imputer внутри падал с 44 vs 38)
+# ============================================================
+
 import logging, numpy as np, pandas as pd, pickle
 import xgboost as xgb
 import lightgbm as lgb
@@ -45,7 +54,6 @@ def prepare_features(df, horizon, side):
     cols = base + macro + [f'{f}_lag{l}' for l in [1,3,6,12,24] for f in ['rsi_norm','macd_norm','ema50_diff','vol_ratio','buy_ratio']]
     data = data.dropna(subset=['target'])
     
-    # --- ФИКС SimpleImputer (отсекаем колонки, где ВООБЩЕ нет данных) ---
     valid_cols = [c for c in cols if c in data.columns and not data[c].isna().all()]
     return data, valid_cols
 
@@ -59,7 +67,7 @@ class StackedRegressor:
         preds = np.column_stack([m.predict(X) for m in self.models])
         return self.meta.predict(preds)
 
-def _backtest(data, feature_cols, preds, side, horizon, cfg):
+def _backtest(data, preds, side, horizon, cfg):
     bt = cfg.get("backtest", {})
     fee = float(cfg.get("global", {}).get("fee_pct", 0.001))
     notional = float(bt.get("position_notional", 20.0))
@@ -68,12 +76,9 @@ def _backtest(data, feature_cols, preds, side, horizon, cfg):
     atr_mult = float(bt.get("atr_mult", 1.5)); pct_top = float(bt.get("percentile_top", 80.0))
     filt = float(bt.get("filter_min_pct_intraday" if horizon <= 24 else "filter_min_pct_swing", 0.5 if horizon <= 24 else 1.5))
 
-    if len(preds) == 0:
-        return {"trades":0,"pnl":0.0,"winrate":0.0,"max_dd":-0.1,"score":-99999.0}
-    if side == "long":
-        th = np.percentile(preds, pct_top); cond = lambda p: p >= th
-    else:
-        th = np.percentile(preds, 100 - pct_top); cond = lambda p: p <= th
+    if len(preds) == 0: return {"trades":0,"pnl":0.0,"winrate":0.0,"max_dd":-0.1,"score":-99999.0}
+    if side == "long": th = np.percentile(preds, pct_top); cond = lambda p: p >= th
+    else: th = np.percentile(preds, 100 - pct_top); cond = lambda p: p <= th
 
     trades = []; in_pos = False; ep=0.0; ei=0; dtp=0.0; dsl=0.0
     for i in range(len(data)):
@@ -83,7 +88,7 @@ def _backtest(data, feature_cols, preds, side, horizon, cfg):
                 if row['low'] <= dsl: trades.append(notional*((dsl-ep)/ep - fee*2)); in_pos=False
                 elif row['high'] >= dtp: trades.append(notional*((dtp-ep)/ep - fee*2)); in_pos=False
             else:
-                if row['high'] >= dsl: trades.append(notional*((ep-dsl)/ep - fee*2)); in_pos=False
+                if row['high'] >= dsl: trades.append(notional*((np.ep-dsl)/ep - fee*2)); in_pos=False
                 elif row['low'] <= dtp: trades.append(notional*((ep-dtp)/ep - fee*2)); in_pos=False
             if in_pos and (i - ei >= horizon):
                 ex = row['close']; pnl = ((ex-ep)/ep if side=="long" else (ep-ex)/ep)
@@ -95,8 +100,7 @@ def _backtest(data, feature_cols, preds, side, horizon, cfg):
             if side == "long": dtp = ep*(1+tp_pct); dsl = ep*(1-sl_pct)
             else: dtp = ep*(1-tp_pct); dsl = ep*(1+sl_pct)
 
-    if not trades:
-        return {"trades":0,"pnl":0.0,"winrate":0.0,"max_dd":-0.1,"score":-99999.0}
+    if not trades: return {"trades":0,"pnl":0.0,"winrate":0.0,"max_dd":-0.1,"score":-99999.0}
     tr = np.array(trades); pnl = tr.sum(); wr = float((tr>0).mean())
     cum = np.cumsum(tr) + init_bal; peak = np.maximum.accumulate(cum)
     dd = float(((cum-peak)/peak*100).min())
@@ -110,34 +114,25 @@ def train(df, side="long", mode="swing", models_dir=None, cfg=None):
         models_dir = Path(models_dir)
         horizon = 12 if mode == "intraday" else 48
         data, cols = prepare_features(df, horizon, side)
-        if len(data) < 1000:
-            log.info(f"  [{mode}/{side}] Not enough rows: {len(data)}"); return None
+        if len(data) < 1000: return None
 
         bt = cfg.get("backtest", {})
         split_pct = float(bt.get("test_split_pct", 0.2))
         split_idx = int(len(data) * (1 - split_pct)) - horizon
-        if split_idx <= 200:
-            return {"params": {"model_type":"stacked_ensemble_reg","horizon":horizon,"time_exit_h":horizon,"features":cols,"model_file":None}, "metrics": {"trades":0,"score":-99999.0}}
+        if split_idx <= 200: return {"params": {"model_type":"stacked_ensemble_reg","horizon":horizon,"time_exit_h":horizon,"features":cols,"model_file":None}, "metrics": {"trades":0,"score":-99999.0}}
 
         train_d, test_d = data.iloc[:split_idx], data.iloc[split_idx:].copy()
         imp = SimpleImputer(strategy='median')
         X_tr = imp.fit_transform(train_d[cols].values); y_tr = train_d['target'].values
-        X_te = imp.transform(test_d[cols].values)
 
-        n_folds = 5
         oof = np.zeros((len(X_tr), 4))
-        kf = KFold(n_splits=n_folds, shuffle=False)
+        kf = KFold(n_splits=5, shuffle=False)
         for fold, (ti, vi) in enumerate(kf.split(X_tr)):
-            Xf, yf = X_tr[ti], y_tr[ti]
-            Xv = X_tr[vi]
-            m_rf = RandomForestRegressor(n_estimators=100, max_depth=6, random_state=42, n_jobs=-1).fit(Xf, yf)
-            m_xgb = xgb.XGBRegressor(n_estimators=100, max_depth=4, learning_rate=0.05, subsample=0.8, colsample_bytree=0.8, random_state=42, verbosity=0).fit(Xf, yf)
-            m_lgb = lgb.LGBMRegressor(n_estimators=100, max_depth=4, learning_rate=0.05, subsample=0.8, colsample_bytree=0.8, random_state=42, verbose=-1).fit(Xf, yf)
-            m_cb = cb.CatBoostRegressor(iterations=100, depth=4, learning_rate=0.05, verbose=0, random_seed=42, nan_mode='Min').fit(Xf, yf)
-            oof[vi, 0] = m_rf.predict(Xv)
-            oof[vi, 1] = m_xgb.predict(Xv)
-            oof[vi, 2] = m_lgb.predict(Xv)
-            oof[vi, 3] = m_cb.predict(Xv)
+            Xf, yf = X_tr[ti], y_tr[ti]; Xv = X_tr[vi]
+            oof[vi, 0] = RandomForestRegressor(n_estimators=100, max_depth=6, random_state=42, n_jobs=-1).fit(Xf, yf).predict(Xv)
+            oof[vi, 1] = xgb.XGBRegressor(n_estimators=100, max_depth=4, learning_rate=0.05, subsample=0.8, colsample_bytree=0.8, random_state=42, verbosity=0).fit(Xf, yf).predict(Xv)
+            oof[vi, 2] = lgb.LGBMRegressor(n_estimators=100, max_depth=4, learning_rate=0.05, subsample=0.8, colsample_bytree=0.8, random_state=42, verbose=-1).fit(Xf, yf).predict(Xv)
+            oof[vi, 3] = cb.CatBoostRegressor(iterations=100, depth=4, learning_rate=0.05, verbose=0, random_seed=42, nan_mode='Min').fit(Xf, yf).predict(Xv)
 
         meta = Ridge(alpha=1.0).fit(oof, y_tr)
 
@@ -147,8 +142,9 @@ def train(df, side="long", mode="swing", models_dir=None, cfg=None):
         m_cb = cb.CatBoostRegressor(iterations=100, depth=4, learning_rate=0.05, verbose=0, random_seed=42, nan_mode='Min').fit(X_tr, y_tr)
 
         stacked = StackedRegressor([m_rf, m_xgb, m_lgb, m_cb], meta, imp)
-        preds = stacked.predict(X_te)
-        metrics = _backtest(test_d.reset_index(drop=True), cols, preds, side, horizon, cfg)
+        # ФИКС v1.0.2: подаём СЫРЫЕ данные (imputer сработает внутри predict)
+        preds = stacked.predict(test_d[cols].values)
+        metrics = _backtest(test_d.reset_index(drop=True), preds, side, horizon, cfg)
 
         X_all = imp.fit_transform(data[cols].values); y_all = data['target'].values
         f_rf = RandomForestRegressor(n_estimators=100, max_depth=6, random_state=42, n_jobs=-1).fit(X_all, y_all)
@@ -157,8 +153,7 @@ def train(df, side="long", mode="swing", models_dir=None, cfg=None):
         f_cb = cb.CatBoostRegressor(iterations=100, depth=4, learning_rate=0.05, verbose=0, random_seed=42, nan_mode='Min').fit(X_all, y_all)
         
         oof_all = np.zeros((len(X_all), 4))
-        kf2 = KFold(n_splits=5, shuffle=False)
-        for ti, vi in kf2.split(X_all):
+        for ti, vi in KFold(n_splits=5, shuffle=False).split(X_all):
             oof_all[vi, 0] = RandomForestRegressor(n_estimators=100, max_depth=6, random_state=42, n_jobs=-1).fit(X_all[ti], y_all[ti]).predict(X_all[vi])
             oof_all[vi, 1] = xgb.XGBRegressor(n_estimators=100, max_depth=4, learning_rate=0.05, subsample=0.8, colsample_bytree=0.8, random_state=42, verbosity=0).fit(X_all[ti], y_all[ti]).predict(X_all[vi])
             oof_all[vi, 2] = lgb.LGBMRegressor(n_estimators=100, max_depth=4, learning_rate=0.05, subsample=0.8, colsample_bytree=0.8, random_state=42, verbose=-1).fit(X_all[ti], y_all[ti]).predict(X_all[vi])
@@ -170,10 +165,6 @@ def train(df, side="long", mode="swing", models_dir=None, cfg=None):
         fname = f"model_stacked_ensemble_{mode}_{side}.pkl"
         with open(models_dir / fname, "wb") as f: pickle.dump(final, f)
 
-        return {
-            "params": {"model_type":"stacked_ensemble_reg","horizon":horizon,"time_exit_h":horizon,"features":cols,"model_file":fname},
-            "metrics": metrics,
-        }
+        return {"params": {"model_type":"stacked_ensemble_reg","horizon":horizon,"time_exit_h":horizon,"features":cols,"model_file":fname}, "metrics": metrics}
     except Exception as e:
-        log.error(f"StackedEnsemble training failed: {e}")
-        return None
+        log.error(f"StackedEnsemble training failed: {e}"); return None
