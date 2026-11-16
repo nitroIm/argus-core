@@ -1,11 +1,17 @@
 # ============================================================
-# ARGUS - SIGNAL BOT v9.5.1
+# ARGUS - SIGNAL BOT v9.5.2
 # Path: crypto/signals/signal_bot.py
 #
-# ИЗМЕНЕНИЯ v9.5.1:
-#   - Адаптивный порог входа от волатильности (ATR-процентиль).
-#     Низкая волатильность -> порог * low_vol_multiplier (легче входить).
-#     Высокая волатильность -> порог * high_vol_multiplier (строже).
+# ИЗМЕНЕНИЯ v9.5.2:
+#   - ФИКС ФАНТОМНЫХ ЗАКРЫТИЙ: _close_deal теперь работает с тем же
+#     словарём deals, что и main(). Раньше закрытие удаляло сделку
+#     из файла, но финальный save_json в main() перезаписывал файл
+#     устаревшей копией — сделка воскресала и закрывалась заново
+#     на каждом прогоне (один вход, одна причина, минус по балансу
+#     каждый раз).
+#   - Удаление сделки теперь идёт в переданный по ссылке словарь.
+#   - TP1-частичное закрытие обновляет сделку в словаре напрямую,
+#     без перечитывания файла.
 # ============================================================
 
 import os, json, logging, base64, pickle, requests
@@ -16,7 +22,7 @@ import pandas as pd
 import numpy as np
 import xgboost as xgb
 
-VERSION = "9.5.1"
+VERSION = "9.5.2"
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("crypto.signal_bot")
 
@@ -257,7 +263,7 @@ def is_ml_ready(node, cfg):
     ml_cfg = cfg.get("ml_deploy", {})
     return int(m.get("trades", 0) or 0) >= int(ml_cfg.get("min_trades_for_live", 10)) and float(m.get("score", -99999) or -99999) >= float(ml_cfg.get("min_score_for_live", 0.0))
 
-def _close_deal(mode, deal, bot_info, exit_price, reason, close_pct, fee_pct, now_utc):
+def _close_deal(mode, deal, bot_info, exit_price, reason, close_pct, fee_pct, now_utc, deals):
     entry = float(deal['entry'])
     deal_type = deal.get("type", "LONG")
     pos_notional_pct = close_pct / 100.0
@@ -269,9 +275,11 @@ def _close_deal(mode, deal, bot_info, exit_price, reason, close_pct, fee_pct, no
     closed = load_json(CLOSED_DEALS, [])
     closed.append({"type":deal_type,"entry":entry,"exit":exit_price,"pnl_pct":round(pnl_pct,2),"pnl_usd":round(pnl_usd,2),"reason":reason,"mode":mode,"close_time":now_utc.isoformat(),"balance_after":bot_info[mode]["balance"],"active_signals":deal.get("active_signals",[])})
     save_json(CLOSED_DEALS, closed)
+    # ФИКС: полное закрытие удаляет сделку из ПЕРЕДАННОГО словаря deals
+    # (того же объекта, что держит main), и сохраняет его. Раньше удаление
+    # шло в локальную копию, а финальный save в main воскрешал сделку.
     if close_pct >= 99.9 or reason != "TAKE_PROFIT_1":
-        deals = load_json(OPENED_DEALS, {})
-        if mode in deals: del deals[mode]
+        deals.pop(mode, None)
         save_json(OPENED_DEALS, deals)
 
 def process_mode(mode, deals, bot_info, models, df_1h, config):
@@ -311,18 +319,19 @@ def process_mode(mode, deals, bot_info, models, df_1h, config):
             if (deal_type == "LONG" and c_low <= sl) or (deal_type == "SHORT" and c_high >= sl):
                 exit_price = sl
                 reason = "TRAILING_STOP" if ((tp1_hit or (deal_type=="LONG" and sl > entry) or (deal_type=="SHORT" and sl < entry))) else "STOP_LOSS"
-                _close_deal(mode, deal, bot_info, exit_price, reason, size_left, fee_pct, now_utc)
+                _close_deal(mode, deal, bot_info, exit_price, reason, size_left, fee_pct, now_utc, deals)
                 return
 
             if (deal_type == "LONG" and c_high >= tp2) or (deal_type == "SHORT" and c_low <= tp2):
-                _close_deal(mode, deal, bot_info, tp2, "TAKE_PROFIT_2", size_left, fee_pct, now_utc)
+                _close_deal(mode, deal, bot_info, tp2, "TAKE_PROFIT_2", size_left, fee_pct, now_utc, deals)
                 return
 
             if not tp1_hit and ((deal_type == "LONG" and c_high >= tp1) or (deal_type == "SHORT" and c_low <= tp1)):
                 tp1_hit = True
                 close_pct = float(rm.get("partial_exit_pct", 50))
-                _close_deal(mode, deal, bot_info, tp1, "TAKE_PROFIT_1", close_pct, fee_pct, now_utc)
-                deals = load_json(OPENED_DEALS, {})
+                _close_deal(mode, deal, bot_info, tp1, "TAKE_PROFIT_1", close_pct, fee_pct, now_utc, deals)
+                # ФИКС: обновляем сделку в переданном словаре напрямую,
+                # без перечитывания файла
                 if mode in deals and "entry" in deals[mode]:
                     deals[mode]['tp1_hit'] = True
                     deals[mode]['size_left_pct'] = size_left - close_pct
@@ -346,14 +355,14 @@ def process_mode(mode, deals, bot_info, models, df_1h, config):
         time_held = (now_utc - deal_open_time).total_seconds() / 3600.0
         close_h = cfg.get("close_hour_utc")
         if mode == "intraday" and close_h is not None and now_utc.hour >= close_h:
-            _close_deal(mode, deal, bot_info, float(df_1h.iloc[-1]['close']), "TIME_EXIT_DAY", size_left, fee_pct, now_utc)
+            _close_deal(mode, deal, bot_info, float(df_1h.iloc[-1]['close']), "TIME_EXIT_DAY", size_left, fee_pct, now_utc, deals)
             return
         max_hold = float(cfg.get("time_exit_h", 168))
         if mode == "swing" and time_held >= max_hold:
             flat_thresh = entry * (rm.get("swing_flat_atr_mult", 2.0) * c_atr / entry) if c_atr > 0 else 0.02
             price_range = max_price - min_price
             if price_range < flat_thresh:
-                _close_deal(mode, deal, bot_info, float(df_1h.iloc[-1]['close']), "TIME_EXIT_FLAT", size_left, fee_pct, now_utc)
+                _close_deal(mode, deal, bot_info, float(df_1h.iloc[-1]['close']), "TIME_EXIT_FLAT", size_left, fee_pct, now_utc, deals)
                 return
         deal['sl'] = sl; deal['size_left_pct'] = size_left
         save_json(BOT_INFO, bot_info); save_json(OPENED_DEALS, deals)
@@ -449,6 +458,8 @@ def main():
     df_1h = calculate_indicators(df_1h.set_index('open_time')).reset_index()
     process_mode("intraday", deals, bot_info, models, df_1h, config)
     process_mode("swing", deals, bot_info, models, df_1h, config)
+    # ФИКС: теперь deals — единственный источник правды, финальный save
+    # уже не может воскресить закрытую сделку
     save_json(OPENED_DEALS, deals); save_json(BOT_INFO, bot_info)
 
 if __name__ == "__main__":
