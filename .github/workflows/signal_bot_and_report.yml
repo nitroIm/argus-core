@@ -46,13 +46,14 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          AIVEN_DB_URL: ${{ secrets.AIVEN_DB_URL }} # <--- ДОБАВЛЕНО СЮДА
+          AIVEN_DB_URL: ${{ secrets.AIVEN_DB_URL }}
         run: python crypto/report/signal_bot_report.py
 
       - name: Commit signals
         run: |
           git config user.name "ARGUS Signals"
           git config user.email "signals@github.com"
+          git pull --rebase --autostash origin main || true
           git add crypto/data/signals/ || true
           if git diff --staged --quiet; then
             echo "No changes"
