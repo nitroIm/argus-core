@@ -1,6 +1,9 @@
 # ============================================================
-# ARGUS - TELEGRAM GROUP REPORT (BREAKEVEN STATS)
+# ARGUS - TELEGRAM GROUP REPORT (BREAKEVEN STATS) v1.1
 # Path: crypto/report/TG_GROUP_report.py
+# 
+# ИЗМЕНЕНИЯ v1.1:
+#   - Удалена ссылка на приватный канал (PAID_GROUP_LINK)
 # ============================================================
 
 import os, json, logging, requests, io
@@ -23,7 +26,6 @@ CLOSED_DEALS = SIGNALS_DIR / "closed_deals.json"
 
 BOT_TOKEN = (os.getenv("TELEGRAM_BOT_TOKEN") or "").strip()
 CHAT_ID = (os.getenv("TELEGRAM_GROUP_ID") or "-1003946449078").strip() 
-PAID_GROUP_LINK = "https://t.me/+rxoHVrXih2k3YzUy"
 
 def load_json(path, default=None):
     if not path.exists(): return default if default is not None else {}
@@ -186,8 +188,7 @@ def main():
         f"Общий баланс: <b>${total_bal:.2f}</b>\n"
         f"Общий PnL: <b>{pnl_sign_total}${total_pnl:.2f}</b>\n\n"
         
-        f"⚠️ <i>Не является инвестиционной рекомендацией.</i>\n"
-        f"🔒 <b>Реальные входы в моменте — в закрытом канале:</b>\n{PAID_GROUP_LINK}"
+        f"⚠️ <i>Не является инвестиционной рекомендацией.</i>"
     )
 
     log.info("Генерация графика...")
