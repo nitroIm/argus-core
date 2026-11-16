@@ -631,5 +631,19 @@
     "active_signals": [
       "ml"
     ]
+  },
+  {
+    "type": "LONG",
+    "entry": 64417.89,
+    "exit": 64546.72578,
+    "pnl_pct": 0.0,
+    "pnl_usd": 0.0,
+    "reason": "TRAILING_STOP",
+    "mode": "intraday",
+    "close_time": "2026-11-16T15:01:35.106171+00:00",
+    "balance_after": 92.17,
+    "active_signals": [
+      "ml"
+    ]
   }
 ]
