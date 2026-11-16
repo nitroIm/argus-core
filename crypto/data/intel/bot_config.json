@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-16T02:11:00.053631+00:00",
+  "updated_at": "2026-11-16T03:11:04.270115+00:00",
   "force_reset_old": false,
   "global": {
     "fee_pct": 0.001,
@@ -48,11 +48,11 @@
     "time_exit_h": 12,
     "threshold": 5.0,
     "weights": {
-      "macd": 1.05,
-      "ema": 1.05,
-      "volume": 1.05,
+      "macd": 1.0,
+      "ema": 1.0,
+      "volume": 1.0,
       "rsi_low": 1.0,
-      "rsi_mid": 1.05,
+      "rsi_mid": 1.0,
       "rsi_high": 1.0
     },
     "trailing_activation_pct": 2.0,
