@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-11-16T06:05:40.532318+00:00",
+  "generated_at": "2026-11-16T07:05:39.224319+00:00",
   "total_news": 92,
-  "avg_sentiment": -0.437,
+  "avg_sentiment": -0.474,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 12,
   "bearish_count": 35,
@@ -22,7 +22,7 @@
     "Bitcoin.com": {
       "total": 8,
       "bull": 0,
-      "bear": 4
+      "bear": 3
     },
     "CryptoSlate": {
       "total": 5,
@@ -30,7 +30,7 @@
       "bear": 2
     },
     "CryptoPotato": {
-      "total": 29,
+      "total": 28,
       "bull": 3,
       "bear": 14
     },
@@ -40,9 +40,9 @@
       "bear": 3
     },
     "ForkLog": {
-      "total": 6,
+      "total": 7,
       "bull": 0,
-      "bear": 1
+      "bear": 2
     }
   },
   "top_bullish": [
@@ -58,26 +58,9 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-16T06:05:39.090876+00:00",
+      "collected_at": "2026-11-16T07:05:37.261886+00:00",
       "effective_weight": 1.04,
       "title_original": "Enterprise blockchain is going to come back from the dead",
-      "cross_check": 1
-    },
-    {
-      "title": "RWA protocol stUSDT winds down 3 years after $2.3B TVL peak",
-      "url": "https://cointelegraph.com/news/rwa-protocol-stusdt-winds-down-three-years-after-23b-tvl-peak?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-11-15T06:27:26+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-16T06:05:39.090974+00:00",
-      "effective_weight": 1.04,
-      "title_original": "RWA protocol stUSDT winds down 3 years after $2.3B TVL peak",
       "cross_check": 1
     },
     {
@@ -92,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-16T06:05:39.416163+00:00",
+      "collected_at": "2026-11-16T07:05:37.917153+00:00",
       "effective_weight": 1.0,
       "title_original": "Solana Company’s Q3 Revenue Jumps to $3.4M, With Staking Leading the Way",
       "cross_check": 1
@@ -109,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-16T06:05:39.332993+00:00",
+      "collected_at": "2026-11-16T07:05:37.752604+00:00",
       "effective_weight": 0.8,
       "title_original": "Tether wants its gold token to rival ETFs",
       "cross_check": 1
@@ -126,13 +109,47 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-16T06:05:39.333109+00:00",
+      "collected_at": "2026-11-16T07:05:37.752785+00:00",
       "effective_weight": 0.8,
       "title_original": "Britain to spend £4 billion on grid bottlenecks. Can Bitcoin use the wasted wind?",
+      "cross_check": 1
+    },
+    {
+      "title": "RWA protocol stUSDT winds down 3 years after $2.3B TVL peak",
+      "url": "https://cointelegraph.com/news/rwa-protocol-stusdt-winds-down-three-years-after-23b-tvl-peak?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-11-15T06:27:26+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 0.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-16T07:05:37.262012+00:00",
+      "effective_weight": 0.65,
+      "title_original": "RWA protocol stUSDT winds down 3 years after $2.3B TVL peak",
       "cross_check": 1
     }
   ],
   "top_bearish": [
+    {
+      "title": "Хакеры взломали платформу Luxor и перенаправили мощности биткоин-майнеров",
+      "url": "https://forklog.com/news/hakery-vzlomali-platformu-luxor-i-perenapravili-moshhnosti-bitkoin-majnerov",
+      "source": "ForkLog",
+      "source_weight": 1.2,
+      "lang": "ru",
+      "pub_date": "2026-11-16T06:48:17+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-16T07:05:39.163878+00:00",
+      "effective_weight": 1.8,
+      "title_original": "Хакеры взломали платформу Luxor и перенаправили мощности биткоин-майнеров",
+      "cross_check": 1
+    },
     {
       "title": "Aster CEO suspects foul play after token plunges 32% in minutes",
       "url": "https://cointelegraph.com/markets/aster-ceo-suspects-foul-play-after-token-plunges-32-in-minutes?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -143,10 +160,10 @@
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 1.5,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-16T06:05:39.090705+00:00",
-      "effective_weight": 1.95,
+      "collected_at": "2026-11-16T07:05:37.261656+00:00",
+      "effective_weight": 1.3,
       "title_original": "Aster CEO suspects foul play after token plunges 32% in minutes",
       "cross_check": 1
     },
@@ -162,7 +179,7 @@
       "bear_weight": 2.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-16T06:05:39.090828+00:00",
+      "collected_at": "2026-11-16T07:05:37.261825+00:00",
       "effective_weight": 1.04,
       "title_original": "US sellers drive Bitcoin crash, Jensen plots Nvidia comeback: Hodler’s Digest",
       "cross_check": 2
@@ -179,7 +196,7 @@
       "bear_weight": 3.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-16T06:05:39.090928+00:00",
+      "collected_at": "2026-11-16T07:05:37.261951+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin falls to 4-month low near $62K as crypto selloff deepens",
       "cross_check": 1
@@ -196,26 +213,9 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-16T06:05:40.486781+00:00",
+      "collected_at": "2026-11-16T07:05:39.164061+00:00",
       "effective_weight": 0.96,
       "title_original": "Биткоин обвалился до $64 000",
-      "cross_check": 1
-    },
-    {
-      "title": "Luxor Confirms Bitcoin Mining Hack and Reveals AI-Enabled Attack",
-      "url": "https://news.bitcoin.com/security/luxor-confirms-bitcoin-mining-hack-and-reveals-ai-enabled-attack/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-15T21:35:08+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-16T06:05:39.251779+00:00",
-      "effective_weight": 0.8,
-      "title_original": "Luxor Confirms Bitcoin Mining Hack and Reveals AI-Enabled Attack",
       "cross_check": 1
     }
   ]
