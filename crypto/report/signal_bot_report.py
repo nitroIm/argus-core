@@ -1,13 +1,14 @@
 # ============================================================
-# ARGUS - SIGNAL REPORT v8.8.0
+# ARGUS - SIGNAL REPORT v8.7.3
 # Path: crypto/report/signal_bot_report.py
 #
-# ИЗМЕНЕНИЯ v8.8.0 (относительно v8.7.2):
-#   - Сообщения и графики теперь отправляются В ЛИЧКУ пользователю
-#     (секрет TELEGRAM_CHAT_ID), а не только в канал.
-#   - Канал сохранён как опция: если в workflow задать
-#     SEND_TO_CHANNEL=true, сообщения дублируются в TG_CHANNEL_ID.
-#   - Поддержка v9.5.1/9.5.2 (tp1/tp2) сохранена.
+# ИЗМЕНЕНИЯ v8.7.3 (относительно v8.7.2):
+#   - Перенаправление доставки: по умолчанию отчёты уходят В ЛИЧКУ
+#     с ботом (TELEGRAM_CHAT_ID), а не в приватный канал.
+#   - Канал не удалён, а стал опциональным: если в workflow задан
+#     SEND_TO_CHANNEL=1, отчёты дублируются и в канал (TG_CHANNEL_ID).
+#   - Оба параметра независимы: можно только личка, только канал
+#     или оба сразу — правкой env, без изменения кода.
 # ============================================================
 
 import os, json, logging, requests, io
@@ -34,9 +35,16 @@ BOT_INFO = SIGNALS_DIR / "bot_info.json"
 
 DB_URL = (os.getenv("AIVEN_DB_URL") or "").strip()
 BOT_TOKEN = (os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("BOT_TOKEN") or "").strip()
-CHAT_ID = (os.getenv("TELEGRAM_CHAT_ID") or "").strip()          # ЛИЧКА — основной получатель
-CHANNEL_ID = (os.getenv("TG_CHANNEL_ID") or "").strip()           # канал — опционально
-SEND_TO_CHANNEL = (os.getenv("SEND_TO_CHANNEL") or "").strip().lower() in ("1", "true", "yes")
+
+# ФИКС v8.7.3: доставка в личку по умолчанию, канал — опционально.
+#   TELEGRAM_CHAT_ID  — личный чат с ботом (основной получатель)
+#   TG_CHANNEL_ID     — приватный канал (дублируется только при SEND_TO_CHANNEL=1)
+#   SEND_TO_CHANNEL   — "1"/"true"/"yes" включает дубль в канал
+CHAT_PRIVATE = (os.getenv("TELEGRAM_CHAT_ID") or "").strip()
+CHAT_CHANNEL = (os.getenv("TG_CHANNEL_ID") or "").strip()
+SEND_TO_CHANNEL = (os.getenv("SEND_TO_CHANNEL") or "0").strip().lower() in ("1", "true", "yes")
+
+TARGETS = [c for c in ([CHAT_PRIVATE, CHAT_CHANNEL if SEND_TO_CHANNEL else ""]) if c]
 
 def load_json(path, default=None):
     if not path.exists(): return default if default is not None else {}
@@ -47,39 +55,33 @@ def load_json(path, default=None):
 def save_json(path, data):
     with open(path, "w", encoding="utf-8") as f: json.dump(data, f, ensure_ascii=False, indent=2)
 
-def send_tg_photo(image_bytes, caption, chat_id):
-    if not BOT_TOKEN or not chat_id: return False
-    url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendPhoto"
-    files = {'photo': ('chart.png', image_bytes, 'image/png')}
-    data = {'chat_id': chat_id, 'caption': caption, 'parse_mode': 'HTML'}
-    r = requests.post(url, data=data, files=files, timeout=30)
-    if r.status_code != 200: log.error(f"TG Photo Error [{chat_id}]: {r.text}")
-    return r.status_code == 200
-
-def send_tg_text(text, chat_id):
-    if not BOT_TOKEN or not chat_id: return False
-    url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
-    r = requests.post(url, json={"chat_id": chat_id, "text": text, "parse_mode": "HTML"}, timeout=20)
-    if r.status_code != 200: log.error(f"TG Text Error [{chat_id}]: {r.text}")
-    return r.status_code == 200
-
-def send_to_all(image_bytes, caption):
-    """Личка — основной получатель. Канал — только если включён SEND_TO_CHANNEL."""
-    sent = False
-    if CHAT_ID:
-        if image_bytes:
-            sent = send_tg_photo(image_bytes, caption, CHAT_ID)
-        else:
-            sent = send_tg_text(caption, CHAT_ID)
-    if SEND_TO_CHANNEL and CHANNEL_ID:
+def send_tg_photo(image_bytes, caption):
+    if not BOT_TOKEN or not TARGETS: return False
+    ok = False
+    for chat_id in TARGETS:
         try:
-            if image_bytes:
-                send_tg_photo(image_bytes, caption, CHANNEL_ID)
-            else:
-                send_tg_text(caption, CHANNEL_ID)
+            url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendPhoto"
+            files = {'photo': ('chart.png', image_bytes, 'image/png')}
+            data = {'chat_id': chat_id, 'caption': caption, 'parse_mode': 'HTML'}
+            r = requests.post(url, data=data, files=files, timeout=30)
+            if r.status_code != 200: log.error(f"TG Photo Error ({chat_id}): {r.text}")
+            else: ok = True
         except Exception as e:
-            log.error(f"Channel send failed: {e}")
-    return sent
+            log.error(f"TG Photo Exception ({chat_id}): {e}")
+    return ok
+
+def send_tg_text(text):
+    if not BOT_TOKEN or not TARGETS: return False
+    ok = False
+    for chat_id in TARGETS:
+        try:
+            url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
+            r = requests.post(url, json={"chat_id": chat_id, "text": text, "parse_mode": "HTML"}, timeout=20)
+            if r.status_code != 200: log.error(f"TG Text Error ({chat_id}): {r.text}")
+            else: ok = True
+        except Exception as e:
+            log.error(f"TG Text Exception ({chat_id}): {e}")
+    return ok
 
 def fmt(p): return "$" + format(int(p), ",") if p >= 1000 else "$" + format(p, ".2f")
 
@@ -242,9 +244,8 @@ def get_stats_text(mode):
     return text
 
 def main():
-    log.info("STARTING SIGNAL REPORT v8.8.0 (personal DM)")
-    if not CHAT_ID:
-        log.error("TELEGRAM_CHAT_ID не задан — личка не настроена")
+    log.info("STARTING SIGNAL REPORT v8.7.3")
+    log.info(f"Получатели: личка={'да' if CHAT_PRIVATE else 'НЕТ'}, канал={'да (дубль)' if (CHAT_CHANNEL and SEND_TO_CHANNEL) else ('да' if CHAT_CHANNEL else 'нет')}")
     queue = load_json(INFO_DEAL, [])
     if not isinstance(queue, list) or not queue:
         return log.info("No new events in queue.")
@@ -277,7 +278,7 @@ def main():
             text = (f"🟡 <b>ПОДТЯЖКА СТОПа: {mode_name}</b>\n\n"
                     f"<b>Сделка {deal_type} все еще в работе!</b>\n"
                     f"🛑 <b>Новый стоп:</b> {fmt(event['new_sl'])} ({sl_pct_val:+.2f}%)\n")
-            if send_to_all(None, text): sent_any = True
+            if send_tg_text(text): sent_any = True
             continue 
 
         elif event["type"] == "CLOSE":
@@ -321,9 +322,13 @@ def main():
             text += "\n" + get_stats_text(event.get("mode", "swing"))
 
         chart = draw_chart(event)
-        if send_to_all(chart, text): sent_any = True
+        if chart:
+            if send_tg_photo(chart, text): sent_any = True
+        else:
+            if send_tg_text(text): sent_any = True
+
         if sent_any:
-            log.info(f"Sent {event['type']} ({event.get('mode')}) to PERSONAL DM.")
+            log.info(f"Sent {event['type']} ({event.get('mode')}) -> личка{'+ канал' if SEND_TO_CHANNEL else ''}.")
         
     if sent_any:
         save_json(INFO_DEAL, [])
