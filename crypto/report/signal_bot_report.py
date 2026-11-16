@@ -1,11 +1,14 @@
 # ============================================================
-# ARGUS - SIGNAL REPORT v8.7.1
+# ARGUS - SIGNAL REPORT v8.7.2
 # Path: crypto/report/signal_bot_report.py
 #
-# ИЗМЕНЕНИЯ v8.7.1 (относительно v8.7):
-#   - ФИКС: event['sl_pct'] -> event.get('sl_pct', 0) в UPDATE
-#     (был KeyError, если signal_bot v9.4.5 писал UPDATE без sl_pct)
-#   - Защита на будущее: любое событие без sl_pct -> покажет +0.00%
+# ИЗМЕНЕНИЯ v8.7.2 (относительно v8.7.1):
+#   - ФИКС: поддержка новых событий signal_bot v9.5.1 с двумя
+#     тейками (tp1/tp2) вместо одного tp (was: KeyError: 'tp').
+#   - На графике ENTRY рисуются оба уровня тейка (ТЕЙК 1 / ТЕЙК 2).
+#   - Совместимость со старыми событиями со схемой tp.
+#   - В reasons_ru добавлены TAKE_PROFIT_1 / TAKE_PROFIT_2 /
+#     TIME_EXIT_FLAT.
 # ============================================================
 
 import os, json, logging, requests, io
@@ -96,7 +99,9 @@ def draw_chart(event):
         
         if event["type"] == "ENTRY":
             sl_price = float(event["sl"])
-            tp_price = float(event["tp"])
+            tp1_price = float(event.get("tp1", 0))
+            tp2_price = float(event.get("tp2", 0))
+            tp_price = float(event.get("tp", tp2_price or tp1_price))
             title = f"Вход {deal_type}"
         else:
             exit_price = float(event.get("exit", entry_price))
@@ -116,8 +121,8 @@ def draw_chart(event):
         max_list = [df['High'].max(), entry_price]
         min_list = [df['Low'].min(), entry_price]
         if event["type"] == "ENTRY":
-            max_list.append(tp_price)
-            min_list.append(sl_price)
+            max_list.extend([tp1_price, tp2_price])
+            min_list.extend([tp1_price, tp2_price, sl_price])
         else:
             max_list.append(exit_price)
             min_list.append(exit_price)
@@ -141,8 +146,8 @@ def draw_chart(event):
         hlines_colors = ['blue']
 
         if event["type"] == "ENTRY":
-            hlines_list.extend([sl_price, tp_price])
-            hlines_colors.extend(['#ef5350', '#26a69a'])
+            hlines_list.extend([sl_price, tp1_price, tp2_price])
+            hlines_colors.extend(['#ef5350', '#26a69a', '#26a69a'])
         else:
             hlines_list.append(exit_price)
             hlines_colors.append('orange')
@@ -165,7 +170,8 @@ def draw_chart(event):
         if event["type"] == "ENTRY":
             ax_main.text(0.01, entry_price, f' ВХОД: {entry_price:,.2f} ', color='white', fontsize=font_size_label, fontweight='bold', va='center', ha='left', bbox=dict(facecolor='blue', alpha=0.9, edgecolor='none', boxstyle=bbox_style), transform=ax_main.get_yaxis_transform())
             ax_main.text(0.01, sl_price, f' СТОП: {sl_price:,.2f} ', color='white', fontsize=font_size_label, fontweight='bold', va='center', ha='left', bbox=dict(facecolor='#ef5350', alpha=0.9, edgecolor='none', boxstyle=bbox_style), transform=ax_main.get_yaxis_transform())
-            ax_main.text(0.01, tp_price, f' ТЕЙК: {tp_price:,.2f} ', color='white', fontsize=font_size_label, fontweight='bold', va='center', ha='left', bbox=dict(facecolor='#26a69a', alpha=0.9, edgecolor='none', boxstyle=bbox_style), transform=ax_main.get_yaxis_transform())
+            ax_main.text(0.01, tp1_price, f' ТЕЙК 1: {tp1_price:,.2f} ', color='white', fontsize=font_size_label, fontweight='bold', va='center', ha='left', bbox=dict(facecolor='#26a69a', alpha=0.9, edgecolor='none', boxstyle=bbox_style), transform=ax_main.get_yaxis_transform())
+            ax_main.text(0.01, tp2_price, f' ТЕЙК 2: {tp2_price:,.2f} ', color='white', fontsize=font_size_label, fontweight='bold', va='center', ha='left', bbox=dict(facecolor='#26a69a', alpha=0.9, edgecolor='none', boxstyle=bbox_style), transform=ax_main.get_yaxis_transform())
         else:
             ax_main.text(0.01, entry_price, f' ВХОД: {entry_price:,.2f} ', color='white', fontsize=font_size_label, fontweight='bold', va='center', ha='left', bbox=dict(facecolor='blue', alpha=0.9, edgecolor='none', boxstyle=bbox_style), transform=ax_main.get_yaxis_transform())
             ax_main.text(0.01, exit_price, f' ВЫХОД: {exit_price:,.2f} ', color='white', fontsize=font_size_label, fontweight='bold', va='center', ha='left', bbox=dict(facecolor='orange', alpha=0.9, edgecolor='none', boxstyle=bbox_style), transform=ax_main.get_yaxis_transform())
@@ -216,7 +222,7 @@ def get_stats_text(mode):
     return text
 
 def main():
-    log.info("STARTING SIGNAL REPORT v8.7.1")
+    log.info("STARTING SIGNAL REPORT v8.7.2")
     queue = load_json(INFO_DEAL, [])
     if not isinstance(queue, list) or not queue:
         return log.info("No new events in queue.")
@@ -228,19 +234,26 @@ def main():
         text = ""
         
         if event["type"] == "ENTRY":
-            entry, tp, sl = float(event["entry"]), float(event["tp"]), float(event["sl"])
+            entry, sl = float(event["entry"]), float(event["sl"])
+            tp1 = float(event.get("tp1", 0))
+            tp2 = float(event.get("tp2", 0))
+            tp = float(event.get("tp", tp2 or tp1))
             action = "ПОКУПКА" if deal_type == "LONG" else "ПРОДАЖА"
+            long_side = deal_type == "LONG"
+            pct = lambda v: ((v - entry) / entry * 100) if long_side else ((entry - v) / entry * 100)
             text = f"🟢 <b>ОТКРЫТА СДЕЛКА: {mode_name}</b>\n\n<b>{action} BTC ({deal_type})</b>\n🟢 <b>Вход:</b> {fmt(entry)}\n"
-            if deal_type == "LONG":
-                text += f"🎯 <b>Тейк:</b> {fmt(tp)} ({(tp-entry)/entry*100:+.2f}%)\n🛑 <b>Стоп:</b> {fmt(sl)} ({(sl-entry)/entry*100:+.2f}%)\n"
+            if tp1 and tp2:
+                text += f"🎯 <b>Тейк 1:</b> {fmt(tp1)} ({pct(tp1):+.2f}%)\n"
+                text += f"🎯 <b>Тейк 2:</b> {fmt(tp2)} ({pct(tp2):+.2f}%)\n"
             else:
-                text += f"🎯 <b>Тейк:</b> {fmt(tp)} ({(entry-tp)/entry*100:+.2f}%)\n🛑 <b>Стоп:</b> {fmt(sl)} ({(entry-sl)/entry*100:+.2f}%)\n"
+                text += f"🎯 <b>Тейк:</b> {fmt(tp)} ({pct(tp):+.2f}%)\n"
+            text += f"🛑 <b>Стоп:</b> {fmt(sl)} ({pct(sl):+.2f}%)\n"
             text += "\n" + get_stats_text(event.get("mode", "swing"))
 
         elif event["type"] == "UPDATE":
             # ФИКС v8.7.1: защита от event без sl_pct
             sl_pct_val = event.get("sl_pct", 0)
-            text = (f"🟡 <b>ПОДТЯЖКА СТОПА: {mode_name}</b>\n\n"
+            text = (f"🟡 <b>ПОДТЯЖКА СТОПа: {mode_name}</b>\n\n"
                     f"<b>Сделка {deal_type} все еще в работе!</b>\n"
                     f"🛑 <b>Новый стоп:</b> {fmt(event['new_sl'])} ({sl_pct_val:+.2f}%)\n")
             if send_tg_text(text): sent_any = True
@@ -265,8 +278,11 @@ def main():
             reasons_ru = {
                 "STOP_LOSS": "Сработал стоп-лосс",
                 "TAKE_PROFIT": "Достигнут тейк-профит",
+                "TAKE_PROFIT_1": "Частичная фиксация (тейк 1)",
+                "TAKE_PROFIT_2": "Достигнут тейк-профит 2",
                 "TRAILING_STOP": "Сработал трейлинг-стоп",
                 "TIME_EXIT_DAY": "Закрытие по времени (конец дня)",
+                "TIME_EXIT_FLAT": "Закрытие по времени (флэт)",
                 "TIME_EXIT": "Закрытие по времени"
             }
             reason_text = reasons_ru.get(reason_raw, reason_raw)
