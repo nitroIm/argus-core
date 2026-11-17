@@ -1,22 +1,22 @@
 {
-  "generated_at": "2026-11-17T20:05:40.145210+00:00",
+  "generated_at": "2026-11-17T21:05:39.778142+00:00",
   "total_news": 104,
-  "avg_sentiment": -0.287,
+  "avg_sentiment": -0.329,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 17,
-  "bearish_count": 31,
+  "bullish_count": 16,
+  "bearish_count": 32,
   "neutral_count": 56,
   "fake_count": 0,
   "cross_confirmed": 15,
   "by_source": {
     "Cointelegraph": {
-      "total": 21,
+      "total": 22,
       "bull": 1,
-      "bear": 8
+      "bear": 9
     },
     "Decrypt": {
-      "total": 23,
-      "bull": 4,
+      "total": 22,
+      "bull": 3,
       "bear": 8
     },
     "Bitcoin.com": {
@@ -56,10 +56,10 @@
       "sentiment": 1.0,
       "bull_weight": 1.2,
       "bear_weight": 0.0,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-17T20:05:37.818852+00:00",
-      "effective_weight": 1.65,
+      "collected_at": "2026-11-17T21:05:37.839361+00:00",
+      "effective_weight": 1.1,
       "title_original": "Ethereum Devs Weigh a Scaling Upgrade That Could Break 15,000 Apps",
       "cross_check": 1
     },
@@ -75,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-17T20:05:37.767590+00:00",
+      "collected_at": "2026-11-17T21:05:37.702705+00:00",
       "effective_weight": 1.04,
       "title_original": "Goldman Sachs reports $1.22B in Ether ETFs as ETHA share count jumps",
       "cross_check": 1
@@ -92,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-17T20:05:37.911484+00:00",
+      "collected_at": "2026-11-17T21:05:38.169693+00:00",
       "effective_weight": 1.0,
       "title_original": "‘Bought the Dip’: Twenty One Capital Adds 154 Bitcoin for $10M",
       "cross_check": 1
@@ -109,7 +109,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-17T20:05:37.911712+00:00",
+      "collected_at": "2026-11-17T21:05:38.169888+00:00",
       "effective_weight": 1.0,
       "title_original": "Wells Fargo More Than Doubles Blackrock Bitcoin ETF Holdings to $2.35B",
       "cross_check": 2
@@ -126,13 +126,30 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-17T20:05:37.911784+00:00",
+      "collected_at": "2026-11-17T21:05:38.169956+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitcoin Price Hits $65K Wall Again as Analysts Warn of More Pain Ahead",
       "cross_check": 2
     }
   ],
   "top_bearish": [
+    {
+      "title": "Eastern Europe crypto flows fall 7.9% as Ukraine draws $12B in stablecoins",
+      "url": "https://cointelegraph.com/news/eastern-europe-crypto-activity-decline-chainalysis?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-11-17T20:05:04+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 2.0,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-17T21:05:37.701817+00:00",
+      "effective_weight": 1.3,
+      "title_original": "Eastern Europe crypto flows fall 7.9% as Ukraine draws $12B in stablecoins",
+      "cross_check": 1
+    },
     {
       "title": "Fed’s Waller cites Binance hack in warning over tokenized finance",
       "url": "https://cointelegraph.com/news/feds-waller-cites-binance-hack-in-warning-over-tokenized-finance?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -145,7 +162,7 @@
       "bear_weight": 2.7,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-17T20:05:37.766827+00:00",
+      "collected_at": "2026-11-17T21:05:37.701911+00:00",
       "effective_weight": 1.3,
       "title_original": "Fed’s Waller cites Binance hack in warning over tokenized finance",
       "cross_check": 1
@@ -162,7 +179,7 @@
       "bear_weight": 2.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-17T20:05:37.766925+00:00",
+      "collected_at": "2026-11-17T21:05:37.701985+00:00",
       "effective_weight": 1.3,
       "title_original": "Bitcoin drops 2.5% as Nvidia stock risks new 5-month lows into Q3 earnings",
       "cross_check": 2
@@ -179,7 +196,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-17T20:05:37.818922+00:00",
+      "collected_at": "2026-11-17T21:05:37.839431+00:00",
       "effective_weight": 1.1,
       "title_original": "Binance Hack Wallets Move $137 Million in Ethereum After Two Weeks of Silence",
       "cross_check": 1
@@ -196,27 +213,10 @@
       "bear_weight": 1.8,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-17T20:05:37.818988+00:00",
+      "collected_at": "2026-11-17T21:05:37.839495+00:00",
       "effective_weight": 1.1,
       "title_original": "Former Robinhood Engineer Pleads Guilty to Crypto Insider Trading Scheme",
       "cross_check": 1
-    },
-    {
-      "title": "Hackers inject credit card, crypto-stealing malware into 178 major websites",
-      "url": "https://cointelegraph.com/news/hackers-inject-malware-into-178-major-websites?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-11-17T01:02:05+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 2.3,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-17T20:05:37.767660+00:00",
-      "effective_weight": 1.04,
-      "title_original": "Hackers inject credit card, crypto-stealing malware into 178 major websites",
-      "cross_check": 3
     }
   ]
 }
