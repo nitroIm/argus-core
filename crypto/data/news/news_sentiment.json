@@ -1,33 +1,33 @@
 {
-  "generated_at": "2026-11-17T22:05:36.947574+00:00",
-  "total_news": 103,
-  "avg_sentiment": -0.292,
+  "generated_at": "2026-11-17T23:05:36.380823+00:00",
+  "total_news": 101,
+  "avg_sentiment": -0.339,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 15,
   "bearish_count": 32,
-  "neutral_count": 56,
+  "neutral_count": 54,
   "fake_count": 0,
-  "cross_confirmed": 13,
+  "cross_confirmed": 11,
   "by_source": {
     "Cointelegraph": {
       "total": 22,
       "bull": 1,
-      "bear": 9
+      "bear": 10
     },
     "Decrypt": {
-      "total": 21,
+      "total": 19,
       "bull": 3,
-      "bear": 8
+      "bear": 7
     },
     "Bitcoin.com": {
       "total": 9,
       "bull": 3,
-      "bear": 2
+      "bear": 3
     },
     "CryptoSlate": {
       "total": 8,
       "bull": 0,
-      "bear": 3
+      "bear": 2
     },
     "CryptoPotato": {
       "total": 21,
@@ -47,23 +47,6 @@
   },
   "top_bullish": [
     {
-      "title": "Bitwise Reveals the Massive Catalyst That Could Send Solana (SOL) Price Soaring",
-      "url": "https://cryptopotato.com/bitwise-reveals-the-massive-catalyst-that-could-send-solana-sol-price-soaring/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-17T21:45:41+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.5,
-      "bear_weight": 0.0,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-17T22:05:35.995813+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Bitwise Reveals the Massive Catalyst That Could Send Solana (SOL) Price Soaring",
-      "cross_check": 2
-    },
-    {
       "title": "Ethereum Devs Weigh a Scaling Upgrade That Could Break 15,000 Apps",
       "url": "https://decrypt.co/383462/ethereum-devs-scaling-upgrade-could-break-15000-apps",
       "source": "Decrypt",
@@ -75,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-17T22:05:35.466773+00:00",
+      "collected_at": "2026-11-17T23:05:33.088040+00:00",
       "effective_weight": 1.1,
       "title_original": "Ethereum Devs Weigh a Scaling Upgrade That Could Break 15,000 Apps",
       "cross_check": 1
@@ -92,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-17T22:05:35.383231+00:00",
+      "collected_at": "2026-11-17T23:05:33.015353+00:00",
       "effective_weight": 1.04,
       "title_original": "Goldman Sachs reports $1.22B in Ether ETFs as ETHA share count jumps",
       "cross_check": 1
@@ -109,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-17T22:05:35.667073+00:00",
+      "collected_at": "2026-11-17T23:05:33.359713+00:00",
       "effective_weight": 1.0,
       "title_original": "‘Bought the Dip’: Twenty One Capital Adds 154 Bitcoin for $10M",
       "cross_check": 1
@@ -126,13 +109,47 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-17T22:05:35.667266+00:00",
+      "collected_at": "2026-11-17T23:05:33.359823+00:00",
       "effective_weight": 1.0,
       "title_original": "Wells Fargo More Than Doubles Blackrock Bitcoin ETF Holdings to $2.35B",
       "cross_check": 1
+    },
+    {
+      "title": "Bitwise Reveals the Massive Catalyst That Could Send Solana (SOL) Price Soaring",
+      "url": "https://cryptopotato.com/bitwise-reveals-the-massive-catalyst-that-could-send-solana-sol-price-soaring/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-17T21:45:41+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.5,
+      "bear_weight": 0.0,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-17T23:05:33.705816+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Bitwise Reveals the Massive Catalyst That Could Send Solana (SOL) Price Soaring",
+      "cross_check": 2
     }
   ],
   "top_bearish": [
+    {
+      "title": "CFTC halts some Kalshi Trump mention markets over manipulation concerns",
+      "url": "https://cointelegraph.com/news/cftc-kalshi-trump-mention-markets-review?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-11-17T22:20:04+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-17T23:05:33.014885+00:00",
+      "effective_weight": 1.95,
+      "title_original": "CFTC halts some Kalshi Trump mention markets over manipulation concerns",
+      "cross_check": 2
+    },
     {
       "title": "Eastern Europe crypto flows fall 7.9% as Ukraine draws $12B in stablecoins",
       "url": "https://cointelegraph.com/news/eastern-europe-crypto-activity-decline-chainalysis?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -145,7 +162,7 @@
       "bear_weight": 2.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-17T22:05:35.381748+00:00",
+      "collected_at": "2026-11-17T23:05:33.014941+00:00",
       "effective_weight": 1.3,
       "title_original": "Eastern Europe crypto flows fall 7.9% as Ukraine draws $12B in stablecoins",
       "cross_check": 1
@@ -162,43 +179,9 @@
       "bear_weight": 2.7,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-17T22:05:35.381898+00:00",
+      "collected_at": "2026-11-17T23:05:33.014990+00:00",
       "effective_weight": 1.3,
       "title_original": "Fed’s Waller cites Binance hack in warning over tokenized finance",
-      "cross_check": 1
-    },
-    {
-      "title": "Bitcoin drops 2.5% as Nvidia stock risks new 5-month lows into Q3 earnings",
-      "url": "https://cointelegraph.com/markets/bitcoin-drops-25-nvidia-stock-risks-new-5-month-low-q3-earnings?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-11-17T16:39:43+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 2.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-17T22:05:35.382026+00:00",
-      "effective_weight": 1.3,
-      "title_original": "Bitcoin drops 2.5% as Nvidia stock risks new 5-month lows into Q3 earnings",
-      "cross_check": 2
-    },
-    {
-      "title": "DeFi Firms Compete for Traditional Bank Deposits",
-      "url": "https://bitcoinist.com/defi-firms-compete-for-traditional-bank-deposits/",
-      "source": "Bitcoinist",
-      "source_weight": 0.9,
-      "lang": "en",
-      "pub_date": "2026-11-17T21:10:36+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.5,
-      "fake_score": 0.1,
-      "collected_at": "2026-11-17T22:05:36.205944+00:00",
-      "effective_weight": 1.215,
-      "title_original": "DeFi Firms Compete for Traditional Bank Deposits",
       "cross_check": 1
     },
     {
@@ -213,10 +196,27 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-17T22:05:35.466844+00:00",
+      "collected_at": "2026-11-17T23:05:33.088080+00:00",
       "effective_weight": 1.1,
       "title_original": "Binance Hack Wallets Move $137 Million in Ethereum After Two Weeks of Silence",
       "cross_check": 1
+    },
+    {
+      "title": "Bitcoin drops 2.5% as Nvidia stock risks new 5-month lows into Q3 earnings",
+      "url": "https://cointelegraph.com/markets/bitcoin-drops-25-nvidia-stock-risks-new-5-month-low-q3-earnings?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-11-17T16:39:43+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 2.0,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-17T23:05:33.015033+00:00",
+      "effective_weight": 1.04,
+      "title_original": "Bitcoin drops 2.5% as Nvidia stock risks new 5-month lows into Q3 earnings",
+      "cross_check": 2
     }
   ]
 }
