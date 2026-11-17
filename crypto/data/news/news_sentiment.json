@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-11-17T05:05:44.585417+00:00",
-  "total_news": 89,
-  "avg_sentiment": -0.598,
+  "generated_at": "2026-11-17T06:05:35.416129+00:00",
+  "total_news": 95,
+  "avg_sentiment": -0.556,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 10,
-  "bearish_count": 39,
-  "neutral_count": 40,
+  "bullish_count": 11,
+  "bearish_count": 40,
+  "neutral_count": 44,
   "fake_count": 0,
-  "cross_confirmed": 1,
+  "cross_confirmed": 4,
   "by_source": {
     "Cointelegraph": {
       "total": 20,
@@ -30,9 +30,14 @@
       "bear": 3
     },
     "CryptoPotato": {
-      "total": 24,
+      "total": 22,
       "bull": 2,
-      "bear": 11
+      "bear": 10
+    },
+    "Bitcoinist": {
+      "total": 8,
+      "bull": 1,
+      "bear": 2
     },
     "ForkLog": {
       "total": 11,
@@ -41,6 +46,23 @@
     }
   },
   "top_bullish": [
+    {
+      "title": "Wells Fargo Doubles Bitcoin ETF Holdings To $2.35 Billion As Wall Street Expands Exposure",
+      "url": "https://bitcoinist.com/wells-fargo-doubles-bitcoin-etf-holdings-to-2-35-billion-as-wall-street-expands-exposure/",
+      "source": "Bitcoinist",
+      "source_weight": 0.9,
+      "lang": "en",
+      "pub_date": "2026-11-17T05:58:19+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.1,
+      "collected_at": "2026-11-17T06:05:34.702660+00:00",
+      "effective_weight": 1.215,
+      "title_original": "Wells Fargo Doubles Bitcoin ETF Holdings To $2.35 Billion As Wall Street Expands Exposure",
+      "cross_check": 2
+    },
     {
       "title": "DBS, JPMorgan’s Kinexys launch 24/7 transfers of tokenized deposits",
       "url": "https://cointelegraph.com/news/dbs-jpmorgans-kinexys-launch-tokenized-transfers?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -53,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-17T05:05:43.031755+00:00",
+      "collected_at": "2026-11-17T06:05:33.086301+00:00",
       "effective_weight": 1.04,
       "title_original": "DBS, JPMorgan’s Kinexys launch 24/7 transfers of tokenized deposits",
       "cross_check": 1
@@ -70,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-17T05:05:43.031798+00:00",
+      "collected_at": "2026-11-17T06:05:33.086336+00:00",
       "effective_weight": 1.04,
       "title_original": "Harvard, Dartmouth keep Bitcoin ETF stakes steady as fund gains 42% in Q3",
       "cross_check": 1
@@ -87,7 +109,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-17T05:05:43.102286+00:00",
+      "collected_at": "2026-11-17T06:05:33.166548+00:00",
       "effective_weight": 0.88,
       "title_original": "Bitcoin Wallet Maker Trezor Says Customer Data Was Exposed Again",
       "cross_check": 1
@@ -104,47 +126,13 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-17T05:05:43.102576+00:00",
+      "collected_at": "2026-11-17T06:05:33.166790+00:00",
       "effective_weight": 0.88,
       "title_original": "Tokenization Is Not the Finish Line': Jupiter to Let Users Borrow Against Bullish Shares",
       "cross_check": 1
-    },
-    {
-      "title": "Vitalik Buterin Now ‘a Total Bull’ on leanPCS as Fast Track to Quantum-Safe Ethereum",
-      "url": "https://decrypt.co/383294/vitalik-buterin-now-a-total-bull-on-leanpcs-as-fast-track-to-quantum-safe-ethereum",
-      "source": "Decrypt",
-      "source_weight": 1.1,
-      "lang": "en",
-      "pub_date": "2026-11-16T09:54:55+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-17T05:05:43.102921+00:00",
-      "effective_weight": 0.88,
-      "title_original": "Vitalik Buterin Now ‘a Total Bull’ on leanPCS as Fast Track to Quantum-Safe Ethereum",
-      "cross_check": 2
     }
   ],
   "top_bearish": [
-    {
-      "title": "Upbit’s $40 Billion Crypto Custody Empire Faces Shrinking Deposits",
-      "url": "https://news.bitcoin.com/exchanges/upbits-40-billion-crypto-custody-empire-faces-shrinking-deposits/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-17T04:30:31+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 2.7,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-17T05:05:43.363217+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Upbit’s $40 Billion Crypto Custody Empire Faces Shrinking Deposits",
-      "cross_check": 1
-    },
     {
       "title": "Hackers inject credit card, crypto-stealing malware into 178 major websites",
       "url": "https://cointelegraph.com/news/hackers-inject-malware-into-178-major-websites?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -157,7 +145,7 @@
       "bear_weight": 2.3,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-17T05:05:43.031156+00:00",
+      "collected_at": "2026-11-17T06:05:33.085797+00:00",
       "effective_weight": 1.3,
       "title_original": "Hackers inject credit card, crypto-stealing malware into 178 major websites",
       "cross_check": 1
@@ -174,7 +162,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-17T05:05:43.031259+00:00",
+      "collected_at": "2026-11-17T06:05:33.085891+00:00",
       "effective_weight": 1.04,
       "title_original": "Binance hack may push institutions to outside custody, FalconX exec says",
       "cross_check": 1
@@ -191,7 +179,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-17T05:05:43.031490+00:00",
+      "collected_at": "2026-11-17T06:05:33.086084+00:00",
       "effective_weight": 1.04,
       "title_original": "Safe wallet reportedly loses $6.5M as Zodiac suspects key compromise",
       "cross_check": 1
@@ -208,9 +196,26 @@
       "bear_weight": 1.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-17T05:05:43.031536+00:00",
+      "collected_at": "2026-11-17T06:05:33.086123+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin price fails to hold $65K as US stocks drop further on AI nerves",
+      "cross_check": 1
+    },
+    {
+      "title": "Binance Pay Later offers credit backed by Bitcoin, Ether and BNB holdings",
+      "url": "https://cointelegraph.com/news/binance-pay-later-crypto-backed-credit?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-11-16T13:00:00+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 0.8,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-17T06:05:33.086223+00:00",
+      "effective_weight": 1.04,
+      "title_original": "Binance Pay Later offers credit backed by Bitcoin, Ether and BNB holdings",
       "cross_check": 1
     }
   ]
