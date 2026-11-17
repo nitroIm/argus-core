@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-11-17T18:05:37.049046+00:00",
+  "generated_at": "2026-11-17T19:05:44.002285+00:00",
   "total_news": 103,
-  "avg_sentiment": -0.381,
+  "avg_sentiment": -0.323,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 16,
-  "bearish_count": 33,
-  "neutral_count": 54,
+  "bullish_count": 17,
+  "bearish_count": 31,
+  "neutral_count": 55,
   "fake_count": 0,
-  "cross_confirmed": 16,
+  "cross_confirmed": 15,
   "by_source": {
     "Cointelegraph": {
       "total": 21,
@@ -15,17 +15,17 @@
       "bear": 8
     },
     "Decrypt": {
-      "total": 22,
+      "total": 21,
       "bull": 3,
-      "bear": 9
+      "bear": 8
     },
     "Bitcoin.com": {
       "total": 9,
-      "bull": 3,
-      "bear": 3
+      "bull": 4,
+      "bear": 2
     },
     "CryptoSlate": {
-      "total": 7,
+      "total": 8,
       "bull": 0,
       "bear": 3
     },
@@ -47,21 +47,21 @@
   },
   "top_bullish": [
     {
-      "title": "Wells Fargo More Than Doubles Blackrock Bitcoin ETF Holdings to $2.35B",
-      "url": "https://news.bitcoin.com/featured/wells-fargo-doubles-blackrock-bitcoin-etf-holdings-2-35-billion/",
+      "title": "‘Bought the Dip’: Twenty One Capital Adds 154 Bitcoin for $10M",
+      "url": "https://news.bitcoin.com/finance/bought-dip-twenty-one-capital-adds-154-bitcoin-10m/",
       "source": "Bitcoin.com",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-11-17T17:15:50+00:00",
+      "pub_date": "2026-11-17T18:55:20+00:00",
       "sentiment": 1.0,
-      "bull_weight": 1.2,
+      "bull_weight": 1.0,
       "bear_weight": 0.0,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-17T18:05:35.665376+00:00",
+      "collected_at": "2026-11-17T19:05:41.296791+00:00",
       "effective_weight": 1.5,
-      "title_original": "Wells Fargo More Than Doubles Blackrock Bitcoin ETF Holdings to $2.35B",
-      "cross_check": 2
+      "title_original": "‘Bought the Dip’: Twenty One Capital Adds 154 Bitcoin for $10M",
+      "cross_check": 1
     },
     {
       "title": "Goldman Sachs reports $1.22B in Ether ETFs as ETHA share count jumps",
@@ -75,10 +75,27 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-17T18:05:35.197710+00:00",
+      "collected_at": "2026-11-17T19:05:41.012825+00:00",
       "effective_weight": 1.04,
       "title_original": "Goldman Sachs reports $1.22B in Ether ETFs as ETHA share count jumps",
       "cross_check": 1
+    },
+    {
+      "title": "Wells Fargo More Than Doubles Blackrock Bitcoin ETF Holdings to $2.35B",
+      "url": "https://news.bitcoin.com/featured/wells-fargo-doubles-blackrock-bitcoin-etf-holdings-2-35-billion/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-17T17:15:50+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-17T19:05:41.296949+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Wells Fargo More Than Doubles Blackrock Bitcoin ETF Holdings to $2.35B",
+      "cross_check": 2
     },
     {
       "title": "Bitcoin Price Hits $65K Wall Again as Analysts Warn of More Pain Ahead",
@@ -92,7 +109,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-17T18:05:35.665428+00:00",
+      "collected_at": "2026-11-17T19:05:41.297000+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitcoin Price Hits $65K Wall Again as Analysts Warn of More Pain Ahead",
       "cross_check": 2
@@ -109,27 +126,10 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-17T18:05:35.953442+00:00",
+      "collected_at": "2026-11-17T19:05:42.341245+00:00",
       "effective_weight": 1.0,
       "title_original": "Almost 50,000 BTC in 2 Weeks: More Pain Ahead for the Bulls?",
       "cross_check": 2
-    },
-    {
-      "title": "PrimeXBT Launches Anthropic Pre-IPO Crypto Futures, Bringing New Trading Opportunities in AI",
-      "url": "https://cryptopotato.com/primexbt-launches-anthropic-pre-ipo-crypto-futures-bringing-new-trading-opportunities-in-ai/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-17T15:05:48+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-17T18:05:35.953505+00:00",
-      "effective_weight": 1.0,
-      "title_original": "PrimeXBT Launches Anthropic Pre-IPO Crypto Futures, Bringing New Trading Opportunities in AI",
-      "cross_check": 1
     }
   ],
   "top_bearish": [
@@ -143,28 +143,11 @@
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 2.7,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-17T18:05:35.197167+00:00",
-      "effective_weight": 1.95,
+      "collected_at": "2026-11-17T19:05:41.012260+00:00",
+      "effective_weight": 1.3,
       "title_original": "Fed’s Waller cites Binance hack in warning over tokenized finance",
-      "cross_check": 1
-    },
-    {
-      "title": "Binance Hack Wallets Move $137 Million in Ethereum After Two Weeks of Silence",
-      "url": "https://decrypt.co/383446/binance-hack-wallets-move-ethereum-after-two-weeks",
-      "source": "Decrypt",
-      "source_weight": 1.1,
-      "lang": "en",
-      "pub_date": "2026-11-17T17:18:41+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-17T18:05:35.442988+00:00",
-      "effective_weight": 1.65,
-      "title_original": "Binance Hack Wallets Move $137 Million in Ethereum After Two Weeks of Silence",
       "cross_check": 1
     },
     {
@@ -179,10 +162,27 @@
       "bear_weight": 2.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-17T18:05:35.197235+00:00",
+      "collected_at": "2026-11-17T19:05:41.012348+00:00",
       "effective_weight": 1.3,
       "title_original": "Bitcoin drops 2.5% as Nvidia stock risks new 5-month lows into Q3 earnings",
       "cross_check": 2
+    },
+    {
+      "title": "Binance Hack Wallets Move $137 Million in Ethereum After Two Weeks of Silence",
+      "url": "https://decrypt.co/383446/binance-hack-wallets-move-ethereum-after-two-weeks",
+      "source": "Decrypt",
+      "source_weight": 1.1,
+      "lang": "en",
+      "pub_date": "2026-11-17T17:18:41+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-17T19:05:41.086936+00:00",
+      "effective_weight": 1.1,
+      "title_original": "Binance Hack Wallets Move $137 Million in Ethereum After Two Weeks of Silence",
+      "cross_check": 1
     },
     {
       "title": "Former Robinhood Engineer Pleads Guilty to Crypto Insider Trading Scheme",
@@ -196,7 +196,7 @@
       "bear_weight": 1.8,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-17T18:05:35.443042+00:00",
+      "collected_at": "2026-11-17T19:05:41.087019+00:00",
       "effective_weight": 1.1,
       "title_original": "Former Robinhood Engineer Pleads Guilty to Crypto Insider Trading Scheme",
       "cross_check": 1
@@ -213,7 +213,7 @@
       "bear_weight": 2.3,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-17T18:05:35.197761+00:00",
+      "collected_at": "2026-11-17T19:05:41.012874+00:00",
       "effective_weight": 1.04,
       "title_original": "Hackers inject credit card, crypto-stealing malware into 178 major websites",
       "cross_check": 3
