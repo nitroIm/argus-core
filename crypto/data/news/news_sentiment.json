@@ -1,18 +1,18 @@
 {
-  "generated_at": "2026-11-17T09:05:38.781529+00:00",
-  "total_news": 96,
-  "avg_sentiment": -0.428,
+  "generated_at": "2026-11-17T10:05:42.922534+00:00",
+  "total_news": 98,
+  "avg_sentiment": -0.36,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 13,
-  "bearish_count": 33,
-  "neutral_count": 50,
+  "bullish_count": 14,
+  "bearish_count": 32,
+  "neutral_count": 52,
   "fake_count": 0,
-  "cross_confirmed": 4,
+  "cross_confirmed": 5,
   "by_source": {
     "Cointelegraph": {
       "total": 20,
       "bull": 3,
-      "bear": 8
+      "bear": 7
     },
     "Decrypt": {
       "total": 19,
@@ -25,7 +25,7 @@
       "bear": 4
     },
     "CryptoSlate": {
-      "total": 6,
+      "total": 7,
       "bull": 0,
       "bear": 3
     },
@@ -40,12 +40,46 @@
       "bear": 1
     },
     "ForkLog": {
-      "total": 14,
-      "bull": 1,
+      "total": 15,
+      "bull": 2,
       "bear": 2
     }
   },
   "top_bullish": [
+    {
+      "title": "Goldman Sachs reports $1.22B in Ether ETFs as ETHA share count jumps",
+      "url": "https://cointelegraph.com/news/goldman-sachs-reports-122b-ether-etfs-etha-shares-jumps?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-11-17T09:08:32+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 2.2,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-17T10:05:41.458453+00:00",
+      "effective_weight": 1.95,
+      "title_original": "Goldman Sachs reports $1.22B in Ether ETFs as ETHA share count jumps",
+      "cross_check": 1
+    },
+    {
+      "title": "Goldman Sachs раскрыла позиции в Ethereum-ETF на $1,22 млрд",
+      "url": "https://forklog.com/goldman-sachs-raskryla-pozitsii-v-ethereum-etf-na-1-22-mlrd",
+      "source": "ForkLog",
+      "source_weight": 1.2,
+      "lang": "ru",
+      "pub_date": "2026-11-17T10:00:00+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-17T10:05:42.868961+00:00",
+      "effective_weight": 1.8,
+      "title_original": "Goldman Sachs раскрыла позиции в Ethereum-ETF на $1,22 млрд",
+      "cross_check": 1
+    },
     {
       "title": "В Bitwise допустили рост Solana до $1100",
       "url": "https://forklog.com/news/v-bitwise-dopustili-rost-solana-do-1100",
@@ -56,10 +90,10 @@
       "sentiment": 1.0,
       "bull_weight": 1.0,
       "bear_weight": 0.0,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-17T09:05:38.716550+00:00",
-      "effective_weight": 1.8,
+      "collected_at": "2026-11-17T10:05:42.869075+00:00",
+      "effective_weight": 1.2,
       "title_original": "В Bitwise допустили рост Solana до $1100",
       "cross_check": 1
     },
@@ -75,7 +109,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-17T09:05:38.084417+00:00",
+      "collected_at": "2026-11-17T10:05:41.876585+00:00",
       "effective_weight": 1.0,
       "title_original": "Backpack Secures Major US Exchange Approval, Native Token Soars 20%",
       "cross_check": 1
@@ -92,47 +126,47 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-17T09:05:37.731095+00:00",
+      "collected_at": "2026-11-17T10:05:41.494385+00:00",
       "effective_weight": 0.88,
       "title_original": "Bitcoin Wallet Maker Trezor Says Customer Data Was Exposed Again",
       "cross_check": 1
-    },
-    {
-      "title": "Tokenization Is Not the Finish Line': Jupiter to Let Users Borrow Against Bullish Shares",
-      "url": "https://decrypt.co/383333/tokenization-is-not-the-finish-line-jupiter-to-let-users-borrow-against-bullish-shares",
-      "source": "Decrypt",
-      "source_weight": 1.1,
-      "lang": "en",
-      "pub_date": "2026-11-16T17:09:28+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 2.2,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-17T09:05:37.731750+00:00",
-      "effective_weight": 0.88,
-      "title_original": "Tokenization Is Not the Finish Line': Jupiter to Let Users Borrow Against Bullish Shares",
-      "cross_check": 1
-    },
-    {
-      "title": "Vitalik Buterin Now ‘a Total Bull’ on leanPCS as Fast Track to Quantum-Safe Ethereum",
-      "url": "https://decrypt.co/383294/vitalik-buterin-now-a-total-bull-on-leanpcs-as-fast-track-to-quantum-safe-ethereum",
-      "source": "Decrypt",
-      "source_weight": 1.1,
-      "lang": "en",
-      "pub_date": "2026-11-16T09:54:55+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-17T09:05:37.732449+00:00",
-      "effective_weight": 0.88,
-      "title_original": "Vitalik Buterin Now ‘a Total Bull’ on leanPCS as Fast Track to Quantum-Safe Ethereum",
-      "cross_check": 3
     }
   ],
   "top_bearish": [
+    {
+      "title": "Hackers Hit Ledger and 177 Other Brands With a Crypto Address-Swapping Attack",
+      "url": "https://news.bitcoin.com/security/optimizely-hack-ledger-178-brands-crypto-address-swap/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-17T09:30:29+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-17T10:05:41.697376+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Hackers Hit Ledger and 177 Other Brands With a Crypto Address-Swapping Attack",
+      "cross_check": 1
+    },
+    {
+      "title": "Bitcoin (BTC) at a Crossroads: Further Collapse or Major Rebound Incoming?",
+      "url": "https://cryptopotato.com/bitcoin-btc-at-a-crossroads-further-collapse-or-major-rebound-incoming/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-17T09:15:36+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-17T10:05:41.876528+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Bitcoin (BTC) at a Crossroads: Further Collapse or Major Rebound Incoming?",
+      "cross_check": 1
+    },
     {
       "title": "Hackers inject credit card, crypto-stealing malware into 178 major websites",
       "url": "https://cointelegraph.com/news/hackers-inject-malware-into-178-major-websites?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -145,7 +179,7 @@
       "bear_weight": 2.3,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-17T09:05:37.652231+00:00",
+      "collected_at": "2026-11-17T10:05:41.458570+00:00",
       "effective_weight": 1.04,
       "title_original": "Hackers inject credit card, crypto-stealing malware into 178 major websites",
       "cross_check": 1
@@ -162,7 +196,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-17T09:05:37.652385+00:00",
+      "collected_at": "2026-11-17T10:05:41.458669+00:00",
       "effective_weight": 1.04,
       "title_original": "Binance hack may push institutions to outside custody, FalconX exec says",
       "cross_check": 1
@@ -179,43 +213,9 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-17T09:05:37.652696+00:00",
+      "collected_at": "2026-11-17T10:05:41.458927+00:00",
       "effective_weight": 1.04,
       "title_original": "Safe wallet reportedly loses $6.5M as Zodiac suspects key compromise",
-      "cross_check": 1
-    },
-    {
-      "title": "Bitcoin price fails to hold $65K as US stocks drop further on AI nerves",
-      "url": "https://cointelegraph.com/markets/bitcoin-price-fails-to-hold-65k-us-stocks-drop-on-ai-nerves?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-11-16T16:26:52+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-17T09:05:37.652757+00:00",
-      "effective_weight": 1.04,
-      "title_original": "Bitcoin price fails to hold $65K as US stocks drop further on AI nerves",
-      "cross_check": 1
-    },
-    {
-      "title": "Binance Pay Later offers credit backed by Bitcoin, Ether and BNB holdings",
-      "url": "https://cointelegraph.com/news/binance-pay-later-crypto-backed-credit?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-11-16T13:00:00+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 0.8,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-17T09:05:37.652920+00:00",
-      "effective_weight": 1.04,
-      "title_original": "Binance Pay Later offers credit backed by Bitcoin, Ether and BNB holdings",
       "cross_check": 1
     }
   ]
