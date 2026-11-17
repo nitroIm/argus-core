@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-17T10:05:42.922534+00:00",
-  "total_news": 98,
-  "avg_sentiment": -0.36,
+  "generated_at": "2026-11-17T11:05:47.031897+00:00",
+  "total_news": 100,
+  "avg_sentiment": -0.45,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 14,
-  "bearish_count": 32,
-  "neutral_count": 52,
+  "bearish_count": 35,
+  "neutral_count": 51,
   "fake_count": 0,
   "cross_confirmed": 5,
   "by_source": {
@@ -15,14 +15,14 @@
       "bear": 7
     },
     "Decrypt": {
-      "total": 19,
+      "total": 20,
       "bull": 4,
-      "bear": 6
+      "bear": 7
     },
     "Bitcoin.com": {
-      "total": 8,
+      "total": 9,
       "bull": 0,
-      "bear": 4
+      "bear": 5
     },
     "CryptoSlate": {
       "total": 7,
@@ -37,7 +37,7 @@
     "Bitcoinist": {
       "total": 8,
       "bull": 2,
-      "bear": 1
+      "bear": 2
     },
     "ForkLog": {
       "total": 15,
@@ -56,10 +56,10 @@
       "sentiment": 1.0,
       "bull_weight": 2.2,
       "bear_weight": 0.0,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-17T10:05:41.458453+00:00",
-      "effective_weight": 1.95,
+      "collected_at": "2026-11-17T11:05:45.316680+00:00",
+      "effective_weight": 1.3,
       "title_original": "Goldman Sachs reports $1.22B in Ether ETFs as ETHA share count jumps",
       "cross_check": 1
     },
@@ -73,10 +73,10 @@
       "sentiment": 1.0,
       "bull_weight": 1.2,
       "bear_weight": 0.0,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-17T10:05:42.868961+00:00",
-      "effective_weight": 1.8,
+      "collected_at": "2026-11-17T11:05:46.955753+00:00",
+      "effective_weight": 1.2,
       "title_original": "Goldman Sachs раскрыла позиции в Ethereum-ETF на $1,22 млрд",
       "cross_check": 1
     },
@@ -92,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-17T10:05:42.869075+00:00",
+      "collected_at": "2026-11-17T11:05:46.955887+00:00",
       "effective_weight": 1.2,
       "title_original": "В Bitwise допустили рост Solana до $1100",
       "cross_check": 1
@@ -109,7 +109,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-17T10:05:41.876585+00:00",
+      "collected_at": "2026-11-17T11:05:45.991782+00:00",
       "effective_weight": 1.0,
       "title_original": "Backpack Secures Major US Exchange Approval, Native Token Soars 20%",
       "cross_check": 1
@@ -126,7 +126,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-17T10:05:41.494385+00:00",
+      "collected_at": "2026-11-17T11:05:45.448029+00:00",
       "effective_weight": 0.88,
       "title_original": "Bitcoin Wallet Maker Trezor Says Customer Data Was Exposed Again",
       "cross_check": 1
@@ -134,38 +134,55 @@
   ],
   "top_bearish": [
     {
-      "title": "Hackers Hit Ledger and 177 Other Brands With a Crypto Address-Swapping Attack",
-      "url": "https://news.bitcoin.com/security/optimizely-hack-ledger-178-brands-crypto-address-swap/",
+      "title": "Optimizely Hack Hijacked Ledger, BBC and 176 Other Sites to Swap Crypto Wallet Addresses",
+      "url": "https://decrypt.co/383414/optimizely-hack-hijacked-ledger-bbc-and-176-other-sites-to-swap-crypto-wallet-addresses",
+      "source": "Decrypt",
+      "source_weight": 1.1,
+      "lang": "en",
+      "pub_date": "2026-11-17T11:05:25+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-17T11:05:45.447829+00:00",
+      "effective_weight": 1.65,
+      "title_original": "Optimizely Hack Hijacked Ledger, BBC and 176 Other Sites to Swap Crypto Wallet Addresses",
+      "cross_check": 2
+    },
+    {
+      "title": "Is Bitcoin’s Price Drop Due to Anthropic’s IPO? Vaneck Sees December Low",
+      "url": "https://news.bitcoin.com/price-predictions/bitcoin-funding-anthropic-ipo-vaneck-december-low/",
       "source": "Bitcoin.com",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-11-17T09:30:29+00:00",
+      "pub_date": "2026-11-17T10:30:39+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 1.5,
+      "bear_weight": 2.0,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-17T10:05:41.697376+00:00",
+      "collected_at": "2026-11-17T11:05:45.684246+00:00",
       "effective_weight": 1.5,
-      "title_original": "Hackers Hit Ledger and 177 Other Brands With a Crypto Address-Swapping Attack",
-      "cross_check": 1
+      "title_original": "Is Bitcoin’s Price Drop Due to Anthropic’s IPO? Vaneck Sees December Low",
+      "cross_check": 2
     },
     {
-      "title": "Bitcoin (BTC) at a Crossroads: Further Collapse or Major Rebound Incoming?",
-      "url": "https://cryptopotato.com/bitcoin-btc-at-a-crossroads-further-collapse-or-major-rebound-incoming/",
-      "source": "CryptoPotato",
+      "title": "Hackers found a way to steal crypto without hacking wallets, and Ledger was caught in the attack",
+      "url": "https://cryptoslate.com/hackers-found-a-way-to-steal-crypto-without-hacking-wallets-and-ledger-was-caught-in-the-attack/",
+      "source": "CryptoSlate",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-11-17T09:15:36+00:00",
+      "pub_date": "2026-11-17T10:40:04+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 1.5,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-17T10:05:41.876528+00:00",
+      "collected_at": "2026-11-17T11:05:45.840120+00:00",
       "effective_weight": 1.5,
-      "title_original": "Bitcoin (BTC) at a Crossroads: Further Collapse or Major Rebound Incoming?",
-      "cross_check": 1
+      "title_original": "Hackers found a way to steal crypto without hacking wallets, and Ledger was caught in the attack",
+      "cross_check": 2
     },
     {
       "title": "Hackers inject credit card, crypto-stealing malware into 178 major websites",
@@ -179,7 +196,7 @@
       "bear_weight": 2.3,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-17T10:05:41.458570+00:00",
+      "collected_at": "2026-11-17T11:05:45.316819+00:00",
       "effective_weight": 1.04,
       "title_original": "Hackers inject credit card, crypto-stealing malware into 178 major websites",
       "cross_check": 1
@@ -196,26 +213,9 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-17T10:05:41.458669+00:00",
+      "collected_at": "2026-11-17T11:05:45.316951+00:00",
       "effective_weight": 1.04,
       "title_original": "Binance hack may push institutions to outside custody, FalconX exec says",
-      "cross_check": 1
-    },
-    {
-      "title": "Safe wallet reportedly loses $6.5M as Zodiac suspects key compromise",
-      "url": "https://cointelegraph.com/news/safe-wallet-reportedly-loses-millions-after-key-compromise?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-11-16T17:49:13+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-17T10:05:41.458927+00:00",
-      "effective_weight": 1.04,
-      "title_original": "Safe wallet reportedly loses $6.5M as Zodiac suspects key compromise",
       "cross_check": 1
     }
   ]
