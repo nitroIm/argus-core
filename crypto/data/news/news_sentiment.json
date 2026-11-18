@@ -1,18 +1,18 @@
 {
-  "generated_at": "2026-11-18T02:05:38.010639+00:00",
-  "total_news": 98,
-  "avg_sentiment": -0.244,
+  "generated_at": "2026-11-18T03:05:51.855346+00:00",
+  "total_news": 89,
+  "avg_sentiment": -0.264,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 17,
-  "bearish_count": 30,
-  "neutral_count": 51,
+  "bullish_count": 15,
+  "bearish_count": 26,
+  "neutral_count": 48,
   "fake_count": 0,
-  "cross_confirmed": 8,
+  "cross_confirmed": 5,
   "by_source": {
     "Cointelegraph": {
-      "total": 21,
+      "total": 20,
       "bull": 1,
-      "bear": 9
+      "bear": 8
     },
     "Decrypt": {
       "total": 18,
@@ -20,8 +20,8 @@
       "bear": 7
     },
     "Bitcoin.com": {
-      "total": 9,
-      "bull": 5,
+      "total": 8,
+      "bull": 4,
       "bear": 2
     },
     "CryptoSlate": {
@@ -33,11 +33,6 @@
       "total": 21,
       "bull": 5,
       "bear": 7
-    },
-    "Bitcoinist": {
-      "total": 7,
-      "bull": 1,
-      "bear": 3
     },
     "ForkLog": {
       "total": 14,
@@ -58,7 +53,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-18T02:05:36.279725+00:00",
+      "collected_at": "2026-11-18T03:05:50.025037+00:00",
       "effective_weight": 1.04,
       "title_original": "Goldman Sachs reports $1.22B in Ether ETFs as ETHA share count jumps",
       "cross_check": 1
@@ -75,7 +70,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-18T02:05:36.636095+00:00",
+      "collected_at": "2026-11-18T03:05:50.557655+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitcoin Price Could Gain If AI Slump Prompts Fed Pivot, Coinshares Says",
       "cross_check": 2
@@ -92,7 +87,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-18T02:05:36.636176+00:00",
+      "collected_at": "2026-11-18T03:05:50.557703+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitwise Bets on AI Security With New ETF as Spending Could Hit $204B",
       "cross_check": 1
@@ -109,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-18T02:05:36.956001+00:00",
+      "collected_at": "2026-11-18T03:05:50.751515+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitwise Reveals the Massive Catalyst That Could Send Solana (SOL) Price Soaring",
       "cross_check": 1
@@ -126,7 +121,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-18T02:05:37.937394+00:00",
+      "collected_at": "2026-11-18T03:05:51.813700+00:00",
       "effective_weight": 0.96,
       "title_original": "Goldman Sachs раскрыла позиции в Ethereum-ETF на $1,22 млрд",
       "cross_check": 1
@@ -145,7 +140,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-18T02:05:36.279033+00:00",
+      "collected_at": "2026-11-18T03:05:50.024517+00:00",
       "effective_weight": 1.3,
       "title_original": "CFTC halts some Kalshi Trump mention markets over manipulation concerns",
       "cross_check": 2
@@ -162,7 +157,7 @@
       "bear_weight": 2.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-18T02:05:36.279099+00:00",
+      "collected_at": "2026-11-18T03:05:50.024568+00:00",
       "effective_weight": 1.04,
       "title_original": "Eastern Europe crypto flows fall 7.9% as Ukraine draws $12B in stablecoins",
       "cross_check": 1
@@ -179,7 +174,7 @@
       "bear_weight": 2.7,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-18T02:05:36.279168+00:00",
+      "collected_at": "2026-11-18T03:05:50.024620+00:00",
       "effective_weight": 1.04,
       "title_original": "Fed’s Waller cites Binance hack in warning over tokenized finance",
       "cross_check": 1
@@ -196,10 +191,10 @@
       "bear_weight": 2.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-18T02:05:36.279234+00:00",
+      "collected_at": "2026-11-18T03:05:50.024670+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin drops 2.5% as Nvidia stock risks new 5-month lows into Q3 earnings",
-      "cross_check": 2
+      "cross_check": 1
     },
     {
       "title": "Ocean Mining Rejects Complicity Claims Over Luxor Bitcoin Pool Hack",
@@ -213,7 +208,7 @@
       "bear_weight": 3.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-18T02:05:36.636248+00:00",
+      "collected_at": "2026-11-18T03:05:50.557745+00:00",
       "effective_weight": 1.0,
       "title_original": "Ocean Mining Rejects Complicity Claims Over Luxor Bitcoin Pool Hack",
       "cross_check": 1
