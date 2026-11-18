@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - WEEKLY TRAINER ORCHESTRATOR v7.6.0
+# ARGUS - WEEKLY TRAINER ORCHESTRATOR v7.6.1
 # Path: crypto/learn/weekly_trainer.py
 # ============================================================
 
@@ -13,7 +13,7 @@ import warnings
 
 warnings.filterwarnings("ignore", message=".*SQLAlchemy.*")
 
-VERSION = "7.6.0"
+VERSION = "7.6.1"
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("crypto.trainer")
 
@@ -323,8 +323,13 @@ def main():
     if force_reset:
         config["force_reset_old"] = False; save_json(CONFIG_FILE, config); log.info("force_reset_old set to false")
 
+    # ИСПРАВЛЕНО: Безопасный путь к отчету
     try:
-        subprocess.run([sys.executable, "crypto/report/weekly_trainer_report.py"], check=False)
+        report_script = SCRIPT_DIR.parent / "report" / "weekly_trainer_report.py"
+        if report_script.exists():
+            subprocess.run([sys.executable, str(report_script)], check=False)
+        else:
+            log.warning(f"Report script not found at {report_script}")
     except Exception as e:
         log.error(f"Report failed: {e}")
 
