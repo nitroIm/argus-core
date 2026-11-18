@@ -1,0 +1,25 @@
+name: Check Aiven Data
+
+on:
+  workflow_dispatch: # Позволяет запускать проверку вручную кнопкой в GitHub
+
+jobs:
+  check-db:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: pip install "psycopg[binary]"
+
+      - name: Run check script
+        env:
+          # Имя секрета в GitHub. Ниже инструкция, как его создать.
+          AIVEN_DB_URL: ${{ secrets.AIVEN_DB_URL }}
+        run: python check_data.py
