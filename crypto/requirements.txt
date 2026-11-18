@@ -14,3 +14,7 @@ hmmlearn==0.3.3
 six==1.17.0
 pyarrow==15.0.0
 fastparquet==2024.2.0
+
+# PyTorch для моделей GRU, TFT и Hybrid
+torch==2.14.0
+torchvision==0.29.0
