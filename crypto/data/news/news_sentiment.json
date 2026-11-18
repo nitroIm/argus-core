@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-11-18T07:05:45.762854+00:00",
-  "total_news": 86,
-  "avg_sentiment": -0.28,
+  "generated_at": "2026-11-18T08:05:42.175539+00:00",
+  "total_news": 91,
+  "avg_sentiment": -0.297,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 14,
-  "bearish_count": 24,
-  "neutral_count": 48,
+  "bullish_count": 15,
+  "bearish_count": 27,
+  "neutral_count": 49,
   "fake_count": 0,
-  "cross_confirmed": 6,
+  "cross_confirmed": 8,
   "by_source": {
     "Cointelegraph": {
       "total": 20,
@@ -22,20 +22,25 @@
     "Bitcoin.com": {
       "total": 8,
       "bull": 3,
-      "bear": 2
+      "bear": 1
     },
     "CryptoSlate": {
-      "total": 7,
+      "total": 8,
       "bull": 0,
-      "bear": 1
+      "bear": 2
     },
     "CryptoPotato": {
       "total": 19,
       "bull": 5,
       "bear": 6
     },
+    "Bitcoinist": {
+      "total": 7,
+      "bull": 1,
+      "bear": 3
+    },
     "ForkLog": {
-      "total": 14,
+      "total": 11,
       "bull": 2,
       "bear": 0
     }
@@ -53,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-18T07:05:43.847514+00:00",
+      "collected_at": "2026-11-18T08:05:40.053910+00:00",
       "effective_weight": 1.04,
       "title_original": "Goldman Sachs reports $1.22B in Ether ETFs as ETHA share count jumps",
       "cross_check": 1
@@ -70,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-18T07:05:45.723216+00:00",
+      "collected_at": "2026-11-18T08:05:42.115703+00:00",
       "effective_weight": 0.96,
       "title_original": "Goldman Sachs раскрыла позиции в Ethereum-ETF на $1,22 млрд",
       "cross_check": 1
@@ -87,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-18T07:05:45.723314+00:00",
+      "collected_at": "2026-11-18T08:05:42.115837+00:00",
       "effective_weight": 0.96,
       "title_original": "В Bitwise допустили рост Solana до $1100",
       "cross_check": 1
@@ -104,7 +109,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-18T07:05:43.919728+00:00",
+      "collected_at": "2026-11-18T08:05:40.090282+00:00",
       "effective_weight": 0.88,
       "title_original": "Ethereum Devs Weigh a Scaling Upgrade That Could Break 15,000 Apps",
       "cross_check": 1
@@ -121,13 +126,30 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-18T07:05:44.126823+00:00",
+      "collected_at": "2026-11-18T08:05:40.226262+00:00",
       "effective_weight": 0.8,
       "title_original": "Bitcoin Price Could Gain If AI Slump Prompts Fed Pivot, Coinshares Says",
-      "cross_check": 2
+      "cross_check": 1
     }
   ],
   "top_bearish": [
+    {
+      "title": "Bitcoin power-law models predict a rebound without real proof",
+      "url": "https://cryptoslate.com/bitcoin-power-law-models-predict-a-rebound-without-real-proof/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-18T07:40:44+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 0.8,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-18T08:05:40.305633+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Bitcoin power-law models predict a rebound without real proof",
+      "cross_check": 1
+    },
     {
       "title": "CFTC halts some Kalshi Trump mention markets over manipulation concerns",
       "url": "https://cointelegraph.com/news/cftc-kalshi-trump-mention-markets-review?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -140,7 +162,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-18T07:05:43.846970+00:00",
+      "collected_at": "2026-11-18T08:05:40.053069+00:00",
       "effective_weight": 1.04,
       "title_original": "CFTC halts some Kalshi Trump mention markets over manipulation concerns",
       "cross_check": 2
@@ -157,7 +179,7 @@
       "bear_weight": 2.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-18T07:05:43.847021+00:00",
+      "collected_at": "2026-11-18T08:05:40.053147+00:00",
       "effective_weight": 1.04,
       "title_original": "Eastern Europe crypto flows fall 7.9% as Ukraine draws $12B in stablecoins",
       "cross_check": 1
@@ -174,7 +196,7 @@
       "bear_weight": 2.7,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-18T07:05:43.847074+00:00",
+      "collected_at": "2026-11-18T08:05:40.053230+00:00",
       "effective_weight": 1.04,
       "title_original": "Fed’s Waller cites Binance hack in warning over tokenized finance",
       "cross_check": 1
@@ -191,27 +213,10 @@
       "bear_weight": 2.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-18T07:05:43.847123+00:00",
+      "collected_at": "2026-11-18T08:05:40.053308+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin drops 2.5% as Nvidia stock risks new 5-month lows into Q3 earnings",
-      "cross_check": 1
-    },
-    {
-      "title": "Binance resets Anthropic futures, wiping out stop-loss orders",
-      "url": "https://cryptoslate.com/binance-resets-anthropic-futures-wiping-out-stop-loss-orders/",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-18T04:40:27+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-18T07:05:44.213387+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Binance resets Anthropic futures, wiping out stop-loss orders",
-      "cross_check": 1
+      "cross_check": 2
     }
   ]
 }
