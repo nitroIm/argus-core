@@ -1,16 +1,16 @@
 {
-  "generated_at": "2026-11-18T09:05:39.423829+00:00",
-  "total_news": 83,
-  "avg_sentiment": -0.326,
+  "generated_at": "2026-11-18T10:05:40.380027+00:00",
+  "total_news": 90,
+  "avg_sentiment": -0.307,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 14,
-  "bearish_count": 25,
+  "bullish_count": 16,
+  "bearish_count": 30,
   "neutral_count": 44,
   "fake_count": 0,
-  "cross_confirmed": 4,
+  "cross_confirmed": 6,
   "by_source": {
     "Cointelegraph": {
-      "total": 20,
+      "total": 19,
       "bull": 2,
       "bear": 9
     },
@@ -21,12 +21,12 @@
     },
     "Bitcoin.com": {
       "total": 7,
-      "bull": 2,
+      "bull": 3,
       "bear": 1
     },
     "CryptoSlate": {
       "total": 7,
-      "bull": 0,
+      "bull": 1,
       "bear": 2
     },
     "CryptoPotato": {
@@ -34,13 +34,52 @@
       "bull": 5,
       "bear": 6
     },
+    "Bitcoinist": {
+      "total": 7,
+      "bull": 0,
+      "bear": 4
+    },
     "ForkLog": {
-      "total": 12,
+      "total": 13,
       "bull": 2,
-      "bear": 0
+      "bear": 1
     }
   },
   "top_bullish": [
+    {
+      "title": "Binance Wallet Opens $500M Anthropic IPO Token Sale but Buyers Won’t Own Shares",
+      "url": "https://news.bitcoin.com/exchanges/binance-wallet-500m-anthropic-ipo-xstocks-token-sale/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-18T09:20:20+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-18T10:05:39.040620+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Binance Wallet Opens $500M Anthropic IPO Token Sale but Buyers Won’t Own Shares",
+      "cross_check": 1
+    },
+    {
+      "title": "Cardano faces $5 million adoption test after Hoskinson declares original roadmap complete",
+      "url": "https://cryptoslate.com/cardano-faces-5-million-adoption-test-after-hoskinson-declares-original-roadmap-complete/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-18T09:30:15+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-18T10:05:39.112793+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Cardano faces $5 million adoption test after Hoskinson declares original roadmap complete",
+      "cross_check": 1
+    },
     {
       "title": "SOL comes out of Breakpoint 7% higher as Solana exits beta",
       "url": "https://cointelegraph.com/markets/solana-sol-gains-7-percent-breakpoint-beta-tokenization?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -51,45 +90,11 @@
       "sentiment": 1.0,
       "bull_weight": 1.0,
       "bear_weight": 0.0,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-18T09:05:38.434957+00:00",
-      "effective_weight": 1.95,
+      "collected_at": "2026-11-18T10:05:38.871983+00:00",
+      "effective_weight": 1.3,
       "title_original": "SOL comes out of Breakpoint 7% higher as Solana exits beta",
-      "cross_check": 1
-    },
-    {
-      "title": "Goldman Sachs reports $1.22B in Ether ETFs as ETHA share count jumps",
-      "url": "https://cointelegraph.com/news/goldman-sachs-reports-122b-ether-etfs-etha-shares-jumps?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-11-17T09:08:32+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 2.2,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-18T09:05:38.435640+00:00",
-      "effective_weight": 1.04,
-      "title_original": "Goldman Sachs reports $1.22B in Ether ETFs as ETHA share count jumps",
-      "cross_check": 1
-    },
-    {
-      "title": "Goldman Sachs раскрыла позиции в Ethereum-ETF на $1,22 млрд",
-      "url": "https://forklog.com/goldman-sachs-raskryla-pozitsii-v-ethereum-etf-na-1-22-mlrd",
-      "source": "ForkLog",
-      "source_weight": 1.2,
-      "lang": "ru",
-      "pub_date": "2026-11-17T10:00:00+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-18T09:05:39.387161+00:00",
-      "effective_weight": 0.96,
-      "title_original": "Goldman Sachs раскрыла позиции в Ethereum-ETF на $1,22 млрд",
       "cross_check": 1
     },
     {
@@ -104,7 +109,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-18T09:05:38.463939+00:00",
+      "collected_at": "2026-11-18T10:05:38.924582+00:00",
       "effective_weight": 0.88,
       "title_original": "Ethereum Devs Weigh a Scaling Upgrade That Could Break 15,000 Apps",
       "cross_check": 1
@@ -121,7 +126,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-18T09:05:38.653920+00:00",
+      "collected_at": "2026-11-18T10:05:39.040915+00:00",
       "effective_weight": 0.8,
       "title_original": "Bitcoin Price Could Gain If AI Slump Prompts Fed Pivot, Coinshares Says",
       "cross_check": 1
@@ -129,20 +134,20 @@
   ],
   "top_bearish": [
     {
-      "title": "Ripple (XRP) Price Flashes Incredibly Rare Signals: is a Rebound Coming?",
-      "url": "https://cryptopotato.com/ripple-xrp-price-flashes-incredibly-rare-signals-is-a-rebound-coming/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-18T08:16:21+00:00",
+      "title": "CFTC приостановила торги на Kalshi по контрактам на высказывания Трампа",
+      "url": "https://forklog.com/cftc-priostanovila-torgi-na-kalshi-po-kontraktam-na-vyskazyvaniya-trampa",
+      "source": "ForkLog",
+      "source_weight": 1.2,
+      "lang": "ru",
+      "pub_date": "2026-11-18T10:00:00+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 0.8,
+      "bear_weight": 1.5,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-18T09:05:38.772213+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Ripple (XRP) Price Flashes Incredibly Rare Signals: is a Rebound Coming?",
+      "collected_at": "2026-11-18T10:05:40.315978+00:00",
+      "effective_weight": 1.8,
+      "title_original": "CFTC приостановила торги на Kalshi по контрактам на высказывания Трампа",
       "cross_check": 1
     },
     {
@@ -157,10 +162,10 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-18T09:05:38.435107+00:00",
+      "collected_at": "2026-11-18T10:05:38.872209+00:00",
       "effective_weight": 1.04,
       "title_original": "CFTC halts some Kalshi Trump mention markets over manipulation concerns",
-      "cross_check": 2
+      "cross_check": 1
     },
     {
       "title": "Eastern Europe crypto flows fall 7.9% as Ukraine draws $12B in stablecoins",
@@ -174,7 +179,7 @@
       "bear_weight": 2.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-18T09:05:38.435154+00:00",
+      "collected_at": "2026-11-18T10:05:38.872285+00:00",
       "effective_weight": 1.04,
       "title_original": "Eastern Europe crypto flows fall 7.9% as Ukraine draws $12B in stablecoins",
       "cross_check": 1
@@ -191,7 +196,7 @@
       "bear_weight": 2.7,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-18T09:05:38.435204+00:00",
+      "collected_at": "2026-11-18T10:05:38.872362+00:00",
       "effective_weight": 1.04,
       "title_original": "Fed’s Waller cites Binance hack in warning over tokenized finance",
       "cross_check": 1
@@ -208,7 +213,7 @@
       "bear_weight": 2.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-18T09:05:38.435250+00:00",
+      "collected_at": "2026-11-18T10:05:38.872434+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin drops 2.5% as Nvidia stock risks new 5-month lows into Q3 earnings",
       "cross_check": 1
