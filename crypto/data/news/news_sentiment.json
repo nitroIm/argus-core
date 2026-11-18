@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-18T15:05:40.113227+00:00",
+  "generated_at": "2026-11-18T16:05:39.586797+00:00",
   "total_news": 91,
-  "avg_sentiment": -0.229,
+  "avg_sentiment": -0.275,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 17,
+  "bullish_count": 18,
   "bearish_count": 28,
-  "neutral_count": 46,
+  "neutral_count": 45,
   "fake_count": 0,
   "cross_confirmed": 7,
   "by_source": {
@@ -22,7 +22,7 @@
     "Bitcoin.com": {
       "total": 9,
       "bull": 2,
-      "bear": 3
+      "bear": 4
     },
     "CryptoSlate": {
       "total": 7,
@@ -30,56 +30,22 @@
       "bear": 1
     },
     "CryptoPotato": {
-      "total": 20,
+      "total": 21,
       "bull": 6,
       "bear": 5
     },
     "Bitcoinist": {
       "total": 7,
-      "bull": 0,
-      "bear": 4
+      "bull": 1,
+      "bear": 3
     },
     "ForkLog": {
-      "total": 10,
+      "total": 9,
       "bull": 1,
       "bear": 1
     }
   },
   "top_bullish": [
-    {
-      "title": "Bitcoin faces a new threat as US prices surge at fastest pace in 38 years",
-      "url": "https://cryptoslate.com/bitcoin-faces-a-new-threat-as-us-prices-surge-at-fastest-pace-in-38-years/",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-18T14:50:59+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.5,
-      "bear_weight": 0.0,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-18T15:05:38.850866+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Bitcoin faces a new threat as US prices surge at fastest pace in 38 years",
-      "cross_check": 1
-    },
-    {
-      "title": "BetFury Offers BFG Staking With Daily Crypto Payouts From Platform Revenue",
-      "url": "https://cryptopotato.com/betfury-offers-bfg-staking-with-daily-crypto-payouts-from-platform-revenue/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-18T14:06:00+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-18T15:05:39.076032+00:00",
-      "effective_weight": 1.5,
-      "title_original": "BetFury Offers BFG Staking With Daily Crypto Payouts From Platform Revenue",
-      "cross_check": 1
-    },
     {
       "title": "Bitwise seeks Texas Stock Exchange listing for Zcash ETF",
       "url": "https://cointelegraph.com/news/bitwise-zcash-etf-texas-stock-exchange-listing?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -92,10 +58,27 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-18T15:05:38.331260+00:00",
+      "collected_at": "2026-11-18T16:05:37.399215+00:00",
       "effective_weight": 1.3,
       "title_original": "Bitwise seeks Texas Stock Exchange listing for Zcash ETF",
-      "cross_check": 1
+      "cross_check": 2
+    },
+    {
+      "title": "Bitwise Targets Texas Stock Exchange for New Zcash ETF Under ZEC Ticker",
+      "url": "https://bitcoinist.com/bitwise-targets-texas-stock-exchange-for-new-zcash-etf-under-zec-ticker/",
+      "source": "Bitcoinist",
+      "source_weight": 0.9,
+      "lang": "en",
+      "pub_date": "2026-11-18T15:45:46+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.1,
+      "collected_at": "2026-11-18T16:05:38.781213+00:00",
+      "effective_weight": 1.215,
+      "title_original": "Bitwise Targets Texas Stock Exchange for New Zcash ETF Under ZEC Ticker",
+      "cross_check": 2
     },
     {
       "title": "SOL comes out of Breakpoint 7% higher as Solana exits beta",
@@ -109,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-18T15:05:38.331385+00:00",
+      "collected_at": "2026-11-18T16:05:37.399295+00:00",
       "effective_weight": 1.04,
       "title_original": "SOL comes out of Breakpoint 7% higher as Solana exits beta",
       "cross_check": 1
@@ -126,29 +109,46 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-18T15:05:38.667007+00:00",
+      "collected_at": "2026-11-18T16:05:37.912349+00:00",
       "effective_weight": 1.0,
       "title_original": "Arthur Hayes Touts ETH Rally, Then Linked Wallet Sends $8.5M in ETH to Coinbase",
+      "cross_check": 1
+    },
+    {
+      "title": "Bitcoin faces a new threat as US prices surge at fastest pace in 38 years",
+      "url": "https://cryptoslate.com/bitcoin-faces-a-new-threat-as-us-prices-surge-at-fastest-pace-in-38-years/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-18T14:50:59+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.5,
+      "bear_weight": 0.0,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-18T16:05:38.042538+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Bitcoin faces a new threat as US prices surge at fastest pace in 38 years",
       "cross_check": 1
     }
   ],
   "top_bearish": [
     {
-      "title": "CFTC приостановила торги на Kalshi по контрактам на высказывания Трампа",
-      "url": "https://forklog.com/cftc-priostanovila-torgi-na-kalshi-po-kontraktam-na-vyskazyvaniya-trampa",
-      "source": "ForkLog",
-      "source_weight": 1.2,
-      "lang": "ru",
-      "pub_date": "2026-11-18T10:00:00+00:00",
+      "title": "Schiff Says CFTC Chair ‘Blatantly Deceived’ Him on Prediction Markets",
+      "url": "https://news.bitcoin.com/igaming/schiff-says-cftc-chair-blatantly-deceived-him-on-prediction-markets/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-18T15:30:28+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.0,
+      "bear_weight": 0.8,
+      "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-18T15:05:40.052130+00:00",
-      "effective_weight": 1.2,
-      "title_original": "CFTC приостановила торги на Kalshi по контрактам на высказывания Трампа",
-      "cross_check": 1
+      "collected_at": "2026-11-18T16:05:37.912261+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Schiff Says CFTC Chair ‘Blatantly Deceived’ Him on Prediction Markets",
+      "cross_check": 2
     },
     {
       "title": "Scattered Spider Hacker Sentenced to 6 Years Over $11.6M in Stolen Crypto",
@@ -162,7 +162,7 @@
       "bear_weight": 5.6,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-18T15:05:38.425839+00:00",
+      "collected_at": "2026-11-18T16:05:37.505328+00:00",
       "effective_weight": 1.1,
       "title_original": "Scattered Spider Hacker Sentenced to 6 Years Over $11.6M in Stolen Crypto",
       "cross_check": 1
@@ -179,7 +179,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-18T15:05:38.331520+00:00",
+      "collected_at": "2026-11-18T16:05:37.399383+00:00",
       "effective_weight": 1.04,
       "title_original": "CFTC halts some Kalshi Trump mention markets over manipulation concerns",
       "cross_check": 1
@@ -196,7 +196,7 @@
       "bear_weight": 2.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-18T15:05:38.331582+00:00",
+      "collected_at": "2026-11-18T16:05:37.399432+00:00",
       "effective_weight": 1.04,
       "title_original": "Eastern Europe crypto flows fall 7.9% as Ukraine draws $12B in stablecoins",
       "cross_check": 1
@@ -213,7 +213,7 @@
       "bear_weight": 2.7,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-18T15:05:38.331649+00:00",
+      "collected_at": "2026-11-18T16:05:37.399475+00:00",
       "effective_weight": 1.04,
       "title_original": "Fed’s Waller cites Binance hack in warning over tokenized finance",
       "cross_check": 1
