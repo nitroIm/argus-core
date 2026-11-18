@@ -1,17 +1,6 @@
 # ============================================================
-# ARGUS - SIGNAL BOT v9.5.2
+# ARGUS - SIGNAL BOT v9.6.0 (Adaptive Routing)
 # Path: crypto/signals/signal_bot.py
-#
-# ИЗМЕНЕНИЯ v9.5.2:
-#   - ФИКС ФАНТОМНЫХ ЗАКРЫТИЙ: _close_deal теперь работает с тем же
-#     словарём deals, что и main(). Раньше закрытие удаляло сделку
-#     из файла, но финальный save_json в main() перезаписывал файл
-#     устаревшей копией — сделка воскресала и закрывалась заново
-#     на каждом прогоне (один вход, одна причина, минус по балансу
-#     каждый раз).
-#   - Удаление сделки теперь идёт в переданный по ссылке словарь.
-#   - TP1-частичное закрытие обновляет сделку в словаре напрямую,
-#     без перечитывания файла.
 # ============================================================
 
 import os, json, logging, base64, pickle, requests
@@ -22,7 +11,7 @@ import pandas as pd
 import numpy as np
 import xgboost as xgb
 
-VERSION = "9.5.2"
+VERSION = "9.6.0"
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("crypto.signal_bot")
 
@@ -125,9 +114,8 @@ def calculate_indicators(df_1h):
     df_1h['atr14_pct'] = df_1h['atr_14'] / df_1h['close']
     return df_1h.dropna()
 
-def get_adaptive_threshold(df_1h, cfg, adap):
+def get_adaptive_threshold(df_1h, base_thresh, adap):
     """Считает порог входа с поправкой на волатильность."""
-    base_thresh = float(cfg.get("threshold", 2.0))
     if not adap.get("enabled", False):
         return base_thresh
     lookback = int(adap.get("atr_lookback", 200))
@@ -148,7 +136,7 @@ def get_adaptive_threshold(df_1h, cfg, adap):
         factor = 1.0
     
     adjusted = base_thresh * factor
-    adjusted = max(float(adap.get("min_threshold", 3.0)), min(float(adap.get("max_threshold", 6.5)), adjusted))
+    adjusted = max(float(adap.get("min_threshold", 1.5)), min(float(adap.get("max_threshold", 6.5)), adjusted))
     return round(adjusted, 2)
 
 def fetch_macro_for_bot():
@@ -275,9 +263,6 @@ def _close_deal(mode, deal, bot_info, exit_price, reason, close_pct, fee_pct, no
     closed = load_json(CLOSED_DEALS, [])
     closed.append({"type":deal_type,"entry":entry,"exit":exit_price,"pnl_pct":round(pnl_pct,2),"pnl_usd":round(pnl_usd,2),"reason":reason,"mode":mode,"close_time":now_utc.isoformat(),"balance_after":bot_info[mode]["balance"],"active_signals":deal.get("active_signals",[])})
     save_json(CLOSED_DEALS, closed)
-    # ФИКС: полное закрытие удаляет сделку из ПЕРЕДАННОГО словаря deals
-    # (того же объекта, что держит main), и сохраняет его. Раньше удаление
-    # шло в локальную копию, а финальный save в main воскрешал сделку.
     if close_pct >= 99.9 or reason != "TAKE_PROFIT_1":
         deals.pop(mode, None)
         save_json(OPENED_DEALS, deals)
@@ -330,8 +315,6 @@ def process_mode(mode, deals, bot_info, models, df_1h, config):
                 tp1_hit = True
                 close_pct = float(rm.get("partial_exit_pct", 50))
                 _close_deal(mode, deal, bot_info, tp1, "TAKE_PROFIT_1", close_pct, fee_pct, now_utc, deals)
-                # ФИКС: обновляем сделку в переданном словаре напрямую,
-                # без перечитывания файла
                 if mode in deals and "entry" in deals[mode]:
                     deals[mode]['tp1_hit'] = True
                     deals[mode]['size_left_pct'] = size_left - close_pct
@@ -403,7 +386,12 @@ def process_mode(mode, deals, bot_info, models, df_1h, config):
         if rsi > 70: score_short += w.get("rsi_high",1.0); active_short.append("rsi_high")
         elif rsi > 30: score_short += w.get("rsi_mid",1.0); active_short.append("rsi_mid")
 
-    thresh = get_adaptive_threshold(df_1h, cfg, adap)
+    # Читаем раздельные пороги
+    base_thresh_long = cfg.get("threshold_long", 5.0)
+    base_thresh_short = cfg.get("threshold_short", 5.0)
+    thresh_long = get_adaptive_threshold(df_1h, base_thresh_long, adap)
+    thresh_short = get_adaptive_threshold(df_1h, base_thresh_short, adap)
+
     can_open = True
     no_entry_str = cfg.get("no_entry_time_utc")
     if mode == "intraday" and no_entry_str:
@@ -412,9 +400,9 @@ def process_mode(mode, deals, bot_info, models, df_1h, config):
             if now_utc.hour > ne_h or (now_utc.hour == ne_h and now_utc.minute >= ne_m): can_open = False
         except Exception: pass
 
-    log.info(f"[{mode.upper()}] Price:{price:.1f} | LONG:{score_long:.2f} | SHORT:{score_short:.2f} | Thresh:{thresh:.2f} (adaptive)")
+    log.info(f"[{mode.upper()}] Price:{price:.1f} | LONG:{score_long:.2f} (Thr:{thresh_long:.2f}) | SHORT:{score_short:.2f} (Thr:{thresh_short:.2f})")
 
-    if can_open and score_long >= thresh and score_long > score_short:
+    if can_open and score_long >= thresh_long and score_long > score_short:
         sl_pct = max(rm.get("min_sl_pct",0.5), min(rm.get("max_sl_pct",3.0), atr * rm.get("atr_mult_sl",1.5) / price * 100))
         tp1_pct = max(rm.get("min_tp1_pct",0.8), min(rm.get("max_tp1_pct",2.0), atr * rm.get("atr_mult_tp1",1.0) / price * 100))
         tp2_pct = max(rm.get("min_tp2_pct",2.0), min(rm.get("max_tp2_pct",8.0), atr * rm.get("atr_mult_tp2",2.5) / price * 100))
@@ -422,7 +410,7 @@ def process_mode(mode, deals, bot_info, models, df_1h, config):
         deals[mode] = deal
         append_event({"type":"ENTRY","mode":mode,"deal_type":"LONG","entry":price,"tp1":deal["tp1"],"tp2":deal["tp2"],"sl":deal["sl"]})
         log.info(f"🚀 [{mode.upper()}] LONG! SL:{sl_pct:.2f}% TP1:{tp1_pct:.2f}% TP2:{tp2_pct:.2f}%")
-    elif can_open and score_short >= thresh and score_short > score_long:
+    elif can_open and score_short >= thresh_short and score_short > score_long:
         sl_pct = max(rm.get("min_sl_pct",0.5), min(rm.get("max_sl_pct",3.0), atr * rm.get("atr_mult_sl",1.5) / price * 100))
         tp1_pct = max(rm.get("min_tp1_pct",0.8), min(rm.get("max_tp1_pct",2.0), atr * rm.get("atr_mult_tp1",1.0) / price * 100))
         tp2_pct = max(rm.get("min_tp2_pct",2.0), min(rm.get("max_tp2_pct",8.0), atr * rm.get("atr_mult_tp2",2.5) / price * 100))
@@ -458,8 +446,6 @@ def main():
     df_1h = calculate_indicators(df_1h.set_index('open_time')).reset_index()
     process_mode("intraday", deals, bot_info, models, df_1h, config)
     process_mode("swing", deals, bot_info, models, df_1h, config)
-    # ФИКС: теперь deals — единственный источник правды, финальный save
-    # уже не может воскресить закрытую сделку
     save_json(OPENED_DEALS, deals); save_json(BOT_INFO, bot_info)
 
 if __name__ == "__main__":
