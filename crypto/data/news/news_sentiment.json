@@ -1,37 +1,37 @@
 {
-  "generated_at": "2026-11-18T14:05:41.942129+00:00",
-  "total_news": 89,
-  "avg_sentiment": -0.292,
+  "generated_at": "2026-11-18T15:05:40.113227+00:00",
+  "total_news": 91,
+  "avg_sentiment": -0.229,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 16,
-  "bearish_count": 29,
-  "neutral_count": 44,
+  "bullish_count": 17,
+  "bearish_count": 28,
+  "neutral_count": 46,
   "fake_count": 0,
-  "cross_confirmed": 8,
+  "cross_confirmed": 7,
   "by_source": {
     "Cointelegraph": {
-      "total": 19,
+      "total": 20,
       "bull": 3,
       "bear": 7
     },
     "Decrypt": {
-      "total": 17,
+      "total": 18,
       "bull": 2,
       "bear": 7
     },
     "Bitcoin.com": {
-      "total": 8,
+      "total": 9,
       "bull": 2,
       "bear": 3
     },
     "CryptoSlate": {
-      "total": 8,
-      "bull": 2,
-      "bear": 2
+      "total": 7,
+      "bull": 3,
+      "bear": 1
     },
     "CryptoPotato": {
-      "total": 19,
-      "bull": 5,
+      "total": 20,
+      "bull": 6,
       "bear": 5
     },
     "Bitcoinist": {
@@ -40,27 +40,44 @@
       "bear": 4
     },
     "ForkLog": {
-      "total": 11,
-      "bull": 2,
+      "total": 10,
+      "bull": 1,
       "bear": 1
     }
   },
   "top_bullish": [
     {
-      "title": "Arthur Hayes Touts ETH Rally, Then Linked Wallet Sends $8.5M in ETH to Coinbase",
-      "url": "https://news.bitcoin.com/market-updates/arthur-hayes-linked-wallet-8-5m-eth-coinbase-after-rally-call/",
-      "source": "Bitcoin.com",
+      "title": "Bitcoin faces a new threat as US prices surge at fastest pace in 38 years",
+      "url": "https://cryptoslate.com/bitcoin-faces-a-new-threat-as-us-prices-surge-at-fastest-pace-in-38-years/",
+      "source": "CryptoSlate",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-11-18T13:30:18+00:00",
+      "pub_date": "2026-11-18T14:50:59+00:00",
       "sentiment": 1.0,
       "bull_weight": 1.5,
       "bear_weight": 0.0,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-18T14:05:39.874490+00:00",
+      "collected_at": "2026-11-18T15:05:38.850866+00:00",
       "effective_weight": 1.5,
-      "title_original": "Arthur Hayes Touts ETH Rally, Then Linked Wallet Sends $8.5M in ETH to Coinbase",
+      "title_original": "Bitcoin faces a new threat as US prices surge at fastest pace in 38 years",
+      "cross_check": 1
+    },
+    {
+      "title": "BetFury Offers BFG Staking With Daily Crypto Payouts From Platform Revenue",
+      "url": "https://cryptopotato.com/betfury-offers-bfg-staking-with-daily-crypto-payouts-from-platform-revenue/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-18T14:06:00+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-18T15:05:39.076032+00:00",
+      "effective_weight": 1.5,
+      "title_original": "BetFury Offers BFG Staking With Daily Crypto Payouts From Platform Revenue",
       "cross_check": 1
     },
     {
@@ -75,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-18T14:05:39.617650+00:00",
+      "collected_at": "2026-11-18T15:05:38.331260+00:00",
       "effective_weight": 1.3,
       "title_original": "Bitwise seeks Texas Stock Exchange listing for Zcash ETF",
       "cross_check": 1
@@ -90,46 +107,29 @@
       "sentiment": 1.0,
       "bull_weight": 1.0,
       "bear_weight": 0.0,
-      "freshness": 1.0,
+      "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-18T14:05:39.617780+00:00",
-      "effective_weight": 1.3,
+      "collected_at": "2026-11-18T15:05:38.331385+00:00",
+      "effective_weight": 1.04,
       "title_original": "SOL comes out of Breakpoint 7% higher as Solana exits beta",
       "cross_check": 1
     },
     {
-      "title": "Binance Wallet Opens $500M Anthropic IPO Token Sale but Buyers Won’t Own Shares",
-      "url": "https://news.bitcoin.com/exchanges/binance-wallet-500m-anthropic-ipo-xstocks-token-sale/",
+      "title": "Arthur Hayes Touts ETH Rally, Then Linked Wallet Sends $8.5M in ETH to Coinbase",
+      "url": "https://news.bitcoin.com/market-updates/arthur-hayes-linked-wallet-8-5m-eth-coinbase-after-rally-call/",
       "source": "Bitcoin.com",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-11-18T09:20:20+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-18T14:05:39.874774+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Binance Wallet Opens $500M Anthropic IPO Token Sale but Buyers Won’t Own Shares",
-      "cross_check": 1
-    },
-    {
-      "title": "Bitcoin’s failed Nvidia earnings rally puts $62,000 support back in the spotlight",
-      "url": "https://cryptoslate.com/bitcoins-failed-nvidia-earnings-rally-puts-62000-support-back-in-the-spotlight/",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-18T10:20:39+00:00",
+      "pub_date": "2026-11-18T13:30:18+00:00",
       "sentiment": 1.0,
       "bull_weight": 1.5,
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-18T14:05:40.067769+00:00",
+      "collected_at": "2026-11-18T15:05:38.667007+00:00",
       "effective_weight": 1.0,
-      "title_original": "Bitcoin’s failed Nvidia earnings rally puts $62,000 support back in the spotlight",
-      "cross_check": 3
+      "title_original": "Arthur Hayes Touts ETH Rally, Then Linked Wallet Sends $8.5M in ETH to Coinbase",
+      "cross_check": 1
     }
   ],
   "top_bearish": [
@@ -145,7 +145,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-18T14:05:41.883359+00:00",
+      "collected_at": "2026-11-18T15:05:40.052130+00:00",
       "effective_weight": 1.2,
       "title_original": "CFTC приостановила торги на Kalshi по контрактам на высказывания Трампа",
       "cross_check": 1
@@ -162,7 +162,7 @@
       "bear_weight": 5.6,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-18T14:05:39.709778+00:00",
+      "collected_at": "2026-11-18T15:05:38.425839+00:00",
       "effective_weight": 1.1,
       "title_original": "Scattered Spider Hacker Sentenced to 6 Years Over $11.6M in Stolen Crypto",
       "cross_check": 1
@@ -179,7 +179,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-18T14:05:39.617912+00:00",
+      "collected_at": "2026-11-18T15:05:38.331520+00:00",
       "effective_weight": 1.04,
       "title_original": "CFTC halts some Kalshi Trump mention markets over manipulation concerns",
       "cross_check": 1
@@ -196,7 +196,7 @@
       "bear_weight": 2.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-18T14:05:39.617974+00:00",
+      "collected_at": "2026-11-18T15:05:38.331582+00:00",
       "effective_weight": 1.04,
       "title_original": "Eastern Europe crypto flows fall 7.9% as Ukraine draws $12B in stablecoins",
       "cross_check": 1
@@ -213,7 +213,7 @@
       "bear_weight": 2.7,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-18T14:05:39.618040+00:00",
+      "collected_at": "2026-11-18T15:05:38.331649+00:00",
       "effective_weight": 1.04,
       "title_original": "Fed’s Waller cites Binance hack in warning over tokenized finance",
       "cross_check": 1
