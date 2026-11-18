@@ -1,9 +1,6 @@
 # ============================================================
-# ARGUS - WEEKLY TRAINER ORCHESTRATOR v7.5.3
+# ARGUS - WEEKLY TRAINER ORCHESTRATOR v7.6.0
 # Path: crypto/learn/weekly_trainer.py
-#
-# ИЗМЕНЕНИЯ v7.5.3:
-#   - Добавлены train_start и train_end в best_params.json (для отчета)
 # ============================================================
 
 import os, json, logging, importlib.util, subprocess, base64, sys
@@ -16,7 +13,7 @@ import warnings
 
 warnings.filterwarnings("ignore", message=".*SQLAlchemy.*")
 
-VERSION = "7.5.3"
+VERSION = "7.6.0"
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("crypto.trainer")
 
@@ -159,7 +156,7 @@ def load_models():
         try:
             spec = importlib.util.spec_from_file_location(fp.stem, fp)
             module = importlib.util.module_from_spec(spec)
-            sys.modules[fp.stem] = module  # ИСПРАВЛЕНИЕ PICKLE
+            sys.modules[fp.stem] = module
             spec.loader.exec_module(module)
             if hasattr(module, "train"):
                 models.append((fp.stem, module))
@@ -167,6 +164,18 @@ def load_models():
         except Exception as e:
             log.error(f"  ✗ Failed to load {fp.stem}: {e}")
     return models
+
+def cleanup_models_dir(winning_files):
+    """Удаляет все файлы моделей, которые не являются победителями."""
+    log.info("🧹 Очистка папки с моделями...")
+    all_files = list(MODELS_DIR.glob("model_*"))
+    for f in all_files:
+        if f.name not in winning_files:
+            try:
+                f.unlink()
+                log.info(f"  🗑 Удален устаревший файл: {f.name}")
+            except Exception as e:
+                log.error(f"  Ошибка удаления {f.name}: {e}")
 
 def main():
     log.info(f"STARTING WEEKLY TRAINER ORCHESTRATOR v{VERSION}")
@@ -234,7 +243,6 @@ def main():
             if m in old_data and isinstance(old_data[m], dict):
                 for s in ["long", "short"]: old_data[m][s] = None
 
-    # ИСПРАВЛЕНИЕ ДАТ В ОТЧЕТЕ: сохраняем train_start и train_end
     out_data = {
         "trainer_version": VERSION, 
         "updated_at": datetime.now(timezone.utc).isoformat(),
@@ -301,11 +309,22 @@ def main():
     save_json(MODEL_OUT_FILE, out_data)
     log.info(f"Saved to {MODEL_OUT_FILE}")
 
+    # ── ОЧИСТКА СТАРЫХ МОДЕЛЕЙ ──
+    winning_files = set()
+    for mode in ["intraday", "swing"]:
+        for side in ["long", "short"]:
+            node = out_data.get(mode, {}).get(side)
+            if node and "params" in node:
+                mf = node["params"].get("model_file")
+                if mf: winning_files.add(mf)
+    cleanup_models_dir(winning_files)
+    # ───────────────────────────
+
     if force_reset:
         config["force_reset_old"] = False; save_json(CONFIG_FILE, config); log.info("force_reset_old set to false")
 
     try:
-        subprocess.run(["python", "crypto/report/weekly_trainer_report.py"], check=False)
+        subprocess.run([sys.executable, "crypto/report/weekly_trainer_report.py"], check=False)
     except Exception as e:
         log.error(f"Report failed: {e}")
 
