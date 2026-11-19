@@ -1,9 +1,6 @@
 # ============================================================
-# ARGUS - TEMPORAL FUSION TRANSFORMER (TFT) v1.0.0
+# ARGUS - TEMPORAL FUSION TRANSFORMER (TFT) v1.0.1
 # Path: crypto/learn/model_tft.py
-#
-# ИДЕЯ: Упрощенный TFT (Variable Selection -> LSTM -> Attention).
-# Исследования 2025 показывают превосходство TFT над LSTM.
 # ============================================================
 
 import logging, numpy as np, pandas as pd, pickle
@@ -31,6 +28,11 @@ def prepare_features(df, horizon, seq_len=48):
     data['atr14_pct'] = data['atr_14'] / data['close']
     data['avg_trade_norm'] = data['avg_trade_size'] / data['volume'].rolling(20).mean()
     data['pc1'] = data['price_change_1h']; data['pc4'] = data['price_change_4h']; data['pc24'] = data['price_change_24h']
+    
+    # Защита на случай, если buy_ratio не пришел
+    if 'buy_ratio' not in data.columns:
+        data['buy_ratio'] = data['taker_buy_volume'] / data['volume'].replace(0, 1)
+
     base = ['rsi_norm','macd_norm','ema50_diff','ema20_diff','ema200_diff','vol_ratio','atr14_pct','avg_trade_norm','pc1','pc4','pc24','buy_ratio']
     data['target'] = ((data['close'].shift(-horizon) - data['close']) / data['close'] * 100).clip(-20, 20)
     data = data.dropna(subset=base + ['target'])
@@ -129,18 +131,25 @@ def train(df, side="long", mode="swing", models_dir=None, cfg=None):
         X_tr, y_tr = torch.tensor(X_seq[:split_idx]), torch.tensor(y_seq[:split_idx])
         X_te, y_te = torch.tensor(X_seq[split_idx:]), torch.tensor(y_seq[split_idx:])
         
+        # Нормализация X
         mean = X_tr.mean(dim=(0,1), keepdim=True)
         std = X_tr.std(dim=(0,1), keepdim=True) + 1e-6
         X_tr = (X_tr - mean) / std
         X_te = (X_te - mean) / std
         
+        # НОРМАЛИЗАЦИЯ Y (КРИТИЧЕСКИЙ ФИКС)
+        y_mean = y_tr.mean()
+        y_std = y_tr.std() + 1e-6
+        y_tr_norm = (y_tr - y_mean) / y_std
+        
         model = SimpleTFT(input_dim=X_tr.shape[2], d_model=32)
         opt = torch.optim.Adam(model.parameters(), lr=0.001)
         loss_fn = nn.MSELoss()
         
-        loader = DataLoader(TensorDataset(X_tr, y_tr), batch_size=128, shuffle=True)
+        loader = DataLoader(TensorDataset(X_tr, y_tr_norm), batch_size=128, shuffle=True)
         model.train()
-        for _ in range(15):
+        # УВЕЛИЧИЛИ ЭПОХИ ДО 50
+        for _ in range(50):
             for bx, by in loader:
                 opt.zero_grad()
                 pred = model(bx)
@@ -150,7 +159,9 @@ def train(df, side="long", mode="swing", models_dir=None, cfg=None):
                 
         model.eval()
         with torch.no_grad():
-            preds = model(X_te).numpy()
+            preds_norm = model(X_te).numpy()
+            # ВОЗВРАЩАЕМ МАСШТАБ Y
+            preds = preds_norm * y_std.item() + y_mean.item()
             
         test_data_aligned = data.iloc[seq_len-1:].iloc[split_idx:].reset_index(drop=True)
         full_preds = np.full(len(test_data_aligned), np.nan)
