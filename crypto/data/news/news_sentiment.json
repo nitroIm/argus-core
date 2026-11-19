@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-19T22:05:40.275131+00:00",
-  "total_news": 89,
-  "avg_sentiment": -0.238,
+  "generated_at": "2026-11-19T23:05:35.396870+00:00",
+  "total_news": 90,
+  "avg_sentiment": -0.255,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 12,
   "bearish_count": 25,
-  "neutral_count": 52,
+  "neutral_count": 53,
   "fake_count": 0,
   "cross_confirmed": 12,
   "by_source": {
@@ -20,7 +20,7 @@
       "bear": 4
     },
     "Bitcoin.com": {
-      "total": 9,
+      "total": 10,
       "bull": 2,
       "bear": 5
     },
@@ -47,23 +47,6 @@
   },
   "top_bullish": [
     {
-      "title": "A New Recovery Model? Binance Wins $6.5B Freezing Order Across 26K Wallets",
-      "url": "https://news.bitcoin.com/regulation-and-legal/new-recovery-model-binance-wins-6-5b-freeze-26k-wallets/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-19T21:25:58+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-19T22:05:38.603198+00:00",
-      "effective_weight": 1.5,
-      "title_original": "A New Recovery Model? Binance Wins $6.5B Freezing Order Across 26K Wallets",
-      "cross_check": 3
-    },
-    {
       "title": "Ethereum’s Glamsterdam upgrade could slip to May 2027 over compatibility concerns",
       "url": "https://cointelegraph.com/news/ethereum-glamsterdam-could-slip-to-may-2027?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
       "source": "Cointelegraph",
@@ -75,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-19T22:05:38.317209+00:00",
+      "collected_at": "2026-11-19T23:05:32.984772+00:00",
       "effective_weight": 1.3,
       "title_original": "Ethereum’s Glamsterdam upgrade could slip to May 2027 over compatibility concerns",
       "cross_check": 1
@@ -92,27 +75,27 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-19T22:05:38.317845+00:00",
+      "collected_at": "2026-11-19T23:05:32.985076+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin retests $62K as Nasdaq futures rise ahead of Anthropic debut",
       "cross_check": 4
     },
     {
-      "title": "Solana Is Planning Its Next Major Upgrades: Here’s What Changes",
-      "url": "https://cryptopotato.com/solana-is-planning-its-next-major-upgrades-heres-what-changes/",
-      "source": "CryptoPotato",
+      "title": "A New Recovery Model? Binance Wins $6.5B Freezing Order Across 26K Wallets",
+      "url": "https://news.bitcoin.com/regulation-and-legal/new-recovery-model-binance-wins-6-5b-freeze-26k-wallets/",
+      "source": "Bitcoin.com",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-11-19T16:24:54+00:00",
+      "pub_date": "2026-11-19T21:25:58+00:00",
       "sentiment": 1.0,
       "bull_weight": 1.2,
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-19T22:05:38.838748+00:00",
+      "collected_at": "2026-11-19T23:05:33.440618+00:00",
       "effective_weight": 1.0,
-      "title_original": "Solana Is Planning Its Next Major Upgrades: Here’s What Changes",
-      "cross_check": 1
+      "title_original": "A New Recovery Model? Binance Wins $6.5B Freezing Order Across 26K Wallets",
+      "cross_check": 3
     },
     {
       "title": "Anthropic IPO Tests Bitcoin ETFs as Blackrock Leads $306M Exit",
@@ -126,10 +109,27 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-19T22:05:38.603581+00:00",
+      "collected_at": "2026-11-19T23:05:33.440827+00:00",
       "effective_weight": 0.8,
       "title_original": "Anthropic IPO Tests Bitcoin ETFs as Blackrock Leads $306M Exit",
       "cross_check": 2
+    },
+    {
+      "title": "Solana Is Planning Its Next Major Upgrades: Here’s What Changes",
+      "url": "https://cryptopotato.com/solana-is-planning-its-next-major-upgrades-heres-what-changes/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-19T16:24:54+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-19T23:05:34.125225+00:00",
+      "effective_weight": 0.8,
+      "title_original": "Solana Is Planning Its Next Major Upgrades: Here’s What Changes",
+      "cross_check": 1
     }
   ],
   "top_bearish": [
@@ -145,7 +145,7 @@
       "bear_weight": 1.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-19T22:05:38.317408+00:00",
+      "collected_at": "2026-11-19T23:05:32.984843+00:00",
       "effective_weight": 1.3,
       "title_original": "Bitcoin price ignores Anthropic debut as ANT share price dips below $100",
       "cross_check": 5
@@ -162,7 +162,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-19T22:05:38.370903+00:00",
+      "collected_at": "2026-11-19T23:05:33.120234+00:00",
       "effective_weight": 1.1,
       "title_original": "Hackers Leak Visa, Mastercard and JPMorgan Customer Data",
       "cross_check": 1
@@ -179,7 +179,7 @@
       "bear_weight": 0.8,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-19T22:05:38.317911+00:00",
+      "collected_at": "2026-11-19T23:05:32.985110+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin carry trades could beat Treasury bills in 2027, Sygnum predicts",
       "cross_check": 3
@@ -196,7 +196,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-19T22:05:38.318040+00:00",
+      "collected_at": "2026-11-19T23:05:32.985177+00:00",
       "effective_weight": 1.04,
       "title_original": "Binance hackers stole 192 tokens across 11 networks, court docs show",
       "cross_check": 1
@@ -213,7 +213,7 @@
       "bear_weight": 1.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-19T22:05:38.603362+00:00",
+      "collected_at": "2026-11-19T23:05:33.440703+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitcoin Giant Strategy Will Keep Buying STRC Below $100 After $600M Day: Saylor",
       "cross_check": 1
