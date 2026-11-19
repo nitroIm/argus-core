@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-11-19T04:05:46.670836+00:00",
-  "total_news": 90,
-  "avg_sentiment": -0.295,
+  "generated_at": "2026-11-19T05:05:48.670250+00:00",
+  "total_news": 83,
+  "avg_sentiment": -0.214,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 13,
-  "bearish_count": 24,
-  "neutral_count": 53,
+  "bullish_count": 12,
+  "bearish_count": 20,
+  "neutral_count": 51,
   "fake_count": 0,
-  "cross_confirmed": 4,
+  "cross_confirmed": 1,
   "by_source": {
     "Cointelegraph": {
       "total": 20,
@@ -25,19 +25,14 @@
       "bear": 2
     },
     "CryptoSlate": {
-      "total": 7,
-      "bull": 2,
+      "total": 8,
+      "bull": 3,
       "bear": 1
     },
     "CryptoPotato": {
       "total": 22,
       "bull": 6,
-      "bear": 5
-    },
-    "Bitcoinist": {
-      "total": 8,
-      "bull": 2,
-      "bear": 3
+      "bear": 4
     },
     "ForkLog": {
       "total": 9,
@@ -46,6 +41,23 @@
     }
   },
   "top_bullish": [
+    {
+      "title": "Binance unlocks 20x BlackRock IBIT ETF trades with a weekend catch",
+      "url": "https://cryptoslate.com/binance-adds-24-7-futures-tied-to-blackrocks-bitcoin-ibit-etf/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-19T04:20:21+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-19T05:05:47.540913+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Binance unlocks 20x BlackRock IBIT ETF trades with a weekend catch",
+      "cross_check": 1
+    },
     {
       "title": "Bitwise seeks Texas Stock Exchange listing for Zcash ETF",
       "url": "https://cointelegraph.com/news/bitwise-zcash-etf-texas-stock-exchange-listing?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -58,10 +70,10 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-19T04:05:45.044494+00:00",
+      "collected_at": "2026-11-19T05:05:47.269808+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitwise seeks Texas Stock Exchange listing for Zcash ETF",
-      "cross_check": 2
+      "cross_check": 1
     },
     {
       "title": "SOL comes out of Breakpoint 7% higher as Solana exits beta",
@@ -75,7 +87,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-19T04:05:45.044581+00:00",
+      "collected_at": "2026-11-19T05:05:47.269897+00:00",
       "effective_weight": 1.04,
       "title_original": "SOL comes out of Breakpoint 7% higher as Solana exits beta",
       "cross_check": 1
@@ -92,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-19T04:05:45.528397+00:00",
+      "collected_at": "2026-11-19T05:05:47.540963+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitcoin launches Testnet5 and gives miners a real trial of four proposed fixes",
       "cross_check": 1
@@ -109,47 +121,13 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-19T04:05:45.528443+00:00",
+      "collected_at": "2026-11-19T05:05:47.541005+00:00",
       "effective_weight": 1.0,
       "title_original": "Japan bond yields surge to 3.75%, hiding a quiet Bitcoin trap",
       "cross_check": 1
-    },
-    {
-      "title": "DBS Taps Circle’s USDC Infrastructure to Push Institutional Stablecoin Adoption in Asia",
-      "url": "https://cryptopotato.com/dbs-taps-circles-usdc-infrastructure-to-push-institutional-stablecoin-adoption-in-asia/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-18T23:45:51+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 2.4,
-      "bear_weight": 0.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-19T04:05:45.614283+00:00",
-      "effective_weight": 1.0,
-      "title_original": "DBS Taps Circle’s USDC Infrastructure to Push Institutional Stablecoin Adoption in Asia",
-      "cross_check": 2
     }
   ],
   "top_bearish": [
-    {
-      "title": "Ledger Confirms Tampered Bitcoin Wallets in Berlin as Spy Implant Probe Spreads Beyond Asia",
-      "url": "https://decrypt.co/383586/ledger-confirms-tampered-bitcoin-wallets-berlin-spreads-beyond-asia",
-      "source": "Decrypt",
-      "source_weight": 1.1,
-      "lang": "en",
-      "pub_date": "2026-11-18T22:16:02+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 0.8,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-19T04:05:45.083288+00:00",
-      "effective_weight": 1.1,
-      "title_original": "Ledger Confirms Tampered Bitcoin Wallets in Berlin as Spy Implant Probe Spreads Beyond Asia",
-      "cross_check": 1
-    },
     {
       "title": "Binance says it obtained $6.5B worldwide freezing order after hack",
       "url": "https://cointelegraph.com/news/binance-says-won-65b-worldwide-freezing-order-after-hack?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -162,7 +140,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-19T04:05:45.044100+00:00",
+      "collected_at": "2026-11-19T05:05:47.269419+00:00",
       "effective_weight": 1.04,
       "title_original": "Binance says it obtained $6.5B worldwide freezing order after hack",
       "cross_check": 2
@@ -179,26 +157,9 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-19T04:05:45.044180+00:00",
+      "collected_at": "2026-11-19T05:05:47.269501+00:00",
       "effective_weight": 1.04,
       "title_original": "$25M Ethereum MEV acquittal tests criminal enforcement limits",
-      "cross_check": 1
-    },
-    {
-      "title": "German Judge Offers to Drop Movie2K Charges in Exchange for $2.5B in Bitcoin",
-      "url": "https://news.bitcoin.com/regulation-and-legal/german-judge-offers-drop-movie2k-charges-2-5-billion-bitcoin/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-18T22:45:48+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-19T04:05:45.480950+00:00",
-      "effective_weight": 1.0,
-      "title_original": "German Judge Offers to Drop Movie2K Charges in Exchange for $2.5B in Bitcoin",
       "cross_check": 1
     },
     {
@@ -213,9 +174,43 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-19T04:05:46.628523+00:00",
+      "collected_at": "2026-11-19T05:05:48.634592+00:00",
       "effective_weight": 0.96,
       "title_original": "CFTC приостановила торги на Kalshi по контрактам на высказывания Трампа",
+      "cross_check": 1
+    },
+    {
+      "title": "Ledger Confirms Tampered Bitcoin Wallets in Berlin as Spy Implant Probe Spreads Beyond Asia",
+      "url": "https://decrypt.co/383586/ledger-confirms-tampered-bitcoin-wallets-berlin-spreads-beyond-asia",
+      "source": "Decrypt",
+      "source_weight": 1.1,
+      "lang": "en",
+      "pub_date": "2026-11-18T22:16:02+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 0.8,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-19T05:05:47.305409+00:00",
+      "effective_weight": 0.88,
+      "title_original": "Ledger Confirms Tampered Bitcoin Wallets in Berlin as Spy Implant Probe Spreads Beyond Asia",
+      "cross_check": 2
+    },
+    {
+      "title": "Scattered Spider Hacker Sentenced to 6 Years Over $11.6M in Stolen Crypto",
+      "url": "https://decrypt.co/383522/scattered-spider-hacker-sentenced-to-6-years-over-11-6m-in-stolen-crypto",
+      "source": "Decrypt",
+      "source_weight": 1.1,
+      "lang": "en",
+      "pub_date": "2026-11-18T10:17:17+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 5.6,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-19T05:05:47.305699+00:00",
+      "effective_weight": 0.88,
+      "title_original": "Scattered Spider Hacker Sentenced to 6 Years Over $11.6M in Stolen Crypto",
       "cross_check": 1
     }
   ]
