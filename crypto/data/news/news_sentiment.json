@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-19T02:05:46.193725+00:00",
+  "generated_at": "2026-11-19T03:05:41.961410+00:00",
   "total_news": 90,
-  "avg_sentiment": -0.342,
+  "avg_sentiment": -0.297,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 13,
-  "bearish_count": 26,
-  "neutral_count": 51,
+  "bearish_count": 25,
+  "neutral_count": 52,
   "fake_count": 0,
   "cross_confirmed": 4,
   "by_source": {
@@ -32,7 +32,7 @@
     "CryptoPotato": {
       "total": 22,
       "bull": 6,
-      "bear": 6
+      "bear": 5
     },
     "Bitcoinist": {
       "total": 8,
@@ -47,6 +47,23 @@
   },
   "top_bullish": [
     {
+      "title": "Bitcoin launches Testnet5 and gives miners a real trial of four proposed fixes",
+      "url": "https://cryptoslate.com/bitcoin-launches-testnet5-and-gives-miners-a-real-trial-of-four-proposed-fixes/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-19T02:30:49+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-19T03:05:41.150138+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Bitcoin launches Testnet5 and gives miners a real trial of four proposed fixes",
+      "cross_check": 1
+    },
+    {
       "title": "Bitwise seeks Texas Stock Exchange listing for Zcash ETF",
       "url": "https://cointelegraph.com/news/bitwise-zcash-etf-texas-stock-exchange-listing?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
       "source": "Cointelegraph",
@@ -58,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-19T02:05:44.126179+00:00",
+      "collected_at": "2026-11-19T03:05:40.862721+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitwise seeks Texas Stock Exchange listing for Zcash ETF",
       "cross_check": 2
@@ -75,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-19T02:05:44.126276+00:00",
+      "collected_at": "2026-11-19T03:05:40.862818+00:00",
       "effective_weight": 1.04,
       "title_original": "SOL comes out of Breakpoint 7% higher as Solana exits beta",
       "cross_check": 1
@@ -92,7 +109,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-19T02:05:44.781620+00:00",
+      "collected_at": "2026-11-19T03:05:41.150189+00:00",
       "effective_weight": 1.0,
       "title_original": "Japan bond yields surge to 3.75%, hiding a quiet Bitcoin trap",
       "cross_check": 1
@@ -109,47 +126,13 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-19T02:05:45.025032+00:00",
+      "collected_at": "2026-11-19T03:05:41.246514+00:00",
       "effective_weight": 1.0,
       "title_original": "DBS Taps Circle’s USDC Infrastructure to Push Institutional Stablecoin Adoption in Asia",
       "cross_check": 2
-    },
-    {
-      "title": "Bitcoin faces a new threat as US prices surge at fastest pace in 38 years",
-      "url": "https://cryptoslate.com/bitcoin-faces-a-new-threat-as-us-prices-surge-at-fastest-pace-in-38-years/",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-18T14:50:59+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.5,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-19T02:05:44.781950+00:00",
-      "effective_weight": 0.8,
-      "title_original": "Bitcoin faces a new threat as US prices surge at fastest pace in 38 years",
-      "cross_check": 1
     }
   ],
   "top_bearish": [
-    {
-      "title": "Binance says it obtained $6.5B worldwide freezing order after hack",
-      "url": "https://cointelegraph.com/news/binance-says-won-65b-worldwide-freezing-order-after-hack?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-11-18T20:20:37+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-19T02:05:44.125750+00:00",
-      "effective_weight": 1.3,
-      "title_original": "Binance says it obtained $6.5B worldwide freezing order after hack",
-      "cross_check": 2
-    },
     {
       "title": "Ledger Confirms Tampered Bitcoin Wallets in Berlin as Spy Implant Probe Spreads Beyond Asia",
       "url": "https://decrypt.co/383586/ledger-confirms-tampered-bitcoin-wallets-berlin-spreads-beyond-asia",
@@ -162,10 +145,27 @@
       "bear_weight": 0.8,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-19T02:05:44.199673+00:00",
+      "collected_at": "2026-11-19T03:05:40.920264+00:00",
       "effective_weight": 1.1,
       "title_original": "Ledger Confirms Tampered Bitcoin Wallets in Berlin as Spy Implant Probe Spreads Beyond Asia",
       "cross_check": 1
+    },
+    {
+      "title": "Binance says it obtained $6.5B worldwide freezing order after hack",
+      "url": "https://cointelegraph.com/news/binance-says-won-65b-worldwide-freezing-order-after-hack?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-11-18T20:20:37+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-19T03:05:40.862287+00:00",
+      "effective_weight": 1.04,
+      "title_original": "Binance says it obtained $6.5B worldwide freezing order after hack",
+      "cross_check": 2
     },
     {
       "title": "$25M Ethereum MEV acquittal tests criminal enforcement limits",
@@ -179,7 +179,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-19T02:05:44.125841+00:00",
+      "collected_at": "2026-11-19T03:05:40.862378+00:00",
       "effective_weight": 1.04,
       "title_original": "$25M Ethereum MEV acquittal tests criminal enforcement limits",
       "cross_check": 1
@@ -196,7 +196,7 @@
       "bear_weight": 1.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-19T02:05:44.507291+00:00",
+      "collected_at": "2026-11-19T03:05:41.078118+00:00",
       "effective_weight": 1.0,
       "title_original": "German Judge Offers to Drop Movie2K Charges in Exchange for $2.5B in Bitcoin",
       "cross_check": 1
@@ -213,7 +213,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-19T02:05:44.781723+00:00",
+      "collected_at": "2026-11-19T03:05:41.150292+00:00",
       "effective_weight": 1.0,
       "title_original": "Coinbase AI blocks $4.7 million scam, but a simple lie exposes its weakness",
       "cross_check": 1
