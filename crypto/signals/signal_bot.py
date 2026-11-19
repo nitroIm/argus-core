@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - SIGNAL BOT v9.6.0 (Adaptive Routing)
+# ARGUS - SIGNAL BOT v9.6.1 (Sequence Support)
 # Path: crypto/signals/signal_bot.py
 # ============================================================
 
@@ -11,7 +11,7 @@ import pandas as pd
 import numpy as np
 import xgboost as xgb
 
-VERSION = "9.6.0"
+VERSION = "9.6.1"
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("crypto.signal_bot")
 
@@ -115,7 +115,6 @@ def calculate_indicators(df_1h):
     return df_1h.dropna()
 
 def get_adaptive_threshold(df_1h, base_thresh, adap):
-    """Считает порог входа с поправкой на волатильность."""
     if not adap.get("enabled", False):
         return base_thresh
     lookback = int(adap.get("atr_lookback", 200))
@@ -180,7 +179,7 @@ def merge_macro_for_bot(df_btc, macro):
     result = asof(result, ['fear_greed'], 48)
     return result
 
-def get_features_for_ml(df_1h, feature_cols):
+def get_features_for_ml(df_1h, feature_cols, seq_len=1):
     df = df_1h.copy()
     df['rsi_norm'] = df['rsi'] / 100.0
     df['rsi_7_norm'] = df['rsi_7'] / 100.0
@@ -215,6 +214,11 @@ def get_features_for_ml(df_1h, feature_cols):
         df = df_m
     cols = [c for c in feature_cols if c in df.columns]
     if not cols: return None
+    
+    # Возвращаем либо 1 шаг, либо последовательность
+    if seq_len > 1:
+        if len(df) < seq_len: return None
+        return df[cols].iloc[-seq_len:].values
     return df[cols].iloc[[-1]].values
 
 def load_ml_model(node):
@@ -238,12 +242,26 @@ def predict_ml(node, df_1h):
     feat = node["params"].get("features", [])
     mt, model = load_ml_model(node)
     if model is None: return None
+    
     try:
-        X = get_features_for_ml(df_1h, feat)
+        # Определяем, нужна ли последовательность
+        raw_mt = node["params"].get("model_type", "")
+        is_seq = raw_mt in ["tft", "hybrid_gru_xgb", "gru"]
+        seq_len = 48 if is_seq else 1
+        
+        X = get_features_for_ml(df_1h, feat, seq_len)
         if X is None or len(X) == 0: return None
-        if mt == "xgb": return float(model.predict(xgb.DMatrix(X))[0])
-        else: return float(model.predict(X)[0])
-    except Exception: return None
+        
+        if is_seq:
+            X = X.reshape(1, seq_len, -1)
+            
+        if mt == "xgb": 
+            return float(model.predict(xgb.DMatrix(X))[0])
+        else: 
+            return float(model.predict(X)[0])
+    except Exception as e:
+        log.error(f"Predict error: {e}")
+        return None
 
 def is_ml_ready(node, cfg):
     if not node: return False
@@ -386,7 +404,6 @@ def process_mode(mode, deals, bot_info, models, df_1h, config):
         if rsi > 70: score_short += w.get("rsi_high",1.0); active_short.append("rsi_high")
         elif rsi > 30: score_short += w.get("rsi_mid",1.0); active_short.append("rsi_mid")
 
-    # Читаем раздельные пороги
     base_thresh_long = cfg.get("threshold_long", 5.0)
     base_thresh_short = cfg.get("threshold_short", 5.0)
     thresh_long = get_adaptive_threshold(df_1h, base_thresh_long, adap)
