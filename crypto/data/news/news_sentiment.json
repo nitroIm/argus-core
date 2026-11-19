@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-11-19T15:05:40.875346+00:00",
+  "generated_at": "2026-11-19T16:05:40.313837+00:00",
   "total_news": 87,
-  "avg_sentiment": -0.302,
+  "avg_sentiment": -0.343,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 11,
-  "bearish_count": 18,
+  "bullish_count": 10,
+  "bearish_count": 19,
   "neutral_count": 58,
   "fake_count": 0,
-  "cross_confirmed": 10,
+  "cross_confirmed": 8,
   "by_source": {
     "Cointelegraph": {
       "total": 22,
@@ -21,12 +21,12 @@
     },
     "Bitcoin.com": {
       "total": 7,
-      "bull": 0,
+      "bull": 1,
       "bear": 3
     },
     "CryptoSlate": {
       "total": 9,
-      "bull": 1,
+      "bull": 0,
       "bear": 2
     },
     "CryptoPotato": {
@@ -36,8 +36,8 @@
     },
     "Bitcoinist": {
       "total": 8,
-      "bull": 2,
-      "bear": 0
+      "bull": 1,
+      "bear": 1
     },
     "ForkLog": {
       "total": 3,
@@ -47,21 +47,21 @@
   },
   "top_bullish": [
     {
-      "title": "Important Cardano News and ADA Price Update: November 19",
-      "url": "https://cryptopotato.com/important-cardano-news-and-ada-price-update-november-19/",
-      "source": "CryptoPotato",
+      "title": "Anthropic IPO Tests Bitcoin ETFs as Blackrock Leads $306M Exit",
+      "url": "https://news.bitcoin.com/bitcoin-etf/anthropic-ipo-tests-bitcoin-etfs-blackrock-leads-306m-exit/",
+      "source": "Bitcoin.com",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-11-19T14:47:47+00:00",
+      "pub_date": "2026-11-19T15:55:57+00:00",
       "sentiment": 1.0,
-      "bull_weight": 0.8,
+      "bull_weight": 1.2,
       "bear_weight": 0.0,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-19T15:05:39.485590+00:00",
+      "collected_at": "2026-11-19T16:05:38.645211+00:00",
       "effective_weight": 1.5,
-      "title_original": "Important Cardano News and ADA Price Update: November 19",
-      "cross_check": 2
+      "title_original": "Anthropic IPO Tests Bitcoin ETFs as Blackrock Leads $306M Exit",
+      "cross_check": 1
     },
     {
       "title": "Bitcoin retests $62K as Nasdaq futures rise ahead of Anthropic debut",
@@ -75,10 +75,27 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-19T15:05:38.781938+00:00",
+      "collected_at": "2026-11-19T16:05:38.260702+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin retests $62K as Nasdaq futures rise ahead of Anthropic debut",
       "cross_check": 3
+    },
+    {
+      "title": "Important Cardano News and ADA Price Update: November 19",
+      "url": "https://cryptopotato.com/important-cardano-news-and-ada-price-update-november-19/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-19T14:47:47+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 0.8,
+      "bear_weight": 0.0,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-19T16:05:39.008354+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Important Cardano News and ADA Price Update: November 19",
+      "cross_check": 2
     },
     {
       "title": "XRP on the Brink of a Major Breakout? Analyst Flags Key Resistance",
@@ -92,7 +109,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-19T15:05:39.485796+00:00",
+      "collected_at": "2026-11-19T16:05:39.008563+00:00",
       "effective_weight": 1.0,
       "title_original": "XRP on the Brink of a Major Breakout? Analyst Flags Key Resistance",
       "cross_check": 1
@@ -109,45 +126,28 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.1,
-      "collected_at": "2026-11-19T15:05:39.825516+00:00",
+      "collected_at": "2026-11-19T16:05:39.240495+00:00",
       "effective_weight": 0.81,
       "title_original": "Bitcoin Could Soon Outperform US Treasury Bills Without A Price Rally — Here’s How",
       "cross_check": 3
-    },
-    {
-      "title": "Binance unlocks 20x BlackRock IBIT ETF trades with a weekend catch",
-      "url": "https://cryptoslate.com/binance-adds-24-7-futures-tied-to-blackrocks-bitcoin-ibit-etf/",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-19T04:20:21+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-19T15:05:39.358319+00:00",
-      "effective_weight": 0.8,
-      "title_original": "Binance unlocks 20x BlackRock IBIT ETF trades with a weekend catch",
-      "cross_check": 1
     }
   ],
   "top_bearish": [
     {
-      "title": "Chainlink and UBS Bring Structured Products Onchain in Push Into $2T Market",
-      "url": "https://news.bitcoin.com/finance/chainlink-ubs-structured-products-onchain-push-2t-market/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
+      "title": "Bitcoin Mining Company Dumps Final BTC as $75M AI Funding Gap Looms",
+      "url": "https://bitcoinist.com/bitcoin-mining-company-dumps-final-btc-as-75m-ai-funding-gap-looms/",
+      "source": "Bitcoinist",
+      "source_weight": 0.9,
       "lang": "en",
-      "pub_date": "2026-11-19T15:03:54+00:00",
+      "pub_date": "2026-11-19T15:20:36+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 0.8,
+      "bear_weight": 1.5,
       "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-19T15:05:39.083641+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Chainlink and UBS Bring Structured Products Onchain in Push Into $2T Market",
+      "fake_score": 0.1,
+      "collected_at": "2026-11-19T16:05:39.240183+00:00",
+      "effective_weight": 1.215,
+      "title_original": "Bitcoin Mining Company Dumps Final BTC as $75M AI Funding Gap Looms",
       "cross_check": 1
     },
     {
@@ -162,7 +162,7 @@
       "bear_weight": 0.8,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-19T15:05:38.782018+00:00",
+      "collected_at": "2026-11-19T16:05:38.260780+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin carry trades could beat Treasury bills in 2027, Sygnum predicts",
       "cross_check": 2
@@ -179,7 +179,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-19T15:05:38.782154+00:00",
+      "collected_at": "2026-11-19T16:05:38.260912+00:00",
       "effective_weight": 1.04,
       "title_original": "Binance hackers stole 192 tokens across 11 networks, court docs show",
       "cross_check": 1
@@ -196,7 +196,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-19T15:05:38.782343+00:00",
+      "collected_at": "2026-11-19T16:05:38.261093+00:00",
       "effective_weight": 1.04,
       "title_original": "Binance says it obtained $6.5B worldwide freezing order after hack",
       "cross_check": 2
@@ -213,7 +213,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-19T15:05:38.782466+00:00",
+      "collected_at": "2026-11-19T16:05:38.261219+00:00",
       "effective_weight": 1.04,
       "title_original": "$25M Ethereum MEV acquittal tests criminal enforcement limits",
       "cross_check": 1
