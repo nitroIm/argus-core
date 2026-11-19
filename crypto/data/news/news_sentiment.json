@@ -1,22 +1,22 @@
 {
-  "generated_at": "2026-11-19T16:05:40.313837+00:00",
-  "total_news": 87,
-  "avg_sentiment": -0.343,
+  "generated_at": "2026-11-19T17:06:04.450404+00:00",
+  "total_news": 86,
+  "avg_sentiment": -0.267,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 10,
-  "bearish_count": 19,
-  "neutral_count": 58,
+  "bearish_count": 20,
+  "neutral_count": 56,
   "fake_count": 0,
-  "cross_confirmed": 8,
+  "cross_confirmed": 7,
   "by_source": {
     "Cointelegraph": {
-      "total": 22,
+      "total": 21,
       "bull": 2,
       "bear": 5
     },
     "Decrypt": {
-      "total": 13,
-      "bull": 1,
+      "total": 12,
+      "bull": 0,
       "bear": 3
     },
     "Bitcoin.com": {
@@ -30,14 +30,14 @@
       "bear": 2
     },
     "CryptoPotato": {
-      "total": 25,
-      "bull": 5,
+      "total": 26,
+      "bull": 6,
       "bear": 5
     },
     "Bitcoinist": {
       "total": 8,
       "bull": 1,
-      "bear": 1
+      "bear": 2
     },
     "ForkLog": {
       "total": 3,
@@ -47,20 +47,20 @@
   },
   "top_bullish": [
     {
-      "title": "Anthropic IPO Tests Bitcoin ETFs as Blackrock Leads $306M Exit",
-      "url": "https://news.bitcoin.com/bitcoin-etf/anthropic-ipo-tests-bitcoin-etfs-blackrock-leads-306m-exit/",
-      "source": "Bitcoin.com",
+      "title": "Solana Is Planning Its Next Major Upgrades: Here’s What Changes",
+      "url": "https://cryptopotato.com/solana-is-planning-its-next-major-upgrades-heres-what-changes/",
+      "source": "CryptoPotato",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-11-19T15:55:57+00:00",
+      "pub_date": "2026-11-19T16:24:54+00:00",
       "sentiment": 1.0,
       "bull_weight": 1.2,
       "bear_weight": 0.0,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-19T16:05:38.645211+00:00",
+      "collected_at": "2026-11-19T17:06:02.954894+00:00",
       "effective_weight": 1.5,
-      "title_original": "Anthropic IPO Tests Bitcoin ETFs as Blackrock Leads $306M Exit",
+      "title_original": "Solana Is Planning Its Next Major Upgrades: Here’s What Changes",
       "cross_check": 1
     },
     {
@@ -75,10 +75,27 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-19T16:05:38.260702+00:00",
+      "collected_at": "2026-11-19T17:06:02.585258+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin retests $62K as Nasdaq futures rise ahead of Anthropic debut",
       "cross_check": 3
+    },
+    {
+      "title": "Anthropic IPO Tests Bitcoin ETFs as Blackrock Leads $306M Exit",
+      "url": "https://news.bitcoin.com/bitcoin-etf/anthropic-ipo-tests-bitcoin-etfs-blackrock-leads-306m-exit/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-19T15:55:57+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-19T17:06:02.742006+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Anthropic IPO Tests Bitcoin ETFs as Blackrock Leads $306M Exit",
+      "cross_check": 1
     },
     {
       "title": "Important Cardano News and ADA Price Update: November 19",
@@ -92,7 +109,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-19T16:05:39.008354+00:00",
+      "collected_at": "2026-11-19T17:06:02.955113+00:00",
       "effective_weight": 1.0,
       "title_original": "Important Cardano News and ADA Price Update: November 19",
       "cross_check": 2
@@ -109,45 +126,28 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-19T16:05:39.008563+00:00",
+      "collected_at": "2026-11-19T17:06:02.955328+00:00",
       "effective_weight": 1.0,
       "title_original": "XRP on the Brink of a Major Breakout? Analyst Flags Key Resistance",
       "cross_check": 1
-    },
-    {
-      "title": "Bitcoin Could Soon Outperform US Treasury Bills Without A Price Rally — Here’s How",
-      "url": "https://bitcoinist.com/bitcoin-could-soon-outperform-us-treasury-bills-without-a-price-rally-heres-how/",
-      "source": "Bitcoinist",
-      "source_weight": 0.9,
-      "lang": "en",
-      "pub_date": "2026-11-19T11:57:28+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.5,
-      "bear_weight": 0.0,
-      "freshness": 1.0,
-      "fake_score": 0.1,
-      "collected_at": "2026-11-19T16:05:39.240495+00:00",
-      "effective_weight": 0.81,
-      "title_original": "Bitcoin Could Soon Outperform US Treasury Bills Without A Price Rally — Here’s How",
-      "cross_check": 3
     }
   ],
   "top_bearish": [
     {
-      "title": "Bitcoin Mining Company Dumps Final BTC as $75M AI Funding Gap Looms",
-      "url": "https://bitcoinist.com/bitcoin-mining-company-dumps-final-btc-as-75m-ai-funding-gap-looms/",
-      "source": "Bitcoinist",
-      "source_weight": 0.9,
+      "title": "Ethereum Price Analysis: Is ETH About to Explode or Crash Below $1.7K?",
+      "url": "https://cryptopotato.com/ethereum-price-analysis-is-eth-about-to-explode-or-crash-below-1-7k/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-11-19T15:20:36+00:00",
+      "pub_date": "2026-11-19T16:23:16+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 1.5,
+      "bear_weight": 3.0,
       "freshness": 1.5,
-      "fake_score": 0.1,
-      "collected_at": "2026-11-19T16:05:39.240183+00:00",
-      "effective_weight": 1.215,
-      "title_original": "Bitcoin Mining Company Dumps Final BTC as $75M AI Funding Gap Looms",
+      "fake_score": 0.0,
+      "collected_at": "2026-11-19T17:06:02.954966+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Ethereum Price Analysis: Is ETH About to Explode or Crash Below $1.7K?",
       "cross_check": 1
     },
     {
@@ -162,7 +162,7 @@
       "bear_weight": 0.8,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-19T16:05:38.260780+00:00",
+      "collected_at": "2026-11-19T17:06:02.585338+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin carry trades could beat Treasury bills in 2027, Sygnum predicts",
       "cross_check": 2
@@ -179,7 +179,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-19T16:05:38.260912+00:00",
+      "collected_at": "2026-11-19T17:06:02.585475+00:00",
       "effective_weight": 1.04,
       "title_original": "Binance hackers stole 192 tokens across 11 networks, court docs show",
       "cross_check": 1
@@ -196,26 +196,26 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-19T16:05:38.261093+00:00",
+      "collected_at": "2026-11-19T17:06:02.585665+00:00",
       "effective_weight": 1.04,
       "title_original": "Binance says it obtained $6.5B worldwide freezing order after hack",
       "cross_check": 2
     },
     {
-      "title": "$25M Ethereum MEV acquittal tests criminal enforcement limits",
-      "url": "https://cointelegraph.com/news/25m-ethereum-mev-acquittal-tests-criminal-enforcement-limits?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
+      "title": "Chainlink and UBS Bring Structured Products Onchain in Push Into $2T Market",
+      "url": "https://news.bitcoin.com/finance/chainlink-ubs-structured-products-onchain-push-2t-market/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-11-18T17:05:04+00:00",
+      "pub_date": "2026-11-19T15:03:54+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 0.8,
+      "bear_weight": 0.8,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-19T16:05:38.261219+00:00",
-      "effective_weight": 1.04,
-      "title_original": "$25M Ethereum MEV acquittal tests criminal enforcement limits",
+      "collected_at": "2026-11-19T17:06:02.742081+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Chainlink and UBS Bring Structured Products Onchain in Push Into $2T Market",
       "cross_check": 1
     }
   ]
