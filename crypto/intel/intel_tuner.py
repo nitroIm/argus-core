@@ -1,5 +1,5 @@
 # ============================================================
-# ARGUS - INTEL TUNER v3.0 (Self-Adaptive)
+# ARGUS - INTEL TUNER v3.1 (Adaptive Stepping)
 # Path: crypto/intel/intel_tuner.py
 # ============================================================
 
@@ -40,7 +40,6 @@ def save_json_atomic(path, data):
         if temp_path.exists(): temp_path.unlink()
 
 class SimpleADWIN:
-    """Упрощенный детектор дрифта ADWIN для потоковых данных."""
     def __init__(self, delta=0.002):
         self.delta = delta
         self.window = []
@@ -50,14 +49,9 @@ class SimpleADWIN:
     def update(self, value):
         self.window.append(value)
         self.n += 1
-        if self.n < 10:
-            self.variance = (self.variance * (self.n - 1) + (value - (sum(self.window) / self.n)) ** 2) / self.n if self.n > 1 else 0
-            return False
-        
+        if self.n < 10: return False
         mean = sum(self.window) / self.n
         self.variance = (self.variance * (self.n - 1) + (value - mean) ** 2) / self.n
-        
-        # Упрощенная проверка на разладку (сравнение первой и второй половины окна)
         if self.n >= 20:
             mid = self.n // 2
             mean1 = sum(self.window[:mid]) / mid
@@ -74,7 +68,6 @@ def check_retrain_triggers(mode, side, recent_deals, config, bot_info):
     min_trades = int(rt_cfg.get("min_trades_eval", 10))
     if len(recent_deals) < min_trades: return False
 
-    # 1. Триггер по винрейту
     wins = sum(1 for d in recent_deals if d.get("pnl_usd", 0) > 0)
     winrate = wins / len(recent_deals) if recent_deals else 0
     winrate_threshold = float(rt_cfg.get(f"winrate_drop_{mode}", 0.40 if mode == "intraday" else 0.35))
@@ -86,7 +79,6 @@ def check_retrain_triggers(mode, side, recent_deals, config, bot_info):
         trigger_fired = True
         reason = f"Winrate {winrate:.2%} < {winrate_threshold:.2%}"
 
-    # 2. Триггер ADWIN по серии ошибок (1 = убыток, 0 = прибыль)
     if not trigger_fired:
         adwin = SimpleADWIN(delta=float(rt_cfg.get("adwin_delta", 0.002)))
         errors = [1 if d.get("pnl_usd", 0) < 0 else 0 for d in reversed(recent_deals)]
@@ -98,7 +90,6 @@ def check_retrain_triggers(mode, side, recent_deals, config, bot_info):
 
     if not trigger_fired: return False
 
-    # Защита от спама (Cooldown)
     key = f"last_retrain_{mode}_{side}"
     last_retrain_str = bot_info.get(key)
     now_utc = datetime.now(timezone.utc)
@@ -107,7 +98,6 @@ def check_retrain_triggers(mode, side, recent_deals, config, bot_info):
     if last_retrain_str:
         last_retrain = datetime.fromisoformat(last_retrain_str)
         if (now_utc - last_retrain).total_seconds() / 3600.0 < cooldown_h:
-            log.info(f"[{mode.upper()}/{side.upper()}] Триггер переобучения ({reason}), но кулдаун еще не прошел.")
             return False
 
     log.warning(f"🚀 [{mode.upper()}/{side.upper()}] ДОСРОЧНОЕ ПЕРЕОБУЧЕНИЕ: {reason}")
@@ -115,7 +105,6 @@ def check_retrain_triggers(mode, side, recent_deals, config, bot_info):
     return True
 
 def tune_hedge_weights(mode, side, recent_deals, config, bot_info):
-    """Онлайн-обновление весов индикаторов по алгоритму Hedge/EWA."""
     hedge_cfg = config.get("hedge_learning", {})
     if not hedge_cfg.get("enabled", False): return
 
@@ -128,31 +117,24 @@ def tune_hedge_weights(mode, side, recent_deals, config, bot_info):
     for deal in recent_deals:
         pnl = deal.get("pnl_usd", 0)
         if pnl == 0: continue
-        
-        # Loss: если минус, то 1.0, если плюс, то 0.0. 
-        # Можно сгладить: loss = max(0, -pnl / initial_balance)
         loss = 1.0 if pnl < 0 else 0.0
         multiplier = 2.71828 ** (-lr * loss)
-
         for sig in deal.get("active_signals", []):
             if sig in weights:
                 old_w = weights[sig]
                 if pnl > 0:
-                    new_w = old_w * (2 - multiplier) # При профите немного растим
+                    new_w = old_w * (2 - multiplier)
                 else:
-                    new_w = old_w * multiplier      # При убытке режем экспоненциально
+                    new_w = old_w * multiplier
                 weights[sig] = round(max(min_w, min(max_w, new_w)), 3)
 
-    # Нормализация (чтобы сумма весов не улетала в космос)
     total_w = sum(weights.values())
     if total_w > 0:
         for k in weights:
             weights[k] = round(weights[k] / total_w * len(weights), 3)
-
     cfg["weights"] = weights
 
 def tune_thresholds(mode, side, deals_history, config, bot_info):
-    """Антипаралич: снижение порога при долгом простое."""
     cfg = config[mode]
     idle_timeout = float(cfg.get("idle_timeout_h", 3.0 if mode == "intraday" else 24.0))
     thresh_key = f"threshold_{side}"
@@ -169,30 +151,36 @@ def tune_thresholds(mode, side, deals_history, config, bot_info):
     if last_trade_time:
         idle_hours = (now_utc - last_trade_time).total_seconds() / 3600.0
     else:
-        # Если сделок вообще не было, используем время старта бота
         started_at = bot_info.get(mode, {}).get("started_at")
         if started_at:
             idle_hours = (now_utc - datetime.fromisoformat(started_at)).total_seconds() / 3600.0
         else:
-            idle_hours = idle_timeout + 1 # Принудительно снижаем
+            idle_hours = idle_timeout + 1
 
     if idle_hours >= idle_timeout and current_thresh > min_thresh:
-        # Защита от "дрожания": меняем не чаще, чем раз в 2 часа
+        # Защита от "дрожания": меняем не чаще, чем раз в 1 час
         key = f"last_threshold_change_{mode}_{side}"
         last_change_str = bot_info.get(key)
         if last_change_str:
             last_change = datetime.fromisoformat(last_change_str)
-            if (now_utc - last_change).total_seconds() < 7200:
+            if (now_utc - last_change).total_seconds() < 3600:
                 return
 
-        step = 0.05 if mode == "swing" else 0.1
+        # НОВОЕ: Адаптивный шаг в зависимости от времени простоя
+        if idle_hours > 100:
+            step = 1.0   # Если спим больше 4 дней — режем сразу на 1.0
+        elif idle_hours > 50:
+            step = 0.5   # Если спим больше 2 дней — режем на 0.5
+        else:
+            step = 0.1 if mode == "intraday" else 0.05
+
         new_thresh = max(min_thresh, current_thresh - step)
         cfg[thresh_key] = round(new_thresh, 2)
         bot_info[key] = now_utc.isoformat()
-        log.info(f"📉 [{mode.upper()}/{side.upper()}] Простой {idle_hours:.1f}ч. Снижаем порог {current_thresh} -> {new_thresh}")
+        log.info(f"📉 [{mode.upper()}/{side.upper()}] Простой {idle_hours:.1f}ч. Снижаем порог {current_thresh} -> {new_thresh} (шаг {step})")
 
 def analyze_deals_and_tune():
-    log.info("🧠 Self-Adaptive Tuner v3.0 запущен")
+    log.info("🧠 Self-Adaptive Tuner v3.1 запущен")
     deals = load_json(DEALS_FILE, [])
     config = load_json(CONFIG_FILE, None)
     bot_info = load_json(BOT_INFO_FILE, {})
@@ -200,28 +188,21 @@ def analyze_deals_and_tune():
     if not config: return log.error("bot_config.json не найден")
 
     now = datetime.now(timezone.utc)
-    cutoff = now - timedelta(hours=24 * 7) # Берем окно на неделю для оценки
-
+    cutoff = now - timedelta(hours=24 * 7)
     need_retrain = False
 
     for mode in ["intraday", "swing"]:
         for side in ["long", "short"]:
-            # Отбираем историю строго для этого сектора
             sector_deals = [
                 d for d in deals 
                 if d.get("mode") == mode and d.get("type", "").upper() == side.upper() 
                 and "close_time" in d
             ]
-            
             if not sector_deals: continue
 
-            # 1. Hedge веса
             tune_hedge_weights(mode, side, sector_deals[-10:], config, bot_info)
-            
-            # 2. Пороги
             tune_thresholds(mode, side, sector_deals, config, bot_info)
 
-            # 3. Переобучение
             if check_retrain_triggers(mode, side, sector_deals[-20:], config, bot_info):
                 need_retrain = True
 
