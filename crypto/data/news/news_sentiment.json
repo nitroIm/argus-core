@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-11-19T14:05:50.445298+00:00",
+  "generated_at": "2026-11-19T15:05:40.875346+00:00",
   "total_news": 87,
-  "avg_sentiment": -0.316,
+  "avg_sentiment": -0.302,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 12,
-  "bearish_count": 20,
-  "neutral_count": 55,
+  "bullish_count": 11,
+  "bearish_count": 18,
+  "neutral_count": 58,
   "fake_count": 0,
-  "cross_confirmed": 8,
+  "cross_confirmed": 10,
   "by_source": {
     "Cointelegraph": {
       "total": 22,
@@ -22,30 +22,47 @@
     "Bitcoin.com": {
       "total": 7,
       "bull": 0,
-      "bear": 2
+      "bear": 3
     },
     "CryptoSlate": {
-      "total": 10,
-      "bull": 3,
+      "total": 9,
+      "bull": 1,
       "bear": 2
     },
     "CryptoPotato": {
-      "total": 23,
-      "bull": 4,
+      "total": 25,
+      "bull": 5,
       "bear": 5
     },
     "Bitcoinist": {
       "total": 8,
       "bull": 2,
-      "bear": 2
+      "bear": 0
     },
     "ForkLog": {
-      "total": 4,
+      "total": 3,
       "bull": 0,
-      "bear": 1
+      "bear": 0
     }
   },
   "top_bullish": [
+    {
+      "title": "Important Cardano News and ADA Price Update: November 19",
+      "url": "https://cryptopotato.com/important-cardano-news-and-ada-price-update-november-19/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-19T14:47:47+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 0.8,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-19T15:05:39.485590+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Important Cardano News and ADA Price Update: November 19",
+      "cross_check": 2
+    },
     {
       "title": "Bitcoin retests $62K as Nasdaq futures rise ahead of Anthropic debut",
       "url": "https://cointelegraph.com/markets/bitcoin-retests-62k-nasdaq-futures-anthropic-debut?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -58,10 +75,10 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-19T14:05:48.617731+00:00",
+      "collected_at": "2026-11-19T15:05:38.781938+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin retests $62K as Nasdaq futures rise ahead of Anthropic debut",
-      "cross_check": 2
+      "cross_check": 3
     },
     {
       "title": "XRP on the Brink of a Major Breakout? Analyst Flags Key Resistance",
@@ -75,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-19T14:05:49.185306+00:00",
+      "collected_at": "2026-11-19T15:05:39.485796+00:00",
       "effective_weight": 1.0,
       "title_original": "XRP on the Brink of a Major Breakout? Analyst Flags Key Resistance",
       "cross_check": 1
@@ -92,7 +109,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.1,
-      "collected_at": "2026-11-19T14:05:49.379207+00:00",
+      "collected_at": "2026-11-19T15:05:39.825516+00:00",
       "effective_weight": 0.81,
       "title_original": "Bitcoin Could Soon Outperform US Treasury Bills Without A Price Rally — Here’s How",
       "cross_check": 3
@@ -109,45 +126,28 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-19T14:05:49.027215+00:00",
+      "collected_at": "2026-11-19T15:05:39.358319+00:00",
       "effective_weight": 0.8,
       "title_original": "Binance unlocks 20x BlackRock IBIT ETF trades with a weekend catch",
-      "cross_check": 1
-    },
-    {
-      "title": "Bitcoin launches Testnet5 and gives miners a real trial of four proposed fixes",
-      "url": "https://cryptoslate.com/bitcoin-launches-testnet5-and-gives-miners-a-real-trial-of-four-proposed-fixes/",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-19T02:30:49+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-19T14:05:49.027293+00:00",
-      "effective_weight": 0.8,
-      "title_original": "Bitcoin launches Testnet5 and gives miners a real trial of four proposed fixes",
       "cross_check": 1
     }
   ],
   "top_bearish": [
     {
-      "title": "S&P Global Maintains Lowest Stability Score for Tether’s USDT",
-      "url": "https://news.bitcoin.com/stablecoins/sp-global-maintains-lowest-stability-score-for-tethers-usdt/",
+      "title": "Chainlink and UBS Bring Structured Products Onchain in Push Into $2T Market",
+      "url": "https://news.bitcoin.com/finance/chainlink-ubs-structured-products-onchain-push-2t-market/",
       "source": "Bitcoin.com",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-11-19T13:55:54+00:00",
+      "pub_date": "2026-11-19T15:03:54+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 1.0,
+      "bear_weight": 0.8,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-19T14:05:48.898493+00:00",
+      "collected_at": "2026-11-19T15:05:39.083641+00:00",
       "effective_weight": 1.5,
-      "title_original": "S&P Global Maintains Lowest Stability Score for Tether’s USDT",
+      "title_original": "Chainlink and UBS Bring Structured Products Onchain in Push Into $2T Market",
       "cross_check": 1
     },
     {
@@ -162,7 +162,7 @@
       "bear_weight": 0.8,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-19T14:05:48.617810+00:00",
+      "collected_at": "2026-11-19T15:05:38.782018+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin carry trades could beat Treasury bills in 2027, Sygnum predicts",
       "cross_check": 2
@@ -179,7 +179,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-19T14:05:48.617953+00:00",
+      "collected_at": "2026-11-19T15:05:38.782154+00:00",
       "effective_weight": 1.04,
       "title_original": "Binance hackers stole 192 tokens across 11 networks, court docs show",
       "cross_check": 1
@@ -196,7 +196,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-19T14:05:48.618144+00:00",
+      "collected_at": "2026-11-19T15:05:38.782343+00:00",
       "effective_weight": 1.04,
       "title_original": "Binance says it obtained $6.5B worldwide freezing order after hack",
       "cross_check": 2
@@ -213,7 +213,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-19T14:05:48.618261+00:00",
+      "collected_at": "2026-11-19T15:05:38.782466+00:00",
       "effective_weight": 1.04,
       "title_original": "$25M Ethereum MEV acquittal tests criminal enforcement limits",
       "cross_check": 1
