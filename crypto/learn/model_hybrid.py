@@ -1,10 +1,6 @@
 # ============================================================
-# ARGUS - HYBRID GRU + XGBOOST v1.0.0
+# ARGUS - HYBRID GRU + XGBOOST v1.0.1
 # Path: crypto/learn/model_hybrid.py
-#
-# ИДЕЯ: GRU кодирует временной ряд в вектор (embedding).
-# Этот вектор конкатенируется с техническими фичами и идет в XGBoost.
-# Дает лучшую accuracy по исследованиям 2025-2026.
 # ============================================================
 
 import logging, numpy as np, pandas as pd, pickle
@@ -23,7 +19,6 @@ except ImportError:
     log.warning("PyTorch not installed. model_hybrid will be skipped.")
 
 def prepare_features(df, horizon, seq_len=48):
-    # Базовая подготовка
     data = df.copy()
     data['rsi_norm'] = data['rsi'] / 100.0
     data['macd_norm'] = data['macd_hist'] / data['close']
@@ -35,6 +30,9 @@ def prepare_features(df, horizon, seq_len=48):
     data['avg_trade_norm'] = data['avg_trade_size'] / data['volume'].rolling(20).mean()
     data['pc1'] = data['price_change_1h']; data['pc4'] = data['price_change_4h']; data['pc24'] = data['price_change_24h']
     
+    if 'buy_ratio' not in data.columns:
+        data['buy_ratio'] = data['taker_buy_volume'] / data['volume'].replace(0, 1)
+
     base = ['rsi_norm','macd_norm','ema50_diff','ema20_diff','ema200_diff','vol_ratio','atr14_pct','avg_trade_norm','pc1','pc4','pc24','buy_ratio']
     data['target'] = ((data['close'].shift(-horizon) - data['close']) / data['close'] * 100).clip(-20, 20)
     data = data.dropna(subset=base + ['target'])
@@ -66,20 +64,23 @@ class HybridWrapper:
         self.mean = mean
         self.std = std
         self.seq_len = seq_len
+        
     def predict(self, X_seq):
         self.encoder.eval()
+        # Защита: если signal_bot прислал только 1 шаг вместо 48
+        if len(X_seq.shape) == 2:
+            X_seq = np.repeat(X_seq[:, np.newaxis, :], self.seq_len, axis=1)
+            
         with torch.no_grad():
             X_t = torch.tensor(X_seq, dtype=torch.float32)
             X_t = (X_t - self.mean) / self.std
             emb = self.encoder(X_t).numpy()
-        # XGB ждет фичи, но мы обучили его на (emb + flat)
-        # Придет в X_seq, нам нужно вытащить flat (последний шаг)
+            
         X_flat = X_seq[:, -1, :]
         X_hybrid = np.hstack([X_flat, emb])
         return self.xgb_model.predict(X_hybrid)
 
 def _backtest(data_aligned, preds, side, horizon, cfg):
-    # Тот же бэктест
     bt = cfg.get("backtest", {})
     fee = float(cfg.get("global", {}).get("fee_pct", 0.001))
     notional = float(bt.get("position_notional", 20.0))
@@ -142,26 +143,25 @@ def train(df, side="long", mode="swing", models_dir=None, cfg=None):
         X_te_seq, y_te = X_seq[split_idx:], y_seq[split_idx:]
         X_te_flat = X_flat[split_idx:]
         
-        # 1. Обучение GRU
+        # 1. Обучение GRU (с временной головой)
         mean = torch.tensor(X_tr_seq).mean(dim=(0,1), keepdim=True)
         std = torch.tensor(X_tr_seq).std(dim=(0,1), keepdim=True) + 1e-6
         X_tr_t = (torch.tensor(X_tr_seq) - mean) / std
         
         encoder = GRUEncoder(input_dim=X_tr_seq.shape[2], hidden_dim=32)
-        opt = torch.optim.Adam(encoder.parameters(), lr=0.001)
+        head = nn.Linear(32, 1) # Временная голова для предсказания
+        opt = torch.optim.Adam(list(encoder.parameters()) + list(head.parameters()), lr=0.001)
         loss_fn = nn.MSELoss()
         
-        # Обучаем GRU регрессии target (как в GRU-only)
         loader = DataLoader(TensorDataset(X_tr_t, torch.tensor(y_tr)), batch_size=128, shuffle=True)
         encoder.train()
-        for _ in range(10):
+        head.train()
+        for _ in range(20): # Увеличили до 20 эпох
             for bx, by in loader:
                 opt.zero_grad()
-                # Так как у GRUEncoder нет головы, добавим временную
                 emb = encoder(bx)
-                pred = emb.mean(dim=1) # просто сумма
-                loss = loss_fn(pred, by) 
-                # (в реальности нужна голова, но для эмбеддинга сойдет)
+                pred = head(emb).squeeze(-1) # Используем голову
+                loss = loss_fn(pred, by)
                 loss.backward()
                 opt.step()
                 
@@ -179,13 +179,11 @@ def train(df, side="long", mode="swing", models_dir=None, cfg=None):
         
         preds = xgb_model.predict(X_te_hybrid)
         
-        # Align backtest
         test_data_aligned = data.iloc[seq_len-1:].iloc[split_idx:].reset_index(drop=True)
         full_preds = np.full(len(test_data_aligned), np.nan)
         full_preds[:len(preds)] = preds
         metrics = _backtest(test_data_aligned, full_preds, side, horizon, cfg)
         
-        # Финальное сохранение
         wrapper = HybridWrapper(encoder, xgb_model, mean, std, seq_len)
         fname = f"model_hybrid_{mode}_{side}.pkl"
         with open(models_dir / fname, "wb") as f:
