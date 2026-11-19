@@ -29,7 +29,6 @@ def prepare_features(df, horizon, seq_len=48):
     data['avg_trade_norm'] = data['avg_trade_size'] / data['volume'].rolling(20).mean()
     data['pc1'] = data['price_change_1h']; data['pc4'] = data['price_change_4h']; data['pc24'] = data['price_change_24h']
     
-    # Защита на случай, если buy_ratio не пришел
     if 'buy_ratio' not in data.columns:
         data['buy_ratio'] = data['taker_buy_volume'] / data['volume'].replace(0, 1)
 
@@ -61,7 +60,7 @@ class TFTWrapper:
 class SimpleTFT(nn.Module):
     def __init__(self, input_dim, d_model=32):
         super().__init__()
-        self.vsn = nn.Linear(input_dim, input_dim) # Variable Selection
+        self.vsn = nn.Linear(input_dim, input_dim)
         self.lstm = nn.LSTM(input_dim, d_model, num_layers=1, batch_first=True)
         self.attn = nn.MultiheadAttention(d_model, num_heads=2, batch_first=True)
         self.fc = nn.Linear(d_model, 1)
@@ -70,7 +69,7 @@ class SimpleTFT(nn.Module):
         x = torch.relu(self.vsn(x))
         x, _ = self.lstm(x)
         x, _ = self.attn(x, x, x)
-        x = x[:, -1, :] # последний шаг
+        x = x[:, -1, :]
         return self.fc(x).squeeze(-1)
 
 def _backtest(data_aligned, preds, side, horizon, cfg):
@@ -131,13 +130,11 @@ def train(df, side="long", mode="swing", models_dir=None, cfg=None):
         X_tr, y_tr = torch.tensor(X_seq[:split_idx]), torch.tensor(y_seq[:split_idx])
         X_te, y_te = torch.tensor(X_seq[split_idx:]), torch.tensor(y_seq[split_idx:])
         
-        # Нормализация X
         mean = X_tr.mean(dim=(0,1), keepdim=True)
         std = X_tr.std(dim=(0,1), keepdim=True) + 1e-6
         X_tr = (X_tr - mean) / std
         X_te = (X_te - mean) / std
         
-        # НОРМАЛИЗАЦИЯ Y (КРИТИЧЕСКИЙ ФИКС)
         y_mean = y_tr.mean()
         y_std = y_tr.std() + 1e-6
         y_tr_norm = (y_tr - y_mean) / y_std
@@ -148,7 +145,6 @@ def train(df, side="long", mode="swing", models_dir=None, cfg=None):
         
         loader = DataLoader(TensorDataset(X_tr, y_tr_norm), batch_size=128, shuffle=True)
         model.train()
-        # УВЕЛИЧИЛИ ЭПОХИ ДО 50
         for _ in range(50):
             for bx, by in loader:
                 opt.zero_grad()
@@ -160,7 +156,6 @@ def train(df, side="long", mode="swing", models_dir=None, cfg=None):
         model.eval()
         with torch.no_grad():
             preds_norm = model(X_te).numpy()
-            # ВОЗВРАЩАЕМ МАСШТАБ Y
             preds = preds_norm * y_std.item() + y_mean.item()
             
         test_data_aligned = data.iloc[seq_len-1:].iloc[split_idx:].reset_index(drop=True)
