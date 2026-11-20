@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-20T20:05:52.851134+00:00",
+  "generated_at": "2026-11-20T21:05:45.226800+00:00",
   "total_news": 95,
-  "avg_sentiment": -0.312,
+  "avg_sentiment": -0.388,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 17,
-  "bearish_count": 37,
-  "neutral_count": 41,
+  "bearish_count": 40,
+  "neutral_count": 38,
   "fake_count": 0,
   "cross_confirmed": 21,
   "by_source": {
@@ -15,29 +15,29 @@
       "bear": 7
     },
     "Decrypt": {
-      "total": 16,
+      "total": 17,
       "bull": 0,
-      "bear": 7
+      "bear": 8
     },
     "Bitcoin.com": {
       "total": 8,
       "bull": 0,
-      "bear": 5
+      "bear": 6
     },
     "CryptoSlate": {
-      "total": 8,
+      "total": 7,
       "bull": 2,
       "bear": 3
     },
     "CryptoPotato": {
       "total": 29,
-      "bull": 7,
+      "bull": 8,
       "bear": 14
     },
     "Bitcoinist": {
       "total": 7,
-      "bull": 3,
-      "bear": 1
+      "bull": 2,
+      "bear": 2
     },
     "ForkLog": {
       "total": 6,
@@ -47,55 +47,21 @@
   },
   "top_bullish": [
     {
-      "title": "Bitcoin ETF investors have a way to hedge during Thanksgiving’s 40+ hour trading gap",
-      "url": "https://cryptoslate.com/bitcoin-etf-investors-have-a-way-to-hedge-during-thanksgivings-40-hour-trading-gap/",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-20T19:15:10+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-20T20:05:51.482467+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Bitcoin ETF investors have a way to hedge during Thanksgiving’s 40+ hour trading gap",
-      "cross_check": 1
-    },
-    {
-      "title": "NVDA Tanks 10% as SEC Reportedly Launches Nvidia Investigation",
-      "url": "https://cryptopotato.com/nvda-tanks-10-as-sec-reportedly-launches-nvidia-investigation/",
+      "title": "Wells Fargo Led Wall Street’s Bitcoin Buying Spree in September as Institutional Holdings Hit a Record",
+      "url": "https://cryptopotato.com/wells-fargo-led-wall-streets-bitcoin-buying-spree-in-september-as-institutional-holdings-hit-a-record/",
       "source": "CryptoPotato",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-11-20T19:43:42+00:00",
+      "pub_date": "2026-11-20T20:49:27+00:00",
       "sentiment": 1.0,
-      "bull_weight": 1.0,
+      "bull_weight": 2.4,
       "bear_weight": 0.0,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-20T20:05:51.612080+00:00",
+      "collected_at": "2026-11-20T21:05:44.241114+00:00",
       "effective_weight": 1.5,
-      "title_original": "NVDA Tanks 10% as SEC Reportedly Launches Nvidia Investigation",
-      "cross_check": 1
-    },
-    {
-      "title": "Wealth Platforms Set Record for Bitcoin ETP Ownership Despite Market Weakness: Report",
-      "url": "https://cryptopotato.com/wealth-platforms-set-record-for-bitcoin-etp-ownership-despite-market-weakness-report/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-20T19:14:05+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-20T20:05:51.612156+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Wealth Platforms Set Record for Bitcoin ETP Ownership Despite Market Weakness: Report",
-      "cross_check": 1
+      "title_original": "Wells Fargo Led Wall Street’s Bitcoin Buying Spree in September as Institutional Holdings Hit a Record",
+      "cross_check": 4
     },
     {
       "title": "Сериал Netflix о FTX раскритиковали за образы Бэнкмана-Фрида и CZ",
@@ -109,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-20T20:05:52.782384+00:00",
+      "collected_at": "2026-11-20T21:05:45.179127+00:00",
       "effective_weight": 1.2,
       "title_original": "Сериал Netflix о FTX раскритиковали за образы Бэнкмана-Фрида и CZ",
       "cross_check": 1
@@ -126,13 +92,81 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-20T20:05:51.246409+00:00",
+      "collected_at": "2026-11-20T21:05:43.797423+00:00",
       "effective_weight": 1.04,
       "title_original": "VanEck to end Gemini ETF custody deals, keeps Coinbase",
+      "cross_check": 1
+    },
+    {
+      "title": "Institutions pile back into US Bitcoin ETFs in Q3 after selling streak",
+      "url": "https://cointelegraph.com/markets/institutional-bitcoin-etf-holdings-clock-record-quarter-after-selling-streak?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-11-20T03:33:22+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-20T21:05:43.797617+00:00",
+      "effective_weight": 1.04,
+      "title_original": "Institutions pile back into US Bitcoin ETFs in Q3 after selling streak",
+      "cross_check": 1
+    },
+    {
+      "title": "Bitcoin ETF investors have a way to hedge during Thanksgiving’s 40+ hour trading gap",
+      "url": "https://cryptoslate.com/bitcoin-etf-investors-have-a-way-to-hedge-during-thanksgivings-40-hour-trading-gap/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-20T19:15:10+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-20T21:05:44.169849+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Bitcoin ETF investors have a way to hedge during Thanksgiving’s 40+ hour trading gap",
       "cross_check": 1
     }
   ],
   "top_bearish": [
+    {
+      "title": "Nvidia Shares Sink to 52-Week Low After Report SEC Is Probing Accounting",
+      "url": "https://decrypt.co/383744/nvidia-shares-sink-52-week-low-sec-probing-accounting",
+      "source": "Decrypt",
+      "source_weight": 1.1,
+      "lang": "en",
+      "pub_date": "2026-11-20T20:36:54+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-20T21:05:43.827559+00:00",
+      "effective_weight": 1.65,
+      "title_original": "Nvidia Shares Sink to 52-Week Low After Report SEC Is Probing Accounting",
+      "cross_check": 1
+    },
+    {
+      "title": "Wrapped Monero Token XMR1 Crashes After $13M Exploit, Founder Vows Repayment",
+      "url": "https://news.bitcoin.com/security/wrapped-monero-token-xmr1-crashes-13m-exploit-founder-vows-repayment/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-20T20:45:04+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 3.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-20T21:05:44.114255+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Wrapped Monero Token XMR1 Crashes After $13M Exploit, Founder Vows Repayment",
+      "cross_check": 3
+    },
     {
       "title": "Wrapped Monero token crashes 99.8% amid suspected $13.5M exploit",
       "url": "https://cointelegraph.com/news/wrapped-monero-token-crashes-998-amid-suspected-135m-exploit?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -143,29 +177,12 @@
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 3.5,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-20T20:05:51.245949+00:00",
-      "effective_weight": 1.95,
+      "collected_at": "2026-11-20T21:05:43.797130+00:00",
+      "effective_weight": 1.3,
       "title_original": "Wrapped Monero token crashes 99.8% amid suspected $13.5M exploit",
-      "cross_check": 2
-    },
-    {
-      "title": "Bitcoin Hits Lowest Price Since 2024 After Peter Brandt Warns of Deflation",
-      "url": "https://news.bitcoin.com/market-updates/peter-brandt-warns-deflation-bitcoin-lowest-price-since-2024/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-20T19:24:57+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.0,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-20T20:05:51.403722+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Bitcoin Hits Lowest Price Since 2024 After Peter Brandt Warns of Deflation",
-      "cross_check": 4
+      "cross_check": 3
     },
     {
       "title": "Sky Protocol sees $2 billion in stablecoin withdrawals, disputes illicit fund claims",
@@ -179,7 +196,7 @@
       "bear_weight": 3.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-20T20:05:51.246048+00:00",
+      "collected_at": "2026-11-20T21:05:43.797196+00:00",
       "effective_weight": 1.3,
       "title_original": "Sky Protocol sees $2 billion in stablecoin withdrawals, disputes illicit fund claims",
       "cross_check": 1
@@ -196,27 +213,10 @@
       "bear_weight": 3.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-20T20:05:51.246124+00:00",
+      "collected_at": "2026-11-20T21:05:43.797246+00:00",
       "effective_weight": 1.3,
       "title_original": "Bitcoin falls below $60K for first time since July amid broader market selloff",
       "cross_check": 4
-    },
-    {
-      "title": "Bitcoin price drops to $60K as Anthropic drops to $87 in tech sell-off",
-      "url": "https://cointelegraph.com/markets/bitcoin-hits-new-20-week-low-anthropic-drops-87-tech-sell-off?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-11-20T15:52:06+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 2.5,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-20T20:05:51.246192+00:00",
-      "effective_weight": 1.3,
-      "title_original": "Bitcoin price drops to $60K as Anthropic drops to $87 in tech sell-off",
-      "cross_check": 2
     }
   ]
 }
