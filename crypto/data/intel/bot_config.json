@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-18T00:00:00.000000+00:00",
+  "updated_at": "2026-11-20T02:11:42.526373+00:00",
   "force_reset_old": false,
   "global": {
     "fee_pct": 0.001,
@@ -45,7 +45,7 @@
   "retrain_triggers": {
     "enabled": true,
     "min_trades_eval": 10,
-    "winrate_drop_intraday": 0.40,
+    "winrate_drop_intraday": 0.4,
     "winrate_drop_swing": 0.35,
     "adwin_delta": 0.002,
     "cooldown_hours_intraday": 12,
@@ -62,15 +62,15 @@
     "no_entry_time_utc": "18:30",
     "time_exit_h": 12,
     "idle_timeout_h": 3.0,
-    "threshold_long": 5.0,
-    "threshold_short": 5.0,
+    "threshold_long": 4.0,
+    "threshold_short": 4.0,
     "weights": {
-      "macd": 1.0,
-      "ema": 1.0,
-      "volume": 1.0,
-      "rsi_low": 1.0,
-      "rsi_mid": 1.0,
-      "rsi_high": 1.0
+      "macd": 0.822,
+      "ema": 0.822,
+      "volume": 0.822,
+      "rsi_low": 1.355,
+      "rsi_mid": 0.822,
+      "rsi_high": 1.355
     },
     "trailing_activation_pct": 2.0,
     "trailing_atr_multiplier": 4.5
@@ -81,7 +81,7 @@
     "time_exit_h": 168,
     "idle_timeout_h": 24.0,
     "threshold_long": 5.0,
-    "threshold_short": 5.0,
+    "threshold_short": 4.0,
     "weights": {
       "macd": 1.0,
       "ema": 1.0,
