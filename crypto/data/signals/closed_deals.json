@@ -799,5 +799,19 @@
     "active_signals": [
       "ml"
     ]
+  },
+  {
+    "type": "LONG",
+    "entry": 61706.04,
+    "exit": 62321.21642857144,
+    "pnl_pct": 0.8,
+    "pnl_usd": 0.36,
+    "reason": "TAKE_PROFIT_1",
+    "mode": "intraday",
+    "close_time": "2026-11-20T03:16:44.288187+00:00",
+    "balance_after": 90.54,
+    "active_signals": [
+      "ml"
+    ]
   }
 ]
