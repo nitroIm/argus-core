@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-20T03:11:21.405234+00:00",
+  "updated_at": "2026-11-20T04:11:26.610687+00:00",
   "force_reset_old": false,
   "global": {
     "fee_pct": 0.001,
@@ -62,15 +62,15 @@
     "no_entry_time_utc": "18:30",
     "time_exit_h": 12,
     "idle_timeout_h": 3.0,
-    "threshold_long": 4.0,
-    "threshold_short": 4.0,
+    "threshold_long": 3.0,
+    "threshold_short": 3.0,
     "weights": {
-      "macd": 0.636,
-      "ema": 0.636,
-      "volume": 0.636,
-      "rsi_low": 1.728,
-      "rsi_mid": 0.636,
-      "rsi_high": 1.728
+      "macd": 0.463,
+      "ema": 0.463,
+      "volume": 0.463,
+      "rsi_low": 2.074,
+      "rsi_mid": 0.463,
+      "rsi_high": 2.074
     },
     "trailing_activation_pct": 2.0,
     "trailing_atr_multiplier": 4.5
@@ -81,7 +81,7 @@
     "time_exit_h": 168,
     "idle_timeout_h": 24.0,
     "threshold_long": 5.0,
-    "threshold_short": 4.0,
+    "threshold_short": 3.0,
     "weights": {
       "macd": 1.0,
       "ema": 1.0,
