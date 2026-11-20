@@ -22,5 +22,17 @@
       "ml"
     ]
   },
-  "intraday": {}
+  "intraday": {
+    "type": "LONG",
+    "entry": 59260.04,
+    "sl": 58301.01928571428,
+    "tp1": 59899.38714285714,
+    "tp2": 60858.407857142854,
+    "size_left_pct": 100,
+    "tp1_hit": false,
+    "open_time": "2026-11-20T16:31:57.830441+00:00",
+    "active_signals": [
+      "ml"
+    ]
+  }
 }
