@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-11-20T02:05:39.076591+00:00",
-  "total_news": 91,
-  "avg_sentiment": -0.246,
+  "generated_at": "2026-11-20T03:05:38.017926+00:00",
+  "total_news": 90,
+  "avg_sentiment": -0.239,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 13,
   "bearish_count": 25,
-  "neutral_count": 53,
+  "neutral_count": 52,
   "fake_count": 0,
-  "cross_confirmed": 14,
+  "cross_confirmed": 13,
   "by_source": {
     "Cointelegraph": {
       "total": 21,
@@ -25,7 +25,7 @@
       "bear": 4
     },
     "CryptoSlate": {
-      "total": 8,
+      "total": 7,
       "bull": 2,
       "bear": 2
     },
@@ -58,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-20T02:05:37.250691+00:00",
+      "collected_at": "2026-11-20T03:05:36.477948+00:00",
       "effective_weight": 1.04,
       "title_original": "Ethereum’s Glamsterdam upgrade could slip to May 2027 over compatibility concerns",
       "cross_check": 1
@@ -75,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-20T02:05:37.251110+00:00",
+      "collected_at": "2026-11-20T03:05:36.478527+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin retests $62K as Nasdaq futures rise ahead of Anthropic debut",
       "cross_check": 3
@@ -92,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-20T02:05:37.665868+00:00",
+      "collected_at": "2026-11-20T03:05:36.714002+00:00",
       "effective_weight": 1.0,
       "title_original": "A New Recovery Model? Binance Wins $6.5B Freezing Order Across 26K Wallets",
       "cross_check": 3
@@ -109,7 +109,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-20T02:05:37.752186+00:00",
+      "collected_at": "2026-11-20T03:05:36.785375+00:00",
       "effective_weight": 1.0,
       "title_original": "A Bitcoin trade that doesn’t need prices to rise could beat Treasury bills in 2027",
       "cross_check": 4
@@ -126,47 +126,13 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-20T02:05:37.666131+00:00",
+      "collected_at": "2026-11-20T03:05:36.714398+00:00",
       "effective_weight": 0.8,
       "title_original": "Anthropic IPO Tests Bitcoin ETFs as Blackrock Leads $306M Exit",
       "cross_check": 2
     }
   ],
   "top_bearish": [
-    {
-      "title": "‘Scattered Spider’ Hacker Gets 6 Years in Prison for $11.6M Crypto Theft Scheme",
-      "url": "https://news.bitcoin.com/regulation-and-legal/scattered-spider-hacker-6-years-prison-11-6m-crypto-theft-scheme/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-20T01:10:46+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 2.3,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-20T02:05:37.665695+00:00",
-      "effective_weight": 1.5,
-      "title_original": "‘Scattered Spider’ Hacker Gets 6 Years in Prison for $11.6M Crypto Theft Scheme",
-      "cross_check": 2
-    },
-    {
-      "title": "Hackers Leak Visa, Mastercard and JPMorgan Customer Data",
-      "url": "https://decrypt.co/383663/hackers-leak-visa-mastercard-jpmorgan-data",
-      "source": "Decrypt",
-      "source_weight": 1.1,
-      "lang": "en",
-      "pub_date": "2026-11-19T20:15:32+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-20T02:05:37.324044+00:00",
-      "effective_weight": 1.1,
-      "title_original": "Hackers Leak Visa, Mastercard and JPMorgan Customer Data",
-      "cross_check": 1
-    },
     {
       "title": "Bitcoin price ignores Anthropic debut as ANT share price dips below $100",
       "url": "https://cointelegraph.com/markets/bitcoin-price-ignores-anthropic-debut-ant-share-price-dips-below-100?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -179,7 +145,7 @@
       "bear_weight": 1.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-20T02:05:37.250792+00:00",
+      "collected_at": "2026-11-20T03:05:36.478087+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin price ignores Anthropic debut as ANT share price dips below $100",
       "cross_check": 4
@@ -196,7 +162,7 @@
       "bear_weight": 0.8,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-20T02:05:37.251169+00:00",
+      "collected_at": "2026-11-20T03:05:36.478592+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin carry trades could beat Treasury bills in 2027, Sygnum predicts",
       "cross_check": 4
@@ -213,10 +179,44 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-20T02:05:37.251266+00:00",
+      "collected_at": "2026-11-20T03:05:36.478721+00:00",
       "effective_weight": 1.04,
       "title_original": "Binance hackers stole 192 tokens across 11 networks, court docs show",
       "cross_check": 1
+    },
+    {
+      "title": "‘Scattered Spider’ Hacker Gets 6 Years in Prison for $11.6M Crypto Theft Scheme",
+      "url": "https://news.bitcoin.com/regulation-and-legal/scattered-spider-hacker-6-years-prison-11-6m-crypto-theft-scheme/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-20T01:10:46+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 2.3,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-20T03:05:36.713742+00:00",
+      "effective_weight": 1.0,
+      "title_original": "‘Scattered Spider’ Hacker Gets 6 Years in Prison for $11.6M Crypto Theft Scheme",
+      "cross_check": 2
+    },
+    {
+      "title": "Bitcoin Falls Below $62k Amid $528M in Liquidations",
+      "url": "https://cryptopotato.com/bitcoin-falls-below-62k-amid-528m-in-liquidations/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-20T00:58:29+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 3.2,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-20T03:05:36.863742+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Bitcoin Falls Below $62k Amid $528M in Liquidations",
+      "cross_check": 2
     }
   ]
 }
