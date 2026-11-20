@@ -9,16 +9,15 @@
     "volume",
     "rsi_low"
   ],
-  "swing": {},
-  "intraday": {
-    "type": "LONG",
-    "entry": 60420.11,
-    "sl": 60608.5,
-    "tp1": 61031.18928571429,
-    "tp2": 61947.80821428572,
-    "size_left_pct": 50.0,
-    "tp1_hit": true,
-    "open_time": "2026-11-20T15:32:00.386136+00:00",
+  "swing": {
+    "type": "SHORT",
+    "entry": 59319.92,
+    "sl": 60224.3,
+    "tp1": 58717.0,
+    "tp2": 57812.619999999995,
+    "size_left_pct": 100,
+    "tp1_hit": false,
+    "open_time": "2026-11-20T16:01:54.215670+00:00",
     "active_signals": [
       "ml"
     ]
