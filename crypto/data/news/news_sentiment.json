@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-21T07:05:35.605713+00:00",
-  "total_news": 95,
-  "avg_sentiment": -0.361,
+  "generated_at": "2026-11-21T08:05:53.939893+00:00",
+  "total_news": 96,
+  "avg_sentiment": -0.383,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 17,
-  "bearish_count": 38,
-  "neutral_count": 40,
+  "bearish_count": 40,
+  "neutral_count": 39,
   "fake_count": 0,
   "cross_confirmed": 21,
   "by_source": {
@@ -20,9 +20,9 @@
       "bear": 8
     },
     "Bitcoin.com": {
-      "total": 8,
+      "total": 9,
       "bull": 0,
-      "bear": 5
+      "bear": 6
     },
     "CryptoSlate": {
       "total": 6,
@@ -32,7 +32,7 @@
     "CryptoPotato": {
       "total": 30,
       "bull": 7,
-      "bear": 15
+      "bear": 16
     },
     "Bitcoinist": {
       "total": 7,
@@ -58,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T07:05:33.517327+00:00",
+      "collected_at": "2026-11-21T08:05:52.138681+00:00",
       "effective_weight": 1.04,
       "title_original": "VanEck to end Gemini ETF custody deals, keeps Coinbase",
       "cross_check": 1
@@ -75,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T07:05:35.571124+00:00",
+      "collected_at": "2026-11-21T08:05:53.892002+00:00",
       "effective_weight": 0.96,
       "title_original": "Сериал Netflix о FTX раскритиковали за образы Бэнкмана-Фрида и CZ",
       "cross_check": 1
@@ -92,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T07:05:35.571162+00:00",
+      "collected_at": "2026-11-21T08:05:53.892049+00:00",
       "effective_weight": 0.96,
       "title_original": "Институционалы нарастили позиции в биткоин-фондах до рекорда",
       "cross_check": 1
@@ -109,7 +109,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T07:05:34.314152+00:00",
+      "collected_at": "2026-11-21T08:05:52.468843+00:00",
       "effective_weight": 0.8,
       "title_original": "Binance raises RLUSD yield to 6.37% as XRP rewards surge 54%",
       "cross_check": 1
@@ -126,7 +126,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T07:05:34.314190+00:00",
+      "collected_at": "2026-11-21T08:05:52.468890+00:00",
       "effective_weight": 0.8,
       "title_original": "Bitcoin miners face a new profitability cliff as difficulty heads for an 8.5% jump",
       "cross_check": 1
@@ -134,21 +134,38 @@
   ],
   "top_bearish": [
     {
-      "title": "Strategy Breaks Silence After BTC Crash as Bitcoin Position Dumps to $17B in Paper Losses",
-      "url": "https://cryptopotato.com/strategy-breaks-silence-after-btc-crash-as-bitcoin-position-dumps-to-17b-in-paper-losses/",
+      "title": "Bitcoin Sinks Below $56K as Arthur Hayes Says Wait for the Bailout",
+      "url": "https://news.bitcoin.com/market-updates/bitcoin-sinks-below-56k-as-arthur-hayes-says-wait-for-the-bailout/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-21T07:30:23+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-21T08:05:52.420460+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Bitcoin Sinks Below $56K as Arthur Hayes Says Wait for the Bailout",
+      "cross_check": 1
+    },
+    {
+      "title": "Crypto Fear Reaches Extreme Levels as Bitcoin Plummets to $55K",
+      "url": "https://cryptopotato.com/crypto-fear-reaches-extreme-levels-as-bitcoin-plummets-to-55k/",
       "source": "CryptoPotato",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-11-21T06:23:22+00:00",
+      "pub_date": "2026-11-21T07:41:59+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 6.5,
+      "bear_weight": 1.2,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T07:05:34.449501+00:00",
+      "collected_at": "2026-11-21T08:05:52.553562+00:00",
       "effective_weight": 1.5,
-      "title_original": "Strategy Breaks Silence After BTC Crash as Bitcoin Position Dumps to $17B in Paper Losses",
-      "cross_check": 1
+      "title_original": "Crypto Fear Reaches Extreme Levels as Bitcoin Plummets to $55K",
+      "cross_check": 2
     },
     {
       "title": "Wrapped Monero token crashes 99.8% amid suspected $13.5M exploit",
@@ -162,7 +179,7 @@
       "bear_weight": 3.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T07:05:33.517091+00:00",
+      "collected_at": "2026-11-21T08:05:52.138371+00:00",
       "effective_weight": 1.04,
       "title_original": "Wrapped Monero token crashes 99.8% amid suspected $13.5M exploit",
       "cross_check": 3
@@ -179,7 +196,7 @@
       "bear_weight": 3.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T07:05:33.517133+00:00",
+      "collected_at": "2026-11-21T08:05:52.138424+00:00",
       "effective_weight": 1.04,
       "title_original": "Sky Protocol sees $2 billion in stablecoin withdrawals, disputes illicit fund claims",
       "cross_check": 1
@@ -196,27 +213,10 @@
       "bear_weight": 3.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T07:05:33.517171+00:00",
+      "collected_at": "2026-11-21T08:05:52.138473+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin falls below $60K for first time since July amid broader market selloff",
       "cross_check": 4
-    },
-    {
-      "title": "Bitcoin price drops to $60K as Anthropic drops to $87 in tech sell-off",
-      "url": "https://cointelegraph.com/markets/bitcoin-hits-new-20-week-low-anthropic-drops-87-tech-sell-off?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-11-20T15:52:06+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 2.5,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-21T07:05:33.517207+00:00",
-      "effective_weight": 1.04,
-      "title_original": "Bitcoin price drops to $60K as Anthropic drops to $87 in tech sell-off",
-      "cross_check": 2
     }
   ]
 }
