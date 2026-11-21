@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-21T22:05:37.996835+00:00",
+  "generated_at": "2026-11-21T23:05:36.710407+00:00",
   "total_news": 101,
-  "avg_sentiment": -0.471,
+  "avg_sentiment": -0.488,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 13,
+  "bullish_count": 12,
   "bearish_count": 42,
-  "neutral_count": 46,
+  "neutral_count": 47,
   "fake_count": 0,
   "cross_confirmed": 17,
   "by_source": {
@@ -31,7 +31,7 @@
     },
     "CryptoPotato": {
       "total": 29,
-      "bull": 7,
+      "bull": 6,
       "bear": 15
     },
     "Bitcoinist": {
@@ -58,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T22:05:36.669844+00:00",
+      "collected_at": "2026-11-21T23:05:35.584458+00:00",
       "effective_weight": 1.0,
       "title_original": "Dogecoin (DOGE) Flashes a Major Bullish Signal: Big Rebound Ahead?",
       "cross_check": 1
@@ -75,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T22:05:36.669943+00:00",
+      "collected_at": "2026-11-21T23:05:35.584551+00:00",
       "effective_weight": 1.0,
       "title_original": "Netflix’s FTX Drama ‘The Altruists’ Makes CZ the Villain, but Is That What Really Happened?",
       "cross_check": 1
@@ -92,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T22:05:36.399485+00:00",
+      "collected_at": "2026-11-21T23:05:35.436793+00:00",
       "effective_weight": 0.8,
       "title_original": "Wells Fargo Leads as US Institutions Hit Record 356K Bitcoin Holdings: Galaxy",
       "cross_check": 2
@@ -109,7 +109,7 @@
       "bear_weight": 0.0,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T22:05:36.042246+00:00",
+      "collected_at": "2026-11-21T23:05:35.139068+00:00",
       "effective_weight": 0.65,
       "title_original": "VanEck to end Gemini ETF custody deals, keeps Coinbase",
       "cross_check": 1
@@ -126,7 +126,7 @@
       "bear_weight": 0.0,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T22:05:36.042535+00:00",
+      "collected_at": "2026-11-21T23:05:35.139453+00:00",
       "effective_weight": 0.65,
       "title_original": "Institutions pile back into US Bitcoin ETFs in Q3 after selling streak",
       "cross_check": 1
@@ -134,20 +134,20 @@
   ],
   "top_bearish": [
     {
-      "title": "Fraudsters Used Fake Crypto Exchanges to Steal $37 Million, SEC Alleges",
-      "url": "https://decrypt.co/383752/fraudsters-fake-crypto-exchanges-steal-37-million-sec",
-      "source": "Decrypt",
-      "source_weight": 1.1,
+      "title": "Behind Closed Doors, Central Banks Build a Case for Bitcoin—But With Gold",
+      "url": "https://news.bitcoin.com/finance/behind-closed-doors-central-banks-build-case-bitcoin-gold/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-11-21T17:01:02+00:00",
+      "pub_date": "2026-11-21T22:55:12+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.0,
+      "bear_weight": 3.0,
+      "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T22:05:36.200124+00:00",
-      "effective_weight": 1.1,
-      "title_original": "Fraudsters Used Fake Crypto Exchanges to Steal $37 Million, SEC Alleges",
+      "collected_at": "2026-11-21T23:05:35.436343+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Behind Closed Doors, Central Banks Build a Case for Bitcoin—But With Gold",
       "cross_check": 1
     },
     {
@@ -162,44 +162,10 @@
       "bear_weight": 3.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T22:05:36.522038+00:00",
+      "collected_at": "2026-11-21T23:05:35.501390+00:00",
       "effective_weight": 1.0,
       "title_original": "Aave’s $4 billion USDC borrow cap could leave just $190 million available for withdrawals",
       "cross_check": 1
-    },
-    {
-      "title": "A Bitcoin drop toward $53,000 could put $240 million in collateral at risk",
-      "url": "https://cryptoslate.com/a-bitcoin-drop-toward-53000-could-put-240-million-in-collateral-at-risk/",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-21T16:35:27+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-21T22:05:36.522172+00:00",
-      "effective_weight": 1.0,
-      "title_original": "A Bitcoin drop toward $53,000 could put $240 million in collateral at risk",
-      "cross_check": 1
-    },
-    {
-      "title": "Ethereum Price Analysis: Did ETH Hit Its Macro Bottom After a 30% Monthly Drop?",
-      "url": "https://cryptopotato.com/ethereum-price-analysis-did-eth-hit-its-macro-bottom-after-a-30-monthly-drop/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-21T16:05:56+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-21T22:05:36.670083+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Ethereum Price Analysis: Did ETH Hit Its Macro Bottom After a 30% Monthly Drop?",
-      "cross_check": 3
     },
     {
       "title": "Обернутый Monero на Hyperliquid обвалился на 99,8%",
@@ -213,10 +179,44 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T22:05:37.920478+00:00",
+      "collected_at": "2026-11-21T23:05:36.634380+00:00",
       "effective_weight": 0.96,
       "title_original": "Обернутый Monero на Hyperliquid обвалился на 99,8%",
       "cross_check": 1
+    },
+    {
+      "title": "Fraudsters Used Fake Crypto Exchanges to Steal $37 Million, SEC Alleges",
+      "url": "https://decrypt.co/383752/fraudsters-fake-crypto-exchanges-steal-37-million-sec",
+      "source": "Decrypt",
+      "source_weight": 1.1,
+      "lang": "en",
+      "pub_date": "2026-11-21T17:01:02+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-21T23:05:35.186225+00:00",
+      "effective_weight": 0.88,
+      "title_original": "Fraudsters Used Fake Crypto Exchanges to Steal $37 Million, SEC Alleges",
+      "cross_check": 1
+    },
+    {
+      "title": "Bitcoin Price Rebounds to $60K After Crash Near $55K, Leaving Billions in Liquidations",
+      "url": "https://news.bitcoin.com/market-updates/bitcoin-price-rebounds-60k-crash-near-55k-billions-liquidations/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-21T15:18:47+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 3.2,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-21T23:05:35.436727+00:00",
+      "effective_weight": 0.8,
+      "title_original": "Bitcoin Price Rebounds to $60K After Crash Near $55K, Leaving Billions in Liquidations",
+      "cross_check": 4
     }
   ]
 }
