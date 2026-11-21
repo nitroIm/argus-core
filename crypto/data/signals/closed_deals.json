@@ -967,5 +967,19 @@
     "active_signals": [
       "ml"
     ]
+  },
+  {
+    "type": "SHORT",
+    "entry": 56941.49,
+    "exit": 56214.352857142854,
+    "pnl_pct": 1.08,
+    "pnl_usd": 0.53,
+    "reason": "TAKE_PROFIT_1",
+    "mode": "swing",
+    "close_time": "2026-11-21T04:31:44.327196+00:00",
+    "balance_after": 98.93,
+    "active_signals": [
+      "ml"
+    ]
   }
 ]
