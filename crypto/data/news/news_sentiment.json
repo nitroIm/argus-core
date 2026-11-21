@@ -1,23 +1,18 @@
 {
-  "generated_at": "2026-11-21T11:05:36.888244+00:00",
-  "total_news": 96,
-  "avg_sentiment": -0.45,
+  "generated_at": "2026-11-21T12:07:03.485007+00:00",
+  "total_news": 80,
+  "avg_sentiment": -0.399,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 15,
-  "bearish_count": 41,
-  "neutral_count": 40,
+  "bearish_count": 33,
+  "neutral_count": 32,
   "fake_count": 0,
-  "cross_confirmed": 14,
+  "cross_confirmed": 10,
   "by_source": {
     "Cointelegraph": {
       "total": 20,
       "bull": 3,
       "bear": 7
-    },
-    "Decrypt": {
-      "total": 17,
-      "bull": 0,
-      "bear": 8
     },
     "Bitcoin.com": {
       "total": 9,
@@ -25,7 +20,7 @@
       "bear": 5
     },
     "CryptoSlate": {
-      "total": 6,
+      "total": 7,
       "bull": 2,
       "bear": 1
     },
@@ -58,26 +53,9 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T11:05:36.819169+00:00",
+      "collected_at": "2026-11-21T12:07:03.453272+00:00",
       "effective_weight": 0.96,
       "title_original": "Сериал Netflix о FTX раскритиковали за образы Бэнкмана-Фрида и CZ",
-      "cross_check": 1
-    },
-    {
-      "title": "Институционалы нарастили позиции в биткоин-фондах до рекорда",
-      "url": "https://forklog.com/news/institutsionaly-narastili-pozitsii-v-bitkoin-fondah-do-rekorda",
-      "source": "ForkLog",
-      "source_weight": 1.2,
-      "lang": "ru",
-      "pub_date": "2026-11-20T11:33:32+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-21T11:05:36.819232+00:00",
-      "effective_weight": 0.96,
-      "title_original": "Институционалы нарастили позиции в биткоин-фондах до рекорда",
       "cross_check": 1
     },
     {
@@ -92,7 +70,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T11:05:35.674858+00:00",
+      "collected_at": "2026-11-21T12:07:02.218816+00:00",
       "effective_weight": 0.8,
       "title_original": "Binance raises RLUSD yield to 6.37% as XRP rewards surge 54%",
       "cross_check": 1
@@ -109,7 +87,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T11:05:35.674946+00:00",
+      "collected_at": "2026-11-21T12:07:02.218861+00:00",
       "effective_weight": 0.8,
       "title_original": "Bitcoin miners face a new profitability cliff as difficulty heads for an 8.5% jump",
       "cross_check": 1
@@ -126,10 +104,27 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T11:05:35.776801+00:00",
+      "collected_at": "2026-11-21T12:07:02.345372+00:00",
       "effective_weight": 0.8,
       "title_original": "Wells Fargo Led Wall Street’s Bitcoin Buying Spree in September as Institutional Holdings Hit a Record",
-      "cross_check": 4
+      "cross_check": 3
+    },
+    {
+      "title": "NVDA Tanks 10% as SEC Reportedly Launches Nvidia Investigation",
+      "url": "https://cryptopotato.com/nvda-tanks-10-as-sec-reportedly-launches-nvidia-investigation/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-20T19:43:42+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-21T12:07:02.345413+00:00",
+      "effective_weight": 0.8,
+      "title_original": "NVDA Tanks 10% as SEC Reportedly Launches Nvidia Investigation",
+      "cross_check": 1
     }
   ],
   "top_bearish": [
@@ -145,7 +140,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T11:05:36.819098+00:00",
+      "collected_at": "2026-11-21T12:07:03.453224+00:00",
       "effective_weight": 1.2,
       "title_original": "Обернутый Monero на Hyperliquid обвалился на 99,8%",
       "cross_check": 1
@@ -162,10 +157,10 @@
       "bear_weight": 3.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T11:05:35.395811+00:00",
+      "collected_at": "2026-11-21T12:05:35.727763+00:00",
       "effective_weight": 1.04,
       "title_original": "Wrapped Monero token crashes 99.8% amid suspected $13.5M exploit",
-      "cross_check": 2
+      "cross_check": 1
     },
     {
       "title": "Sky Protocol sees $2 billion in stablecoin withdrawals, disputes illicit fund claims",
@@ -179,7 +174,7 @@
       "bear_weight": 3.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T11:05:35.395890+00:00",
+      "collected_at": "2026-11-21T12:05:35.727823+00:00",
       "effective_weight": 1.04,
       "title_original": "Sky Protocol sees $2 billion in stablecoin withdrawals, disputes illicit fund claims",
       "cross_check": 1
@@ -196,10 +191,10 @@
       "bear_weight": 3.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T11:05:35.395981+00:00",
+      "collected_at": "2026-11-21T12:05:35.727874+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin falls below $60K for first time since July amid broader market selloff",
-      "cross_check": 6
+      "cross_check": 5
     },
     {
       "title": "Bitcoin price drops to $60K as Anthropic drops to $87 in tech sell-off",
@@ -213,7 +208,7 @@
       "bear_weight": 2.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T11:05:35.396052+00:00",
+      "collected_at": "2026-11-21T12:05:35.727917+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin price drops to $60K as Anthropic drops to $87 in tech sell-off",
       "cross_check": 2
