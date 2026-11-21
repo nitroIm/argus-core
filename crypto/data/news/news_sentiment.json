@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-11-21T21:05:36.341747+00:00",
+  "generated_at": "2026-11-21T22:05:37.996835+00:00",
   "total_news": 101,
-  "avg_sentiment": -0.46,
+  "avg_sentiment": -0.471,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 13,
   "bearish_count": 42,
@@ -56,10 +56,10 @@
       "sentiment": 1.0,
       "bull_weight": 1.2,
       "bear_weight": 0.0,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T21:05:35.144095+00:00",
-      "effective_weight": 1.5,
+      "collected_at": "2026-11-21T22:05:36.669844+00:00",
+      "effective_weight": 1.0,
       "title_original": "Dogecoin (DOGE) Flashes a Major Bullish Signal: Big Rebound Ahead?",
       "cross_check": 1
     },
@@ -75,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T21:05:35.144152+00:00",
+      "collected_at": "2026-11-21T22:05:36.669943+00:00",
       "effective_weight": 1.0,
       "title_original": "Netflix’s FTX Drama ‘The Altruists’ Makes CZ the Villain, but Is That What Really Happened?",
       "cross_check": 1
@@ -92,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T21:05:34.896765+00:00",
+      "collected_at": "2026-11-21T22:05:36.399485+00:00",
       "effective_weight": 0.8,
       "title_original": "Wells Fargo Leads as US Institutions Hit Record 356K Bitcoin Holdings: Galaxy",
       "cross_check": 2
@@ -109,7 +109,7 @@
       "bear_weight": 0.0,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T21:05:34.530056+00:00",
+      "collected_at": "2026-11-21T22:05:36.042246+00:00",
       "effective_weight": 0.65,
       "title_original": "VanEck to end Gemini ETF custody deals, keeps Coinbase",
       "cross_check": 1
@@ -126,7 +126,7 @@
       "bear_weight": 0.0,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T21:05:34.530235+00:00",
+      "collected_at": "2026-11-21T22:05:36.042535+00:00",
       "effective_weight": 0.65,
       "title_original": "Institutions pile back into US Bitcoin ETFs in Q3 after selling streak",
       "cross_check": 1
@@ -145,27 +145,10 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T21:05:34.613068+00:00",
+      "collected_at": "2026-11-21T22:05:36.200124+00:00",
       "effective_weight": 1.1,
       "title_original": "Fraudsters Used Fake Crypto Exchanges to Steal $37 Million, SEC Alleges",
       "cross_check": 1
-    },
-    {
-      "title": "Bitcoin Price Rebounds to $60K After Crash Near $55K, Leaving Billions in Liquidations",
-      "url": "https://news.bitcoin.com/market-updates/bitcoin-price-rebounds-60k-crash-near-55k-billions-liquidations/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-21T15:18:47+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 3.2,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-21T21:05:34.896726+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Bitcoin Price Rebounds to $60K After Crash Near $55K, Leaving Billions in Liquidations",
-      "cross_check": 4
     },
     {
       "title": "Aave’s $4 billion USDC borrow cap could leave just $190 million available for withdrawals",
@@ -179,7 +162,7 @@
       "bear_weight": 3.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T21:05:35.023245+00:00",
+      "collected_at": "2026-11-21T22:05:36.522038+00:00",
       "effective_weight": 1.0,
       "title_original": "Aave’s $4 billion USDC borrow cap could leave just $190 million available for withdrawals",
       "cross_check": 1
@@ -196,7 +179,7 @@
       "bear_weight": 1.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T21:05:35.023321+00:00",
+      "collected_at": "2026-11-21T22:05:36.522172+00:00",
       "effective_weight": 1.0,
       "title_original": "A Bitcoin drop toward $53,000 could put $240 million in collateral at risk",
       "cross_check": 1
@@ -213,10 +196,27 @@
       "bear_weight": 1.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T21:05:35.144245+00:00",
+      "collected_at": "2026-11-21T22:05:36.670083+00:00",
       "effective_weight": 1.0,
       "title_original": "Ethereum Price Analysis: Did ETH Hit Its Macro Bottom After a 30% Monthly Drop?",
       "cross_check": 3
+    },
+    {
+      "title": "Обернутый Monero на Hyperliquid обвалился на 99,8%",
+      "url": "https://forklog.com/news/obernutyj-monero-na-hyperliquid-obvalilsya-na-99-8",
+      "source": "ForkLog",
+      "source_weight": 1.2,
+      "lang": "ru",
+      "pub_date": "2026-11-21T08:32:16+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-21T22:05:37.920478+00:00",
+      "effective_weight": 0.96,
+      "title_original": "Обернутый Monero на Hyperliquid обвалился на 99,8%",
+      "cross_check": 1
     }
   ]
 }
