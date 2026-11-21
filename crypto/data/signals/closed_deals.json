@@ -1009,5 +1009,19 @@
     "active_signals": [
       "ml"
     ]
+  },
+  {
+    "type": "SHORT",
+    "entry": 56391.38,
+    "exit": 56278.597239999996,
+    "pnl_pct": 0.0,
+    "pnl_usd": 0.0,
+    "reason": "TRAILING_STOP",
+    "mode": "swing",
+    "close_time": "2026-11-21T06:46:41.548703+00:00",
+    "balance_after": 99.5,
+    "active_signals": [
+      "ml"
+    ]
   }
 ]
