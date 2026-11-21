@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-11-21T08:05:53.939893+00:00",
-  "total_news": 96,
-  "avg_sentiment": -0.383,
+  "generated_at": "2026-11-21T09:05:37.607122+00:00",
+  "total_news": 97,
+  "avg_sentiment": -0.464,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 17,
-  "bearish_count": 40,
-  "neutral_count": 39,
+  "bullish_count": 15,
+  "bearish_count": 42,
+  "neutral_count": 40,
   "fake_count": 0,
-  "cross_confirmed": 21,
+  "cross_confirmed": 18,
   "by_source": {
     "Cointelegraph": {
       "total": 21,
@@ -26,13 +26,13 @@
     },
     "CryptoSlate": {
       "total": 6,
-      "bull": 3,
+      "bull": 2,
       "bear": 1
     },
     "CryptoPotato": {
       "total": 30,
-      "bull": 7,
-      "bear": 16
+      "bull": 6,
+      "bear": 17
     },
     "Bitcoinist": {
       "total": 7,
@@ -40,9 +40,9 @@
       "bear": 2
     },
     "ForkLog": {
-      "total": 6,
+      "total": 7,
       "bull": 2,
-      "bear": 0
+      "bear": 1
     }
   },
   "top_bullish": [
@@ -58,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T08:05:52.138681+00:00",
+      "collected_at": "2026-11-21T09:05:35.531483+00:00",
       "effective_weight": 1.04,
       "title_original": "VanEck to end Gemini ETF custody deals, keeps Coinbase",
       "cross_check": 1
@@ -75,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T08:05:53.892002+00:00",
+      "collected_at": "2026-11-21T09:05:37.536051+00:00",
       "effective_weight": 0.96,
       "title_original": "Сериал Netflix о FTX раскритиковали за образы Бэнкмана-Фрида и CZ",
       "cross_check": 1
@@ -92,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T08:05:53.892049+00:00",
+      "collected_at": "2026-11-21T09:05:37.536117+00:00",
       "effective_weight": 0.96,
       "title_original": "Институционалы нарастили позиции в биткоин-фондах до рекорда",
       "cross_check": 1
@@ -109,7 +109,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T08:05:52.468843+00:00",
+      "collected_at": "2026-11-21T09:05:36.424194+00:00",
       "effective_weight": 0.8,
       "title_original": "Binance raises RLUSD yield to 6.37% as XRP rewards surge 54%",
       "cross_check": 1
@@ -126,7 +126,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T08:05:52.468890+00:00",
+      "collected_at": "2026-11-21T09:05:36.424262+00:00",
       "effective_weight": 0.8,
       "title_original": "Bitcoin miners face a new profitability cliff as difficulty heads for an 8.5% jump",
       "cross_check": 1
@@ -134,38 +134,38 @@
   ],
   "top_bearish": [
     {
-      "title": "Bitcoin Sinks Below $56K as Arthur Hayes Says Wait for the Bailout",
-      "url": "https://news.bitcoin.com/market-updates/bitcoin-sinks-below-56k-as-arthur-hayes-says-wait-for-the-bailout/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-21T07:30:23+00:00",
+      "title": "Обернутый Monero на Hyperliquid обвалился на 99,8%",
+      "url": "https://forklog.com/news/obernutyj-monero-na-hyperliquid-obvalilsya-na-99-8",
+      "source": "ForkLog",
+      "source_weight": 1.2,
+      "lang": "ru",
+      "pub_date": "2026-11-21T08:32:16+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 1.0,
+      "bear_weight": 1.5,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T08:05:52.420460+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Bitcoin Sinks Below $56K as Arthur Hayes Says Wait for the Bailout",
+      "collected_at": "2026-11-21T09:05:37.535969+00:00",
+      "effective_weight": 1.8,
+      "title_original": "Обернутый Monero на Hyperliquid обвалился на 99,8%",
       "cross_check": 1
     },
     {
-      "title": "Crypto Fear Reaches Extreme Levels as Bitcoin Plummets to $55K",
-      "url": "https://cryptopotato.com/crypto-fear-reaches-extreme-levels-as-bitcoin-plummets-to-55k/",
+      "title": "Crypto Market Cap Dumps Below $2T as Bitcoin Rollercoaster Intensifies: Weekend Watch",
+      "url": "https://cryptopotato.com/crypto-market-cap-dumps-below-2t-as-bitcoin-rollercoaster-intensifies-weekend-watch/",
       "source": "CryptoPotato",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-11-21T07:41:59+00:00",
+      "pub_date": "2026-11-21T08:30:43+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 1.2,
+      "bear_weight": 2.5,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T08:05:52.553562+00:00",
+      "collected_at": "2026-11-21T09:05:36.486165+00:00",
       "effective_weight": 1.5,
-      "title_original": "Crypto Fear Reaches Extreme Levels as Bitcoin Plummets to $55K",
-      "cross_check": 2
+      "title_original": "Crypto Market Cap Dumps Below $2T as Bitcoin Rollercoaster Intensifies: Weekend Watch",
+      "cross_check": 3
     },
     {
       "title": "Wrapped Monero token crashes 99.8% amid suspected $13.5M exploit",
@@ -179,7 +179,7 @@
       "bear_weight": 3.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T08:05:52.138371+00:00",
+      "collected_at": "2026-11-21T09:05:35.531041+00:00",
       "effective_weight": 1.04,
       "title_original": "Wrapped Monero token crashes 99.8% amid suspected $13.5M exploit",
       "cross_check": 3
@@ -196,7 +196,7 @@
       "bear_weight": 3.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T08:05:52.138424+00:00",
+      "collected_at": "2026-11-21T09:05:35.531121+00:00",
       "effective_weight": 1.04,
       "title_original": "Sky Protocol sees $2 billion in stablecoin withdrawals, disputes illicit fund claims",
       "cross_check": 1
@@ -213,10 +213,10 @@
       "bear_weight": 3.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T08:05:52.138473+00:00",
+      "collected_at": "2026-11-21T09:05:35.531194+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin falls below $60K for first time since July amid broader market selloff",
-      "cross_check": 4
+      "cross_check": 6
     }
   ]
 }
