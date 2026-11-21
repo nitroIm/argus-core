@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-11-21T05:05:46.807126+00:00",
-  "total_news": 96,
-  "avg_sentiment": -0.329,
+  "generated_at": "2026-11-21T06:05:42.247662+00:00",
+  "total_news": 95,
+  "avg_sentiment": -0.33,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 18,
   "bearish_count": 37,
-  "neutral_count": 41,
+  "neutral_count": 40,
   "fake_count": 0,
-  "cross_confirmed": 21,
+  "cross_confirmed": 23,
   "by_source": {
     "Cointelegraph": {
       "total": 21,
@@ -20,9 +20,9 @@
       "bear": 8
     },
     "Bitcoin.com": {
-      "total": 9,
+      "total": 8,
       "bull": 0,
-      "bear": 6
+      "bear": 5
     },
     "CryptoSlate": {
       "total": 7,
@@ -32,7 +32,7 @@
     "CryptoPotato": {
       "total": 29,
       "bull": 7,
-      "bear": 13
+      "bear": 14
     },
     "Bitcoinist": {
       "total": 7,
@@ -58,26 +58,9 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T05:05:44.891885+00:00",
+      "collected_at": "2026-11-21T06:05:40.300527+00:00",
       "effective_weight": 1.04,
       "title_original": "VanEck to end Gemini ETF custody deals, keeps Coinbase",
-      "cross_check": 1
-    },
-    {
-      "title": "Binance raises RLUSD yield to 6.37% as XRP rewards surge 54%",
-      "url": "https://cryptoslate.com/binance-raises-rlusd-yield-to-6-37-as-xrp-rewards-surge-54/",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-20T23:40:12+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.5,
-      "bear_weight": 0.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-21T05:05:45.354145+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Binance raises RLUSD yield to 6.37% as XRP rewards surge 54%",
       "cross_check": 1
     },
     {
@@ -92,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T05:05:46.769852+00:00",
+      "collected_at": "2026-11-21T06:05:42.183344+00:00",
       "effective_weight": 0.96,
       "title_original": "Сериал Netflix о FTX раскритиковали за образы Бэнкмана-Фрида и CZ",
       "cross_check": 1
@@ -109,9 +92,26 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T05:05:46.769902+00:00",
+      "collected_at": "2026-11-21T06:05:42.183421+00:00",
       "effective_weight": 0.96,
       "title_original": "Институционалы нарастили позиции в биткоин-фондах до рекорда",
+      "cross_check": 1
+    },
+    {
+      "title": "Binance raises RLUSD yield to 6.37% as XRP rewards surge 54%",
+      "url": "https://cryptoslate.com/binance-raises-rlusd-yield-to-6-37-as-xrp-rewards-surge-54/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-20T23:40:12+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.5,
+      "bear_weight": 0.0,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-21T06:05:40.763009+00:00",
+      "effective_weight": 0.8,
+      "title_original": "Binance raises RLUSD yield to 6.37% as XRP rewards surge 54%",
       "cross_check": 1
     },
     {
@@ -126,7 +126,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T05:05:45.354184+00:00",
+      "collected_at": "2026-11-21T06:05:40.763074+00:00",
       "effective_weight": 0.8,
       "title_original": "Bitcoin miners face a new profitability cliff as difficulty heads for an 8.5% jump",
       "cross_check": 1
@@ -134,21 +134,21 @@
   ],
   "top_bearish": [
     {
-      "title": "Sky offers nearly 30% yield but 99.96% of its lending vault is unavailable for immediate withdrawals",
-      "url": "https://cryptoslate.com/sky-offers-nearly-30-yield-but-99-96-of-its-lending-vault-is-unavailable-for-immediate-withdrawals/",
-      "source": "CryptoSlate",
+      "title": "Bitcoin Price Plunges to $55.5K for the First Time Since September 2024",
+      "url": "https://cryptopotato.com/bitcoin-price-plunges-to-55-5k-for-the-first-time-since-september-2024/",
+      "source": "CryptoPotato",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-11-21T04:10:34+00:00",
+      "pub_date": "2026-11-21T05:26:32+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 3.0,
+      "bear_weight": 1.5,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T05:05:45.354070+00:00",
+      "collected_at": "2026-11-21T06:05:40.908729+00:00",
       "effective_weight": 1.5,
-      "title_original": "Sky offers nearly 30% yield but 99.96% of its lending vault is unavailable for immediate withdrawals",
-      "cross_check": 1
+      "title_original": "Bitcoin Price Plunges to $55.5K for the First Time Since September 2024",
+      "cross_check": 3
     },
     {
       "title": "Wrapped Monero token crashes 99.8% amid suspected $13.5M exploit",
@@ -162,7 +162,7 @@
       "bear_weight": 3.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T05:05:44.890797+00:00",
+      "collected_at": "2026-11-21T06:05:40.300124+00:00",
       "effective_weight": 1.04,
       "title_original": "Wrapped Monero token crashes 99.8% amid suspected $13.5M exploit",
       "cross_check": 3
@@ -179,7 +179,7 @@
       "bear_weight": 3.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T05:05:44.891019+00:00",
+      "collected_at": "2026-11-21T06:05:40.300192+00:00",
       "effective_weight": 1.04,
       "title_original": "Sky Protocol sees $2 billion in stablecoin withdrawals, disputes illicit fund claims",
       "cross_check": 1
@@ -196,10 +196,10 @@
       "bear_weight": 3.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T05:05:44.891219+00:00",
+      "collected_at": "2026-11-21T06:05:40.300255+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin falls below $60K for first time since July amid broader market selloff",
-      "cross_check": 3
+      "cross_check": 4
     },
     {
       "title": "Bitcoin price drops to $60K as Anthropic drops to $87 in tech sell-off",
@@ -213,7 +213,7 @@
       "bear_weight": 2.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T05:05:44.891390+00:00",
+      "collected_at": "2026-11-21T06:05:40.300313+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin price drops to $60K as Anthropic drops to $87 in tech sell-off",
       "cross_check": 2
