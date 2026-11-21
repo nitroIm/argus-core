@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-21T13:05:45.774863+00:00",
-  "total_news": 97,
-  "avg_sentiment": -0.416,
+  "generated_at": "2026-11-21T14:05:37.475567+00:00",
+  "total_news": 99,
+  "avg_sentiment": -0.441,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 16,
-  "bearish_count": 40,
-  "neutral_count": 41,
+  "bullish_count": 15,
+  "bearish_count": 41,
+  "neutral_count": 43,
   "fake_count": 0,
   "cross_confirmed": 13,
   "by_source": {
@@ -25,7 +25,7 @@
       "bear": 4
     },
     "CryptoSlate": {
-      "total": 7,
+      "total": 8,
       "bull": 2,
       "bear": 1
     },
@@ -36,11 +36,11 @@
     },
     "Bitcoinist": {
       "total": 7,
-      "bull": 2,
-      "bear": 3
+      "bull": 1,
+      "bear": 4
     },
     "ForkLog": {
-      "total": 8,
+      "total": 9,
       "bull": 2,
       "bear": 1
     }
@@ -56,10 +56,10 @@
       "sentiment": 1.0,
       "bull_weight": 1.2,
       "bear_weight": 0.0,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T13:05:43.139059+00:00",
-      "effective_weight": 1.5,
+      "collected_at": "2026-11-21T14:05:36.166892+00:00",
+      "effective_weight": 1.0,
       "title_original": "Wells Fargo Leads as US Institutions Hit Record 356K Bitcoin Holdings: Galaxy",
       "cross_check": 2
     },
@@ -75,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T13:05:45.725010+00:00",
+      "collected_at": "2026-11-21T14:05:37.401886+00:00",
       "effective_weight": 0.96,
       "title_original": "Сериал Netflix о FTX раскритиковали за образы Бэнкмана-Фрида и CZ",
       "cross_check": 1
@@ -92,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T13:05:43.205009+00:00",
+      "collected_at": "2026-11-21T14:05:36.242966+00:00",
       "effective_weight": 0.8,
       "title_original": "Binance raises RLUSD yield to 6.37% as XRP rewards surge 54%",
       "cross_check": 1
@@ -109,7 +109,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T13:05:43.205054+00:00",
+      "collected_at": "2026-11-21T14:05:36.243033+00:00",
       "effective_weight": 0.8,
       "title_original": "Bitcoin miners face a new profitability cliff as difficulty heads for an 8.5% jump",
       "cross_check": 1
@@ -126,7 +126,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T13:05:43.297941+00:00",
+      "collected_at": "2026-11-21T14:05:36.336762+00:00",
       "effective_weight": 0.8,
       "title_original": "Wells Fargo Led Wall Street’s Bitcoin Buying Spree in September as Institutional Holdings Hit a Record",
       "cross_check": 5
@@ -134,20 +134,20 @@
   ],
   "top_bearish": [
     {
-      "title": "Bitcoin Price Crashes To Two-Year Low Near $55,000, Analysts Say A Bottom Could Be Close",
-      "url": "https://bitcoinist.com/bitcoin-price-crashes-to-two-year-low-near-55000-analysts-say-a-bottom-could-be-close/",
+      "title": "NFT Sales Climb To $33M As Buyers Return Despite The Crypto Crash",
+      "url": "https://bitcoinist.com/nft-sales-climb-to-33m-as-buyers-return-despite-the-crypto-crash/",
       "source": "Bitcoinist",
       "source_weight": 0.9,
       "lang": "en",
-      "pub_date": "2026-11-21T12:41:07+00:00",
+      "pub_date": "2026-11-21T13:48:34+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 4.5,
+      "bear_weight": 2.0,
       "freshness": 1.5,
       "fake_score": 0.1,
-      "collected_at": "2026-11-21T13:05:43.482434+00:00",
+      "collected_at": "2026-11-21T14:05:36.484256+00:00",
       "effective_weight": 1.215,
-      "title_original": "Bitcoin Price Crashes To Two-Year Low Near $55,000, Analysts Say A Bottom Could Be Close",
+      "title_original": "NFT Sales Climb To $33M As Buyers Return Despite The Crypto Crash",
       "cross_check": 1
     },
     {
@@ -162,7 +162,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T13:05:45.724964+00:00",
+      "collected_at": "2026-11-21T14:05:37.401814+00:00",
       "effective_weight": 1.2,
       "title_original": "Обернутый Monero на Hyperliquid обвалился на 99,8%",
       "cross_check": 1
@@ -179,7 +179,7 @@
       "bear_weight": 3.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T13:05:42.831749+00:00",
+      "collected_at": "2026-11-21T14:05:35.911993+00:00",
       "effective_weight": 1.04,
       "title_original": "Wrapped Monero token crashes 99.8% amid suspected $13.5M exploit",
       "cross_check": 2
@@ -196,7 +196,7 @@
       "bear_weight": 3.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T13:05:42.831799+00:00",
+      "collected_at": "2026-11-21T14:05:35.912068+00:00",
       "effective_weight": 1.04,
       "title_original": "Sky Protocol sees $2 billion in stablecoin withdrawals, disputes illicit fund claims",
       "cross_check": 1
@@ -213,7 +213,7 @@
       "bear_weight": 3.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-21T13:05:42.831847+00:00",
+      "collected_at": "2026-11-21T14:05:35.912146+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin falls below $60K for first time since July amid broader market selloff",
       "cross_check": 6
