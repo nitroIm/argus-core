@@ -25,11 +25,11 @@
   "intraday": {
     "type": "LONG",
     "entry": 57888.49,
-    "sl": 56697.794285714284,
+    "sl": 58004.26698,
     "tp1": 58682.28714285714,
     "tp2": 59872.98285714285,
-    "size_left_pct": 100.0,
-    "tp1_hit": false,
+    "size_left_pct": 50.0,
+    "tp1_hit": true,
     "open_time": "2026-11-21T09:16:24.148331+00:00",
     "active_signals": [
       "ml"
