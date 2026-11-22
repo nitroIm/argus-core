@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-22T03:05:41.340780+00:00",
+  "generated_at": "2026-11-22T04:05:37.028522+00:00",
   "total_news": 101,
-  "avg_sentiment": -0.492,
+  "avg_sentiment": -0.511,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 12,
-  "bearish_count": 41,
-  "neutral_count": 48,
+  "bearish_count": 42,
+  "neutral_count": 47,
   "fake_count": 0,
   "cross_confirmed": 17,
   "by_source": {
@@ -22,7 +22,7 @@
     "Bitcoin.com": {
       "total": 10,
       "bull": 1,
-      "bear": 2
+      "bear": 3
     },
     "CryptoSlate": {
       "total": 8,
@@ -58,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-22T03:05:39.897072+00:00",
+      "collected_at": "2026-11-22T04:05:35.717236+00:00",
       "effective_weight": 0.8,
       "title_original": "Wells Fargo Leads as US Institutions Hit Record 356K Bitcoin Holdings: Galaxy",
       "cross_check": 2
@@ -75,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-22T03:05:40.130201+00:00",
+      "collected_at": "2026-11-22T04:05:35.878348+00:00",
       "effective_weight": 0.8,
       "title_original": "Dogecoin (DOGE) Flashes a Major Bullish Signal: Big Rebound Ahead?",
       "cross_check": 1
@@ -92,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-22T03:05:40.130270+00:00",
+      "collected_at": "2026-11-22T04:05:35.878440+00:00",
       "effective_weight": 0.8,
       "title_original": "Netflix’s FTX Drama ‘The Altruists’ Makes CZ the Villain, but Is That What Really Happened?",
       "cross_check": 1
@@ -109,7 +109,7 @@
       "bear_weight": 0.0,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-22T03:05:39.526228+00:00",
+      "collected_at": "2026-11-22T04:05:35.467184+00:00",
       "effective_weight": 0.65,
       "title_original": "VanEck to end Gemini ETF custody deals, keeps Coinbase",
       "cross_check": 1
@@ -126,13 +126,30 @@
       "bear_weight": 0.0,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-22T03:05:39.526437+00:00",
+      "collected_at": "2026-11-22T04:05:35.467480+00:00",
       "effective_weight": 0.65,
       "title_original": "Institutions pile back into US Bitcoin ETFs in Q3 after selling streak",
       "cross_check": 1
     }
   ],
   "top_bearish": [
+    {
+      "title": "Robert Kiyosaki Urges Buyers to Wait Out the Crash as Bitcoin Plummets",
+      "url": "https://news.bitcoin.com/featured/robert-kiyosaki-urges-buyers-to-wait-out-the-crash-as-bitcoin-plummets/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-22T03:30:33+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 2.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-22T04:05:35.716540+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Robert Kiyosaki Urges Buyers to Wait Out the Crash as Bitcoin Plummets",
+      "cross_check": 1
+    },
     {
       "title": "Behind Closed Doors, Central Banks Build a Case for Bitcoin—But With Gold",
       "url": "https://news.bitcoin.com/finance/behind-closed-doors-central-banks-build-case-bitcoin-gold/",
@@ -145,7 +162,7 @@
       "bear_weight": 3.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-22T03:05:39.896769+00:00",
+      "collected_at": "2026-11-22T04:05:35.716806+00:00",
       "effective_weight": 1.0,
       "title_original": "Behind Closed Doors, Central Banks Build a Case for Bitcoin—But With Gold",
       "cross_check": 1
@@ -162,7 +179,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-22T03:05:41.279975+00:00",
+      "collected_at": "2026-11-22T04:05:36.951392+00:00",
       "effective_weight": 0.96,
       "title_original": "Обернутый Monero на Hyperliquid обвалился на 99,8%",
       "cross_check": 1
@@ -179,7 +196,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-22T03:05:39.716297+00:00",
+      "collected_at": "2026-11-22T04:05:35.508601+00:00",
       "effective_weight": 0.88,
       "title_original": "Fraudsters Used Fake Crypto Exchanges to Steal $37 Million, SEC Alleges",
       "cross_check": 1
@@ -196,27 +213,10 @@
       "bear_weight": 3.2,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-22T03:05:39.897023+00:00",
+      "collected_at": "2026-11-22T04:05:35.717167+00:00",
       "effective_weight": 0.8,
       "title_original": "Bitcoin Price Rebounds to $60K After Crash Near $55K, Leaving Billions in Liquidations",
       "cross_check": 4
-    },
-    {
-      "title": "Aave’s $4 billion USDC borrow cap could leave just $190 million available for withdrawals",
-      "url": "https://cryptoslate.com/aaves-4-billion-usdc-borrow-cap-could-leave-just-190-million-available-for-withdrawals/",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-21T18:40:32+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 3.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-22T03:05:40.013006+00:00",
-      "effective_weight": 0.8,
-      "title_original": "Aave’s $4 billion USDC borrow cap could leave just $190 million available for withdrawals",
-      "cross_check": 1
     }
   ]
 }
