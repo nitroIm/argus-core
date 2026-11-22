@@ -22,19 +22,5 @@
       "macd",
       "ema"
     ]
-  },
-  "intraday": {
-    "type": "LONG",
-    "entry": 59447.47,
-    "sl": 58889.21607142857,
-    "tp1": 59923.04976,
-    "tp2": 60636.4194,
-    "size_left_pct": 100.0,
-    "tp1_hit": false,
-    "open_time": "2026-11-22T03:31:50.297382+00:00",
-    "active_signals": [
-      "macd",
-      "rsi_low"
-    ]
   }
 }
