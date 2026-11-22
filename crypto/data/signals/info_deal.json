@@ -1,1 +1,13 @@
-[]
+[
+  {
+    "type": "CLOSE",
+    "mode": "swing",
+    "deal_type": "SHORT",
+    "reason": "STOP_LOSS",
+    "pnl_pct": -1.25,
+    "pnl_usd": -1.2,
+    "new_balance": 94.87,
+    "entry": 59736.68,
+    "exit": 60364.152500000004
+  }
+]
