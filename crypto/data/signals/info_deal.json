@@ -1,1 +1,13 @@
-[]
+[
+  {
+    "type": "CLOSE",
+    "mode": "intraday",
+    "deal_type": "LONG",
+    "reason": "TAKE_PROFIT_1",
+    "pnl_pct": 0.6,
+    "pnl_usd": 0.26,
+    "new_balance": 85.85,
+    "entry": 58817.34,
+    "exit": 59287.87871999999
+  }
+]
