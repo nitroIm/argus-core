@@ -1212,5 +1212,19 @@
       "volume",
       "rsi_mid"
     ]
+  },
+  {
+    "type": "SHORT",
+    "entry": 61046.43,
+    "exit": 60844.24,
+    "pnl_pct": 0.13,
+    "pnl_usd": 0.11,
+    "reason": "TIME_EXIT_DAY",
+    "mode": "intraday",
+    "close_time": "2026-11-22T19:02:03.306817+00:00",
+    "balance_after": 86.22,
+    "active_signals": [
+      "rsi_high"
+    ]
   }
 ]
