@@ -1,1 +1,13 @@
-[]
+[
+  {
+    "type": "CLOSE",
+    "mode": "intraday",
+    "deal_type": "LONG",
+    "reason": "STOP_LOSS",
+    "pnl_pct": -1.57,
+    "pnl_usd": -1.38,
+    "new_balance": 86.58,
+    "entry": 60251.69,
+    "exit": 59424.9575
+  }
+]

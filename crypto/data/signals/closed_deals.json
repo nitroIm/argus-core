@@ -1093,5 +1093,19 @@
     "active_signals": [
       "ml"
     ]
+  },
+  {
+    "type": "LONG",
+    "entry": 60251.69,
+    "exit": 59424.9575,
+    "pnl_pct": -1.57,
+    "pnl_usd": -1.38,
+    "reason": "STOP_LOSS",
+    "mode": "intraday",
+    "close_time": "2026-11-22T03:16:26.666796+00:00",
+    "balance_after": 86.58,
+    "active_signals": [
+      "ml"
+    ]
   }
 ]
