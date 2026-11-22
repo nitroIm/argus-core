@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-11-22T19:05:37.497486+00:00",
+  "generated_at": "2026-11-22T20:05:49.199681+00:00",
   "total_news": 96,
-  "avg_sentiment": -0.427,
+  "avg_sentiment": -0.42,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 15,
   "bearish_count": 39,
@@ -25,14 +25,14 @@
       "bear": 3
     },
     "CryptoSlate": {
-      "total": 8,
+      "total": 9,
       "bull": 2,
-      "bear": 3
+      "bear": 4
     },
     "CryptoPotato": {
-      "total": 28,
+      "total": 27,
       "bull": 6,
-      "bear": 12
+      "bear": 11
     },
     "Bitcoinist": {
       "total": 8,
@@ -58,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-22T19:05:35.803810+00:00",
+      "collected_at": "2026-11-22T20:05:47.531514+00:00",
       "effective_weight": 1.3,
       "title_original": "The future of onchain FX could start with users, not institutional liquidity",
       "cross_check": 1
@@ -75,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-22T19:05:36.226345+00:00",
+      "collected_at": "2026-11-22T20:05:47.805220+00:00",
       "effective_weight": 1.0,
       "title_original": "XRP’s institutional adoption story has a catch that investors may be overlooking",
       "cross_check": 1
@@ -92,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-22T19:05:36.226449+00:00",
+      "collected_at": "2026-11-22T20:05:47.805313+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitcoin reclaims $61,000 before giving back a third of the weekend rally",
       "cross_check": 1
@@ -109,7 +109,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-22T19:05:36.342991+00:00",
+      "collected_at": "2026-11-22T20:05:47.902043+00:00",
       "effective_weight": 0.8,
       "title_original": "Dogecoin (DOGE) Flashes a Major Bullish Signal: Big Rebound Ahead?",
       "cross_check": 1
@@ -126,47 +126,13 @@
       "bear_weight": 0.0,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-22T19:05:35.804286+00:00",
+      "collected_at": "2026-11-22T20:05:47.531953+00:00",
       "effective_weight": 0.65,
       "title_original": "VanEck to end Gemini ETF custody deals, keeps Coinbase",
       "cross_check": 1
     }
   ],
   "top_bearish": [
-    {
-      "title": "UK to ban crypto exchanges from making markets on their own platforms as Bitcoin rules change",
-      "url": "https://cryptoslate.com/uk-to-ban-crypto-exchanges-from-making-markets-on-their-own-platforms-as-bitcoin-rules-change/",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-22T18:05:49+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-22T19:05:36.226278+00:00",
-      "effective_weight": 1.5,
-      "title_original": "UK to ban crypto exchanges from making markets on their own platforms as Bitcoin rules change",
-      "cross_check": 1
-    },
-    {
-      "title": "Bitcoin and Ethereum ETF Outflows Stay in the Billions for Another Week",
-      "url": "https://cryptopotato.com/bitcoin-and-ethereum-etf-outflows-stay-in-the-billions-for-another-week/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-22T18:15:03+00:00",
-      "sentiment": -0.755,
-      "bull_weight": 1.2,
-      "bear_weight": 8.6,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-22T19:05:36.342497+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Bitcoin and Ethereum ETF Outflows Stay in the Billions for Another Week",
-      "cross_check": 1
-    },
     {
       "title": "Bitcoin briefly drops to $17K on Kraken, exchange upholds trades",
       "url": "https://cointelegraph.com/news/bitcoin-17k-kraken-canadian-dollar-market-trades-stand?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -179,7 +145,7 @@
       "bear_weight": 1.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-22T19:05:35.803923+00:00",
+      "collected_at": "2026-11-22T20:05:47.531615+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin briefly drops to $17K on Kraken, exchange upholds trades",
       "cross_check": 2
@@ -196,7 +162,7 @@
       "bear_weight": 1.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-22T19:05:36.122100+00:00",
+      "collected_at": "2026-11-22T20:05:47.745896+00:00",
       "effective_weight": 1.0,
       "title_original": "Peter Brandt Links 75% Bitcoin Drops to Parabolic Rallies",
       "cross_check": 1
@@ -213,9 +179,43 @@
       "bear_weight": 2.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-22T19:05:36.122152+00:00",
+      "collected_at": "2026-11-22T20:05:47.745936+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitcoin Price Predictions Favor $50K as Market Fear Deepens",
+      "cross_check": 1
+    },
+    {
+      "title": "Wagyu’s $13.5 million token crash exposes another coin with 99.9% held by one wallet",
+      "url": "https://cryptoslate.com/wagyus-13-5-million-token-crash-exposes-another-coin-with-99-9-held-by-one-wallet/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-22T19:05:03+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 2.0,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-22T20:05:47.805105+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Wagyu’s $13.5 million token crash exposes another coin with 99.9% held by one wallet",
+      "cross_check": 1
+    },
+    {
+      "title": "UK to ban crypto exchanges from making markets on their own platforms as Bitcoin rules change",
+      "url": "https://cryptoslate.com/uk-to-ban-crypto-exchanges-from-making-markets-on-their-own-platforms-as-bitcoin-rules-change/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-22T18:05:49+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-22T20:05:47.805161+00:00",
+      "effective_weight": 1.0,
+      "title_original": "UK to ban crypto exchanges from making markets on their own platforms as Bitcoin rules change",
       "cross_check": 1
     }
   ]
