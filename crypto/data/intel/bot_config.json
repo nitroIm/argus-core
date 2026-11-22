@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-22T11:11:34.521852+00:00",
+  "updated_at": "2026-11-22T12:11:32.582430+00:00",
   "force_reset_old": false,
   "global": {
     "fee_pct": 0.001,
@@ -68,9 +68,9 @@
       "macd": 0.1,
       "ema": 0.1,
       "volume": 0.1,
-      "rsi_low": 0.266,
+      "rsi_low": 0.164,
       "rsi_mid": 0.1,
-      "rsi_high": 5.334
+      "rsi_high": 5.435
     },
     "trailing_activation_pct": 2.0,
     "trailing_atr_multiplier": 4.5
@@ -83,12 +83,12 @@
     "threshold_long": 5.0,
     "threshold_short": 1.5,
     "weights": {
-      "macd": 0.17,
-      "ema": 0.17,
-      "volume": 0.761,
-      "rsi_low": 2.069,
-      "rsi_mid": 0.761,
-      "rsi_high": 2.069
+      "macd": 0.114,
+      "ema": 0.114,
+      "volume": 0.527,
+      "rsi_low": 2.359,
+      "rsi_mid": 0.527,
+      "rsi_high": 2.359
     },
     "trailing_activation_pct": 2.2,
     "trailing_atr_multiplier": 5.0
