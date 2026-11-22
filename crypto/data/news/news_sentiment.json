@@ -1,18 +1,18 @@
 {
-  "generated_at": "2026-11-22T09:05:36.439071+00:00",
+  "generated_at": "2026-11-22T10:05:43.505041+00:00",
   "total_news": 99,
-  "avg_sentiment": -0.506,
+  "avg_sentiment": -0.565,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 11,
-  "bearish_count": 39,
-  "neutral_count": 49,
+  "bearish_count": 41,
+  "neutral_count": 47,
   "fake_count": 0,
-  "cross_confirmed": 14,
+  "cross_confirmed": 17,
   "by_source": {
     "Cointelegraph": {
       "total": 19,
       "bull": 3,
-      "bear": 7
+      "bear": 8
     },
     "Decrypt": {
       "total": 17,
@@ -27,7 +27,7 @@
     "CryptoSlate": {
       "total": 8,
       "bull": 0,
-      "bear": 2
+      "bear": 3
     },
     "CryptoPotato": {
       "total": 29,
@@ -58,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-22T09:05:35.279019+00:00",
+      "collected_at": "2026-11-22T10:05:42.372053+00:00",
       "effective_weight": 0.8,
       "title_original": "Dogecoin (DOGE) Flashes a Major Bullish Signal: Big Rebound Ahead?",
       "cross_check": 1
@@ -75,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-22T09:05:35.279067+00:00",
+      "collected_at": "2026-11-22T10:05:42.372158+00:00",
       "effective_weight": 0.8,
       "title_original": "Netflix’s FTX Drama ‘The Altruists’ Makes CZ the Villain, but Is That What Really Happened?",
       "cross_check": 1
@@ -92,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-22T09:05:34.633502+00:00",
+      "collected_at": "2026-11-22T10:05:41.923418+00:00",
       "effective_weight": 0.65,
       "title_original": "VanEck to end Gemini ETF custody deals, keeps Coinbase",
       "cross_check": 1
@@ -109,7 +109,7 @@
       "bear_weight": 0.0,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-22T09:05:34.633783+00:00",
+      "collected_at": "2026-11-22T10:05:41.923705+00:00",
       "effective_weight": 0.65,
       "title_original": "Institutions pile back into US Bitcoin ETFs in Q3 after selling streak",
       "cross_check": 1
@@ -126,7 +126,7 @@
       "bear_weight": 0.0,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-22T09:05:34.634040+00:00",
+      "collected_at": "2026-11-22T10:05:41.923995+00:00",
       "effective_weight": 0.65,
       "title_original": "Ethereum’s Glamsterdam upgrade could slip to May 2027 over compatibility concerns",
       "cross_check": 2
@@ -134,20 +134,71 @@
   ],
   "top_bearish": [
     {
-      "title": "Robert Kiyosaki Urges Buyers to Wait Out the Crash as Bitcoin Plummets",
-      "url": "https://news.bitcoin.com/featured/robert-kiyosaki-urges-buyers-to-wait-out-the-crash-as-bitcoin-plummets/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
+      "title": "Bitcoin briefly drops to $17K on Kraken, exchange upholds trades",
+      "url": "https://cointelegraph.com/news/bitcoin-17k-kraken-canadian-dollar-market-trades-stand?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
       "lang": "en",
-      "pub_date": "2026-11-22T03:30:33+00:00",
+      "pub_date": "2026-11-22T09:33:06+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 2.0,
-      "freshness": 1.0,
+      "bear_weight": 1.0,
+      "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-22T09:05:35.002641+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Robert Kiyosaki Urges Buyers to Wait Out the Crash as Bitcoin Plummets",
+      "collected_at": "2026-11-22T10:05:41.922809+00:00",
+      "effective_weight": 1.95,
+      "title_original": "Bitcoin briefly drops to $17K on Kraken, exchange upholds trades",
+      "cross_check": 3
+    },
+    {
+      "title": "Bitcoin shorts collapsed 79% in five weeks, then the market turned lower",
+      "url": "https://cryptoslate.com/bitcoin-shorts-collapsed-79-in-five-weeks-then-the-market-turned-lower/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-22T09:30:45+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 2.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-22T10:05:42.280753+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Bitcoin shorts collapsed 79% in five weeks, then the market turned lower",
+      "cross_check": 1
+    },
+    {
+      "title": "Robert Kiyosaki Wants More Bitcoin After the Price Collapse: Here’s Why",
+      "url": "https://cryptopotato.com/robert-kiyosaki-wants-more-bitcoin-after-the-price-collapse-heres-why/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-22T09:50:24+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-22T10:05:42.371692+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Robert Kiyosaki Wants More Bitcoin After the Price Collapse: Here’s Why",
+      "cross_check": 5
+    },
+    {
+      "title": "Chainflip Suffers $12M Crypto Hack and Offers Attacker 10% Bounty",
+      "url": "https://bitcoinist.com/chainflip-suffers-12m-crypto-hack-and-offers-attacker-10-bounty/",
+      "source": "Bitcoinist",
+      "source_weight": 0.9,
+      "lang": "en",
+      "pub_date": "2026-11-22T09:15:49+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.1,
+      "collected_at": "2026-11-22T10:05:42.483579+00:00",
+      "effective_weight": 1.215,
+      "title_original": "Chainflip Suffers $12M Crypto Hack and Offers Attacker 10% Bounty",
       "cross_check": 1
     },
     {
@@ -162,61 +213,10 @@
       "bear_weight": 3.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-22T09:05:35.278899+00:00",
+      "collected_at": "2026-11-22T10:05:42.371851+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitcoin’s Weirdest Crash Yet? BTC Briefly Dumped to $17K on Kraken",
-      "cross_check": 1
-    },
-    {
-      "title": "Bitcoin’s $55K Crash Was Historic – But Still Far From Crypto’s Worst",
-      "url": "https://cryptopotato.com/bitcoins-55k-crash-was-historic-but-still-far-from-cryptos-worst/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-22T06:08:45+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 2.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-22T09:05:35.278943+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Bitcoin’s $55K Crash Was Historic – But Still Far From Crypto’s Worst",
       "cross_check": 2
-    },
-    {
-      "title": "Fraudsters Used Fake Crypto Exchanges to Steal $37 Million, SEC Alleges",
-      "url": "https://decrypt.co/383752/fraudsters-fake-crypto-exchanges-steal-37-million-sec",
-      "source": "Decrypt",
-      "source_weight": 1.1,
-      "lang": "en",
-      "pub_date": "2026-11-21T17:01:02+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-22T09:05:34.743428+00:00",
-      "effective_weight": 0.88,
-      "title_original": "Fraudsters Used Fake Crypto Exchanges to Steal $37 Million, SEC Alleges",
-      "cross_check": 1
-    },
-    {
-      "title": "Bitcoin Reclaims $60,000 After 9% Bounce From Two-Year Low",
-      "url": "https://bitcoinist.com/bitcoin-reclaims-60000-after-9-bounce-from-two-year-low/",
-      "source": "Bitcoinist",
-      "source_weight": 0.9,
-      "lang": "en",
-      "pub_date": "2026-11-22T07:56:46+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.0,
-      "freshness": 1.0,
-      "fake_score": 0.1,
-      "collected_at": "2026-11-22T09:05:35.457612+00:00",
-      "effective_weight": 0.81,
-      "title_original": "Bitcoin Reclaims $60,000 After 9% Bounce From Two-Year Low",
-      "cross_check": 1
     }
   ]
 }
