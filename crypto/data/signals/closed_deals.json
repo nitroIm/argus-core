@@ -1349,5 +1349,35 @@
       "volume",
       "rsi_high"
     ]
+  },
+  {
+    "type": "SHORT",
+    "entry": 63702.86,
+    "exit": 63575.45428,
+    "pnl_pct": 0.0,
+    "pnl_usd": 0.0,
+    "reason": "TRAILING_STOP",
+    "mode": "intraday",
+    "close_time": "2026-11-23T14:46:36.644749+00:00",
+    "balance_after": 84.56,
+    "active_signals": [
+      "volume",
+      "rsi_high"
+    ]
+  },
+  {
+    "type": "SHORT",
+    "entry": 63702.86,
+    "exit": 63575.45428,
+    "pnl_pct": 0.0,
+    "pnl_usd": 0.0,
+    "reason": "TRAILING_STOP",
+    "mode": "swing",
+    "close_time": "2026-11-23T14:46:36.647711+00:00",
+    "balance_after": 95.6,
+    "active_signals": [
+      "volume",
+      "rsi_high"
+    ]
   }
 ]
