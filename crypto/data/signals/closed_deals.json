@@ -1271,5 +1271,21 @@
     "active_signals": [
       "rsi_high"
     ]
+  },
+  {
+    "type": "LONG",
+    "entry": 61526.85,
+    "exit": 60829.09821428571,
+    "pnl_pct": -1.33,
+    "pnl_usd": -1.14,
+    "reason": "STOP_LOSS",
+    "mode": "intraday",
+    "close_time": "2026-11-23T03:46:46.669540+00:00",
+    "balance_after": 83.97,
+    "active_signals": [
+      "ema",
+      "volume",
+      "rsi_mid"
+    ]
   }
 ]
