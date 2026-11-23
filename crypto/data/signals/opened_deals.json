@@ -12,11 +12,11 @@
   "swing": {
     "type": "SHORT",
     "entry": 63702.86,
-    "sl": 64675.737499999996,
+    "sl": 63575.45428,
     "tp1": 63054.275,
     "tp2": 62081.3975,
-    "size_left_pct": 100,
-    "tp1_hit": false,
+    "size_left_pct": 50.0,
+    "tp1_hit": true,
     "open_time": "2026-11-23T14:02:02.577073+00:00",
     "active_signals": [
       "volume",
@@ -26,11 +26,11 @@
   "intraday": {
     "type": "SHORT",
     "entry": 63702.86,
-    "sl": 64675.737499999996,
+    "sl": 63575.45428,
     "tp1": 63054.275,
     "tp2": 62081.3975,
-    "size_left_pct": 100,
-    "tp1_hit": false,
+    "size_left_pct": 50.0,
+    "tp1_hit": true,
     "open_time": "2026-11-23T14:02:02.574269+00:00",
     "active_signals": [
       "volume",
