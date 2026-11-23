@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-11-23T04:05:46.180085+00:00",
+  "generated_at": "2026-11-23T05:05:41.513675+00:00",
   "total_news": 92,
-  "avg_sentiment": -0.388,
+  "avg_sentiment": -0.395,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 14,
   "bearish_count": 37,
@@ -58,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-23T04:05:45.011702+00:00",
+      "collected_at": "2026-11-23T05:05:39.535901+00:00",
       "effective_weight": 1.04,
       "title_original": "The future of onchain FX could start with users, not institutional liquidity",
       "cross_check": 1
@@ -75,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-23T04:05:45.162655+00:00",
+      "collected_at": "2026-11-23T05:05:39.880616+00:00",
       "effective_weight": 1.0,
       "title_original": "21shares Sees Bitcoin Hitting New High in 2027, Cycle Peak Later",
       "cross_check": 1
@@ -92,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-23T04:05:45.162741+00:00",
+      "collected_at": "2026-11-23T05:05:39.880784+00:00",
       "effective_weight": 1.0,
       "title_original": "Solo Bitcoin Miner Wins $190K Jackpot Against 130 Million-to-One Odds",
       "cross_check": 1
@@ -107,10 +107,10 @@
       "sentiment": 1.0,
       "bull_weight": 1.0,
       "bear_weight": 0.0,
-      "freshness": 1.0,
+      "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-23T04:05:45.162824+00:00",
-      "effective_weight": 1.0,
+      "collected_at": "2026-11-23T05:05:39.880921+00:00",
+      "effective_weight": 0.8,
       "title_original": "Bitcoin Price Takes a Beating as November Rout Erases Summer Gains",
       "cross_check": 1
     },
@@ -126,7 +126,7 @@
       "bear_weight": 0.0,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-23T04:05:45.012127+00:00",
+      "collected_at": "2026-11-23T05:05:39.536461+00:00",
       "effective_weight": 0.65,
       "title_original": "VanEck to end Gemini ETF custody deals, keeps Coinbase",
       "cross_check": 1
@@ -143,10 +143,10 @@
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 0.8,
-      "freshness": 1.0,
+      "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-23T04:05:45.011640+00:00",
-      "effective_weight": 1.3,
+      "collected_at": "2026-11-23T05:05:39.535808+00:00",
+      "effective_weight": 1.04,
       "title_original": "Will Bitcoin’s big rebound hold? More tampered Ledgers found: Hodler’s Digest",
       "cross_check": 1
     },
@@ -162,7 +162,7 @@
       "bear_weight": 1.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-23T04:05:45.011792+00:00",
+      "collected_at": "2026-11-23T05:05:39.536022+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin briefly drops to $17K on Kraken, exchange upholds trades",
       "cross_check": 2
@@ -179,9 +179,26 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-23T04:05:45.162782+00:00",
+      "collected_at": "2026-11-23T05:05:39.880853+00:00",
       "effective_weight": 1.0,
       "title_original": "Chainflip Hacker Steals $12 Million as FLIP Token Craters 69%",
+      "cross_check": 1
+    },
+    {
+      "title": "Bitquery counted 400 fewer BTC in Maple’s disclosed wallets than Maple reported",
+      "url": "https://cryptoslate.com/bitquery-counted-400-fewer-btc-in-maples-disclosed-wallets-than-maple-reported/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-23T04:05:33+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-23T05:05:40.026859+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Bitquery counted 400 fewer BTC in Maple’s disclosed wallets than Maple reported",
       "cross_check": 1
     },
     {
@@ -196,26 +213,9 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-23T04:05:45.193538+00:00",
+      "collected_at": "2026-11-23T05:05:40.026993+00:00",
       "effective_weight": 1.0,
       "title_original": "Repaying a Bitcoin-backed loan on Sui can leave you waiting to withdraw native BTC",
-      "cross_check": 1
-    },
-    {
-      "title": "Peter Brandt Links 75% Bitcoin Drops to Parabolic Rallies",
-      "url": "https://news.bitcoin.com/market-updates/peter-brandt-links-75-bitcoin-drops-to-parabolic-rallies/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-22T17:01:11+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-23T04:05:45.162969+00:00",
-      "effective_weight": 0.8,
-      "title_original": "Peter Brandt Links 75% Bitcoin Drops to Parabolic Rallies",
       "cross_check": 1
     }
   ]
