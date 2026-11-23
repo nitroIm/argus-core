@@ -1257,5 +1257,19 @@
     "active_signals": [
       "rsi_high"
     ]
+  },
+  {
+    "type": "SHORT",
+    "entry": 61046.43,
+    "exit": 60924.33714,
+    "pnl_pct": -0.0,
+    "pnl_usd": -0.0,
+    "reason": "TRAILING_STOP",
+    "mode": "swing",
+    "close_time": "2026-11-23T03:16:48.005501+00:00",
+    "balance_after": 95.21,
+    "active_signals": [
+      "rsi_high"
+    ]
   }
 ]
