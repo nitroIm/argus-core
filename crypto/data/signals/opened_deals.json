@@ -12,14 +12,15 @@
   "swing": {
     "type": "SHORT",
     "entry": 61046.43,
-    "sl": 61887.743571428575,
+    "sl": 60924.33714,
     "tp1": 60485.55428571429,
     "tp2": 59644.24071428571,
-    "size_left_pct": 100.0,
-    "tp1_hit": false,
+    "size_left_pct": 50.0,
+    "tp1_hit": true,
     "open_time": "2026-11-22T16:16:49.257261+00:00",
     "active_signals": [
       "rsi_high"
     ]
-  }
+  },
+  "intraday": {}
 }
