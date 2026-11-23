@@ -1,17 +1,17 @@
 {
-  "generated_at": "2026-11-23T03:05:39.955017+00:00",
-  "total_news": 94,
-  "avg_sentiment": -0.346,
+  "generated_at": "2026-11-23T04:05:46.180085+00:00",
+  "total_news": 92,
+  "avg_sentiment": -0.388,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 16,
-  "bearish_count": 38,
-  "neutral_count": 40,
+  "bullish_count": 14,
+  "bearish_count": 37,
+  "neutral_count": 41,
   "fake_count": 0,
   "cross_confirmed": 7,
   "by_source": {
     "Cointelegraph": {
-      "total": 19,
-      "bull": 4,
+      "total": 17,
+      "bull": 3,
       "bear": 8
     },
     "Decrypt": {
@@ -22,11 +22,11 @@
     "Bitcoin.com": {
       "total": 9,
       "bull": 3,
-      "bear": 3
+      "bear": 2
     },
     "CryptoSlate": {
       "total": 5,
-      "bull": 1,
+      "bull": 0,
       "bear": 3
     },
     "CryptoPotato": {
@@ -47,23 +47,6 @@
   },
   "top_bullish": [
     {
-      "title": "21shares Sees Bitcoin Hitting New High in 2027, Cycle Peak Later",
-      "url": "https://news.bitcoin.com/featured/21shares-sees-bitcoin-hitting-new-high-in-2027-cycle-peak-later/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-23T02:30:39+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 2.3,
-      "bear_weight": 0.0,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-23T03:05:38.704094+00:00",
-      "effective_weight": 1.5,
-      "title_original": "21shares Sees Bitcoin Hitting New High in 2027, Cycle Peak Later",
-      "cross_check": 1
-    },
-    {
       "title": "The future of onchain FX could start with users, not institutional liquidity",
       "url": "https://cointelegraph.com/opinion/future-onchain-fx-could-start-with-users-not-institutional-liquidity?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
       "source": "Cointelegraph",
@@ -75,9 +58,26 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-23T03:05:38.476575+00:00",
+      "collected_at": "2026-11-23T04:05:45.011702+00:00",
       "effective_weight": 1.04,
       "title_original": "The future of onchain FX could start with users, not institutional liquidity",
+      "cross_check": 1
+    },
+    {
+      "title": "21shares Sees Bitcoin Hitting New High in 2027, Cycle Peak Later",
+      "url": "https://news.bitcoin.com/featured/21shares-sees-bitcoin-hitting-new-high-in-2027-cycle-peak-later/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-23T02:30:39+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 2.3,
+      "bear_weight": 0.0,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-23T04:05:45.162655+00:00",
+      "effective_weight": 1.0,
+      "title_original": "21shares Sees Bitcoin Hitting New High in 2027, Cycle Peak Later",
       "cross_check": 1
     },
     {
@@ -92,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-23T03:05:38.704230+00:00",
+      "collected_at": "2026-11-23T04:05:45.162741+00:00",
       "effective_weight": 1.0,
       "title_original": "Solo Bitcoin Miner Wins $190K Jackpot Against 130 Million-to-One Odds",
       "cross_check": 1
@@ -109,47 +109,30 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-23T03:05:38.704357+00:00",
+      "collected_at": "2026-11-23T04:05:45.162824+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitcoin Price Takes a Beating as November Rout Erases Summer Gains",
       "cross_check": 1
     },
     {
-      "title": "XRP’s institutional adoption story has a catch that investors may be overlooking",
-      "url": "https://cryptoslate.com/xrps-institutional-adoption-story-has-a-catch-that-investors-may-be-overlooking/",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
+      "title": "VanEck to end Gemini ETF custody deals, keeps Coinbase",
+      "url": "https://cointelegraph.com/news/vaneck-gemini-etf-custody-end-keep-coinbase?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
       "lang": "en",
-      "pub_date": "2026-11-22T17:05:07+00:00",
+      "pub_date": "2026-11-20T10:54:38+00:00",
       "sentiment": 1.0,
-      "bull_weight": 2.4,
+      "bull_weight": 1.2,
       "bear_weight": 0.0,
-      "freshness": 0.8,
+      "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-23T03:05:38.747146+00:00",
-      "effective_weight": 0.8,
-      "title_original": "XRP’s institutional adoption story has a catch that investors may be overlooking",
+      "collected_at": "2026-11-23T04:05:45.012127+00:00",
+      "effective_weight": 0.65,
+      "title_original": "VanEck to end Gemini ETF custody deals, keeps Coinbase",
       "cross_check": 1
     }
   ],
   "top_bearish": [
-    {
-      "title": "Repaying a Bitcoin-backed loan on Sui can leave you waiting to withdraw native BTC",
-      "url": "https://cryptoslate.com/repaying-a-bitcoin-backed-loan-on-sui-can-leave-you-waiting-to-withdraw-native-btc/",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-23T02:05:39+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-23T03:05:38.746832+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Repaying a Bitcoin-backed loan on Sui can leave you waiting to withdraw native BTC",
-      "cross_check": 1
-    },
     {
       "title": "Will Bitcoin’s big rebound hold? More tampered Ledgers found: Hodler’s Digest",
       "url": "https://cointelegraph.com/magazine/will-bitcoins-big-rebound-hold-more-tampered-ledgers-found-hodlers-digest?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -162,7 +145,7 @@
       "bear_weight": 0.8,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-23T03:05:38.476488+00:00",
+      "collected_at": "2026-11-23T04:05:45.011640+00:00",
       "effective_weight": 1.3,
       "title_original": "Will Bitcoin’s big rebound hold? More tampered Ledgers found: Hodler’s Digest",
       "cross_check": 1
@@ -179,7 +162,7 @@
       "bear_weight": 1.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-23T03:05:38.476713+00:00",
+      "collected_at": "2026-11-23T04:05:45.011792+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin briefly drops to $17K on Kraken, exchange upholds trades",
       "cross_check": 2
@@ -196,26 +179,43 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-23T03:05:38.704292+00:00",
+      "collected_at": "2026-11-23T04:05:45.162782+00:00",
       "effective_weight": 1.0,
       "title_original": "Chainflip Hacker Steals $12 Million as FLIP Token Craters 69%",
       "cross_check": 1
     },
     {
-      "title": "Bitcoin’s Big Holders Signal Strength, But One Red Flag Looms",
-      "url": "https://cryptopotato.com/bitcoins-big-holders-signal-strength-but-one-red-flag-looms/",
-      "source": "CryptoPotato",
+      "title": "Repaying a Bitcoin-backed loan on Sui can leave you waiting to withdraw native BTC",
+      "url": "https://cryptoslate.com/repaying-a-bitcoin-backed-loan-on-sui-can-leave-you-waiting-to-withdraw-native-btc/",
+      "source": "CryptoSlate",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-11-22T21:25:35+00:00",
+      "pub_date": "2026-11-23T02:05:39+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 0.8,
+      "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-23T03:05:38.832067+00:00",
+      "collected_at": "2026-11-23T04:05:45.193538+00:00",
       "effective_weight": 1.0,
-      "title_original": "Bitcoin’s Big Holders Signal Strength, But One Red Flag Looms",
+      "title_original": "Repaying a Bitcoin-backed loan on Sui can leave you waiting to withdraw native BTC",
+      "cross_check": 1
+    },
+    {
+      "title": "Peter Brandt Links 75% Bitcoin Drops to Parabolic Rallies",
+      "url": "https://news.bitcoin.com/market-updates/peter-brandt-links-75-bitcoin-drops-to-parabolic-rallies/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-22T17:01:11+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.0,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-23T04:05:45.162969+00:00",
+      "effective_weight": 0.8,
+      "title_original": "Peter Brandt Links 75% Bitcoin Drops to Parabolic Rallies",
       "cross_check": 1
     }
   ]
