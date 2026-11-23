@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-23T12:05:49.914181+00:00",
-  "total_news": 96,
-  "avg_sentiment": -0.25,
+  "generated_at": "2026-11-23T13:05:42.017128+00:00",
+  "total_news": 98,
+  "avg_sentiment": -0.271,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 16,
+  "bullish_count": 17,
   "bearish_count": 36,
-  "neutral_count": 44,
+  "neutral_count": 45,
   "fake_count": 0,
   "cross_confirmed": 6,
   "by_source": {
@@ -15,18 +15,18 @@
       "bear": 9
     },
     "Decrypt": {
-      "total": 17,
+      "total": 18,
       "bull": 0,
       "bear": 8
     },
     "Bitcoin.com": {
-      "total": 9,
+      "total": 8,
       "bull": 2,
       "bear": 1
     },
     "CryptoSlate": {
-      "total": 8,
-      "bull": 2,
+      "total": 9,
+      "bull": 3,
       "bear": 4
     },
     "CryptoPotato": {
@@ -40,12 +40,29 @@
       "bear": 1
     },
     "ForkLog": {
-      "total": 10,
+      "total": 11,
       "bull": 1,
       "bear": 1
     }
   },
   "top_bullish": [
+    {
+      "title": "Bitcoin hedges could expire an hour before ETF trading resumes on Black Friday",
+      "url": "https://cryptoslate.com/bitcoin-hedges-could-expire-an-hour-before-etf-trading-resumes-on-black-friday/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-23T12:20:26+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-23T13:05:40.659140+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Bitcoin hedges could expire an hour before ETF trading resumes on Black Friday",
+      "cross_check": 1
+    },
     {
       "title": "BTC price gains 12% from $55K: Three things to know in Bitcoin this week",
       "url": "https://cointelegraph.com/markets/btc-price-stock-futures-rebound-three-things-know-bitcoin-this-week?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -56,46 +73,12 @@
       "sentiment": 1.0,
       "bull_weight": 1.0,
       "bear_weight": 0.0,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-23T12:05:48.171208+00:00",
-      "effective_weight": 1.95,
+      "collected_at": "2026-11-23T13:05:40.317770+00:00",
+      "effective_weight": 1.3,
       "title_original": "BTC price gains 12% from $55K: Three things to know in Bitcoin this week",
       "cross_check": 1
-    },
-    {
-      "title": "Bitcoin’s blockchain keeps growing as its live ledger sheds 25 million entries",
-      "url": "https://cryptoslate.com/bitcoins-blockchain-keeps-growing-as-its-live-ledger-sheds-25-million-entries/",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-23T11:20:18+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-23T12:05:48.496166+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Bitcoin’s blockchain keeps growing as its live ledger sheds 25 million entries",
-      "cross_check": 1
-    },
-    {
-      "title": "Bullish XRP Signal Appears for First Time Since Market Downturn: Analyst",
-      "url": "https://cryptopotato.com/bullish-xrp-signal-appears-for-first-time-since-market-downturn-analyst/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-23T11:27:16+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-23T12:05:48.595309+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Bullish XRP Signal Appears for First Time Since Market Downturn: Analyst",
-      "cross_check": 3
     },
     {
       "title": "The future of onchain FX could start with users, not institutional liquidity",
@@ -109,27 +92,44 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-23T12:05:48.171595+00:00",
+      "collected_at": "2026-11-23T13:05:40.318175+00:00",
       "effective_weight": 1.04,
       "title_original": "The future of onchain FX could start with users, not institutional liquidity",
       "cross_check": 2
     },
     {
-      "title": "BTC Rebounds From $55K, But 4 Major Catalysts Could Shake Crypto Again This Week",
-      "url": "https://cryptopotato.com/btc-rebounds-from-55k-but-4-major-catalysts-could-shake-crypto-again-this-week/",
-      "source": "CryptoPotato",
+      "title": "Bitcoin’s blockchain keeps growing as its live ledger sheds 25 million entries",
+      "url": "https://cryptoslate.com/bitcoins-blockchain-keeps-growing-as-its-live-ledger-sheds-25-million-entries/",
+      "source": "CryptoSlate",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-11-23T06:10:04+00:00",
+      "pub_date": "2026-11-23T11:20:18+00:00",
       "sentiment": 1.0,
-      "bull_weight": 1.0,
+      "bull_weight": 1.2,
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-23T12:05:48.595528+00:00",
+      "collected_at": "2026-11-23T13:05:40.659226+00:00",
       "effective_weight": 1.0,
-      "title_original": "BTC Rebounds From $55K, But 4 Major Catalysts Could Shake Crypto Again This Week",
+      "title_original": "Bitcoin’s blockchain keeps growing as its live ledger sheds 25 million entries",
       "cross_check": 1
+    },
+    {
+      "title": "Bullish XRP Signal Appears for First Time Since Market Downturn: Analyst",
+      "url": "https://cryptopotato.com/bullish-xrp-signal-appears-for-first-time-since-market-downturn-analyst/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-23T11:27:16+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-23T13:05:40.750103+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Bullish XRP Signal Appears for First Time Since Market Downturn: Analyst",
+      "cross_check": 3
     }
   ],
   "top_bearish": [
@@ -143,10 +143,10 @@
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 2.5,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-23T12:05:48.207632+00:00",
-      "effective_weight": 1.65,
+      "collected_at": "2026-11-23T13:05:40.386630+00:00",
+      "effective_weight": 1.1,
       "title_original": "Bitcoin Rebounds to $61K After Weekend Plunge to Two-Year Low",
       "cross_check": 2
     },
@@ -162,26 +162,9 @@
       "bear_weight": 0.8,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-23T12:05:48.171523+00:00",
+      "collected_at": "2026-11-23T13:05:40.318103+00:00",
       "effective_weight": 1.04,
       "title_original": "Will Bitcoin’s big rebound hold? More tampered Ledgers found: Hodler’s Digest",
-      "cross_check": 1
-    },
-    {
-      "title": "Bitcoin Price Clings to $60K as KOSPI Crashes 5% and Hayes Talks $55K Retest",
-      "url": "https://news.bitcoin.com/market-updates/bitcoin-price-61k-arthur-hayes-55k-retest-kospi-crash/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-23T06:30:20+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 2.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-23T12:05:48.418922+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Bitcoin Price Clings to $60K as KOSPI Crashes 5% and Hayes Talks $55K Retest",
       "cross_check": 1
     },
     {
@@ -196,7 +179,7 @@
       "bear_weight": 2.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-23T12:05:48.496254+00:00",
+      "collected_at": "2026-11-23T13:05:40.659309+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitcoin’s plunge below $60,000 triggers $20 million buying spree at Twenty One Capital",
       "cross_check": 1
@@ -213,10 +196,27 @@
       "bear_weight": 0.8,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-23T12:05:48.595396+00:00",
+      "collected_at": "2026-11-23T13:05:40.750194+00:00",
       "effective_weight": 1.0,
       "title_original": "‘Black Monday’ Predictions Fail as Bitcoin (BTC) Climbs Above $61K: Market Watch",
       "cross_check": 2
+    },
+    {
+      "title": "Bitcoin Price Clings to $60K as KOSPI Crashes 5% and Hayes Talks $55K Retest",
+      "url": "https://news.bitcoin.com/market-updates/bitcoin-price-61k-arthur-hayes-55k-retest-kospi-crash/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-23T06:30:20+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 2.0,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-23T13:05:40.581758+00:00",
+      "effective_weight": 0.8,
+      "title_original": "Bitcoin Price Clings to $60K as KOSPI Crashes 5% and Hayes Talks $55K Retest",
+      "cross_check": 1
     }
   ]
 }
