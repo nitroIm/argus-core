@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-11-23T19:05:38.757455+00:00",
-  "total_news": 96,
-  "avg_sentiment": -0.186,
+  "generated_at": "2026-11-23T20:05:42.148671+00:00",
+  "total_news": 95,
+  "avg_sentiment": -0.242,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 17,
-  "bearish_count": 33,
-  "neutral_count": 46,
+  "bullish_count": 16,
+  "bearish_count": 34,
+  "neutral_count": 45,
   "fake_count": 0,
-  "cross_confirmed": 16,
+  "cross_confirmed": 18,
   "by_source": {
     "Cointelegraph": {
       "total": 19,
@@ -15,24 +15,24 @@
       "bear": 10
     },
     "Decrypt": {
-      "total": 19,
+      "total": 18,
       "bull": 3,
       "bear": 8
     },
     "Bitcoin.com": {
-      "total": 7,
+      "total": 8,
       "bull": 2,
-      "bear": 1
+      "bear": 2
     },
     "CryptoSlate": {
-      "total": 7,
-      "bull": 2,
-      "bear": 1
+      "total": 6,
+      "bull": 1,
+      "bear": 0
     },
     "CryptoPotato": {
       "total": 25,
       "bull": 4,
-      "bear": 11
+      "bear": 12
     },
     "Bitcoinist": {
       "total": 8,
@@ -56,46 +56,12 @@
       "sentiment": 1.0,
       "bull_weight": 1.0,
       "bear_weight": 0.0,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-23T19:05:36.727578+00:00",
-      "effective_weight": 1.65,
-      "title_original": "Solo Bitcoin Miner Scores Again, Hitting $191,000 Jackpot Against the Odds",
-      "cross_check": 1
-    },
-    {
-      "title": "Eric Trump’s American Bitcoin Stock Jumps After $150M BTC-Backed Loan",
-      "url": "https://news.bitcoin.com/finance/eric-trumps-american-bitcoin-stock-jumps-150m-btc-backed-loan/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-23T18:28:05+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-23T19:05:37.049381+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Eric Trump’s American Bitcoin Stock Jumps After $150M BTC-Backed Loan",
-      "cross_check": 3
-    },
-    {
-      "title": "OKX, ICE launch 113 tokenized assets despite issuer objections",
-      "url": "https://cointelegraph.com/news/okxice-launch-113-tokenized-assets-objections?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-11-23T14:00:00+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-23T19:05:36.570581+00:00",
-      "effective_weight": 1.3,
-      "title_original": "OKX, ICE launch 113 tokenized assets despite issuer objections",
-      "cross_check": 2
+      "collected_at": "2026-11-23T20:05:40.378106+00:00",
+      "effective_weight": 1.1,
+      "title_original": "Solo Bitcoin Miner Scores Again, Hitting $191,000 Jackpot Against the Odds",
+      "cross_check": 1
     },
     {
       "title": "Tom Lee Says Ethereum Is as Scarce as Bitcoin—And Bitmine Just Bought More",
@@ -109,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-23T19:05:36.727663+00:00",
+      "collected_at": "2026-11-23T20:05:40.378186+00:00",
       "effective_weight": 1.1,
       "title_original": "Tom Lee Says Ethereum Is as Scarce as Bitcoin—And Bitmine Just Bought More",
       "cross_check": 1
@@ -126,13 +92,81 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-23T19:05:36.727743+00:00",
+      "collected_at": "2026-11-23T20:05:40.378257+00:00",
       "effective_weight": 1.1,
       "title_original": "Bitcoin Rallies, Anthropic Sinks as Nvidia Surges 35% on Jensen Huang’s Return",
-      "cross_check": 6
+      "cross_check": 7
+    },
+    {
+      "title": "OKX, ICE launch 113 tokenized assets despite issuer objections",
+      "url": "https://cointelegraph.com/news/okxice-launch-113-tokenized-assets-objections?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-11-23T14:00:00+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-23T20:05:40.281386+00:00",
+      "effective_weight": 1.04,
+      "title_original": "OKX, ICE launch 113 tokenized assets despite issuer objections",
+      "cross_check": 2
+    },
+    {
+      "title": "BTC price gains 12% from $55K: Three things to know in Bitcoin this week",
+      "url": "https://cointelegraph.com/markets/btc-price-stock-futures-rebound-three-things-know-bitcoin-this-week?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-11-23T11:20:57+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-23T20:05:40.281701+00:00",
+      "effective_weight": 1.04,
+      "title_original": "BTC price gains 12% from $55K: Three things to know in Bitcoin this week",
+      "cross_check": 1
     }
   ],
   "top_bearish": [
+    {
+      "title": "BTCS offloads $44M in ETH to reduce DeFi debt amid market downturn",
+      "url": "https://cointelegraph.com/news/btcs-offloads-44m-eth-reduce-defi-debt-market-downturn?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-11-23T19:35:06+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 0.8,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-23T20:05:40.281073+00:00",
+      "effective_weight": 1.95,
+      "title_original": "BTCS offloads $44M in ETH to reduce DeFi debt amid market downturn",
+      "cross_check": 1
+    },
+    {
+      "title": "Top Ethereum Price Predictions as ETH Challenges $1,800",
+      "url": "https://cryptopotato.com/top-ethereum-price-predictions-as-eth-challenges-1800/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-23T19:45:35+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 0.8,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-23T20:05:40.827740+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Top Ethereum Price Predictions as ETH Challenges $1,800",
+      "cross_check": 1
+    },
     {
       "title": "Cross River Bank enters Bitcoin-backed lending with $250K loans",
       "url": "https://cointelegraph.com/news/cross-river-bank-bitcoin-backed-lending-250k-loans?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -145,7 +179,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-23T19:05:36.570374+00:00",
+      "collected_at": "2026-11-23T20:05:40.281217+00:00",
       "effective_weight": 1.3,
       "title_original": "Cross River Bank enters Bitcoin-backed lending with $250K loans",
       "cross_check": 1
@@ -160,10 +194,10 @@
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 0.8,
-      "freshness": 1.0,
+      "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-23T19:05:36.570645+00:00",
-      "effective_weight": 1.3,
+      "collected_at": "2026-11-23T20:05:40.281444+00:00",
+      "effective_weight": 1.04,
       "title_original": "Trump-linked American Bitcoin secures $150M credit line from FalconX",
       "cross_check": 3
     },
@@ -177,46 +211,12 @@
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 0.8,
-      "freshness": 1.0,
+      "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-23T19:05:36.570707+00:00",
-      "effective_weight": 1.3,
+      "collected_at": "2026-11-23T20:05:40.281514+00:00",
+      "effective_weight": 1.04,
       "title_original": "Strategy buys 457 Bitcoin, spends $212M on preferred share buybacks",
       "cross_check": 3
-    },
-    {
-      "title": "AI agents are using credit cards. Where does that leave crypto?",
-      "url": "https://cointelegraph.com/magazine/ai-agents-are-using-credit-cards-where-does-that-leave-crypto?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-11-23T13:30:00+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 0.8,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-23T19:05:36.570777+00:00",
-      "effective_weight": 1.3,
-      "title_original": "AI agents are using credit cards. Where does that leave crypto?",
-      "cross_check": 1
-    },
-    {
-      "title": "Morning Minute: Crypto Rebounds after NVDA Drives Friday Selloff",
-      "url": "https://decrypt.co/383778/morning-minute-crypto-rebounds-after-nvda-drives-friday-selloff",
-      "source": "Decrypt",
-      "source_weight": 1.1,
-      "lang": "en",
-      "pub_date": "2026-11-23T13:34:13+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-23T19:05:36.727808+00:00",
-      "effective_weight": 1.1,
-      "title_original": "Morning Minute: Crypto Rebounds after NVDA Drives Friday Selloff",
-      "cross_check": 1
     }
   ]
 }
