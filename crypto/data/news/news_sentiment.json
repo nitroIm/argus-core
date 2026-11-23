@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-11-23T09:05:39.268029+00:00",
-  "total_news": 92,
-  "avg_sentiment": -0.341,
+  "generated_at": "2026-11-23T10:05:38.325010+00:00",
+  "total_news": 91,
+  "avg_sentiment": -0.347,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 15,
-  "bearish_count": 37,
-  "neutral_count": 40,
+  "bullish_count": 14,
+  "bearish_count": 35,
+  "neutral_count": 42,
   "fake_count": 0,
-  "cross_confirmed": 7,
+  "cross_confirmed": 4,
   "by_source": {
     "Cointelegraph": {
       "total": 18,
@@ -21,7 +21,7 @@
     },
     "Bitcoin.com": {
       "total": 10,
-      "bull": 4,
+      "bull": 3,
       "bear": 2
     },
     "CryptoSlate": {
@@ -37,10 +37,10 @@
     "Bitcoinist": {
       "total": 8,
       "bull": 1,
-      "bear": 4
+      "bear": 2
     },
     "ForkLog": {
-      "total": 8,
+      "total": 7,
       "bull": 2,
       "bear": 1
     }
@@ -58,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-23T09:05:37.079437+00:00",
+      "collected_at": "2026-11-23T10:05:36.824189+00:00",
       "effective_weight": 1.04,
       "title_original": "The future of onchain FX could start with users, not institutional liquidity",
       "cross_check": 1
@@ -75,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-23T09:05:37.384345+00:00",
+      "collected_at": "2026-11-23T10:05:37.057726+00:00",
       "effective_weight": 1.0,
       "title_original": "Flare Says XRP Holders Are Borrowing Dollars Without Selling Their Tokens",
       "cross_check": 1
@@ -92,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-23T09:05:37.443183+00:00",
+      "collected_at": "2026-11-23T10:05:37.120212+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitcoin Core fixes a bug that can stall nodes, leaving 29.x users to upgrade",
       "cross_check": 1
@@ -109,7 +109,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-23T09:05:37.530267+00:00",
+      "collected_at": "2026-11-23T10:05:37.216254+00:00",
       "effective_weight": 1.0,
       "title_original": "BTC Rebounds From $55K, But 4 Major Catalysts Could Shake Crypto Again This Week",
       "cross_check": 1
@@ -126,7 +126,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-23T09:05:37.384451+00:00",
+      "collected_at": "2026-11-23T10:05:37.057871+00:00",
       "effective_weight": 0.8,
       "title_original": "21shares Sees Bitcoin Hitting New High in 2027, Cycle Peak Later",
       "cross_check": 1
@@ -145,27 +145,10 @@
       "bear_weight": 0.8,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-23T09:05:37.079377+00:00",
+      "collected_at": "2026-11-23T10:05:36.824108+00:00",
       "effective_weight": 1.04,
       "title_original": "Will Bitcoin’s big rebound hold? More tampered Ledgers found: Hodler’s Digest",
       "cross_check": 1
-    },
-    {
-      "title": "Bitcoin briefly drops to $17K on Kraken, exchange upholds trades",
-      "url": "https://cointelegraph.com/news/bitcoin-17k-kraken-canadian-dollar-market-trades-stand?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-11-22T09:33:06+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-23T09:05:37.079488+00:00",
-      "effective_weight": 1.04,
-      "title_original": "Bitcoin briefly drops to $17K on Kraken, exchange upholds trades",
-      "cross_check": 2
     },
     {
       "title": "Bitcoin Price Clings to $60K as KOSPI Crashes 5% and Hayes Talks $55K Retest",
@@ -179,26 +162,9 @@
       "bear_weight": 2.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-23T09:05:37.384294+00:00",
+      "collected_at": "2026-11-23T10:05:37.057659+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitcoin Price Clings to $60K as KOSPI Crashes 5% and Hayes Talks $55K Retest",
-      "cross_check": 1
-    },
-    {
-      "title": "Bitquery counted 400 fewer BTC in Maple’s disclosed wallets than Maple reported",
-      "url": "https://cryptoslate.com/bitquery-counted-400-fewer-btc-in-maples-disclosed-wallets-than-maple-reported/",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-23T04:05:33+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-23T09:05:37.443244+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Bitquery counted 400 fewer BTC in Maple’s disclosed wallets than Maple reported",
       "cross_check": 1
     },
     {
@@ -213,9 +179,43 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-23T09:05:37.384595+00:00",
+      "collected_at": "2026-11-23T10:05:37.058063+00:00",
       "effective_weight": 0.8,
       "title_original": "Chainflip Hacker Steals $12 Million as FLIP Token Craters 69%",
+      "cross_check": 1
+    },
+    {
+      "title": "Bitquery counted 400 fewer BTC in Maple’s disclosed wallets than Maple reported",
+      "url": "https://cryptoslate.com/bitquery-counted-400-fewer-btc-in-maples-disclosed-wallets-than-maple-reported/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-23T04:05:33+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-23T10:05:37.120296+00:00",
+      "effective_weight": 0.8,
+      "title_original": "Bitquery counted 400 fewer BTC in Maple’s disclosed wallets than Maple reported",
+      "cross_check": 1
+    },
+    {
+      "title": "Repaying a Bitcoin-backed loan on Sui can leave you waiting to withdraw native BTC",
+      "url": "https://cryptoslate.com/repaying-a-bitcoin-backed-loan-on-sui-can-leave-you-waiting-to-withdraw-native-btc/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-23T02:05:39+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-23T10:05:37.120442+00:00",
+      "effective_weight": 0.8,
+      "title_original": "Repaying a Bitcoin-backed loan on Sui can leave you waiting to withdraw native BTC",
       "cross_check": 1
     }
   ]
