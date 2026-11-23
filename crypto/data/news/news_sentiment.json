@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-23T10:05:38.325010+00:00",
-  "total_news": 91,
-  "avg_sentiment": -0.347,
+  "generated_at": "2026-11-23T11:05:36.514592+00:00",
+  "total_news": 94,
+  "avg_sentiment": -0.342,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 14,
-  "bearish_count": 35,
-  "neutral_count": 42,
+  "bullish_count": 15,
+  "bearish_count": 36,
+  "neutral_count": 43,
   "fake_count": 0,
   "cross_confirmed": 4,
   "by_source": {
@@ -20,32 +20,49 @@
       "bear": 7
     },
     "Bitcoin.com": {
-      "total": 10,
+      "total": 9,
       "bull": 3,
-      "bear": 2
+      "bear": 1
     },
     "CryptoSlate": {
-      "total": 6,
+      "total": 7,
       "bull": 1,
-      "bear": 3
+      "bear": 4
     },
     "CryptoPotato": {
       "total": 26,
       "bull": 4,
-      "bear": 11
+      "bear": 12
     },
     "Bitcoinist": {
       "total": 8,
-      "bull": 1,
+      "bull": 2,
       "bear": 2
     },
     "ForkLog": {
-      "total": 7,
+      "total": 10,
       "bull": 2,
       "bear": 1
     }
   },
   "top_bullish": [
+    {
+      "title": "XRP Ledger Takes Another Step Toward Institutional Lending — Could This Change XRP’s Future?",
+      "url": "https://bitcoinist.com/xrp-ledger-takes-another-step-toward-institutional-lending-could-this-change-xrps-future/",
+      "source": "Bitcoinist",
+      "source_weight": 0.9,
+      "lang": "en",
+      "pub_date": "2026-11-23T10:49:29+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.1,
+      "collected_at": "2026-11-23T11:05:35.508988+00:00",
+      "effective_weight": 1.215,
+      "title_original": "XRP Ledger Takes Another Step Toward Institutional Lending — Could This Change XRP’s Future?",
+      "cross_check": 2
+    },
     {
       "title": "The future of onchain FX could start with users, not institutional liquidity",
       "url": "https://cointelegraph.com/opinion/future-onchain-fx-could-start-with-users-not-institutional-liquidity?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -58,10 +75,10 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-23T10:05:36.824189+00:00",
+      "collected_at": "2026-11-23T11:05:35.052606+00:00",
       "effective_weight": 1.04,
       "title_original": "The future of onchain FX could start with users, not institutional liquidity",
-      "cross_check": 1
+      "cross_check": 2
     },
     {
       "title": "Flare Says XRP Holders Are Borrowing Dollars Without Selling Their Tokens",
@@ -75,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-23T10:05:37.057726+00:00",
+      "collected_at": "2026-11-23T11:05:35.240915+00:00",
       "effective_weight": 1.0,
       "title_original": "Flare Says XRP Holders Are Borrowing Dollars Without Selling Their Tokens",
       "cross_check": 1
@@ -92,7 +109,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-23T10:05:37.120212+00:00",
+      "collected_at": "2026-11-23T11:05:35.307979+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitcoin Core fixes a bug that can stall nodes, leaving 29.x users to upgrade",
       "cross_check": 1
@@ -109,30 +126,47 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-23T10:05:37.216254+00:00",
+      "collected_at": "2026-11-23T11:05:35.402743+00:00",
       "effective_weight": 1.0,
       "title_original": "BTC Rebounds From $55K, But 4 Major Catalysts Could Shake Crypto Again This Week",
-      "cross_check": 1
-    },
-    {
-      "title": "21shares Sees Bitcoin Hitting New High in 2027, Cycle Peak Later",
-      "url": "https://news.bitcoin.com/featured/21shares-sees-bitcoin-hitting-new-high-in-2027-cycle-peak-later/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-23T02:30:39+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 2.3,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-23T10:05:37.057871+00:00",
-      "effective_weight": 0.8,
-      "title_original": "21shares Sees Bitcoin Hitting New High in 2027, Cycle Peak Later",
       "cross_check": 1
     }
   ],
   "top_bearish": [
+    {
+      "title": "Bitcoin’s plunge below $60,000 triggers $20 million buying spree at Twenty One Capital",
+      "url": "https://cryptoslate.com/bitcoins-plunge-below-60000-triggers-20-million-buying-spree-at-twenty-one-capital/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-23T10:20:10+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 2.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-23T11:05:35.307742+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Bitcoin’s plunge below $60,000 triggers $20 million buying spree at Twenty One Capital",
+      "cross_check": 1
+    },
+    {
+      "title": "‘Black Monday’ Predictions Fail as Bitcoin (BTC) Climbs Above $61K: Market Watch",
+      "url": "https://cryptopotato.com/black-monday-predictions-fail-as-bitcoin-btc-climbs-above-61k-market-watch/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-23T10:39:51+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 0.8,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-23T11:05:35.402604+00:00",
+      "effective_weight": 1.5,
+      "title_original": "‘Black Monday’ Predictions Fail as Bitcoin (BTC) Climbs Above $61K: Market Watch",
+      "cross_check": 2
+    },
     {
       "title": "Will Bitcoin’s big rebound hold? More tampered Ledgers found: Hodler’s Digest",
       "url": "https://cointelegraph.com/magazine/will-bitcoins-big-rebound-hold-more-tampered-ledgers-found-hodlers-digest?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -145,7 +179,7 @@
       "bear_weight": 0.8,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-23T10:05:36.824108+00:00",
+      "collected_at": "2026-11-23T11:05:35.052531+00:00",
       "effective_weight": 1.04,
       "title_original": "Will Bitcoin’s big rebound hold? More tampered Ledgers found: Hodler’s Digest",
       "cross_check": 1
@@ -162,26 +196,9 @@
       "bear_weight": 2.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-23T10:05:37.057659+00:00",
+      "collected_at": "2026-11-23T11:05:35.240848+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitcoin Price Clings to $60K as KOSPI Crashes 5% and Hayes Talks $55K Retest",
-      "cross_check": 1
-    },
-    {
-      "title": "Chainflip Hacker Steals $12 Million as FLIP Token Craters 69%",
-      "url": "https://news.bitcoin.com/security/chainflip-hacker-steals-12-million-as-flip-token-craters-69/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-22T23:16:47+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-23T10:05:37.058063+00:00",
-      "effective_weight": 0.8,
-      "title_original": "Chainflip Hacker Steals $12 Million as FLIP Token Craters 69%",
       "cross_check": 1
     },
     {
@@ -196,26 +213,9 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-23T10:05:37.120296+00:00",
+      "collected_at": "2026-11-23T11:05:35.308058+00:00",
       "effective_weight": 0.8,
       "title_original": "Bitquery counted 400 fewer BTC in Maple’s disclosed wallets than Maple reported",
-      "cross_check": 1
-    },
-    {
-      "title": "Repaying a Bitcoin-backed loan on Sui can leave you waiting to withdraw native BTC",
-      "url": "https://cryptoslate.com/repaying-a-bitcoin-backed-loan-on-sui-can-leave-you-waiting-to-withdraw-native-btc/",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-23T02:05:39+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-23T10:05:37.120442+00:00",
-      "effective_weight": 0.8,
-      "title_original": "Repaying a Bitcoin-backed loan on Sui can leave you waiting to withdraw native BTC",
       "cross_check": 1
     }
   ]
