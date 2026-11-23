@@ -1379,5 +1379,33 @@
       "volume",
       "rsi_high"
     ]
+  },
+  {
+    "type": "SHORT",
+    "entry": 63366.71,
+    "exit": 62589.36285714286,
+    "pnl_pct": 1.03,
+    "pnl_usd": 0.43,
+    "reason": "TAKE_PROFIT_1",
+    "mode": "intraday",
+    "close_time": "2026-11-23T16:16:56.484861+00:00",
+    "balance_after": 84.99,
+    "active_signals": [
+      "rsi_high"
+    ]
+  },
+  {
+    "type": "SHORT",
+    "entry": 63366.71,
+    "exit": 62589.36285714286,
+    "pnl_pct": 1.03,
+    "pnl_usd": 0.49,
+    "reason": "TAKE_PROFIT_1",
+    "mode": "swing",
+    "close_time": "2026-11-23T16:16:56.488891+00:00",
+    "balance_after": 96.09,
+    "active_signals": [
+      "rsi_high"
+    ]
   }
 ]
