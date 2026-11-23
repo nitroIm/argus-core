@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-23T07:05:38.463960+00:00",
-  "total_news": 94,
-  "avg_sentiment": -0.271,
+  "generated_at": "2026-11-23T08:05:43.042847+00:00",
+  "total_news": 91,
+  "avg_sentiment": -0.292,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 17,
+  "bullish_count": 16,
   "bearish_count": 37,
-  "neutral_count": 40,
+  "neutral_count": 38,
   "fake_count": 0,
   "cross_confirmed": 7,
   "by_source": {
@@ -30,8 +30,8 @@
       "bear": 3
     },
     "CryptoPotato": {
-      "total": 27,
-      "bull": 6,
+      "total": 26,
+      "bull": 5,
       "bear": 11
     },
     "Bitcoinist": {
@@ -40,29 +40,12 @@
       "bear": 5
     },
     "ForkLog": {
-      "total": 10,
+      "total": 8,
       "bull": 2,
       "bear": 1
     }
   },
   "top_bullish": [
-    {
-      "title": "BTC Rebounds From $55K, But 4 Major Catalysts Could Shake Crypto Again This Week",
-      "url": "https://cryptopotato.com/btc-rebounds-from-55k-but-4-major-catalysts-could-shake-crypto-again-this-week/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-23T06:10:04+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-23T07:05:37.251822+00:00",
-      "effective_weight": 1.5,
-      "title_original": "BTC Rebounds From $55K, But 4 Major Catalysts Could Shake Crypto Again This Week",
-      "cross_check": 1
-    },
     {
       "title": "The future of onchain FX could start with users, not institutional liquidity",
       "url": "https://cointelegraph.com/opinion/future-onchain-fx-could-start-with-users-not-institutional-liquidity?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -75,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-23T07:05:36.608646+00:00",
+      "collected_at": "2026-11-23T08:05:41.503317+00:00",
       "effective_weight": 1.04,
       "title_original": "The future of onchain FX could start with users, not institutional liquidity",
       "cross_check": 1
@@ -92,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-23T07:05:37.013147+00:00",
+      "collected_at": "2026-11-23T08:05:41.738240+00:00",
       "effective_weight": 1.0,
       "title_original": "Flare Says XRP Holders Are Borrowing Dollars Without Selling Their Tokens",
       "cross_check": 1
@@ -109,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-23T07:05:37.013254+00:00",
+      "collected_at": "2026-11-23T08:05:41.738386+00:00",
       "effective_weight": 1.0,
       "title_original": "21shares Sees Bitcoin Hitting New High in 2027, Cycle Peak Later",
       "cross_check": 1
@@ -126,30 +109,30 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-23T07:05:37.127607+00:00",
+      "collected_at": "2026-11-23T08:05:41.779241+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitcoin Core fixes a bug that can stall nodes, leaving 29.x users to upgrade",
+      "cross_check": 1
+    },
+    {
+      "title": "BTC Rebounds From $55K, But 4 Major Catalysts Could Shake Crypto Again This Week",
+      "url": "https://cryptopotato.com/btc-rebounds-from-55k-but-4-major-catalysts-could-shake-crypto-again-this-week/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-23T06:10:04+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-23T08:05:41.850792+00:00",
+      "effective_weight": 1.0,
+      "title_original": "BTC Rebounds From $55K, But 4 Major Catalysts Could Shake Crypto Again This Week",
       "cross_check": 1
     }
   ],
   "top_bearish": [
-    {
-      "title": "Bitcoin Price Clings to $60K as KOSPI Crashes 5% and Hayes Talks $55K Retest",
-      "url": "https://news.bitcoin.com/market-updates/bitcoin-price-61k-arthur-hayes-55k-retest-kospi-crash/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-23T06:30:20+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 2.0,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-23T07:05:37.013090+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Bitcoin Price Clings to $60K as KOSPI Crashes 5% and Hayes Talks $55K Retest",
-      "cross_check": 1
-    },
     {
       "title": "Will Bitcoin’s big rebound hold? More tampered Ledgers found: Hodler’s Digest",
       "url": "https://cointelegraph.com/magazine/will-bitcoins-big-rebound-hold-more-tampered-ledgers-found-hodlers-digest?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -162,7 +145,7 @@
       "bear_weight": 0.8,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-23T07:05:36.608557+00:00",
+      "collected_at": "2026-11-23T08:05:41.503199+00:00",
       "effective_weight": 1.04,
       "title_original": "Will Bitcoin’s big rebound hold? More tampered Ledgers found: Hodler’s Digest",
       "cross_check": 1
@@ -179,10 +162,27 @@
       "bear_weight": 1.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-23T07:05:36.608755+00:00",
+      "collected_at": "2026-11-23T08:05:41.503448+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin briefly drops to $17K on Kraken, exchange upholds trades",
       "cross_check": 2
+    },
+    {
+      "title": "Bitcoin Price Clings to $60K as KOSPI Crashes 5% and Hayes Talks $55K Retest",
+      "url": "https://news.bitcoin.com/market-updates/bitcoin-price-61k-arthur-hayes-55k-retest-kospi-crash/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-23T06:30:20+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 2.0,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-23T08:05:41.738169+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Bitcoin Price Clings to $60K as KOSPI Crashes 5% and Hayes Talks $55K Retest",
+      "cross_check": 1
     },
     {
       "title": "Bitquery counted 400 fewer BTC in Maple’s disclosed wallets than Maple reported",
@@ -196,26 +196,26 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-23T07:05:37.127669+00:00",
+      "collected_at": "2026-11-23T08:05:41.779324+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitquery counted 400 fewer BTC in Maple’s disclosed wallets than Maple reported",
       "cross_check": 1
     },
     {
-      "title": "Repaying a Bitcoin-backed loan on Sui can leave you waiting to withdraw native BTC",
-      "url": "https://cryptoslate.com/repaying-a-bitcoin-backed-loan-on-sui-can-leave-you-waiting-to-withdraw-native-btc/",
-      "source": "CryptoSlate",
+      "title": "Chainflip Hacker Steals $12 Million as FLIP Token Craters 69%",
+      "url": "https://news.bitcoin.com/security/chainflip-hacker-steals-12-million-as-flip-token-craters-69/",
+      "source": "Bitcoin.com",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-11-23T02:05:39+00:00",
+      "pub_date": "2026-11-22T23:16:47+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 1.5,
-      "freshness": 1.0,
+      "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-23T07:05:37.127791+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Repaying a Bitcoin-backed loan on Sui can leave you waiting to withdraw native BTC",
+      "collected_at": "2026-11-23T08:05:41.738576+00:00",
+      "effective_weight": 0.8,
+      "title_original": "Chainflip Hacker Steals $12 Million as FLIP Token Craters 69%",
       "cross_check": 1
     }
   ]
