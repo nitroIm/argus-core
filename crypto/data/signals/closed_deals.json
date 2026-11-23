@@ -1303,5 +1303,21 @@
       "volume",
       "rsi_mid"
     ]
+  },
+  {
+    "type": "LONG",
+    "entry": 61381.12,
+    "exit": 61503.882240000006,
+    "pnl_pct": 0.0,
+    "pnl_usd": 0.0,
+    "reason": "TRAILING_STOP",
+    "mode": "intraday",
+    "close_time": "2026-11-23T09:46:50.600008+00:00",
+    "balance_after": 84.22,
+    "active_signals": [
+      "ema",
+      "volume",
+      "rsi_mid"
+    ]
   }
 ]
