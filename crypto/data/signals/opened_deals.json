@@ -9,18 +9,5 @@
     "volume",
     "rsi_low"
   ],
-  "intraday": {
-    "type": "LONG",
-    "entry": 60190.44,
-    "sl": 59307.97392857143,
-    "tp1": 60778.750714285714,
-    "tp2": 61661.21678571429,
-    "size_left_pct": 100.0,
-    "tp1_hit": false,
-    "open_time": "2026-11-24T03:16:49.427060+00:00",
-    "active_signals": [
-      "rsi_low"
-    ]
-  },
   "swing": {}
 }
