@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-11-24T06:05:43.159593+00:00",
-  "total_news": 96,
-  "avg_sentiment": -0.318,
+  "generated_at": "2026-11-24T07:05:38.700068+00:00",
+  "total_news": 97,
+  "avg_sentiment": -0.311,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 15,
-  "bearish_count": 32,
-  "neutral_count": 49,
+  "bullish_count": 16,
+  "bearish_count": 31,
+  "neutral_count": 50,
   "fake_count": 0,
-  "cross_confirmed": 6,
+  "cross_confirmed": 4,
   "by_source": {
     "Cointelegraph": {
       "total": 20,
@@ -22,7 +22,7 @@
     "Bitcoin.com": {
       "total": 10,
       "bull": 1,
-      "bear": 4
+      "bear": 3
     },
     "CryptoSlate": {
       "total": 6,
@@ -31,8 +31,8 @@
     },
     "CryptoPotato": {
       "total": 25,
-      "bull": 5,
-      "bear": 10
+      "bull": 6,
+      "bear": 9
     },
     "Bitcoinist": {
       "total": 8,
@@ -40,12 +40,29 @@
       "bear": 2
     },
     "ForkLog": {
-      "total": 11,
+      "total": 12,
       "bull": 0,
-      "bear": 0
+      "bear": 1
     }
   },
   "top_bullish": [
+    {
+      "title": "Visa Launches AI Agent Wallet That Lets US Users Earn OUSD for Paid Tasks",
+      "url": "https://cryptopotato.com/visa-launches-ai-agent-wallet-that-lets-us-users-earn-ousd-for-paid-tasks/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-24T06:33:29+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-24T07:05:37.519177+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Visa Launches AI Agent Wallet That Lets US Users Earn OUSD for Paid Tasks",
+      "cross_check": 2
+    },
     {
       "title": "OKX, ICE launch 113 tokenized assets despite issuer objections",
       "url": "https://cointelegraph.com/news/okxice-launch-113-tokenized-assets-objections?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -58,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T06:05:41.919067+00:00",
+      "collected_at": "2026-11-24T07:05:36.948638+00:00",
       "effective_weight": 1.04,
       "title_original": "OKX, ICE launch 113 tokenized assets despite issuer objections",
       "cross_check": 2
@@ -75,26 +92,9 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T06:05:41.919298+00:00",
+      "collected_at": "2026-11-24T07:05:36.948984+00:00",
       "effective_weight": 1.04,
       "title_original": "BTC price gains 12% from $55K: Three things to know in Bitcoin this week",
-      "cross_check": 1
-    },
-    {
-      "title": "Visa Launches Wallet That Lets AI Agents Earn Stablecoins for Owners",
-      "url": "https://news.bitcoin.com/featured/visa-launches-wallet-lets-ai-agents-earn-stablecoins-owners/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-24T00:45:54+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-24T06:05:42.095361+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Visa Launches Wallet That Lets AI Agents Earn Stablecoins for Owners",
       "cross_check": 1
     },
     {
@@ -109,7 +109,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T06:05:42.196868+00:00",
+      "collected_at": "2026-11-24T07:05:37.519251+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitcoin Investors Are Moving Differently Again as 6,400 BTC Flood Binance",
       "cross_check": 1
@@ -126,7 +126,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T06:05:41.950493+00:00",
+      "collected_at": "2026-11-24T07:05:36.999984+00:00",
       "effective_weight": 0.88,
       "title_original": "Solo Bitcoin Miner Scores Again, Hitting $191,000 Jackpot Against the Odds",
       "cross_check": 1
@@ -134,21 +134,21 @@
   ],
   "top_bearish": [
     {
-      "title": "LendingUSA, Cross River Bank Debut Bitcoin-Backed Loans Up to $250K",
-      "url": "https://news.bitcoin.com/finance/lendingusa-cross-river-bank-bitcoin-backed-loans-250k/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-24T05:30:00+00:00",
+      "title": "Суд отклонил коллективный иск против Coinbase из-за краха TerraUSD",
+      "url": "https://forklog.com/news/sud-otklonil-kollektivnyj-isk-protiv-coinbase-iz-za-kraha-terrausd",
+      "source": "ForkLog",
+      "source_weight": 1.2,
+      "lang": "ru",
+      "pub_date": "2026-11-24T06:39:39+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 1.5,
+      "bear_weight": 2.4,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T06:05:42.095094+00:00",
-      "effective_weight": 1.5,
-      "title_original": "LendingUSA, Cross River Bank Debut Bitcoin-Backed Loans Up to $250K",
-      "cross_check": 2
+      "collected_at": "2026-11-24T07:05:38.630479+00:00",
+      "effective_weight": 1.8,
+      "title_original": "Суд отклонил коллективный иск против Coinbase из-за краха TerraUSD",
+      "cross_check": 1
     },
     {
       "title": "US seeks to recover $1.1B in crypto stolen in North Korea-linked Binance hack",
@@ -162,7 +162,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T06:05:41.918842+00:00",
+      "collected_at": "2026-11-24T07:05:36.948303+00:00",
       "effective_weight": 1.04,
       "title_original": "US seeks to recover $1.1B in crypto stolen in North Korea-linked Binance hack",
       "cross_check": 2
@@ -179,7 +179,7 @@
       "bear_weight": 0.8,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T06:05:41.918886+00:00",
+      "collected_at": "2026-11-24T07:05:36.948369+00:00",
       "effective_weight": 1.04,
       "title_original": "BTCS offloads $44M in ETH to reduce DeFi debt amid market downturn",
       "cross_check": 1
@@ -196,7 +196,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T06:05:41.918983+00:00",
+      "collected_at": "2026-11-24T07:05:36.948514+00:00",
       "effective_weight": 1.04,
       "title_original": "Cross River Bank enters Bitcoin-backed lending with $250K loans",
       "cross_check": 2
@@ -213,7 +213,7 @@
       "bear_weight": 0.8,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T06:05:41.919110+00:00",
+      "collected_at": "2026-11-24T07:05:36.948701+00:00",
       "effective_weight": 1.04,
       "title_original": "Trump-linked American Bitcoin secures $150M credit line from FalconX",
       "cross_check": 2
