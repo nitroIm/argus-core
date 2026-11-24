@@ -1,23 +1,23 @@
 {
-  "generated_at": "2026-11-24T21:05:38.682518+00:00",
-  "total_news": 99,
-  "avg_sentiment": -0.409,
+  "generated_at": "2026-11-24T22:05:47.839893+00:00",
+  "total_news": 98,
+  "avg_sentiment": -0.468,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 18,
-  "bearish_count": 35,
-  "neutral_count": 46,
+  "bullish_count": 17,
+  "bearish_count": 38,
+  "neutral_count": 43,
   "fake_count": 0,
-  "cross_confirmed": 25,
+  "cross_confirmed": 24,
   "by_source": {
     "Cointelegraph": {
       "total": 21,
-      "bull": 3,
-      "bear": 8
+      "bull": 2,
+      "bear": 9
     },
     "Decrypt": {
-      "total": 18,
+      "total": 17,
       "bull": 4,
-      "bear": 9
+      "bear": 10
     },
     "Bitcoin.com": {
       "total": 9,
@@ -27,7 +27,7 @@
     "CryptoSlate": {
       "total": 9,
       "bull": 3,
-      "bear": 2
+      "bear": 3
     },
     "CryptoPotato": {
       "total": 25,
@@ -58,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T21:05:36.424418+00:00",
+      "collected_at": "2026-11-24T22:05:45.767807+00:00",
       "effective_weight": 1.3,
       "title_original": "BlackRock launches tokenized money market fund accepting stablecoins in Hong Kong",
       "cross_check": 2
@@ -75,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T21:05:36.424794+00:00",
+      "collected_at": "2026-11-24T22:05:45.768055+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin dipped on Huang’s Nvidia exit but jumped 5% on his return",
       "cross_check": 5
@@ -92,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T21:05:36.703714+00:00",
+      "collected_at": "2026-11-24T22:05:46.056186+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitcoin Lender Ledn Moves US Business Onshore With Custody Accounts Launch",
       "cross_check": 1
@@ -109,7 +109,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T21:05:36.703953+00:00",
+      "collected_at": "2026-11-24T22:05:46.056325+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitcoin Price Struggles to Hold $60K as Nvidia CEO Return Rally Fades Fast",
       "cross_check": 7
@@ -126,13 +126,64 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T21:05:36.964693+00:00",
+      "collected_at": "2026-11-24T22:05:46.337231+00:00",
       "effective_weight": 1.0,
       "title_original": "Eric Trump’s Bitcoin miner surges 17% after $150 million deal to avoid selling BTC",
       "cross_check": 1
     }
   ],
   "top_bearish": [
+    {
+      "title": "Europol follows $28.5M crypto trail in streaming piracy crackdown",
+      "url": "https://cointelegraph.com/news/europol-crypto-trail-streaming-piracy-crackdown?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-11-24T21:50:25+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 2.8,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-24T22:05:45.767599+00:00",
+      "effective_weight": 1.95,
+      "title_original": "Europol follows $28.5M crypto trail in streaming piracy crackdown",
+      "cross_check": 2
+    },
+    {
+      "title": "Coldcard Bitcoin Exploit, Revisited: How a Hidden Flaw Survived Years of Audits",
+      "url": "https://decrypt.co/383930/coldcard-bitcoin-exploit-how-hidden-flaw-survived-years-audits",
+      "source": "Decrypt",
+      "source_weight": 1.1,
+      "lang": "en",
+      "pub_date": "2026-11-24T21:16:02+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-24T22:05:45.838003+00:00",
+      "effective_weight": 1.65,
+      "title_original": "Coldcard Bitcoin Exploit, Revisited: How a Hidden Flaw Survived Years of Audits",
+      "cross_check": 2
+    },
+    {
+      "title": "Ansem claims wallet hack after an 87 million ANSEM token dump, but on-chain data raises questions",
+      "url": "https://cryptoslate.com/ansem-claims-wallet-hack-after-a-87-million-ansem-token-dump-but-on-chain-data-raises-questions/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-24T21:30:15+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 3.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-24T22:05:46.337119+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Ansem claims wallet hack after an 87 million ANSEM token dump, but on-chain data raises questions",
+      "cross_check": 2
+    },
     {
       "title": "Bitcoin sell-off driven by weak demand, forced liquidations: 21Shares",
       "url": "https://cointelegraph.com/news/bitcoin-selloff-weak-demand-forced-liquidations-21shares?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -145,7 +196,7 @@
       "bear_weight": 2.7,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T21:05:36.424179+00:00",
+      "collected_at": "2026-11-24T22:05:45.767658+00:00",
       "effective_weight": 1.3,
       "title_original": "Bitcoin sell-off driven by weak demand, forced liquidations: 21Shares",
       "cross_check": 1
@@ -162,60 +213,9 @@
       "bear_weight": 0.8,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T21:05:36.424340+00:00",
+      "collected_at": "2026-11-24T22:05:45.767749+00:00",
       "effective_weight": 1.3,
       "title_original": "CFTC sets new prediction market rules as more firms seek US entry",
-      "cross_check": 1
-    },
-    {
-      "title": "Bitcoin slides amid US tariff nerves as Anthropic falls below IPO price",
-      "url": "https://cointelegraph.com/markets/bitcoin-slides-us-tariff-nerves-anthropic-falls-ipo-price?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-11-24T17:09:11+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 2.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-24T21:05:36.424489+00:00",
-      "effective_weight": 1.3,
-      "title_original": "Bitcoin slides amid US tariff nerves as Anthropic falls below IPO price",
-      "cross_check": 2
-    },
-    {
-      "title": "Bitcoin Losses Are the Worst Since FTX. Is the Bottom Near?",
-      "url": "https://decrypt.co/383909/bitcoin-losses-worst-since-ftx-is-bottom-near",
-      "source": "Decrypt",
-      "source_weight": 1.1,
-      "lang": "en",
-      "pub_date": "2026-11-24T19:35:32+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 3.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-24T21:05:36.508672+00:00",
-      "effective_weight": 1.1,
-      "title_original": "Bitcoin Losses Are the Worst Since FTX. Is the Bottom Near?",
-      "cross_check": 3
-    },
-    {
-      "title": "What the CFTC’s New Crypto Reserves Guidance Actually Allows—And What It Doesn’t",
-      "url": "https://decrypt.co/383906/cftc-new-crypto-reserves-guidance-actually-allows-what-it-doesnt",
-      "source": "Decrypt",
-      "source_weight": 1.1,
-      "lang": "en",
-      "pub_date": "2026-11-24T18:55:27+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-24T21:05:36.508759+00:00",
-      "effective_weight": 1.1,
-      "title_original": "What the CFTC’s New Crypto Reserves Guidance Actually Allows—And What It Doesn’t",
       "cross_check": 1
     }
   ]
