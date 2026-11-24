@@ -1,16 +1,16 @@
 {
-  "generated_at": "2026-11-24T16:05:38.541523+00:00",
-  "total_news": 97,
-  "avg_sentiment": -0.401,
+  "generated_at": "2026-11-24T17:05:38.795328+00:00",
+  "total_news": 89,
+  "avg_sentiment": -0.359,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 16,
+  "bullish_count": 15,
   "bearish_count": 31,
-  "neutral_count": 50,
+  "neutral_count": 43,
   "fake_count": 0,
-  "cross_confirmed": 19,
+  "cross_confirmed": 16,
   "by_source": {
     "Cointelegraph": {
-      "total": 22,
+      "total": 21,
       "bull": 3,
       "bear": 8
     },
@@ -21,23 +21,18 @@
     },
     "Bitcoin.com": {
       "total": 8,
-      "bull": 0,
+      "bull": 1,
       "bear": 1
     },
     "CryptoSlate": {
       "total": 9,
-      "bull": 1,
-      "bear": 1
+      "bull": 2,
+      "bear": 2
     },
     "CryptoPotato": {
       "total": 25,
-      "bull": 6,
-      "bear": 10
-    },
-    "Bitcoinist": {
-      "total": 7,
-      "bull": 2,
-      "bear": 2
+      "bull": 5,
+      "bear": 11
     },
     "ForkLog": {
       "total": 10,
@@ -46,6 +41,40 @@
     }
   },
   "top_bullish": [
+    {
+      "title": "Bitcoin Price Struggles to Hold $60K as Nvidia CEO Return Rally Fades Fast",
+      "url": "https://news.bitcoin.com/market-updates/bitcoin-price-struggles-hold-60k-nvidia-ceo-return-rally-fades-fast/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-24T16:41:51+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.5,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-24T17:05:37.182371+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Bitcoin Price Struggles to Hold $60K as Nvidia CEO Return Rally Fades Fast",
+      "cross_check": 7
+    },
+    {
+      "title": "Bitcoin’s $5,000 price swing and Anthropic’s IPO decline expose cracks in AI-driven market rally",
+      "url": "https://cryptoslate.com/bitcoins-5000-price-swing-and-anthropics-ipo-decline-expose-cracks-in-ai-driven-market-rally/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-24T16:10:02+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 2.7,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-24T17:05:37.348890+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Bitcoin’s $5,000 price swing and Anthropic’s IPO decline expose cracks in AI-driven market rally",
+      "cross_check": 3
+    },
     {
       "title": "Bitcoin dipped on Huang’s Nvidia exit but jumped 5% on his return",
       "url": "https://cointelegraph.com/markets/bitcoin-huangs-return-18-below-pre-resignation-levels?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -58,10 +87,10 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T16:05:35.890953+00:00",
+      "collected_at": "2026-11-24T17:05:36.931944+00:00",
       "effective_weight": 1.3,
       "title_original": "Bitcoin dipped on Huang’s Nvidia exit but jumped 5% on his return",
-      "cross_check": 3
+      "cross_check": 4
     },
     {
       "title": "Morning Minute: Jensen Returns, Markets Soar (Except Crypto)",
@@ -75,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T16:05:36.014574+00:00",
+      "collected_at": "2026-11-24T17:05:37.011537+00:00",
       "effective_weight": 1.1,
       "title_original": "Morning Minute: Jensen Returns, Markets Soar (Except Crypto)",
       "cross_check": 2
@@ -92,80 +121,46 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T16:05:36.692676+00:00",
+      "collected_at": "2026-11-24T17:05:37.348974+00:00",
       "effective_weight": 1.0,
       "title_original": "Bisq 2 desktop users must update to keep trading Bitcoin",
-      "cross_check": 1
-    },
-    {
-      "title": "Solo Bitcoin Miner Scores Again, Hitting $191,000 Jackpot Against the Odds",
-      "url": "https://decrypt.co/383818/solo-bitcoin-miner-scores-again-191000-jackpot",
-      "source": "Decrypt",
-      "source_weight": 1.1,
-      "lang": "en",
-      "pub_date": "2026-11-23T18:16:25+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-24T16:05:36.014699+00:00",
-      "effective_weight": 0.88,
-      "title_original": "Solo Bitcoin Miner Scores Again, Hitting $191,000 Jackpot Against the Odds",
-      "cross_check": 1
-    },
-    {
-      "title": "Tom Lee Says Ethereum Is as Scarce as Bitcoin—And Bitmine Just Bought More",
-      "url": "https://decrypt.co/383800/tom-lee-ethereum-scarce-bitcoin-bitmine-buys-more",
-      "source": "Decrypt",
-      "source_weight": 1.1,
-      "lang": "en",
-      "pub_date": "2026-11-23T16:46:03+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-24T16:05:36.014748+00:00",
-      "effective_weight": 0.88,
-      "title_original": "Tom Lee Says Ethereum Is as Scarce as Bitcoin—And Bitmine Just Bought More",
       "cross_check": 1
     }
   ],
   "top_bearish": [
     {
-      "title": "Grayscale Sees Bitcoin Oversold as Long-Term Holders Sell at 33% Loss",
-      "url": "https://news.bitcoin.com/market-updates/grayscale-bitcoin-oversold-long-term-holders-sell-33-percent-loss/",
-      "source": "Bitcoin.com",
+      "title": "US moves to seize $1.1 billion from Binance hackers without accessing their wallets",
+      "url": "https://cryptoslate.com/us-moves-to-seize-1-1-billion-from-binance-hackers-without-accessing-their-wallets/",
+      "source": "CryptoSlate",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-11-24T15:06:24+00:00",
+      "pub_date": "2026-11-24T16:50:10+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 1.5,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T16:05:36.357006+00:00",
+      "collected_at": "2026-11-24T17:05:37.348820+00:00",
       "effective_weight": 1.5,
-      "title_original": "Grayscale Sees Bitcoin Oversold as Long-Term Holders Sell at 33% Loss",
-      "cross_check": 3
+      "title_original": "US moves to seize $1.1 billion from Binance hackers without accessing their wallets",
+      "cross_check": 1
     },
     {
-      "title": "Bitcoin Price Analysis: Where Does the $64.5K Rejection Leave BTC?",
-      "url": "https://cryptopotato.com/bitcoin-price-analysis-where-does-the-64-5k-rejection-leave-btc/",
+      "title": "UniCredit Opens Bitcoin Certificate to Italian Retail Clients With 65% Return Cap",
+      "url": "https://cryptopotato.com/unicredit-opens-bitcoin-certificate-to-italian-retail-clients-with-65-return-cap/",
       "source": "CryptoPotato",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-11-24T15:19:40+00:00",
+      "pub_date": "2026-11-24T16:58:58+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 1.5,
+      "bear_weight": 0.8,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T16:05:37.394792+00:00",
+      "collected_at": "2026-11-24T17:05:37.538317+00:00",
       "effective_weight": 1.5,
-      "title_original": "Bitcoin Price Analysis: Where Does the $64.5K Rejection Leave BTC?",
-      "cross_check": 2
+      "title_original": "UniCredit Opens Bitcoin Certificate to Italian Retail Clients With 65% Return Cap",
+      "cross_check": 1
     },
     {
       "title": "South Korea proposes bank-led stablecoins, 20% cap on crypto exchange stakes",
@@ -179,27 +174,10 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T16:05:35.890904+00:00",
+      "collected_at": "2026-11-24T17:05:36.931897+00:00",
       "effective_weight": 1.3,
       "title_original": "South Korea proposes bank-led stablecoins, 20% cap on crypto exchange stakes",
-      "cross_check": 3
-    },
-    {
-      "title": "Grayscale Says Bitcoin Is Oversold but AI Risks Could Delay Market Recovery",
-      "url": "https://bitcoinist.com/grayscale-says-bitcoin-is-oversold-but-ai-risks-could-delay-market-recovery/",
-      "source": "Bitcoinist",
-      "source_weight": 0.9,
-      "lang": "en",
-      "pub_date": "2026-11-24T15:18:30+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.2,
-      "freshness": 1.5,
-      "fake_score": 0.1,
-      "collected_at": "2026-11-24T16:05:37.609169+00:00",
-      "effective_weight": 1.215,
-      "title_original": "Grayscale Says Bitcoin Is Oversold but AI Risks Could Delay Market Recovery",
-      "cross_check": 3
+      "cross_check": 2
     },
     {
       "title": "Криптоинфлюенсер Ansem подтвердил взлом его Pump Wallet",
@@ -213,10 +191,27 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T16:05:38.501430+00:00",
+      "collected_at": "2026-11-24T17:05:38.762720+00:00",
       "effective_weight": 1.2,
       "title_original": "Криптоинфлюенсер Ansem подтвердил взлом его Pump Wallet",
       "cross_check": 1
+    },
+    {
+      "title": "Justice Department Moves to Forfeit $1.1B in USDC From North Korea's Binance Hack",
+      "url": "https://decrypt.co/383874/justice-department-moves-to-forfeit-1-1b-in-usdc-from-north-koreas-binance-hack",
+      "source": "Decrypt",
+      "source_weight": 1.1,
+      "lang": "en",
+      "pub_date": "2026-11-24T14:13:03+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-24T17:05:37.011445+00:00",
+      "effective_weight": 1.1,
+      "title_original": "Justice Department Moves to Forfeit $1.1B in USDC From North Korea's Binance Hack",
+      "cross_check": 3
     }
   ]
 }
