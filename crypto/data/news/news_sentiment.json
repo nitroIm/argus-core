@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-24T09:05:37.418467+00:00",
-  "total_news": 99,
-  "avg_sentiment": -0.328,
+  "generated_at": "2026-11-24T10:05:39.045712+00:00",
+  "total_news": 95,
+  "avg_sentiment": -0.298,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 15,
-  "bearish_count": 32,
-  "neutral_count": 52,
+  "bullish_count": 16,
+  "bearish_count": 31,
+  "neutral_count": 48,
   "fake_count": 0,
   "cross_confirmed": 5,
   "by_source": {
@@ -22,30 +22,47 @@
     "Bitcoin.com": {
       "total": 10,
       "bull": 1,
-      "bear": 3
+      "bear": 2
     },
     "CryptoSlate": {
-      "total": 7,
+      "total": 6,
       "bull": 0,
       "bear": 1
     },
     "CryptoPotato": {
-      "total": 25,
+      "total": 24,
       "bull": 6,
       "bear": 9
     },
     "Bitcoinist": {
       "total": 8,
-      "bull": 2,
+      "bull": 3,
       "bear": 2
     },
     "ForkLog": {
-      "total": 12,
+      "total": 10,
       "bull": 0,
       "bear": 1
     }
   },
   "top_bullish": [
+    {
+      "title": "South Korea Unveils Landmark Crypto Bill – Could Asia Become The Next Bitcoin Adoption Hub?",
+      "url": "https://bitcoinist.com/south-korea-unveils-landmark-crypto-bill-could-asia-become-the-next-bitcoin-adoption-hub/",
+      "source": "Bitcoinist",
+      "source_weight": 0.9,
+      "lang": "en",
+      "pub_date": "2026-11-24T09:26:45+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.1,
+      "collected_at": "2026-11-24T10:05:37.973811+00:00",
+      "effective_weight": 1.215,
+      "title_original": "South Korea Unveils Landmark Crypto Bill – Could Asia Become The Next Bitcoin Adoption Hub?",
+      "cross_check": 2
+    },
     {
       "title": "OKX, ICE launch 113 tokenized assets despite issuer objections",
       "url": "https://cointelegraph.com/news/okxice-launch-113-tokenized-assets-objections?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -58,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T09:05:35.982886+00:00",
+      "collected_at": "2026-11-24T10:05:37.068586+00:00",
       "effective_weight": 1.04,
       "title_original": "OKX, ICE launch 113 tokenized assets despite issuer objections",
       "cross_check": 2
@@ -75,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T09:05:35.983235+00:00",
+      "collected_at": "2026-11-24T10:05:37.068924+00:00",
       "effective_weight": 1.04,
       "title_original": "BTC price gains 12% from $55K: Three things to know in Bitcoin this week",
       "cross_check": 1
@@ -92,7 +109,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T09:05:36.430121+00:00",
+      "collected_at": "2026-11-24T10:05:37.791906+00:00",
       "effective_weight": 1.0,
       "title_original": "Visa Launches AI Agent Wallet That Lets US Users Earn OUSD for Paid Tasks",
       "cross_check": 2
@@ -109,46 +126,29 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T09:05:36.430190+00:00",
+      "collected_at": "2026-11-24T10:05:37.791974+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitcoin Investors Are Moving Differently Again as 6,400 BTC Flood Binance",
-      "cross_check": 1
-    },
-    {
-      "title": "Solo Bitcoin Miner Scores Again, Hitting $191,000 Jackpot Against the Odds",
-      "url": "https://decrypt.co/383818/solo-bitcoin-miner-scores-again-191000-jackpot",
-      "source": "Decrypt",
-      "source_weight": 1.1,
-      "lang": "en",
-      "pub_date": "2026-11-23T18:16:25+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-24T09:05:36.018037+00:00",
-      "effective_weight": 0.88,
-      "title_original": "Solo Bitcoin Miner Scores Again, Hitting $191,000 Jackpot Against the Odds",
       "cross_check": 1
     }
   ],
   "top_bearish": [
     {
-      "title": "Bitcoin’s next crash may come from holders, not leverage, as $10.7 billion gets liquidated",
-      "url": "https://cryptoslate.com/bitcoins-next-crash-may-come-from-holders-not-leverage-as-10-7-billion-gets-liquidated/",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
+      "title": "Bitcoin dips back under $60K as gold seals worst 60-day loss since 1980s",
+      "url": "https://cointelegraph.com/markets/bitcoin-dips-60k-gold-worst-60-day-loss-1980s?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
       "lang": "en",
-      "pub_date": "2026-11-24T08:30:22+00:00",
+      "pub_date": "2026-11-24T09:25:45+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 2.0,
+      "bear_weight": 1.5,
       "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-24T09:05:36.326659+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Bitcoin’s next crash may come from holders, not leverage, as $10.7 billion gets liquidated",
-      "cross_check": 1
+      "fake_score": 0.25,
+      "collected_at": "2026-11-24T10:05:37.067784+00:00",
+      "effective_weight": 1.463,
+      "title_original": "Bitcoin dips back under $60K as gold seals worst 60-day loss since 1980s",
+      "cross_check": 2
     },
     {
       "title": "Суд отклонил коллективный иск против Coinbase из-за краха TerraUSD",
@@ -162,7 +162,7 @@
       "bear_weight": 2.4,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T09:05:37.340901+00:00",
+      "collected_at": "2026-11-24T10:05:38.978492+00:00",
       "effective_weight": 1.2,
       "title_original": "Суд отклонил коллективный иск против Coinbase из-за краха TerraUSD",
       "cross_check": 1
@@ -179,7 +179,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T09:05:35.982552+00:00",
+      "collected_at": "2026-11-24T10:05:37.068229+00:00",
       "effective_weight": 1.04,
       "title_original": "US seeks to recover $1.1B in crypto stolen in North Korea-linked Binance hack",
       "cross_check": 2
@@ -196,7 +196,7 @@
       "bear_weight": 0.8,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T09:05:35.982618+00:00",
+      "collected_at": "2026-11-24T10:05:37.068305+00:00",
       "effective_weight": 1.04,
       "title_original": "BTCS offloads $44M in ETH to reduce DeFi debt amid market downturn",
       "cross_check": 1
@@ -213,7 +213,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T09:05:35.982763+00:00",
+      "collected_at": "2026-11-24T10:05:37.068463+00:00",
       "effective_weight": 1.04,
       "title_original": "Cross River Bank enters Bitcoin-backed lending with $250K loans",
       "cross_check": 2
