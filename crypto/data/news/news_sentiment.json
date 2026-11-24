@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-24T08:05:48.855383+00:00",
-  "total_news": 97,
-  "avg_sentiment": -0.354,
+  "generated_at": "2026-11-24T09:05:37.418467+00:00",
+  "total_news": 99,
+  "avg_sentiment": -0.328,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 16,
-  "bearish_count": 31,
-  "neutral_count": 50,
+  "bullish_count": 15,
+  "bearish_count": 32,
+  "neutral_count": 52,
   "fake_count": 0,
   "cross_confirmed": 5,
   "by_source": {
@@ -25,9 +25,9 @@
       "bear": 3
     },
     "CryptoSlate": {
-      "total": 6,
+      "total": 7,
       "bull": 0,
-      "bear": 0
+      "bear": 1
     },
     "CryptoPotato": {
       "total": 25,
@@ -36,11 +36,11 @@
     },
     "Bitcoinist": {
       "total": 8,
-      "bull": 3,
+      "bull": 2,
       "bear": 2
     },
     "ForkLog": {
-      "total": 11,
+      "total": 12,
       "bull": 0,
       "bear": 1
     }
@@ -58,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T08:05:46.885387+00:00",
+      "collected_at": "2026-11-24T09:05:35.982886+00:00",
       "effective_weight": 1.04,
       "title_original": "OKX, ICE launch 113 tokenized assets despite issuer objections",
       "cross_check": 2
@@ -75,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T08:05:46.885599+00:00",
+      "collected_at": "2026-11-24T09:05:35.983235+00:00",
       "effective_weight": 1.04,
       "title_original": "BTC price gains 12% from $55K: Three things to know in Bitcoin this week",
       "cross_check": 1
@@ -92,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T08:05:47.406551+00:00",
+      "collected_at": "2026-11-24T09:05:36.430121+00:00",
       "effective_weight": 1.0,
       "title_original": "Visa Launches AI Agent Wallet That Lets US Users Earn OUSD for Paid Tasks",
       "cross_check": 2
@@ -109,7 +109,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T08:05:47.406597+00:00",
+      "collected_at": "2026-11-24T09:05:36.430190+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitcoin Investors Are Moving Differently Again as 6,400 BTC Flood Binance",
       "cross_check": 1
@@ -126,7 +126,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T08:05:46.922770+00:00",
+      "collected_at": "2026-11-24T09:05:36.018037+00:00",
       "effective_weight": 0.88,
       "title_original": "Solo Bitcoin Miner Scores Again, Hitting $191,000 Jackpot Against the Odds",
       "cross_check": 1
@@ -134,20 +134,20 @@
   ],
   "top_bearish": [
     {
-      "title": "Arthur Hayes Warns NVDA Pump Could Delay the Liquidity Boost Crypto Needs",
-      "url": "https://cryptopotato.com/arthur-hayes-warns-nvda-pump-could-delay-the-liquidity-boost-crypto-needs/",
-      "source": "CryptoPotato",
+      "title": "Bitcoin’s next crash may come from holders, not leverage, as $10.7 billion gets liquidated",
+      "url": "https://cryptoslate.com/bitcoins-next-crash-may-come-from-holders-not-leverage-as-10-7-billion-gets-liquidated/",
+      "source": "CryptoSlate",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-11-24T07:48:04+00:00",
+      "pub_date": "2026-11-24T08:30:22+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 1.2,
+      "bear_weight": 2.0,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T08:05:47.406502+00:00",
+      "collected_at": "2026-11-24T09:05:36.326659+00:00",
       "effective_weight": 1.5,
-      "title_original": "Arthur Hayes Warns NVDA Pump Could Delay the Liquidity Boost Crypto Needs",
+      "title_original": "Bitcoin’s next crash may come from holders, not leverage, as $10.7 billion gets liquidated",
       "cross_check": 1
     },
     {
@@ -162,7 +162,7 @@
       "bear_weight": 2.4,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T08:05:48.806388+00:00",
+      "collected_at": "2026-11-24T09:05:37.340901+00:00",
       "effective_weight": 1.2,
       "title_original": "Суд отклонил коллективный иск против Coinbase из-за краха TerraUSD",
       "cross_check": 1
@@ -179,7 +179,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T08:05:46.885162+00:00",
+      "collected_at": "2026-11-24T09:05:35.982552+00:00",
       "effective_weight": 1.04,
       "title_original": "US seeks to recover $1.1B in crypto stolen in North Korea-linked Binance hack",
       "cross_check": 2
@@ -196,7 +196,7 @@
       "bear_weight": 0.8,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T08:05:46.885207+00:00",
+      "collected_at": "2026-11-24T09:05:35.982618+00:00",
       "effective_weight": 1.04,
       "title_original": "BTCS offloads $44M in ETH to reduce DeFi debt amid market downturn",
       "cross_check": 1
@@ -213,7 +213,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T08:05:46.885306+00:00",
+      "collected_at": "2026-11-24T09:05:35.982763+00:00",
       "effective_weight": 1.04,
       "title_original": "Cross River Bank enters Bitcoin-backed lending with $250K loans",
       "cross_check": 2
