@@ -1,16 +1,16 @@
 {
-  "generated_at": "2026-11-24T00:05:49.058628+00:00",
-  "total_news": 93,
-  "avg_sentiment": -0.296,
+  "generated_at": "2026-11-24T01:05:40.872353+00:00",
+  "total_news": 94,
+  "avg_sentiment": -0.256,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 15,
+  "bullish_count": 16,
   "bearish_count": 32,
   "neutral_count": 46,
   "fake_count": 0,
-  "cross_confirmed": 14,
+  "cross_confirmed": 12,
   "by_source": {
     "Cointelegraph": {
-      "total": 18,
+      "total": 19,
       "bull": 3,
       "bear": 9
     },
@@ -21,7 +21,7 @@
     },
     "Bitcoin.com": {
       "total": 9,
-      "bull": 2,
+      "bull": 3,
       "bear": 4
     },
     "CryptoSlate": {
@@ -47,20 +47,20 @@
   },
   "top_bullish": [
     {
-      "title": "Solo Bitcoin Miner Scores Again, Hitting $191,000 Jackpot Against the Odds",
-      "url": "https://decrypt.co/383818/solo-bitcoin-miner-scores-again-191000-jackpot",
-      "source": "Decrypt",
-      "source_weight": 1.1,
+      "title": "Visa Launches Wallet That Lets AI Agents Earn Stablecoins for Owners",
+      "url": "https://news.bitcoin.com/featured/visa-launches-wallet-lets-ai-agents-earn-stablecoins-owners/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-11-23T18:16:25+00:00",
+      "pub_date": "2026-11-24T00:45:54+00:00",
       "sentiment": 1.0,
       "bull_weight": 1.0,
       "bear_weight": 0.0,
-      "freshness": 1.0,
+      "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T00:05:46.990312+00:00",
-      "effective_weight": 1.1,
-      "title_original": "Solo Bitcoin Miner Scores Again, Hitting $191,000 Jackpot Against the Odds",
+      "collected_at": "2026-11-24T01:05:39.249898+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Visa Launches Wallet That Lets AI Agents Earn Stablecoins for Owners",
       "cross_check": 1
     },
     {
@@ -75,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T00:05:46.951058+00:00",
+      "collected_at": "2026-11-24T01:05:38.835322+00:00",
       "effective_weight": 1.04,
       "title_original": "OKX, ICE launch 113 tokenized assets despite issuer objections",
       "cross_check": 2
@@ -92,27 +92,27 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T00:05:46.951394+00:00",
+      "collected_at": "2026-11-24T01:05:38.835624+00:00",
       "effective_weight": 1.04,
       "title_original": "BTC price gains 12% from $55K: Three things to know in Bitcoin this week",
       "cross_check": 1
     },
     {
-      "title": "Eric Trump’s American Bitcoin Stock Jumps After $150M BTC-Backed Loan",
-      "url": "https://news.bitcoin.com/finance/eric-trumps-american-bitcoin-stock-jumps-150m-btc-backed-loan/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
+      "title": "Solo Bitcoin Miner Scores Again, Hitting $191,000 Jackpot Against the Odds",
+      "url": "https://decrypt.co/383818/solo-bitcoin-miner-scores-again-191000-jackpot",
+      "source": "Decrypt",
+      "source_weight": 1.1,
       "lang": "en",
-      "pub_date": "2026-11-23T18:28:05+00:00",
+      "pub_date": "2026-11-23T18:16:25+00:00",
       "sentiment": 1.0,
       "bull_weight": 1.0,
       "bear_weight": 0.0,
-      "freshness": 1.0,
+      "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T00:05:47.478623+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Eric Trump’s American Bitcoin Stock Jumps After $150M BTC-Backed Loan",
-      "cross_check": 3
+      "collected_at": "2026-11-24T01:05:38.941583+00:00",
+      "effective_weight": 0.88,
+      "title_original": "Solo Bitcoin Miner Scores Again, Hitting $191,000 Jackpot Against the Odds",
+      "cross_check": 1
     },
     {
       "title": "Tom Lee Says Ethereum Is as Scarce as Bitcoin—And Bitmine Just Bought More",
@@ -126,30 +126,13 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T00:05:46.990393+00:00",
+      "collected_at": "2026-11-24T01:05:38.941655+00:00",
       "effective_weight": 0.88,
       "title_original": "Tom Lee Says Ethereum Is as Scarce as Bitcoin—And Bitmine Just Bought More",
       "cross_check": 1
     }
   ],
   "top_bearish": [
-    {
-      "title": "Clockwork Laundering: Binance Hackers Follow a Daily Cadence Linked to China",
-      "url": "https://news.bitcoin.com/featured/clockwork-laundering-binance-hackers-follow-daily-cadence-linked-china/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-23T23:45:52+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 2.5,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-24T00:05:47.478262+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Clockwork Laundering: Binance Hackers Follow a Daily Cadence Linked to China",
-      "cross_check": 1
-    },
     {
       "title": "US seeks to recover $1.1B in crypto stolen in North Korea-linked Binance hack",
       "url": "https://cointelegraph.com/news/us-seeks-11b-crypto-stolen-north-korea-binance-hack?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -162,7 +145,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T00:05:46.950703+00:00",
+      "collected_at": "2026-11-24T01:05:38.835018+00:00",
       "effective_weight": 1.3,
       "title_original": "US seeks to recover $1.1B in crypto stolen in North Korea-linked Binance hack",
       "cross_check": 2
@@ -179,7 +162,7 @@
       "bear_weight": 0.8,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T00:05:46.950778+00:00",
+      "collected_at": "2026-11-24T01:05:38.835074+00:00",
       "effective_weight": 1.3,
       "title_original": "BTCS offloads $44M in ETH to reduce DeFi debt amid market downturn",
       "cross_check": 1
@@ -196,7 +179,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T00:05:46.990237+00:00",
+      "collected_at": "2026-11-24T01:05:38.941517+00:00",
       "effective_weight": 1.1,
       "title_original": "North Korea Moves $247 Million of Binance Hack Loot Through Bitcoin Mixers",
       "cross_check": 2
@@ -213,10 +196,27 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T00:05:46.950921+00:00",
+      "collected_at": "2026-11-24T01:05:38.835203+00:00",
       "effective_weight": 1.04,
       "title_original": "Cross River Bank enters Bitcoin-backed lending with $250K loans",
       "cross_check": 1
+    },
+    {
+      "title": "Trump-linked American Bitcoin secures $150M credit line from FalconX",
+      "url": "https://cointelegraph.com/news/trumps-american-bitcoin-rises-150m-credit-falconx?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-11-23T13:44:16+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 0.8,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-24T01:05:38.835378+00:00",
+      "effective_weight": 1.04,
+      "title_original": "Trump-linked American Bitcoin secures $150M credit line from FalconX",
+      "cross_check": 3
     }
   ]
 }
