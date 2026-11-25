@@ -1,8 +1,8 @@
 {
   "trainer_version": "7.6.1",
-  "updated_at": "2026-11-24T17:11:55.606965+00:00",
-  "train_start": "2025-11-24",
-  "train_end": "2026-11-24",
+  "updated_at": "2026-11-25T06:11:29.615106+00:00",
+  "train_start": "2025-11-25",
+  "train_end": "2026-11-25",
   "intraday": {
     "long": {
       "params": {
@@ -255,25 +255,25 @@
     "intraday": {
       "long": {
         "model_base": {
-          "trades": 100,
-          "pnl": -5.83,
-          "winrate": 0.51,
-          "max_dd": -6.03,
-          "score": -0.97
+          "trades": 96,
+          "pnl": -5.68,
+          "winrate": 0.5104,
+          "max_dd": -5.8,
+          "score": -0.98
         },
         "model_catboost": {
-          "trades": 17,
-          "pnl": -0.77,
-          "winrate": 0.7059,
-          "max_dd": -0.88,
-          "score": -0.88
+          "trades": 19,
+          "pnl": -1.6,
+          "winrate": 0.6316,
+          "max_dd": -1.66,
+          "score": -0.96
         },
         "model_gru": {
-          "trades": 66,
-          "pnl": -5.7,
-          "winrate": 0.3333,
-          "max_dd": -6.39,
-          "score": -0.89
+          "trades": 56,
+          "pnl": -3.39,
+          "winrate": 0.375,
+          "max_dd": -3.76,
+          "score": -0.9
         },
         "model_hybrid": {
           "trades": 0,
@@ -283,39 +283,39 @@
           "score": -99999.0
         },
         "model_lgbm": {
-          "trades": 48,
-          "pnl": -2.96,
-          "winrate": 0.5833,
-          "max_dd": -3.11,
-          "score": -0.95
+          "trades": 44,
+          "pnl": -2.09,
+          "winrate": 0.6591,
+          "max_dd": -2.79,
+          "score": -0.75
         },
         "model_lgbm_ranker": {
-          "trades": 73,
-          "pnl": -4.11,
-          "winrate": 0.4247,
-          "max_dd": -4.3,
-          "score": -0.95
+          "trades": 70,
+          "pnl": -3.01,
+          "winrate": 0.4429,
+          "max_dd": -3.8,
+          "score": -0.79
         },
         "model_meta_labeling": {
-          "trades": 29,
-          "pnl": -0.55,
-          "winrate": 0.3793,
-          "max_dd": -1.59,
-          "score": -0.35
+          "trades": 32,
+          "pnl": -1.41,
+          "winrate": 0.3438,
+          "max_dd": -1.73,
+          "score": -0.82
         },
         "model_rf": {
-          "trades": 12,
-          "pnl": -0.59,
-          "winrate": 0.6667,
-          "max_dd": -0.5,
-          "score": -1.19
+          "trades": 13,
+          "pnl": -0.55,
+          "winrate": 0.6923,
+          "max_dd": -0.56,
+          "score": -0.99
         },
         "model_stacked_ensemble": {
-          "trades": 27,
-          "pnl": -0.83,
-          "winrate": 0.4815,
-          "max_dd": -1.71,
-          "score": -0.48
+          "trades": 32,
+          "pnl": -0.16,
+          "winrate": 0.5312,
+          "max_dd": -1.59,
+          "score": -0.1
         },
         "model_tft": {
           "trades": 0,
@@ -325,34 +325,34 @@
           "score": -99999.0
         },
         "model_xgb": {
-          "trades": 26,
-          "pnl": -0.97,
-          "winrate": 0.6923,
-          "max_dd": -1.34,
-          "score": -0.72
+          "trades": 29,
+          "pnl": -0.99,
+          "winrate": 0.5862,
+          "max_dd": -1.19,
+          "score": -0.83
         }
       },
       "short": {
         "model_base": {
-          "trades": 57,
-          "pnl": -2.36,
-          "winrate": 0.614,
-          "max_dd": -2.32,
-          "score": -1.02
+          "trades": 60,
+          "pnl": -1.66,
+          "winrate": 0.6667,
+          "max_dd": -1.72,
+          "score": -0.97
         },
         "model_catboost": {
-          "trades": 23,
-          "pnl": -1.18,
-          "winrate": 0.6957,
-          "max_dd": -1.33,
-          "score": -0.89
+          "trades": 24,
+          "pnl": -1.19,
+          "winrate": 0.7083,
+          "max_dd": -1.36,
+          "score": -0.88
         },
         "model_gru": {
-          "trades": 70,
-          "pnl": -1.66,
-          "winrate": 0.5857,
-          "max_dd": -2.15,
-          "score": -0.77
+          "trades": 67,
+          "pnl": -1.08,
+          "winrate": 0.5075,
+          "max_dd": -2.89,
+          "score": -0.37
         },
         "model_hybrid": {
           "trades": 0,
@@ -362,39 +362,39 @@
           "score": -99999.0
         },
         "model_lgbm": {
-          "trades": 47,
-          "pnl": -0.85,
-          "winrate": 0.7021,
-          "max_dd": -1.07,
-          "score": -0.8
+          "trades": 54,
+          "pnl": -1.12,
+          "winrate": 0.7037,
+          "max_dd": -1.36,
+          "score": -0.82
         },
         "model_lgbm_ranker": {
-          "trades": 79,
-          "pnl": -1.06,
-          "winrate": 0.3797,
-          "max_dd": -2.22,
-          "score": -0.48
+          "trades": 76,
+          "pnl": -1.09,
+          "winrate": 0.3684,
+          "max_dd": -3.19,
+          "score": -0.34
         },
         "model_meta_labeling": {
-          "trades": 40,
-          "pnl": 1.92,
-          "winrate": 0.425,
-          "max_dd": -1.13,
-          "score": 1.7
+          "trades": 29,
+          "pnl": 0.78,
+          "winrate": 0.3793,
+          "max_dd": -1.79,
+          "score": 0.43
         },
         "model_rf": {
-          "trades": 28,
-          "pnl": 0.4,
-          "winrate": 0.7857,
-          "max_dd": -1.2,
-          "score": 0.33
+          "trades": 26,
+          "pnl": -0.26,
+          "winrate": 0.7308,
+          "max_dd": -1.19,
+          "score": -0.22
         },
         "model_stacked_ensemble": {
-          "trades": 16,
-          "pnl": -0.69,
-          "winrate": 0.625,
-          "max_dd": -0.92,
-          "score": -0.76
+          "trades": 26,
+          "pnl": -0.53,
+          "winrate": 0.5769,
+          "max_dd": -1.31,
+          "score": -0.4
         },
         "model_tft": {
           "trades": 0,
@@ -404,36 +404,36 @@
           "score": -99999.0
         },
         "model_xgb": {
-          "trades": 32,
-          "pnl": 0.09,
-          "winrate": 0.6875,
-          "max_dd": -0.7,
-          "score": 0.13
+          "trades": 37,
+          "pnl": 0.48,
+          "winrate": 0.6757,
+          "max_dd": -0.63,
+          "score": 0.76
         }
       }
     },
     "swing": {
       "long": {
         "model_base": {
-          "trades": 22,
-          "pnl": -1.14,
-          "winrate": 0.3182,
-          "max_dd": -2.03,
-          "score": -0.56
+          "trades": 20,
+          "pnl": -0.64,
+          "winrate": 0.35,
+          "max_dd": -1.55,
+          "score": -0.42
         },
         "model_catboost": {
           "trades": 4,
-          "pnl": -0.14,
+          "pnl": -0.29,
           "winrate": 0.25,
-          "max_dd": -0.48,
-          "score": -0.3
+          "max_dd": -0.46,
+          "score": -0.63
         },
         "model_gru": {
-          "trades": 27,
-          "pnl": -5.55,
-          "winrate": 0.037,
-          "max_dd": -5.33,
-          "score": -1.04
+          "trades": 36,
+          "pnl": -3.52,
+          "winrate": 0.1389,
+          "max_dd": -4.03,
+          "score": -0.87
         },
         "model_hybrid": {
           "trades": 0,
@@ -444,38 +444,38 @@
         },
         "model_lgbm": {
           "trades": 12,
-          "pnl": 0.02,
-          "winrate": 0.3333,
-          "max_dd": -0.58,
-          "score": 0.04
+          "pnl": -0.59,
+          "winrate": 0.25,
+          "max_dd": -0.91,
+          "score": -0.65
         },
         "model_lgbm_ranker": {
-          "trades": 46,
-          "pnl": -2.88,
-          "winrate": 0.2391,
-          "max_dd": -2.84,
-          "score": -1.01
+          "trades": 48,
+          "pnl": -4.29,
+          "winrate": 0.1667,
+          "max_dd": -4.18,
+          "score": -1.03
         },
         "model_meta_labeling": {
-          "trades": 31,
-          "pnl": -3.57,
-          "winrate": 0.1613,
-          "max_dd": -3.58,
-          "score": -1.0
+          "trades": 34,
+          "pnl": -2.98,
+          "winrate": 0.2353,
+          "max_dd": -3.13,
+          "score": -0.95
         },
         "model_rf": {
-          "trades": 5,
-          "pnl": -0.1,
-          "winrate": 0.4,
-          "max_dd": -0.37,
+          "trades": 6,
+          "pnl": -0.19,
+          "winrate": 0.3333,
+          "max_dd": -0.69,
           "score": -0.28
         },
         "model_stacked_ensemble": {
-          "trades": 20,
-          "pnl": -1.46,
-          "winrate": 0.5,
-          "max_dd": -1.88,
-          "score": -0.78
+          "trades": 13,
+          "pnl": -0.11,
+          "winrate": 0.5385,
+          "max_dd": -0.38,
+          "score": -0.3
         },
         "model_tft": {
           "trades": 0,
@@ -486,33 +486,33 @@
         },
         "model_xgb": {
           "trades": 18,
-          "pnl": -0.71,
-          "winrate": 0.5,
-          "max_dd": -0.92,
-          "score": -0.77
+          "pnl": -0.68,
+          "winrate": 0.5556,
+          "max_dd": -0.69,
+          "score": -0.98
         }
       },
       "short": {
         "model_base": {
-          "trades": 4,
-          "pnl": 0.47,
-          "winrate": 0.75,
-          "max_dd": -0.22,
-          "score": 2.18
+          "trades": 6,
+          "pnl": 0.4,
+          "winrate": 0.6667,
+          "max_dd": -0.49,
+          "score": 0.81
         },
         "model_catboost": {
-          "trades": 16,
-          "pnl": 1.18,
-          "winrate": 0.625,
+          "trades": 19,
+          "pnl": 2.44,
+          "winrate": 0.6842,
           "max_dd": -0.46,
-          "score": 2.57
+          "score": 5.32
         },
         "model_gru": {
-          "trades": 34,
-          "pnl": 0.79,
-          "winrate": 0.4412,
-          "max_dd": -1.58,
-          "score": 0.5
+          "trades": 29,
+          "pnl": -0.04,
+          "winrate": 0.3793,
+          "max_dd": -1.1,
+          "score": -0.03
         },
         "model_hybrid": {
           "trades": 0,
@@ -522,39 +522,39 @@
           "score": -99999.0
         },
         "model_lgbm": {
-          "trades": 31,
-          "pnl": 0.94,
-          "winrate": 0.5161,
-          "max_dd": -1.2,
-          "score": 0.78
+          "trades": 27,
+          "pnl": 1.22,
+          "winrate": 0.5556,
+          "max_dd": -1.51,
+          "score": 0.8
         },
         "model_lgbm_ranker": {
-          "trades": 36,
-          "pnl": 1.1,
-          "winrate": 0.3056,
-          "max_dd": -1.93,
-          "score": 0.57
+          "trades": 38,
+          "pnl": 0.81,
+          "winrate": 0.2632,
+          "max_dd": -2.53,
+          "score": 0.32
         },
         "model_meta_labeling": {
-          "trades": 36,
-          "pnl": 1.82,
-          "winrate": 0.4167,
-          "max_dd": -1.65,
-          "score": 1.1
+          "trades": 34,
+          "pnl": -0.23,
+          "winrate": 0.3235,
+          "max_dd": -2.11,
+          "score": -0.11
         },
         "model_rf": {
-          "trades": 15,
-          "pnl": 2.01,
-          "winrate": 0.6,
+          "trades": 18,
+          "pnl": 2.09,
+          "winrate": 0.6111,
           "max_dd": -0.9,
-          "score": 2.23
+          "score": 2.32
         },
         "model_stacked_ensemble": {
           "trades": 6,
-          "pnl": -0.34,
+          "pnl": -0.33,
           "winrate": 0.5,
-          "max_dd": -0.27,
-          "score": -1.28
+          "max_dd": -0.3,
+          "score": -1.07
         },
         "model_tft": {
           "trades": 0,
@@ -564,11 +564,11 @@
           "score": -99999.0
         },
         "model_xgb": {
-          "trades": 50,
-          "pnl": 1.34,
-          "winrate": 0.72,
-          "max_dd": -0.91,
-          "score": 1.47
+          "trades": 49,
+          "pnl": 2.13,
+          "winrate": 0.7755,
+          "max_dd": -0.95,
+          "score": 2.24
         }
       }
     }
