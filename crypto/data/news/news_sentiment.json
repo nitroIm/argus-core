@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-11-25T13:05:40.129698+00:00",
-  "total_news": 93,
-  "avg_sentiment": -0.486,
+  "generated_at": "2026-11-25T14:05:46.648363+00:00",
+  "total_news": 94,
+  "avg_sentiment": -0.405,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 15,
+  "bullish_count": 16,
   "bearish_count": 38,
   "neutral_count": 40,
   "fake_count": 0,
-  "cross_confirmed": 16,
+  "cross_confirmed": 14,
   "by_source": {
     "Cointelegraph": {
       "total": 21,
@@ -15,9 +15,9 @@
       "bear": 10
     },
     "Decrypt": {
-      "total": 16,
+      "total": 17,
       "bull": 3,
-      "bear": 11
+      "bear": 12
     },
     "Bitcoin.com": {
       "total": 9,
@@ -31,8 +31,8 @@
     },
     "CryptoPotato": {
       "total": 25,
-      "bull": 3,
-      "bear": 10
+      "bull": 4,
+      "bear": 9
     },
     "Bitcoinist": {
       "total": 7,
@@ -47,6 +47,57 @@
   },
   "top_bullish": [
     {
+      "title": "Morning Minute: Ethereum Focuses on Security As AI Threats Rise",
+      "url": "https://decrypt.co/383945/morning-minute-ethereum-focuses-on-security-as-ai-threats-rise",
+      "source": "Decrypt",
+      "source_weight": 1.1,
+      "lang": "en",
+      "pub_date": "2026-11-25T13:41:38+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-25T14:05:45.340988+00:00",
+      "effective_weight": 1.65,
+      "title_original": "Morning Minute: Ethereum Focuses on Security As AI Threats Rise",
+      "cross_check": 1
+    },
+    {
+      "title": "Japan’s $2.3T Financial Giants SBI, SMFG Launch Solana Venture",
+      "url": "https://news.bitcoin.com/finance/japans-2-3t-financial-giants-sbi-smfg-launch-solana-venture/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-25T13:30:48+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-25T14:05:45.556612+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Japan’s $2.3T Financial Giants SBI, SMFG Launch Solana Venture",
+      "cross_check": 2
+    },
+    {
+      "title": "BTC Price Slides Again as US PCE Inflation Posts Second-Highest Reading Since Early 2023",
+      "url": "https://cryptopotato.com/btc-price-slides-again-as-us-pce-inflation-posts-second-highest-reading-since-early-2023/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-25T13:43:56+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 2.0,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-25T14:05:45.665160+00:00",
+      "effective_weight": 1.5,
+      "title_original": "BTC Price Slides Again as US PCE Inflation Posts Second-Highest Reading Since Early 2023",
+      "cross_check": 1
+    },
+    {
       "title": "Japan’s SBI, SMFG launch Solana venture for stablecoins, tokenization",
       "url": "https://cointelegraph.com/news/sbi-smfg-solana-global-stablecoin-tokenization?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
       "source": "Cointelegraph",
@@ -58,10 +109,10 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-25T13:05:38.384792+00:00",
+      "collected_at": "2026-11-25T14:05:45.303219+00:00",
       "effective_weight": 1.3,
       "title_original": "Japan’s SBI, SMFG launch Solana venture for stablecoins, tokenization",
-      "cross_check": 1
+      "cross_check": 2
     },
     {
       "title": "Ark Invest продала акции собственного биткоин-ETF на $6,8 млн",
@@ -75,64 +126,47 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-25T13:05:40.080322+00:00",
+      "collected_at": "2026-11-25T14:05:46.602049+00:00",
       "effective_weight": 1.2,
       "title_original": "Ark Invest продала акции собственного биткоин-ETF на $6,8 млн",
-      "cross_check": 1
-    },
-    {
-      "title": "BlackRock launches tokenized money market fund accepting stablecoins in Hong Kong",
-      "url": "https://cointelegraph.com/news/blackrock-launches-tokenized-money-market-fund-stablecoins-hong-kong?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-11-24T18:07:22+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-25T13:05:38.385459+00:00",
-      "effective_weight": 1.04,
-      "title_original": "BlackRock launches tokenized money market fund accepting stablecoins in Hong Kong",
-      "cross_check": 1
-    },
-    {
-      "title": "Bitcoin ETFs gained 191 institutional holders but just 25 drove all the growth",
-      "url": "https://cryptoslate.com/bitcoin-etfs-gained-191-institutional-holders-but-just-25-drove-all-the-growth/",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-25T10:50:46+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 4.4,
-      "bear_weight": 0.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-25T13:05:38.725131+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Bitcoin ETFs gained 191 institutional holders but just 25 drove all the growth",
-      "cross_check": 1
-    },
-    {
-      "title": "OKX’s 24/7 stock trading launch saw just 7% of first-day volume come from customers",
-      "url": "https://cryptoslate.com/okxs-24-7-stock-trading-launch-saw-just-7-of-first-day-volume-come-from-customers/",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-25T08:10:42+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-25T13:05:38.725263+00:00",
-      "effective_weight": 1.0,
-      "title_original": "OKX’s 24/7 stock trading launch saw just 7% of first-day volume come from customers",
       "cross_check": 1
     }
   ],
   "top_bearish": [
+    {
+      "title": "French Senate Rejects Plan to Make Crypto Holders Declare Self-Custody Wallets",
+      "url": "https://decrypt.co/383944/french-senate-rejects-plan-to-make-crypto-holders-declare-self-custody-wallets",
+      "source": "Decrypt",
+      "source_weight": 1.1,
+      "lang": "en",
+      "pub_date": "2026-11-25T13:15:24+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-25T14:05:45.341039+00:00",
+      "effective_weight": 1.65,
+      "title_original": "French Senate Rejects Plan to Make Crypto Holders Declare Self-Custody Wallets",
+      "cross_check": 2
+    },
+    {
+      "title": "Bitcoin’s crash protection could make its next selloff worse as US inflation data looms",
+      "url": "https://cryptoslate.com/bitcoins-crash-protection-could-make-its-next-selloff-worse-as-us-inflation-data-looms/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-25T13:10:14+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 3.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-25T14:05:45.597033+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Bitcoin’s crash protection could make its next selloff worse as US inflation data looms",
+      "cross_check": 1
+    },
     {
       "title": "Bitcoin price may fall below $53K if bear-market history repeats",
       "url": "https://cointelegraph.com/markets/bitcoin-price-bear-market-history-repeats?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -145,7 +179,7 @@
       "bear_weight": 3.2,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-25T13:05:38.384906+00:00",
+      "collected_at": "2026-11-25T14:05:45.303311+00:00",
       "effective_weight": 1.3,
       "title_original": "Bitcoin price may fall below $53K if bear-market history repeats",
       "cross_check": 5
@@ -162,10 +196,10 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-25T13:05:38.384957+00:00",
+      "collected_at": "2026-11-25T14:05:45.303353+00:00",
       "effective_weight": 1.3,
       "title_original": "French Senate rejects 100K euro crypto wallet disclosure requirement",
-      "cross_check": 1
+      "cross_check": 2
     },
     {
       "title": "Stablecoin redemptions hit $12B in 30 days, echoing 2022 bear market",
@@ -179,43 +213,9 @@
       "bear_weight": 2.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-25T13:05:38.385008+00:00",
+      "collected_at": "2026-11-25T14:05:45.303396+00:00",
       "effective_weight": 1.3,
       "title_original": "Stablecoin redemptions hit $12B in 30 days, echoing 2022 bear market",
-      "cross_check": 1
-    },
-    {
-      "title": "Florida Man Jailed for Using AI to Pose as Streamer N3ON in $260K Crypto Scam",
-      "url": "https://decrypt.co/383941/florida-man-jailed-for-using-ai-to-pose-as-streamer-n3on-in-260k-crypto-scam",
-      "source": "Decrypt",
-      "source_weight": 1.1,
-      "lang": "en",
-      "pub_date": "2026-11-25T11:52:06+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-25T13:05:38.446622+00:00",
-      "effective_weight": 1.1,
-      "title_original": "Florida Man Jailed for Using AI to Pose as Streamer N3ON in $260K Crypto Scam",
-      "cross_check": 1
-    },
-    {
-      "title": "Hyperliquid Leads Altcoin Losses as Bitcoin Slips Below $59K",
-      "url": "https://decrypt.co/383938/hyperliquid-leads-altcoin-losses-as-bitcoin-slips-below-59k",
-      "source": "Decrypt",
-      "source_weight": 1.1,
-      "lang": "en",
-      "pub_date": "2026-11-25T11:23:57+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 4.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-25T13:05:38.446684+00:00",
-      "effective_weight": 1.1,
-      "title_original": "Hyperliquid Leads Altcoin Losses as Bitcoin Slips Below $59K",
       "cross_check": 1
     }
   ]
