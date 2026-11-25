@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-11-25T05:05:48.649219+00:00",
-  "total_news": 94,
-  "avg_sentiment": -0.481,
+  "generated_at": "2026-11-25T06:05:42.703563+00:00",
+  "total_news": 93,
+  "avg_sentiment": -0.466,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 15,
-  "bearish_count": 36,
+  "bearish_count": 35,
   "neutral_count": 43,
   "fake_count": 0,
   "cross_confirmed": 13,
@@ -21,17 +21,17 @@
     },
     "Bitcoin.com": {
       "total": 9,
-      "bull": 2,
+      "bull": 3,
       "bear": 0
     },
     "CryptoSlate": {
       "total": 8,
       "bull": 1,
-      "bear": 4
+      "bear": 3
     },
     "CryptoPotato": {
       "total": 25,
-      "bull": 4,
+      "bull": 3,
       "bear": 10
     },
     "Bitcoinist": {
@@ -40,12 +40,29 @@
       "bear": 2
     },
     "ForkLog": {
-      "total": 10,
+      "total": 9,
       "bull": 0,
       "bear": 2
     }
   },
   "top_bullish": [
+    {
+      "title": "Over 2,200 Institutions Held $29.8B in Bitcoin ETFs, Advisers Led",
+      "url": "https://news.bitcoin.com/featured/over-2200-institutions-held-29-8b-in-bitcoin-etfs-advisers-led/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-25T05:30:08+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-25T06:05:41.205103+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Over 2,200 Institutions Held $29.8B in Bitcoin ETFs, Advisers Led",
+      "cross_check": 1
+    },
     {
       "title": "BlackRock launches tokenized money market fund accepting stablecoins in Hong Kong",
       "url": "https://cointelegraph.com/news/blackrock-launches-tokenized-money-market-fund-stablecoins-hong-kong?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -58,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-25T05:05:46.999733+00:00",
+      "collected_at": "2026-11-25T06:05:40.943420+00:00",
       "effective_weight": 1.04,
       "title_original": "BlackRock launches tokenized money market fund accepting stablecoins in Hong Kong",
       "cross_check": 1
@@ -75,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-25T05:05:47.000099+00:00",
+      "collected_at": "2026-11-25T06:05:40.943735+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin dipped on Huang’s Nvidia exit but jumped 5% on his return",
       "cross_check": 4
@@ -92,7 +109,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-25T05:05:47.048575+00:00",
+      "collected_at": "2026-11-25T06:05:41.014116+00:00",
       "effective_weight": 0.88,
       "title_original": "Morning Minute: Jensen Returns, Markets Soar (Except Crypto)",
       "cross_check": 2
@@ -109,26 +126,9 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-25T05:05:47.198061+00:00",
+      "collected_at": "2026-11-25T06:05:41.205531+00:00",
       "effective_weight": 0.8,
       "title_original": "Bitcoin Lender Ledn Moves US Business Onshore With Custody Accounts Launch",
-      "cross_check": 1
-    },
-    {
-      "title": "Eric Trump’s Bitcoin miner surges 17% after $150 million deal to avoid selling BTC",
-      "url": "https://cryptoslate.com/eric-trumps-bitcoin-miner-surges-17-after-150-million-deal-to-avoid-selling-btc/",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-24T18:00:31+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.5,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-25T05:05:47.283024+00:00",
-      "effective_weight": 0.8,
-      "title_original": "Eric Trump’s Bitcoin miner surges 17% after $150 million deal to avoid selling BTC",
       "cross_check": 1
     }
   ],
@@ -145,7 +145,7 @@
       "bear_weight": 2.8,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-25T05:05:46.999427+00:00",
+      "collected_at": "2026-11-25T06:05:40.943215+00:00",
       "effective_weight": 1.04,
       "title_original": "Europol follows $28.5M crypto trail in streaming piracy crackdown",
       "cross_check": 2
@@ -162,7 +162,7 @@
       "bear_weight": 2.7,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-25T05:05:46.999503+00:00",
+      "collected_at": "2026-11-25T06:05:40.943263+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin sell-off driven by weak demand, forced liquidations: 21Shares",
       "cross_check": 1
@@ -179,7 +179,7 @@
       "bear_weight": 0.8,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-25T05:05:46.999661+00:00",
+      "collected_at": "2026-11-25T06:05:40.943360+00:00",
       "effective_weight": 1.04,
       "title_original": "CFTC sets new prediction market rules as more firms seek US entry",
       "cross_check": 1
@@ -196,7 +196,7 @@
       "bear_weight": 2.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-25T05:05:46.999812+00:00",
+      "collected_at": "2026-11-25T06:05:40.943472+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin slides amid US tariff nerves as Anthropic falls below IPO price",
       "cross_check": 1
@@ -213,7 +213,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-25T05:05:47.000026+00:00",
+      "collected_at": "2026-11-25T06:05:40.943660+00:00",
       "effective_weight": 1.04,
       "title_original": "South Korea proposes bank-led stablecoins, 20% cap on crypto exchange stakes",
       "cross_check": 2
