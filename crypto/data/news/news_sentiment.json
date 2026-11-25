@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-11-24T23:05:41.385297+00:00",
+  "generated_at": "2026-11-25T00:05:35.392100+00:00",
   "total_news": 97,
-  "avg_sentiment": -0.449,
+  "avg_sentiment": -0.45,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 17,
   "bearish_count": 37,
@@ -58,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T23:05:39.585336+00:00",
+      "collected_at": "2026-11-25T00:05:33.186081+00:00",
       "effective_weight": 1.3,
       "title_original": "BlackRock launches tokenized money market fund accepting stablecoins in Hong Kong",
       "cross_check": 2
@@ -75,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T23:05:39.585606+00:00",
+      "collected_at": "2026-11-25T00:05:33.186279+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin dipped on Huang’s Nvidia exit but jumped 5% on his return",
       "cross_check": 5
@@ -92,26 +92,9 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T23:05:39.921715+00:00",
+      "collected_at": "2026-11-25T00:05:33.536742+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitcoin Lender Ledn Moves US Business Onshore With Custody Accounts Launch",
-      "cross_check": 1
-    },
-    {
-      "title": "Eric Trump’s Bitcoin miner surges 17% after $150 million deal to avoid selling BTC",
-      "url": "https://cryptoslate.com/eric-trumps-bitcoin-miner-surges-17-after-150-million-deal-to-avoid-selling-btc/",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-24T18:00:31+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.5,
-      "bear_weight": 0.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-24T23:05:40.005388+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Eric Trump’s Bitcoin miner surges 17% after $150 million deal to avoid selling BTC",
       "cross_check": 1
     },
     {
@@ -126,10 +109,27 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T23:05:39.692270+00:00",
+      "collected_at": "2026-11-25T00:05:33.281077+00:00",
       "effective_weight": 0.88,
       "title_original": "Morning Minute: Jensen Returns, Markets Soar (Except Crypto)",
       "cross_check": 2
+    },
+    {
+      "title": "Bitcoin Price Struggles to Hold $60K as Nvidia CEO Return Rally Fades Fast",
+      "url": "https://news.bitcoin.com/market-updates/bitcoin-price-struggles-hold-60k-nvidia-ceo-return-rally-fades-fast/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-24T16:41:51+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.5,
+      "bear_weight": 0.0,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-25T00:05:33.536858+00:00",
+      "effective_weight": 0.8,
+      "title_original": "Bitcoin Price Struggles to Hold $60K as Nvidia CEO Return Rally Fades Fast",
+      "cross_check": 7
     }
   ],
   "top_bearish": [
@@ -145,7 +145,7 @@
       "bear_weight": 2.8,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T23:05:39.585117+00:00",
+      "collected_at": "2026-11-25T00:05:33.185928+00:00",
       "effective_weight": 1.3,
       "title_original": "Europol follows $28.5M crypto trail in streaming piracy crackdown",
       "cross_check": 2
@@ -162,7 +162,7 @@
       "bear_weight": 2.7,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T23:05:39.585172+00:00",
+      "collected_at": "2026-11-25T00:05:33.185967+00:00",
       "effective_weight": 1.3,
       "title_original": "Bitcoin sell-off driven by weak demand, forced liquidations: 21Shares",
       "cross_check": 1
@@ -179,27 +179,10 @@
       "bear_weight": 0.8,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T23:05:39.585285+00:00",
+      "collected_at": "2026-11-25T00:05:33.186043+00:00",
       "effective_weight": 1.3,
       "title_original": "CFTC sets new prediction market rules as more firms seek US entry",
       "cross_check": 1
-    },
-    {
-      "title": "Bitcoin slides amid US tariff nerves as Anthropic falls below IPO price",
-      "url": "https://cointelegraph.com/markets/bitcoin-slides-us-tariff-nerves-anthropic-falls-ipo-price?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-11-24T17:09:11+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 2.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-24T23:05:39.585385+00:00",
-      "effective_weight": 1.3,
-      "title_original": "Bitcoin slides amid US tariff nerves as Anthropic falls below IPO price",
-      "cross_check": 2
     },
     {
       "title": "Coldcard Bitcoin Exploit, Revisited: How a Hidden Flaw Survived Years of Audits",
@@ -213,10 +196,27 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-24T23:05:39.691790+00:00",
+      "collected_at": "2026-11-25T00:05:33.280737+00:00",
       "effective_weight": 1.1,
       "title_original": "Coldcard Bitcoin Exploit, Revisited: How a Hidden Flaw Survived Years of Audits",
       "cross_check": 2
+    },
+    {
+      "title": "Bitcoin Losses Are the Worst Since FTX. Is the Bottom Near?",
+      "url": "https://decrypt.co/383909/bitcoin-losses-worst-since-ftx-is-bottom-near",
+      "source": "Decrypt",
+      "source_weight": 1.1,
+      "lang": "en",
+      "pub_date": "2026-11-24T19:35:32+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 3.0,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-25T00:05:33.280812+00:00",
+      "effective_weight": 1.1,
+      "title_original": "Bitcoin Losses Are the Worst Since FTX. Is the Bottom Near?",
+      "cross_check": 3
     }
   ]
 }
