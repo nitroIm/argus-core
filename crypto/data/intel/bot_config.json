@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-26T02:11:42.412774+00:00",
+  "updated_at": "2026-11-26T03:11:44.106107+00:00",
   "force_reset_old": false,
   "global": {
     "fee_pct": 0.001,
@@ -68,9 +68,9 @@
       "macd": 0.23,
       "ema": 0.23,
       "volume": 0.23,
-      "rsi_low": 0.485,
+      "rsi_low": 0.474,
       "rsi_mid": 0.23,
-      "rsi_high": 4.596
+      "rsi_high": 4.605
     },
     "trailing_activation_pct": 2.0,
     "trailing_atr_multiplier": 4.5
