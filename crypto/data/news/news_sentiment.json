@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-11-26T05:05:38.085452+00:00",
-  "total_news": 93,
-  "avg_sentiment": -0.377,
+  "generated_at": "2026-11-26T06:05:42.025980+00:00",
+  "total_news": 94,
+  "avg_sentiment": -0.368,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 16,
   "bearish_count": 35,
-  "neutral_count": 42,
+  "neutral_count": 43,
   "fake_count": 0,
-  "cross_confirmed": 15,
+  "cross_confirmed": 17,
   "by_source": {
     "Cointelegraph": {
       "total": 20,
@@ -22,12 +22,12 @@
     "Bitcoin.com": {
       "total": 10,
       "bull": 1,
-      "bear": 3
+      "bear": 2
     },
     "CryptoSlate": {
-      "total": 7,
+      "total": 8,
       "bull": 2,
-      "bear": 2
+      "bear": 3
     },
     "CryptoPotato": {
       "total": 24,
@@ -47,6 +47,23 @@
   },
   "top_bullish": [
     {
+      "title": "Moscow Exchange Set to Launch Bitcoin, Ethereum, and USDT Trading",
+      "url": "https://cryptopotato.com/moscow-exchange-set-to-launch-bitcoin-ethereum-and-usdt-trading/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-26T05:08:37+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-26T06:05:40.751849+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Moscow Exchange Set to Launch Bitcoin, Ethereum, and USDT Trading",
+      "cross_check": 2
+    },
+    {
       "title": "US inflation rises to 3.8% ahead of December Fed meeting, clouding crypto outlook",
       "url": "https://cointelegraph.com/news/us-inflation-rises-december-fed-meeting-clouding-crypto-outlook?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
       "source": "Cointelegraph",
@@ -58,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-26T05:05:36.113544+00:00",
+      "collected_at": "2026-11-26T06:05:40.182910+00:00",
       "effective_weight": 1.04,
       "title_original": "US inflation rises to 3.8% ahead of December Fed meeting, clouding crypto outlook",
       "cross_check": 1
@@ -75,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-26T05:05:36.113765+00:00",
+      "collected_at": "2026-11-26T06:05:40.183036+00:00",
       "effective_weight": 1.04,
       "title_original": "Ex-FTX COO calls out Netflix over CZ’s ‘Asian mafia’ portrayal",
       "cross_check": 1
@@ -92,7 +109,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-26T05:05:36.113897+00:00",
+      "collected_at": "2026-11-26T06:05:40.183108+00:00",
       "effective_weight": 1.04,
       "title_original": "Japan’s SBI, SMFG launch Solana venture for stablecoins, tokenization",
       "cross_check": 1
@@ -109,30 +126,47 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-26T05:05:36.516207+00:00",
+      "collected_at": "2026-11-26T06:05:40.607137+00:00",
       "effective_weight": 1.0,
       "title_original": "Lido tightens Ethereum staking penalties as operators gain access to larger validators",
-      "cross_check": 1
-    },
-    {
-      "title": "Ark Invest продала акции собственного биткоин-ETF на $6,8 млн",
-      "url": "https://forklog.com/ark-invest-prodala-aktsii-sobstvennogo-bitkoin-etf-na-6-8-mln",
-      "source": "ForkLog",
-      "source_weight": 1.2,
-      "lang": "ru",
-      "pub_date": "2026-11-25T11:30:00+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-26T05:05:38.022368+00:00",
-      "effective_weight": 0.96,
-      "title_original": "Ark Invest продала акции собственного биткоин-ETF на $6,8 млн",
       "cross_check": 1
     }
   ],
   "top_bearish": [
+    {
+      "title": "UK regulator plans tighter DeFi rules, citing $6.3B Binance hack: Report",
+      "url": "https://cointelegraph.com/news/uk-fca-defi-regulation-binance-hack?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-11-26T05:53:08+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-26T06:05:40.182689+00:00",
+      "effective_weight": 1.95,
+      "title_original": "UK regulator plans tighter DeFi rules, citing $6.3B Binance hack: Report",
+      "cross_check": 1
+    },
+    {
+      "title": "South Korea wants banks to own more than 50% of domestic stablecoin issuers",
+      "url": "https://cryptoslate.com/south-korea-wants-banks-to-own-more-than-50-of-domestic-stablecoin-issuers/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-26T05:50:38+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-26T06:05:40.607017+00:00",
+      "effective_weight": 1.5,
+      "title_original": "South Korea wants banks to own more than 50% of domestic stablecoin issuers",
+      "cross_check": 2
+    },
     {
       "title": "Bitcoin falls toward $57K amid US tariff fears, hot PCE data as Nasdaq drops 4%",
       "url": "https://cointelegraph.com/markets/bitcoin-falls-57k-us-tariff-pce-data-nasdaq-drops?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -145,7 +179,7 @@
       "bear_weight": 3.2,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-26T05:05:36.113614+00:00",
+      "collected_at": "2026-11-26T06:05:40.182956+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin falls toward $57K amid US tariff fears, hot PCE data as Nasdaq drops 4%",
       "cross_check": 1
@@ -162,7 +196,7 @@
       "bear_weight": 3.2,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-26T05:05:36.114023+00:00",
+      "collected_at": "2026-11-26T06:05:40.183176+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin price may fall below $53K if bear-market history repeats",
       "cross_check": 5
@@ -179,44 +213,10 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-26T05:05:36.114089+00:00",
+      "collected_at": "2026-11-26T06:05:40.183209+00:00",
       "effective_weight": 1.04,
       "title_original": "French Senate rejects 100K euro crypto wallet disclosure requirement",
       "cross_check": 2
-    },
-    {
-      "title": "Stablecoin redemptions hit $12B in 30 days, echoing 2022 bear market",
-      "url": "https://cointelegraph.com/markets/stablecoin-cash-out-2022-bear-market?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-11-25T09:52:22+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 2.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-26T05:05:36.114169+00:00",
-      "effective_weight": 1.04,
-      "title_original": "Stablecoin redemptions hit $12B in 30 days, echoing 2022 bear market",
-      "cross_check": 1
-    },
-    {
-      "title": "Bitcoin Could Sink to $48,500 if It Breaks Below $53K, Analyst Warns",
-      "url": "https://news.bitcoin.com/market-updates/bitcoin-could-sink-to-48500-if-it-breaks-below-53k-analyst-warns/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-26T02:05:37+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-26T05:05:36.383055+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Bitcoin Could Sink to $48,500 if It Breaks Below $53K, Analyst Warns",
-      "cross_check": 1
     }
   ]
 }
