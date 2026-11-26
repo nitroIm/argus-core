@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-11-26T02:05:37.365058+00:00",
+  "generated_at": "2026-11-26T03:05:37.740709+00:00",
   "total_news": 94,
-  "avg_sentiment": -0.395,
+  "avg_sentiment": -0.427,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 16,
   "bearish_count": 39,
@@ -47,23 +47,6 @@
   },
   "top_bullish": [
     {
-      "title": "Lido tightens Ethereum staking penalties as operators gain access to larger validators",
-      "url": "https://cryptoslate.com/lido-tightens-ethereum-staking-penalties-as-operators-gain-access-to-larger-validators/",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-26T01:50:48+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-26T02:05:36.093805+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Lido tightens Ethereum staking penalties as operators gain access to larger validators",
-      "cross_check": 1
-    },
-    {
       "title": "US inflation rises to 3.8% ahead of December Fed meeting, clouding crypto outlook",
       "url": "https://cointelegraph.com/news/us-inflation-rises-december-fed-meeting-clouding-crypto-outlook?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
       "source": "Cointelegraph",
@@ -75,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-26T02:05:35.481294+00:00",
+      "collected_at": "2026-11-26T03:05:36.477686+00:00",
       "effective_weight": 1.04,
       "title_original": "US inflation rises to 3.8% ahead of December Fed meeting, clouding crypto outlook",
       "cross_check": 1
@@ -92,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-26T02:05:35.481520+00:00",
+      "collected_at": "2026-11-26T03:05:36.477914+00:00",
       "effective_weight": 1.04,
       "title_original": "Ex-FTX COO calls out Netflix over CZ’s ‘Asian mafia’ portrayal",
       "cross_check": 1
@@ -109,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-26T02:05:35.481673+00:00",
+      "collected_at": "2026-11-26T03:05:36.478055+00:00",
       "effective_weight": 1.04,
       "title_original": "Japan’s SBI, SMFG launch Solana venture for stablecoins, tokenization",
       "cross_check": 1
@@ -126,13 +109,47 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-26T02:05:35.997886+00:00",
+      "collected_at": "2026-11-26T03:05:36.650651+00:00",
       "effective_weight": 1.0,
       "title_original": "Tether Expands Latin American Push With Investment in Argentine Fintech Lemon",
+      "cross_check": 1
+    },
+    {
+      "title": "Lido tightens Ethereum staking penalties as operators gain access to larger validators",
+      "url": "https://cryptoslate.com/lido-tightens-ethereum-staking-penalties-as-operators-gain-access-to-larger-validators/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-26T01:50:48+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-26T03:05:36.730590+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Lido tightens Ethereum staking penalties as operators gain access to larger validators",
       "cross_check": 1
     }
   ],
   "top_bearish": [
+    {
+      "title": "Bitcoin Could Sink to $48,500 if It Breaks Below $53K, Analyst Warns",
+      "url": "https://news.bitcoin.com/market-updates/bitcoin-could-sink-to-48500-if-it-breaks-below-53k-analyst-warns/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-26T02:05:37+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-26T03:05:36.650437+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Bitcoin Could Sink to $48,500 if It Breaks Below $53K, Analyst Warns",
+      "cross_check": 1
+    },
     {
       "title": "Bitcoin falls toward $57K amid US tariff fears, hot PCE data as Nasdaq drops 4%",
       "url": "https://cointelegraph.com/markets/bitcoin-falls-57k-us-tariff-pce-data-nasdaq-drops?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -145,7 +162,7 @@
       "bear_weight": 3.2,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-26T02:05:35.481367+00:00",
+      "collected_at": "2026-11-26T03:05:36.477759+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin falls toward $57K amid US tariff fears, hot PCE data as Nasdaq drops 4%",
       "cross_check": 1
@@ -162,7 +179,7 @@
       "bear_weight": 3.2,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-26T02:05:35.481807+00:00",
+      "collected_at": "2026-11-26T03:05:36.478187+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin price may fall below $53K if bear-market history repeats",
       "cross_check": 5
@@ -179,7 +196,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-26T02:05:35.481870+00:00",
+      "collected_at": "2026-11-26T03:05:36.478273+00:00",
       "effective_weight": 1.04,
       "title_original": "French Senate rejects 100K euro crypto wallet disclosure requirement",
       "cross_check": 2
@@ -196,26 +213,9 @@
       "bear_weight": 2.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-26T02:05:35.481937+00:00",
+      "collected_at": "2026-11-26T03:05:36.478342+00:00",
       "effective_weight": 1.04,
       "title_original": "Stablecoin redemptions hit $12B in 30 days, echoing 2022 bear market",
-      "cross_check": 1
-    },
-    {
-      "title": "Bitcoin has fallen so far that its original Rainbow Chart has run out of colors",
-      "url": "https://cryptoslate.com/bitcoin-has-fallen-so-far-that-its-original-rainbow-chart-has-run-out-of-colors/",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-25T22:40:35+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-26T02:05:36.093949+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Bitcoin has fallen so far that its original Rainbow Chart has run out of colors",
       "cross_check": 1
     }
   ]
