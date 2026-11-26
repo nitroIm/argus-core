@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-11-26T07:05:36.414497+00:00",
+  "generated_at": "2026-11-26T08:05:43.972683+00:00",
   "total_news": 95,
-  "avg_sentiment": -0.376,
+  "avg_sentiment": -0.39,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 15,
   "bearish_count": 35,
@@ -25,14 +25,14 @@
       "bear": 2
     },
     "CryptoSlate": {
-      "total": 8,
+      "total": 9,
       "bull": 2,
-      "bear": 3
+      "bear": 4
     },
     "CryptoPotato": {
-      "total": 24,
+      "total": 23,
       "bull": 4,
-      "bear": 9
+      "bear": 8
     },
     "Bitcoinist": {
       "total": 7,
@@ -48,7 +48,7 @@
   "top_bullish": [
     {
       "title": "US inflation rises to 3.8% ahead of December Fed meeting, clouding crypto outlook",
-      "url": "https://cointelegraph.com/news/us-inflation-rises-december-fed-meeting-clouding-crypto-outlook?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "url": "https://cointelegraph.com/markets/us-inflation-rises-december-fed-meeting-clouding-crypto-outlook?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
       "source": "Cointelegraph",
       "source_weight": 1.3,
       "lang": "en",
@@ -58,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-26T07:05:35.015514+00:00",
+      "collected_at": "2026-11-26T08:05:42.001947+00:00",
       "effective_weight": 1.04,
       "title_original": "US inflation rises to 3.8% ahead of December Fed meeting, clouding crypto outlook",
       "cross_check": 1
@@ -75,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-26T07:05:35.015728+00:00",
+      "collected_at": "2026-11-26T08:05:42.002129+00:00",
       "effective_weight": 1.04,
       "title_original": "Ex-FTX COO calls out Netflix over CZ’s ‘Asian mafia’ portrayal",
       "cross_check": 1
@@ -92,26 +92,9 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-26T07:05:35.015863+00:00",
+      "collected_at": "2026-11-26T08:05:42.002242+00:00",
       "effective_weight": 1.04,
       "title_original": "Japan’s SBI, SMFG launch Solana venture for stablecoins, tokenization",
-      "cross_check": 1
-    },
-    {
-      "title": "Lido tightens Ethereum staking penalties as operators gain access to larger validators",
-      "url": "https://cryptoslate.com/lido-tightens-ethereum-staking-penalties-as-operators-gain-access-to-larger-validators/",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-26T01:50:48+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-26T07:05:35.334054+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Lido tightens Ethereum staking penalties as operators gain access to larger validators",
       "cross_check": 1
     },
     {
@@ -126,13 +109,47 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-26T07:05:35.414996+00:00",
+      "collected_at": "2026-11-26T08:05:42.629103+00:00",
       "effective_weight": 1.0,
       "title_original": "Moscow Exchange Set to Launch Bitcoin, Ethereum, and USDT Trading",
       "cross_check": 2
+    },
+    {
+      "title": "Ark Invest продала акции собственного биткоин-ETF на $6,8 млн",
+      "url": "https://forklog.com/ark-invest-prodala-aktsii-sobstvennogo-bitkoin-etf-na-6-8-mln",
+      "source": "ForkLog",
+      "source_weight": 1.2,
+      "lang": "ru",
+      "pub_date": "2026-11-25T11:30:00+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-26T08:05:43.910822+00:00",
+      "effective_weight": 0.96,
+      "title_original": "Ark Invest продала акции собственного биткоин-ETF на $6,8 млн",
+      "cross_check": 1
     }
   ],
   "top_bearish": [
+    {
+      "title": "Bitcoin could double by 2032 and UniCredit investors would still make just 65%",
+      "url": "https://cryptoslate.com/bitcoin-could-double-by-2032-and-unicredit-investors-would-still-make-just-65/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-26T07:20:18+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 0.8,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-26T08:05:42.459601+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Bitcoin could double by 2032 and UniCredit investors would still make just 65%",
+      "cross_check": 2
+    },
     {
       "title": "UK regulator plans tighter DeFi rules, citing $6.3B Binance hack: Report",
       "url": "https://cointelegraph.com/news/uk-fca-defi-regulation-binance-hack?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -145,7 +162,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-26T07:05:35.015100+00:00",
+      "collected_at": "2026-11-26T08:05:42.001583+00:00",
       "effective_weight": 1.3,
       "title_original": "UK regulator plans tighter DeFi rules, citing $6.3B Binance hack: Report",
       "cross_check": 2
@@ -162,7 +179,7 @@
       "bear_weight": 3.2,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-26T07:05:35.015587+00:00",
+      "collected_at": "2026-11-26T08:05:42.002010+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin falls toward $57K amid US tariff fears, hot PCE data as Nasdaq drops 4%",
       "cross_check": 1
@@ -179,7 +196,7 @@
       "bear_weight": 3.2,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-26T07:05:35.015995+00:00",
+      "collected_at": "2026-11-26T08:05:42.002350+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin price may fall below $53K if bear-market history repeats",
       "cross_check": 5
@@ -196,27 +213,10 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-26T07:05:35.016086+00:00",
+      "collected_at": "2026-11-26T08:05:42.002403+00:00",
       "effective_weight": 1.04,
       "title_original": "French Senate rejects 100K euro crypto wallet disclosure requirement",
       "cross_check": 2
-    },
-    {
-      "title": "Stablecoin redemptions hit $12B in 30 days, echoing 2022 bear market",
-      "url": "https://cointelegraph.com/markets/stablecoin-cash-out-2022-bear-market?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-11-25T09:52:22+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 2.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-26T07:05:35.016152+00:00",
-      "effective_weight": 1.04,
-      "title_original": "Stablecoin redemptions hit $12B in 30 days, echoing 2022 bear market",
-      "cross_check": 1
     }
   ]
 }
