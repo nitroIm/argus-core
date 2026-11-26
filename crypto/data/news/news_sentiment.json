@@ -1,23 +1,23 @@
 {
-  "generated_at": "2026-11-26T21:05:39.375419+00:00",
-  "total_news": 96,
-  "avg_sentiment": -0.252,
+  "generated_at": "2026-11-26T22:05:40.718810+00:00",
+  "total_news": 85,
+  "avg_sentiment": -0.33,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 18,
-  "bearish_count": 29,
-  "neutral_count": 49,
+  "bullish_count": 15,
+  "bearish_count": 28,
+  "neutral_count": 42,
   "fake_count": 0,
-  "cross_confirmed": 21,
+  "cross_confirmed": 8,
   "by_source": {
     "Cointelegraph": {
-      "total": 23,
-      "bull": 4,
-      "bear": 5
+      "total": 22,
+      "bull": 2,
+      "bear": 6
     },
     "Decrypt": {
-      "total": 17,
+      "total": 16,
       "bull": 2,
-      "bear": 10
+      "bear": 9
     },
     "Bitcoin.com": {
       "total": 10,
@@ -25,19 +25,14 @@
       "bear": 3
     },
     "CryptoSlate": {
-      "total": 7,
+      "total": 6,
       "bull": 1,
-      "bear": 3
+      "bear": 2
     },
     "CryptoPotato": {
       "total": 23,
       "bull": 7,
       "bear": 7
-    },
-    "Bitcoinist": {
-      "total": 8,
-      "bull": 1,
-      "bear": 0
     },
     "ForkLog": {
       "total": 8,
@@ -46,23 +41,6 @@
     }
   },
   "top_bullish": [
-    {
-      "title": "Chainlink jumps 10% as its Wall Street ambitions gain momentum on two fronts",
-      "url": "https://cryptoslate.com/chainlink-jumps-10-as-its-wall-street-ambitions-gain-momentum-on-two-fronts/",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-26T20:40:01+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 2.0,
-      "bear_weight": 0.0,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-26T21:05:38.275902+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Chainlink jumps 10% as its Wall Street ambitions gain momentum on two fronts",
-      "cross_check": 1
-    },
     {
       "title": "Switzerland’s first spot Bitcoin ETF ticks up 0.6% in opening hour",
       "url": "https://cointelegraph.com/markets/bit-debuts-switzerlands-first-spot-bitcoin-etf?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -75,7 +53,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-26T21:05:37.897124+00:00",
+      "collected_at": "2026-11-26T22:05:39.010588+00:00",
       "effective_weight": 1.04,
       "title_original": "Switzerland’s first spot Bitcoin ETF ticks up 0.6% in opening hour",
       "cross_check": 3
@@ -92,9 +70,26 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-26T21:05:38.122803+00:00",
+      "collected_at": "2026-11-26T22:05:39.286912+00:00",
       "effective_weight": 1.0,
       "title_original": "Fidelity Pushes Beyond Bitcoin With Chainlink ETF Filing",
+      "cross_check": 1
+    },
+    {
+      "title": "Chainlink jumps 10% as its Wall Street ambitions gain momentum on two fronts",
+      "url": "https://cryptoslate.com/chainlink-jumps-10-as-its-wall-street-ambitions-gain-momentum-on-two-fronts/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-26T20:40:01+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 2.0,
+      "bear_weight": 0.0,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-26T22:05:39.379770+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Chainlink jumps 10% as its Wall Street ambitions gain momentum on two fronts",
       "cross_check": 1
     },
     {
@@ -109,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-26T21:05:38.367435+00:00",
+      "collected_at": "2026-11-26T22:05:39.473159+00:00",
       "effective_weight": 1.0,
       "title_original": "Switzerland’s First Spot Bitcoin ETF Debuts on SIX Swiss Exchange With 0.19% Fee",
       "cross_check": 3
@@ -126,7 +121,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-26T21:05:38.367500+00:00",
+      "collected_at": "2026-11-26T22:05:39.473216+00:00",
       "effective_weight": 1.0,
       "title_original": "Ripple Price Analysis: Can XRP Break Above $1.00 as a Bullish Reversal Pattern Forms?",
       "cross_check": 1
@@ -134,20 +129,20 @@
   ],
   "top_bearish": [
     {
-      "title": "How EU brokers could lose access to Kyrgyz crypto exchanges",
-      "url": "https://cointelegraph.com/news/how-eu-brokers-could-lose-access-to-kyrgyz-crypto-exchanges?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "title": "Binance completes withdrawal recovery four weeks after $6.3B hack",
+      "url": "https://cointelegraph.com/news/binance-completes-withdrawal-recovery-four-weeks-after-63b-hack?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
       "source": "Cointelegraph",
       "source_weight": 1.3,
       "lang": "en",
-      "pub_date": "2026-11-26T15:45:07+00:00",
+      "pub_date": "2026-11-26T21:33:47+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 1.0,
+      "bear_weight": 4.5,
+      "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-26T21:05:37.896718+00:00",
-      "effective_weight": 1.3,
-      "title_original": "How EU brokers could lose access to Kyrgyz crypto exchanges",
+      "collected_at": "2026-11-26T22:05:39.009966+00:00",
+      "effective_weight": 1.95,
+      "title_original": "Binance completes withdrawal recovery four weeks after $6.3B hack",
       "cross_check": 1
     },
     {
@@ -162,9 +157,26 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-26T21:05:37.957800+00:00",
+      "collected_at": "2026-11-26T22:05:39.079522+00:00",
       "effective_weight": 1.1,
       "title_original": "Before the Sell-Off, AI Stocks Showed Dot-Com-Level Bubble Signals: Study",
+      "cross_check": 1
+    },
+    {
+      "title": "How EU brokers could lose access to Kyrgyz crypto exchanges",
+      "url": "https://cointelegraph.com/news/how-eu-brokers-could-lose-access-to-kyrgyz-crypto-exchanges?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-11-26T15:45:07+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-26T22:05:39.010238+00:00",
+      "effective_weight": 1.04,
+      "title_original": "How EU brokers could lose access to Kyrgyz crypto exchanges",
       "cross_check": 1
     },
     {
@@ -179,7 +191,7 @@
       "bear_weight": 0.8,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-26T21:05:37.896948+00:00",
+      "collected_at": "2026-11-26T22:05:39.010436+00:00",
       "effective_weight": 1.04,
       "title_original": "Standard Chartered’s Zodia Custody suffers data breach",
       "cross_check": 3
@@ -196,27 +208,10 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-26T21:05:37.897182+00:00",
+      "collected_at": "2026-11-26T22:05:39.010640+00:00",
       "effective_weight": 1.04,
       "title_original": "UK regulator plans tighter DeFi rules, citing $6.3B Binance hack: Report",
-      "cross_check": 3
-    },
-    {
-      "title": "DOJ Targets Crypto Scams in Largest Cyberfraud Crackdown in History",
-      "url": "https://news.bitcoin.com/regulation-and-legal/doj-targets-crypto-scams-and-money-laundering-in-sweeping-nationwide-crackdown/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-26T17:02:48+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 4.8,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-26T21:05:38.123046+00:00",
-      "effective_weight": 1.0,
-      "title_original": "DOJ Targets Crypto Scams in Largest Cyberfraud Crackdown in History",
-      "cross_check": 1
+      "cross_check": 2
     }
   ]
 }
