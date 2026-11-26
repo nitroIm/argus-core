@@ -1,17 +1,17 @@
 {
-  "generated_at": "2026-11-26T09:05:51.493566+00:00",
-  "total_news": 95,
-  "avg_sentiment": -0.396,
+  "generated_at": "2026-11-26T10:05:42.158313+00:00",
+  "total_news": 96,
+  "avg_sentiment": -0.359,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 15,
-  "bearish_count": 34,
+  "bearish_count": 35,
   "neutral_count": 46,
   "fake_count": 0,
   "cross_confirmed": 15,
   "by_source": {
     "Cointelegraph": {
-      "total": 21,
-      "bull": 3,
+      "total": 22,
+      "bull": 4,
       "bear": 7
     },
     "Decrypt": {
@@ -20,13 +20,13 @@
       "bear": 12
     },
     "Bitcoin.com": {
-      "total": 10,
+      "total": 9,
       "bull": 1,
       "bear": 2
     },
     "CryptoSlate": {
       "total": 8,
-      "bull": 2,
+      "bull": 1,
       "bear": 3
     },
     "CryptoPotato": {
@@ -40,12 +40,46 @@
       "bear": 2
     },
     "ForkLog": {
-      "total": 6,
+      "total": 7,
       "bull": 1,
-      "bear": 0
+      "bear": 1
     }
   },
   "top_bullish": [
+    {
+      "title": "Switzerland’s first spot Bitcoin ETF ticks up 0.6% in opening hour",
+      "url": "https://cointelegraph.com/markets/bit-debuts-switzerlands-first-spot-bitcoin-etf?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-11-26T09:18:15+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-26T10:05:40.442698+00:00",
+      "effective_weight": 1.95,
+      "title_original": "Switzerland’s first spot Bitcoin ETF ticks up 0.6% in opening hour",
+      "cross_check": 1
+    },
+    {
+      "title": "$7 Billion Bitcoin Options Expiry Gives Bulls a $71,000 Reality Check",
+      "url": "https://bitcoinist.com/bitcoin-options-expiry-7-billion/",
+      "source": "Bitcoinist",
+      "source_weight": 0.9,
+      "lang": "en",
+      "pub_date": "2026-11-26T09:12:15+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.1,
+      "collected_at": "2026-11-26T10:05:41.204354+00:00",
+      "effective_weight": 1.215,
+      "title_original": "$7 Billion Bitcoin Options Expiry Gives Bulls a $71,000 Reality Check",
+      "cross_check": 1
+    },
     {
       "title": "US inflation rises to 3.8% ahead of December Fed meeting, clouding crypto outlook",
       "url": "https://cointelegraph.com/markets/us-inflation-rises-december-fed-meeting-clouding-crypto-outlook?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -58,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-26T09:05:49.477322+00:00",
+      "collected_at": "2026-11-26T10:05:40.443007+00:00",
       "effective_weight": 1.04,
       "title_original": "US inflation rises to 3.8% ahead of December Fed meeting, clouding crypto outlook",
       "cross_check": 1
@@ -75,7 +109,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-26T09:05:49.477481+00:00",
+      "collected_at": "2026-11-26T10:05:40.443137+00:00",
       "effective_weight": 1.04,
       "title_original": "Ex-FTX COO calls out Netflix over CZ’s ‘Asian mafia’ portrayal",
       "cross_check": 1
@@ -92,62 +126,28 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-26T09:05:49.477591+00:00",
+      "collected_at": "2026-11-26T10:05:40.443213+00:00",
       "effective_weight": 1.04,
       "title_original": "Japan’s SBI, SMFG launch Solana venture for stablecoins, tokenization",
-      "cross_check": 1
-    },
-    {
-      "title": "Moscow Exchange Set to Launch Bitcoin, Ethereum, and USDT Trading",
-      "url": "https://cryptopotato.com/moscow-exchange-set-to-launch-bitcoin-ethereum-and-usdt-trading/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-26T05:08:37+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-26T09:05:50.080278+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Moscow Exchange Set to Launch Bitcoin, Ethereum, and USDT Trading",
-      "cross_check": 2
-    },
-    {
-      "title": "Ark Invest продала акции собственного биткоин-ETF на $6,8 млн",
-      "url": "https://forklog.com/ark-invest-prodala-aktsii-sobstvennogo-bitkoin-etf-na-6-8-mln",
-      "source": "ForkLog",
-      "source_weight": 1.2,
-      "lang": "ru",
-      "pub_date": "2026-11-25T11:30:00+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-26T09:05:51.443328+00:00",
-      "effective_weight": 0.96,
-      "title_original": "Ark Invest продала акции собственного биткоин-ETF на $6,8 млн",
       "cross_check": 1
     }
   ],
   "top_bearish": [
     {
-      "title": "Bitcoin Bears May Be Walking Into a Trap as $16B Short Squeeze Builds",
-      "url": "https://cryptopotato.com/bitcoin-bears-may-be-walking-into-a-trap-as-16b-short-squeeze-builds/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-26T08:49:06+00:00",
+      "title": "Великобритания ужесточит правила для DeFi-платформ после взлома Binance",
+      "url": "https://forklog.com/velikobritaniya-uzhestochit-pravila-dlya-defi-platform-posle-vzloma-binance",
+      "source": "ForkLog",
+      "source_weight": 1.2,
+      "lang": "ru",
+      "pub_date": "2026-11-26T09:26:59+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 1.2,
+      "bear_weight": 1.5,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-26T09:05:50.080154+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Bitcoin Bears May Be Walking Into a Trap as $16B Short Squeeze Builds",
+      "collected_at": "2026-11-26T10:05:42.119489+00:00",
+      "effective_weight": 1.8,
+      "title_original": "Великобритания ужесточит правила для DeFi-платформ после взлома Binance",
       "cross_check": 1
     },
     {
@@ -162,10 +162,27 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-26T09:05:49.477019+00:00",
+      "collected_at": "2026-11-26T10:05:40.442778+00:00",
       "effective_weight": 1.3,
       "title_original": "UK regulator plans tighter DeFi rules, citing $6.3B Binance hack: Report",
       "cross_check": 2
+    },
+    {
+      "title": "Bitcoin ETF November outflows top $5B, Morgan Stanley bucks trend",
+      "url": "https://cointelegraph.com/markets/morgan-stanley-bitcoin-etf-trend-outflows-november?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
+      "lang": "en",
+      "pub_date": "2026-11-26T09:42:34+00:00",
+      "sentiment": -0.586,
+      "bull_weight": 1.2,
+      "bear_weight": 4.6,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-26T10:05:40.442639+00:00",
+      "effective_weight": 1.95,
+      "title_original": "Bitcoin ETF November outflows top $5B, Morgan Stanley bucks trend",
+      "cross_check": 1
     },
     {
       "title": "Bitcoin falls toward $57K amid US tariff fears, hot PCE data as Nasdaq drops 4%",
@@ -179,7 +196,7 @@
       "bear_weight": 3.2,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-26T09:05:49.477376+00:00",
+      "collected_at": "2026-11-26T10:05:40.443055+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin falls toward $57K amid US tariff fears, hot PCE data as Nasdaq drops 4%",
       "cross_check": 1
@@ -196,27 +213,10 @@
       "bear_weight": 3.2,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-26T09:05:49.477690+00:00",
+      "collected_at": "2026-11-26T10:05:40.443284+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin price may fall below $53K if bear-market history repeats",
       "cross_check": 4
-    },
-    {
-      "title": "French Senate rejects 100K euro crypto wallet disclosure requirement",
-      "url": "https://cointelegraph.com/news/french-senate-rejects-disclosing-self-custodied-crypto-wallets-100k?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-11-25T09:58:12+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-26T09:05:49.477738+00:00",
-      "effective_weight": 1.04,
-      "title_original": "French Senate rejects 100K euro crypto wallet disclosure requirement",
-      "cross_check": 2
     }
   ]
 }
