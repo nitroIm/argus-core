@@ -9,6 +9,30 @@
     "volume",
     "rsi_low"
   ],
-  "intraday": {},
-  "swing": {}
+  "intraday": {
+    "type": "SHORT",
+    "entry": 61511.9,
+    "sl": 61933.81142857144,
+    "tp1": 61019.8048,
+    "tp2": 60281.662000000004,
+    "size_left_pct": 100,
+    "tp1_hit": false,
+    "open_time": "2026-11-27T05:02:17.603297+00:00",
+    "active_signals": [
+      "rsi_high"
+    ]
+  },
+  "swing": {
+    "type": "SHORT",
+    "entry": 61511.9,
+    "sl": 61933.81142857144,
+    "tp1": 61019.8048,
+    "tp2": 60281.662000000004,
+    "size_left_pct": 100,
+    "tp1_hit": false,
+    "open_time": "2026-11-27T05:02:17.606677+00:00",
+    "active_signals": [
+      "rsi_high"
+    ]
+  }
 }
