@@ -1604,5 +1604,36 @@
       "volume",
       "rsi_low"
     ]
+  },
+  {
+    "type": "SHORT",
+    "entry": 59076.53,
+    "exit": 59821.89928571429,
+    "pnl_pct": -1.46,
+    "pnl_usd": -1.22,
+    "reason": "STOP_LOSS",
+    "mode": "intraday",
+    "close_time": "2026-11-27T15:46:30.257828+00:00",
+    "balance_after": 82.23,
+    "active_signals": [
+      "macd",
+      "ema",
+      "volume"
+    ]
+  },
+  {
+    "type": "LONG",
+    "entry": 59076.53,
+    "exit": 59194.683059999996,
+    "pnl_pct": -0.0,
+    "pnl_usd": -0.0,
+    "reason": "TRAILING_STOP",
+    "mode": "swing",
+    "close_time": "2026-11-27T15:46:30.260568+00:00",
+    "balance_after": 96.26,
+    "active_signals": [
+      "volume",
+      "rsi_low"
+    ]
   }
 ]
