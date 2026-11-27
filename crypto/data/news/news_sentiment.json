@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-11-27T14:05:44.305144+00:00",
-  "total_news": 99,
-  "avg_sentiment": -0.088,
-  "mood": "🟡 НЕЙТРАЛЬНОЕ",
+  "generated_at": "2026-11-27T15:05:41.010770+00:00",
+  "total_news": 101,
+  "avg_sentiment": -0.226,
+  "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 19,
-  "bearish_count": 27,
-  "neutral_count": 53,
+  "bearish_count": 30,
+  "neutral_count": 52,
   "fake_count": 0,
-  "cross_confirmed": 15,
+  "cross_confirmed": 12,
   "by_source": {
     "Cointelegraph": {
       "total": 24,
@@ -20,19 +20,19 @@
       "bear": 9
     },
     "Bitcoin.com": {
-      "total": 8,
-      "bull": 2,
-      "bear": 1
-    },
-    "CryptoSlate": {
-      "total": 10,
+      "total": 9,
       "bull": 2,
       "bear": 2
     },
+    "CryptoSlate": {
+      "total": 9,
+      "bull": 2,
+      "bear": 1
+    },
     "CryptoPotato": {
-      "total": 24,
+      "total": 25,
       "bull": 6,
-      "bear": 5
+      "bear": 7
     },
     "Bitcoinist": {
       "total": 8,
@@ -40,9 +40,9 @@
       "bear": 1
     },
     "ForkLog": {
-      "total": 7,
+      "total": 8,
       "bull": 1,
-      "bear": 0
+      "bear": 1
     }
   },
   "top_bullish": [
@@ -56,10 +56,10 @@
       "sentiment": 1.0,
       "bull_weight": 1.0,
       "bear_weight": 0.0,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-27T14:05:41.939875+00:00",
-      "effective_weight": 1.95,
+      "collected_at": "2026-11-27T15:05:39.160124+00:00",
+      "effective_weight": 1.3,
       "title_original": "Binance to launch tokenized IPO program after regulatory approval: Yi He",
       "cross_check": 1
     },
@@ -75,26 +75,9 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-27T14:05:41.940021+00:00",
+      "collected_at": "2026-11-27T15:05:39.160221+00:00",
       "effective_weight": 1.3,
       "title_original": "Brazil’s stock exchange pushes stablecoin launch back to 2027",
-      "cross_check": 1
-    },
-    {
-      "title": "Hyperliquid (HYPE) Surges Nearly 9% Despite $120 Million In Whale Shorts",
-      "url": "https://bitcoinist.com/hyperliquid-price-surge-whale-shorts/",
-      "source": "Bitcoinist",
-      "source_weight": 0.9,
-      "lang": "en",
-      "pub_date": "2026-11-27T13:52:28+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.5,
-      "bear_weight": 0.0,
-      "freshness": 1.5,
-      "fake_score": 0.1,
-      "collected_at": "2026-11-27T14:05:43.325805+00:00",
-      "effective_weight": 1.215,
-      "title_original": "Hyperliquid (HYPE) Surges Nearly 9% Despite $120 Million In Whale Shorts",
       "cross_check": 1
     },
     {
@@ -109,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-27T14:05:44.235782+00:00",
+      "collected_at": "2026-11-27T15:05:40.970082+00:00",
       "effective_weight": 1.2,
       "title_original": "Обзор: Monero столкнулась с делистингами, Zcash получила новые ETF",
       "cross_check": 1
@@ -126,29 +109,97 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-27T14:05:42.155096+00:00",
+      "collected_at": "2026-11-27T15:05:39.533236+00:00",
       "effective_weight": 1.0,
       "title_original": "JPMorgan vs TD Cowen: Can Saylor’s Strategy Survive a Record Discount?",
+      "cross_check": 1
+    },
+    {
+      "title": "Bit Digital borrowed against Ethereum to fund AI, and now its crypto treasury is paying the price",
+      "url": "https://cryptoslate.com/bit-digital-borrowed-against-ethereum-to-fund-ai-and-now-its-crypto-treasury-is-paying-the-price/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-27T12:40:54+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-27T15:05:39.653835+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Bit Digital borrowed against Ethereum to fund AI, and now its crypto treasury is paying the price",
       "cross_check": 1
     }
   ],
   "top_bearish": [
     {
-      "title": "Binance Fully Lifts Withdrawal Suspension Four Weeks After $6.4B Hack",
-      "url": "https://decrypt.co/384121/binance-fully-lifts-withdrawal-suspension-four-weeks-after-6-4b-hack",
-      "source": "Decrypt",
-      "source_weight": 1.1,
+      "title": "What was Coinbase worth while Nasdaq was closed?",
+      "url": "https://cointelegraph.com/news/what-was-coinbase-worth-while-nasdaq-was-closed?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "source_weight": 1.3,
       "lang": "en",
-      "pub_date": "2026-11-27T13:24:17+00:00",
+      "pub_date": "2026-11-27T14:40:54+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 4.5,
+      "bear_weight": 1.5,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-27T14:05:42.018387+00:00",
-      "effective_weight": 1.65,
-      "title_original": "Binance Fully Lifts Withdrawal Suspension Four Weeks After $6.4B Hack",
-      "cross_check": 2
+      "collected_at": "2026-11-27T15:05:39.160078+00:00",
+      "effective_weight": 1.95,
+      "title_original": "What was Coinbase worth while Nasdaq was closed?",
+      "cross_check": 1
+    },
+    {
+      "title": "Кредитное плечо в криптотрейдинге: как избежать ликвидации и что предлагают CoinW, WEEX, Bitget и Binance",
+      "url": "https://forklog.com/exclusive/kreditnoe-plecho-v-kriptotrejdinge-kak-izbezhat-likvidatsii-i-chto-predlagayut-coinw-weex-bitget-i-binance",
+      "source": "ForkLog",
+      "source_weight": 1.2,
+      "lang": "ru",
+      "pub_date": "2026-11-27T14:50:06+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.2,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-27T15:05:40.969921+00:00",
+      "effective_weight": 1.8,
+      "title_original": "Кредитное плечо в криптотрейдинге: как избежать ликвидации и что предлагают CoinW, WEEX, Bitget и Binance",
+      "cross_check": 1
+    },
+    {
+      "title": "Prediction Markets Paint a Brutal Year-End Price Picture for XRP Holders",
+      "url": "https://news.bitcoin.com/price-predictions/prediction-markets-paint-brutal-year-end-picture-xrp-holders/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-27T14:33:07+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 0.8,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-27T15:05:39.533049+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Prediction Markets Paint a Brutal Year-End Price Picture for XRP Holders",
+      "cross_check": 1
+    },
+    {
+      "title": "Ethereum Price Analysis: Is ETH Heading Toward $1.5K After Another Rejection?",
+      "url": "https://cryptopotato.com/ethereum-price-analysis-is-eth-heading-toward-1-5k-after-another-rejection/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-27T14:53:27+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-27T15:05:39.779029+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Ethereum Price Analysis: Is ETH Heading Toward $1.5K After Another Rejection?",
+      "cross_check": 1
     },
     {
       "title": "Bitcoin supply metric hits 11-year low as new ‘capitulation’ signal arrives",
@@ -162,60 +213,9 @@
       "bear_weight": 1.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-27T14:05:41.940154+00:00",
+      "collected_at": "2026-11-27T15:05:39.160302+00:00",
       "effective_weight": 1.3,
       "title_original": "Bitcoin supply metric hits 11-year low as new ‘capitulation’ signal arrives",
-      "cross_check": 1
-    },
-    {
-      "title": "Japan’s crypto security group taps SEAL to speed up hack response",
-      "url": "https://cointelegraph.com/news/japans-crypto-security-group-taps-seal-to-speed-up-hack-response?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-11-27T05:22:36+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-27T14:05:41.940272+00:00",
-      "effective_weight": 1.04,
-      "title_original": "Japan’s crypto security group taps SEAL to speed up hack response",
-      "cross_check": 1
-    },
-    {
-      "title": "Ethereum devs set Glamsterdam’s Hoodi rollout for mid-December after delays",
-      "url": "https://cointelegraph.com/news/ethereum-devs-set-glamsterdams-hoodi-rollout-for-mid-december-after-delays?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-11-27T04:47:36+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.2,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-27T14:05:41.940346+00:00",
-      "effective_weight": 1.04,
-      "title_original": "Ethereum devs set Glamsterdam’s Hoodi rollout for mid-December after delays",
-      "cross_check": 4
-    },
-    {
-      "title": "Privacy coins face diverging fortunes as KuCoin moves to drop Monero",
-      "url": "https://cointelegraph.com/news/privacy-coins-kucoin-drop-monero-grayscale-zcash?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-11-27T00:35:39+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-27T14:05:41.940469+00:00",
-      "effective_weight": 1.04,
-      "title_original": "Privacy coins face diverging fortunes as KuCoin moves to drop Monero",
       "cross_check": 1
     }
   ]
