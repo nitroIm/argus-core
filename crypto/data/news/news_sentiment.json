@@ -1,28 +1,28 @@
 {
-  "generated_at": "2026-11-27T10:05:38.957444+00:00",
-  "total_news": 86,
-  "avg_sentiment": -0.157,
+  "generated_at": "2026-11-27T11:05:35.963078+00:00",
+  "total_news": 85,
+  "avg_sentiment": -0.176,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 16,
-  "bearish_count": 26,
-  "neutral_count": 44,
+  "bearish_count": 27,
+  "neutral_count": 42,
   "fake_count": 0,
-  "cross_confirmed": 4,
+  "cross_confirmed": 7,
   "by_source": {
     "Cointelegraph": {
-      "total": 23,
+      "total": 22,
       "bull": 1,
       "bear": 8
     },
     "Decrypt": {
-      "total": 16,
+      "total": 17,
       "bull": 2,
       "bear": 9
     },
     "Bitcoin.com": {
-      "total": 7,
+      "total": 8,
       "bull": 3,
-      "bear": 0
+      "bear": 1
     },
     "CryptoSlate": {
       "total": 9,
@@ -30,17 +30,34 @@
       "bear": 2
     },
     "CryptoPotato": {
-      "total": 24,
+      "total": 23,
       "bull": 7,
       "bear": 6
     },
     "ForkLog": {
-      "total": 7,
+      "total": 6,
       "bull": 1,
       "bear": 1
     }
   },
   "top_bullish": [
+    {
+      "title": "Ethereum’s Much-Awaited Glamsterdam Upgrade Finally Gets a December Test Date",
+      "url": "https://cryptopotato.com/ethereums-much-awaited-glamsterdam-upgrade-finally-gets-a-december-test-date/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-27T10:30:03+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.2,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-27T11:05:34.719079+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Ethereum’s Much-Awaited Glamsterdam Upgrade Finally Gets a December Test Date",
+      "cross_check": 3
+    },
     {
       "title": "Обзор: Monero столкнулась с делистингами, Zcash получила новые ETF",
       "url": "https://forklog.com/news/obzor-monero-stolknulas-s-delistingami-zcash-poluchila-novye-etf",
@@ -51,10 +68,10 @@
       "sentiment": 1.0,
       "bull_weight": 1.2,
       "bear_weight": 0.0,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-27T10:05:38.902226+00:00",
-      "effective_weight": 1.8,
+      "collected_at": "2026-11-27T11:05:35.933249+00:00",
+      "effective_weight": 1.2,
       "title_original": "Обзор: Monero столкнулась с делистингами, Zcash получила новые ETF",
       "cross_check": 1
     },
@@ -68,10 +85,10 @@
       "sentiment": 1.0,
       "bull_weight": 1.2,
       "bear_weight": 0.0,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-27T10:05:37.508242+00:00",
-      "effective_weight": 1.5,
+      "collected_at": "2026-11-27T11:05:34.468159+00:00",
+      "effective_weight": 1.0,
       "title_original": "JPMorgan vs TD Cowen: Can Saylor’s Strategy Survive a Record Discount?",
       "cross_check": 1
     },
@@ -87,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-27T10:05:37.508320+00:00",
+      "collected_at": "2026-11-27T11:05:34.468207+00:00",
       "effective_weight": 1.0,
       "title_original": "XRP ETFs Snap 17-Session Drought as Graniteshares Readies 3x XRP Funds",
       "cross_check": 1
@@ -104,30 +121,30 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-27T10:05:37.508643+00:00",
+      "collected_at": "2026-11-27T11:05:34.468401+00:00",
       "effective_weight": 0.8,
       "title_original": "Bitcoin Could Rally Sharply if AI Stocks Recover, Devere CEO Says",
       "cross_check": 1
-    },
-    {
-      "title": "Bought Nvidia stock during the 2017 crypto boom? You could qualify for a $290 million settlement",
-      "url": "https://cryptoslate.com/who-could-share-nvidia-proposed-290-million-crypto-mining-settlement/",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-27T02:10:55+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-27T10:05:37.621185+00:00",
-      "effective_weight": 0.8,
-      "title_original": "Bought Nvidia stock during the 2017 crypto boom? You could qualify for a $290 million settlement",
-      "cross_check": 2
     }
   ],
   "top_bearish": [
+    {
+      "title": "Arthur Hayes Warns of Weekend ‘Crypto Dump’ as $7B in Bitcoin Options Expire",
+      "url": "https://news.bitcoin.com/crypto-news/bitcoin-price-arthur-hayes-weekend-dump-options-expiry/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-27T10:30:57+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-27T11:05:34.468110+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Arthur Hayes Warns of Weekend ‘Crypto Dump’ as $7B in Bitcoin Options Expire",
+      "cross_check": 1
+    },
     {
       "title": "Japan’s crypto security group taps SEAL to speed up hack response",
       "url": "https://cointelegraph.com/news/japans-crypto-security-group-taps-seal-to-speed-up-hack-response?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -140,7 +157,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-27T10:05:37.255490+00:00",
+      "collected_at": "2026-11-27T11:05:34.089326+00:00",
       "effective_weight": 1.3,
       "title_original": "Japan’s crypto security group taps SEAL to speed up hack response",
       "cross_check": 1
@@ -155,12 +172,12 @@
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 1.2,
-      "freshness": 1.0,
+      "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-27T10:05:37.255574+00:00",
-      "effective_weight": 1.3,
+      "collected_at": "2026-11-27T11:05:34.089378+00:00",
+      "effective_weight": 1.04,
       "title_original": "Ethereum devs set Glamsterdam’s Hoodi rollout for mid-December after delays",
-      "cross_check": 2
+      "cross_check": 4
     },
     {
       "title": "Privacy coins face diverging fortunes as KuCoin moves to drop Monero",
@@ -174,7 +191,7 @@
       "bear_weight": 1.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-27T10:05:37.255723+00:00",
+      "collected_at": "2026-11-27T11:05:34.089470+00:00",
       "effective_weight": 1.04,
       "title_original": "Privacy coins face diverging fortunes as KuCoin moves to drop Monero",
       "cross_check": 1
@@ -191,26 +208,9 @@
       "bear_weight": 4.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-27T10:05:37.255883+00:00",
+      "collected_at": "2026-11-27T11:05:34.089568+00:00",
       "effective_weight": 1.04,
       "title_original": "Binance completes withdrawal recovery four weeks after $6.3B hack",
-      "cross_check": 1
-    },
-    {
-      "title": "How EU brokers could lose access to Kyrgyz crypto exchanges",
-      "url": "https://cointelegraph.com/news/how-eu-brokers-could-lose-access-to-kyrgyz-crypto-exchanges?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-11-26T15:45:07+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.5,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-27T10:05:37.256238+00:00",
-      "effective_weight": 1.04,
-      "title_original": "How EU brokers could lose access to Kyrgyz crypto exchanges",
       "cross_check": 1
     }
   ]
