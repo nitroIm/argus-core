@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-11-27T03:05:36.486032+00:00",
+  "generated_at": "2026-11-27T04:05:41.085020+00:00",
   "total_news": 94,
-  "avg_sentiment": -0.136,
+  "avg_sentiment": -0.145,
   "mood": "🟡 НЕЙТРАЛЬНОЕ",
   "bullish_count": 19,
   "bearish_count": 25,
@@ -47,23 +47,6 @@
   },
   "top_bullish": [
     {
-      "title": "Bought Nvidia stock during the 2017 crypto boom? You could qualify for a $290 million settlement",
-      "url": "https://cryptoslate.com/who-could-share-nvidia-proposed-290-million-crypto-mining-settlement/",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-27T02:10:55+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-27T03:05:35.202279+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Bought Nvidia stock during the 2017 crypto boom? You could qualify for a $290 million settlement",
-      "cross_check": 2
-    },
-    {
       "title": "Switzerland’s first spot Bitcoin ETF ticks up 0.6% in opening hour",
       "url": "https://cointelegraph.com/markets/bit-debuts-switzerlands-first-spot-bitcoin-etf?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
       "source": "Cointelegraph",
@@ -75,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-27T03:05:34.726173+00:00",
+      "collected_at": "2026-11-27T04:05:39.325938+00:00",
       "effective_weight": 1.04,
       "title_original": "Switzerland’s first spot Bitcoin ETF ticks up 0.6% in opening hour",
       "cross_check": 3
@@ -92,10 +75,27 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-27T03:05:35.085369+00:00",
+      "collected_at": "2026-11-27T04:05:39.603488+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitcoin Could Rally Sharply if AI Stocks Recover, Devere CEO Says",
       "cross_check": 1
+    },
+    {
+      "title": "Bought Nvidia stock during the 2017 crypto boom? You could qualify for a $290 million settlement",
+      "url": "https://cryptoslate.com/who-could-share-nvidia-proposed-290-million-crypto-mining-settlement/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-27T02:10:55+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-27T04:05:39.705202+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Bought Nvidia stock during the 2017 crypto boom? You could qualify for a $290 million settlement",
+      "cross_check": 2
     },
     {
       "title": "Pump.fun Wants to Make Token Launches Fairer: Its New Fee Targets Block0 Buyers",
@@ -109,7 +109,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-27T03:05:35.336138+00:00",
+      "collected_at": "2026-11-27T04:05:39.811847+00:00",
       "effective_weight": 1.0,
       "title_original": "Pump.fun Wants to Make Token Launches Fairer: Its New Fee Targets Block0 Buyers",
       "cross_check": 1
@@ -126,7 +126,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-27T03:05:35.085561+00:00",
+      "collected_at": "2026-11-27T04:05:39.603743+00:00",
       "effective_weight": 0.8,
       "title_original": "Fidelity Pushes Beyond Bitcoin With Chainlink ETF Filing",
       "cross_check": 1
@@ -145,7 +145,7 @@
       "bear_weight": 1.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-27T03:05:34.725324+00:00",
+      "collected_at": "2026-11-27T04:05:39.325219+00:00",
       "effective_weight": 1.3,
       "title_original": "Privacy coins face diverging fortunes as KuCoin moves to drop Monero",
       "cross_check": 1
@@ -160,10 +160,10 @@
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 4.5,
-      "freshness": 1.0,
+      "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-27T03:05:34.725507+00:00",
-      "effective_weight": 1.3,
+      "collected_at": "2026-11-27T04:05:39.325381+00:00",
+      "effective_weight": 1.04,
       "title_original": "Binance completes withdrawal recovery four weeks after $6.3B hack",
       "cross_check": 1
     },
@@ -179,7 +179,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-27T03:05:34.725804+00:00",
+      "collected_at": "2026-11-27T04:05:39.325648+00:00",
       "effective_weight": 1.04,
       "title_original": "How EU brokers could lose access to Kyrgyz crypto exchanges",
       "cross_check": 1
@@ -196,7 +196,7 @@
       "bear_weight": 0.8,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-27T03:05:34.725971+00:00",
+      "collected_at": "2026-11-27T04:05:39.325787+00:00",
       "effective_weight": 1.04,
       "title_original": "Standard Chartered’s Zodia Custody suffers data breach",
       "cross_check": 2
@@ -213,7 +213,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-27T03:05:34.726233+00:00",
+      "collected_at": "2026-11-27T04:05:39.325986+00:00",
       "effective_weight": 1.04,
       "title_original": "UK regulator plans tighter DeFi rules, citing $6.3B Binance hack: Report",
       "cross_check": 3
