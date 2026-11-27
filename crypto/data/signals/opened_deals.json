@@ -8,31 +8,5 @@
     "ema",
     "volume",
     "rsi_low"
-  ],
-  "intraday": {
-    "type": "SHORT",
-    "entry": 61763.65,
-    "sl": 61640.1227,
-    "tp1": 61269.5408,
-    "tp2": 60528.377,
-    "size_left_pct": 50.0,
-    "tp1_hit": true,
-    "open_time": "2026-11-27T06:02:07.833743+00:00",
-    "active_signals": [
-      "rsi_high"
-    ]
-  },
-  "swing": {
-    "type": "SHORT",
-    "entry": 61763.65,
-    "sl": 61640.1227,
-    "tp1": 61269.5408,
-    "tp2": 60528.377,
-    "size_left_pct": 50.0,
-    "tp1_hit": true,
-    "open_time": "2026-11-27T06:02:07.837176+00:00",
-    "active_signals": [
-      "rsi_high"
-    ]
-  }
+  ]
 }
