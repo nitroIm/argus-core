@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-11-27T01:05:38.133371+00:00",
+  "generated_at": "2026-11-27T02:05:35.087358+00:00",
   "total_news": 85,
-  "avg_sentiment": -0.247,
+  "avg_sentiment": -0.171,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 16,
-  "bearish_count": 26,
+  "bullish_count": 17,
+  "bearish_count": 25,
   "neutral_count": 43,
   "fake_count": 0,
   "cross_confirmed": 5,
@@ -12,7 +12,7 @@
     "Cointelegraph": {
       "total": 23,
       "bull": 2,
-      "bear": 7
+      "bear": 6
     },
     "Decrypt": {
       "total": 16,
@@ -21,7 +21,7 @@
     },
     "Bitcoin.com": {
       "total": 8,
-      "bull": 2,
+      "bull": 3,
       "bear": 1
     },
     "CryptoSlate": {
@@ -42,6 +42,23 @@
   },
   "top_bullish": [
     {
+      "title": "Bitcoin Could Rally Sharply if AI Stocks Recover, Devere CEO Says",
+      "url": "https://news.bitcoin.com/market-updates/bitcoin-could-rally-sharply-if-ai-stocks-recover-devere-ceo-says/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-27T01:45:38+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.5,
+      "bear_weight": 0.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-27T02:05:34.023958+00:00",
+      "effective_weight": 1.5,
+      "title_original": "Bitcoin Could Rally Sharply if AI Stocks Recover, Devere CEO Says",
+      "cross_check": 1
+    },
+    {
       "title": "Switzerland’s first spot Bitcoin ETF ticks up 0.6% in opening hour",
       "url": "https://cointelegraph.com/markets/bit-debuts-switzerlands-first-spot-bitcoin-etf?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
       "source": "Cointelegraph",
@@ -53,7 +70,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-27T01:05:36.415268+00:00",
+      "collected_at": "2026-11-27T02:05:33.771135+00:00",
       "effective_weight": 1.04,
       "title_original": "Switzerland’s first spot Bitcoin ETF ticks up 0.6% in opening hour",
       "cross_check": 3
@@ -70,7 +87,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-27T01:05:36.793152+00:00",
+      "collected_at": "2026-11-27T02:05:34.094008+00:00",
       "effective_weight": 1.0,
       "title_original": "Chainlink jumps 10% as its Wall Street ambitions gain momentum on two fronts",
       "cross_check": 1
@@ -87,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-27T01:05:36.922362+00:00",
+      "collected_at": "2026-11-27T02:05:34.187602+00:00",
       "effective_weight": 1.0,
       "title_original": "Pump.fun Wants to Make Token Launches Fairer: Its New Fee Targets Block0 Buyers",
       "cross_check": 1
@@ -104,27 +121,10 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-27T01:05:36.672876+00:00",
+      "collected_at": "2026-11-27T02:05:34.024134+00:00",
       "effective_weight": 0.8,
       "title_original": "Fidelity Pushes Beyond Bitcoin With Chainlink ETF Filing",
       "cross_check": 1
-    },
-    {
-      "title": "Switzerland’s First Spot Bitcoin ETF Debuts on SIX Swiss Exchange With 0.19% Fee",
-      "url": "https://cryptopotato.com/switzerlands-first-spot-bitcoin-etf-debuts-on-six-swiss-exchange-with-0-19-fee/",
-      "source": "CryptoPotato",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-26T17:25:11+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.2,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-27T01:05:36.922589+00:00",
-      "effective_weight": 0.8,
-      "title_original": "Switzerland’s First Spot Bitcoin ETF Debuts on SIX Swiss Exchange With 0.19% Fee",
-      "cross_check": 3
     }
   ],
   "top_bearish": [
@@ -138,10 +138,10 @@
       "sentiment": -1.0,
       "bull_weight": 0.0,
       "bear_weight": 1.0,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-27T01:05:36.414253+00:00",
-      "effective_weight": 1.95,
+      "collected_at": "2026-11-27T02:05:33.770616+00:00",
+      "effective_weight": 1.3,
       "title_original": "Privacy coins face diverging fortunes as KuCoin moves to drop Monero",
       "cross_check": 1
     },
@@ -157,7 +157,7 @@
       "bear_weight": 4.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-27T01:05:36.414504+00:00",
+      "collected_at": "2026-11-27T02:05:33.770737+00:00",
       "effective_weight": 1.3,
       "title_original": "Binance completes withdrawal recovery four weeks after $6.3B hack",
       "cross_check": 1
@@ -174,7 +174,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-27T01:05:36.414854+00:00",
+      "collected_at": "2026-11-27T02:05:33.770928+00:00",
       "effective_weight": 1.04,
       "title_original": "How EU brokers could lose access to Kyrgyz crypto exchanges",
       "cross_check": 1
@@ -191,7 +191,7 @@
       "bear_weight": 0.8,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-27T01:05:36.415043+00:00",
+      "collected_at": "2026-11-27T02:05:33.771029+00:00",
       "effective_weight": 1.04,
       "title_original": "Standard Chartered’s Zodia Custody suffers data breach",
       "cross_check": 2
@@ -208,7 +208,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-27T01:05:36.415339+00:00",
+      "collected_at": "2026-11-27T02:05:33.771170+00:00",
       "effective_weight": 1.04,
       "title_original": "UK regulator plans tighter DeFi rules, citing $6.3B Binance hack: Report",
       "cross_check": 2
