@@ -1635,5 +1635,20 @@
       "volume",
       "rsi_low"
     ]
+  },
+  {
+    "type": "LONG",
+    "entry": 59866.81,
+    "exit": 60386.08499999999,
+    "pnl_pct": 0.67,
+    "pnl_usd": 0.32,
+    "reason": "TAKE_PROFIT_1",
+    "mode": "swing",
+    "close_time": "2026-11-27T16:46:30.480137+00:00",
+    "balance_after": 96.58,
+    "active_signals": [
+      "volume",
+      "rsi_low"
+    ]
   }
 ]
