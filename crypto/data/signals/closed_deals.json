@@ -1665,5 +1665,22 @@
       "volume",
       "rsi_low"
     ]
+  },
+  {
+    "type": "SHORT",
+    "entry": 60026.5,
+    "exit": 59870.71,
+    "pnl_pct": 0.06,
+    "pnl_usd": 0.05,
+    "reason": "TIME_EXIT_DAY",
+    "mode": "intraday",
+    "close_time": "2026-11-27T19:02:07.254930+00:00",
+    "balance_after": 82.28,
+    "active_signals": [
+      "macd",
+      "ema",
+      "volume",
+      "rsi_mid"
+    ]
   }
 ]
