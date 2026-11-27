@@ -1650,5 +1650,20 @@
       "volume",
       "rsi_low"
     ]
+  },
+  {
+    "type": "LONG",
+    "entry": 59866.81,
+    "exit": 59986.54362,
+    "pnl_pct": -0.0,
+    "pnl_usd": -0.0,
+    "reason": "TRAILING_STOP",
+    "mode": "swing",
+    "close_time": "2026-11-27T17:02:07.491026+00:00",
+    "balance_after": 96.58,
+    "active_signals": [
+      "volume",
+      "rsi_low"
+    ]
   }
 ]
