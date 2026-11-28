@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-28T13:05:37.348224+00:00",
-  "total_news": 100,
-  "avg_sentiment": -0.466,
+  "generated_at": "2026-11-28T14:05:40.852658+00:00",
+  "total_news": 101,
+  "avg_sentiment": -0.479,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 14,
   "bearish_count": 39,
-  "neutral_count": 47,
+  "neutral_count": 48,
   "fake_count": 0,
   "cross_confirmed": 12,
   "by_source": {
@@ -30,7 +30,7 @@
       "bear": 2
     },
     "CryptoPotato": {
-      "total": 27,
+      "total": 28,
       "bull": 4,
       "bear": 12
     },
@@ -58,7 +58,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-28T13:05:37.305720+00:00",
+      "collected_at": "2026-11-28T14:05:40.775922+00:00",
       "effective_weight": 1.2,
       "title_original": "В Малайзии запустят первый в мире шариатский спотовый биткоин-ETF",
       "cross_check": 1
@@ -75,26 +75,9 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-28T13:05:35.686709+00:00",
+      "collected_at": "2026-11-28T14:05:39.101156+00:00",
       "effective_weight": 1.04,
       "title_original": "Franklin Templeton makes room for HYPE in crypto index ETF",
-      "cross_check": 1
-    },
-    {
-      "title": "Binance to launch tokenized IPO program after regulatory approval: Yi He",
-      "url": "https://cointelegraph.com/news/binance-ipo-program-regulatory-approval-yi-he?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-11-27T13:44:00+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-28T13:05:35.686905+00:00",
-      "effective_weight": 1.04,
-      "title_original": "Binance to launch tokenized IPO program after regulatory approval: Yi He",
       "cross_check": 1
     },
     {
@@ -109,7 +92,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-28T13:05:36.055375+00:00",
+      "collected_at": "2026-11-28T14:05:39.453673+00:00",
       "effective_weight": 1.0,
       "title_original": "Vitalik Buterin warns against rushing Ethereum gas change that could break some contracts",
       "cross_check": 1
@@ -126,30 +109,30 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-28T13:05:35.951116+00:00",
+      "collected_at": "2026-11-28T14:05:39.361956+00:00",
       "effective_weight": 0.8,
       "title_original": "Bitcoin’s Correlation With Gold Hits Record High, Galaxy Research Finds",
       "cross_check": 2
+    },
+    {
+      "title": "Vitalik Buterin’s Bitcoin Hardware Wallet Fix Wouldn’t Be Approved by Ledger CTO",
+      "url": "https://news.bitcoin.com/security/buterins-bitcoin-hardware-wallet-fix-wouldnt-approved-ledger-cto/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-28T00:05:32+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.5,
+      "bear_weight": 0.0,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-28T14:05:39.362175+00:00",
+      "effective_weight": 0.8,
+      "title_original": "Vitalik Buterin’s Bitcoin Hardware Wallet Fix Wouldn’t Be Approved by Ledger CTO",
+      "cross_check": 1
     }
   ],
   "top_bearish": [
-    {
-      "title": "Crypto Fear And Greed Index: 16 Days Of Panic, But Is The Bitcoin Crash Really Over?",
-      "url": "https://bitcoinist.com/crypto-fear-and-greed-index-bitcoin-crash-bottom/",
-      "source": "Bitcoinist",
-      "source_weight": 0.9,
-      "lang": "en",
-      "pub_date": "2026-11-28T12:29:33+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 4.7,
-      "freshness": 1.5,
-      "fake_score": 0.1,
-      "collected_at": "2026-11-28T13:05:36.377292+00:00",
-      "effective_weight": 1.215,
-      "title_original": "Crypto Fear And Greed Index: 16 Days Of Panic, But Is The Bitcoin Crash Really Over?",
-      "cross_check": 1
-    },
     {
       "title": "Связанный с Трампом токен WLFI обвалился более чем на 50%",
       "url": "https://forklog.com/news/svyazannyj-s-trampom-token-wlfi-obvalilsya-bolee-chem-na-50",
@@ -162,7 +145,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-28T13:05:37.305629+00:00",
+      "collected_at": "2026-11-28T14:05:40.775780+00:00",
       "effective_weight": 1.2,
       "title_original": "Связанный с Трампом токен WLFI обвалился более чем на 50%",
       "cross_check": 1
@@ -179,7 +162,7 @@
       "bear_weight": 2.7,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-28T13:05:35.686747+00:00",
+      "collected_at": "2026-11-28T14:05:39.101231+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin whales pile into BTC despite shrinking profit cushion",
       "cross_check": 1
@@ -196,7 +179,7 @@
       "bear_weight": 2.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-28T13:05:35.686820+00:00",
+      "collected_at": "2026-11-28T14:05:39.101374+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin price drops below $59K as Anthropic joins tech stock rebound",
       "cross_check": 1
@@ -213,10 +196,27 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-28T13:05:35.686866+00:00",
+      "collected_at": "2026-11-28T14:05:39.101435+00:00",
       "effective_weight": 1.04,
       "title_original": "What was Coinbase worth while Nasdaq was closed?",
       "cross_check": 1
+    },
+    {
+      "title": "Trump-Linked World Liberty Wallet Dumps 12,121 ETH, Locking in a $19M Loss",
+      "url": "https://news.bitcoin.com/crypto-news/world-liberty-financial-sells-12121-eth-19-million-loss/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-28T10:30:54+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 3.0,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-28T14:05:39.361734+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Trump-Linked World Liberty Wallet Dumps 12,121 ETH, Locking in a $19M Loss",
+      "cross_check": 2
     }
   ]
 }
