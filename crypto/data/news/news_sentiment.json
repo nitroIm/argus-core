@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-11-28T16:05:35.948842+00:00",
-  "total_news": 95,
-  "avg_sentiment": -0.589,
+  "generated_at": "2026-11-28T17:05:44.862877+00:00",
+  "total_news": 103,
+  "avg_sentiment": -0.612,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 11,
-  "bearish_count": 42,
-  "neutral_count": 42,
+  "bullish_count": 12,
+  "bearish_count": 46,
+  "neutral_count": 45,
   "fake_count": 0,
-  "cross_confirmed": 10,
+  "cross_confirmed": 17,
   "by_source": {
     "Cointelegraph": {
       "total": 25,
@@ -15,14 +15,14 @@
       "bear": 9
     },
     "Decrypt": {
-      "total": 15,
+      "total": 14,
       "bull": 0,
-      "bear": 8
+      "bear": 7
     },
     "Bitcoin.com": {
-      "total": 8,
+      "total": 9,
       "bull": 1,
-      "bear": 5
+      "bear": 6
     },
     "CryptoSlate": {
       "total": 6,
@@ -31,8 +31,13 @@
     },
     "CryptoPotato": {
       "total": 28,
-      "bull": 4,
-      "bear": 12
+      "bull": 3,
+      "bear": 13
+    },
+    "Bitcoinist": {
+      "total": 8,
+      "bull": 2,
+      "bear": 3
     },
     "ForkLog": {
       "total": 13,
@@ -53,26 +58,9 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-28T16:05:34.496808+00:00",
+      "collected_at": "2026-11-28T17:05:43.329100+00:00",
       "effective_weight": 1.04,
       "title_original": "Franklin Templeton makes room for HYPE in crypto index ETF",
-      "cross_check": 1
-    },
-    {
-      "title": "Vitalik Buterin warns against rushing Ethereum gas change that could break some contracts",
-      "url": "https://cryptoslate.com/vitalik-buterin-warns-against-rushing-ethereum-gas-change-that-could-break-some-contracts/",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-28T11:00:35+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-28T16:05:35.018256+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Vitalik Buterin warns against rushing Ethereum gas change that could break some contracts",
       "cross_check": 1
     },
     {
@@ -87,7 +75,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-28T16:05:35.913708+00:00",
+      "collected_at": "2026-11-28T17:05:44.783666+00:00",
       "effective_weight": 0.96,
       "title_original": "В Малайзии запустят первый в мире шариатский спотовый биткоин-ETF",
       "cross_check": 1
@@ -104,10 +92,27 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-28T16:05:34.928607+00:00",
+      "collected_at": "2026-11-28T17:05:43.600599+00:00",
       "effective_weight": 0.8,
       "title_original": "Bitcoin’s Correlation With Gold Hits Record High, Galaxy Research Finds",
       "cross_check": 2
+    },
+    {
+      "title": "Vitalik Buterin warns against rushing Ethereum gas change that could break some contracts",
+      "url": "https://cryptoslate.com/vitalik-buterin-warns-against-rushing-ethereum-gas-change-that-could-break-some-contracts/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-28T11:00:35+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 0.8,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-28T17:05:43.681552+00:00",
+      "effective_weight": 0.8,
+      "title_original": "Vitalik Buterin warns against rushing Ethereum gas change that could break some contracts",
+      "cross_check": 1
     },
     {
       "title": "Binance to launch tokenized IPO program after regulatory approval: Yi He",
@@ -121,7 +126,7 @@
       "bear_weight": 0.0,
       "freshness": 0.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-28T16:05:34.496986+00:00",
+      "collected_at": "2026-11-28T17:05:43.329453+00:00",
       "effective_weight": 0.65,
       "title_original": "Binance to launch tokenized IPO program after regulatory approval: Yi He",
       "cross_check": 1
@@ -129,38 +134,38 @@
   ],
   "top_bearish": [
     {
-      "title": "$150 Million Bitcoin Long Sees Hyperliquid Whale Lose $3.5M In 5 Hours",
-      "url": "https://news.bitcoin.com/crypto-news/hyperliquid-whale-aguilatrades-loses-3-5m-bitcoin-long/",
+      "title": "2017 Whale Moves Nearly 760 BTC as Bitcoin Price Struggles Below $60K",
+      "url": "https://news.bitcoin.com/featured/2017-whale-moves-nearly-760-btc-as-bitcoin-price-struggles-below-60k/",
       "source": "Bitcoin.com",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-11-28T15:10:01+00:00",
+      "pub_date": "2026-11-28T16:10:17+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 1.5,
+      "bear_weight": 1.0,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-28T16:05:34.928416+00:00",
+      "collected_at": "2026-11-28T17:05:43.600151+00:00",
       "effective_weight": 1.5,
-      "title_original": "$150 Million Bitcoin Long Sees Hyperliquid Whale Lose $3.5M In 5 Hours",
-      "cross_check": 1
+      "title_original": "2017 Whale Moves Nearly 760 BTC as Bitcoin Price Struggles Below $60K",
+      "cross_check": 5
     },
     {
-      "title": "World Liberty Breaks Silence After WLFI Crash, Denies Role in Binance Futures Closures",
-      "url": "https://cryptopotato.com/world-liberty-breaks-silence-after-wlfi-crash-denies-role-in-binance-futures-closures/",
+      "title": "Bitcoin Price Analysis: Why BTC’s Compression Below $60K Could Spark an Extended Consolidation",
+      "url": "https://cryptopotato.com/bitcoin-price-analysis-why-btcs-compression-below-60k-could-spark-an-extended-consolidation/",
       "source": "CryptoPotato",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-11-28T15:28:39+00:00",
+      "pub_date": "2026-11-28T16:10:55+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 2.0,
+      "bear_weight": 1.0,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-28T16:05:35.098835+00:00",
+      "collected_at": "2026-11-28T17:05:43.815992+00:00",
       "effective_weight": 1.5,
-      "title_original": "World Liberty Breaks Silence After WLFI Crash, Denies Role in Binance Futures Closures",
-      "cross_check": 2
+      "title_original": "Bitcoin Price Analysis: Why BTC’s Compression Below $60K Could Spark an Extended Consolidation",
+      "cross_check": 3
     },
     {
       "title": "CZ: Нынешний медвежий рынок лучше любого другого медвежьего рынка",
@@ -174,7 +179,7 @@
       "bear_weight": 1.2,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-28T16:05:35.913522+00:00",
+      "collected_at": "2026-11-28T17:05:44.783331+00:00",
       "effective_weight": 1.2,
       "title_original": "CZ: Нынешний медвежий рынок лучше любого другого медвежьего рынка",
       "cross_check": 1
@@ -191,7 +196,7 @@
       "bear_weight": 1.2,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-28T16:05:35.913563+00:00",
+      "collected_at": "2026-11-28T17:05:44.783406+00:00",
       "effective_weight": 1.2,
       "title_original": "Goldman Sachs увидел риск переоценки акций Unitree на 48%",
       "cross_check": 1
@@ -208,7 +213,7 @@
       "bear_weight": 1.5,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-28T16:05:35.913601+00:00",
+      "collected_at": "2026-11-28T17:05:44.783475+00:00",
       "effective_weight": 1.2,
       "title_original": "На BBW рассказали об использовании ИИ во время взлома Binance",
       "cross_check": 1
