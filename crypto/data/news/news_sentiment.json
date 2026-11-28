@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-11-28T06:05:46.860930+00:00",
+  "generated_at": "2026-11-28T07:05:36.427129+00:00",
   "total_news": 91,
-  "avg_sentiment": -0.392,
+  "avg_sentiment": -0.448,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 12,
-  "bearish_count": 33,
+  "bullish_count": 11,
+  "bearish_count": 34,
   "neutral_count": 46,
   "fake_count": 0,
   "cross_confirmed": 13,
@@ -31,8 +31,8 @@
     },
     "CryptoPotato": {
       "total": 26,
-      "bull": 5,
-      "bear": 9
+      "bull": 4,
+      "bear": 10
     },
     "ForkLog": {
       "total": 9,
@@ -41,23 +41,6 @@
     }
   },
   "top_bullish": [
-    {
-      "title": "Bitcoin’s Correlation With Gold Hits Record High, Galaxy Research Finds",
-      "url": "https://news.bitcoin.com/featured/bitcoins-correlation-with-gold-hits-record-high-galaxy-research-finds/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-28T05:30:52+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 2.2,
-      "bear_weight": 0.0,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-28T06:05:45.521640+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Bitcoin’s Correlation With Gold Hits Record High, Galaxy Research Finds",
-      "cross_check": 2
-    },
     {
       "title": "Franklin Templeton makes room for HYPE in crypto index ETF",
       "url": "https://cointelegraph.com/news/franklin-templeton-hype-crypto-index-etf?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -70,7 +53,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-28T06:05:45.254188+00:00",
+      "collected_at": "2026-11-28T07:05:35.178688+00:00",
       "effective_weight": 1.04,
       "title_original": "Franklin Templeton makes room for HYPE in crypto index ETF",
       "cross_check": 1
@@ -87,7 +70,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-28T06:05:45.254417+00:00",
+      "collected_at": "2026-11-28T07:05:35.179048+00:00",
       "effective_weight": 1.04,
       "title_original": "Binance to launch tokenized IPO program after regulatory approval: Yi He",
       "cross_check": 1
@@ -104,10 +87,27 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-28T06:05:45.254475+00:00",
+      "collected_at": "2026-11-28T07:05:35.179132+00:00",
       "effective_weight": 1.04,
       "title_original": "Brazil’s stock exchange pushes stablecoin launch back to 2027",
       "cross_check": 1
+    },
+    {
+      "title": "Bitcoin’s Correlation With Gold Hits Record High, Galaxy Research Finds",
+      "url": "https://news.bitcoin.com/featured/bitcoins-correlation-with-gold-hits-record-high-galaxy-research-finds/",
+      "source": "Bitcoin.com",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-28T05:30:52+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 2.2,
+      "bear_weight": 0.0,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-28T07:05:35.359435+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Bitcoin’s Correlation With Gold Hits Record High, Galaxy Research Finds",
+      "cross_check": 2
     },
     {
       "title": "Обзор: Monero столкнулась с делистингами, Zcash получила новые ETF",
@@ -121,13 +121,30 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-28T06:05:46.818257+00:00",
+      "collected_at": "2026-11-28T07:05:36.365167+00:00",
       "effective_weight": 0.96,
       "title_original": "Обзор: Monero столкнулась с делистингами, Zcash получила новые ETF",
       "cross_check": 1
     }
   ],
   "top_bearish": [
+    {
+      "title": "WLFI Collapses 54% as World Liberty’s ‘Strategic Reserve’ Dumps $20M in ETH",
+      "url": "https://cryptopotato.com/wlfi-collapses-54-as-world-libertys-strategic-reserve-dumps-20m-in-eth/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-28T06:53:18+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 3.0,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-28T07:05:35.525100+00:00",
+      "effective_weight": 1.5,
+      "title_original": "WLFI Collapses 54% as World Liberty’s ‘Strategic Reserve’ Dumps $20M in ETH",
+      "cross_check": 1
+    },
     {
       "title": "Bitcoin whales pile into BTC despite shrinking profit cushion",
       "url": "https://cointelegraph.com/markets/bitcoin-whales-pile-btc-despite-shrinking-profit-cushion?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -140,7 +157,7 @@
       "bear_weight": 2.7,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-28T06:05:45.254249+00:00",
+      "collected_at": "2026-11-28T07:05:35.178758+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin whales pile into BTC despite shrinking profit cushion",
       "cross_check": 1
@@ -157,7 +174,7 @@
       "bear_weight": 2.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-28T06:05:45.254337+00:00",
+      "collected_at": "2026-11-28T07:05:35.178922+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin price drops below $59K as Anthropic joins tech stock rebound",
       "cross_check": 1
@@ -174,7 +191,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-28T06:05:45.254374+00:00",
+      "collected_at": "2026-11-28T07:05:35.178981+00:00",
       "effective_weight": 1.04,
       "title_original": "What was Coinbase worth while Nasdaq was closed?",
       "cross_check": 1
@@ -191,26 +208,9 @@
       "bear_weight": 1.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-28T06:05:45.254571+00:00",
+      "collected_at": "2026-11-28T07:05:35.179279+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin supply metric hits 11-year low as new ‘capitulation’ signal arrives",
-      "cross_check": 1
-    },
-    {
-      "title": "Bitcoin Whales Add 121,117 BTC as Price Falls Nearly 30%",
-      "url": "https://news.bitcoin.com/market-updates/bitcoin-whales-add-121117-btc-as-price-falls-nearly-30/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-28T04:05:37+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.0,
-      "freshness": 1.0,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-28T06:05:45.521686+00:00",
-      "effective_weight": 1.0,
-      "title_original": "Bitcoin Whales Add 121,117 BTC as Price Falls Nearly 30%",
       "cross_check": 1
     }
   ]
