@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-28T11:05:35.747120+00:00",
+  "generated_at": "2026-11-28T12:05:38.501307+00:00",
   "total_news": 94,
-  "avg_sentiment": -0.426,
+  "avg_sentiment": -0.475,
   "mood": "🔴 МЕДВЕЖЬЕ",
   "bullish_count": 12,
-  "bearish_count": 36,
-  "neutral_count": 46,
+  "bearish_count": 37,
+  "neutral_count": 45,
   "fake_count": 0,
   "cross_confirmed": 10,
   "by_source": {
@@ -37,27 +37,10 @@
     "ForkLog": {
       "total": 11,
       "bull": 2,
-      "bear": 1
+      "bear": 2
     }
   },
   "top_bullish": [
-    {
-      "title": "Vitalik Buterin warns against rushing Ethereum gas change that could break some contracts",
-      "url": "https://cryptoslate.com/vitalik-buterin-warns-against-rushing-ethereum-gas-change-that-could-break-some-contracts/",
-      "source": "CryptoSlate",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-28T11:00:35+00:00",
-      "sentiment": 1.0,
-      "bull_weight": 1.0,
-      "bear_weight": 0.0,
-      "freshness": 1.5,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-28T11:05:34.415434+00:00",
-      "effective_weight": 1.5,
-      "title_original": "Vitalik Buterin warns against rushing Ethereum gas change that could break some contracts",
-      "cross_check": 1
-    },
     {
       "title": "В Малайзии запустят первый в мире шариатский спотовый биткоин-ETF",
       "url": "https://forklog.com/v-malajzii-zapustyat-pervyj-v-mire-shariatskij-spotovyj-bitkoin-etf",
@@ -70,7 +53,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-28T11:05:35.712779+00:00",
+      "collected_at": "2026-11-28T12:05:38.452165+00:00",
       "effective_weight": 1.2,
       "title_original": "В Малайзии запустят первый в мире шариатский спотовый биткоин-ETF",
       "cross_check": 1
@@ -87,7 +70,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-28T11:05:34.097060+00:00",
+      "collected_at": "2026-11-28T12:05:36.845260+00:00",
       "effective_weight": 1.04,
       "title_original": "Franklin Templeton makes room for HYPE in crypto index ETF",
       "cross_check": 1
@@ -104,7 +87,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-28T11:05:34.097238+00:00",
+      "collected_at": "2026-11-28T12:05:36.845507+00:00",
       "effective_weight": 1.04,
       "title_original": "Binance to launch tokenized IPO program after regulatory approval: Yi He",
       "cross_check": 1
@@ -121,29 +104,63 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-28T11:05:34.097298+00:00",
+      "collected_at": "2026-11-28T12:05:36.845567+00:00",
       "effective_weight": 1.04,
       "title_original": "Brazil’s stock exchange pushes stablecoin launch back to 2027",
+      "cross_check": 1
+    },
+    {
+      "title": "Vitalik Buterin warns against rushing Ethereum gas change that could break some contracts",
+      "url": "https://cryptoslate.com/vitalik-buterin-warns-against-rushing-ethereum-gas-change-that-could-break-some-contracts/",
+      "source": "CryptoSlate",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-28T11:00:35+00:00",
+      "sentiment": 1.0,
+      "bull_weight": 1.0,
+      "bear_weight": 0.0,
+      "freshness": 1.0,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-28T12:05:37.213090+00:00",
+      "effective_weight": 1.0,
+      "title_original": "Vitalik Buterin warns against rushing Ethereum gas change that could break some contracts",
       "cross_check": 1
     }
   ],
   "top_bearish": [
     {
-      "title": "Trump-Linked World Liberty Wallet Dumps 12,121 ETH, Locking in a $19M Loss",
-      "url": "https://news.bitcoin.com/crypto-news/world-liberty-financial-sells-12121-eth-19-million-loss/",
-      "source": "Bitcoin.com",
-      "source_weight": 1.0,
-      "lang": "en",
-      "pub_date": "2026-11-28T10:30:54+00:00",
+      "title": "Связанный с Трампом токен WLFI обвалился более чем на 50%",
+      "url": "https://forklog.com/news/svyazannyj-s-trampom-token-wlfi-obvalilsya-bolee-chem-na-50",
+      "source": "ForkLog",
+      "source_weight": 1.2,
+      "lang": "ru",
+      "pub_date": "2026-11-28T11:12:51+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 3.0,
+      "bear_weight": 1.5,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-28T11:05:34.313669+00:00",
+      "collected_at": "2026-11-28T12:05:38.452047+00:00",
+      "effective_weight": 1.8,
+      "title_original": "Связанный с Трампом токен WLFI обвалился более чем на 50%",
+      "cross_check": 1
+    },
+    {
+      "title": "WLFI’s Rollercoaster Intensifies as Bitcoin (BTC) Loses $60K Support: Weekend Watch",
+      "url": "https://cryptopotato.com/wlfis-rollercoaster-intensifies-as-bitcoin-btc-loses-60k-support-weekend-watch/",
+      "source": "CryptoPotato",
+      "source_weight": 1.0,
+      "lang": "en",
+      "pub_date": "2026-11-28T12:00:49+00:00",
+      "sentiment": -1.0,
+      "bull_weight": 0.0,
+      "bear_weight": 1.5,
+      "freshness": 1.5,
+      "fake_score": 0.0,
+      "collected_at": "2026-11-28T12:05:37.317123+00:00",
       "effective_weight": 1.5,
-      "title_original": "Trump-Linked World Liberty Wallet Dumps 12,121 ETH, Locking in a $19M Loss",
-      "cross_check": 2
+      "title_original": "WLFI’s Rollercoaster Intensifies as Bitcoin (BTC) Loses $60K Support: Weekend Watch",
+      "cross_check": 1
     },
     {
       "title": "Bitcoin whales pile into BTC despite shrinking profit cushion",
@@ -157,7 +174,7 @@
       "bear_weight": 2.7,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-28T11:05:34.097096+00:00",
+      "collected_at": "2026-11-28T12:05:36.845309+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin whales pile into BTC despite shrinking profit cushion",
       "cross_check": 1
@@ -174,7 +191,7 @@
       "bear_weight": 2.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-28T11:05:34.097164+00:00",
+      "collected_at": "2026-11-28T12:05:36.845405+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin price drops below $59K as Anthropic joins tech stock rebound",
       "cross_check": 1
@@ -191,26 +208,9 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-28T11:05:34.097202+00:00",
+      "collected_at": "2026-11-28T12:05:36.845456+00:00",
       "effective_weight": 1.04,
       "title_original": "What was Coinbase worth while Nasdaq was closed?",
-      "cross_check": 1
-    },
-    {
-      "title": "Bitcoin supply metric hits 11-year low as new ‘capitulation’ signal arrives",
-      "url": "https://cointelegraph.com/markets/bitcoin-supply-metric-new-capitulation-signal?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "source": "Cointelegraph",
-      "source_weight": 1.3,
-      "lang": "en",
-      "pub_date": "2026-11-27T11:14:28+00:00",
-      "sentiment": -1.0,
-      "bull_weight": 0.0,
-      "bear_weight": 1.0,
-      "freshness": 0.8,
-      "fake_score": 0.0,
-      "collected_at": "2026-11-28T11:05:34.097377+00:00",
-      "effective_weight": 1.04,
-      "title_original": "Bitcoin supply metric hits 11-year low as new ‘capitulation’ signal arrives",
       "cross_check": 1
     }
   ]
