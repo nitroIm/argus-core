@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-28T15:11:43.201859+00:00",
+  "updated_at": "2026-11-28T16:11:36.589248+00:00",
   "force_reset_old": false,
   "global": {
     "fee_pct": 0.001,
@@ -80,7 +80,7 @@
     "no_entry_time_utc": null,
     "time_exit_h": 168,
     "idle_timeout_h": 24.0,
-    "threshold_long": 5.0,
+    "threshold_long": 4.95,
     "threshold_short": 1.5,
     "weights": {
       "macd": 0.975,
