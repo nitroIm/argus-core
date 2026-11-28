@@ -24,5 +24,17 @@
       "rsi_mid"
     ]
   },
-  "intraday": {}
+  "intraday": {
+    "type": "LONG",
+    "entry": 59891.76,
+    "sl": 59166.470357142854,
+    "tp1": 60375.28642857144,
+    "tp2": 61100.57607142858,
+    "size_left_pct": 100,
+    "tp1_hit": false,
+    "open_time": "2026-11-28T00:02:07.395240+00:00",
+    "active_signals": [
+      "rsi_low"
+    ]
+  }
 }
