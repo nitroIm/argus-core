@@ -1728,5 +1728,37 @@
       "ema",
       "rsi_mid"
     ]
+  },
+  {
+    "type": "SHORT",
+    "entry": 59192.49,
+    "exit": 59575.07035714286,
+    "pnl_pct": -0.85,
+    "pnl_usd": -0.69,
+    "reason": "STOP_LOSS",
+    "mode": "intraday",
+    "close_time": "2026-11-28T17:01:56.018040+00:00",
+    "balance_after": 80.43,
+    "active_signals": [
+      "macd",
+      "ema",
+      "rsi_mid"
+    ]
+  },
+  {
+    "type": "SHORT",
+    "entry": 59192.49,
+    "exit": 59575.07035714286,
+    "pnl_pct": -0.85,
+    "pnl_usd": -0.82,
+    "reason": "STOP_LOSS",
+    "mode": "swing",
+    "close_time": "2026-11-28T17:01:56.021073+00:00",
+    "balance_after": 96.15,
+    "active_signals": [
+      "macd",
+      "ema",
+      "rsi_mid"
+    ]
   }
 ]
