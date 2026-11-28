@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-11-28T09:05:38.942924+00:00",
-  "total_news": 101,
-  "avg_sentiment": -0.387,
+  "generated_at": "2026-11-28T10:05:36.088549+00:00",
+  "total_news": 93,
+  "avg_sentiment": -0.46,
   "mood": "🔴 МЕДВЕЖЬЕ",
-  "bullish_count": 13,
-  "bearish_count": 36,
-  "neutral_count": 52,
+  "bullish_count": 11,
+  "bearish_count": 35,
+  "neutral_count": 47,
   "fake_count": 0,
-  "cross_confirmed": 13,
+  "cross_confirmed": 10,
   "by_source": {
     "Cointelegraph": {
       "total": 25,
@@ -32,12 +32,7 @@
     "CryptoPotato": {
       "total": 27,
       "bull": 4,
-      "bear": 11
-    },
-    "Bitcoinist": {
-      "total": 8,
-      "bull": 2,
-      "bear": 2
+      "bear": 12
     },
     "ForkLog": {
       "total": 10,
@@ -56,10 +51,10 @@
       "sentiment": 1.0,
       "bull_weight": 1.2,
       "bear_weight": 0.0,
-      "freshness": 1.5,
+      "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-28T09:05:38.885443+00:00",
-      "effective_weight": 1.8,
+      "collected_at": "2026-11-28T10:05:36.040853+00:00",
+      "effective_weight": 1.2,
       "title_original": "В Малайзии запустят первый в мире шариатский спотовый биткоин-ETF",
       "cross_check": 1
     },
@@ -75,7 +70,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-28T09:05:37.183670+00:00",
+      "collected_at": "2026-11-28T10:05:34.772548+00:00",
       "effective_weight": 1.04,
       "title_original": "Franklin Templeton makes room for HYPE in crypto index ETF",
       "cross_check": 1
@@ -92,7 +87,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-28T09:05:37.183944+00:00",
+      "collected_at": "2026-11-28T10:05:34.772797+00:00",
       "effective_weight": 1.04,
       "title_original": "Binance to launch tokenized IPO program after regulatory approval: Yi He",
       "cross_check": 1
@@ -109,7 +104,7 @@
       "bear_weight": 0.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-28T09:05:37.184004+00:00",
+      "collected_at": "2026-11-28T10:05:34.772853+00:00",
       "effective_weight": 1.04,
       "title_original": "Brazil’s stock exchange pushes stablecoin launch back to 2027",
       "cross_check": 1
@@ -126,7 +121,7 @@
       "bear_weight": 0.0,
       "freshness": 1.0,
       "fake_score": 0.0,
-      "collected_at": "2026-11-28T09:05:37.499504+00:00",
+      "collected_at": "2026-11-28T10:05:34.969835+00:00",
       "effective_weight": 1.0,
       "title_original": "Bitcoin’s Correlation With Gold Hits Record High, Galaxy Research Finds",
       "cross_check": 2
@@ -134,20 +129,20 @@
   ],
   "top_bearish": [
     {
-      "title": "Biggest US Bank Failure in Over Two Years: United Fidelity Shut Down With $5.9B in Assets",
-      "url": "https://cryptopotato.com/biggest-us-bank-failure-in-over-two-years-united-fidelity-shut-down-with-5-9b-in-assets/",
+      "title": "Bitcoin Whales Are Doing Something They Didn’t Do in the 2018 or 2022 Bear Markets",
+      "url": "https://cryptopotato.com/bitcoin-whales-are-doing-something-they-didnt-do-in-the-2018-or-2022-bear-markets/",
       "source": "CryptoPotato",
       "source_weight": 1.0,
       "lang": "en",
-      "pub_date": "2026-11-28T08:18:42+00:00",
+      "pub_date": "2026-11-28T09:50:56+00:00",
       "sentiment": -1.0,
       "bull_weight": 0.0,
-      "bear_weight": 1.5,
+      "bear_weight": 1.2,
       "freshness": 1.5,
       "fake_score": 0.0,
-      "collected_at": "2026-11-28T09:05:37.741620+00:00",
+      "collected_at": "2026-11-28T10:05:35.185864+00:00",
       "effective_weight": 1.5,
-      "title_original": "Biggest US Bank Failure in Over Two Years: United Fidelity Shut Down With $5.9B in Assets",
+      "title_original": "Bitcoin Whales Are Doing Something They Didn’t Do in the 2018 or 2022 Bear Markets",
       "cross_check": 1
     },
     {
@@ -162,7 +157,7 @@
       "bear_weight": 2.7,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-28T09:05:37.183725+00:00",
+      "collected_at": "2026-11-28T10:05:34.772602+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin whales pile into BTC despite shrinking profit cushion",
       "cross_check": 1
@@ -179,7 +174,7 @@
       "bear_weight": 2.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-28T09:05:37.183819+00:00",
+      "collected_at": "2026-11-28T10:05:34.772697+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin price drops below $59K as Anthropic joins tech stock rebound",
       "cross_check": 1
@@ -196,7 +191,7 @@
       "bear_weight": 1.5,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-28T09:05:37.183863+00:00",
+      "collected_at": "2026-11-28T10:05:34.772739+00:00",
       "effective_weight": 1.04,
       "title_original": "What was Coinbase worth while Nasdaq was closed?",
       "cross_check": 1
@@ -213,7 +208,7 @@
       "bear_weight": 1.0,
       "freshness": 0.8,
       "fake_score": 0.0,
-      "collected_at": "2026-11-28T09:05:37.184113+00:00",
+      "collected_at": "2026-11-28T10:05:34.772960+00:00",
       "effective_weight": 1.04,
       "title_original": "Bitcoin supply metric hits 11-year low as new ‘capitulation’ signal arrives",
       "cross_check": 1
